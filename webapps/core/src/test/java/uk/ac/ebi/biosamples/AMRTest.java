@@ -88,7 +88,7 @@ public class AMRTest {
   }
 
   private AMRTable getAMRTable() {
-    return new AMRTable.Builder("http://schema.org", "self.test").addEntry(getAMREntry()).build();
+    return new AMRTable.Builder("http://schema.org", "self.test", null).addEntry(getAMREntry()).build();
   }
 
   private Sample.Builder getTestSampleBuilder() {
@@ -125,7 +125,7 @@ public class AMRTest {
       throws Exception {
     AMREntry amrEntry = getAMREntry();
     AMRTable amrTable =
-        new AMRTable.Builder("http://schema.org", "self.test").addEntry(amrEntry).build();
+        new AMRTable.Builder("http://schema.org", "self.test", null).addEntry(amrEntry).build();
 
     Sample sample = getTestSampleBuilder().addData(amrTable).build();
     when(sampleService.fetch(eq(sample.getAccession()), any(), any(String.class)))
@@ -201,7 +201,7 @@ public class AMRTest {
             .withUpdate(jsonSample.at("/update").asText())
             .withRelease(jsonSample.at("/release").asText())
             .addData(
-                new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "self.test")
+                new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "self.test", null)
                     .addEntry(amrEntry)
                     .build())
             .withAttributes(Collections.singletonList(organismAttribute))
@@ -248,7 +248,7 @@ public class AMRTest {
             .withUpdate(jsonSample.at("/update").asText())
             .withRelease(jsonSample.at("/release").asText())
             .addData(
-                new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "self.test")
+                new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "self.test", null)
                     .addEntry(amrEntry)
                     .build())
             .withAttributes(Collections.singletonList(organismAttribute))

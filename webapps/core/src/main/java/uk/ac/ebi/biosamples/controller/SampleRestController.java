@@ -93,19 +93,20 @@ public class SampleRestController {
 
     // convert it into the format to return
     Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains, curationRepo);
-    if (sample.isEmpty()) {
+    if (sample.isPresent()) {
+      bioSamplesAapService.checkAccessible(sample.get());
+
+      // TODO If user is not Read super user, reduce the fields to show
+      if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
+        sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
+      }
+
+      // TODO cache control
+      return sampleResourceAssembler.toResource(
+              sample.get(), decodedLegacyDetails, decodedCurationDomains);
+    } else {
       throw new SampleNotFoundException();
     }
-    bioSamplesAapService.checkAccessible(sample.get());
-
-    // TODO If user is not Read super user, reduce the fields to show
-    if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
-      sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
-    }
-
-    // TODO cache control
-    return sampleResourceAssembler.toResource(
-        sample.get(), decodedLegacyDetails, decodedCurationDomains);
   }
 
   @RequestMapping(produces = "application/phenopacket+json")
@@ -132,18 +133,18 @@ public class SampleRestController {
     // convert it into the format to return
     Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains, curationRepo);
 
-    if (sample.isEmpty()) {
+    if (sample.isPresent()) {
+      bioSamplesAapService.checkAccessible(sample.get());
+
+      // TODO If user is not Read super user, reduce the fields to show
+      if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
+        sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
+      }
+
+      return phenopacketConverter.convertToJsonPhenopacket(sample.get());
+    } else {
       throw new SampleNotFoundException();
     }
-
-    bioSamplesAapService.checkAccessible(sample.get());
-
-    // TODO If user is not Read super user, reduce the fields to show
-    if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
-      sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
-    }
-
-    return phenopacketConverter.convertToJsonPhenopacket(sample.get());
   }
 
   @PreAuthorize("isAuthenticated()")
@@ -206,7 +207,7 @@ public class SampleRestController {
     // todo Fix all integration tests to not to use predefined accessions, then remove
     // isIntegrationTestUser() check
     if (!authProvider.equalsIgnoreCase("WEBIN")) {
-      if (sampleService.isExistingAccession(accession)
+      if (sampleService.isNotExistingAccession(accession)
               && !(bioSamplesAapService.isWriteSuperUser()
               || bioSamplesAapService.isIntegrationTestUser())) {
         throw new SampleAccessionDoesNotExistException();
@@ -223,7 +224,21 @@ public class SampleRestController {
               .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
               .getBody();
 
-      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
+      final String webinAccountId = webinAccount.getId();
+
+      if (sampleService.isNotExistingAccession(accession) && !bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId)) {
+        throw new SampleAccessionDoesNotExistException();
+      }
+
+      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
+
+      if (sample.getData() != null && sample.getData().size() > 0) {
+        if (bioSamplesWebinAuthenticationService.isOriginalSubmitter(sample, webinAccountId)) {
+          sample = Sample.Builder.fromSample(sample).build();
+        } else {
+          sample = Sample.Builder.fromSample(sample).withNoData().build();
+        }
+      }
     } else {
       sample = bioSamplesAapService.handleSampleDomain(sample);
 
@@ -280,10 +295,13 @@ public class SampleRestController {
   @PreAuthorize("isAuthenticated()")
   @PatchMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public Resource<Sample> patchStructuredData(
+          HttpServletRequest request,
       @PathVariable String accession,
       @RequestBody Sample sample,
       @RequestParam(name = "structuredData", required = false, defaultValue = "false")
-          boolean structuredData) {
+          boolean structuredData,
+      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
+              String authProvider) {
 
     if (!structuredData) throw new SampleDataPatchMethodNotSupportedException();
 
@@ -291,18 +309,31 @@ public class SampleRestController {
       throw new SampleAccessionMismatchException();
     }
 
-    if (sampleService.isExistingAccession(accession)
-        && !(bioSamplesAapService.isWriteSuperUser()
-            || bioSamplesAapService.isIntegrationTestUser())) {
-      throw new SampleAccessionDoesNotExistException();
+    if (authProvider.equalsIgnoreCase("WEBIN")) {
+      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
+      final Authentication authentication = bearerTokenExtractor.extract(request);
+      final SubmissionAccount webinAccount =
+              bioSamplesWebinAuthenticationService
+                      .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+                      .getBody();
+      sample = bioSamplesWebinAuthenticationService.handleStructuredDataWebinUser(sample, webinAccount.getId());
+      sample = sampleService.storeSampleStructuredData(sample, authProvider);
+
+      return sampleResourceAssembler.toResource(sample);
+    } else {
+      if (sampleService.isNotExistingAccession(accession)
+              && !(bioSamplesAapService.isWriteSuperUser()
+              || bioSamplesAapService.isIntegrationTestUser())) {
+        throw new SampleAccessionDoesNotExistException();
+      }
+
+      log.debug("Received PATCH for " + accession);
+
+      sample = bioSamplesAapService.handleStructuredDataDomain(sample);
+      sample = sampleService.storeSampleStructuredData(sample, authProvider);
+
+      return sampleResourceAssembler.toResource(sample);
     }
-
-    log.debug("Received PATCH for " + accession);
-
-    sample = bioSamplesAapService.handleStructuredDataDomain(sample);
-    sample = sampleService.storeSampleStructuredData(sample);
-
-    return sampleResourceAssembler.toResource(sample);
   }
 
   @ResponseStatus(

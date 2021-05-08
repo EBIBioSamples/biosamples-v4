@@ -239,7 +239,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
           attributes.add(
               Attribute.build(
                   tag,
-                  Objects.requireNonNullElse(value, ""),
+                      value,
                   TAG_SAMPLE_ATTRIBUTE,
                   Collections.emptyList(),
                   null));
@@ -251,7 +251,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
           attributes.add(
               Attribute.build(
                   tag,
-                  Objects.requireNonNullElse(value, ""),
+                      value,
                   TAG_SAMPLE_ATTRIBUTE,
                   Collections.emptyList(),
                   null));
@@ -262,7 +262,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
           attributes.add(
               Attribute.build(
                   tag,
-                  Objects.requireNonNullElse(value, ""),
+                     value,
                   TAG_SAMPLE_ATTRIBUTE,
                   Collections.emptyList(),
                   unit));

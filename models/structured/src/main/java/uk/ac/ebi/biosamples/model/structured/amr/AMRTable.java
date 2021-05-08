@@ -23,16 +23,23 @@ public class AMRTable extends AbstractData implements Comparable<AbstractData> {
   private final URI schema;
   private final Set<AMREntry> amrEntries;
   private final String domain;
+  private final String webinSubmissionAccountId;
 
-  public AMRTable(URI schema, Set<AMREntry> amrEntries, String domain) {
+  public AMRTable(URI schema, Set<AMREntry> amrEntries, String domain, String webinSubmissionAccountId) {
     this.schema = schema;
     this.amrEntries = amrEntries;
     this.domain = domain;
+    this.webinSubmissionAccountId = webinSubmissionAccountId;
   }
 
   @Override
   public String getDomain() {
     return domain;
+  }
+
+  @Override
+  public String getWebinSubmissionAccountId() {
+    return webinSubmissionAccountId;
   }
 
   @Override
@@ -94,7 +101,13 @@ public class AMRTable extends AbstractData implements Comparable<AbstractData> {
       return comparison;
     }
 
-    return nullSafeStringComparison(this.domain, otherAmrTable.domain);
+    comparison =  nullSafeStringComparison(this.domain, otherAmrTable.domain);
+
+    if (comparison != 0) {
+      return comparison;
+    }
+
+    return nullSafeStringComparison(this.webinSubmissionAccountId, otherAmrTable.webinSubmissionAccountId);
   }
 
   @Override
@@ -104,12 +117,13 @@ public class AMRTable extends AbstractData implements Comparable<AbstractData> {
     AMRTable amrTable = (AMRTable) o;
     return Objects.equals(getSchema(), amrTable.getSchema())
         && Objects.equals(amrEntries, amrTable.amrEntries)
-        && Objects.equals(getDomain(), amrTable.getDomain());
+        && Objects.equals(getDomain(), amrTable.getDomain())
+            && Objects.equals(getWebinSubmissionAccountId(), amrTable.getWebinSubmissionAccountId());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getSchema(), amrEntries, domain);
+    return Objects.hash(getSchema(), amrEntries, domain, webinSubmissionAccountId);
   }
 
   private int nullSafeStringComparison(String one, String two) {
@@ -131,17 +145,19 @@ public class AMRTable extends AbstractData implements Comparable<AbstractData> {
     private URI schema;
     private Set<AMREntry> amrEntries;
     private String domain;
+    private String webinSubmissionAccountId;
 
     @JsonCreator
-    public Builder(URI schema, String domain) {
+    public Builder(URI schema, String domain, String webinSubmissionAccountId) {
       this.schema = schema;
       this.amrEntries = new HashSet<>();
       this.domain = domain;
+      this.webinSubmissionAccountId = webinSubmissionAccountId;
     }
 
     @JsonCreator
-    public Builder(String schema, String domain) {
-      this(URI.create(schema), domain);
+    public Builder(String schema, String domain, String webinSubmissionAccountId) {
+      this(URI.create(schema), domain, webinSubmissionAccountId);
     }
 
     @JsonProperty
@@ -157,7 +173,7 @@ public class AMRTable extends AbstractData implements Comparable<AbstractData> {
     }
 
     public AMRTable build() {
-      return new AMRTable(this.schema, this.amrEntries, this.domain);
+      return new AMRTable(this.schema, this.amrEntries, this.domain, this.webinSubmissionAccountId);
     }
   }
 }

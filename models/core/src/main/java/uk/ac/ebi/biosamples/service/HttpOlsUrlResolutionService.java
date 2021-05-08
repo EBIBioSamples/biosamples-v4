@@ -10,14 +10,15 @@
 */
 package uk.ac.ebi.biosamples.service;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.SortedSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.SortedSet;
 
 @Service
 public class HttpOlsUrlResolutionService {
@@ -43,28 +44,28 @@ public class HttpOlsUrlResolutionService {
     // check this is a sane iri
     try {
       final UriComponents iriComponents =
-          UriComponentsBuilder.fromUriString(displayIri).build(true);
+              UriComponentsBuilder.fromUriString(displayIri).build(true);
 
       if (iriComponents.getScheme() == null
-          || iriComponents.getHost() == null
-          || iriComponents.getPath() == null) {
+              || iriComponents.getHost() == null
+              || iriComponents.getPath() == null) {
         // incomplete iri (e.g. 9606, EFO_12345) don't bother to check
         return null;
+      }
+
+      // TODO application.properties this
+      // TODO use https
+      final String iriUrl = URLEncoder.encode(displayIri, StandardCharsets.UTF_8.toString());
+
+      if (checkUrlForPattern(displayIri)) {
+        return OLS_PREFIX + iriUrl;
+      } else {
+        return displayIri;
       }
     } catch (final Exception e) {
       // FIXME: Can't use a non static logger here because
       log.error("An error occurred while trying to build OLS iri for " + displayIri, e);
       return null;
-    }
-
-    // TODO application.properties this
-    // TODO use https
-    final String iriUrl = URLEncoder.encode(displayIri, StandardCharsets.UTF_8);
-
-    if (checkUrlForPattern(displayIri)) {
-      return OLS_PREFIX + iriUrl;
-    } else {
-      return displayIri;
     }
   }
 

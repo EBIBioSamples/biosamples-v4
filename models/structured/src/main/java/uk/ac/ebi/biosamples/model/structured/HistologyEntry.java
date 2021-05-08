@@ -57,15 +57,14 @@ public class HistologyEntry extends StructuredEntry implements Comparable<Histol
   @Override
   public Map<String, StructuredCell> getDataAsMap() {
     // keys must match DataType.HISTOLOGY.getHeaders()
-    return Map.of(
-        "Marker",
-        marker,
-        "Measurement",
-        measurement,
-        "Measurement Units",
-        measurementUnits,
-        "Partner",
-        partner);
+    Map<String, StructuredCell> keyToStructuredCellMap = new HashMap<>();
+
+    keyToStructuredCellMap.put("Marker", marker);
+    keyToStructuredCellMap.put("Measurement", measurement);
+    keyToStructuredCellMap.put("Measurement Units", measurementUnits);
+    keyToStructuredCellMap.put("Partner", partner);
+
+    return keyToStructuredCellMap;
   }
 
   public int compareTo(HistologyEntry other) {

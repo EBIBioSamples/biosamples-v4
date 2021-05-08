@@ -59,7 +59,7 @@ public class AmrJsonConversionTest {
   @Test
   public void testAmrTableSerializer() throws IOException {
     AMRTable.Builder tableBuilder =
-        new AMRTable.Builder("http://some-fake-schema.com", "self.test");
+        new AMRTable.Builder("http://some-fake-schema.com", "self.test", null);
     tableBuilder.addEntry(
         new AMREntry.Builder()
             .withAntibioticName(new AmrPair("A"))
@@ -111,7 +111,7 @@ public class AmrJsonConversionTest {
 
   @Test
   public void testAMRDeserialization() throws Exception {
-    AMRTable.Builder tableBuilder = new AMRTable.Builder("test", "self.test");
+    AMRTable.Builder tableBuilder = new AMRTable.Builder("test", "self.test", null);
     tableBuilder.addEntry(
         new AMREntry.Builder()
             .withAntibioticName(new AmrPair("ampicillin", "test.org"))

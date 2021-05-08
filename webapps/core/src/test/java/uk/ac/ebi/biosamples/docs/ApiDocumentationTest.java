@@ -27,10 +27,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.Before;
@@ -373,7 +370,7 @@ public class ApiDocumentationTest {
         .thenReturn(Optional.of(sampleWithDomainAndData));
     when(aapService.handleStructuredDataDomain(sampleWithDomainAndData))
         .thenReturn(sampleWithDomainAndData);
-    when(sampleService.storeSampleStructuredData(eq(sampleWithDomainAndData)))
+    when(sampleService.storeSampleStructuredData(eq(sampleWithDomainAndData), eq("AAP")))
         .thenReturn(sampleWithDomainAndData);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
@@ -405,7 +402,7 @@ public class ApiDocumentationTest {
         .thenReturn(Optional.of(sampleWithDomainAndData));
     when(aapService.handleStructuredDataDomain(sampleWithDomainAndData))
         .thenReturn(sampleWithDomainAndData);
-    when(sampleService.storeSampleStructuredData(eq(sampleWithDomainAndData)))
+    when(sampleService.storeSampleStructuredData(eq(sampleWithDomainAndData), eq("AAP")))
         .thenReturn(sampleWithDomainAndData);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
@@ -660,22 +657,27 @@ public class ApiDocumentationTest {
     when(aapService.handleSampleDomain(sample)).thenReturn(sample);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
+
+    List<Certificate> certificates = new java.util.ArrayList<>();
+
+    certificates.add(Certificate.build(
+            "biosamples-minimal",
+            "0.0.1",
+            "schemas/certification/biosamples-minimal.json"));
     when(certifyService.certify(new ObjectMapper().writeValueAsString(sample), true))
         .thenReturn(
-            List.of(
-                Certificate.build(
-                    "biosamples-minimal",
-                    "0.0.1",
-                    "schemas/certification/biosamples-minimal.json")));
+                certificates);
+
+    certificates.add(Certificate.build(
+            "biosamples-minimal",
+            "0.0.1",
+            "schemas/certification/biosamples-minimal.json"));
+
     when(sampleService.store(eq(sample), eq(false), eq("AAP")))
         .thenReturn(
             Sample.Builder.fromSample(sample)
                 .withCertificates(
-                    List.of(
-                        Certificate.build(
-                            "biosamples-minimal",
-                            "0.0.1",
-                            "schemas/certification/biosamples-minimal.json")))
+                        certificates)
                 .build());
     doNothing().when(aapService).checkAccessible(isA(Sample.class));
 
@@ -710,29 +712,27 @@ public class ApiDocumentationTest {
         .thenReturn(sampleWithWebinId);
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
         .thenReturn(ResponseEntity.ok(submissionAccount));
-
     when(sampleService.fetch(
             eq(sampleWithWebinId.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sampleWithWebinId));
     when(aapService.handleSampleDomain(sampleWithWebinId)).thenReturn(sampleWithWebinId);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
+
+    List<Certificate> certificates = new java.util.ArrayList<>();
+    certificates.add(Certificate.build(
+            "biosamples-minimal",
+            "0.0.1",
+            "schemas/certification/biosamples-minimal.json"));
+
     when(certifyService.certify(new ObjectMapper().writeValueAsString(sampleWithWebinId), true))
         .thenReturn(
-            List.of(
-                Certificate.build(
-                    "biosamples-minimal",
-                    "0.0.1",
-                    "schemas/certification/biosamples-minimal.json")));
+                certificates);
     when(sampleService.store(eq(sampleWithWebinId), eq(false), eq("WEBIN")))
         .thenReturn(
             Sample.Builder.fromSample(sampleWithWebinId)
                 .withCertificates(
-                    List.of(
-                        Certificate.build(
-                            "biosamples-minimal",
-                            "0.0.1",
-                            "schemas/certification/biosamples-minimal.json")))
+                        certificates)
                 .build());
     doNothing().when(aapService).checkAccessible(isA(Sample.class));
 
@@ -775,24 +775,31 @@ public class ApiDocumentationTest {
     bioSamplesCertificationComplainceResult.add(
         new uk.ac.ebi.biosamples.model.certification.Certificate(
             new SampleDocument("SAMFAKE123456", new ObjectMapper().writeValueAsString(sample)),
-            List.of(),
+            new ArrayList<>(),
             new Checklist(
                 "ncbi-candidate-schema",
                 "0.0.1",
                 "schemas/certification/ncbi-candidate-schema.json",
                 false)));
+
+    List<CurationResult> curationResults = new ArrayList<>();
+    curationResults.add(curationResult);
+
     bioSamplesCertificationComplainceResult.add(
         new uk.ac.ebi.biosamples.model.certification.Certificate(
             new SampleDocument("SAMFAKE123456", new ObjectMapper().writeValueAsString(sample)),
-            List.of(curationResult),
+                curationResults,
             new Checklist(
                 "biosamples-basic",
                 "0.0.1",
                 "schemas/certification/biosamples-basic.json",
                 false)));
 
+    List<Suggestion> suggestions = new ArrayList<>();
+    suggestions.add(suggestion);
+
     bioSamplesCertificationComplainceResult.add(
-        new Recommendation("biosamples-minimal-0.0.1", List.of(suggestion)));
+        new Recommendation("biosamples-minimal-0.0.1", suggestions));
 
     when(certifyService.recordResult(new ObjectMapper().writeValueAsString(sample), true))
         .thenReturn(bioSamplesCertificationComplainceResult);

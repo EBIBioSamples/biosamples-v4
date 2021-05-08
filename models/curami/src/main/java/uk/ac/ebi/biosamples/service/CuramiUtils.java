@@ -24,7 +24,7 @@ public class CuramiUtils {
   public static List<String> getSimilarAttributes(String attribute, SortedSet<String> attributes) {
     return attributes.stream()
         .filter(a -> CuramiUtils.getSimilarityScore(a, attribute) > 0.8)
-        .collect(Collectors.toUnmodifiableList());
+        .collect(Collectors.toList());
   }
 
   public static Optional<String> getMostSimilarAttribute(

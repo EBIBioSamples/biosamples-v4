@@ -72,7 +72,7 @@ public class MongoSerializationTest {
 
     Set<AbstractData> structuredData = new HashSet<>();
     AMRTable amrTable =
-        new AMRTable.Builder("http://test", "self.test")
+        new AMRTable.Builder("http://test", "self.test", null)
             .addEntry(
                 new AMREntry.Builder()
                     .withAntibioticName(new AmrPair("ampicillin", ""))
@@ -160,7 +160,7 @@ public class MongoSerializationTest {
     Set<AbstractData> data = new HashSet<>();
 
     AMRTable amrTable =
-        new AMRTable.Builder("http://test", "self.test")
+        new AMRTable.Builder("http://test", "self.test", null)
             .addEntry(
                 new AMREntry.Builder()
                     .withAntibioticName(new AmrPair("ampicillin", ""))

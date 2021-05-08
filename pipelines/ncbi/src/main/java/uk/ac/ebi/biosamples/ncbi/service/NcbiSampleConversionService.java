@@ -250,7 +250,7 @@ public class NcbiSampleConversionService {
         attrs.add(
             Attribute.build(
                 key,
-                Objects.requireNonNullElse(value, ""),
+                    value,
                 SAMPLE_ATTRIBUTE,
                 Collections.emptyList(),
                 null));
@@ -280,7 +280,7 @@ public class NcbiSampleConversionService {
         attrs.add(
             Attribute.build(
                 key,
-                Objects.requireNonNullElse(value, ""),
+                    value != null ? value : null,
                 SAMPLE_ATTRIBUTE,
                 Collections.emptyList(),
                 null));
