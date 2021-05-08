@@ -24,7 +24,12 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
   private final StructuredDataType type;
   private final Set<T> entries;
 
-  public StructuredTable(URI schema, String domain, String webinSubmissionAccountId, StructuredDataType type, Set<T> entries) {
+  public StructuredTable(
+      URI schema,
+      String domain,
+      String webinSubmissionAccountId,
+      StructuredDataType type,
+      Set<T> entries) {
     this.schema = schema;
     this.domain = domain;
     this.webinSubmissionAccountId = webinSubmissionAccountId;
@@ -64,9 +69,7 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
 
   @Override
   public List<Map<String, StructuredCell>> getDataAsMap() {
-    return entries.stream()
-        .map(StructuredEntry::getDataAsMap)
-        .collect(Collectors.toList());
+    return entries.stream().map(StructuredEntry::getDataAsMap).collect(Collectors.toList());
   }
 
   @Override
@@ -109,7 +112,7 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
       return this.getDataType().equals(other.getDataType())
           && this.getSchema().equals(other.getSchema())
           && this.getDomain().equals(other.getDomain())
-              && this.getWebinSubmissionAccountId().equals(other.getWebinSubmissionAccountId());
+          && this.getWebinSubmissionAccountId().equals(other.getWebinSubmissionAccountId());
     }
 
     return false;
@@ -128,7 +131,8 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
     private StructuredDataType type;
 
     @JsonCreator
-    public Builder(URI schema, String domain, String webinSubmissionAccountId, StructuredDataType type) {
+    public Builder(
+        URI schema, String domain, String webinSubmissionAccountId, StructuredDataType type) {
       this.schema = schema;
       this.domain = domain;
       this.webinSubmissionAccountId = webinSubmissionAccountId;
@@ -137,7 +141,8 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
     }
 
     @JsonCreator
-    public Builder(String schema, String domain, String webinSubmissionAccountId, StructuredDataType type) {
+    public Builder(
+        String schema, String domain, String webinSubmissionAccountId, StructuredDataType type) {
       this(URI.create(schema), domain, webinSubmissionAccountId, type);
     }
 
@@ -154,7 +159,8 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
     }
 
     public StructuredTable<T> build() {
-      return new StructuredTable<>(this.schema, this.domain, this.webinSubmissionAccountId, this.type, this.entries);
+      return new StructuredTable<>(
+          this.schema, this.domain, this.webinSubmissionAccountId, this.type, this.entries);
     }
   }
 }

@@ -12,7 +12,6 @@ package uk.ac.ebi.biosamples.ena;
 
 import java.time.Instant;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.dom4j.Element;
@@ -237,35 +236,20 @@ public class EnaElementConverter implements Converter<Element, Sample> {
         // BSD-1744 - Deal with multiple descriptions in ENA XML
         if (tag != null && tag.equalsIgnoreCase(ENA_DESCRIPTION)) {
           attributes.add(
-              Attribute.build(
-                  tag,
-                      value,
-                  TAG_SAMPLE_ATTRIBUTE,
-                  Collections.emptyList(),
-                  null));
+              Attribute.build(tag, value, TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
           continue;
         }
 
         // BSD-1813 - Deal with multiple titles in ENA XML
         if (tag != null && tag.equalsIgnoreCase(ENA_TITLE)) {
           attributes.add(
-              Attribute.build(
-                  tag,
-                      value,
-                  TAG_SAMPLE_ATTRIBUTE,
-                  Collections.emptyList(),
-                  null));
+              Attribute.build(tag, value, TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
           continue;
         }
 
         if (tag != null) {
           attributes.add(
-              Attribute.build(
-                  tag,
-                     value,
-                  TAG_SAMPLE_ATTRIBUTE,
-                  Collections.emptyList(),
-                  unit));
+              Attribute.build(tag, value, TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), unit));
         }
       }
     }

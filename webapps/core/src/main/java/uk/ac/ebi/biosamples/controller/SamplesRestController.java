@@ -10,6 +10,16 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
+import java.net.URI;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -38,17 +48,6 @@ import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
-
-import javax.servlet.http.HttpServletRequest;
-import java.net.URI;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and write.
@@ -385,8 +384,8 @@ public class SamplesRestController {
   }
 
   @PostMapping(
-          consumes = {MediaType.APPLICATION_JSON_VALUE},
-          produces = {MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE})
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE})
   @RequestMapping("/validate")
   public ResponseEntity<Sample> validateSample(@RequestBody Sample sample) {
     schemaValidationService.validate(sample);
@@ -487,7 +486,9 @@ public class SamplesRestController {
       final Set<AbstractData> structuredData = sample.getData();
 
       if (structuredData != null && structuredData.size() > 0) {
-        sample = bioSamplesWebinAuthenticationService.handleStructuredDataWebinUser(sample, webinAccountId);
+        sample =
+            bioSamplesWebinAuthenticationService.handleStructuredDataWebinUser(
+                sample, webinAccountId);
       }
     } else {
       if (sample.hasAccession() && !bioSamplesAapService.isWriteSuperUser()) {

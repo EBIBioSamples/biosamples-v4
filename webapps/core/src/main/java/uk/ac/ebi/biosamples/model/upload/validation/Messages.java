@@ -10,10 +10,9 @@
 */
 package uk.ac.ebi.biosamples.model.upload.validation;
 
-import org.springframework.stereotype.Component;
-
 import java.util.Set;
 import java.util.TreeSet;
+import org.springframework.stereotype.Component;
 
 @Component
 public class Messages {

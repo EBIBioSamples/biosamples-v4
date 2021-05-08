@@ -46,7 +46,10 @@ public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
     JsonNode webinSubmissionAccountId = rootNode.get("webinSubmissionAccountId");
     JsonNode content = rootNode.get("content");
     String domainStr = (domain != null && !domain.isNull()) ? domain.asText() : null;
-    String webinIdStr = (webinSubmissionAccountId != null && !webinSubmissionAccountId.isNull()) ? webinSubmissionAccountId.asText() : null;
+    String webinIdStr =
+        (webinSubmissionAccountId != null && !webinSubmissionAccountId.isNull())
+            ? webinSubmissionAccountId.asText()
+            : null;
 
     // Deserialize the object based on the datatype
     if (type == StructuredDataType.AMR) {

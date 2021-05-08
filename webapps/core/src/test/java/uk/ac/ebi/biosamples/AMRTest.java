@@ -88,7 +88,9 @@ public class AMRTest {
   }
 
   private AMRTable getAMRTable() {
-    return new AMRTable.Builder("http://schema.org", "self.test", null).addEntry(getAMREntry()).build();
+    return new AMRTable.Builder("http://schema.org", "self.test", null)
+        .addEntry(getAMREntry())
+        .build();
   }
 
   private Sample.Builder getTestSampleBuilder() {

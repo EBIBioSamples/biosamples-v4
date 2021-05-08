@@ -10,6 +10,8 @@
 */
 package uk.ac.ebi.biosamples.mongo.service;
 
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +24,6 @@ import uk.ac.ebi.biosamples.mongo.model.MongoCertificate;
 import uk.ac.ebi.biosamples.mongo.model.MongoExternalReference;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
-
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * Class to convert {@link Sample} to {@link MongoSample} without validating if sample has a domain.
@@ -63,48 +62,53 @@ public class SampleToMongoSampleStructuredDataCentricConverter {
 
     if (authProvider.equals("WEBIN")) {
       sample
-              .getData()
-              .forEach(
-                      data -> {
-                        if (data.getWebinSubmissionAccountId() == null || data.getWebinSubmissionAccountId().isEmpty()) {
-                          LOGGER.warn(
-                                  String.format(
-                                          "sample %s structured data does not have a webin id", sample.getAccession()));
-                          throw new RuntimeException("sample structured data does not have a webin id " + sample);
-                        }
-                      });
+          .getData()
+          .forEach(
+              data -> {
+                if (data.getWebinSubmissionAccountId() == null
+                    || data.getWebinSubmissionAccountId().isEmpty()) {
+                  LOGGER.warn(
+                      String.format(
+                          "sample %s structured data does not have a webin id",
+                          sample.getAccession()));
+                  throw new RuntimeException(
+                      "sample structured data does not have a webin id " + sample);
+                }
+              });
     } else {
       sample
-              .getData()
-              .forEach(
-                      data -> {
-                        if (data.getDomain() == null || data.getDomain().isEmpty()) {
-                          LOGGER.warn(
-                                  String.format(
-                                          "sample %s structured data does not have a domain", sample.getAccession()));
-                          throw new RuntimeException("sample structured data does not have a domain " + sample);
-                        }
-                      });
+          .getData()
+          .forEach(
+              data -> {
+                if (data.getDomain() == null || data.getDomain().isEmpty()) {
+                  LOGGER.warn(
+                      String.format(
+                          "sample %s structured data does not have a domain",
+                          sample.getAccession()));
+                  throw new RuntimeException(
+                      "sample structured data does not have a domain " + sample);
+                }
+              });
     }
 
     return MongoSample.build(
-            sample.getName(),
-            sample.getAccession(),
-            sample.getDomain(),
-            sample.getWebinSubmissionAccountId(),
-            sample.getRelease(),
-            sample.getUpdate(),
-            sample.getCreate(),
-            sample.getSubmitted(),
-            sample.getReviewed(),
-            sample.getCharacteristics(),
-            sample.getData(),
-            relationships,
-            externalReferences,
-            sample.getOrganizations(),
-            sample.getContacts(),
-            sample.getPublications(),
-            certificates,
-            sample.getSubmittedVia());
+        sample.getName(),
+        sample.getAccession(),
+        sample.getDomain(),
+        sample.getWebinSubmissionAccountId(),
+        sample.getRelease(),
+        sample.getUpdate(),
+        sample.getCreate(),
+        sample.getSubmitted(),
+        sample.getReviewed(),
+        sample.getCharacteristics(),
+        sample.getData(),
+        relationships,
+        externalReferences,
+        sample.getOrganizations(),
+        sample.getContacts(),
+        sample.getPublications(),
+        certificates,
+        sample.getSubmittedVia());
   }
 }

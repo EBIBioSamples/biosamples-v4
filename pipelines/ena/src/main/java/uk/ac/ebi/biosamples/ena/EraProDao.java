@@ -139,7 +139,7 @@ public class EraProDao {
               + "to_char(FIRST_PUBLIC, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_PUBLIC,  "
               + " to_char(FIRST_CREATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_CREATED, "
               + "STATUS_ID, "
-                  + "SUBMISSION_ACCOUNT_ID "
+              + "SUBMISSION_ACCOUNT_ID "
               + "FROM SAMPLE "
               + "WHERE BIOSAMPLE_ID = ? "
               + "AND SAMPLE_ID LIKE 'ERS%'";

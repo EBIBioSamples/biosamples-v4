@@ -1,13 +1,13 @@
 /*
- * Copyright 2019 EMBL - European Bioinformatics Institute
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- */
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples;
 
 import java.net.URI;
@@ -53,10 +53,12 @@ public class BioSamplesProperties {
   @Value("${biosamples.client.aap.password:#{null}}")
   private String biosamplesClientAapPassword;
 
-  @Value("${biosamples.client.webin.auth.token.uri:https://www.ebi.ac.uk/ena/submit/webin/auth/token}")
+  @Value(
+      "${biosamples.client.webin.auth.token.uri:https://www.ebi.ac.uk/ena/submit/webin/auth/token}")
   private URI biosamplesWebinAuthTokenUri;
 
-  @Value("${biosamples.client.webin.auth.submissionaccount.uri:https://www.ebi.ac.uk/ena/submit/webin/auth/admin/submission-account}")
+  @Value(
+      "${biosamples.client.webin.auth.submissionaccount.uri:https://www.ebi.ac.uk/ena/submit/webin/auth/admin/submission-account}")
   private URI biosamplesWebinAuthFetchSubmissionAccountUri;
 
   // can't use "null" because it will be a string

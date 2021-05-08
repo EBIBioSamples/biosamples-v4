@@ -660,25 +660,18 @@ public class ApiDocumentationTest {
 
     List<Certificate> certificates = new java.util.ArrayList<>();
 
-    certificates.add(Certificate.build(
-            "biosamples-minimal",
-            "0.0.1",
-            "schemas/certification/biosamples-minimal.json"));
+    certificates.add(
+        Certificate.build(
+            "biosamples-minimal", "0.0.1", "schemas/certification/biosamples-minimal.json"));
     when(certifyService.certify(new ObjectMapper().writeValueAsString(sample), true))
-        .thenReturn(
-                certificates);
+        .thenReturn(certificates);
 
-    certificates.add(Certificate.build(
-            "biosamples-minimal",
-            "0.0.1",
-            "schemas/certification/biosamples-minimal.json"));
+    certificates.add(
+        Certificate.build(
+            "biosamples-minimal", "0.0.1", "schemas/certification/biosamples-minimal.json"));
 
     when(sampleService.store(eq(sample), eq(false), eq("AAP")))
-        .thenReturn(
-            Sample.Builder.fromSample(sample)
-                .withCertificates(
-                        certificates)
-                .build());
+        .thenReturn(Sample.Builder.fromSample(sample).withCertificates(certificates).build());
     doNothing().when(aapService).checkAccessible(isA(Sample.class));
 
     this.mockMvc
@@ -720,20 +713,15 @@ public class ApiDocumentationTest {
     when(aapService.isIntegrationTestUser()).thenReturn(false);
 
     List<Certificate> certificates = new java.util.ArrayList<>();
-    certificates.add(Certificate.build(
-            "biosamples-minimal",
-            "0.0.1",
-            "schemas/certification/biosamples-minimal.json"));
+    certificates.add(
+        Certificate.build(
+            "biosamples-minimal", "0.0.1", "schemas/certification/biosamples-minimal.json"));
 
     when(certifyService.certify(new ObjectMapper().writeValueAsString(sampleWithWebinId), true))
-        .thenReturn(
-                certificates);
+        .thenReturn(certificates);
     when(sampleService.store(eq(sampleWithWebinId), eq(false), eq("WEBIN")))
         .thenReturn(
-            Sample.Builder.fromSample(sampleWithWebinId)
-                .withCertificates(
-                        certificates)
-                .build());
+            Sample.Builder.fromSample(sampleWithWebinId).withCertificates(certificates).build());
     doNothing().when(aapService).checkAccessible(isA(Sample.class));
 
     this.mockMvc
@@ -788,7 +776,7 @@ public class ApiDocumentationTest {
     bioSamplesCertificationComplainceResult.add(
         new uk.ac.ebi.biosamples.model.certification.Certificate(
             new SampleDocument("SAMFAKE123456", new ObjectMapper().writeValueAsString(sample)),
-                curationResults,
+            curationResults,
             new Checklist(
                 "biosamples-basic",
                 "0.0.1",

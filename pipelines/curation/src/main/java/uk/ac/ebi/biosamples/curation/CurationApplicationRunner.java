@@ -53,11 +53,11 @@ public class CurationApplicationRunner implements ApplicationRunner {
   @Autowired IriUrlValidatorService iriUrlValidatorService;
 
   public CurationApplicationRunner(
-          @Qualifier("AAPCLIENT") BioSamplesClient bioSamplesClient,
-          PipelinesProperties pipelinesProperties,
-          OlsProcessor olsProcessor,
-          CurationApplicationService curationApplicationService,
-          AnalyticsService analyticsService) {
+      @Qualifier("AAPCLIENT") BioSamplesClient bioSamplesClient,
+      PipelinesProperties pipelinesProperties,
+      OlsProcessor olsProcessor,
+      CurationApplicationService curationApplicationService,
+      AnalyticsService analyticsService) {
     this.bioSamplesClient = bioSamplesClient;
     this.pipelinesProperties = pipelinesProperties;
     this.olsProcessor = olsProcessor;
