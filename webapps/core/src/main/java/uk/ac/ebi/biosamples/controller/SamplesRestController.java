@@ -487,7 +487,7 @@ public class SamplesRestController {
 
       if (structuredData != null && structuredData.size() > 0) {
         sample =
-            bioSamplesWebinAuthenticationService.handleStructuredDataWebinUser(
+            bioSamplesWebinAuthenticationService.handleStructuredDataWebinUserInData(
                 sample, webinAccountId);
       }
     } else {
@@ -505,7 +505,7 @@ public class SamplesRestController {
       if (!(bioSamplesAapService.isWriteSuperUser()
           || bioSamplesAapService.isIntegrationTestUser())) {
         if (structuredData != null && structuredData.size() > 0) {
-          sample = bioSamplesAapService.handleStructuredDataDomain(sample);
+          sample = bioSamplesAapService.handleStructuredDataDomainInData(sample);
         }
       }
     }

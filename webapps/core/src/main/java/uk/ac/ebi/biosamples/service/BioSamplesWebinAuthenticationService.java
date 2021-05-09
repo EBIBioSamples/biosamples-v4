@@ -23,6 +23,7 @@ import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
 
 @Service
 public class BioSamplesWebinAuthenticationService {
@@ -149,7 +150,7 @@ public class BioSamplesWebinAuthenticationService {
     }
   }
 
-  public Sample handleStructuredDataWebinUser(Sample sample, String id) {
+  public Sample handleStructuredDataWebinUserInData(Sample sample, String id) {
     final AtomicBoolean isWebinIdValid = new AtomicBoolean(false);
 
     sample
@@ -165,54 +166,7 @@ public class BioSamplesWebinAuthenticationService {
             });
 
     if (sample.hasAccession()) {
-      final Optional<Sample> oldSample =
-          sampleService.fetch(sample.getAccession(), Optional.empty(), null);
-
-      if (oldSample.isPresent()) {
-        Sample oldSampleRetrieved = oldSample.get();
-
-        sample
-            .getData()
-            .forEach(
-                data -> {
-                  if (data.getDataType() != null) {
-                    Optional<AbstractData> filteredData =
-                        oldSampleRetrieved.getData().stream()
-                            .filter(
-                                oldSampledata ->
-                                    oldSampledata.getDataType().equals(data.getDataType()))
-                            .findFirst();
-
-                    final String webinSubmissionAccountId = data.getWebinSubmissionAccountId();
-
-                    if (filteredData.isPresent()) {
-                      AbstractData fData = filteredData.get();
-
-                      if (!webinSubmissionAccountId.equalsIgnoreCase(
-                          fData.getWebinSubmissionAccountId())) {
-                        throw new StructuredDataNotAccessibleException();
-                      } else {
-                        isWebinIdValid.set(true);
-                      }
-                    } else {
-                      if (id.equalsIgnoreCase(webinSubmissionAccountId)) {
-                        isWebinIdValid.set(true);
-                      }
-                    }
-                  }
-                });
-      } else {
-        sample
-            .getData()
-            .forEach(
-                data -> {
-                  if (data.getDataType() != null) {
-                    if (id.equalsIgnoreCase(data.getWebinSubmissionAccountId())) {
-                      isWebinIdValid.set(true);
-                    }
-                  }
-                });
-      }
+      isWebinIdValid.set(checkStructureDataAccessibilityForSubmitter(sample, id));
     } else {
       sample
           .getData()
@@ -230,25 +184,84 @@ public class BioSamplesWebinAuthenticationService {
     else throw new StructuredDataNotAccessibleException();
   }
 
-  public boolean isOriginalSubmitter(Sample sample, String id) {
+  public boolean checkIfOriginalSampleWebinSubmitter(Sample sample, String id) {
     final AtomicBoolean isWebinIdValid = new AtomicBoolean(false);
 
     sample
-        .getData()
-        .forEach(
-            data -> {
-              if (data.getDataType() != null) {
-                final String structuredDataWebinId = data.getWebinSubmissionAccountId();
-                if (structuredDataWebinId == null) {
-                  throw new StructuredDataWebinIdMissingException();
-                } else if (id.equalsIgnoreCase(data.getWebinSubmissionAccountId())) {
-                  isWebinIdValid.set(true);
-                }
-              }
-            });
+            .getData()
+            .forEach(
+                    data -> {
+                      if (data.getDataType() != null) {
+                        final String structuredDataWebinId = data.getWebinSubmissionAccountId();
+
+                        if (structuredDataWebinId == null)
+                          throw new StructuredDataWebinIdMissingException();
+                      }
+                    });
+
+    if (sample.hasAccession()) {
+      isWebinIdValid.set(checkStructureDataAccessibilityForSubmitter(sample, id));
+    }
 
     if (isWebinIdValid.get()) return true;
     else throw new StructuredDataNotAccessibleException();
+  }
+
+  private boolean checkStructureDataAccessibilityForSubmitter(Sample sample, String id) {
+    final AtomicBoolean isWebinIdValid = new AtomicBoolean(false);
+
+    final Optional<Sample> oldSample =
+            sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+
+    if (oldSample.isPresent()) {
+      Sample oldSampleRetrieved = oldSample.get();
+
+      sample
+              .getData()
+              .forEach(
+                      data -> {
+                        final StructuredDataType dataType = data.getDataType();
+
+                        if (dataType != null) {
+                          Optional<AbstractData> filteredData =
+                                  oldSampleRetrieved.getData().stream()
+                                          .filter(
+                                                  oldSampledata ->
+                                                          oldSampledata.getDataType().equals(dataType))
+                                          .findFirst();
+
+                          final String webinSubmissionAccountId = data.getWebinSubmissionAccountId();
+
+                          if (filteredData.isPresent()) {
+                            AbstractData fData = filteredData.get();
+
+                            if (!webinSubmissionAccountId.equalsIgnoreCase(
+                                    fData.getWebinSubmissionAccountId())) {
+                              throw new StructuredDataNotAccessibleException();
+                            } else {
+                              isWebinIdValid.set(true);
+                            }
+                          } else {
+                            if (id.equalsIgnoreCase(webinSubmissionAccountId)) {
+                              isWebinIdValid.set(true);
+                            }
+                          }
+                        }
+                      });
+    } else {
+      sample
+              .getData()
+              .forEach(
+                      data -> {
+                        if (data.getDataType() != null) {
+                          if (id.equalsIgnoreCase(data.getWebinSubmissionAccountId())) {
+                            isWebinIdValid.set(true);
+                          }
+                        }
+                      });
+    }
+
+    return isWebinIdValid.get();
   }
 
   public boolean isWebinSuperUser(String webinId) {
