@@ -368,7 +368,7 @@ public class ApiDocumentationTest {
     when(sampleService.fetch(
             eq(sampleWithDomainAndData.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sampleWithDomainAndData));
-    when(aapService.handleStructuredDataDomain(sampleWithDomainAndData))
+    when(aapService.handleStructuredDataDomainInData(sampleWithDomainAndData))
         .thenReturn(sampleWithDomainAndData);
     when(sampleService.storeSampleStructuredData(eq(sampleWithDomainAndData), eq("AAP")))
         .thenReturn(sampleWithDomainAndData);
@@ -400,7 +400,7 @@ public class ApiDocumentationTest {
     when(sampleService.fetch(
             eq(sampleWithDomainAndData.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sampleWithDomainAndData));
-    when(aapService.handleStructuredDataDomain(sampleWithDomainAndData))
+    when(aapService.handleStructuredDataDomainInData(sampleWithDomainAndData))
         .thenReturn(sampleWithDomainAndData);
     when(sampleService.storeSampleStructuredData(eq(sampleWithDomainAndData), eq("AAP")))
         .thenReturn(sampleWithDomainAndData);

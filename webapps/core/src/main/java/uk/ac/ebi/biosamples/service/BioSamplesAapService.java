@@ -224,7 +224,7 @@ public class BioSamplesAapService {
    * @throws StructuredDataNotAccessibleException
    * @throws StructuredDataDomainMissingException
    */
-  public Sample handleStructuredDataDomain(Sample sample)
+  public Sample handleStructuredDataDomainInData(Sample sample)
       throws StructuredDataNotAccessibleException, StructuredDataDomainMissingException {
     // get the domains the current user has access to
     final Set<String> usersDomains = getDomains();
@@ -255,7 +255,7 @@ public class BioSamplesAapService {
    * @throws StructuredDataNotAccessibleException
    * @throws StructuredDataDomainMissingException
    */
-  public boolean isOriginalSubmitter(Sample sample)
+  public boolean checkIfOriginalAAPSubmitter(Sample sample)
       throws StructuredDataNotAccessibleException, StructuredDataDomainMissingException {
     // get the domains the current user has access to
     final Set<String> usersDomains = getDomains();

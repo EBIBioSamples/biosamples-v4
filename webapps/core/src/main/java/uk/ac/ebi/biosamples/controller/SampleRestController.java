@@ -234,7 +234,7 @@ public class SampleRestController {
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
 
       if (sample.getData() != null && sample.getData().size() > 0) {
-        if (bioSamplesWebinAuthenticationService.isOriginalSubmitter(sample, webinAccountId)) {
+        if (bioSamplesWebinAuthenticationService.checkIfOriginalSampleWebinSubmitter(sample, webinAccountId)) {
           sample = Sample.Builder.fromSample(sample).build();
         } else {
           sample = Sample.Builder.fromSample(sample).withNoData().build();
@@ -244,7 +244,7 @@ public class SampleRestController {
       sample = bioSamplesAapService.handleSampleDomain(sample);
 
       if (sample.getData() != null && sample.getData().size() > 0) {
-        if (bioSamplesAapService.isOriginalSubmitter(sample)) {
+        if (bioSamplesAapService.checkIfOriginalAAPSubmitter(sample)) {
           sample = Sample.Builder.fromSample(sample).build();
         } else if (bioSamplesAapService.isWriteSuperUser()
             || bioSamplesAapService.isIntegrationTestUser()) {
@@ -318,7 +318,7 @@ public class SampleRestController {
               .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
               .getBody();
       sample =
-          bioSamplesWebinAuthenticationService.handleStructuredDataWebinUser(
+          bioSamplesWebinAuthenticationService.handleStructuredDataWebinUserInData(
               sample, webinAccount.getId());
       sample = sampleService.storeSampleStructuredData(sample, authProvider);
 
@@ -332,7 +332,7 @@ public class SampleRestController {
 
       log.debug("Received PATCH for " + accession);
 
-      sample = bioSamplesAapService.handleStructuredDataDomain(sample);
+      sample = bioSamplesAapService.handleStructuredDataDomainInData(sample);
       sample = sampleService.storeSampleStructuredData(sample, authProvider);
 
       return sampleResourceAssembler.toResource(sample);
