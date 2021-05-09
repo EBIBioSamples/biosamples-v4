@@ -152,9 +152,11 @@ public class PhenopacketConverter {
   private List<Disease> populateDiseases(List<PhenopacketAttribute> diseases) {
     List<Disease> diseaseList = new ArrayList<>();
     for (PhenopacketAttribute disease : diseases) {
-      Disease.Builder builder = Disease.newBuilder();
-      builder.setTerm(phenopacketConversionHelper.getOntology(disease));
-      diseaseList.add(builder.build());
+      if (disease.getOntologyId() != null) {
+        Disease.Builder builder = Disease.newBuilder();
+        builder.setTerm(phenopacketConversionHelper.getOntology(disease));
+        diseaseList.add(builder.build());
+      }
     }
     return diseaseList;
   }
@@ -436,6 +438,8 @@ public class PhenopacketConverter {
         normalisedAttribute =
             phenopacketConversionHelper.convertAttribute("disease", "ibd", "MONDO:0005265", "ibd");
       }
+    } else if ("Biosamples inferred disease".equalsIgnoreCase(attribute.getType())) {
+      normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", attribute);
     }
 
     return normalisedAttribute;
