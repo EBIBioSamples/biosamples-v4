@@ -38,23 +38,11 @@ public class ExternalReferenceService {
   }
 
   public String getOntologyTitle(String ontologyId) {
-    String title;
-    if (ontologyMap.containsKey(ontologyId)) {
-      title = ontologyMap.get(ontologyId).get("title");
-    } else {
-      title = "";
-    }
-    return title;
+    return ontologyMap.containsKey(ontologyId) ? ontologyMap.get(ontologyId).get("title") : "";
   }
 
   public String getOntologyDescription(String ontologyId) {
-    String body;
-    if (ontologyMap.containsKey(ontologyId)) {
-      body = ontologyMap.get(ontologyId).get("body");
-    } else {
-      body = "";
-    }
-    return body;
+    return ontologyMap.containsKey(ontologyId) ? ontologyMap.get(ontologyId).get("body") : "";
   }
 
   private void populateOntologies(Map<String, Map<String, String>> ontologyMap) {
