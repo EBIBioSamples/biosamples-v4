@@ -148,9 +148,12 @@ public class EnaCallable implements Callable<Void> {
                         .getExternalReferencesPost()
                         .forEach(
                             externalReference -> {
-                              if (externalReference
-                                  .getUrl()
-                                  .contains("www.ebi.ac.uk/ena/data/view")) {
+                              final String externalReferenceUrl = externalReference
+                                      .getUrl();
+
+                              if (externalReferenceUrl
+                                  .contains("www.ebi.ac.uk/ena/data/view") || externalReferenceUrl
+                                      .contains("www.ebi.ac.uk/ena/browser/view")) {
                                 externalRefDuplicateLinks.add(curationLink);
                               }
                             });
