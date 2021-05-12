@@ -31,6 +31,7 @@ import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.ga4gh.phenopacket.PhenopacketConverter;
 import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 /**
@@ -54,6 +55,7 @@ public class SampleRestController {
   private final SampleResourceAssembler sampleResourceAssembler;
   private PhenopacketConverter phenopacketConverter;
   private final SchemaValidationService schemaValidationService;
+  private final ENATaxonClientService enaTaxonClientService;
 
   public SampleRestController(
       SampleService sampleService,
@@ -62,7 +64,8 @@ public class SampleRestController {
       SampleManipulationService sampleManipulationService,
       SampleResourceAssembler sampleResourceAssembler,
       PhenopacketConverter phenopacketConverter,
-      SchemaValidationService schemaValidationService) {
+      SchemaValidationService schemaValidationService,
+      ENATaxonClientService enaTaxonClientService) {
     this.sampleService = sampleService;
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
@@ -70,6 +73,7 @@ public class SampleRestController {
     this.sampleResourceAssembler = sampleResourceAssembler;
     this.phenopacketConverter = phenopacketConverter;
     this.schemaValidationService = schemaValidationService;
+    this.enaTaxonClientService = enaTaxonClientService;
   }
 
   @PreAuthorize("isAuthenticated()")
@@ -200,13 +204,15 @@ public class SampleRestController {
           boolean setFullDetails,
       @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
           String authProvider) {
+    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
       throw new SampleAccessionMismatchException();
     }
 
     // todo Fix all integration tests to not to use predefined accessions, then remove
     // isIntegrationTestUser() check
-    if (!authProvider.equalsIgnoreCase("WEBIN")) {
+    if (!webinAuth) {
       if (sampleService.isNotExistingAccession(accession)
           && !(bioSamplesAapService.isWriteSuperUser()
               || bioSamplesAapService.isIntegrationTestUser())) {
@@ -270,6 +276,10 @@ public class SampleRestController {
       schemaValidationService.validate(sample);
     } else if (!bioSamplesAapService.isWriteSuperUser()) {
       schemaValidationService.validate(sample);
+    }
+
+    if (webinAuth) {
+      sample = enaTaxonClientService.performTaxonomyValidation(sample);
     }
 
     final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample);

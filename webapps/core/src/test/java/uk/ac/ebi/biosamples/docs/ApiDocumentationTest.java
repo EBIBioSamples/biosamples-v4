@@ -58,6 +58,7 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
 import uk.ac.ebi.biosamples.service.certification.Identifier;
+import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -86,6 +87,8 @@ public class ApiDocumentationTest {
   @MockBean private BioSamplesAapService aapService;
 
   @MockBean private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
+
+  @MockBean private ENATaxonClientService enaTaxonClientService;
 
   @MockBean private Identifier identifier;
 
@@ -298,6 +301,7 @@ public class ApiDocumentationTest {
         .thenReturn(ResponseEntity.ok(submissionAccount));
     when(sampleService.store(any(Sample.class), eq(false), eq("WEBIN")))
         .thenReturn(sampleWithWebinId);
+    when(enaTaxonClientService.performTaxonomyValidation(any(Sample.class))).thenReturn(sampleWithWebinId);
     when(schemaValidationService.validate(any(Sample.class))).thenReturn("ERC100001");
 
     this.mockMvc
@@ -851,6 +855,9 @@ public class ApiDocumentationTest {
         .thenReturn(Optional.of(sampleWithWebinId));
     when(sampleService.store(eq(sampleWithWebinId), eq(false), eq("WEBIN")))
         .thenReturn(sampleWithWebinId);
+
+    when(enaTaxonClientService.performTaxonomyValidation(any(Sample.class)))
+            .thenReturn(sampleWithWebinId);
 
     this.mockMvc
         .perform(
