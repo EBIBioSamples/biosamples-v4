@@ -85,7 +85,8 @@
     var myDropzone = new Dropzone(".dropzone", {
         autoProcessQueue: false,
         parallelUploads: 5,
-        maxFiles: 5
+        maxFiles: 5,
+        timeout: 180000
     });
 
     $('#uploadFile').click(function () {
