@@ -2,9 +2,36 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+[[v5.1.0]]
+== v5.1.0 Release notes
+=== New Features
+1. JSON Schema store integration with BioSamples
+
+We have integrated the JSON Schema store with BioSamples. JSON Schema store is an application for storing and managing JSON Schemas. All BioSamples’ checklists will be stored and managed in the JSON Schema store. In the future we plan to expose the API with authentication.
+
+2. BioSamples File uploader
+
+We have introduced a new drag and drop style file uploader for bulk uploading of samples. This is mostly intended for our non-programmatic submitters who want to fill in their samples metadata in a file for uploading and persisting samples in BioSamples.
+The drag and drop uploader in BioSamples supports both Webin and AAP authentication. 
+More details on the uploader can be found in a newly added uploader guide. The guide has the required details about the file format, mandatory fields and other pre-conditions. [add link]
+
+3. ENA taxonomy service integration with BioSamples
+
+Samples submitted to BioSamples using ENA Webin authentication are put through additional checks to be compliant with ENA. All ENA samples must have taxonomy information and the taxonomy must be valid against the ENA taxonomy service. In BioSamples we have added a submission time validation of the mandatory organism attribute against the ENA taxonomy service.
+
+4. BioSamples client changes
+
+BioSamples client version 5.1.0 has undergone technical changes to support Webin authentication. The latest version of the client can be used to submit samples, curate samples or certify samples in BioSamples using Webin authentication. 
+
+5. Improved DUO code rendering
+
+Improve DUO codes in Samples page. When the mouse pointer is moved on top of a DUO code, its description will be displayed as a tooltip.
+=== Bug Fixes
+1. Fix Phenopacket export errors when exporting samples with disease related attributes
+
 [[v5.0.7]]
 == v5.0.7 Release notes
-=== Bug Fixes:
+=== Bug Fixes
 1. Re-introduce missing `samples/validate` endpoint
 +
 In last release we have removed `samples/validate` endpoint in favour of `validate` endpoint.
@@ -19,7 +46,6 @@ Validate endpoint did not support `hal+json` `accept` header in last release. We
 ENA will pre-accession samples using a WEBIN super user (prefixed SU-) and the metadata submission will be done by a non super user.
 During metadata submission we will check if the sample has been accessioned by the ENA registered super user and
 if yes then we will allow submission by any general webin user who wants to submit metadata against the accession.
-
 
 [[v5.0.6]]
 == v5.0.6 Release notes
@@ -51,7 +77,7 @@ The validation API is also available independently of submission and can be used
 We have updated our documentation to reflect these changes in https://www.ebi.ac.uk/biosamples/docs/references/api/certify[certification]
 and https://www.ebi.ac.uk/biosamples/docs/references/api/validate[validation].
 
-=== Bug Fixes:
+=== Bug Fixes
 1. Link to new ENA browser - Samples having external reference to ENA were using the old ENA browser links.
 This has now been updated to link to the new ENA browser.
 
@@ -68,7 +94,7 @@ Previously, private samples were only available for direct retrieval after loggi
 This release enables searching of private samples through the API by their owner.
 The https://www.ebi.ac.uk/biosamples/docs/guides/search[sample search endpoint] requires a  JWT and returns the private samples the user is authorised for.
 
-=== Bug Fixes:
+=== Bug Fixes
 1. Documentation updates
 +
 BioSamples documentation has been updated to remove links to deprecated AAP services.
@@ -149,7 +175,7 @@ The ENA import pipeline that imports samples from ENA to BioSamples has been mod
 8. BioSamples sample XML view has been modified to include AMR Antibiogram model as well. Please download the XML from the example sample - https://wwwdev.ebi.ac.uk/biosamples/samples/SAMN09711403 to see the XML modelling of AMR data
 
 
-===Bug Fixes:
+===Bug Fixes
 1. Bug fix in EBI search pipeline to not include killed and suppressed samples in the exported data
 2. Bug fix in NCBI samples to avoid 400 bad requests while processing samples that don't have an organism. Certification service rejects samples without an organism
 3. Bug fix in pipelines to deal with HTTP 404 errors while trying to fetch samples with blank curation domain. Pipeline failure avoided in such cases and error logging is improved
