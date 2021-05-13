@@ -54,9 +54,16 @@ public class ContactComparisonTest {
             .url("ttcorp.com")
             .build();
 
+    Contact thirdContact = new Contact.Builder().email("tt@ttcorp.com").build();
+
+    Contact fourthContact = new Contact.Builder().email("tu@ttcorp.com").build();
+
     Assert.assertEquals(
         firstContact.compareTo(secondContact), oldComparison(firstContact, secondContact));
     Assert.assertEquals(firstContact.compareTo(secondContact), -1);
+
+    Assert.assertEquals(
+        thirdContact.compareTo(fourthContact), oldComparison(thirdContact, fourthContact));
   }
 
   private int oldComparison(Contact first, Contact second) {

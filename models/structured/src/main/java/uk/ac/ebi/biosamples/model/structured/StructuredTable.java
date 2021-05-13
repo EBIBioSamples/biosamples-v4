@@ -20,12 +20,19 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
     implements Comparable<AbstractData> {
   private final URI schema;
   private final String domain;
+  private final String webinSubmissionAccountId;
   private final StructuredDataType type;
   private final Set<T> entries;
 
-  public StructuredTable(URI schema, String domain, StructuredDataType type, Set<T> entries) {
+  public StructuredTable(
+      URI schema,
+      String domain,
+      String webinSubmissionAccountId,
+      StructuredDataType type,
+      Set<T> entries) {
     this.schema = schema;
     this.domain = domain;
+    this.webinSubmissionAccountId = webinSubmissionAccountId;
     this.type = type;
     this.entries = entries;
   }
@@ -38,6 +45,11 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
   @Override
   public String getDomain() {
     return domain;
+  }
+
+  @Override
+  public String getWebinSubmissionAccountId() {
+    return webinSubmissionAccountId;
   }
 
   @Override
@@ -57,9 +69,7 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
 
   @Override
   public List<Map<String, StructuredCell>> getDataAsMap() {
-    return entries.stream()
-        .map(StructuredEntry::getDataAsMap)
-        .collect(Collectors.toUnmodifiableList());
+    return entries.stream().map(StructuredEntry::getDataAsMap).collect(Collectors.toList());
   }
 
   @Override
@@ -77,9 +87,19 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
     if (cmp != 0) {
       return cmp;
     }
-    cmp = domain.compareTo(other.domain);
-    if (cmp != 0) {
-      return cmp;
+
+    if (domain != null) {
+      cmp = domain.compareTo(other.domain);
+      if (cmp != 0) {
+        return cmp;
+      }
+    }
+
+    if (webinSubmissionAccountId != null) {
+      cmp = webinSubmissionAccountId.compareTo(other.webinSubmissionAccountId);
+      if (cmp != 0) {
+        return cmp;
+      }
     }
     return schema.compareTo(other.schema);
   }
@@ -91,7 +111,8 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
       StructuredTable<T> other = (StructuredTable<T>) o;
       return this.getDataType().equals(other.getDataType())
           && this.getSchema().equals(other.getSchema())
-          && this.getDomain().equals(other.getDomain());
+          && this.getDomain().equals(other.getDomain())
+          && this.getWebinSubmissionAccountId().equals(other.getWebinSubmissionAccountId());
     }
 
     return false;
@@ -99,26 +120,30 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
 
   @Override
   public int hashCode() {
-    return Objects.hash(schema, entries, domain);
+    return Objects.hash(schema, entries, domain, webinSubmissionAccountId);
   }
 
   public static class Builder<T extends StructuredEntry> {
     private URI schema;
     private Set<T> entries;
     private String domain;
+    private String webinSubmissionAccountId;
     private StructuredDataType type;
 
     @JsonCreator
-    public Builder(URI schema, String domain, StructuredDataType type) {
+    public Builder(
+        URI schema, String domain, String webinSubmissionAccountId, StructuredDataType type) {
       this.schema = schema;
       this.domain = domain;
+      this.webinSubmissionAccountId = webinSubmissionAccountId;
       this.type = type;
       this.entries = new HashSet<>();
     }
 
     @JsonCreator
-    public Builder(String schema, String domain, StructuredDataType type) {
-      this(URI.create(schema), domain, type);
+    public Builder(
+        String schema, String domain, String webinSubmissionAccountId, StructuredDataType type) {
+      this(URI.create(schema), domain, webinSubmissionAccountId, type);
     }
 
     @JsonProperty
@@ -134,7 +159,8 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
     }
 
     public StructuredTable<T> build() {
-      return new StructuredTable<>(this.schema, this.domain, this.type, this.entries);
+      return new StructuredTable<>(
+          this.schema, this.domain, this.webinSubmissionAccountId, this.type, this.entries);
     }
   }
 }

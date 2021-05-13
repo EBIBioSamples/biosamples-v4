@@ -61,10 +61,12 @@ public class CertificationController {
       throw new SampleRestController.SampleAccessionMismatchException();
     }
 
-    if (sampleService.isExistingAccession(accession)
-        && !(bioSamplesAapService.isWriteSuperUser()
-            || bioSamplesAapService.isIntegrationTestUser())) {
-      throw new SampleRestController.SampleAccessionDoesNotExistException();
+    if (!authProvider.equalsIgnoreCase("WEBIN")) {
+      if (sampleService.isNotExistingAccession(accession)
+          && !(bioSamplesAapService.isWriteSuperUser()
+              || bioSamplesAapService.isIntegrationTestUser())) {
+        throw new SampleRestController.SampleAccessionDoesNotExistException();
+      }
     }
 
     log.info("Received PUT for validation of " + accession);
@@ -77,7 +79,14 @@ public class CertificationController {
               .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
               .getBody();
 
-      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
+      final String webinAccountId = webinAccount.getId();
+
+      if (sampleService.isNotExistingAccession(accession)
+          && !bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId)) {
+        throw new SampleRestController.SampleAccessionDoesNotExistException();
+      }
+
+      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
     } else {
       sample = bioSamplesAapService.handleSampleDomain(sample);
     }

@@ -208,7 +208,7 @@ public class SampleService {
     return fetch(sample.getAccession(), Optional.empty(), null).get();
   }
 
-  public Sample storeSampleStructuredData(Sample newSample) {
+  public Sample storeSampleStructuredData(Sample newSample, String authProvider) {
     validateSampleContentsForStructuredDataPatching(newSample);
 
     MongoSample mongoOldSample = mongoSampleRepository.findOne(newSample.getAccession());
@@ -220,7 +220,7 @@ public class SampleService {
           "Trying to update newSample not in database, accession: {}", newSample.getAccession());
     }
 
-    MongoSample mongoSample = structuredDataConverter.convert(newSample);
+    MongoSample mongoSample = structuredDataConverter.convert(newSample, authProvider);
     mongoSample = mongoSampleRepository.save(mongoSample);
     newSample = mongoSampleToSampleConverter.convert(mongoSample);
 
@@ -290,7 +290,7 @@ public class SampleService {
     }
   }
 
-  public boolean isExistingAccession(String accession) {
+  public boolean isNotExistingAccession(String accession) {
     return mongoSampleRepository.findOne(accession) == null;
   }
 

@@ -169,12 +169,12 @@ public class NeoSampleRepository implements AutoCloseable {
   public void createSample(Session session, NeoSample sample) {
     String query =
         "MERGE (a:Sample{accession:$accession}) " + "SET a.name = $name, a.taxid = $taxid";
-    Map<String, Object> params =
-        new HashMap<>(
-            Map.of(
-                "accession", sample.getAccession(),
-                "name", sample.getName(),
-                "taxid", sample.getTaxId()));
+    Map<String, String> sampleBasicInfoMap = new HashMap<>();
+    sampleBasicInfoMap.put("accession", sample.getAccession());
+    sampleBasicInfoMap.put("name", sample.getName());
+    sampleBasicInfoMap.put("taxid", sample.getTaxId());
+
+    Map<String, Object> params = new HashMap<>(sampleBasicInfoMap);
 
     if (sample.getOrganism() != null) {
       query = query + ", a.organism = $organism";
@@ -223,10 +223,9 @@ public class NeoSampleRepository implements AutoCloseable {
             + "MERGE (a)-[r:"
             + relationship.getType()
             + "]->(b)";
-    Map<String, Object> params =
-        Map.of(
-            "fromAccession", relationship.getSource(),
-            "toAccession", relationship.getTarget());
+    Map<String, Object> params = new HashMap<>();
+    params.put("fromAccession", relationship.getSource());
+    params.put("toAccession", relationship.getTarget());
 
     session.run(query, params);
   }
@@ -238,12 +237,11 @@ public class NeoSampleRepository implements AutoCloseable {
             + "MERGE (b:ExternalEntity {url:$url}) "
             + "SET b.archive = $archive, b.ref = $ref "
             + "MERGE (a)-[r:EXTERNAL_REFERENCE]->(b)";
-    Map<String, Object> params =
-        Map.of(
-            "accession", accession,
-            "url", externalEntity.getUrl(),
-            "archive", externalEntity.getArchive(),
-            "ref", externalEntity.getRef());
+    Map<String, Object> params = new HashMap<>();
+    params.put("accession", accession);
+    params.put("url", externalEntity.getUrl());
+    params.put("archive", externalEntity.getArchive());
+    params.put("ref", externalEntity.getRef());
 
     session.run(query, params);
   }
@@ -253,11 +251,10 @@ public class NeoSampleRepository implements AutoCloseable {
     String query =
         "MERGE (a:ExternalEntity{url:$url}) "
             + "SET a.archive = $archive, a.externalRef = $externalRef";
-    Map<String, Object> params =
-        Map.of(
-            "url", url,
-            "archive", archive,
-            "externalRef", externalRef);
+    Map<String, Object> params = new HashMap<>();
+    params.put("url", url);
+    params.put("archive", archive);
+    params.put("externalRef", externalRef);
 
     session.run(query, params);
   }

@@ -61,7 +61,7 @@ public class EnaAmrDataProcessService {
     final Set<AbstractData> structuredData = new HashSet<>();
     final AMRTable.Builder amrTableBuilder =
         new AMRTable.Builder(
-            "http://localhost:8081/biosamples/schemas/amr.json", "self.BiosampleImportENA");
+            "http://localhost:8081/biosamples/schemas/amr.json", "self.BiosampleImportENA", null);
 
     lines.forEach(
         line -> {

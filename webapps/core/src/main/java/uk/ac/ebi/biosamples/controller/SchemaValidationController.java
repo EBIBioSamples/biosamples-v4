@@ -11,7 +11,6 @@
 package uk.ac.ebi.biosamples.controller;
 
 import java.util.Optional;
-
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

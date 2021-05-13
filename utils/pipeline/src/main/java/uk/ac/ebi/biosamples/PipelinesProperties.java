@@ -52,6 +52,9 @@ public class PipelinesProperties {
   @Value("${biosamples.pipelines.ena.domain:self.BiosampleImportENA}")
   private String enaDomain;
 
+  @Value("${biosamples.pipelines.ena.webin_id:Webin-40894}")
+  private String proxyWebinId;
+
   @Value("${biosamples.pipelines.accession.domain:self.BiosampleImportAcccession}")
   private String accessionDomain;
 
@@ -63,6 +66,10 @@ public class PipelinesProperties {
 
   @Value("${biosamples.pipelines.copydown.domain:self.BiosampleCopydown}")
   private String copydownDomain;
+
+  public String getProxyWebinId() {
+    return proxyWebinId;
+  }
 
   public String getNcbiFile() {
     return ncbiFile;

@@ -71,7 +71,7 @@ public class BioSamplesClient implements AutoCloseable {
       URI uri,
       RestTemplateBuilder restTemplateBuilder,
       SampleValidator sampleValidator,
-      AapClientService aapClientService,
+      ClientService clientService,
       BioSamplesProperties bioSamplesProperties) {
 
     RestTemplate restOperations = restTemplateBuilder.build();
@@ -84,15 +84,22 @@ public class BioSamplesClient implements AutoCloseable {
             bioSamplesProperties.getBiosamplesClientThreadCount(),
             bioSamplesProperties.getBiosamplesClientThreadCountMax());
 
-    if (aapClientService != null) {
-      log.trace("Adding AapClientHttpRequestInterceptor");
-      restOperations.getInterceptors().add(new AapClientHttpRequestInterceptor(aapClientService));
-    } else {
-      log.trace("No AapClientService available");
+    if (clientService != null) {
+      if (clientService instanceof AapClientService) {
+        log.trace("Adding BsdClientHttpRequestInterceptor");
+        restOperations.getInterceptors().add(new BsdClientHttpRequestInterceptor(clientService));
+      } else if (clientService instanceof WebinAuthClientService) {
+        log.trace("Adding WebinClientHttpRequestInterceptor");
+        restOperations.getInterceptors().add(new BsdClientHttpRequestInterceptor(clientService));
+      } else {
+        log.trace("No ClientService available");
+      }
     }
 
     Traverson traverson = new Traverson(uri, MediaTypes.HAL_JSON);
     traverson.setRestOperations(restOperations);
+
+    boolean isWebinSubmission = clientService instanceof WebinAuthClientService ? true : false;
 
     sampleRetrievalService =
         new SampleRetrievalService(restOperations, traverson, threadPoolExecutor);
@@ -110,10 +117,12 @@ public class BioSamplesClient implements AutoCloseable {
             bioSamplesProperties.getBiosamplesClientPagesize());
 
     sampleSubmissionService =
-        new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
+        new SampleSubmissionService(
+            restOperations, traverson, threadPoolExecutor, isWebinSubmission);
 
     sampleCertificationService =
-        new SampleCertificationService(restOperations, traverson, threadPoolExecutor);
+        new SampleCertificationService(
+            restOperations, traverson, threadPoolExecutor, isWebinSubmission);
 
     sampleGroupSubmissionService =
         new SampleGroupSubmissionService(restOperations, traverson, threadPoolExecutor);
@@ -124,11 +133,12 @@ public class BioSamplesClient implements AutoCloseable {
             threadPoolExecutor,
             bioSamplesProperties.getBiosamplesClientPagesize());
     curationSubmissionService =
-        new CurationSubmissionService(restOperations, traverson, threadPoolExecutor);
+        new CurationSubmissionService(
+            restOperations, traverson, threadPoolExecutor, isWebinSubmission);
 
     this.sampleValidator = sampleValidator;
 
-    if (aapClientService == null) {
+    if (clientService == null) {
       this.publicClient = Optional.empty();
     } else {
       this.publicClient =
@@ -142,20 +152,19 @@ public class BioSamplesClient implements AutoCloseable {
     return this.publicClient;
   }
 
-  private static class AapClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
+  private static class BsdClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
 
-    private final AapClientService aapClientService;
+    private final ClientService clientService;
 
-    public AapClientHttpRequestInterceptor(AapClientService aapClientService) {
-      this.aapClientService = aapClientService;
+    public BsdClientHttpRequestInterceptor(ClientService clientService) {
+      this.clientService = clientService;
     }
 
     @Override
     public ClientHttpResponse intercept(
         HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
-      if (aapClientService != null
-          && !request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-        String jwt = aapClientService.getJwt();
+      if (clientService != null && !request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
+        String jwt = clientService.getJwt();
         if (jwt != null) {
           request.getHeaders().set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
         }

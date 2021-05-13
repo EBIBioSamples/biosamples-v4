@@ -4,7 +4,7 @@
 
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>biosamples</artifactId>
-	<version>5.0.7</version>
+	<version>5.0.8-SNAPSHOT</version>
 
 
 	<packaging>pom</packaging>
@@ -20,6 +20,8 @@
 		<thymeleaf.version>3.0.2.RELEASE</thymeleaf.version>
 		<thymeleaf-layout-dialect.version>2.1.2</thymeleaf-layout-dialect.version>
 		<neo4j-ogm.version>2.1.4</neo4j-ogm.version>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
 
 	<profiles>

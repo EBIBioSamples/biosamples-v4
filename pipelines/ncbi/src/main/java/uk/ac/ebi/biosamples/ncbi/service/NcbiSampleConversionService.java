@@ -247,13 +247,7 @@ public class NcbiSampleConversionService {
       // Dont ignore organism in attributes - ENA Presentation (27.01.2020)
 
       if (key.equalsIgnoreCase(DESCRIPTION)) {
-        attrs.add(
-            Attribute.build(
-                key,
-                Objects.requireNonNullElse(value, ""),
-                SAMPLE_ATTRIBUTE,
-                Collections.emptyList(),
-                null));
+        attrs.add(Attribute.build(key, value, SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
         continue;
       }
 
@@ -280,7 +274,7 @@ public class NcbiSampleConversionService {
         attrs.add(
             Attribute.build(
                 key,
-                Objects.requireNonNullElse(value, ""),
+                value != null ? value : null,
                 SAMPLE_ATTRIBUTE,
                 Collections.emptyList(),
                 null));

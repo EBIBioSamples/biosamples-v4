@@ -25,32 +25,42 @@
             <div class="row">
                 <div class="col-lg-8 mt-5">
                     <div th:if="${loginmethod == null}">
-                        <select class="form-control" id="aapDomain" name="aapDomain">
-                            <option th:value="0"><b>Select AAP domain</b></option>
+                        <select class="required" id="aapDomain" name="aapDomain">
+                            <option th:value="0" selected disabled><b>Select AAP domain</b></option>
                             <option th:each="domain : ${domains}" th:value="${domain}" th:text="${domain}"></option>
                         </select>
                     </div>
                     <div>
-                        <select class="form-control" id="certificate" name="certificate">
-                            <option th:value="0"><b>Select checklist for validation</b></option>
+                        <select class="required" id="certificate" name="certificate">
+                            <option th:value="0" selected disabled><b>Select checklist for validation</b></option>
                             <option th:each="certificate : ${certificates}" th:value="${certificate}"
                                     th:text="${certificate}"></option>
                         </select>
                     </div>
-                    <div id="dropzone">
+                    <!--<div id="dropzone">
                         <form action="/biosamples/upload" class="dropzone needsclick" id="upload">
                             <input type="hidden" id="hiddenAapDomain" name="hiddenAapDomain">
                             <input type="hidden" id="hiddenCertificate" name="hiddenCertificate">
-                            <input type="hidden" th:value="${webinAccount}" name="webinAccount" />
+                            <input type="hidden" th:value="${webinAccount}" name="webinAccount"/>
                             <div class="dz-message needsclick">
                                 <button type="button" class="dz-button">Drop files here or click to upload. <br/>
                                     You can upload .csv files containing your samples. <br/></button>
                                 <br/>
                             </div>
                         </form>
-                    </div>
+                        <input type="submit" id="submitFiles" value="Process files"/>
+                    </div>-->
 
+                    <form action="/biosamples/upload" enctype="multipart/form-data" class="dropzone" id="data-upload">
+                        <input type="hidden" id="hiddenAapDomain" name="hiddenAapDomain">
+                        <input type="hidden" id="hiddenCertificate" name="hiddenCertificate">
+                        <input type="hidden" th:value="${webinAccount}" name="webinAccount"/>
+                        <div>
+                        </div>
+                    </form>
                     <br/>
+                    <input type="submit" id="uploadFile" value="Upload files" class="toggle-disabled" disabled/>
+                    <br/><br/><br/>
                     <b><a th:href="@{/uploadLogin}"><<< Back</a></b>
                 </div>
             </div>
@@ -62,7 +72,7 @@
 
 <script>
     Dropzone.autoDiscover = false;
-    $("#upload").dropzone({
+    /*$("#upload").dropzone({
         success: function (file, response) {
             toastr.success('File ' + file.name + ' uploaded successfully')
 
@@ -70,6 +80,32 @@
                 this.removeFile(this.files[0]);
             }
         }
+    });*/
+
+    var myDropzone = new Dropzone(".dropzone", {
+        autoProcessQueue: false,
+        parallelUploads: 5,
+        maxFiles: 5,
+        timeout: 180000
+    });
+
+    $('#uploadFile').click(function () {
+        myDropzone.processQueue();
+    });
+
+    myDropzone.on("success", function (file, response) {
+        /*$(".dz-success-mark svg").css("background", "green");
+        $(".dz-error-mark").css("display", "none");*/
+        toastr.success('File ' + file.name + ' uploaded successfully')
+        myDropzone.removeFile(file);
+        download(response, file.name, "text/csv");
+    });
+
+    myDropzone.on("error", function (file, response) {
+        $(".dz-error-mark svg").css("background", "red");
+        $(".dz-success-mark").css("display", "none");
+        toastr.error("Your file upload has failed");
+        download(response, "failed_response.txt", "text/plain");
     });
 
     $("#aapDomain").change(function (e) {
@@ -79,6 +115,25 @@
     $("#certificate").change(function (e) {
         $("#hiddenCertificate").val(e.target.value);
     });
+
+    $(document).on('change keyup', '.required', function (e) {
+        let Disabled = true;
+        $(".required").each(function () {
+            let value = this.value
+            if ((value) && (value.trim() != '0')) {
+                Disabled = false
+            } else {
+                Disabled = true
+                return false
+            }
+        });
+
+        if (Disabled) {
+            $('.toggle-disabled').prop("disabled", true);
+        } else {
+            $('.toggle-disabled').prop("disabled", false);
+        }
+    })
 </script>
 </body>
 </html>

@@ -60,7 +60,7 @@ public class StructuredDataIntegration extends AbstractIntegration {
   protected void phaseTwo() {
     Optional<Resource<Sample>> sampleResource =
         client.fetchSampleResource("StructuredDataIntegration_sample_1");
-    if (sampleResource.isEmpty()) {
+    if (!sampleResource.isPresent()) {
       throw new IntegrationTestFailException(
           "Expected structured data sample not present", Phase.TWO);
     }
@@ -81,7 +81,7 @@ public class StructuredDataIntegration extends AbstractIntegration {
                 .parallelStream()
                 .filter(entry -> entry.getMarker().getValue().equalsIgnoreCase("Cortisol"))
                 .findFirst();
-        if (optionalEntry.isEmpty()) {
+        if (!optionalEntry.isPresent()) {
           throw new IntegrationTestFailException(
               "Structured data content verification failed", Phase.TWO);
         }

@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -47,6 +46,7 @@ import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 
@@ -71,6 +71,7 @@ public class SamplesRestController {
   private final BioSamplesProperties bioSamplesProperties;
   private final SampleResourceAssembler sampleResourceAssembler;
   private final SchemaValidationService schemaValidationService;
+  private final ENATaxonClientService enaTaxonClientService;
 
   private static final String NCBI_IMPORT_DOMAIN = "self.BiosampleImportNCBI";
   private static final String ENA_IMPORT_DOMAIN = "self.BiosampleImportENA";
@@ -86,7 +87,8 @@ public class SamplesRestController {
       SampleManipulationService sampleManipulationService,
       SampleService sampleService,
       BioSamplesProperties bioSamplesProperties,
-      SchemaValidationService schemaValidationService) {
+      SchemaValidationService schemaValidationService,
+      ENATaxonClientService enaTaxonClientService) {
     this.samplePageService = samplePageService;
     this.filterService = filterService;
     this.bioSamplesAapService = bioSamplesAapService;
@@ -96,6 +98,7 @@ public class SamplesRestController {
     this.sampleService = sampleService;
     this.schemaValidationService = schemaValidationService;
     this.bioSamplesProperties = bioSamplesProperties;
+    this.enaTaxonClientService = enaTaxonClientService;
   }
 
   // must return a ResponseEntity so that cache headers can be set
@@ -118,11 +121,19 @@ public class SamplesRestController {
 
     int effectivePage;
 
-    effectivePage = Objects.requireNonNullElse(page, 0);
+    if (page == null) {
+      effectivePage = 0;
+    } else {
+      effectivePage = page;
+    }
 
     int effectiveSize;
 
-    effectiveSize = Objects.requireNonNullElse(size, 20);
+    if (size == null) {
+      effectiveSize = 20;
+    } else {
+      effectiveSize = size;
+    }
 
     Collection<Filter> filters = filterService.getFiltersCollection(decodedFilter);
     Collection<String> domains = bioSamplesAapService.getDomains();
@@ -377,8 +388,8 @@ public class SamplesRestController {
   }
 
   @PostMapping(
-          consumes = {MediaType.APPLICATION_JSON_VALUE},
-          produces = {MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE})
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE})
   @RequestMapping("/validate")
   public ResponseEntity<Sample> validateSample(@RequestBody Sample sample) {
     schemaValidationService.validate(sample);
@@ -459,7 +470,9 @@ public class SamplesRestController {
           String authProvider) {
     log.debug("Received POST for " + sample);
 
-    if (authProvider.equalsIgnoreCase("WEBIN")) {
+    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+
+    if (webinAuth) {
       final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
 
       if (sample.hasAccession()) {
@@ -472,7 +485,17 @@ public class SamplesRestController {
               .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
               .getBody();
 
-      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
+      final String webinAccountId = webinAccount.getId();
+
+      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
+
+      final Set<AbstractData> structuredData = sample.getData();
+
+      if (structuredData != null && structuredData.size() > 0) {
+        sample =
+            bioSamplesWebinAuthenticationService.handleStructuredDataWebinUserInData(
+                sample, webinAccountId);
+      }
     } else {
       if (sample.hasAccession() && !bioSamplesAapService.isWriteSuperUser()) {
         // Throw an error only if the user is not a super user and is trying to post a sample
@@ -488,7 +511,7 @@ public class SamplesRestController {
       if (!(bioSamplesAapService.isWriteSuperUser()
           || bioSamplesAapService.isIntegrationTestUser())) {
         if (structuredData != null && structuredData.size() > 0) {
-          sample = bioSamplesAapService.handleStructuredDataDomain(sample);
+          sample = bioSamplesAapService.handleStructuredDataDomainInData(sample);
         }
       }
     }
@@ -512,6 +535,10 @@ public class SamplesRestController {
       schemaValidationService.validate(sample);
     } else if (!bioSamplesAapService.isWriteSuperUser()) {
       schemaValidationService.validate(sample);
+    }
+
+    if (webinAuth) {
+      sample = enaTaxonClientService.performTaxonomyValidation(sample);
     }
 
     if (!setFullDetails) {
@@ -552,6 +579,5 @@ public class SamplesRestController {
   @ResponseStatus(
       value = HttpStatus.BAD_REQUEST,
       reason = "New sample submission should not contain an accession")
-  // 400
   public static class SampleWithAccessionSumbissionException extends RuntimeException {}
 }

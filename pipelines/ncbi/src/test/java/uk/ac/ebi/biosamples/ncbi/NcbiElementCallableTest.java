@@ -37,7 +37,8 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 @ActiveProfiles("test")
 public class NcbiElementCallableTest {
 
-  @MockBean BioSamplesClient bioSamplesClient;
+  @MockBean(name = "AAPCLIENT")
+  BioSamplesClient bioSamplesClient;
 
   TestUtilities testUtils = new TestUtilities();
   TaxonomyService taxonService = new TaxonomyService();

@@ -164,7 +164,7 @@ public class DocumentationHelper {
             .withResistancePhenotype("NA")
             .build();
     final AMRTable amrTable =
-        new AMRTable.Builder("test", "self.ExampleDomain")
+        new AMRTable.Builder("test", "self.ExampleDomain", null)
             .withEntries(Arrays.asList(amrEntry))
             .build();
 
@@ -175,7 +175,10 @@ public class DocumentationHelper {
   public Sample getExampleSampleWithStructuredData2() {
     StructuredTable<HistologyEntry> histologyData =
         new StructuredTable.Builder<HistologyEntry>(
-                "www.fake.schema.url", "self.ExampleDomain", StructuredDataType.HISTOLOGY_MARKERS)
+                "www.fake.schema.url",
+                "self.ExampleDomain",
+                null,
+                StructuredDataType.HISTOLOGY_MARKERS)
             .addEntry(
                 new HistologyEntry.Builder()
                     .withMarker(new StructuredCell("Crypt depth", ""))

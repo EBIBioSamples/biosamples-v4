@@ -46,10 +46,9 @@ import uk.ac.ebi.biosamples.service.certification.CertifyService;
 @Service
 public class FileUploadService {
   private Logger log = LoggerFactory.getLogger(getClass());
+  private ValidationResult validationResult = new ValidationResult();
 
   @Autowired ObjectMapper objectMapper;
-
-  @Autowired ValidationResult validationResult;
 
   @Autowired SampleService sampleService;
 
@@ -59,7 +58,7 @@ public class FileUploadService {
 
   public File upload(MultipartFile file, String aapDomain, String certificate, String webinId)
       throws IOException {
-    Path temp = Files.createTempFile("upload", ".csv");
+    Path temp = Files.createTempFile("upload", ".tsv");
 
     File fileToBeUploaded = temp.toFile();
     file.transferTo(fileToBeUploaded);
@@ -93,12 +92,15 @@ public class FileUploadService {
           try {
             Sample sample = validateAndBuildSample(mappedSample);
 
+            log.info("Sample before submission is " + sample.toString());
+
             if (sampleService.isWebinAuthorization(authProvider)) {
               sample =
                   Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(webinId).build();
             } else {
               sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
             }
+
             if (certify(sample, certificate)) {
               sample = sampleService.store(sample, true, authProvider);
               sampleNameToAccessionMap.put(sample.getName(), sample.getAccession());
@@ -318,7 +320,7 @@ public class FileUploadService {
   }
 
   public List<Map<?, ?>> readObjectsFromCsv(File file) throws IOException {
-    CsvSchema bootstrap = CsvSchema.emptySchema().withHeader();
+    CsvSchema bootstrap = CsvSchema.emptySchema().withHeader().withColumnSeparator('\t');
     CsvMapper csvMapper = new CsvMapper();
     csvMapper
         .configure(CsvParser.Feature.TRIM_SPACES, true)
