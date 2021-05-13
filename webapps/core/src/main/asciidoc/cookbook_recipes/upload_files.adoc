@@ -1,33 +1,33 @@
-
 = [.ebi-color]#How to bulk upload samples to BioSamples using the new drag'n'drop uploader#
 :last-update-label!:
 
 == User requirements
-I am a non programmatic submitter and I want to store my samples in BioSamples using a easy route
-without having to go through the technical challenges of using the API's
+
+I am a non programmatic submitter and I want to store my samples in BioSamples using a easy route without having to go through the technical challenges of using the API's
 
 == Requirements
-- You need an AAP account or a WEBIN submission account to proceed with this recipe
-Please refer our link:../guides/authentication[AUTHENTICATION GUIDE] for more information
 
-== Important related to the file format
-- The file format for uploading sample metadata to BioSamples is ISA-Tab
-(https://isa-specs.readthedocs.io/en/latest/isatab.html). Although ISA-Tab is specifically
-for Investigation, Study and Assay data, we have tried to use the sample table format
-specified in the ISA-Tab specification
+- You need an AAP account or a WEBIN submission account to proceed with this recipe Please refer our link:../guides/authentication[AUTHENTICATION GUIDE] for more information
+
+== Important information related to the file format
+
+- The file format for uploading sample metadata to BioSamples is ISA-Tab (https://isa-specs.readthedocs.io/en/latest/isatab.html).
+Although ISA-Tab is specifically for Investigation, Study and Assay data, we have tried to use the sample table format specified in the ISA-Tab specification
 - The ISA-Tab file format is a tab delimited format (TSV)
 
 == Data format
 
 .TSV file Columns
-
 [width="100%",cols=">s,^m,e",frame="topbot",options="header"]
 |===
 |Columns |Description | Mandatory/Optional
 
 |Source Name | Source Name can be the name/ID of your investigation, study, assay,
 project or even sample. It can be the ID of the donor as well.
-If you don't have a source name then you can keep it blank. Remember
+Source Name is specifically added as a column to comply with ISA-Tab standards.
+If you don't have a source name then you can keep it blank or add any dummy value.
+The entered value is eventually ignored.
+Remember
 not to miss the tab delimiter even if you are keeping Source Name as blank | Optional
 
 |Sample Name | The name of the sample, mandatory, and expected to be unique
@@ -71,6 +71,7 @@ is optional, mandatory if you are looking to update existing samples| Optional (
 |===
 
 == Example file
+
 [%header,format=tsv]
 |===
 include::files/isa-example.tsv[]
@@ -80,25 +81,22 @@ After upload is successful, the uploader will send back a file with the sample m
 The accessions are defined by the Sample Identifier field in the TSV post upload.
 
 == Example output file
+
 [%header,format=tsv]
 |===
 include::files/isa-result-example.tsv[]
 |===
 
 == Important points to consider before you start uploading sample metadata to BioSamples using the uploader
-1. Every Characteristics you choose to provide as column header in the TSV file must have
-Term Source Ref and Term Accession Number column headers following it. While filling up the
-data (rows) in the file you may choose to provide blank values if you don't have the information
-for it. In the below example you can always opt to not provide the Term Source Ref and
-Term Accession Number but the column headers must be present as in the example below
+
+1. Every Characteristics you choose to provide as column header in the TSV file must have Term Source Ref and Term Accession Number column headers following it.
+While filling up the data (rows) in the file you may choose to provide blank values if you don't have the information for it.
+In the below example you can always opt to not provide the Term Source Ref and Term Accession Number but the column headers must be present as in the example below
 
     Example : Characteristics[Organism]	Term Source REF	Term Accession Number
 
-
-2. All samples might not have all the information as per the columns specified in the
-TSV file, please remember not to miss the tab delimiter if you are not specifying any value.
-Example if you are not specifying Term Source Ref and Term Accession Number
-for any/ all characteristics please don't forget you need to provide the tab delimiter.
+2. All samples might not have all the information as per the columns specified in the TSV file, please remember not to miss the tab delimiter if you are not specifying any value.
+Example if you are not specifying Term Source Ref and Term Accession Number for any/ all characteristics please don't forget you need to provide the tab delimiter.
 This will help us to parse the file correctly
 
     Example : Characteristics[Organism]	Term Source REF	Term Accession Number
@@ -108,22 +106,44 @@ This will help us to parse the file correctly
 
 4. The uploader sends back a file for download with submission result,
 
-4.1 In case of SUCCESS - the file contains
-    submitted sample metadata with the accessions and a receipt at the end of the file.
-    The receipt has the details on the submission like number of samples persisted and if some
-    error has occurred for some/all samples.
+4.1 In case of SUCCESS - the file contains submitted sample metadata with the accessions and a receipt at the end of the file.
+The receipt has the details on the submission like number of samples persisted and if some error has occurred for some/all samples.
 
-4.2 In case of FAILURE - The downloaded file
-    will contain the error. Please revert to the BioSamples team at mailto:biosamples@ebi.ac.uk[biosamples@ebi.ac.uk]
-    with the error message and the file you are trying to upload, we will look into it.
+4.2 In case of FAILURE - The downloaded file will contain the error.
+Please revert to the BioSamples team at mailto:biosamples@ebi.ac.uk[biosamples@ebi.ac.uk]
+with the error message and the file you are trying to upload, we will look into it.
 
-5.If you are looking to update existing samples that has been uploaded, you can use the
-file that was returned to you after your submission. Please remember to remove the receipt
-section
+5.If you are looking to update existing samples that has been uploaded, you can use the file that was returned to you after your submission.
+Please remember to remove the receipt section
+
+== Steps to upload
+
+=== Login Page
+
+1. Click on the upload menu to open the uploader login page
+2. Select the radio button, if you wish to use your AAP credentials please select AAP, else select WEBIN
+3. Enter the credentials you have setup in the authentication system selected in step 2
+4. Click on the button Sign in to Upload
+
+=== Upload Page
+
+1. If you have logged in using your AAP credentials then select your AAP domain that you want to use for the submission from the "Select AAP domain" dropdown.
+This is not required for submissions using WEBIN authentication.
+The dropdown is pre-populated with domains you have access to
+2. Select a checklist that you want to validate the samples against from the "Select checklist for validation" dropdown.
+If you don't have a specific checklist to validate against, please select biosamples-minimal.
+Compliance to biosamples-minimal is a basic system requirement of BioSamples database and this checklist checks if the sample has a valid organism attribute
+3. Drag'n'drop the files you want to upload.
+*Please note* you can upload a maximum of 5 files at once
+4. Click on Upload files button
+5. If your upload is successful you will receive a file which will contain all the samples persisted in BioSamples with the accessions.
+The file is exactly the same as your uploaded file but contains the accessions against each sample.
+*Please note* The downloaded file has a receipt section at the end which is a summary of the submission.
 
 == Next steps
-This is the first release of our BioSamples drag'n'drop uploader. We call it a Beta version,
-below are the next planned steps of improvement:
+
+This is the first release of our BioSamples drag'n'drop uploader.
+We call it a Beta version, below are the next planned steps of improvement:
 
 1. Incorporate feedback received from submitters and we also have a release plan as below:
 
@@ -139,6 +159,6 @@ we target to parse all contact attributes like first name, last name, consortium
 |===
 
 == Feedback
+
 We welcome your feedback on the uploader, feedback certainly helps us improve.
-Please write to us at mailto:biosamples@ebi.ac.uk[biosamples@ebi.ac.uk] to let us know your inputs
-and improvement suggestions
+Please write to us at mailto:biosamples@ebi.ac.uk[biosamples@ebi.ac.uk] to let us know your inputs and improvement suggestions

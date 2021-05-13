@@ -95,6 +95,7 @@ public class FileUploadController {
   public ResponseEntity<byte[]> downloadExampleFile() throws IOException {
     final Path temp = Files.createTempFile("upload_example", ".tsv");
     final File pathFile = temp.toFile();
+
     FileUtils.copyInputStreamToFile(
         this.getClass().getClassLoader().getResourceAsStream("isa-example.tsv"), pathFile);
     final byte[] bytes = FileUtils.readFileToByteArray(pathFile);
