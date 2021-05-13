@@ -92,8 +92,16 @@ The API account can be registered at
 https://explore.aai.ebi.ac.uk/registerUser. A detailed instruction about user account and authentication can be
 found on https://www.ebi.ac.uk/biosamples/docs/guides/authentication.
 +
-*Please replace ALL 'https://aai.ebi.ac.uk' in the authentication guide with 'https://explore.aai.ebi.ac.uk'
-to use the local BioSamples API.*
+
+*Above guide shows AAP account details for production usage.
+Please replace all URL references as below to create and authenticate against development server.*
+[cols="1,1"]
+|===
+| Original                  | Replace with
+| https://aai.ebi.ac.uk     | https://explore.aai.ebi.ac.uk
+| https://api.aai.ebi.ac.uk | https://explore.api.aai.ebi.ac.uk
+|===
+
 . Upload first test data 
 +
 [source,sh]

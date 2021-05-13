@@ -1,11 +1,7 @@
 = [.ebi-color]#Data submission#
 :last-update-label!:
-:toc:
 
-== How to submit to BioSamples Database?
-
-=== JSON API
-Please use our link:../references/api/submit[JSON API] for submission.
+Please use our link:../references/api/submit[JSON API] or our drag'n'drop uploader for submission
 
 '''
 If you have any questions about these services or would like more information, please contact us at mailto:biosamples@ebi.ac.uk[biosamples@ebi.ac.uk].

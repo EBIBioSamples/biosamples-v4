@@ -11,13 +11,13 @@
 			<table class="hover">
                 <thead>
                     <tr>
-                        <th>Type</th>
+                        <th class="sample-attribute-table-column">Type</th>
                         <th>Value</th>
                     </tr>
 				</thead>
                 <tbody>
                     <tr th:each="attribute : ${attributes}" th:with="iriUrl = ${@httpOlsUrlResolutionService.getIriOls(attribute.iri)}">
-                        <td th:text="${attribute.type}">Attribute Type</td>
+                        <td class="sample-attribute-table-column" th:text="${attribute.type}">Attribute Type</td>
 
                         <td
                                 th:if="${not #strings.isEmpty(iriUrl) and #strings.isEmpty(attribute.unit)}"><a
@@ -83,9 +83,14 @@
                        th:text="${@externalReferenceService.getNickname(externalReference)}"></a>
                 </td>
                 <td>
-                    <div th:each="duo : ${externalReference.duo}">
+                    <div th:each="duo : ${externalReference.duo}" class="duo-tooltip">
                         <a class="duo-badge shield" th:href="${@externalReferenceService.getDuoUrl(duo)}"
                            th:text="${duo}"></a>
+                        <span class="duo-tooltip-text">
+                            <div class="duo-tooltip-text-title" th:text="${@externalReferenceService.getOntologyTitle(duo)}"></div>
+<!--                            <h4>hello</h4>-->
+                            <p class="duo-tooltip-text-body" th:text="${@externalReferenceService.getOntologyDescription(duo)}"></p>
+                        </span>
                     </div>
                 </td>
             </tr>

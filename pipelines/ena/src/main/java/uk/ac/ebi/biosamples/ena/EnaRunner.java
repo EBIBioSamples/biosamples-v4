@@ -113,17 +113,18 @@ public class EnaRunner implements ApplicationRunner {
       importEraSamples(fromDate, toDate, sampleToAmrMap);
 
       // Handler to append SRA Accession (ENA accession numbers to samples owned by BioSamples)
-      importEraBsdAuthoritySamples(fromDate, toDate);
+      // importEraBsdAuthoritySamples(fromDate, toDate);
 
       if (suppressionRunner) {
         // handler for suppressed ENA samples
-        handleSuppressedEnaSamples();
+        // handleSuppressedEnaSamples();
         // handler for suppressed NCBI/DDBJ samples
-        handleSuppressedNcbiDdbjSamples();
+        // handleSuppressedNcbiDdbjSamples();
       }
 
       if (killedRunner) {
-        handleKilledEnaSamples();
+        // handler for killed ENA samples
+        // handleKilledEnaSamples();
       }
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);

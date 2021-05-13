@@ -27,6 +27,9 @@ public abstract class AbstractData implements Comparable<AbstractData> {
   @JsonProperty("domain")
   public abstract String getDomain();
 
+  @JsonProperty("webinSubmissionAccountId")
+  public abstract String getWebinSubmissionAccountId();
+
   @JsonProperty("type")
   public abstract StructuredDataType getDataType();
 

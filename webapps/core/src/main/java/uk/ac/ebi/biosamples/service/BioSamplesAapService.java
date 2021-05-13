@@ -11,11 +11,9 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -32,6 +30,8 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
+import uk.ac.ebi.tsc.aap.client.repo.DomainService;
+import uk.ac.ebi.tsc.aap.client.repo.TokenService;
 import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
 
 @Service
@@ -42,21 +42,38 @@ public class BioSamplesAapService {
   private final Traverson traverson;
   private final BioSamplesProperties bioSamplesProperties;
   private final SampleService sampleService;
+  private final TokenService tokenService;
+  private final DomainService domainService;
 
   public BioSamplesAapService(
       RestTemplateBuilder restTemplateBuilder,
       BioSamplesProperties bioSamplesProperties,
-      SampleService sampleService) {
+      SampleService sampleService,
+      TokenService tokenService,
+      DomainService domainService) {
     traverson =
         new Traverson(bioSamplesProperties.getBiosamplesClientAapUri(), MediaTypes.HAL_JSON);
+    this.tokenService = tokenService;
+    this.domainService = domainService;
     traverson.setRestOperations(restTemplateBuilder.build());
     this.bioSamplesProperties = bioSamplesProperties;
     this.sampleService = sampleService;
   }
 
-  public Sample handleUpdateRequestFromOriginalSubmitter(final Sample sample) {
-    if (handleStructuredDataDomain(sample) != null) return sample;
-    else return null;
+  public String authenticate(String userName, String password) {
+    return tokenService.getAAPToken(userName, password);
+  }
+
+  public List<String> getDomains(String token) {
+    List<String> domains = new ArrayList<>();
+
+    domainService.getMyDomains(token).forEach(domain -> log.info(domain.getDomainName()));
+    domains.addAll(
+        domainService.getMyDomains(token).stream()
+            .map(domain -> domain.getDomainName())
+            .collect(Collectors.toList()));
+
+    return domains;
   }
 
   @ResponseStatus(
@@ -167,7 +184,10 @@ public class BioSamplesAapService {
         // sample.getExternalReferences(),
         //						sample.getOrganizations(), sample.getContacts(), sample.getPublications());
         sample =
-            Sample.Builder.fromSample(sample).withDomain(usersDomains.iterator().next()).build();
+            Sample.Builder.fromSample(sample)
+                .withDomain(usersDomains.iterator().next())
+                .withNoWebinSubmissionAccountId()
+                .build();
       } else {
         // if the sample doesn't have a domain, and we can't guess one, then end
         throw new DomainMissingException();
@@ -178,7 +198,7 @@ public class BioSamplesAapService {
     if (sample.getAccession() != null && !(isWriteSuperUser() || isIntegrationTestUser())) {
       Optional<Sample> oldSample =
           sampleService.fetch(sample.getAccession(), Optional.empty(), null);
-      if (oldSample.isEmpty() || !usersDomains.contains(oldSample.get().getDomain())) {
+      if (!oldSample.isPresent() || !usersDomains.contains(oldSample.get().getDomain())) {
         throw new SampleDomainMismatchException();
       }
     }
@@ -204,29 +224,25 @@ public class BioSamplesAapService {
    * @throws StructuredDataNotAccessibleException
    * @throws StructuredDataDomainMissingException
    */
-  public Sample handleStructuredDataDomain(Sample sample)
+  public Sample handleStructuredDataDomainInData(Sample sample)
       throws StructuredDataNotAccessibleException, StructuredDataDomainMissingException {
     // get the domains the current user has access to
     final Set<String> usersDomains = getDomains();
-
     final AtomicBoolean isDomainValid = new AtomicBoolean(false);
-    sample = Sample.Builder.fromSample(sample).build();
 
-    if (isStructuredDataPresent(sample)) {
-      sample
-          .getData()
-          .forEach(
-              data -> {
-                if (data.getDataType() != null) {
-                  final String structuredDataDomain = data.getDomain();
-                  if (structuredDataDomain == null) {
-                    throw new StructuredDataDomainMissingException();
-                  } else if (usersDomains.contains(data.getDomain())) {
-                    isDomainValid.set(true);
-                  }
+    sample
+        .getData()
+        .forEach(
+            data -> {
+              if (data.getDataType() != null) {
+                final String structuredDataDomain = data.getDomain();
+                if (structuredDataDomain == null) {
+                  throw new StructuredDataDomainMissingException();
+                } else if (usersDomains.contains(data.getDomain())) {
+                  isDomainValid.set(true);
                 }
-              });
-    }
+              }
+            });
 
     if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) return sample;
     else if (isDomainValid.get()) return sample;
@@ -239,38 +255,36 @@ public class BioSamplesAapService {
    * @throws StructuredDataNotAccessibleException
    * @throws StructuredDataDomainMissingException
    */
-  public boolean isOriginalSubmitter(Sample sample)
+  public boolean checkIfOriginalAAPSubmitter(Sample sample)
       throws StructuredDataNotAccessibleException, StructuredDataDomainMissingException {
     // get the domains the current user has access to
     final Set<String> usersDomains = getDomains();
+    final String sampleDomain = sample.getDomain();
 
     final AtomicBoolean isDomainValid = new AtomicBoolean(false);
-    sample = Sample.Builder.fromSample(sample).build();
 
-    if (isStructuredDataPresent(sample)) {
-      sample
-          .getData()
-          .forEach(
-              data -> {
-                if (data.getDataType() != null) {
-                  final String structuredDataDomain = data.getDomain();
+    sample
+        .getData()
+        .forEach(
+            data -> {
+              if (data.getDataType() != null) {
+                final String structuredDataDomain = data.getDomain();
 
-                  if (structuredDataDomain == null) {
-                    throw new StructuredDataDomainMissingException();
-                  } else if (usersDomains.contains(data.getDomain())) {
-                    isDomainValid.set(true);
-                  }
+                if (structuredDataDomain == null) {
+                  throw new StructuredDataDomainMissingException();
+                } else if (usersDomains.contains(data.getDomain())
+                    && usersDomains.contains(
+                        sampleDomain)) { // if the structured data domain and the sample domain both
+                  // in usersDomain
+                  // then we can consider the data being submitted by original submitter
+                  isDomainValid.set(true);
                 }
-              });
-    }
+              }
+            });
 
     if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) return true;
     else if (isDomainValid.get()) return true;
     else throw new StructuredDataNotAccessibleException();
-  }
-
-  private boolean isStructuredDataPresent(Sample sample) {
-    return sample.getData() != null && sample.getData().size() > 0;
   }
 
   /**
@@ -299,6 +313,7 @@ public class BioSamplesAapService {
                 curationLink.getSample(),
                 curationLink.getCuration(),
                 usersDomains.iterator().next(),
+                null,
                 curationLink.getCreated());
       } else {
         // if the sample doesn't have a domain, and we can't guess one, then end

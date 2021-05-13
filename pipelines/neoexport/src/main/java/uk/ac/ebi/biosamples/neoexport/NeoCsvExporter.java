@@ -84,42 +84,52 @@ public class NeoCsvExporter {
   }
 
   private void addSample(NeoSample sample) {
-    Map<String, String> sampleMap =
-        Map.of(
-            "accession", sample.getAccession(),
-            "name", sample.getName(),
-            "organism", sample.getOrganism() == null ? "" : sample.getOrganism(),
-            "taxId", sample.getTaxId() == null ? "" : sample.getTaxId(),
-            "sex", sample.getSex() == null ? "" : sample.getSex(),
-            "cellType", sample.getCellType() == null ? "" : sample.getCellType(),
-            "material", sample.getMaterial() == null ? "" : sample.getMaterial(),
-            "project", sample.getProject() == null ? "" : sample.getProject(),
-            "cellLine", sample.getCellLine() == null ? "" : sample.getCellLine(),
-            "organismPart", sample.getOrganismPart() == null ? "" : sample.getOrganismPart());
-    samples.add(sampleMap);
+    Map<String, String> attributeMap = new HashMap<>();
+    attributeMap.put("accession", sample.getAccession());
+    attributeMap.put("name", sample.getName());
+    attributeMap.put("organism", sample.getOrganism() == null ? "" : sample.getOrganism());
+    attributeMap.put("taxId", sample.getTaxId() == null ? "" : sample.getTaxId());
+    attributeMap.put("sex", sample.getSex() == null ? "" : sample.getSex());
+    attributeMap.put("cellType", sample.getCellType() == null ? "" : sample.getCellType());
+    attributeMap.put("material", sample.getMaterial() == null ? "" : sample.getMaterial());
+    attributeMap.put("project", sample.getProject() == null ? "" : sample.getProject());
+    attributeMap.put("cellLine", sample.getCellLine() == null ? "" : sample.getCellLine());
+    attributeMap.put(
+        "organismPart", sample.getOrganismPart() == null ? "" : sample.getOrganismPart());
+    samples.add(attributeMap);
 
     for (NeoRelationship rel : sample.getRelationships()) {
       if (rel.getSource().equals(sample.getAccession())) {
         switch (rel.getType()) {
           case DERIVED_FROM:
-            relsDerivedFrom.add(
-                Map.of(REL_SOURCE_HEADER, rel.getSource(), REL_TARGET_HEADER, rel.getTarget()));
+            Map<String, String> e = new HashMap<>();
+            e.put(REL_SOURCE_HEADER, rel.getSource());
+            e.put(REL_TARGET_HEADER, rel.getTarget());
+            relsDerivedFrom.add(e);
             break;
           case SAME_AS:
-            relsSameAs.add(
-                Map.of(REL_SOURCE_HEADER, rel.getSource(), REL_TARGET_HEADER, rel.getTarget()));
+            Map<String, String> e1 = new HashMap<>();
+            e1.put(REL_SOURCE_HEADER, rel.getSource());
+            e1.put(REL_TARGET_HEADER, rel.getTarget());
+            relsSameAs.add(e1);
             break;
           case HAS_MEMBER:
-            relsHasMember.add(
-                Map.of(REL_SOURCE_HEADER, rel.getSource(), REL_TARGET_HEADER, rel.getTarget()));
+            Map<String, String> e2 = new HashMap<>();
+            e2.put(REL_SOURCE_HEADER, rel.getSource());
+            e2.put(REL_TARGET_HEADER, rel.getTarget());
+            relsHasMember.add(e2);
             break;
           case CHILD_OF:
-            relsChildOf.add(
-                Map.of(REL_SOURCE_HEADER, rel.getSource(), REL_TARGET_HEADER, rel.getTarget()));
+            Map<String, String> e3 = new HashMap<>();
+            e3.put(REL_SOURCE_HEADER, rel.getSource());
+            e3.put(REL_TARGET_HEADER, rel.getTarget());
+            relsChildOf.add(e3);
             break;
           default:
-            relsOther.add(
-                Map.of(REL_SOURCE_HEADER, rel.getSource(), REL_TARGET_HEADER, rel.getTarget()));
+            Map<String, String> e4 = new HashMap<>();
+            e4.put(REL_SOURCE_HEADER, rel.getSource());
+            e4.put(REL_TARGET_HEADER, rel.getTarget());
+            relsOther.add(e4);
             break;
         }
       }
@@ -127,18 +137,16 @@ public class NeoCsvExporter {
 
     for (NeoExternalEntity ref : sample.getExternalRefs()) {
       String refId = ref.getArchive() + "_" + ref.getRef();
-      externalEntity.add(
-          Map.of(
-              "name",
-              refId,
-              "archive",
-              ref.getArchive(),
-              "ref",
-              ref.getRef(),
-              "url",
-              ref.getUrl()));
-      relsExternalRef.add(
-          Map.of(REL_SOURCE_HEADER, sample.getAccession(), REL_TARGET_HEADER, refId));
+      Map<String, String> e = new HashMap<>();
+      e.put("name", refId);
+      e.put("archive", ref.getArchive());
+      e.put("ref", ref.getRef());
+      e.put("url", ref.getUrl());
+      externalEntity.add(e);
+      Map<String, String> e1 = new HashMap<>();
+      e1.put(REL_SOURCE_HEADER, sample.getAccession());
+      e1.put(REL_TARGET_HEADER, refId);
+      relsExternalRef.add(e1);
     }
 
     checkWriteStatus();

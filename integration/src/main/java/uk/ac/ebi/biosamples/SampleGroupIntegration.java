@@ -97,14 +97,14 @@ public class SampleGroupIntegration extends AbstractIntegration {
   protected void phaseTwo() {
     Sample testSampleGroup = getSampleTest1();
     Optional<Sample> optionalGroupSample = fetchUniqueSampleByName(testSampleGroup.getName());
-    if (optionalGroupSample.isEmpty()) {
+    if (!optionalGroupSample.isPresent()) {
       throw new IntegrationTestFailException(
           "RestIntegration test sample should not be available during phase 1", Phase.TWO);
     }
 
     Sample testSample = getSampleTest2();
     Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
-    if (optionalSample.isEmpty()) {
+    if (!optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
           "RestIntegration test sample should not be available during phase 1", Phase.TWO);
     }

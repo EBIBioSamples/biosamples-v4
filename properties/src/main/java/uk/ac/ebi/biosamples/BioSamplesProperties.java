@@ -53,6 +53,22 @@ public class BioSamplesProperties {
   @Value("${biosamples.client.aap.password:#{null}}")
   private String biosamplesClientAapPassword;
 
+  @Value(
+      "${biosamples.client.webin.auth.token.uri:https://www.ebi.ac.uk/ena/submit/webin/auth/token}")
+  private URI biosamplesWebinAuthTokenUri;
+
+  @Value(
+      "${biosamples.client.webin.auth.submissionaccount.uri:https://www.ebi.ac.uk/ena/submit/webin/auth/admin/submission-account}")
+  private URI biosamplesWebinAuthFetchSubmissionAccountUri;
+
+  // can't use "null" because it will be a string
+  @Value("${biosamples.client.webin.username:Webin-40894}")
+  private String biosamplesClientWebinUsername;
+
+  // can't use "null" because it will be a string
+  @Value("${biosamples.client.webin.password:#{null}}")
+  private String biosamplesClientWebinPassword;
+
   // max number of cache entries, 0 means no cache is used by the client
   // This multiplied by the cache maxobjectsize value defines the max size of the cache
   @Value("${biosamples.client.cache.maxentries:0}")
@@ -100,11 +116,26 @@ public class BioSamplesProperties {
   @Value("${biosamples.schemaValidator:http://localhost:3020/validate}")
   private String schemaValidator;
 
-  @Value("${biosamples.schemaStore:http://localhost:8085/api/v2/schemas}")
+  @Value("${biosamples.schemaStore:http://localhost:8085}")
   private String schemaStore;
+
+  @Value("${biosamples.schema.default:ERC100001}")
+  private String biosamplesDefaultSchema;
+
+  public String getBiosamplesClientWebinUsername() {
+    return biosamplesClientWebinUsername;
+  }
+
+  public String getBiosamplesClientWebinPassword() {
+    return biosamplesClientWebinPassword;
+  }
 
   public URI getBiosamplesClientUri() {
     return biosamplesClientUri;
+  }
+
+  public URI getBiosamplesWebinAuthTokenUri() {
+    return biosamplesWebinAuthTokenUri;
   }
 
   public int getBiosamplesClientPagesize() {
@@ -133,6 +164,10 @@ public class BioSamplesProperties {
 
   public URI getBiosamplesClientAapUri() {
     return biosamplesClientAapUri;
+  }
+
+  public URI getBiosamplesWebinAuthFetchSubmissionAccountUri() {
+    return biosamplesWebinAuthFetchSubmissionAccountUri;
   }
 
   public String getBiosamplesClientAapUsername() {
@@ -205,5 +240,9 @@ public class BioSamplesProperties {
 
   public String getSchemaStore() {
     return schemaStore;
+  }
+
+  public String getBiosamplesDefaultSchema() {
+    return biosamplesDefaultSchema;
   }
 }

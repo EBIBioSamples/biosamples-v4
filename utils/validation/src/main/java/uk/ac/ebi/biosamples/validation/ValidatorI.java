@@ -10,8 +10,11 @@
  */
 package uk.ac.ebi.biosamples.validation;
 
+import uk.ac.ebi.biosamples.exception.SchemaValidationException;
+
 import java.io.IOException;
 
 public interface ValidatorI {
     void validate(String schemaId, String sample) throws IOException;
+    String validateById(String schemaId, String document) throws IOException, SchemaValidationException;
 }

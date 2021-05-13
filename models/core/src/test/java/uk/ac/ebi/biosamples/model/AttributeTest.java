@@ -11,7 +11,7 @@
 package uk.ac.ebi.biosamples.model;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -47,7 +47,7 @@ public class AttributeTest {
         allOf(
             endsWith("NCBITaxon_291302"),
             startsWith("http://www.ebi.ac.uk/ols/terms?iri="),
-            containsString(URLEncoder.encode(iri, StandardCharsets.UTF_8))));
+            containsString(URLEncoder.encode(iri, StandardCharsets.UTF_8.toString()))));
   }
 
   @Test

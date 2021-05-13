@@ -69,8 +69,14 @@ public class SamplesGraphIntegration extends AbstractIntegration {
     GraphNode node = new GraphNode();
     node.setId("a1");
     node.setType("Sample");
-    node.setAttributes(Map.of("organism", "homo sapiens"));
-    query.setNodes(Set.of(node));
+
+    Map<String, String> attributes = new HashMap<>();
+    attributes.put("organism", "homo sapiens");
+    node.setAttributes(attributes);
+
+    Set<GraphNode> nodes = new HashSet<>();
+    nodes.add(node);
+    query.setNodes(nodes);
     query.setLinks(Collections.emptySet());
 
     GraphSearchQuery response = neoSampleRepository.graphSearch(query, 10, 1);

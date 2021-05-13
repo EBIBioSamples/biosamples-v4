@@ -51,20 +51,20 @@ public class HttpOlsUrlResolutionService {
         // incomplete iri (e.g. 9606, EFO_12345) don't bother to check
         return null;
       }
+
+      // TODO application.properties this
+      // TODO use https
+      final String iriUrl = URLEncoder.encode(displayIri, StandardCharsets.UTF_8.toString());
+
+      if (checkUrlForPattern(displayIri)) {
+        return OLS_PREFIX + iriUrl;
+      } else {
+        return displayIri;
+      }
     } catch (final Exception e) {
       // FIXME: Can't use a non static logger here because
       log.error("An error occurred while trying to build OLS iri for " + displayIri, e);
       return null;
-    }
-
-    // TODO application.properties this
-    // TODO use https
-    final String iriUrl = URLEncoder.encode(displayIri, StandardCharsets.UTF_8);
-
-    if (checkUrlForPattern(displayIri)) {
-      return OLS_PREFIX + iriUrl;
-    } else {
-      return displayIri;
     }
   }
 

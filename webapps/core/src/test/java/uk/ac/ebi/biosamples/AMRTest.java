@@ -43,13 +43,29 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.StreamUtils;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 import uk.ac.ebi.biosamples.model.structured.amr.AmrPair;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.SchemaValidatorService;
 import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
+import uk.ac.ebi.biosamples.service.SchemaValidationService;
+
+import java.nio.charset.Charset;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Optional;
+
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -72,12 +88,14 @@ public class AMRTest {
 
   private ObjectMapper mapper;
 
-  @MockBean
-  private BioSamplesAapService bioSamplesAapService;
-  @MockBean
-  private SampleService sampleService;
-  @MockBean
-  private SchemaValidatorService schemaValidatorService;
+  @MockBean private BioSamplesAapService bioSamplesAapService;
+
+  @MockBean private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
+
+  @MockBean private SampleService sampleService;
+
+  @MockBean private SchemaValidationService schemaValidatorService;
+
   @MockBean
   ElixirSchemaValidator validator;
 
@@ -93,7 +111,9 @@ public class AMRTest {
   }
 
   private AMRTable getAMRTable() {
-    return new AMRTable.Builder("http://schema.org", "self.test").addEntry(getAMREntry()).build();
+    return new AMRTable.Builder("http://schema.org", "self.test", null)
+        .addEntry(getAMREntry())
+        .build();
   }
 
   private Sample.Builder getTestSampleBuilder() {
@@ -130,7 +150,7 @@ public class AMRTest {
       throws Exception {
     AMREntry amrEntry = getAMREntry();
     AMRTable amrTable =
-        new AMRTable.Builder("http://schema.org", "self.test").addEntry(amrEntry).build();
+        new AMRTable.Builder("http://schema.org", "self.test", null).addEntry(amrEntry).build();
 
     Sample sample = getTestSampleBuilder().addData(amrTable).build();
     when(sampleService.fetch(eq(sample.getAccession()), any(), any(String.class)))
@@ -206,17 +226,16 @@ public class AMRTest {
             .withUpdate(jsonSample.at("/update").asText())
             .withRelease(jsonSample.at("/release").asText())
             .addData(
-                new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "self.test")
+                new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "self.test", null)
                     .addEntry(amrEntry)
                     .build())
             .withAttributes(Collections.singletonList(organismAttribute))
             .build();
 
-    when(schemaValidatorService.validate(any(), any())).thenReturn(ResponseEntity.ok("[]"));
     when(bioSamplesAapService.isWriteSuperUser()).thenReturn(true);
     when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
-    when(bioSamplesAapService.handleStructuredDataDomain(any(Sample.class))).thenReturn(testSample);
-    when(sampleService.store(testSample, false)).thenReturn(testSample);
+    when(bioSamplesAapService.handleStructuredDataDomainInData(any(Sample.class))).thenReturn(testSample);
+    when(sampleService.store(testSample, false, "AAP")).thenReturn(testSample);
 
     mockMvc
         .perform(post("/samples").contentType(MediaType.APPLICATION_JSON_VALUE).content(json))
@@ -254,21 +273,74 @@ public class AMRTest {
             .withUpdate(jsonSample.at("/update").asText())
             .withRelease(jsonSample.at("/release").asText())
             .addData(
-                new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "self.test")
+                new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "self.test", null)
                     .addEntry(amrEntry)
                     .build())
             .withAttributes(Collections.singletonList(organismAttribute))
             .build();
 
-    when(schemaValidatorService.validate(any(), any())).thenReturn(ResponseEntity.ok("[]"));
     when(bioSamplesAapService.isWriteSuperUser()).thenReturn(false);
     when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
-    when(bioSamplesAapService.handleStructuredDataDomain(any(Sample.class))).thenReturn(testSample);
+    when(bioSamplesAapService.handleStructuredDataDomainInData(any(Sample.class))).thenReturn(testSample);
 
     ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
-    when(sampleService.store(generatedSample.capture(), eq(false))).thenReturn(testSample);
+    when(sampleService.store(generatedSample.capture(), eq(false), eq("AAP")))
+        .thenReturn(testSample);
 
     mockMvc.perform(post("/samples").contentType(MediaType.APPLICATION_JSON_VALUE).content(json));
+
+    assert (!generatedSample.getValue().getData().isEmpty());
+  }
+
+  @Test
+  public void able_to_submit_amr_with_webin_id() throws Exception {
+
+    String json =
+            StreamUtils.copyToString(
+                    new ClassPathResource("amr_sample_webin.json").getInputStream(), Charset.defaultCharset());
+    JsonNode jsonSample = mapper.readTree(json);
+
+    JsonNode jsonAmr = jsonSample.at("/data/0/content/0");
+    SubmissionAccount submissionAccount = new SubmissionAccount();
+
+    submissionAccount.setId("Webin-57176");
+
+    AMREntry amrEntry =
+            new AMREntry.Builder()
+                    .withAntibioticName(new AmrPair(jsonAmr.get("antibiotic_name").asText(), ""))
+                    .withResistancePhenotype(jsonAmr.get("resistance_phenotype").asText())
+                    .withMeasure(
+                            jsonAmr.get("measurement_sign").asText(),
+                            jsonAmr.get("measurement").asText(),
+                            jsonAmr.get("measurement_units").asText())
+                    .withVendor(jsonAmr.get("vendor").asText())
+                    .withLaboratoryTypingMethod(jsonAmr.get("laboratory_typing_method").asText())
+                    .withAstStandard(jsonAmr.get("ast_standard").asText())
+                    .build();
+
+    Attribute organismAttribute = Attribute.build("organism", "Homo Sapiens");
+
+    Sample testSample =
+            new Sample.Builder(jsonSample.at("/name").asText())
+                    .withUpdate(jsonSample.at("/update").asText())
+                    .withRelease(jsonSample.at("/release").asText())
+                    .addData(
+                            new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "null", "Webin-57176")
+                                    .addEntry(amrEntry)
+                                    .build())
+                    .withAttributes(Collections.singletonList(organismAttribute))
+                    .build();
+
+    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
+            .thenReturn(ResponseEntity.ok(submissionAccount));
+    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class))).thenReturn(testSample);
+    when(bioSamplesWebinAuthenticationService.handleStructuredDataWebinUserInData(any(Sample.class), eq("Webin-57176"))).thenReturn(testSample);
+
+    ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
+    when(sampleService.store(generatedSample.capture(), eq(false), eq("WEBIN")))
+            .thenReturn(testSample);
+
+    mockMvc.perform(post("/samples?authProvider=WEBIN").contentType(MediaType.APPLICATION_JSON_VALUE).content(json).header("Authorization", "Bearer $TOKEN"));
 
     assert (!generatedSample.getValue().getData().isEmpty());
   }

@@ -286,9 +286,9 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     List<Sample> sampleList = new ArrayList<>();
 
     sampleResources.forEach(
-        sampleResource -> {
-          final Sample sample = sampleResource.getContent();
-          List<Integer> statusList =
+            sampleResource -> {
+              final Sample sample = sampleResource.getContent();
+          /*List<Integer> statusList =
               ebeyeBioSamplesDataDumpGeneratorDao.doGetSampleStatus(sample.getAccession());
 
           if (statusList != null && statusList.size() > 0) {
@@ -299,12 +299,12 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
             if (sampleStatus == 5 || sampleStatus == 6) {
               System.out.println(
                   "Sample not added " + sample.getAccession() + " status " + sampleStatus);
-            } else {
+            } else {*/
               sampleList.add(sample);
               System.out.println("Sample added " + sample.getAccession());
-            }
-          }
-        });
+            /*}
+          }*/
+            });
 
     return sampleList;
   }
@@ -366,7 +366,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
             extRef -> {
               RefType refType = new RefType();
 
-              final var url = extRef.getUrl();
+              final String url = extRef.getUrl();
 
               if (url.contains(ENA_LC) || url.contains(ENA_UC)) {
                 refType.setDbname(ENA_UC);

@@ -138,7 +138,8 @@ public class EraProDao {
               + "to_char(LAST_UPDATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS LAST_UPDATED, "
               + "to_char(FIRST_PUBLIC, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_PUBLIC,  "
               + " to_char(FIRST_CREATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_CREATED, "
-              + "STATUS_ID "
+              + "STATUS_ID, "
+              + "SUBMISSION_ACCOUNT_ID "
               + "FROM SAMPLE "
               + "WHERE BIOSAMPLE_ID = ? "
               + "AND SAMPLE_ID LIKE 'ERS%'";
@@ -196,6 +197,7 @@ public class EraProDao {
         sampleBean.setLastUpdate(rs.getString("LAST_UPDATED"));
         sampleBean.setFirstCreated(rs.getString("FIRST_CREATED"));
         sampleBean.setStatus(rs.getInt("STATUS_ID"));
+        sampleBean.setSubmissionAccountId(rs.getString("SUBMISSION_ACCOUNT_ID"));
 
         return sampleBean;
       };

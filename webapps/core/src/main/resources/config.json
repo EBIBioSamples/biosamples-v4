@@ -1,10 +1,17 @@
 {
   "checklists": [
+
     {
-      "name": "biosamples-minimal",
+      "name": "ERC100001",
       "version": "0.0.1",
-      "file": "schemas/certification/biosamples-minimal.json",
+      "file": "https://www.ebi.ac.uk/biosamples/schemas/biosamples-minimal/1.0.0",
       "block": "true"
+    },
+    {
+      "name": "ERC100002",
+      "version": "1.2.0",
+      "file": "https://www.ebi.ac.uk/biosamples/schemas/plant-miappe/1.2.0",
+      "block": "false"
     }
   ],
   "plans": [

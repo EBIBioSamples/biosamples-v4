@@ -12,6 +12,7 @@ package uk.ac.ebi.biosamples.ena;
 
 import java.util.Set;
 import java.util.concurrent.Callable;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -23,10 +24,10 @@ public class EnaCallableFactory {
   private final EnaXmlEnhancer enaXmlEnhancer;
   private final EnaElementConverter enaElementConverter;
   private final EraProDao eraProDao;
-  private final String domain;
+  private final String webinId;
 
   public EnaCallableFactory(
-      BioSamplesClient bioSamplesClient,
+      @Qualifier("WEBINCLIENT") BioSamplesClient bioSamplesClient,
       EnaXmlEnhancer enaXmlEnhancer,
       EnaElementConverter enaElementConverter,
       EraProDao eraProDao,
@@ -36,7 +37,7 @@ public class EnaCallableFactory {
     this.enaXmlEnhancer = enaXmlEnhancer;
     this.enaElementConverter = enaElementConverter;
     this.eraProDao = eraProDao;
-    this.domain = pipelinesProperties.getEnaDomain();
+    this.webinId = pipelinesProperties.getProxyWebinId();
   }
 
   /**
@@ -60,7 +61,7 @@ public class EnaCallableFactory {
         enaXmlEnhancer,
         enaElementConverter,
         eraProDao,
-        domain,
+        webinId,
         suppressionHandler,
         killedHandler,
         bsdAuthority,

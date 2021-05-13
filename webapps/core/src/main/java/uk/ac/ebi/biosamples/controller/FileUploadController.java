@@ -10,79 +10,97 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.*;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import javax.validation.Valid;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import uk.ac.ebi.biosamples.service.upload.FileUploadService;
+import uk.ac.ebi.biosamples.service.upload.IsaTabUploadService;
+import uk.ac.ebi.biosamples.service.upload.UploadInvalidException;
 
-@Slf4j
-@RestController
+@Controller
 @RequestMapping("/upload")
 public class FileUploadController {
+  private Logger log = LoggerFactory.getLogger(getClass());
+
+  @Autowired FileUploadService fileUploadService;
+
+  @Autowired IsaTabUploadService isaTabUploadService;
+
   @PostMapping
-  public void upload(@RequestParam("file") MultipartFile file) {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+  public ResponseEntity<byte[]> upload(
+      @RequestParam("file") MultipartFile file,
+      @Valid String hiddenAapDomain,
+      @Valid String hiddenCertificate,
+      @Valid String webinAccount)
+      throws IOException {
+    try {
+      final File downloadableFile =
+          isaTabUploadService.upload(file, hiddenAapDomain, hiddenCertificate, webinAccount);
+      final byte[] bytes = FileUtils.readFileToByteArray(downloadableFile);
+      final HttpHeaders headers = setResponseHeadersSuccess(downloadableFile);
 
-    MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-    body.add("file", file);
+      return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+    } catch (UploadInvalidException e) {
+      log.info("File upload failure " + e.getMessage());
+      final Path temp = Files.createTempFile("failure_result", ".txt");
 
-    HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
-    RestTemplate restTemplate = new RestTemplate();
-
-    log.info("Before submission");
-
-    ResponseEntity<Object> response =
-        restTemplate.postForEntity(
-            "http://localhost:8082/biosamples/sampletab/api/v1/file/va",
-            requestEntity,
-            Object.class);
-
-    log.info("Response is : " + response.getStatusCode());
-    log.info("uploaded file " + file.getOriginalFilename());
-  }
-
-  /*
-  // Test call with a main.
-  public static void main(String[] a) throws IOException {
-      HttpHeaders headers = new HttpHeaders();
-      headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-      MultiValueMap<String, Object> body
-              = new LinkedMultiValueMap<>();
-
-      body.add("file", getUserFileResource());
-
-      HttpEntity<MultiValueMap<String, Object>> requestEntity
-              = new HttpEntity<>(body, headers);
-
-      RestTemplate restTemplate = new RestTemplate();
-
-      log.info("Before submission");
-
-      try {
-          ResponseEntity<String> response = restTemplate.exchange("http://localhost:8082/biosamples/sampletab/api/v1/file/va",
-                  HttpMethod.POST, requestEntity, String.class);
-
-          log.info("Response is : " + response.getStatusCode());
-
-      } catch (Exception e) {
-          e.printStackTrace();
+      try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
+        writer.write(e.getMessage());
       }
+
+      final File failedUploadMessageFile = temp.toFile();
+      final byte[] bytes = FileUtils.readFileToByteArray(failedUploadMessageFile);
+      final HttpHeaders headers = setResponseHeadersFailure(failedUploadMessageFile);
+      return new ResponseEntity<>(bytes, headers, HttpStatus.BAD_REQUEST);
+    }
   }
 
-  public static Resource getUserFileResource() throws IOException {
-      Path tempFile = Files.createTempFile("upload-test-file", ".txt");
-      Files.write(tempFile, "some test content...\nline1\nline2".getBytes());
-      System.out.println("uploading: " + tempFile);
-      File file = tempFile.toFile();
-      return new Resource(file);
-  }*/
+  private HttpHeaders setResponseHeadersSuccess(File file) {
+    final HttpHeaders httpHeaders = new HttpHeaders();
+
+    httpHeaders.setContentType(new MediaType("text", "csv"));
+    httpHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + file.getName());
+
+    return httpHeaders;
+  }
+
+  private HttpHeaders setResponseHeadersFailure(File file) {
+    final HttpHeaders httpHeaders = new HttpHeaders();
+
+    httpHeaders.setContentType(new MediaType("text", "plain"));
+    httpHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + file.getName());
+
+    return httpHeaders;
+  }
+
+  @GetMapping(value = "/downloadExampleFile")
+  public ResponseEntity<byte[]> downloadExampleFile() throws IOException {
+    final Path temp = Files.createTempFile("upload_example", ".tsv");
+    final File pathFile = temp.toFile();
+
+    FileUtils.copyInputStreamToFile(
+        this.getClass().getClassLoader().getResourceAsStream("isa-example.tsv"), pathFile);
+    final byte[] bytes = FileUtils.readFileToByteArray(pathFile);
+    final HttpHeaders headers = setResponseHeadersSuccess(pathFile);
+
+    return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+  }
 }

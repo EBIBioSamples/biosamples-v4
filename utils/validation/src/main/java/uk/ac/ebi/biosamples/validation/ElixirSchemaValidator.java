@@ -24,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exception.SampleValidationException;
+import uk.ac.ebi.biosamples.exception.SchemaValidationException;
 
 import java.io.IOException;
 import java.net.URI;
@@ -60,9 +61,29 @@ public class ElixirSchemaValidator implements ValidatorI {
         }
     }
 
+    public String validateById(String schemaAccession, String sample)
+            throws IOException, SchemaValidationException {
+        JsonNode sampleJson = objectMapper.readTree(sample);
+        JsonNode schema = getSchemaByAccession(schemaAccession);
+
+        ValidationRequest validationRequest = new ValidationRequest(schema, sampleJson);
+        URI validatorUri = URI.create(bioSamplesProperties.getSchemaValidator());
+        RequestEntity<ValidationRequest> requestEntity = RequestEntity.post(validatorUri)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(validationRequest);
+        JsonNode validationResponse = restTemplate.exchange(requestEntity, JsonNode.class).getBody();
+
+        if (validationResponse.get("validationState").asText().equalsIgnoreCase("INVALID")) {
+            throw new SampleValidationException("Sample validation failed: " + validationResponse.get("validationErrors").toString());
+        }
+
+        return schemaAccession;
+    }
+
     public JsonSchema getSchema(String schemaId) {
         URI schemaStoreUri = UriComponentsBuilder
-                .fromUriString(bioSamplesProperties.getSchemaStore() + "/id?id={schemaId}")
+                .fromUriString(bioSamplesProperties.getSchemaStore() + "/api/v2/schemas/id?id={schemaId}")
                 .build()
                 .expand(schemaId)
                 .encode()
@@ -72,6 +93,24 @@ public class ElixirSchemaValidator implements ValidatorI {
         ResponseEntity<JsonSchema> schemaResponse = restTemplate.exchange(requestEntity, JsonSchema.class);
         if (schemaResponse.getStatusCode() != HttpStatus.OK) {
             log.error("Failed to retrieve schema from JSON Schema Store: {}", schemaId);
+            throw new SampleValidationException("Failed to retrieve schema from JSON Schema Store");
+        }
+
+        return schemaResponse.getBody();
+    }
+
+    public JsonNode getSchemaByAccession(String accession) {
+        URI schemaStoreUri = UriComponentsBuilder
+                .fromUriString(bioSamplesProperties.getSchemaStore() + "/registry/schemas/{accession}")
+                .build()
+                .expand(accession)
+                .encode()
+                .toUri();
+
+        RequestEntity<Void> requestEntity = RequestEntity.get(schemaStoreUri).accept(MediaType.APPLICATION_JSON).build();
+        ResponseEntity<JsonNode> schemaResponse = restTemplate.exchange(requestEntity, JsonNode.class);
+        if (schemaResponse.getStatusCode() != HttpStatus.OK) {
+            log.error("Failed to retrieve schema from JSON Schema Store: {}", accession);
             throw new SampleValidationException("Failed to retrieve schema from JSON Schema Store");
         }
 

@@ -88,6 +88,14 @@ public class DocumentationHelper {
     return getExampleSampleBuilder().withDomain(getExampleDomain()).build();
   }
 
+  public Sample getExampleSampleWithWebinId() {
+    return getExampleSampleBuilder().withWebinSubmissionAccountId("WEBIN-12345").build();
+  }
+
+  public Sample getExampleSampleWithoutWebinId() {
+    return getExampleSampleBuilder().build();
+  }
+
   public Sample getExampleSampleWithExternalReferences() {
     return getExampleSampleBuilder()
         .addExternalReference(
@@ -127,7 +135,16 @@ public class DocumentationHelper {
     Sample sampleObject = getExampleSampleBuilder().build();
     String domain = getExampleDomain();
 
-    return CurationLink.build(sampleObject.getAccession(), curationObject, domain, Instant.now());
+    return CurationLink.build(
+        sampleObject.getAccession(), curationObject, domain, null, Instant.now());
+  }
+
+  public CurationLink getExampleCurationLinkWithWebinId() {
+    Curation curationObject = getExampleCuration();
+    Sample sampleObject = getExampleSampleBuilder().build();
+
+    return CurationLink.build(
+        sampleObject.getAccession(), curationObject, null, "WEBIN-12345", Instant.now());
   }
 
   public Sample getExampleSampleWithStructuredData() {
@@ -147,7 +164,7 @@ public class DocumentationHelper {
             .withResistancePhenotype("NA")
             .build();
     final AMRTable amrTable =
-        new AMRTable.Builder("test", "self.ExampleDomain")
+        new AMRTable.Builder("test", "self.ExampleDomain", null)
             .withEntries(Arrays.asList(amrEntry))
             .build();
 
@@ -158,7 +175,10 @@ public class DocumentationHelper {
   public Sample getExampleSampleWithStructuredData2() {
     StructuredTable<HistologyEntry> histologyData =
         new StructuredTable.Builder<HistologyEntry>(
-                "www.fake.schema.url", "self.ExampleDomain", StructuredDataType.HISTOLOGY_MARKERS)
+                "www.fake.schema.url",
+                "self.ExampleDomain",
+                null,
+                StructuredDataType.HISTOLOGY_MARKERS)
             .addEntry(
                 new HistologyEntry.Builder()
                     .withMarker(new StructuredCell("Crypt depth", ""))

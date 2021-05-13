@@ -10,8 +10,6 @@
 */
 package uk.ac.ebi.biosamples.solr.service;
 
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -150,8 +148,6 @@ public class SolrFilterService {
     }
 
     // filter out non-public
-    // use a day-based time so the filter is cacheable
-    String dateTime = releaseFilterFormatter.format(ZonedDateTime.now(ZoneOffset.UTC));
     FilterQuery filterQuery = new SimpleFilterQuery();
     Criteria publicSampleCriteria = new Criteria("release_dt").lessThan("NOW/DAY");
     // can use .and("release_dt").isNotNull(); to filter out non-null
@@ -159,8 +155,7 @@ public class SolrFilterService {
 
     if (!domains.isEmpty()) {
       // user can only see private samples inside its own domain
-      // TODO fix integration tests for this
-      // publicSampleCriteria = publicSampleCriteria.or(new Criteria("domain_s").in(domains));
+      publicSampleCriteria = publicSampleCriteria.or(new Criteria("domain_s").in(domains));
     }
 
     filterQuery.addCriteria(publicSampleCriteria);

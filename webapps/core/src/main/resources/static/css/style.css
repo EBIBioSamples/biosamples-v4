@@ -291,6 +291,24 @@ code[class^="language"] {
     margin-top: 1.5rem;
 }
 
+.content-search-download {
+    float: right;
+    margin-top: 1rem;
+    margin-right: 1rem;
+}
+
+.content-search-download-select {
+    width: 120px;
+    height: 30px;
+    float: left;
+    margin-left: 5px;
+}
+
+.content-search-download-button {
+    padding: 0.5em 0.5em;
+    margin-left: 5px;
+}
+
 .biosamples-pagination {
     margin-top: 0.8rem;
 }
@@ -453,4 +471,35 @@ code[class^="language"] {
     background-repeat: no-repeat;
     background-size: 300px 30px;
     background-position: center;
+}
+
+.sample-attribute-table-column {
+    width: 33%;
+    vertical-align: top;
+}
+
+.duo-tooltip .duo-tooltip-text {
+    visibility: hidden;
+    width: 320px;
+    background-color: gray;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    opacity: 90%;
+    position: absolute;
+    z-index: 1;
+}
+
+.duo-tooltip:hover .duo-tooltip-text  {
+    visibility: visible;
+}
+
+.duo-tooltip-text-title {
+    color: #ffa200;
+    font-weight: bold;
+}
+
+.duo-tooltip-text-body {
+    color: #ffffff;
 }

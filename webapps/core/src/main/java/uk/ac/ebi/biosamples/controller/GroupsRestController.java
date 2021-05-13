@@ -61,7 +61,7 @@ public class GroupsRestController {
             .withSubmittedVia(submittedVia)
             .build();
 
-    sample = sampleService.store(sample, true);
+    sample = sampleService.store(sample, true, "");
     Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
         .body(sampleResource);
@@ -83,7 +83,7 @@ public class GroupsRestController {
     sample =
         Sample.Builder.fromSample(sample).withUpdate(update).withSubmittedVia(submittedVia).build();
 
-    sample = sampleService.store(sample, true);
+    sample = sampleService.store(sample, true, "");
     return sampleResourceAssembler.toResource(sample);
   }
 }

@@ -2,11 +2,10 @@
 :last-update-label!:
 :toc:
 
-== Sample Certification and Validation in BioSamples during submission
+== Sample Certification: post-submission
 
 Certification of samples essentially means validation of samples submitted to BioSamples
 against JSON schema checklists.
-Sample certification is done in BioSamples while sample submission and sample updates.
 Samples are validated against available checklists in BioSamples and if the sample get
 successfully validated then the sample is deemed certified and certificate names are
 added to the sample
@@ -171,10 +170,10 @@ version - is the checklist version
 
 fileName - the JSON schema file
 
-== Sample Certification and Validation before submission (validation only)
+== Sample Certification: pre-submission
 
-There is also a provision to validate a sample metadata without really submitting it.
-The validation result will show the below:
+There is also a provision to get compliant certificates without submitting sample data.
+The certification results will list following content
 
 1. JSON schemas against which the sample got validated
 2. Curation plans which indicates if a sample is curated by

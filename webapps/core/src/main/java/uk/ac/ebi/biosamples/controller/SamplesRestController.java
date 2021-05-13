@@ -10,18 +10,18 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,16 +35,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.*;
-import uk.ac.ebi.biosamples.service.certification.CertifyService;
+import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 
@@ -64,32 +66,39 @@ public class SamplesRestController {
   private final SampleService sampleService;
   private final FilterService filterService;
   private final BioSamplesAapService bioSamplesAapService;
+  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final SampleManipulationService sampleManipulationService;
   private final BioSamplesProperties bioSamplesProperties;
   private final SampleResourceAssembler sampleResourceAssembler;
+  private final SchemaValidationService schemaValidationService;
+  private final ENATaxonClientService enaTaxonClientService;
 
   private static final String NCBI_IMPORT_DOMAIN = "self.BiosampleImportNCBI";
   private static final String ENA_IMPORT_DOMAIN = "self.BiosampleImportENA";
 
   private Logger log = LoggerFactory.getLogger(getClass());
 
-  @Autowired private CertifyService certifyService;
-
   public SamplesRestController(
       SamplePageService samplePageService,
       FilterService filterService,
       BioSamplesAapService bioSamplesAapService,
+      BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       SampleResourceAssembler sampleResourceAssembler,
       SampleManipulationService sampleManipulationService,
       SampleService sampleService,
-      BioSamplesProperties bioSamplesProperties) {
+      BioSamplesProperties bioSamplesProperties,
+      SchemaValidationService schemaValidationService,
+      ENATaxonClientService enaTaxonClientService) {
     this.samplePageService = samplePageService;
     this.filterService = filterService;
     this.bioSamplesAapService = bioSamplesAapService;
+    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.sampleResourceAssembler = sampleResourceAssembler;
     this.sampleManipulationService = sampleManipulationService;
     this.sampleService = sampleService;
+    this.schemaValidationService = schemaValidationService;
     this.bioSamplesProperties = bioSamplesProperties;
+    this.enaTaxonClientService = enaTaxonClientService;
   }
 
   // must return a ResponseEntity so that cache headers can be set
@@ -112,11 +121,19 @@ public class SamplesRestController {
 
     int effectivePage;
 
-    effectivePage = Objects.requireNonNullElse(page, 0);
+    if (page == null) {
+      effectivePage = 0;
+    } else {
+      effectivePage = page;
+    }
 
     int effectiveSize;
 
-    effectiveSize = Objects.requireNonNullElse(size, 20);
+    if (size == null) {
+      effectiveSize = 20;
+    } else {
+      effectiveSize = size;
+    }
 
     Collection<Filter> filters = filterService.getFiltersCollection(decodedFilter);
     Collection<String> domains = bioSamplesAapService.getDomains();
@@ -370,12 +387,13 @@ public class SamplesRestController {
     return new Link(builder.toUriString(), rel);
   }
 
-  @PostMapping({MediaType.APPLICATION_JSON_VALUE})
+  @PostMapping(
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE})
   @RequestMapping("/validate")
-  public ResponseEntity<Map> validateSample(@RequestBody Map sampleAsMap) {
-    sampleService.validateSample(sampleAsMap);
-
-    return ResponseEntity.ok(sampleAsMap);
+  public ResponseEntity<Sample> validateSample(@RequestBody Sample sample) {
+    schemaValidationService.validate(sample);
+    return ResponseEntity.ok(sample);
   }
 
   @PreAuthorize("isAuthenticated()")
@@ -384,13 +402,27 @@ public class SamplesRestController {
       produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
   @RequestMapping("/accession")
   public ResponseEntity<Object> accessionSample(
+      HttpServletRequest request,
       @RequestBody Sample sample,
       @RequestParam(name = "preAccessioning", required = false, defaultValue = "false")
-          final boolean preAccessioning) {
+          final boolean preAccessioning,
+      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
+          String authProvider) {
     log.debug("Received POST for accessioning " + sample);
     if (sample.hasAccession()) throw new SampleWithAccessionSumbissionException();
 
-    sample = bioSamplesAapService.handleSampleDomain(sample);
+    if (authProvider.equalsIgnoreCase("WEBIN")) {
+      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
+      final Authentication authentication = bearerTokenExtractor.extract(request);
+      final SubmissionAccount webinAccount =
+          bioSamplesWebinAuthenticationService
+              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+              .getBody();
+
+      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
+    } else {
+      sample = bioSamplesAapService.handleSampleDomain(sample);
+    }
 
     final Instant release =
         Instant.ofEpochSecond(
@@ -413,13 +445,13 @@ public class SamplesRestController {
         return new ResponseEntity<>(
             "Sample already exists, use POST only for new submissions", HttpStatus.BAD_REQUEST);
       } else {
-        sample = sampleService.store(sample, false);
+        sample = sampleService.store(sample, false, authProvider);
         final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
         return ResponseEntity.ok(sampleResource.getContent().getAccession());
       }
     } else {
-      sample = sampleService.store(sample, false);
+      sample = sampleService.store(sample, false, authProvider);
       final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
       return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
@@ -430,34 +462,63 @@ public class SamplesRestController {
   @PreAuthorize("isAuthenticated()")
   @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Resource<Sample>> post(
+      HttpServletRequest request,
       @RequestBody Sample sample,
       @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
-          boolean setFullDetails)
-      throws JsonProcessingException {
-    log.debug("Recieved POST for " + sample);
-    final ObjectMapper jsonMapper = new ObjectMapper();
+          boolean setFullDetails,
+      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
+          String authProvider) {
+    log.debug("Received POST for " + sample);
 
-    if (sample.hasAccession() && !bioSamplesAapService.isWriteSuperUser()) {
-      // Throw an error only if the user is not a super user and is trying to post a sample
-      // with an
-      // accession
-      throw new SampleWithAccessionSumbissionException();
+    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+
+    if (webinAuth) {
+      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
+
+      if (sample.hasAccession()) {
+        throw new SampleWithAccessionSumbissionException();
+      }
+
+      final Authentication authentication = bearerTokenExtractor.extract(request);
+      final SubmissionAccount webinAccount =
+          bioSamplesWebinAuthenticationService
+              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+              .getBody();
+
+      final String webinAccountId = webinAccount.getId();
+
+      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
+
+      final Set<AbstractData> structuredData = sample.getData();
+
+      if (structuredData != null && structuredData.size() > 0) {
+        sample =
+            bioSamplesWebinAuthenticationService.handleStructuredDataWebinUserInData(
+                sample, webinAccountId);
+      }
+    } else {
+      if (sample.hasAccession() && !bioSamplesAapService.isWriteSuperUser()) {
+        // Throw an error only if the user is not a super user and is trying to post a sample
+        // with an
+        // accession
+        throw new SampleWithAccessionSumbissionException();
+      }
+
+      sample = bioSamplesAapService.handleSampleDomain(sample);
+
+      final Set<AbstractData> structuredData = sample.getData();
+
+      if (!(bioSamplesAapService.isWriteSuperUser()
+          || bioSamplesAapService.isIntegrationTestUser())) {
+        if (structuredData != null && structuredData.size() > 0) {
+          sample = bioSamplesAapService.handleStructuredDataDomainInData(sample);
+        }
+      }
     }
-
-    sample = bioSamplesAapService.handleSampleDomain(sample);
 
     // update, create date are system generated fields
     SubmittedViaType submittedVia =
         sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
-
-    final Set<AbstractData> structuredData = sample.getData();
-
-    if (!(bioSamplesAapService.isWriteSuperUser()
-        || bioSamplesAapService.isIntegrationTestUser())) {
-      if (structuredData != null && structuredData.size() > 0) {
-        sample = bioSamplesAapService.handleStructuredDataDomain(sample);
-      }
-    }
 
     sample =
         Sample.Builder.fromSample(sample)
@@ -467,28 +528,24 @@ public class SamplesRestController {
             .withSubmittedVia(submittedVia)
             .build();
 
-    List<Certificate> certificates =
-        certifyService.certify(jsonMapper.writeValueAsString(sample), false);
+    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
+    // Validate all samples submitted with WEBIN AUTH
 
-    sample = Sample.Builder.fromSample(sample).withCertificates(certificates).build();
+    if (sample.getWebinSubmissionAccountId() != null) {
+      schemaValidationService.validate(sample);
+    } else if (!bioSamplesAapService.isWriteSuperUser()) {
+      schemaValidationService.validate(sample);
+    }
+
+    if (webinAuth) {
+      sample = enaTaxonClientService.performTaxonomyValidation(sample);
+    }
 
     if (!setFullDetails) {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
-    /*	//TODO reanable the validation once the AMR schema is defined and we have the actual validator in place
-    if (!sample.getData().isEmpty()) {
-    	Optional<ResponseEntity<String>> optionalInvalidResponse = sample.getData()
-    			.parallelStream()
-    			.map(abstractData -> schemaValidatorService.validate(abstractData.getStructuredData(), abstractData.getSchema()))
-                      .filter(response -> !response.getBody().equalsIgnoreCase("[]"))
-                      .findAny();
-    	if (optionalInvalidResponse.isPresent()) {
-    		throw new SampleWithInvalidStructuredData(optionalInvalidResponse.get().getBody());
-    	}
-    }*/
-
-    sample = sampleService.store(sample, false);
+    sample = sampleService.store(sample, false, authProvider);
 
     // assemble a resource to return
     Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());
@@ -522,6 +579,5 @@ public class SamplesRestController {
   @ResponseStatus(
       value = HttpStatus.BAD_REQUEST,
       reason = "New sample submission should not contain an accession")
-  // 400
   public static class SampleWithAccessionSumbissionException extends RuntimeException {}
 }

@@ -31,13 +31,13 @@ public class NcbiCurationCallable implements Callable<Void> {
 
   private final String accession;
   private final BioSamplesClient bioSamplesClient;
-  private final String domain;
+  private final String webinId;
   private boolean suppressionHandler;
 
-  public NcbiCurationCallable(String accession, BioSamplesClient bioSamplesClient, String domain) {
+  public NcbiCurationCallable(String accession, BioSamplesClient bioSamplesClient, String webinId) {
     this.accession = accession;
     this.bioSamplesClient = bioSamplesClient;
-    this.domain = domain;
+    this.webinId = webinId;
   }
 
   /**
@@ -45,17 +45,17 @@ public class NcbiCurationCallable implements Callable<Void> {
    *
    * @param accession
    * @param bioSamplesClient
-   * @param domain
+   * @param webinId
    * @param suppressionHandler
    */
   public NcbiCurationCallable(
       String accession,
       BioSamplesClient bioSamplesClient,
-      String domain,
+      String webinId,
       boolean suppressionHandler) {
     this.accession = accession;
     this.bioSamplesClient = bioSamplesClient;
-    this.domain = domain;
+    this.webinId = webinId;
     this.suppressionHandler = suppressionHandler;
   }
 
@@ -63,7 +63,7 @@ public class NcbiCurationCallable implements Callable<Void> {
   public Void call() {
     log.trace("HANDLING " + this.accession);
     ExternalReference exRef =
-        ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + this.accession);
+        ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + this.accession);
     Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
 
     try {
@@ -74,7 +74,7 @@ public class NcbiCurationCallable implements Callable<Void> {
         if (bioSamplesClient
             .fetchSampleResource(this.accession, Optional.of(new ArrayList<>()))
             .isPresent()) {
-          bioSamplesClient.persistCuration(this.accession, curation, domain);
+          bioSamplesClient.persistCuration(this.accession, curation, webinId);
         } else {
           log.warn("Unable to find " + this.accession);
         }

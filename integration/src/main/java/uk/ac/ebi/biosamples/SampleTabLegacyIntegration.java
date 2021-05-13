@@ -624,7 +624,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
         client.fetchPagedSampleResource("*:*", Collections.singleton(nameFilter), 0, 1);
 
     Optional<Resource<Sample>> sample = samplePage.getContent().stream().findFirst();
-    if (sample.isEmpty()) {
+    if (!sample.isPresent()) {
       throw new RuntimeException("Can't find sample submitted using sampletab GSB-52.txt");
     }
 
@@ -649,7 +649,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 
     Optional<Resource<Sample>> optionalSampleResource =
         samplePage.getContent().stream().findFirst();
-    if (optionalSampleResource.isEmpty()) {
+    if (!optionalSampleResource.isPresent()) {
       throw new RuntimeException(
           "Can't find sample submitted using sampletab 'sampletab_with_escaped_newline.txt'");
     }

@@ -25,7 +25,8 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 public class NcbiAmrConversionService {
   public AMRTable convertElementToAmrTable(Element amrTableElement, String organism)
       throws AmrParsingException {
-    AMRTable.Builder amrTableBuilder = new AMRTable.Builder("test", "self.BiosampleImportNCBI");
+    AMRTable.Builder amrTableBuilder =
+        new AMRTable.Builder("test", "self.BiosampleImportNCBI", null);
 
     List<String> fields =
         XmlPathBuilder.of(amrTableElement).path("Header").elements("Cell").stream()

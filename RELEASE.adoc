@@ -2,6 +2,116 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+[[v5.1.0]]
+== v5.1.0 Release notes
+=== New Features
+1. JSON Schema store integration with BioSamples
+
+We have integrated the JSON Schema store with BioSamples. JSON Schema store is an application for storing and managing JSON Schemas. All BioSamples’ checklists will be stored and managed in the JSON Schema store. In the future we plan to expose the API with authentication.
+
+2. BioSamples File uploader
+
+We have introduced a new drag and drop style file uploader for bulk uploading of samples. This is mostly intended for our non-programmatic submitters who want to fill in their samples metadata in a file for uploading and persisting samples in BioSamples.
+The drag and drop uploader in BioSamples supports both Webin and AAP authentication. 
+More details on the uploader can be found in a newly added uploader guide. The guide has the required details about the file format, mandatory fields and other pre-conditions. [add link]
+
+3. ENA taxonomy service integration with BioSamples
+
+Samples submitted to BioSamples using ENA Webin authentication are put through additional checks to be compliant with ENA. All ENA samples must have taxonomy information and the taxonomy must be valid against the ENA taxonomy service. In BioSamples we have added a submission time validation of the mandatory organism attribute against the ENA taxonomy service.
+
+4. BioSamples client changes
+
+BioSamples client version 5.1.0 has undergone technical changes to support Webin authentication. The latest version of the client can be used to submit samples, curate samples or certify samples in BioSamples using Webin authentication. 
+
+5. Improved DUO code rendering
+
+Improve DUO codes in Samples page. When the mouse pointer is moved on top of a DUO code, its description will be displayed as a tooltip.
+=== Bug Fixes
+1. Fix Phenopacket export errors when exporting samples with disease related attributes
+
+[[v5.0.7]]
+== v5.0.7 Release notes
+=== Bug Fixes
+1. Re-introduce missing `samples/validate` endpoint
++
+In last release we have removed `samples/validate` endpoint in favour of `validate` endpoint.
+But since most users are using `samples/validate` we will keep this and deprecate in a future release.
+
+2. Support both json and hal+json for accept header
++
+Validate endpoint did not support `hal+json` `accept` header in last release. We will include support for this.
+
+3. Enable ENA to pre-accession samples using WEBIN authentication instead of AAP
++
+ENA will pre-accession samples using a WEBIN super user (prefixed SU-) and the metadata submission will be done by a non super user.
+During metadata submission we will check if the sample has been accessioned by the ENA registered super user and
+if yes then we will allow submission by any general webin user who wants to submit metadata against the accession.
+
+[[v5.0.6]]
+== v5.0.6 Release notes
+=== New features
+1. Authentication
++
+We have added additional authentication support in BioSamples. With this release BioSamples users can authenticate
+using EBML-EBI’s European Nucleotide Archive (ENA) https://www.ebi.ac.uk/ena/submit/webin/auth[WEBIN authentication service].
+This is especially useful for users who intend to submit their sample metadata to BioSamples and sequencing data to ENA as shared,
+identical WEBIN credentials can be used to submit to both BioSamples and ENA.
+BioSamples continues to support the existing AAP authentication mechanism. AAP authentication is the default mode and current
+users using AAP authentication to submit sample metadata to BioSamples are not required to do any changes to their submission routines.
+More information related to authentication could be found https://www.ebi.ac.uk/biosamples/docs/guides/authentication[here].
+
+2. Sample search results bulk download
++
+A new API enables downloading searching and bulk downloading results up to a maximum of 100,000 samples. The API supports
+text search and samples filtering. When search results exceed the maximum allowable download size, only the first 100,000
+samples will be downloaded. Download buttons were also added to the search user interface. Currently this supports downloading
+samples as JSON, XML or accession list only.
+
+3. Validation checklist in samples body (similar to existing ENA checklists)
++
+Samples are validated at submission time. They are by default validated against the biosamples-minimal (ERC100001) checklist.
+Users can additionally provide the name of a known checklist in the sample body; when provided, this is also used for validation.
+If validation fails, the submission will be rejected. This enables users to define their preferred validation checklist at
+submission time. Please refer to the https://www.ebi.ac.uk/biosamples/docs/guides/validation[validation guide] to see available checklists.
+The validation API is also available independently of submission and can be used to validate samples without submitting.
+We have updated our documentation to reflect these changes in https://www.ebi.ac.uk/biosamples/docs/references/api/certify[certification]
+and https://www.ebi.ac.uk/biosamples/docs/references/api/validate[validation].
+
+=== Bug Fixes
+1. Link to new ENA browser - Samples having external reference to ENA were using the old ENA browser links.
+This has now been updated to link to the new ENA browser.
+
+.Example:
+* Old link -  https://www.ebi.ac.uk/ena/data/view/SAMEA5776016
+* New link - https://www.ebi.ac.uk/ena/browser/view/SAMEA5776016
+
+[[v5.0.5]]
+== v5.0.5 Release notes
+=== New features
+1. Private samples are searchable by authenticated users
++
+Previously, private samples were only available for direct retrieval after logging in.
+This release enables searching of private samples through the API by their owner.
+The https://www.ebi.ac.uk/biosamples/docs/guides/search[sample search endpoint] requires a  JWT and returns the private samples the user is authorised for.
+
+=== Bug Fixes
+1. Documentation updates
++
+BioSamples documentation has been updated to remove links to deprecated AAP services.
+Furthermore, the documentation has been improved to distinguish between the dev and production authentication services.
+
+[[v5.0.4]]
+== v5.0.4 Release notes
+=== New Features
+1. Add Plant-MIAPPE checklist to BioSamples' schemas
++
+We have added Plant-MIAPPE checklist into BioSamples' schemas.
+At the sample submission time, certification service will verify if the given sample is in compliance with this checklist.
+If compliant, Plant-MIAPPE compliant certificate will be attached to the sample.
+Please find more about certification and validation in our documentation https://www.ebi.ac.uk/biosamples/docs/references/api/certify[here].
+
+2. Remove holiday notification banner from the website
+
 [[v5.0.3]]
 == v5.0.3 Release notes
 === New Features
@@ -65,7 +175,7 @@ The ENA import pipeline that imports samples from ENA to BioSamples has been mod
 8. BioSamples sample XML view has been modified to include AMR Antibiogram model as well. Please download the XML from the example sample - https://wwwdev.ebi.ac.uk/biosamples/samples/SAMN09711403 to see the XML modelling of AMR data
 
 
-===Bug Fixes:
+===Bug Fixes
 1. Bug fix in EBI search pipeline to not include killed and suppressed samples in the exported data
 2. Bug fix in NCBI samples to avoid 400 bad requests while processing samples that don't have an organism. Certification service rejects samples without an organism
 3. Bug fix in pipelines to deal with HTTP 404 errors while trying to fetch samples with blank curation domain. Pipeline failure avoided in such cases and error logging is improved
