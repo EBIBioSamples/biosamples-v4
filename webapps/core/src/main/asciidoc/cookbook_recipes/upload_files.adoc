@@ -24,7 +24,10 @@ Although ISA-Tab is specifically for Investigation, Study and Assay data, we hav
 
 |Source Name | Source Name can be the name/ID of your investigation, study, assay,
 project or even sample. It can be the ID of the donor as well.
-If you don't have a source name then you can keep it blank. Remember
+Source Name is specifically added as a column to comply with ISA-Tab standards.
+If you don't have a source name then you can keep it blank or add any dummy value.
+The entered value is eventually ignored.
+Remember
 not to miss the tab delimiter even if you are keeping Source Name as blank | Optional
 
 |Sample Name | The name of the sample, mandatory, and expected to be unique
