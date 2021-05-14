@@ -31,7 +31,7 @@ public class Interrogator {
   private ConfigLoader configLoader;
   private ValidatorI validator;
 
-  public Interrogator(ConfigLoader configLoader, @Qualifier("elixirValidator") ValidatorI validator) {
+  public Interrogator(ConfigLoader configLoader, @Qualifier("javaValidator") ValidatorI validator) {
     this.validator = validator;
     this.configLoader = configLoader;
   }

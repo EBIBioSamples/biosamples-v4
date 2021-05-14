@@ -107,6 +107,8 @@ public class ElixirSchemaValidator implements ValidatorI {
                 .encode()
                 .toUri();
 
+        System.out.println("HELLO" + schemaStoreUri.toString());
+
         RequestEntity<Void> requestEntity = RequestEntity.get(schemaStoreUri).accept(MediaType.APPLICATION_JSON).build();
         ResponseEntity<JsonNode> schemaResponse = restTemplate.exchange(requestEntity, JsonNode.class);
         if (schemaResponse.getStatusCode() != HttpStatus.OK) {

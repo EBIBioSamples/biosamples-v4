@@ -36,7 +36,7 @@ public class Certifier {
   private ValidatorI validator;
   private Applicator applicator;
 
-  public Certifier(ConfigLoader configLoader, @Qualifier("elixirValidator") ValidatorI validator, Applicator applicator) {
+  public Certifier(ConfigLoader configLoader, @Qualifier("javaValidator") ValidatorI validator, Applicator applicator) {
     this.validator = validator;
     this.configLoader = configLoader;
     this.applicator = applicator;

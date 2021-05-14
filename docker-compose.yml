@@ -29,7 +29,7 @@ services:
     - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
     - BIOSAMPLES_NEO_URL=bolt://neo4j:7687
     - biosamples.schemaValidator=http://json-schema-validator:3020/validate
-    - biosamples.schemaStore=http://schema-store:8085/api/v2/schemas
+    - biosamples.schemaStore=http://schema-store:8085
     - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
     - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
