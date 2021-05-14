@@ -113,12 +113,10 @@ public class BioSamplesProperties {
   @Value("${biosamples.schema.validator.uri:http://localhost:8085/validate}")
   private URI biosamplesSchemaValidatorServiceUri;
 
-//  @Value("${biosamples.schemaValidator:http://localhost:3020/validate}")
-  @Value("${biosamples.schemaValidator}")
+  @Value("${biosamples.schemaValidator:http://localhost:3020/validate}")
   private String schemaValidator;
 
-//  @Value("${biosamples.schemaStore:http://localhost:8085}")
-  @Value("${biosamples.schemaStore")
+  @Value("${biosamples.schemaStore:http://localhost:8085}")
   private String schemaStore;
 
   @Value("${biosamples.schema.default:ERC100001}")
