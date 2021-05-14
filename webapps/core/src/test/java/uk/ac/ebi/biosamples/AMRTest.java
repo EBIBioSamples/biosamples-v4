@@ -10,8 +10,21 @@
 */
 package uk.ac.ebi.biosamples;
 
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.Charset;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,6 +50,7 @@ import uk.ac.ebi.biosamples.model.structured.amr.AmrPair;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
 import uk.ac.ebi.biosamples.service.SchemaValidationService;
 
 import java.nio.charset.Charset;
@@ -81,6 +95,9 @@ public class AMRTest {
   @MockBean private SampleService sampleService;
 
   @MockBean private SchemaValidationService schemaValidatorService;
+
+  @MockBean
+  ElixirSchemaValidator validator;
 
   private AMREntry getAMREntry() {
     return new AMREntry.Builder()

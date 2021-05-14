@@ -195,7 +195,7 @@
                 <tr th:each = "certificate : ${certificates}">
                     <td th:text="${#strings.defaultString(certificate.name, 'No name available')}"></td>
                     <td th:text="${#strings.defaultString(certificate.version, 'No version available')}"></td>
-                    <td><a th:href="@{'/certificates?certificateName='+${certificate.name}}" download
+                    <td><a th:href="@{${schemaStoreUrl} + '/id?id=' + ${certificate.fileName}}" target="_blank" rel="noopener noreferrer"
                            th:text="${#strings.defaultString(certificate.fileName, 'No file name available')}"></a></td>
                 </tr>
                 </tbody>

@@ -13,6 +13,8 @@ package uk.ac.ebi.biosamples;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.net.URI;
+
 @Component
 public class PipelinesProperties {
 
@@ -66,6 +68,12 @@ public class PipelinesProperties {
 
   @Value("${biosamples.pipelines.copydown.domain:self.BiosampleCopydown}")
   private String copydownDomain;
+
+  @Value("${biosamples.schemaValidator:http://localhost:3020/validate}")
+  private String schemaValidator;
+
+  @Value("${biosamples.schemaStore:http://localhost:8085/api/v2/schemas}")
+  private String schemaStore;
 
   public String getProxyWebinId() {
     return proxyWebinId;
@@ -133,5 +141,13 @@ public class PipelinesProperties {
 
   public String getZooma() {
     return zooma;
+  }
+
+  public String getSchemaValidator() {
+    return schemaValidator;
+  }
+
+  public String getSchemaStore() {
+    return schemaStore;
   }
 }

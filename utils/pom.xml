@@ -22,5 +22,6 @@
 		<module>xml</module>
 		<module>client</module>
 		<module>utils-core</module>
+		<module>validation</module>
 	</modules>
 </project>
