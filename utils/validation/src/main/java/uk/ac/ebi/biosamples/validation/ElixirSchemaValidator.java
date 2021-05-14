@@ -83,11 +83,13 @@ public class ElixirSchemaValidator implements ValidatorI {
 
     public JsonSchema getSchema(String schemaId) {
         URI schemaStoreUri = UriComponentsBuilder
-                .fromUriString(bioSamplesProperties.getSchemaStore() + "/api/v2/schemas/id?id={schemaId}")
+                .fromUriString(bioSamplesProperties.getSchemaStore() + "/api/v2/schemas?id={schemaId}")
                 .build()
                 .expand(schemaId)
                 .encode()
                 .toUri();
+
+        log.info("SCHEMA REPO PATH" + schemaStoreUri);
 
         RequestEntity<Void> requestEntity = RequestEntity.get(schemaStoreUri).accept(MediaType.APPLICATION_JSON).build();
         ResponseEntity<JsonSchema> schemaResponse = restTemplate.exchange(requestEntity, JsonSchema.class);
@@ -108,11 +110,13 @@ public class ElixirSchemaValidator implements ValidatorI {
                 .toUri();
 
         System.out.println("HELLO" + schemaStoreUri.toString());
+        log.info("SCHEMA REPO PATH" + schemaStoreUri);
 
         RequestEntity<Void> requestEntity = RequestEntity.get(schemaStoreUri).accept(MediaType.APPLICATION_JSON).build();
         ResponseEntity<JsonNode> schemaResponse = restTemplate.exchange(requestEntity, JsonNode.class);
         if (schemaResponse.getStatusCode() != HttpStatus.OK) {
             log.error("Failed to retrieve schema from JSON Schema Store: {}", accession);
+            log.error(schemaResponse.toString());
             throw new SampleValidationException("Failed to retrieve schema from JSON Schema Store");
         }
 
