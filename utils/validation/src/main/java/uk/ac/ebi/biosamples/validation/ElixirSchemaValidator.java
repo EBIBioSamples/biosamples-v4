@@ -68,13 +68,17 @@ public class ElixirSchemaValidator implements ValidatorI {
 
         ValidationRequest validationRequest = new ValidationRequest(schema, sampleJson);
         URI validatorUri = URI.create(bioSamplesProperties.getSchemaValidator());
+        log.info("validator uri: " + validatorUri);
         RequestEntity<ValidationRequest> requestEntity = RequestEntity.post(validatorUri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .body(validationRequest);
         JsonNode validationResponse = restTemplate.exchange(requestEntity, JsonNode.class).getBody();
 
+        log.info(validationResponse.asText());
+
         if (validationResponse.get("validationState").asText().equalsIgnoreCase("INVALID")) {
+            log.info(validationResponse.asText());
             throw new SampleValidationException("Sample validation failed: " + validationResponse.get("validationErrors").toString());
         }
 
@@ -109,17 +113,21 @@ public class ElixirSchemaValidator implements ValidatorI {
                 .encode()
                 .toUri();
 
-        System.out.println("HELLO" + schemaStoreUri.toString());
-        log.info("SCHEMA REPO PATH" + schemaStoreUri);
+        System.out.println("HELLO " + schemaStoreUri.toString());
+        log.info("SCHEMA REPO PATH " + schemaStoreUri);
 
         RequestEntity<Void> requestEntity = RequestEntity.get(schemaStoreUri).accept(MediaType.APPLICATION_JSON).build();
         ResponseEntity<JsonNode> schemaResponse = restTemplate.exchange(requestEntity, JsonNode.class);
         if (schemaResponse.getStatusCode() != HttpStatus.OK) {
             log.error("Failed to retrieve schema from JSON Schema Store: {}", accession);
             log.error(schemaResponse.toString());
+            log.info("Error occurred: " + schemaResponse.toString());
             throw new SampleValidationException("Failed to retrieve schema from JSON Schema Store");
         }
 
+
+        log.info(schemaResponse.toString());
+        log.info(schemaResponse.getBody().asText());
         return schemaResponse.getBody();
     }
 }
