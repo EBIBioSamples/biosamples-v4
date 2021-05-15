@@ -77,7 +77,7 @@ public class ElixirSchemaValidator implements ValidatorI {
 
         log.info(validationResponse.asText());
 
-        if (validationResponse.get("validationState").asText().equalsIgnoreCase("INVALID")) {
+        if (!validationResponse.asText().isEmpty() && validationResponse.size() > 0 && validationResponse.get("validationState").asText().equalsIgnoreCase("INVALID")) {
             log.info(validationResponse.asText());
             throw new SampleValidationException("Sample validation failed: " + validationResponse.get("validationErrors").toString());
         }
