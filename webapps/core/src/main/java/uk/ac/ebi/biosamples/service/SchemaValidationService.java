@@ -57,7 +57,8 @@ public class SchemaValidationService {
     } catch (ValidationException | SampleValidationException e) {
       throw new SchemaValidationException("Checklist validation failed: " + e.getMessage(), e);
     } catch (Exception e) {
-      throw new SchemaValidationException("Could not find checklist for " + schemaId, e);
+      log.error("Schema validation error: " + e.getMessage(), e);
+      throw new SchemaValidationException("Checklist validation error: " + e.getMessage(), e);
     }
   }
 }

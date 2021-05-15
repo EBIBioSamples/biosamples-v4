@@ -17,7 +17,18 @@
 				</thead>
                 <tbody>
                     <tr th:each="attribute : ${attributes}" th:with="iriUrl = ${@httpOlsUrlResolutionService.getIriOls(attribute.iri)}">
-                        <td class="sample-attribute-table-column" th:text="${attribute.type}">Attribute Type</td>
+                        <td class="sample-attribute-table-column"
+                            th:if="${not attribute.type.equals('Biosamples inferred disease') and not attribute.type.equals('checklist')}"
+                            th:text="${attribute.type}">Attribute Type
+                        </td>
+                        <td th:if="${attribute.type.equals('Biosamples inferred disease')}">
+                            <a th:href="@{/docs/guides/curation}"
+                               th:text="${attribute.type}"></a>
+                        </td>
+                        <td th:if="${attribute.type.equals('checklist')}">
+                            <a th:href="@{/docs/guides/validation}"
+                               th:text="${attribute.type}"></a>
+                        </td>
 
                         <td
                                 th:if="${not #strings.isEmpty(iriUrl) and #strings.isEmpty(attribute.unit)}"><a
