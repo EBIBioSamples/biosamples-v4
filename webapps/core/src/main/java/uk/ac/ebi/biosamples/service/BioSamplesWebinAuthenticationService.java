@@ -130,7 +130,7 @@ public class BioSamplesWebinAuthenticationService {
     }
   }
 
-  private Sample buildSample(Sample sample, String webinId) {
+  public Sample buildSample(Sample sample, String webinId) {
     return Sample.Builder.fromSample(sample)
         .withWebinSubmissionAccountId(webinId)
         .withNoDomain()
