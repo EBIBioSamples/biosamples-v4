@@ -11,6 +11,18 @@
       "version": "1.2.0",
       "file": "schemas/certification/plant-miappe.json",
       "block": "false"
+    },
+    {
+      "name": "ERC100001(biosamples-minimal)",
+      "version": "0.0.1",
+      "file": "schemas/certification/biosamples-minimal.json",
+      "block": "true"
+    },
+    {
+      "name": "ERC100002(plant-miappe)",
+      "version": "1.2.0",
+      "file": "schemas/certification/plant-miappe.json",
+      "block": "false"
     }
   ],
   "plans": [
