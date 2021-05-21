@@ -664,7 +664,7 @@ public class SamplesRestController {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
-    sample = sampleService.store(sample, false, authProvider);
+    sample = sampleService.store(sample, true, authProvider);
 
     // assemble a resource to return
     Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());

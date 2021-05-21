@@ -250,7 +250,7 @@ public class IsaTabUploadService {
     relationships.forEach(relationship -> log.info(relationship.toString()));
 
     sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
-    sample = sampleService.store(sample, false, true, authProvider);
+    sample = sampleService.store(sample, true, authProvider);
 
     return sample;
   }

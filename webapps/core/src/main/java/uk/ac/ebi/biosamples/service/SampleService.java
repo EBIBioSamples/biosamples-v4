@@ -84,22 +84,24 @@ public class SampleService {
     return solrSampleService.getAutocomplete(autocompletePrefix, filters, noSuggestions);
   }
 
-  public boolean beforeStore(Sample sample) {
-    return beforeStoreCheck(sample);
+  public boolean beforeStore(Sample sample, boolean isWebinSuperUser) {
+    return beforeStoreCheck(sample, isWebinSuperUser);
   }
 
-  private boolean beforeStoreCheck(Sample sample) {
+  private boolean beforeStoreCheck(Sample sample, boolean isWebinSuperUser) {
     boolean firstTimeMetadataAdded;
 
     final String domain = sample.getDomain();
 
-    if (isPipelineEnaOrNcbiDomain(domain))
+    if (isPipelineEnaOrNcbiDomain(domain) || isWebinSuperUser)
       firstTimeMetadataAdded = false; // imported sample - never submitted first time to BSD
     else {
       firstTimeMetadataAdded = isFirstTimeMetadataAddedForNonImportedSamples(sample);
     }
 
-    if (firstTimeMetadataAdded) log.trace("First time metadata added");
+    if (firstTimeMetadataAdded) {
+      log.trace("First time metadata added");
+    }
 
     return firstTimeMetadataAdded;
   }
@@ -110,7 +112,7 @@ public class SampleService {
     if (sample.hasAccession()) {
       MongoSample mongoOldSample = mongoSampleRepository.findOne(sample.getAccession());
       if (mongoOldSample != null) {
-        firstTimeMetadataAdded = isFirstTimeMetadataAdded(firstTimeMetadataAdded, mongoOldSample);
+        firstTimeMetadataAdded = isFirstTimeMetadataAdded(mongoOldSample);
       }
     }
 
@@ -122,7 +124,8 @@ public class SampleService {
   }
 
   private boolean isFirstTimeMetadataAdded(
-      boolean firstTimeMetadataAdded, MongoSample mongoOldSample) {
+          MongoSample mongoOldSample) {
+    boolean firstTimeMetadataAdded = true;
     Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
 
     if (oldSample.getTaxId() != null && oldSample.getTaxId() > 0) {
@@ -349,20 +352,22 @@ public class SampleService {
   }
 
   private Instant defineCreateDate(
-      final Sample sampleToUpdate, final Sample oldSample, String authProvider) {
+          final Sample sampleToUpdate, final Sample oldSample, String authProvider) {
     final String domain = sampleToUpdate.getDomain();
 
-    if (!isWebinAuthorization(authProvider)) {
+    if (isWebinAuthorization(authProvider)) {
+      return (oldSample.getCreate() != null ? oldSample.getCreate() : sampleToUpdate.getCreate());
+    } else {
       if (isPipelineNcbiDomain(domain)) {
         return sampleToUpdate.getCreate() != null
-            ? sampleToUpdate.getCreate()
-            : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
+                ? sampleToUpdate.getCreate()
+                : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
       } else if (isPipelineEnaDomain(domain)) {
         return (oldSample.getCreate() != null) ? oldSample.getCreate() : sampleToUpdate.getCreate();
+      } else {
+        return (oldSample.getCreate() != null ? oldSample.getCreate() : sampleToUpdate.getCreate());
       }
     }
-
-    return (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
   }
 
   public boolean isWebinAuthorization(String authProviderIdentifier) {
@@ -380,27 +385,39 @@ public class SampleService {
   }
 
   private Instant defineSubmittedDate(
-      final Sample sampleToUpdate,
-      final Sample oldSample,
-      boolean isFirstTimeMetadataAdded,
-      String authProvider) {
-    final String domain = sampleToUpdate.getDomain();
+          final Sample sampleToUpdate,
+          final Sample oldSample,
+          boolean isFirstTimeMetadataAdded,
+          String authProvider) {
+    log.info("Is first time metadata added " + isFirstTimeMetadataAdded);
 
-    if (isPipelineNcbiDomain(domain)) {
-      return sampleToUpdate.getSubmitted() != null
-          ? sampleToUpdate.getSubmitted()
-          : (oldSample.getSubmitted() != null ? oldSample.getSubmitted() : oldSample.getCreate());
-    } else if (isPipelineEnaDomain(domain)) {
-      return (oldSample.getSubmitted() != null)
-          ? oldSample.getSubmitted()
-          : sampleToUpdate.getSubmitted();
-    } else {
+    if (isWebinAuthorization(authProvider)) {
       if (isFirstTimeMetadataAdded) {
         return sampleToUpdate.getSubmitted();
       } else {
         return oldSample.getSubmitted() != null
-            ? oldSample.getSubmitted()
-            : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
+                ? oldSample.getSubmitted()
+                : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
+      }
+    } else {
+      final String domain = sampleToUpdate.getDomain();
+
+      if (isPipelineNcbiDomain(domain)) {
+        return sampleToUpdate.getSubmitted() != null
+                ? sampleToUpdate.getSubmitted()
+                : (oldSample.getSubmitted() != null ? oldSample.getSubmitted() : oldSample.getCreate());
+      } else if (isPipelineEnaDomain(domain)) {
+        return (oldSample.getSubmitted() != null)
+                ? oldSample.getSubmitted()
+                : sampleToUpdate.getSubmitted();
+      } else {
+        if (isFirstTimeMetadataAdded) {
+          return sampleToUpdate.getSubmitted();
+        } else {
+          return oldSample.getSubmitted() != null
+                  ? oldSample.getSubmitted()
+                  : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
+        }
       }
     }
   }

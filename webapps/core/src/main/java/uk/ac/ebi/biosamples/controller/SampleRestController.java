@@ -205,6 +205,7 @@ public class SampleRestController {
       @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
           String authProvider) {
     final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+    boolean isWebinSuperUser = false;
 
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
       throw new SampleAccessionMismatchException();
@@ -232,8 +233,10 @@ public class SampleRestController {
 
       final String webinAccountId = webinAccount.getId();
 
+      isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
+
       if (sampleService.isNotExistingAccession(accession)
-          && !bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId)) {
+          && !isWebinSuperUser) {
         throw new SampleAccessionDoesNotExistException();
       }
 
@@ -283,7 +286,7 @@ public class SampleRestController {
       sample = enaTaxonClientService.performTaxonomyValidation(sample);
     }
 
-    final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample);
+    final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, isWebinSuperUser);
 
     if (isFirstTimeMetadataAdded) {
       Instant now = Instant.now();
