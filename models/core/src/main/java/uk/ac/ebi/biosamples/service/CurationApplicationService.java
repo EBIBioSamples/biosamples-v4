@@ -86,8 +86,8 @@ public class CurationApplicationService {
   }
 
   public Sample applyAllCurationToSample(Sample sample, Collection<Curation> curations) {
-
     boolean curationApplied = true;
+
     while (curationApplied && curations.size() > 0) {
       Iterator<Curation> it = curations.iterator();
       curationApplied = false;

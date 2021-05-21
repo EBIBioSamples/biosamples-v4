@@ -168,7 +168,7 @@ public class ETagIntegration extends AbstractIntegration {
             Stream.of(Attribute.build("organism", "Homo Sapiens")).collect(Collectors.toSet()));
 
     client.persistCuration(
-        testSample.getAccession(), sampleCuration, "self.BiosampleIntegrationTest");
+        testSample.getAccession(), sampleCuration, "self.BiosampleIntegrationTest", false);
 
     // Fetch again both the sample and the raw sample, the raw ETAG should match
     rawSampleResponse =

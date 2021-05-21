@@ -148,12 +148,11 @@ public class EnaCallable implements Callable<Void> {
                         .getExternalReferencesPost()
                         .forEach(
                             externalReference -> {
-                              final String externalReferenceUrl = externalReference
-                                      .getUrl();
+                              final String externalReferenceUrl = externalReference.getUrl();
 
-                              if (externalReferenceUrl
-                                  .contains("www.ebi.ac.uk/ena/data/view") || externalReferenceUrl
-                                      .contains("www.ebi.ac.uk/ena/browser/view")) {
+                              if (externalReferenceUrl.contains("www.ebi.ac.uk/ena/data/view")
+                                  || externalReferenceUrl.contains(
+                                      "www.ebi.ac.uk/ena/browser/view")) {
                                 externalRefDuplicateLinks.add(curationLink);
                               }
                             });
@@ -175,7 +174,7 @@ public class EnaCallable implements Callable<Void> {
               Curation enaLinkCuration =
                   Curation.build(null, null, null, Collections.singleton(exRef));
 
-              bioSamplesClient.persistCuration(sampleAccession, enaLinkCuration, webinId);
+              bioSamplesClient.persistCuration(sampleAccession, enaLinkCuration, webinId, true);
               log.info("Updated sample " + sampleAccession + " with ENA link");
             }
           } else {

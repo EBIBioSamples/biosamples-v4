@@ -163,7 +163,7 @@ public class SampleZoomaCallable implements Callable<PipelineResult> {
                   Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 
           // save the curation back in biosamples
-          bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
+          bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
           sample = curationApplicationService.applyCurationToSample(sample, curation);
           curationCount++;
         }

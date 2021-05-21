@@ -31,13 +31,13 @@ public class NcbiCurationCallable implements Callable<Void> {
 
   private final String accession;
   private final BioSamplesClient bioSamplesClient;
-  private final String webinId;
+  private final String domain;
   private boolean suppressionHandler;
 
-  public NcbiCurationCallable(String accession, BioSamplesClient bioSamplesClient, String webinId) {
+  public NcbiCurationCallable(String accession, BioSamplesClient bioSamplesClient, String domain) {
     this.accession = accession;
     this.bioSamplesClient = bioSamplesClient;
-    this.webinId = webinId;
+    this.domain = domain;
   }
 
   /**
@@ -45,17 +45,17 @@ public class NcbiCurationCallable implements Callable<Void> {
    *
    * @param accession
    * @param bioSamplesClient
-   * @param webinId
+   * @param domain
    * @param suppressionHandler
    */
   public NcbiCurationCallable(
       String accession,
       BioSamplesClient bioSamplesClient,
-      String webinId,
+      String domain,
       boolean suppressionHandler) {
     this.accession = accession;
     this.bioSamplesClient = bioSamplesClient;
-    this.webinId = webinId;
+    this.domain = domain;
     this.suppressionHandler = suppressionHandler;
   }
 
@@ -74,7 +74,7 @@ public class NcbiCurationCallable implements Callable<Void> {
         if (bioSamplesClient
             .fetchSampleResource(this.accession, Optional.of(new ArrayList<>()))
             .isPresent()) {
-          bioSamplesClient.persistCuration(this.accession, curation, webinId);
+          bioSamplesClient.persistCuration(this.accession, curation, domain, false);
         } else {
           log.warn("Unable to find " + this.accession);
         }

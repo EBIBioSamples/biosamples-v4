@@ -240,7 +240,8 @@ public class SampleRestController {
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
 
       if (sample.getData() != null && sample.getData().size() > 0) {
-        if (bioSamplesWebinAuthenticationService.checkIfOriginalSampleWebinSubmitter(sample, webinAccountId)) {
+        if (bioSamplesWebinAuthenticationService.checkIfOriginalSampleWebinSubmitter(
+            sample, webinAccountId)) {
           sample = Sample.Builder.fromSample(sample).build();
         } else {
           sample = Sample.Builder.fromSample(sample).withNoData().build();

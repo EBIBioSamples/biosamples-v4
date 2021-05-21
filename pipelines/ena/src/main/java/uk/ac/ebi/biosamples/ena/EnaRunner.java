@@ -102,7 +102,7 @@ public class EnaRunner implements ApplicationRunner {
 
       if (args.getOptionNames().contains("killedRunner")) {
         if (args.getOptionValues("killedRunner").iterator().next().equalsIgnoreCase("false")) {
-          suppressionRunner = false;
+          killedRunner = false;
         }
       }
 
@@ -113,18 +113,18 @@ public class EnaRunner implements ApplicationRunner {
       importEraSamples(fromDate, toDate, sampleToAmrMap);
 
       // Handler to append SRA Accession (ENA accession numbers to samples owned by BioSamples)
-      // importEraBsdAuthoritySamples(fromDate, toDate);
+      importEraBsdAuthoritySamples(fromDate, toDate);
 
       if (suppressionRunner) {
         // handler for suppressed ENA samples
-        // handleSuppressedEnaSamples();
+        handleSuppressedEnaSamples();
         // handler for suppressed NCBI/DDBJ samples
-        // handleSuppressedNcbiDdbjSamples();
+        handleSuppressedNcbiDdbjSamples();
       }
 
       if (killedRunner) {
         // handler for killed ENA samples
-        // handleKilledEnaSamples();
+        handleKilledEnaSamples();
       }
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);
@@ -462,9 +462,7 @@ public class EnaRunner implements ApplicationRunner {
 
       switch (enaStatus) {
         case PUBLIC:
-
         case SUPPRESSED:
-
         case TEMPORARY_SUPPRESSED:
           log.info(
               String.format(
@@ -477,6 +475,7 @@ public class EnaRunner implements ApplicationRunner {
           } else {
             callable = enaCallableFactory.build(sampleAccession, false, false, false, null);
           }
+
           if (executorService == null) {
             try {
               callable.call();
@@ -487,6 +486,7 @@ public class EnaRunner implements ApplicationRunner {
             }
           } else {
             futures.put(sampleAccession, executorService.submit(callable));
+
             try {
               ThreadUtils.checkFutures(futures, 100);
             } catch (ExecutionException e) {
@@ -499,13 +499,11 @@ public class EnaRunner implements ApplicationRunner {
           break;
 
         case KILLED:
-
         case TEMPORARY_KILLED:
           log.info(
               String.format(
-                  "%s would be handled as status is %s", sampleAccession, enaStatus.name()));
+                  "%s would not be handled as status is %s", sampleAccession, enaStatus.name()));
           break;
-
         default:
           log.info(
               String.format(

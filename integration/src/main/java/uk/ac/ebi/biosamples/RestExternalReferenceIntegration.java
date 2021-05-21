@@ -55,7 +55,8 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
             null,
             Collections.singletonList(
                 ExternalReference.build("http://www.ebi.ac.uk/ena/ERA123456"))),
-        "self.BiosampleIntegrationTest");
+        "self.BiosampleIntegrationTest",
+        false);
   }
 
   @Override

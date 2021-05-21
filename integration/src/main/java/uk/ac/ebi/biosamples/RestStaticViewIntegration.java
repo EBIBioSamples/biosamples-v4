@@ -122,7 +122,8 @@ public class RestStaticViewIntegration extends AbstractIntegration {
     client.persistCuration(
         test2.getAccession(),
         Curation.build(attributesPre, attributesPost, null, null),
-        defaultIntegrationSubmissionDomain);
+        defaultIntegrationSubmissionDomain,
+        false);
 
     attributesPre = new HashSet<>();
     attributesPre.add(Attribute.build("organism", "Homo sapiens"));
@@ -133,7 +134,8 @@ public class RestStaticViewIntegration extends AbstractIntegration {
     client.persistCuration(
         test2.getAccession(),
         Curation.build(attributesPre, attributesPost, null, null),
-        defaultIntegrationSubmissionDomain);
+        defaultIntegrationSubmissionDomain,
+        false);
 
     SortedSet<Relationship> relationships = new TreeSet<>();
     relationships.add(

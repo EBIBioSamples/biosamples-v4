@@ -32,7 +32,9 @@ public class SchemaValidationService {
   private final ValidatorI validator;
 
   public SchemaValidationService(
-      ObjectMapper mapper, BioSamplesProperties bioSamplesProperties, @Qualifier("elixirValidator") ValidatorI validator) {
+      ObjectMapper mapper,
+      BioSamplesProperties bioSamplesProperties,
+      @Qualifier("elixirValidator") ValidatorI validator) {
     this.objectMapper = mapper;
     this.bioSamplesProperties = bioSamplesProperties;
     this.validator = validator;
@@ -41,11 +43,7 @@ public class SchemaValidationService {
   public String validate(Sample sample) {
     String schemaId =
         sample.getCharacteristics().stream()
-            .filter(
-                s ->
-                    s.getType()
-                        .equalsIgnoreCase(
-                            "checklist"))
+            .filter(s -> s.getType().equalsIgnoreCase("checklist"))
             // to search
             .findFirst()
             .map(Attribute::getValue)

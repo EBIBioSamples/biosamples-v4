@@ -109,7 +109,8 @@ public class RestCurationIntegration extends AbstractIntegration {
     client.persistCuration(
         sample.getAccession(),
         Curation.build(attributesPre, attributesPost, null, null),
-        "self.BiosampleIntegrationTest");
+        "self.BiosampleIntegrationTest",
+        false);
 
     attributesPre = new HashSet<>();
     attributesPre.add(Attribute.build("Organism", "Homo sapiens"));
@@ -120,7 +121,8 @@ public class RestCurationIntegration extends AbstractIntegration {
     client.persistCuration(
         sample.getAccession(),
         Curation.build(attributesPre, attributesPost, null, null),
-        "self.BiosampleIntegrationTest");
+        "self.BiosampleIntegrationTest",
+        false);
 
     attributesPre = new HashSet<>();
     attributesPre.add(Attribute.build("Weird", "\"\""));
@@ -128,7 +130,8 @@ public class RestCurationIntegration extends AbstractIntegration {
     client.persistCuration(
         sample.getAccession(),
         Curation.build(attributesPre, attributesPost, null, null),
-        "self.BiosampleIntegrationTest");
+        "self.BiosampleIntegrationTest",
+        false);
 
     // test alternative domain interpretations
     attributesPre = new HashSet<>();
@@ -138,7 +141,8 @@ public class RestCurationIntegration extends AbstractIntegration {
     client.persistCuration(
         sample.getAccession(),
         Curation.build(attributesPre, attributesPost, null, null),
-        "self.BiosampleIntegrationTest");
+        "self.BiosampleIntegrationTest",
+        false);
 
     attributesPre = new HashSet<>();
     attributesPre.add(Attribute.build("CurationDomain", "original"));
@@ -147,7 +151,8 @@ public class RestCurationIntegration extends AbstractIntegration {
     client.persistCuration(
         sample.getAccession(),
         Curation.build(attributesPre, attributesPost, null, null),
-        "self.BiosampleIntegrationTestAlternative");
+        "self.BiosampleIntegrationTestAlternative",
+        false);
 
     Set<Relationship> relationshipsPre = new HashSet<>();
     Set<Relationship> relationshipsPost = new HashSet<>();
@@ -156,7 +161,8 @@ public class RestCurationIntegration extends AbstractIntegration {
     client.persistCuration(
         sample.getAccession(),
         Curation.build(null, null, null, null, relationshipsPre, relationshipsPost),
-        "self.BiosampleIntegrationTestAlternative");
+        "self.BiosampleIntegrationTestAlternative",
+        false);
   }
 
   @Override
@@ -214,7 +220,8 @@ public class RestCurationIntegration extends AbstractIntegration {
     client.persistCuration(
         sample3.getAccession(),
         Curation.build(null, null, null, null, relationshipsPre, relationshipsPost),
-        "self.BiosampleIntegrationTestAlternative");
+        "self.BiosampleIntegrationTestAlternative",
+        false);
   }
 
   @Override

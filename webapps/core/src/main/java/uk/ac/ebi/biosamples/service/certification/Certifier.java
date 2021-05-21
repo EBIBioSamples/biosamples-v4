@@ -24,7 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.ac.ebi.biosamples.model.certification.*;
-import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
 import uk.ac.ebi.biosamples.validation.ValidatorI;
 
 @Service
@@ -36,7 +35,10 @@ public class Certifier {
   private ValidatorI validator;
   private Applicator applicator;
 
-  public Certifier(ConfigLoader configLoader, @Qualifier("javaValidator") ValidatorI validator, Applicator applicator) {
+  public Certifier(
+      ConfigLoader configLoader,
+      @Qualifier("javaValidator") ValidatorI validator,
+      Applicator applicator) {
     this.validator = validator;
     this.configLoader = configLoader;
     this.applicator = applicator;
