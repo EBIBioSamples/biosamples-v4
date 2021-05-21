@@ -13,10 +13,9 @@ package uk.ac.ebi.biosamples.certification.service;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Collections;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,8 +53,8 @@ public class FileRecorderTest {
   @Qualifier("nullRecorder")
   @Autowired
   private Recorder recorder;
-  @MockBean
-  ElixirSchemaValidator validator;
+
+  @MockBean ElixirSchemaValidator validator;
 
   @Test
   public void given_certificate_save_to_file() throws IOException {

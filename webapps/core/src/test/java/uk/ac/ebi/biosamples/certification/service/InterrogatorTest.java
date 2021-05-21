@@ -12,12 +12,10 @@ package uk.ac.ebi.biosamples.certification.service;
 
 import static org.junit.Assert.assertEquals;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Collections;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,12 +48,9 @@ import uk.ac.ebi.biosamples.validation.ValidatorI;
     },
     properties = {"job.autorun.enabled=false"})
 public class InterrogatorTest {
-  @Autowired
-  private Interrogator interrogator;
-  @Autowired
-  private ConfigLoader configLoader;
-  @MockBean
-  ElixirSchemaValidator validator;
+  @Autowired private Interrogator interrogator;
+  @Autowired private ConfigLoader configLoader;
+  @MockBean ElixirSchemaValidator validator;
 
   @Test
   public void given_ncbi_sample_return_ncbi_checklist_as_a_match() throws IOException {

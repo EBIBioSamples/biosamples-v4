@@ -15,12 +15,11 @@ import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,10 +51,8 @@ import uk.ac.ebi.biosamples.validation.ValidatorI;
     },
     properties = {"job.autorun.enabled=false"})
 public class CuratorTest {
-  @Autowired
-  private Curator curator;
-  @MockBean
-  ElixirSchemaValidator validator;
+  @Autowired private Curator curator;
+  @MockBean ElixirSchemaValidator validator;
 
   @Test
   public void given_ChecklistMatches_run_curation_plans() throws Exception {

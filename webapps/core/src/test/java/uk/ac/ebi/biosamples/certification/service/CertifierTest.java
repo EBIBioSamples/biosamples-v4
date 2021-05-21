@@ -18,7 +18,6 @@ import java.util.Collections;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -52,12 +51,9 @@ import uk.ac.ebi.biosamples.validation.ValidatorI;
     },
     properties = {"job.autorun.enabled=false"})
 public class CertifierTest {
-  @Autowired
-  private Certifier certifier;
-  @Autowired
-  private CertifyService certifyService;
-  @MockBean
-  ElixirSchemaValidator validator;
+  @Autowired private Certifier certifier;
+  @Autowired private CertifyService certifyService;
+  @MockBean ElixirSchemaValidator validator;
 
   @Test
   public void given_valid_plan_result_issue_certificate() throws Exception {

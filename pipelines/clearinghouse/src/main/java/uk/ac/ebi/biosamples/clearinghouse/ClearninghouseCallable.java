@@ -91,7 +91,7 @@ public class ClearninghouseCallable implements Callable<PipelineResult> {
             final Curation curation = Curation.build(null, attributePost);
 
             LOG.info("New curation found {}, {}", sample.getAccession(), curation);
-            bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
+            bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
 
             appliedCurations++;
             curationAccepted = true;
@@ -110,7 +110,7 @@ public class ClearninghouseCallable implements Callable<PipelineResult> {
               final Curation curation = Curation.build(sampleAttribute, attributePost);
 
               LOG.info("New curation found {}, {}", sample.getAccession(), curation);
-              bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
+              bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
 
               appliedCurations++;
               curationAccepted = true;

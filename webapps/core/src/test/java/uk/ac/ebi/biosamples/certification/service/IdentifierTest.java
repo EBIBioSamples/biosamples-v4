@@ -12,9 +12,8 @@ package uk.ac.ebi.biosamples.certification.service;
 
 import static junit.framework.TestCase.assertTrue;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,10 +46,8 @@ import uk.ac.ebi.biosamples.validation.ValidatorI;
     },
     properties = {"job.autorun.enabled=false"})
 public class IdentifierTest {
-  @Autowired
-  private Identifier identifier;
-  @MockBean
-  ElixirSchemaValidator validator;
+  @Autowired private Identifier identifier;
+  @MockBean ElixirSchemaValidator validator;
 
   @Test
   public void given_ncbi_sample_return_sample() throws IOException {

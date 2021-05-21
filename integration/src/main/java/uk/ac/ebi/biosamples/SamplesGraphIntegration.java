@@ -10,6 +10,7 @@
 */
 package uk.ac.ebi.biosamples;
 
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
@@ -21,8 +22,6 @@ import uk.ac.ebi.biosamples.neo4j.model.GraphSearchQuery;
 import uk.ac.ebi.biosamples.neo4j.model.NeoSample;
 import uk.ac.ebi.biosamples.neo4j.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
-
-import java.util.*;
 
 @Component
 public class SamplesGraphIntegration extends AbstractIntegration {
