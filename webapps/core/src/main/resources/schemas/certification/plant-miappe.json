@@ -58,27 +58,27 @@
           "$ref": "#/definitions/attribute_value_list"
         },
         "biological material ID": {
-          "description": "(DM-41) Code used to identify the biological material in the data file. Should be unique within the prjoect. Can correspond to experimental plant ID, seed lot ID, etc… (ex: INRA:inra_kernel_2351; Rothamsted:rres_GK090847)",
+          "description": "(DM-41) Code used to identify the biological material in the data file. Should be unique within the project. Can correspond to experimental plant ID, seed lot ID, etc… (ex: INRA:inra_kernel_2351, Rothamsted:rres_GK090847)",
           "cardinality": "mandatory",
           "$ref": "#/definitions/attribute_value_list"
         },
         "organism": {
-          "description": "(DM-42) An identifier for the organism at the species level. Use of the NCBI taxon ID is recommended.",
+          "description": "(DM-42) An identifier for the organism at the species level. Use of the NCBI taxon ID is recommended (ex: NCBITAXON:4577).",
           "cardinality": "mandatory",
           "$ref": "#/definitions/attribute_value_list"
         },
         "genus": {
-          "description": "(DM-43) Genus name for the organism under study, according to standard scientific nomenclature.",
+          "description": "(DM-43) Genus name for the organism under study, according to standard scientific nomenclature (ex: Zea, Solanum).",
           "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "species": {
-          "description": "(DM-44) Species name (formally: specific epithet) for the organism under study, according to standard scientific nomenclature.",
+          "description": "(DM-44) Species name (formally: specific epithet) for the organism under study, according to standard scientific nomenclature (ex: mays, lycosperium x pennellii).",
           "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "infraspecific name": {
-          "description": "(DM-44) Name of any subtaxa level, including variety, crossing name, etc. It can be used to store any additional taxonomic identifier. Either free text description or key-value pair list format (the key is the name of the rank and the value is the value of  the rank). Ranks can be among the following terms: subspecies, cultivar, variety, subvariety, convariety, group, subgroup, hybrid, line, form, subform. For MCPD compliance, the following abbreviations are allowed: ‘subsp.’ (subspecies); ‘convar.’ (convariety); ‘var.’ (variety); ‘f.’ (form); ‘Group’ (cultivar group).",
+          "description": "(DM-44) Name of any subtaxa level, including variety, crossing name, etc. It can be used to store any additional taxonomic identifier. Either free text description or key-value pair list format (the key is the name of the rank and the value is the value of  the rank). Ranks can be among the following terms: subspecies, cultivar, variety, subvariety, convariety, group, subgroup, hybrid, line, form, subform. For MCPD compliance, the following abbreviations are allowed: ‘subsp.’ (subspecies); ‘convar.’ (convariety); ‘var.’ (variety); ‘f.’ (form); ‘Group’ (cultivar group) (ex: vinifera Pinot noir, B73, subspecies:vinifera ; cultivar:Pinot noir).",
           "cardinality": "recommended",
           "$ref": "#/definitions/attribute_value_list"
         },
@@ -88,7 +88,7 @@
           "$ref": "#/definitions/attribute_value_list"
         },
         "biological material latitude": {
-          "description": "(DM-45) Latitude of the studied biological material. [Alternative identifier for in situ material]",
+          "description": "(DM-45) Latitude of the studied biological material (ex: +39.067). [Alternative identifier for in situ material]",
           "cardinality": "optional",
           "allOf": [
             {
@@ -100,7 +100,7 @@
           ]
         },
         "biological material longitude": {
-          "description": "(DM-46) Longitude of the studied biological material. [Alternative identifier for in situ material]",
+          "description": "(DM-46) Longitude of the studied biological material (ex: -8.73). [Alternative identifier for in situ material]",
           "cardinality": "optional",
           "allOf": [
             {
@@ -112,32 +112,72 @@
           ]
         },
         "biological material altitude": {
-          "description": "(DM-47) Altitude of the studied biological material, provided in meters (m). [Alternative identifier for in situ material]",
+          "description": "(DM-47) Altitude of the studied biological material, provided in meters (m) (ex: 10m). [Alternative identifier for in situ material]",
           "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "biological material coordinates uncertainty": {
-          "description": "(DM-48) Circular uncertainty of the coordinates, preferably provided in meters (m). [Alternative identifier for in situ material]",
+          "description": "(DM-48) Circular uncertainty of the coordinates, preferably provided in meters (m) (ex: 200m). [Alternative identifier for in situ material]",
           "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "biological material geographic location": {
-          "description": "The geographical origin of the biological material as defined by the country or sea name followed by specific region name. Country or sea names should be chosen from the INSDC country list (http://insdc.org/country.html), or the GAZ ontology (v 1.512) (http://purl.bioontology.org/ontology/GAZ)",
+          "description": "The geographical origin of the biological material as defined by the country or sea name followed by specific region name. Country or sea names should be chosen from the INSDC country list (http://insdc.org/country.html), or the GAZ ontology (v 1.512) (http://purl.bioontology.org/ontology/GAZ) (ex: Germany:Sylt:Hausstrand).",
           "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "biological material preprocessing": {
-          "description": "(DM-49) Biological material preprocessing.",
+          "description": "(DM-49) Description of any process or treatment applied uniformly to the biological material, prior to the study itself. Can be provided as free text or as an accession number from a suitable controlled vocabulary (ex: EO:0007210 - PVY(NTN), transplanted from study http://phenome-fppn.fr/maugio/2013/t2351 observation unit ID: pot:894).",
           "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
+          "sex": {
+          "description": "Sex of the organism from which the sample was obtained.",
+          "cardinality": "optional",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "environment (biome)": {
+          "description": "Biomes are defined based on factors such as plant structures, leaf types, plant spacing, and other factors like climate. Biome should be treated as the descriptor of the broad ecological context of a sample. Examples include: desert, taiga, deciduous woodland, or coral reef. EnvO (v 2013-06-14) terms can be found via the link: www.environmentontology.org/Browse-EnvO",
+          "cardinality": "optional",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "environment parameter": {
+          "description": "(DM-58) Name of the environment parameter constant within the experiment (ex: sowing density, rooting medium composition; pH).",
+          "cardinality": "optional",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "environment parameter value": {
+          "description": "(DM-59) Value of the environment parameter (defined above) constant within the experiment (ex: 300 seeds per m2, Clay 50% plus sand; 6.5).",
+          "cardinality": "optional",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "plant structure development stage": {
+          "description": "(DM-77) The stage in the life of a plant structure during which the sample was taken, in the form of an accession number to a suitable controlled vocabulary (Plant Ontology, BBCH scale) (ex: PO:0025094, BBCH-17).",
+          "cardinality": "optional",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "plant anatomical entity": {
+          "description": "(DM-78) A description of  the plant part (e.g. leaf) or the plant product (e.g. resin) from which the sample was taken, in the form of an accession number to a suitable controlled vocabulary (Plant Ontology) (ex: PO:0000003, PO:0025161).",
+          "cardinality": "optional",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "sample description": {
+          "description": "(DM-79) Any information not captured by the other sample fields, including quantification, sample treatments and processing (ex: Distal part of the leaf ; 100 mg of roots taken from 10 roots at 20°C, conserved in vacuum at 20 mM NaCl salinity, stored at -60 °C to -85 °C.).",
+          "cardinality": "recommended",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "sample ID": {
+          "description": "(DM-76) Unique identifier for the sample (ex: CEA:BE00034067).",
+          "cardinality": "recommended",
+          "$ref": "#/definitions/attribute_value_list"
+        },
         "material source ID": {
-          "description": "(DM-50) An identifier for the source of the biological material, in the form of a key-value pair comprising the name/identifier of the repository from which the material was sourced plus the accession number of the repository for that material. Where an accession number has not been assigned, but the material has been derived from the crossing of known accessions, the material can be defined as follows: 'mother_accession X father_accession', or, if father is unknown, as 'mother_accession X UNKNOWN'. For in situ material, the region of provenance may be used when an accession is not available.",
+          "description": "(DM-50) An identifier for the source of the biological material, in the form of a key-value pair comprising the name/identifier of the repository from which the material was sourced plus the accession number of the repository for that material. Where an accession number has not been assigned, but the material has been derived from the crossing of known accessions, the material can be defined as follows: 'mother_accession X father_accession', or, if father is unknown, as 'mother_accession X UNKNOWN'. For in situ material, the region of provenance may be used when an accession is not available (ex: INRA:W95115_inra, ICNF:PNB-RPI).",
           "cardinality": "recommended",
           "$ref": "#/definitions/attribute_value_list"
         },
         "material source DOI": {
-          "description": "(DM-51) Digital Object Identifier (DOI) of the material source.",
+          "description": "(DM-51) Digital Object Identifier (DOI) of the material source (ex: doi:10.15454/1.4658436467893904E12).",
           "cardinality": "recommended",
           "$ref": "#/definitions/attribute_value_list",
           "allOf": [
@@ -155,7 +195,7 @@
           ]
         },
         "material source latitude": {
-          "description": "(DM-52) Latitude of the material source. [Alternative identifier for in situ material]",
+          "description": "(DM-52) Latitude of the material source (ex: +39.067). [Alternative identifier for in situ material]",
           "cardinality": "optional",
           "allOf": [
             {
@@ -167,7 +207,7 @@
           ]
         },
         "material source longitude": {
-          "description": "(DM-53) Longitude of the material source. [Alternative identifier for in situ material]",
+          "description": "(DM-53) Longitude of the material source (ex: -8.73). [Alternative identifier for in situ material]",
           "cardinality": "optional",
           "allOf": [
             {
@@ -179,27 +219,27 @@
           ]
         },
         "material source altitude": {
-          "description": "(DM-54) Altitude of the material source, provided in metres (m). [Alternative identifier for in situ material]",
+          "description": "(DM-54) Altitude of the material source, provided in metres (m) (ex: 10m). [Alternative identifier for in situ material]",
           "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "material source coordinates uncertainty": {
-          "description": "(DM-55) Circular uncertainty of the coordinates, provided in meters (m). [Alternative identifier for in situ material]",
+          "description": "(DM-55) Circular uncertainty of the coordinates, provided in meters (m) (ex: 200m). [Alternative identifier for in situ material]",
           "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "material source description": {
-          "description": "(DM-56) Description of the material source.",
+          "description": "(DM-56) Description of the material source. (ex: Branches were collected from a 10-year-old tree growing in a progeny trial established in a loamy brown earth soil.).",
           "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "material source geographic location": {
-          "description": "The geographical origin of the material source as defined by the country or sea name followed by specific region name. Country or sea names should be chosen from the INSDC country list (http://insdc.org/country.html), or the GAZ ontology (v 1.512) (http://purl.bioontology.org/ontology/GAZ)",
+          "description": "The geographical origin of the material source as defined by the country or sea name followed by specific region name. Country or sea names should be chosen from the INSDC country list (http://insdc.org/country.html), or the GAZ ontology (v 1.512) (http://purl.bioontology.org/ontology/GAZ) (ex: Germany:Sylt:Hausstrand).",
           "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "biological material ploidy": {
-          "description": "The ploidy level of the genome (e.g. allopolyploid, haploid, diploid, triploid, tetraploid). It has implications for the downstream study of duplicated gene and regions of the genomes (and perhaps for difficulties in assembly). For terms, please select terms listed under class ploidy (PATO:001374) of Phenotypic Quality Ontology (PATO), and for a browser of PATO (v 2013-10-28) please refer to http://purl.bioontology.org/ontology/PATO",
+          "description": "The ploidy level of the genome (e.g. allopolyploid, haploid, diploid, triploid, tetraploid). It has implications for the downstream study of duplicated gene and regions of the genomes (and perhaps for difficulties in assembly). For terms, please select terms listed under class ploidy (PATO:001374) of Phenotypic Quality Ontology (PATO), and for a browser of PATO (v 2013-10-28) please refer to http://purl.bioontology.org/ontology/PATO (ex: allopolyploid, polyploid).",
           "cardinality": "recommended",
           "$ref": "#/definitions/attribute_value_list"
         },
@@ -210,46 +250,6 @@
         },
         "collection date": {
           "description": "The date of sampling, either as an instance (single point in time) or interval. In case no exact time is available, the date/time can be right truncated i.e. all of these are valid ISO8601 compliant times: 2008-01-23T19:23:10+00:00; 2008-01-23T19:23:10; 2008-01-23; 2008-01; 2008.",
-          "cardinality": "optional",
-          "$ref": "#/definitions/attribute_value_list"
-        },
-        "sex": {
-          "description": "Sex of the organism from which the sample was obtained.",
-          "cardinality": "optional",
-          "$ref": "#/definitions/attribute_value_list"
-        },
-        "environment (biome)": {
-          "description": "Biomes are defined based on factors such as plant structures, leaf types, plant spacing, and other factors like climate. Biome should be treated as the descriptor of the broad ecological context of a sample. Examples include: desert, taiga, deciduous woodland, or coral reef. EnvO (v 2013-06-14) terms can be found via the link: www.environmentontology.org/Browse-EnvO",
-          "cardinality": "optional",
-          "$ref": "#/definitions/attribute_value_list"
-        },
-        "plant structure development stage": {
-          "description": "(DM-77) The stage in the life of a plant structure during which the sample was taken, in the form of an accession number to a suitable controlled vocabulary (Plant Ontology, BBCH scale).",
-          "cardinality": "optional",
-          "$ref": "#/definitions/attribute_value_list"
-        },
-        "plant anatomical entity": {
-          "description": "(DM-78) A description of  the plant part (e.g. leaf) or the plant product (e.g. resin) from which the sample was taken, in the form of an accession number to a suitable controlled vocabulary (Plant Ontology).",
-          "cardinality": "optional",
-          "$ref": "#/definitions/attribute_value_list"
-        },
-        "sample description": {
-          "description": "(DM-79) Any information not captured by the other sample fields, including quantification, sample treatments and processing.",
-          "cardinality": "recommended",
-          "$ref": "#/definitions/attribute_value_list"
-        },
-        "sample ID": {
-          "description": "(DM-76) Unique identifier for the sample.",
-          "cardinality": "recommended",
-          "$ref": "#/definitions/attribute_value_list"
-        },
-        "environment parameter": {
-          "description": "(DM-58) Name of the environment parameter constant within the experiment.",
-          "cardinality": "optional",
-          "$ref": "#/definitions/attribute_value_list"
-        },
-        "environment parameter value": {
-          "description": "(DM-59) Value of the environment parameter (defined above) constant within the experiment.",
           "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         }
