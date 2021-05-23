@@ -34,6 +34,7 @@ public class NcbiCurationCallableFactory {
    * @return the callable, {@link NcbiCurationCallable}
    */
   public NcbiCurationCallable build(String accession, int statusId, boolean suppressionHandler) {
-    return new NcbiCurationCallable(accession, statusId, bioSamplesClient, domain, suppressionHandler);
+    return new NcbiCurationCallable(
+        accession, statusId, bioSamplesClient, domain, suppressionHandler);
   }
 }

@@ -123,8 +123,7 @@ public class SampleService {
     return isPipelineEnaDomain(domain) || isPipelineNcbiDomain(domain);
   }
 
-  private boolean isFirstTimeMetadataAdded(
-          MongoSample mongoOldSample) {
+  private boolean isFirstTimeMetadataAdded(MongoSample mongoOldSample) {
     boolean firstTimeMetadataAdded = true;
     Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
 
@@ -352,7 +351,7 @@ public class SampleService {
   }
 
   private Instant defineCreateDate(
-          final Sample sampleToUpdate, final Sample oldSample, String authProvider) {
+      final Sample sampleToUpdate, final Sample oldSample, String authProvider) {
     final String domain = sampleToUpdate.getDomain();
 
     if (isWebinAuthorization(authProvider)) {
@@ -360,8 +359,8 @@ public class SampleService {
     } else {
       if (isPipelineNcbiDomain(domain)) {
         return sampleToUpdate.getCreate() != null
-                ? sampleToUpdate.getCreate()
-                : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
+            ? sampleToUpdate.getCreate()
+            : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
       } else if (isPipelineEnaDomain(domain)) {
         return (oldSample.getCreate() != null) ? oldSample.getCreate() : sampleToUpdate.getCreate();
       } else {
@@ -385,36 +384,36 @@ public class SampleService {
   }
 
   private Instant defineSubmittedDate(
-          final Sample sampleToUpdate,
-          final Sample oldSample,
-          boolean isFirstTimeMetadataAdded,
-          String authProvider) {
+      final Sample sampleToUpdate,
+      final Sample oldSample,
+      boolean isFirstTimeMetadataAdded,
+      String authProvider) {
     if (isWebinAuthorization(authProvider)) {
       if (isFirstTimeMetadataAdded) {
         return sampleToUpdate.getSubmitted();
       } else {
         return oldSample.getSubmitted() != null
-                ? oldSample.getSubmitted()
-                : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
+            ? oldSample.getSubmitted()
+            : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
       }
     } else {
       final String domain = sampleToUpdate.getDomain();
 
       if (isPipelineNcbiDomain(domain)) {
         return sampleToUpdate.getSubmitted() != null
-                ? sampleToUpdate.getSubmitted()
-                : (oldSample.getSubmitted() != null ? oldSample.getSubmitted() : oldSample.getCreate());
+            ? sampleToUpdate.getSubmitted()
+            : (oldSample.getSubmitted() != null ? oldSample.getSubmitted() : oldSample.getCreate());
       } else if (isPipelineEnaDomain(domain)) {
         return (oldSample.getSubmitted() != null)
-                ? oldSample.getSubmitted()
-                : sampleToUpdate.getSubmitted();
+            ? oldSample.getSubmitted()
+            : sampleToUpdate.getSubmitted();
       } else {
         if (isFirstTimeMetadataAdded) {
           return sampleToUpdate.getSubmitted();
         } else {
           return oldSample.getSubmitted() != null
-                  ? oldSample.getSubmitted()
-                  : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
+              ? oldSample.getSubmitted()
+              : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
         }
       }
     }
