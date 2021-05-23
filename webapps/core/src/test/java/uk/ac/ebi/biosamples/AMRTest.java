@@ -221,7 +221,7 @@ public class AMRTest {
     when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
     when(bioSamplesAapService.handleStructuredDataDomainInData(any(Sample.class)))
         .thenReturn(testSample);
-    when(sampleService.store(testSample, false, "AAP")).thenReturn(testSample);
+    when(sampleService.store(testSample, true, "AAP")).thenReturn(testSample);
 
     mockMvc
         .perform(post("/samples").contentType(MediaType.APPLICATION_JSON_VALUE).content(json))
@@ -271,7 +271,7 @@ public class AMRTest {
         .thenReturn(testSample);
 
     ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
-    when(sampleService.store(generatedSample.capture(), eq(false), eq("AAP")))
+    when(sampleService.store(generatedSample.capture(), eq(true), eq("AAP")))
         .thenReturn(testSample);
 
     mockMvc.perform(post("/samples").contentType(MediaType.APPLICATION_JSON_VALUE).content(json));
@@ -329,7 +329,7 @@ public class AMRTest {
         .thenReturn(testSample);
 
     ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
-    when(sampleService.store(generatedSample.capture(), eq(false), eq("WEBIN")))
+    when(sampleService.store(generatedSample.capture(), eq(true), eq("WEBIN")))
         .thenReturn(testSample);
 
     mockMvc.perform(

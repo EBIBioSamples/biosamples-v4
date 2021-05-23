@@ -33,7 +33,9 @@ public class EnaCallable implements Callable<Void> {
   private static final String DDBJ_SAMPLE_PREFIX = "SAMD";
   private static final String NCBI_SAMPLE_PREFIX = "SAMN";
   private static final String SUPPRESSED = "suppressed";
+  private static final String TEMPORARY_SUPPRESSED = "temporary_suppressed";
   private static final String KILLED = "killed";
+  private static final String TEMPORARY_KILLED = "temporary_killed";
   public static final String ENA_SRA_ACCESSION = "SRA accession";
   private final String sampleAccession;
   private final BioSamplesClient bioSamplesClient;
@@ -45,9 +47,11 @@ public class EnaCallable implements Callable<Void> {
   private boolean suppressionHandler;
   private boolean killedHandler;
   private boolean bsdAuthority;
+  private int statusId;
 
   public EnaCallable(
       String sampleAccession,
+      int statusId,
       BioSamplesClient bioSamplesClient,
       EnaXmlEnhancer enaXmlEnhancer,
       EnaElementConverter enaElementConverter,
@@ -58,6 +62,7 @@ public class EnaCallable implements Callable<Void> {
       boolean bsdAuthority,
       Set<AbstractData> amrData) {
     this.sampleAccession = sampleAccession;
+    this.statusId = statusId;
     this.bioSamplesClient = bioSamplesClient;
     this.enaXmlEnhancer = enaXmlEnhancer;
     this.enaElementConverter = enaElementConverter;
@@ -323,7 +328,7 @@ public class EnaCallable implements Callable<Void> {
 
         for (Attribute attribute : sample.getAttributes()) {
           if (attribute.getType().equals("INSDC status")
-              && attribute.getValue().equals(SUPPRESSED)) {
+              && attribute.getValue().equals(SUPPRESSED) || attribute.getValue().equalsIgnoreCase(TEMPORARY_SUPPRESSED)) {
             persistRequired = false;
             break;
           }
@@ -331,7 +336,7 @@ public class EnaCallable implements Callable<Void> {
 
         if (persistRequired) {
           sample.getAttributes().removeIf(attr -> attr.getType().contains("INSDC status"));
-          sample.getAttributes().add(Attribute.build("INSDC status", SUPPRESSED));
+          sample.getAttributes().add(Attribute.build("INSDC status", statusId == 5 ? SUPPRESSED :TEMPORARY_SUPPRESSED));
           log.info("Updating status to suppressed of sample: " + this.sampleAccession);
           bioSamplesClient.persistSampleResource(sample);
         }
@@ -373,7 +378,7 @@ public class EnaCallable implements Callable<Void> {
         boolean persistRequired = true;
 
         for (Attribute attribute : sample.getAttributes()) {
-          if (attribute.getType().equals("INSDC status") && attribute.getValue().equals(KILLED)) {
+          if (attribute.getType().equals("INSDC status") && (attribute.getValue().equals(KILLED) || attribute.getValue().equals(TEMPORARY_KILLED))) {
             persistRequired = false;
             break;
           }
@@ -381,7 +386,7 @@ public class EnaCallable implements Callable<Void> {
 
         if (persistRequired) {
           sample.getAttributes().removeIf(attr -> attr.getType().contains("INSDC status"));
-          sample.getAttributes().add(Attribute.build("INSDC status", KILLED));
+          sample.getAttributes().add(Attribute.build("INSDC status", statusId == 6 ? KILLED : TEMPORARY_KILLED));
           log.info("Updating status to killed of sample: " + this.sampleAccession);
           bioSamplesClient.persistSampleResource(sample);
         }

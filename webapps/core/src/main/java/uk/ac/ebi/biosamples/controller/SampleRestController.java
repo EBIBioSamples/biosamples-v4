@@ -205,6 +205,7 @@ public class SampleRestController {
       @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
           String authProvider) {
     final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+    boolean isWebinSuperUser = false;
 
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
       throw new SampleAccessionMismatchException();
@@ -232,8 +233,10 @@ public class SampleRestController {
 
       final String webinAccountId = webinAccount.getId();
 
+      isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
+
       if (sampleService.isNotExistingAccession(accession)
-          && !bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId)) {
+          && !isWebinSuperUser) {
         throw new SampleAccessionDoesNotExistException();
       }
 
@@ -262,13 +265,13 @@ public class SampleRestController {
       }
     }
 
-    // update date is system generated field
-    Instant update = Instant.now();
+    // now date is system generated field
+    Instant now = Instant.now();
 
     SubmittedViaType submittedVia =
         sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
     sample =
-        Sample.Builder.fromSample(sample).withUpdate(update).withSubmittedVia(submittedVia).build();
+        Sample.Builder.fromSample(sample).withUpdate(now).withSubmittedVia(submittedVia).build();
 
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
     // Validate all samples submitted with WEBIN AUTH
@@ -283,11 +286,9 @@ public class SampleRestController {
       sample = enaTaxonClientService.performTaxonomyValidation(sample);
     }
 
-    final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample);
+    final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, isWebinSuperUser);
 
     if (isFirstTimeMetadataAdded) {
-      Instant now = Instant.now();
-
       sample = Sample.Builder.fromSample(sample).withSubmitted(now).build();
     }
 

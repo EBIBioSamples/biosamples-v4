@@ -44,6 +44,7 @@ public class EnaCallableFactory {
    * Builds callable for dealing most ENA samples
    *
    * @param accession The accession passed
+   * @param statusId sample status
    * @param suppressionHandler Is running to set samples to SUPPRESSED
    * @param bsdAuthority Indicates its running for samples submitted through BioSamples
    * @param amrData The AMR {@link AbstractData} of the sample
@@ -51,12 +52,14 @@ public class EnaCallableFactory {
    */
   public Callable<Void> build(
       String accession,
+      int statusId,
       boolean suppressionHandler,
       boolean killedHandler,
       boolean bsdAuthority,
       Set<AbstractData> amrData) {
     return new EnaCallable(
         accession,
+        statusId,
         bioSamplesClient,
         enaXmlEnhancer,
         enaElementConverter,
