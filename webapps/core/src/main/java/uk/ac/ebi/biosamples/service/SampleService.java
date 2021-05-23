@@ -389,8 +389,6 @@ public class SampleService {
           final Sample oldSample,
           boolean isFirstTimeMetadataAdded,
           String authProvider) {
-    log.info("Is first time metadata added " + isFirstTimeMetadataAdded);
-
     if (isWebinAuthorization(authProvider)) {
       if (isFirstTimeMetadataAdded) {
         return sampleToUpdate.getSubmitted();
