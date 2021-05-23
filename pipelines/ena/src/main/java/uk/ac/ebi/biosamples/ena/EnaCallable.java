@@ -327,8 +327,8 @@ public class EnaCallable implements Callable<Void> {
         boolean persistRequired = true;
 
         for (Attribute attribute : sample.getAttributes()) {
-          if (attribute.getType().equals("INSDC status")
-              && attribute.getValue().equals(SUPPRESSED) || attribute.getValue().equalsIgnoreCase(TEMPORARY_SUPPRESSED)) {
+          if (attribute.getType().equals("INSDC status") && attribute.getValue().equals(SUPPRESSED)
+              || attribute.getValue().equalsIgnoreCase(TEMPORARY_SUPPRESSED)) {
             persistRequired = false;
             break;
           }
@@ -336,7 +336,11 @@ public class EnaCallable implements Callable<Void> {
 
         if (persistRequired) {
           sample.getAttributes().removeIf(attr -> attr.getType().contains("INSDC status"));
-          sample.getAttributes().add(Attribute.build("INSDC status", statusId == 5 ? SUPPRESSED :TEMPORARY_SUPPRESSED));
+          sample
+              .getAttributes()
+              .add(
+                  Attribute.build(
+                      "INSDC status", statusId == 5 ? SUPPRESSED : TEMPORARY_SUPPRESSED));
           log.info("Updating status to suppressed of sample: " + this.sampleAccession);
           bioSamplesClient.persistSampleResource(sample);
         }
@@ -378,7 +382,9 @@ public class EnaCallable implements Callable<Void> {
         boolean persistRequired = true;
 
         for (Attribute attribute : sample.getAttributes()) {
-          if (attribute.getType().equals("INSDC status") && (attribute.getValue().equals(KILLED) || attribute.getValue().equals(TEMPORARY_KILLED))) {
+          if (attribute.getType().equals("INSDC status")
+              && (attribute.getValue().equals(KILLED)
+                  || attribute.getValue().equals(TEMPORARY_KILLED))) {
             persistRequired = false;
             break;
           }
@@ -386,7 +392,9 @@ public class EnaCallable implements Callable<Void> {
 
         if (persistRequired) {
           sample.getAttributes().removeIf(attr -> attr.getType().contains("INSDC status"));
-          sample.getAttributes().add(Attribute.build("INSDC status", statusId == 6 ? KILLED : TEMPORARY_KILLED));
+          sample
+              .getAttributes()
+              .add(Attribute.build("INSDC status", statusId == 6 ? KILLED : TEMPORARY_KILLED));
           log.info("Updating status to killed of sample: " + this.sampleAccession);
           bioSamplesClient.persistSampleResource(sample);
         }

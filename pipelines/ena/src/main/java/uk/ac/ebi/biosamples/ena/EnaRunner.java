@@ -412,7 +412,8 @@ public class EnaRunner implements ApplicationRunner {
       final String sampleAccession = rs.getString("BIOSAMPLE_ID");
       final int statusId = rs.getInt("STATUS_ID");
 
-      final Callable<Void> callable = ncbiCurationCallableFactory.build(sampleAccession, statusId, true);
+      final Callable<Void> callable =
+          ncbiCurationCallableFactory.build(sampleAccession, statusId, true);
 
       if (executorService == null) {
         try {
@@ -592,7 +593,8 @@ public class EnaRunner implements ApplicationRunner {
     public void processRow(ResultSet rs) throws SQLException {
       final String sampleAccession = rs.getString("BIOSAMPLE_ID");
 
-      Callable<Void> callable = enaCallableFactory.build(sampleAccession, 0,false, false, true, null);
+      Callable<Void> callable =
+          enaCallableFactory.build(sampleAccession, 0, false, false, true, null);
       if (executorService == null) {
         try {
           callable.call();

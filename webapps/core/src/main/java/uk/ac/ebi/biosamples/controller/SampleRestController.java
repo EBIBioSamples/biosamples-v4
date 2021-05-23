@@ -235,8 +235,7 @@ public class SampleRestController {
 
       isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
 
-      if (sampleService.isNotExistingAccession(accession)
-          && !isWebinSuperUser) {
+      if (sampleService.isNotExistingAccession(accession) && !isWebinSuperUser) {
         throw new SampleAccessionDoesNotExistException();
       }
 
@@ -282,7 +281,7 @@ public class SampleRestController {
       schemaValidationService.validate(sample);
     }
 
-    if (webinAuth) {
+    if (webinAuth && !isWebinSuperUser) {
       sample = enaTaxonClientService.performTaxonomyValidation(sample);
     }
 

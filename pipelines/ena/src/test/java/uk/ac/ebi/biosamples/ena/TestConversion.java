@@ -12,8 +12,6 @@ package uk.ac.ebi.biosamples.ena;
 
 import static org.junit.Assert.fail;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import org.junit.Ignore;
@@ -43,27 +41,27 @@ public class TestConversion {
   @Ignore
   public void test_over_all_samples() {
     RowCallbackHandler rowCallbackHandler =
-            resultSet -> {
-              String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-              EnaCallable enaCallable =
-                  new EnaCallable(
-                      sampleAccession,
-                      0,
-                      bioSamplesClient,
-                      enaXmlEnhancer,
-                      enaElementConverter,
-                      eraProDao,
-                      "test",
-                      false,
-                      false,
-                      false,
-                      null);
-              try {
-                enaCallable.call();
-              } catch (Exception e) {
-                e.printStackTrace();
-              }
-            };
+        resultSet -> {
+          String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
+          EnaCallable enaCallable =
+              new EnaCallable(
+                  sampleAccession,
+                  0,
+                  bioSamplesClient,
+                  enaXmlEnhancer,
+                  enaElementConverter,
+                  eraProDao,
+                  "test",
+                  false,
+                  false,
+                  false,
+                  null);
+          try {
+            enaCallable.call();
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+        };
     LocalDate fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
     LocalDate toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
     eraProDao.doSampleCallback(fromDate, toDate, rowCallbackHandler);
@@ -72,112 +70,112 @@ public class TestConversion {
   @Test
   public void test_with_single() {
     RowCallbackHandler rowCallbackHandler =
-            resultSet -> {
-              String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-              EnaCallable enaCallable =
-                  new EnaCallable(
-                      sampleAccession,
-                      0,
-                      bioSamplesClient,
-                      enaXmlEnhancer,
-                      enaElementConverter,
-                      eraProDao,
-                      "test",
-                      false,
-                      false,
-                      false,
-                      null);
-              try {
-                enaCallable.call();
-              } catch (Exception e) {
-                e.printStackTrace();
-                fail();
-              }
-            };
+        resultSet -> {
+          String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
+          EnaCallable enaCallable =
+              new EnaCallable(
+                  sampleAccession,
+                  0,
+                  bioSamplesClient,
+                  enaXmlEnhancer,
+                  enaElementConverter,
+                  eraProDao,
+                  "test",
+                  false,
+                  false,
+                  false,
+                  null);
+          try {
+            enaCallable.call();
+          } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+          }
+        };
     eraProDao.getSingleSample("SAMEA100000168", rowCallbackHandler);
   }
 
   @Test
   public void test_with_suppressed() {
     RowCallbackHandler rowCallbackHandler =
-            resultSet -> {
-              String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-              EnaCallable enaCallable =
-                  new EnaCallable(
-                      sampleAccession,
-                      0,
-                      bioSamplesClient,
-                      enaXmlEnhancer,
-                      enaElementConverter,
-                      eraProDao,
-                      "test",
-                      false,
-                      false,
-                      false,
-                      null);
-              try {
-                enaCallable.call();
-              } catch (Exception e) {
-                e.printStackTrace();
-                fail();
-              }
-            };
+        resultSet -> {
+          String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
+          EnaCallable enaCallable =
+              new EnaCallable(
+                  sampleAccession,
+                  0,
+                  bioSamplesClient,
+                  enaXmlEnhancer,
+                  enaElementConverter,
+                  eraProDao,
+                  "test",
+                  false,
+                  false,
+                  false,
+                  null);
+          try {
+            enaCallable.call();
+          } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+          }
+        };
     eraProDao.getSingleSample("SAMEA1930638", rowCallbackHandler);
   }
 
   @Test
   public void test_with_killed() {
     RowCallbackHandler rowCallbackHandler =
-            resultSet -> {
-              String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-              EnaCallable enaCallable =
-                  new EnaCallable(
-                      sampleAccession,
-                      0,
-                      bioSamplesClient,
-                      enaXmlEnhancer,
-                      enaElementConverter,
-                      eraProDao,
-                      "test",
-                      false,
-                      false,
-                      false,
-                      null);
-              try {
-                enaCallable.call();
-              } catch (Exception e) {
-                e.printStackTrace();
-                fail();
-              }
-            };
+        resultSet -> {
+          String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
+          EnaCallable enaCallable =
+              new EnaCallable(
+                  sampleAccession,
+                  0,
+                  bioSamplesClient,
+                  enaXmlEnhancer,
+                  enaElementConverter,
+                  eraProDao,
+                  "test",
+                  false,
+                  false,
+                  false,
+                  null);
+          try {
+            enaCallable.call();
+          } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+          }
+        };
     eraProDao.getSingleSample("SAMEA1935107", rowCallbackHandler);
   }
 
   @Test
   public void test_with_failing() {
     RowCallbackHandler rowCallbackHandler =
-            resultSet -> {
-              String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-              EnaCallable enaCallable =
-                  new EnaCallable(
-                      sampleAccession,
-                      0,
-                      bioSamplesClient,
-                      enaXmlEnhancer,
-                      enaElementConverter,
-                      eraProDao,
-                      "test",
-                      false,
-                      false,
-                      false,
-                      null);
-              try {
-                enaCallable.call();
-              } catch (Exception e) {
-                e.printStackTrace();
-                fail();
-              }
-            };
+        resultSet -> {
+          String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
+          EnaCallable enaCallable =
+              new EnaCallable(
+                  sampleAccession,
+                  0,
+                  bioSamplesClient,
+                  enaXmlEnhancer,
+                  enaElementConverter,
+                  eraProDao,
+                  "test",
+                  false,
+                  false,
+                  false,
+                  null);
+          try {
+            enaCallable.call();
+          } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+          }
+        };
     eraProDao.getSingleSample("SAMEA104371999", rowCallbackHandler);
   }
 }

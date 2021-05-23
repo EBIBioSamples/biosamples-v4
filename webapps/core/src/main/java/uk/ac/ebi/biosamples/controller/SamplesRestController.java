@@ -590,6 +590,7 @@ public class SamplesRestController {
     log.debug("Received POST for " + sample);
 
     final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+    boolean isWebinSuperUser = false;
 
     if (webinAuth) {
       final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
@@ -606,6 +607,7 @@ public class SamplesRestController {
 
       final String webinAccountId = webinAccount.getId();
 
+      isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
 
       final Set<AbstractData> structuredData = sample.getData();
@@ -656,7 +658,7 @@ public class SamplesRestController {
       schemaValidationService.validate(sample);
     }
 
-    if (webinAuth) {
+    if (webinAuth && !isWebinSuperUser) {
       sample = enaTaxonClientService.performTaxonomyValidation(sample);
     }
 
