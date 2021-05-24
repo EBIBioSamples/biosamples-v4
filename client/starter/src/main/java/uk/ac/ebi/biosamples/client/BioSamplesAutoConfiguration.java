@@ -102,7 +102,7 @@ public class BioSamplesAutoConfiguration {
           bioSamplesProperties.getBiosamplesWebinAuthTokenUri(),
           bioSamplesProperties.getBiosamplesClientWebinUsername(),
           bioSamplesProperties.getBiosamplesClientWebinPassword(),
-          Arrays.asList(AuthRealm.ENA)); // pass the realm
+          Arrays.asList(AuthRealm.ENA, AuthRealm.EGA)); // pass the realm
     } else {
       return null;
     }
