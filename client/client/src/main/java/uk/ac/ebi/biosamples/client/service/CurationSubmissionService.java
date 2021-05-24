@@ -34,28 +34,24 @@ public class CurationSubmissionService {
   private final Traverson traverson;
   private final ExecutorService executor;
   private final RestOperations restOperations;
-  private final boolean isWebinSubmission;
 
   public CurationSubmissionService(
-      RestOperations restOperations,
-      Traverson traverson,
-      ExecutorService executor,
-      boolean isWebinSubmission) {
+      RestOperations restOperations, Traverson traverson, ExecutorService executor) {
     this.restOperations = restOperations;
     this.traverson = traverson;
     this.executor = executor;
-    this.isWebinSubmission = isWebinSubmission;
   }
 
-  public Resource<CurationLink> submit(CurationLink curationLink) throws RestClientException {
-    return persistCuration(curationLink, null);
-  }
-
-  public Resource<CurationLink> persistCuration(CurationLink curationLink, String jwt)
+  public Resource<CurationLink> submit(CurationLink curationLink, boolean isWebin)
       throws RestClientException {
+    return persistCuration(curationLink, null, isWebin);
+  }
+
+  public Resource<CurationLink> persistCuration(
+      CurationLink curationLink, String jwt, boolean isWebin) throws RestClientException {
     String addWebinRequestParam = "";
 
-    if (isWebinSubmission) {
+    if (isWebin) {
       addWebinRequestParam = "?authProvider=WEBIN";
     }
 

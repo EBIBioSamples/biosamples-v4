@@ -15,6 +15,7 @@ import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,9 +25,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.certification.*;
 import uk.ac.ebi.biosamples.service.certification.*;
+import uk.ac.ebi.biosamples.service.certification.Validator;
+import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
+import uk.ac.ebi.biosamples.validation.ValidatorI;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -35,11 +42,17 @@ import uk.ac.ebi.biosamples.service.certification.*;
       Certifier.class,
       ConfigLoader.class,
       Validator.class,
+      ValidatorI.class,
+      ElixirSchemaValidator.class,
+      RestTemplate.class,
+      BioSamplesProperties.class,
+      ObjectMapper.class,
       Applicator.class
     },
     properties = {"job.autorun.enabled=false"})
 public class CuratorTest {
   @Autowired private Curator curator;
+  @MockBean ElixirSchemaValidator validator;
 
   @Test
   public void given_ChecklistMatches_run_curation_plans() throws Exception {

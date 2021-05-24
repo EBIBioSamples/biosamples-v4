@@ -13,6 +13,7 @@ package uk.ac.ebi.biosamples.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,10 @@ public class LoginController {
   public String auth(@ModelAttribute("authRequest") AuthRequest authRequest, ModelMap model) {
     try {
       log.info("Login way is " + authRequest.getLoginWay());
-      List<String> certificates = certifyService.getAllCertificateNames();
+      List<String> certificates =
+          certifyService.getAllCertificateNames().stream()
+              .filter(certificateName -> certificateName.startsWith("ERC"))
+              .collect(Collectors.toList());
 
       if (authRequest.getLoginWay().equals("WEBIN")) {
         final AuthRequestWebin authRequestWebin =

@@ -256,7 +256,7 @@ public class ApiDocumentationTest {
             + "}";
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
-    when(sampleService.store(any(Sample.class), eq(false), eq("AAP"))).thenReturn(sampleWithDomain);
+    when(sampleService.store(any(Sample.class), eq(true), eq("AAP"))).thenReturn(sampleWithDomain);
     when(schemaValidationService.validate(any(Sample.class))).thenReturn("ERC100001");
 
     this.mockMvc
@@ -299,9 +299,10 @@ public class ApiDocumentationTest {
         .thenReturn(sampleWithWebinId);
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
         .thenReturn(ResponseEntity.ok(submissionAccount));
-    when(sampleService.store(any(Sample.class), eq(false), eq("WEBIN")))
+    when(sampleService.store(any(Sample.class), eq(true), eq("WEBIN")))
         .thenReturn(sampleWithWebinId);
-    when(enaTaxonClientService.performTaxonomyValidation(any(Sample.class))).thenReturn(sampleWithWebinId);
+    when(enaTaxonClientService.performTaxonomyValidation(any(Sample.class)))
+        .thenReturn(sampleWithWebinId);
     when(schemaValidationService.validate(any(Sample.class))).thenReturn("ERC100001");
 
     this.mockMvc
@@ -343,7 +344,7 @@ public class ApiDocumentationTest {
             + "}";
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
-    when(sampleService.store(any(Sample.class), eq(false), eq("AAP"))).thenReturn(sampleWithDomain);
+    when(sampleService.store(any(Sample.class), eq(true), eq("AAP"))).thenReturn(sampleWithDomain);
     when(schemaValidationService.validate(any(Sample.class))).thenReturn("ERC100001");
 
     this.mockMvc
@@ -857,7 +858,7 @@ public class ApiDocumentationTest {
         .thenReturn(sampleWithWebinId);
 
     when(enaTaxonClientService.performTaxonomyValidation(any(Sample.class)))
-            .thenReturn(sampleWithWebinId);
+        .thenReturn(sampleWithWebinId);
 
     this.mockMvc
         .perform(

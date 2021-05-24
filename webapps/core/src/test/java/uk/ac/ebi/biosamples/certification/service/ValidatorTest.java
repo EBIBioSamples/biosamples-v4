@@ -10,19 +10,31 @@
 */
 package uk.ac.ebi.biosamples.certification.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.everit.json.schema.ValidationException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.service.certification.*;
+import uk.ac.ebi.biosamples.service.certification.Validator;
+import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
+import uk.ac.ebi.biosamples.validation.ValidatorI;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     classes = {
       Validator.class,
+      ValidatorI.class,
+      ElixirSchemaValidator.class,
+      RestTemplate.class,
+      BioSamplesProperties.class,
+      ObjectMapper.class,
       Curator.class,
       Certifier.class,
       ConfigLoader.class,
@@ -31,7 +43,9 @@ import uk.ac.ebi.biosamples.service.certification.*;
     },
     properties = {"job.autorun.enabled=false"})
 public class ValidatorTest {
-  @Autowired private Validator validator;
+  @Autowired
+  @Qualifier("javaValidator")
+  private ValidatorI validator;
 
   @Test
   public void given_valid_data_dont_throw_exception() throws Exception {

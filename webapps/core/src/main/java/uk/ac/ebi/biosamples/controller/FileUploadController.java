@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-import uk.ac.ebi.biosamples.service.upload.FileUploadService;
 import uk.ac.ebi.biosamples.service.upload.IsaTabUploadService;
 import uk.ac.ebi.biosamples.service.upload.UploadInvalidException;
 
@@ -39,8 +38,6 @@ import uk.ac.ebi.biosamples.service.upload.UploadInvalidException;
 @RequestMapping("/upload")
 public class FileUploadController {
   private Logger log = LoggerFactory.getLogger(getClass());
-
-  @Autowired FileUploadService fileUploadService;
 
   @Autowired IsaTabUploadService isaTabUploadService;
 

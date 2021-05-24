@@ -10,8 +10,21 @@
 */
 package uk.ac.ebi.biosamples;
 
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.Charset;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,20 +51,7 @@ import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.SchemaValidationService;
-
-import java.nio.charset.Charset;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.Optional;
-
-import static org.hamcrest.Matchers.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -81,6 +81,8 @@ public class AMRTest {
   @MockBean private SampleService sampleService;
 
   @MockBean private SchemaValidationService schemaValidatorService;
+
+  @MockBean ElixirSchemaValidator validator;
 
   private AMREntry getAMREntry() {
     return new AMREntry.Builder()
@@ -217,8 +219,9 @@ public class AMRTest {
 
     when(bioSamplesAapService.isWriteSuperUser()).thenReturn(true);
     when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
-    when(bioSamplesAapService.handleStructuredDataDomainInData(any(Sample.class))).thenReturn(testSample);
-    when(sampleService.store(testSample, false, "AAP")).thenReturn(testSample);
+    when(bioSamplesAapService.handleStructuredDataDomainInData(any(Sample.class)))
+        .thenReturn(testSample);
+    when(sampleService.store(testSample, true, "AAP")).thenReturn(testSample);
 
     mockMvc
         .perform(post("/samples").contentType(MediaType.APPLICATION_JSON_VALUE).content(json))
@@ -264,10 +267,11 @@ public class AMRTest {
 
     when(bioSamplesAapService.isWriteSuperUser()).thenReturn(false);
     when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
-    when(bioSamplesAapService.handleStructuredDataDomainInData(any(Sample.class))).thenReturn(testSample);
+    when(bioSamplesAapService.handleStructuredDataDomainInData(any(Sample.class)))
+        .thenReturn(testSample);
 
     ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
-    when(sampleService.store(generatedSample.capture(), eq(false), eq("AAP")))
+    when(sampleService.store(generatedSample.capture(), eq(true), eq("AAP")))
         .thenReturn(testSample);
 
     mockMvc.perform(post("/samples").contentType(MediaType.APPLICATION_JSON_VALUE).content(json));
@@ -279,8 +283,9 @@ public class AMRTest {
   public void able_to_submit_amr_with_webin_id() throws Exception {
 
     String json =
-            StreamUtils.copyToString(
-                    new ClassPathResource("amr_sample_webin.json").getInputStream(), Charset.defaultCharset());
+        StreamUtils.copyToString(
+            new ClassPathResource("amr_sample_webin.json").getInputStream(),
+            Charset.defaultCharset());
     JsonNode jsonSample = mapper.readTree(json);
 
     JsonNode jsonAmr = jsonSample.at("/data/0/content/0");
@@ -289,41 +294,49 @@ public class AMRTest {
     submissionAccount.setId("Webin-57176");
 
     AMREntry amrEntry =
-            new AMREntry.Builder()
-                    .withAntibioticName(new AmrPair(jsonAmr.get("antibiotic_name").asText(), ""))
-                    .withResistancePhenotype(jsonAmr.get("resistance_phenotype").asText())
-                    .withMeasure(
-                            jsonAmr.get("measurement_sign").asText(),
-                            jsonAmr.get("measurement").asText(),
-                            jsonAmr.get("measurement_units").asText())
-                    .withVendor(jsonAmr.get("vendor").asText())
-                    .withLaboratoryTypingMethod(jsonAmr.get("laboratory_typing_method").asText())
-                    .withAstStandard(jsonAmr.get("ast_standard").asText())
-                    .build();
+        new AMREntry.Builder()
+            .withAntibioticName(new AmrPair(jsonAmr.get("antibiotic_name").asText(), ""))
+            .withResistancePhenotype(jsonAmr.get("resistance_phenotype").asText())
+            .withMeasure(
+                jsonAmr.get("measurement_sign").asText(),
+                jsonAmr.get("measurement").asText(),
+                jsonAmr.get("measurement_units").asText())
+            .withVendor(jsonAmr.get("vendor").asText())
+            .withLaboratoryTypingMethod(jsonAmr.get("laboratory_typing_method").asText())
+            .withAstStandard(jsonAmr.get("ast_standard").asText())
+            .build();
 
     Attribute organismAttribute = Attribute.build("organism", "Homo Sapiens");
 
     Sample testSample =
-            new Sample.Builder(jsonSample.at("/name").asText())
-                    .withUpdate(jsonSample.at("/update").asText())
-                    .withRelease(jsonSample.at("/release").asText())
-                    .addData(
-                            new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "null", "Webin-57176")
-                                    .addEntry(amrEntry)
-                                    .build())
-                    .withAttributes(Collections.singletonList(organismAttribute))
-                    .build();
+        new Sample.Builder(jsonSample.at("/name").asText())
+            .withUpdate(jsonSample.at("/update").asText())
+            .withRelease(jsonSample.at("/release").asText())
+            .addData(
+                new AMRTable.Builder(
+                        jsonSample.at("/data/0/schema").asText(), "null", "Webin-57176")
+                    .addEntry(amrEntry)
+                    .build())
+            .withAttributes(Collections.singletonList(organismAttribute))
+            .build();
 
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
-            .thenReturn(ResponseEntity.ok(submissionAccount));
-    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class))).thenReturn(testSample);
-    when(bioSamplesWebinAuthenticationService.handleStructuredDataWebinUserInData(any(Sample.class), eq("Webin-57176"))).thenReturn(testSample);
+        .thenReturn(ResponseEntity.ok(submissionAccount));
+    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class)))
+        .thenReturn(testSample);
+    when(bioSamplesWebinAuthenticationService.handleStructuredDataWebinUserInData(
+            any(Sample.class), eq("Webin-57176")))
+        .thenReturn(testSample);
 
     ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
-    when(sampleService.store(generatedSample.capture(), eq(false), eq("WEBIN")))
-            .thenReturn(testSample);
+    when(sampleService.store(generatedSample.capture(), eq(true), eq("WEBIN")))
+        .thenReturn(testSample);
 
-    mockMvc.perform(post("/samples?authProvider=WEBIN").contentType(MediaType.APPLICATION_JSON_VALUE).content(json).header("Authorization", "Bearer $TOKEN"));
+    mockMvc.perform(
+        post("/samples?authProvider=WEBIN")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .content(json)
+            .header("Authorization", "Bearer $TOKEN"));
 
     assert (!generatedSample.getValue().getData().isEmpty());
   }

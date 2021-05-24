@@ -2,8 +2,8 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
-[[v5.1.0]]
-== v5.1.0 Release notes
+[[v5.1.1]]
+== v5.1.1 Release notes
 === New Features
 1. JSON Schema store integration with BioSamples
 
@@ -21,7 +21,7 @@ Samples submitted to BioSamples using ENA Webin authentication are put through a
 
 4. BioSamples client changes
 
-BioSamples client version 5.1.0 has undergone technical changes to support Webin authentication. The latest version of the client can be used to submit samples, curate samples or certify samples in BioSamples using Webin authentication. 
+BioSamples client version 5.1.0 has undergone technical changes to support Webin authentication. The latest version of the client can be used to submit samples, curate samples or certify samples in BioSamples using Webin authentication.
 
 5. Improved DUO code rendering
 

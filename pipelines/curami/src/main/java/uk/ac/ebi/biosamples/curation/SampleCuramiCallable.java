@@ -83,7 +83,7 @@ public class SampleCuramiCallable implements Callable<PipelineResult> {
                     a.getIri(),
                     a.getUnit()));
         LOG.info("New curation found {}", curation);
-        bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
+        bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
         curations.add(curation);
       }
     }

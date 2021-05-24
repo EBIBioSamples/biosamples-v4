@@ -128,7 +128,7 @@ public class SampleCopydownCallable implements Callable<PipelineResult> {
     postAttributes.add(organismValue);
     final Curation curation = Curation.build(Collections.emptyList(), postAttributes);
 
-    bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
+    bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
     curationCount++;
   }
 

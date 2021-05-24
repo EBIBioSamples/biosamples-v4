@@ -36,7 +36,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.curation.service.IriUrlValidatorService;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -51,8 +50,6 @@ public class SampleCurationCallableTest {
   @Autowired private ObjectMapper objectMapper;
 
   @Autowired private OlsProcessor olsProcessor;
-
-  @Autowired private BioSamplesProperties bioSamplesProperties;
 
   private MockRestServiceServer mockServer;
 

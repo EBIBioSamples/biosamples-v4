@@ -14,12 +14,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.everit.json.schema.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.exception.SampleValidationException;
 import uk.ac.ebi.biosamples.exception.SchemaValidationException;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.certification.Validator;
+import uk.ac.ebi.biosamples.validation.ValidatorI;
 
 @Service
 public class SchemaValidationService {
@@ -27,10 +29,12 @@ public class SchemaValidationService {
 
   private final BioSamplesProperties bioSamplesProperties;
   private final ObjectMapper objectMapper;
-  private final Validator validator;
+  private final ValidatorI validator;
 
   public SchemaValidationService(
-      ObjectMapper mapper, BioSamplesProperties bioSamplesProperties, Validator validator) {
+      ObjectMapper mapper,
+      BioSamplesProperties bioSamplesProperties,
+      @Qualifier("elixirValidator") ValidatorI validator) {
     this.objectMapper = mapper;
     this.bioSamplesProperties = bioSamplesProperties;
     this.validator = validator;
@@ -39,11 +43,7 @@ public class SchemaValidationService {
   public String validate(Sample sample) {
     String schemaId =
         sample.getCharacteristics().stream()
-            .filter(
-                s ->
-                    s.getType()
-                        .equalsIgnoreCase(
-                            "checklist")) // todo checklist name or checklist id, we need full path
+            .filter(s -> s.getType().equalsIgnoreCase("checklist"))
             // to search
             .findFirst()
             .map(Attribute::getValue)
@@ -52,10 +52,11 @@ public class SchemaValidationService {
     try {
       String sampleString = this.objectMapper.writeValueAsString(sample);
       return validator.validateById(schemaId, sampleString);
-    } catch (ValidationException e) {
-      throw new SchemaValidationException("Checklist validation failed", e);
+    } catch (ValidationException | SampleValidationException e) {
+      throw new SchemaValidationException("Checklist validation failed: " + e.getMessage(), e);
     } catch (Exception e) {
-      throw new SchemaValidationException("Could not find checklist for " + schemaId, e);
+      log.error("Schema validation error: " + e.getMessage(), e);
+      throw new SchemaValidationException("Checklist validation error: " + e.getMessage(), e);
     }
   }
 }

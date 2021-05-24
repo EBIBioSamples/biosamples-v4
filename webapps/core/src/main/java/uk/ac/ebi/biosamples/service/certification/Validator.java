@@ -22,11 +22,15 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.exception.SchemaValidationException;
 import uk.ac.ebi.biosamples.model.certification.Checklist;
+import uk.ac.ebi.biosamples.validation.ValidatorI;
 
 @Service
-public class Validator {
+@Qualifier("javaValidator")
+public class Validator implements ValidatorI {
   private Logger log = LoggerFactory.getLogger(getClass());
 
   private ConfigLoader configLoader;
@@ -53,8 +57,6 @@ public class Validator {
   }
 
   public void validate(String schemaPath, String document) throws IOException, ValidationException {
-    log.info("Schema path is " + schemaPath);
-
     try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(schemaPath)) {
       JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
       Schema schema = SchemaLoader.load(rawSchema);
@@ -63,13 +65,15 @@ public class Validator {
   }
 
   public String validateById(String schemaId, String document)
-      throws IOException, ValidationException {
+      throws IOException, SchemaValidationException {
     Checklist checklist = getChecklist(schemaId);
     try (InputStream inputStream =
         getClass().getClassLoader().getResourceAsStream(checklist.getFileName())) {
       JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
       Schema schema = SchemaLoader.load(rawSchema);
       schema.validate(new JSONObject(document));
+    } catch (ValidationException e) {
+      throw new SchemaValidationException(e.getMessage());
     }
 
     return checklist.getID();

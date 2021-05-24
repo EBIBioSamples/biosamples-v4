@@ -73,11 +73,13 @@ public class MockBioSamplesClient extends BioSamplesClient {
     }
   }
 
+  @Override
   public Resource<CurationLink> persistCuration(
-      String accession, Curation curation, String domain) {
-    log.trace("Mocking persisting curation " + curation + " on " + accession + " in " + domain);
+      String accession, Curation curation, String webinIdOrDomain, boolean isWebin) {
+    log.trace(
+        "Mocking persisting curation " + curation + " on " + accession + " in " + webinIdOrDomain);
     if (logCurations) {
-      logCuration(accession, domain, curation);
+      logCuration(accession, webinIdOrDomain, curation);
     }
     List<Curation> sampleCurations = curations.get(accession);
     if (sampleCurations == null) {

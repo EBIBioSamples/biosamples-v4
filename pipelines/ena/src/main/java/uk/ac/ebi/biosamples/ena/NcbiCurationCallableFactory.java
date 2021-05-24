@@ -17,26 +17,24 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 @Service
 public class NcbiCurationCallableFactory {
   private final BioSamplesClient bioSamplesClient;
-  private final String webinId;
+  private final String domain;
 
   public NcbiCurationCallableFactory(
       BioSamplesClient bioSamplesClient, PipelinesProperties pipelinesProperties) {
     this.bioSamplesClient = bioSamplesClient;
-    this.webinId = pipelinesProperties.getProxyWebinId();
-  }
-
-  public NcbiCurationCallable build(String accession) {
-    return new NcbiCurationCallable(accession, bioSamplesClient, webinId);
+    this.domain = pipelinesProperties.getEnaDomain();
   }
 
   /**
    * Builds a callable for dealing samples that are SUPPRESSED
    *
    * @param accession The accession passed
+   * @param statusId The sample status
    * @param suppressionHandler true for this case
    * @return the callable, {@link NcbiCurationCallable}
    */
-  public NcbiCurationCallable build(String accession, boolean suppressionHandler) {
-    return new NcbiCurationCallable(accession, bioSamplesClient, webinId, suppressionHandler);
+  public NcbiCurationCallable build(String accession, int statusId, boolean suppressionHandler) {
+    return new NcbiCurationCallable(
+        accession, statusId, bioSamplesClient, domain, suppressionHandler);
   }
 }

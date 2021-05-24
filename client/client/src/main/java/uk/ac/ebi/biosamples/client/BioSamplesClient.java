@@ -133,8 +133,7 @@ public class BioSamplesClient implements AutoCloseable {
             threadPoolExecutor,
             bioSamplesProperties.getBiosamplesClientPagesize());
     curationSubmissionService =
-        new CurationSubmissionService(
-            restOperations, traverson, threadPoolExecutor, isWebinSubmission);
+        new CurationSubmissionService(restOperations, traverson, threadPoolExecutor);
 
     this.sampleValidator = sampleValidator;
 
@@ -336,10 +335,12 @@ public class BioSamplesClient implements AutoCloseable {
   }
 
   public Resource<CurationLink> persistCuration(
-      String accession, Curation curation, String domain) {
-    log.trace("Persisting curation " + curation + " on " + accession + " in " + domain);
-    return curationSubmissionService.submit(
-        CurationLink.build(accession, curation, domain, null, null));
+      String accession, Curation curation, String webinIdOrDomain, boolean isWebin) {
+    log.trace("Persisting curation " + curation + " on " + accession + " using " + webinIdOrDomain);
+
+    CurationLink curationLink = buildCurationLink(accession, curation, webinIdOrDomain, isWebin);
+
+    return curationSubmissionService.submit(curationLink, isWebin);
   }
 
   public Iterable<Resource<CurationLink>> fetchCurationLinksOfSample(String accession) {
@@ -431,10 +432,38 @@ public class BioSamplesClient implements AutoCloseable {
   }
 
   public Resource<CurationLink> persistCuration(
-      String accession, Curation curation, String domain, String jwt) {
-    log.trace("Persisting curation {} on {} in {}", curation, accession, domain);
-    return curationSubmissionService.persistCuration(
-        CurationLink.build(accession, curation, domain, null, null), jwt);
+      String accession, Curation curation, String webinIdOrDomain, String jwt, boolean isWebin) {
+    log.trace("Persisting curation {} on {} in {}", curation, accession, webinIdOrDomain);
+
+    CurationLink curationLink = buildCurationLink(accession, curation, webinIdOrDomain, isWebin);
+
+    return curationSubmissionService.submit(curationLink, isWebin);
+  }
+
+  private CurationLink buildCurationLink(
+      String accession, Curation curation, String webinIdOrDomain, boolean isWebin) {
+    CurationLink curationLink;
+
+    if (isWebin) {
+      log.trace(
+          "Persisting curation "
+              + curation
+              + " on "
+              + accession
+              + " using WEBIN ID "
+              + webinIdOrDomain);
+      curationLink = CurationLink.build(accession, curation, null, webinIdOrDomain, null);
+    } else {
+      log.trace(
+          "Persisting curation "
+              + curation
+              + " on "
+              + accession
+              + " using DOMAIN "
+              + webinIdOrDomain);
+      curationLink = CurationLink.build(accession, curation, webinIdOrDomain, null, null);
+    }
+    return curationLink;
   }
 
   public Iterable<Resource<CurationLink>> fetchCurationLinksOfSample(String accession, String jwt) {

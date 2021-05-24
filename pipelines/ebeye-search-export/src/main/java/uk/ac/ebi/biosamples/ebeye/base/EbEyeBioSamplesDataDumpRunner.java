@@ -286,8 +286,8 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     List<Sample> sampleList = new ArrayList<>();
 
     sampleResources.forEach(
-            sampleResource -> {
-              final Sample sample = sampleResource.getContent();
+        sampleResource -> {
+          final Sample sample = sampleResource.getContent();
           /*List<Integer> statusList =
               ebeyeBioSamplesDataDumpGeneratorDao.doGetSampleStatus(sample.getAccession());
 
@@ -300,11 +300,11 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
               System.out.println(
                   "Sample not added " + sample.getAccession() + " status " + sampleStatus);
             } else {*/
-              sampleList.add(sample);
-              System.out.println("Sample added " + sample.getAccession());
-            /*}
+          sampleList.add(sample);
+          System.out.println("Sample added " + sample.getAccession());
+          /*}
           }*/
-            });
+        });
 
     return sampleList;
   }

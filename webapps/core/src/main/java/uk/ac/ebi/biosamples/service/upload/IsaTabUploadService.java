@@ -37,6 +37,7 @@ import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.upload.Characteristics;
 import uk.ac.ebi.biosamples.model.upload.validation.ValidationResult;
 import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.SchemaValidationService;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
 
 @Service
@@ -49,6 +50,10 @@ public class IsaTabUploadService {
   @Autowired SampleService sampleService;
 
   @Autowired CertifyService certifyService;
+
+  @Autowired SchemaValidationService schemaValidationService;
+
+  @Autowired JsonSchemaStoreAccessibilityCheckService jsonSchemaStoreAccessibilityCheckService;
 
   public synchronized File upload(
       MultipartFile file, String aapDomain, String certificate, String webinId) {
@@ -186,13 +191,17 @@ public class IsaTabUploadService {
       String certificate) {
     final Map<String, String> sampleNameToAccessionMap = new LinkedHashMap<>();
     final Map<Sample, Multimap<String, String>> sampleToMappedSample = new LinkedHashMap<>();
+    final boolean isSchemaValidatorAccessible =
+        jsonSchemaStoreAccessibilityCheckService.checkJsonSchemaStoreConnectivity();
 
     csvDataMap.forEach(
         csvRecordMap -> {
           Sample sample = null;
 
           try {
-            sample = buildSample(csvRecordMap, aapDomain, webinId, certificate);
+            sample =
+                buildSample(
+                    csvRecordMap, aapDomain, webinId, certificate, isSchemaValidatorAccessible);
 
             if (sample == null) {
               validationResult.addValidationMessage("Failed to create all samples in the file");
@@ -241,13 +250,17 @@ public class IsaTabUploadService {
     relationships.forEach(relationship -> log.info(relationship.toString()));
 
     sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
-    sample = sampleService.store(sample, false, true, authProvider);
+    sample = sampleService.store(sample, true, authProvider);
 
     return sample;
   }
 
   private Sample buildSample(
-      Multimap<String, String> multiMap, String aapDomain, String webinId, String certificate)
+      Multimap<String, String> multiMap,
+      String aapDomain,
+      String webinId,
+      String certificate,
+      boolean isSchemaValidatorAccessible)
       throws JsonProcessingException {
     final String sampleName = getSampleName(multiMap);
     final String sampleReleaseDate = getReleaseDate(multiMap);
@@ -256,12 +269,13 @@ public class IsaTabUploadService {
     final List<ExternalReference> externalReferenceList = handleExternalReferences(multiMap);
     final List<Contact> contactsList = handleContacts(multiMap);
     final String authProvider = isWebinIdUsedToAuthenticate(webinId) ? "WEBIN" : "AAP";
-    boolean validationFailure = false;
+    boolean basicValidationFailure = false;
+    boolean isCertified;
 
     if (sampleName == null || sampleName.isEmpty()) {
       validationResult.addValidationMessage(
           "All samples in the file must have a sample name, some samples are missing sample name and hence are not created");
-      validationFailure = true;
+      basicValidationFailure = true;
     }
 
     if (sampleReleaseDate == null || sampleReleaseDate.isEmpty()) {
@@ -269,10 +283,10 @@ public class IsaTabUploadService {
           "All samples in the file must have a release date "
               + sampleName
               + " doesn't have a release date and is not created");
-      validationFailure = true;
+      basicValidationFailure = true;
     }
 
-    if (!validationFailure) {
+    if (!basicValidationFailure) {
       Sample sample =
           new Sample.Builder(sampleName.trim())
               .withAccession(accession)
@@ -301,20 +315,38 @@ public class IsaTabUploadService {
         sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
       }
 
-      final boolean isCertified = certify(sample, certificate);
+      final Set<Attribute> attributeSet = sample.getAttributes();
+      final Attribute attribute =
+          new Attribute.Builder("checklist", certificate.substring(0, certificate.indexOf('(')))
+              .build();
 
-      if (isCertified) {
-        final Set<Attribute> attributeSet = sample.getAttributes();
-        final Attribute attribute = new Attribute.Builder("checklist", certificate).build();
+      attributeSet.add(attribute);
+      sample = Sample.Builder.fromSample(sample).withAttributes(attributeSet).build();
 
-        attributeSet.add(attribute);
-        sample = Sample.Builder.fromSample(sample).withAttributes(attributeSet).build();
-        sample = sampleService.store(sample, false, true, authProvider);
+      try {
+        if (isSchemaValidatorAccessible) {
+          schemaValidationService.validate(sample);
+          isCertified = true;
+        } else {
+          log.info("Schema validator not accesible, trying certification service");
+          isCertified = certify(sample, certificate);
+        }
+      } catch (final Exception schemaValidationException) {
+        log.info("Schema validator failed to validate sample, trying certification service");
+        isCertified = certify(sample, certificate);
       }
 
-      log.info("Sample " + sample.getName() + " created with accession " + sample.getAccession());
+      if (isCertified) {
+        sample = sampleService.store(sample, false, true, authProvider);
+        log.info("Sample " + sample.getName() + " created with accession " + sample.getAccession());
 
-      return sample;
+        return sample;
+      } else {
+        validationResult.addValidationMessage(
+            sampleName + " failed validation against " + certificate);
+
+        return null;
+      }
     } else {
       return null;
     }

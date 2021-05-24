@@ -10,16 +10,23 @@
 */
 package uk.ac.ebi.biosamples.certification.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.certification.BioSamplesCertificationComplainceResult;
 import uk.ac.ebi.biosamples.model.certification.SampleDocument;
 import uk.ac.ebi.biosamples.service.certification.*;
+import uk.ac.ebi.biosamples.service.certification.Validator;
+import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
+import uk.ac.ebi.biosamples.validation.ValidatorI;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -27,6 +34,11 @@ import uk.ac.ebi.biosamples.service.certification.*;
       Certifier.class,
       ConfigLoader.class,
       Validator.class,
+      ValidatorI.class,
+      ElixirSchemaValidator.class,
+      RestTemplate.class,
+      BioSamplesProperties.class,
+      ObjectMapper.class,
       Applicator.class,
       CertifyService.class,
       Curator.class,
@@ -37,6 +49,7 @@ import uk.ac.ebi.biosamples.service.certification.*;
     properties = {"job.autorun.enabled=false"})
 public class CertifyServiceTest {
   @Autowired private CertifyService certifyService;
+  @MockBean ElixirSchemaValidator validator;
 
   @Test
   public void given_valid_plan_result_issue_certificate_curator_test() throws Exception {

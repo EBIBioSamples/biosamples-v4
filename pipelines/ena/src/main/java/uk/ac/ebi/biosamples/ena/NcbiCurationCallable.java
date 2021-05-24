@@ -26,36 +26,35 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 public class NcbiCurationCallable implements Callable<Void> {
   private static final String SUPPRESSED = "suppressed";
+  public static final String TEMPORARY_SUPPRESSED = "temporary_suppressed";
 
   private Logger log = LoggerFactory.getLogger(getClass());
 
   private final String accession;
+  private final int statusId;
   private final BioSamplesClient bioSamplesClient;
-  private final String webinId;
+  private final String domain;
   private boolean suppressionHandler;
 
-  public NcbiCurationCallable(String accession, BioSamplesClient bioSamplesClient, String webinId) {
-    this.accession = accession;
-    this.bioSamplesClient = bioSamplesClient;
-    this.webinId = webinId;
-  }
-
   /**
-   * Construction for SUPPRESSED samples
+   * Construction
    *
    * @param accession
+   * @param statusId
    * @param bioSamplesClient
-   * @param webinId
+   * @param domain
    * @param suppressionHandler
    */
   public NcbiCurationCallable(
       String accession,
+      int statusId,
       BioSamplesClient bioSamplesClient,
-      String webinId,
+      String domain,
       boolean suppressionHandler) {
     this.accession = accession;
+    this.statusId = statusId;
     this.bioSamplesClient = bioSamplesClient;
-    this.webinId = webinId;
+    this.domain = domain;
     this.suppressionHandler = suppressionHandler;
   }
 
@@ -74,7 +73,7 @@ public class NcbiCurationCallable implements Callable<Void> {
         if (bioSamplesClient
             .fetchSampleResource(this.accession, Optional.of(new ArrayList<>()))
             .isPresent()) {
-          bioSamplesClient.persistCuration(this.accession, curation, webinId);
+          bioSamplesClient.persistCuration(this.accession, curation, domain, false);
         } else {
           log.warn("Unable to find " + this.accession);
         }
@@ -107,7 +106,8 @@ public class NcbiCurationCallable implements Callable<Void> {
 
         for (Attribute attribute : sample.getAttributes()) {
           if (attribute.getType().equals("INSDC status")
-              && attribute.getValue().equals(SUPPRESSED)) {
+              && (attribute.getValue().equals(SUPPRESSED)
+                  || attribute.getValue().equalsIgnoreCase(TEMPORARY_SUPPRESSED))) {
             persistRequired = false;
             break;
           }
@@ -115,8 +115,12 @@ public class NcbiCurationCallable implements Callable<Void> {
 
         if (persistRequired) {
           sample.getAttributes().removeIf(attr -> attr.getType().contains("INSDC status"));
-          sample.getAttributes().add(Attribute.build("INSDC status", SUPPRESSED));
-          log.info("Updating status to suppressed of sample: " + this.accession);
+          sample
+              .getAttributes()
+              .add(
+                  Attribute.build(
+                      "INSDC status", statusId == 5 ? SUPPRESSED : TEMPORARY_SUPPRESSED));
+          log.info("Updating status to suppressed/ temp-suppressed of sample: " + this.accession);
           bioSamplesClient.persistSampleResource(sample);
         }
       }

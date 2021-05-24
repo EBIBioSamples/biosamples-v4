@@ -8,25 +8,10 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.model.upload.validation;
+package uk.ac.ebi.biosamples.exception;
 
-import java.util.Set;
-import java.util.TreeSet;
-import org.springframework.stereotype.Component;
-
-@Component
-public class Messages {
-  private Set<String> messagesList = new TreeSet<>();
-
-  public void addMessage(String message) {
-    messagesList.add(message);
-  }
-
-  public Set<String> getMessagesList() {
-    return messagesList;
-  }
-
-  public void clear() {
-    messagesList.clear();
+public class SampleValidationException extends RuntimeException {
+  public SampleValidationException(String message) {
+    super(message);
   }
 }

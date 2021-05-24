@@ -14,10 +14,8 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -441,21 +439,142 @@ public class SamplesRestController {
     /*Pre accessioning is done by other archives to get a BioSamples accession before processing their own pipelines. It is better to check duplicates in pre-accessioning cases
      * The original case of accession remains unchanged*/
     if (preAccessioning) {
-      if (sampleService.searchSampleByDomainAndName(sample.getDomain(), sample.getName())) {
-        return new ResponseEntity<>(
-            "Sample already exists, use POST only for new submissions", HttpStatus.BAD_REQUEST);
-      } else {
-        sample = sampleService.store(sample, false, authProvider);
-        final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
+      sample = sampleService.store(sample, false, authProvider);
+      final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
-        return ResponseEntity.ok(sampleResource.getContent().getAccession());
-      }
+      return ResponseEntity.ok(sampleResource.getContent().getAccession());
     } else {
       sample = sampleService.store(sample, false, authProvider);
       final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
       return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
           .body(sampleResource);
+    }
+  }
+
+  @PreAuthorize("isAuthenticated()")
+  @PostMapping(
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
+  @RequestMapping("/bulk-accession")
+  public ResponseEntity<Map<String, String>> bulkAccessionSample(
+      HttpServletRequest request,
+      @RequestBody List<Sample> samples,
+      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
+          String authProvider) {
+    log.debug("Received POST for bulk accessioning of " + samples.size() + " samples");
+
+    samples.forEach(
+        sample -> {
+          if (sample.hasAccession()) {
+            throw new SampleWithAccessionSumbissionException();
+          }
+        });
+
+    if (authProvider.equalsIgnoreCase("WEBIN")) {
+      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
+      final Authentication authentication = bearerTokenExtractor.extract(request);
+      final SubmissionAccount webinAccount =
+          bioSamplesWebinAuthenticationService
+              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+              .getBody();
+
+      samples =
+          samples.stream()
+              .map(
+                  sample ->
+                      bioSamplesWebinAuthenticationService.buildSample(
+                          sample, webinAccount.getId()))
+              .collect(Collectors.toList());
+    } else {
+      if (samples.size() > 0) {
+        Sample firstSample = samples.get(0);
+        firstSample = bioSamplesAapService.handleSampleDomain(firstSample);
+
+        Sample finalFirstSample = firstSample;
+
+        samples =
+            samples.stream()
+                .map(
+                    sample ->
+                        Sample.Builder.fromSample(sample)
+                            .withDomain(finalFirstSample.getDomain())
+                            .withNoWebinSubmissionAccountId()
+                            .build())
+                .collect(Collectors.toList());
+      }
+    }
+
+    final ExecutorService executor = Executors.newFixedThreadPool(samples.size());
+
+    /*final Map<String, String> outputMap = samples.stream().map(sample -> executor.submit(new SamplePersistence(sample, authProvider))).map(sampleFuture -> {
+      try {
+        return sampleFuture.get();
+      } catch (InterruptedException | ExecutionException e) {
+        log.info("Exception here " + e.getMessage());
+      }
+
+      return null;
+    }).filter(Objects::nonNull).collect(Collectors.toMap(Sample::getName, Sample::getAccession));*/
+
+    final List<Future<Sample>> sampleFutures =
+        samples.stream()
+            .map(sample -> executor.submit(new SamplePersistence(sample, authProvider)))
+            .collect(Collectors.toList());
+
+    log.info("Number of futures " + sampleFutures.size());
+
+    final Map<String, String> outputMap =
+        sampleFutures.stream()
+            .map(
+                sampleFuture -> {
+                  try {
+                    return sampleFuture.get();
+                  } catch (InterruptedException | ExecutionException e) {
+                    log.info("Exception here " + e.getMessage());
+                  }
+
+                  return null;
+                })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toMap(Sample::getName, Sample::getAccession));
+
+    /*final Map<String, String> outputMap = samples.stream().map(sample -> checkAndPersistSample(sample, authProvider)).collect(Collectors.toMap(
+            Sample::getName, Sample::getAccession
+    ));*/
+
+    return ResponseEntity.ok(outputMap);
+  }
+
+  class SamplePersistence implements Callable<Sample> {
+    Sample sample;
+    String authProvider;
+
+    SamplePersistence(Sample sample, String authProvider) {
+      this.sample = sample;
+      this.authProvider = authProvider;
+    }
+
+    @Override
+    public Sample call() {
+      Logger log = LoggerFactory.getLogger(getClass());
+
+      final Instant release =
+          Instant.ofEpochSecond(
+              LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+      final Instant update = Instant.now();
+      final SubmittedViaType submittedVia =
+          sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+
+      sample =
+          Sample.Builder.fromSample(sample)
+              .withRelease(release)
+              .withUpdate(update)
+              .withSubmittedVia(submittedVia)
+              .build();
+
+      log.info("Initiating store() for " + sample.getName());
+      return sampleService.store(sample, false, authProvider);
     }
   }
 
@@ -471,6 +590,7 @@ public class SamplesRestController {
     log.debug("Received POST for " + sample);
 
     final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+    boolean isWebinSuperUser = false;
 
     if (webinAuth) {
       final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
@@ -487,6 +607,7 @@ public class SamplesRestController {
 
       final String webinAccountId = webinAccount.getId();
 
+      isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
 
       final Set<AbstractData> structuredData = sample.getData();
@@ -537,7 +658,7 @@ public class SamplesRestController {
       schemaValidationService.validate(sample);
     }
 
-    if (webinAuth) {
+    if (webinAuth && !isWebinSuperUser) {
       sample = enaTaxonClientService.performTaxonomyValidation(sample);
     }
 
@@ -545,7 +666,7 @@ public class SamplesRestController {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
-    sample = sampleService.store(sample, false, authProvider);
+    sample = sampleService.store(sample, true, authProvider);
 
     // assemble a resource to return
     Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());

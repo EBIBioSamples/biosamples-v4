@@ -130,7 +130,7 @@ public class BioSamplesWebinAuthenticationService {
     }
   }
 
-  private Sample buildSample(Sample sample, String webinId) {
+  public Sample buildSample(Sample sample, String webinId) {
     return Sample.Builder.fromSample(sample)
         .withWebinSubmissionAccountId(webinId)
         .withNoDomain()
@@ -188,16 +188,16 @@ public class BioSamplesWebinAuthenticationService {
     final AtomicBoolean isWebinIdValid = new AtomicBoolean(false);
 
     sample
-            .getData()
-            .forEach(
-                    data -> {
-                      if (data.getDataType() != null) {
-                        final String structuredDataWebinId = data.getWebinSubmissionAccountId();
+        .getData()
+        .forEach(
+            data -> {
+              if (data.getDataType() != null) {
+                final String structuredDataWebinId = data.getWebinSubmissionAccountId();
 
-                        if (structuredDataWebinId == null)
-                          throw new StructuredDataWebinIdMissingException();
-                      }
-                    });
+                if (structuredDataWebinId == null)
+                  throw new StructuredDataWebinIdMissingException();
+              }
+            });
 
     if (sample.hasAccession()) {
       isWebinIdValid.set(checkStructureDataAccessibilityForSubmitter(sample, id));
@@ -211,54 +211,52 @@ public class BioSamplesWebinAuthenticationService {
     final AtomicBoolean isWebinIdValid = new AtomicBoolean(false);
 
     final Optional<Sample> oldSample =
-            sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+        sampleService.fetch(sample.getAccession(), Optional.empty(), null);
 
     if (oldSample.isPresent()) {
       Sample oldSampleRetrieved = oldSample.get();
 
       sample
-              .getData()
-              .forEach(
-                      data -> {
-                        final StructuredDataType dataType = data.getDataType();
+          .getData()
+          .forEach(
+              data -> {
+                final StructuredDataType dataType = data.getDataType();
 
-                        if (dataType != null) {
-                          Optional<AbstractData> filteredData =
-                                  oldSampleRetrieved.getData().stream()
-                                          .filter(
-                                                  oldSampledata ->
-                                                          oldSampledata.getDataType().equals(dataType))
-                                          .findFirst();
+                if (dataType != null) {
+                  Optional<AbstractData> filteredData =
+                      oldSampleRetrieved.getData().stream()
+                          .filter(oldSampledata -> oldSampledata.getDataType().equals(dataType))
+                          .findFirst();
 
-                          final String webinSubmissionAccountId = data.getWebinSubmissionAccountId();
+                  final String webinSubmissionAccountId = data.getWebinSubmissionAccountId();
 
-                          if (filteredData.isPresent()) {
-                            AbstractData fData = filteredData.get();
+                  if (filteredData.isPresent()) {
+                    AbstractData fData = filteredData.get();
 
-                            if (!webinSubmissionAccountId.equalsIgnoreCase(
-                                    fData.getWebinSubmissionAccountId())) {
-                              throw new StructuredDataNotAccessibleException();
-                            } else {
-                              isWebinIdValid.set(true);
-                            }
-                          } else {
-                            if (id.equalsIgnoreCase(webinSubmissionAccountId)) {
-                              isWebinIdValid.set(true);
-                            }
-                          }
-                        }
-                      });
+                    if (!webinSubmissionAccountId.equalsIgnoreCase(
+                        fData.getWebinSubmissionAccountId())) {
+                      throw new StructuredDataNotAccessibleException();
+                    } else {
+                      isWebinIdValid.set(true);
+                    }
+                  } else {
+                    if (id.equalsIgnoreCase(webinSubmissionAccountId)) {
+                      isWebinIdValid.set(true);
+                    }
+                  }
+                }
+              });
     } else {
       sample
-              .getData()
-              .forEach(
-                      data -> {
-                        if (data.getDataType() != null) {
-                          if (id.equalsIgnoreCase(data.getWebinSubmissionAccountId())) {
-                            isWebinIdValid.set(true);
-                          }
-                        }
-                      });
+          .getData()
+          .forEach(
+              data -> {
+                if (data.getDataType() != null) {
+                  if (id.equalsIgnoreCase(data.getWebinSubmissionAccountId())) {
+                    isWebinIdValid.set(true);
+                  }
+                }
+              });
     }
 
     return isWebinIdValid.get();

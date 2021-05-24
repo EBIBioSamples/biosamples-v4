@@ -33,7 +33,7 @@ public class EraProDao {
 
   private Logger log = LoggerFactory.getLogger(getClass());
 
-  private static final String STATUS_CLAUSE = "STATUS_ID IN (4, 5, 6, 7, 8)";
+  private static final String STATUS_CLAUSE = "STATUS_ID IN (3, 4, 5, 6, 7, 8)";
 
   /**
    * Return a set of BioSamples accessions that have been updated or made public within the
@@ -92,7 +92,7 @@ public class EraProDao {
    */
   public void doGetSuppressedEnaSamples(RowCallbackHandler rch) {
     String query =
-        "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 5";
+        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 5";
 
     jdbcTemplate.query(query, rch);
   }
@@ -104,7 +104,7 @@ public class EraProDao {
    */
   public void doGetSuppressedNcbiDdbjSamples(RowCallbackHandler rch) {
     String query =
-        "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 5";
+        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 5";
 
     jdbcTemplate.query(query, rch);
   }
@@ -204,7 +204,7 @@ public class EraProDao {
 
   public void doGetKilledEnaSamples(RowCallbackHandler rch) {
     String query =
-        "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 6";
+        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 6";
 
     jdbcTemplate.query(query, rch);
   }
