@@ -18,6 +18,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+
+import org.apache.commons.lang.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +42,7 @@ public class WebinAuthClientService implements ClientService {
 
   private Optional<String> jwt = Optional.empty();
   private Optional<Date> expiry = Optional.empty();
-  private Calendar cal = Calendar.getInstance();
+  private Optional<Date> expiryMinusAnHour = Optional.empty();
 
   @Autowired ObjectMapper objectMapper;
 
@@ -66,11 +68,7 @@ public class WebinAuthClientService implements ClientService {
       return null;
     }
 
-    cal.setTime(new Date());
-    cal.add(Calendar.HOUR, -1);
-    final Date oneHourBack = cal.getTime();
-
-    if (!jwt.isPresent() || (expiry.isPresent() && expiry.get().before(oneHourBack))) {
+    if (!jwt.isPresent() || (expiry.isPresent() && expiryMinusAnHour.get().before(new Date()))) {
       final AuthRequestWebin authRequestWebin =
           new AuthRequestWebin(username, password, authRealms);
       HttpHeaders headers = new HttpHeaders();
@@ -88,6 +86,10 @@ public class WebinAuthClientService implements ClientService {
         final DecodedJWT decodedJwt = JWT.decode(jwt.orElse(null));
 
         expiry = Optional.of(decodedJwt.getExpiresAt());
+
+        if (expiry.isPresent()) {
+          expiryMinusAnHour = Optional.of(DateUtils.addHours(expiry.get(), -1));
+        }
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
