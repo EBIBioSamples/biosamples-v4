@@ -6,26 +6,27 @@ This pages contains links to release notes for BioSamples for version 4.0.0 and 
 == v5.1.1 Release notes
 === New Features
 1. JSON Schema store integration with BioSamples
-
++
 We have integrated the JSON Schema store with BioSamples. JSON Schema store is an application for storing and managing JSON Schemas. All BioSamples’ checklists will be stored and managed in the JSON Schema store. In the future we plan to expose the API with authentication.
 
 2. BioSamples File uploader
-
++
 We have introduced a new drag and drop style file uploader for bulk uploading of samples. This is mostly intended for our non-programmatic submitters who want to fill in their samples metadata in a file for uploading and persisting samples in BioSamples.
 The drag and drop uploader in BioSamples supports both Webin and AAP authentication. 
 More details on the uploader can be found in a newly added uploader guide. The guide has the required details about the file format, mandatory fields and other pre-conditions. [add link]
 
 3. ENA taxonomy service integration with BioSamples
-
++
 Samples submitted to BioSamples using ENA Webin authentication are put through additional checks to be compliant with ENA. All ENA samples must have taxonomy information and the taxonomy must be valid against the ENA taxonomy service. In BioSamples we have added a submission time validation of the mandatory organism attribute against the ENA taxonomy service.
 
 4. BioSamples client changes
-
++
 BioSamples client version 5.1.0 has undergone technical changes to support Webin authentication. The latest version of the client can be used to submit samples, curate samples or certify samples in BioSamples using Webin authentication.
 
 5. Improved DUO code rendering
-
++
 Improve DUO codes in Samples page. When the mouse pointer is moved on top of a DUO code, its description will be displayed as a tooltip.
+
 === Bug Fixes
 1. Fix Phenopacket export errors when exporting samples with disease related attributes
 
