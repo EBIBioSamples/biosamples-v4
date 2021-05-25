@@ -87,8 +87,11 @@ public class WebinAuthClientService implements ClientService {
 
         expiry = Optional.of(decodedJwt.getExpiresAt());
 
+        log.info("Expiry of JWT is : " + (expiry.isPresent() ? expiry.get() : null));
+
         if (expiry.isPresent()) {
-          expiryMinusAnHour = Optional.of(DateUtils.addHours(expiry.get(), -1));
+          expiryMinusAnHour = Optional.of(DateUtils.addHours(expiry.get(), -4));
+          log.info("Refresh set to : " + (expiryMinusAnHour.isPresent() ? expiryMinusAnHour.get() : null));
         }
       } catch (Exception e) {
         throw new RuntimeException(e);
