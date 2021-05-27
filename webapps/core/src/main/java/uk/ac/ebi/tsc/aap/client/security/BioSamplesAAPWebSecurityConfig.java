@@ -10,8 +10,6 @@
 */
 package uk.ac.ebi.tsc.aap.client.security;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
@@ -28,15 +26,12 @@ import uk.ac.ebi.tsc.aap.client.security.AAPWebSecurityAutoConfiguration.AAPWebS
 @Component
 @Order(99)
 public class BioSamplesAAPWebSecurityConfig extends AAPWebSecurityConfig {
-  private Logger log = LoggerFactory.getLogger(this.getClass());
-
   private final StatelessAuthenticationEntryPoint unauthorizedHandler;
-
-  private TokenAuthenticationService tokenAuthenticationService;
+  private BioSamplesTokenAuthenticationService tokenAuthenticationService;
 
   public BioSamplesAAPWebSecurityConfig(
       StatelessAuthenticationEntryPoint unauthorizedHandler,
-      TokenAuthenticationService tokenAuthenticationService) {
+      BioSamplesTokenAuthenticationService tokenAuthenticationService) {
     this.unauthorizedHandler = unauthorizedHandler;
     this.tokenAuthenticationService = tokenAuthenticationService;
   }
