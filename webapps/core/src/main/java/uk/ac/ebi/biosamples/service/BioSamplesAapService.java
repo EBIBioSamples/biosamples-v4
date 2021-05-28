@@ -125,12 +125,20 @@ public class BioSamplesAapService {
       UserAuthentication userAuthentication = (UserAuthentication) authentication;
 
       log.trace("userAuthentication = " + userAuthentication.getName());
-      log.trace("userAuthentication = " + userAuthentication.getAuthorities());
+
+      final Collection<? extends GrantedAuthority> authorities = userAuthentication.getAuthorities();
+
+      log.trace("userAuthentication = " + authorities);
       log.trace("userAuthentication = " + userAuthentication.getPrincipal());
       log.trace("userAuthentication = " + userAuthentication.getCredentials());
 
       Set<String> domains = new HashSet<>();
-      for (GrantedAuthority authority : userAuthentication.getAuthorities()) {
+
+      if (authorities == null) {
+        return Collections.emptySet();
+      }
+
+      for (GrantedAuthority authority : authorities) {
         if (authority instanceof Domain) {
           log.trace("Found domain " + authority);
           Domain domain = (Domain) authority;
