@@ -5,6 +5,8 @@ import io.jsonwebtoken.Jwts;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.MalformedClaimException;
 import org.jose4j.jwt.consumer.InvalidJwtException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.model.User;
@@ -15,6 +17,8 @@ import java.util.Set;
 
 @Component
 public class BioSamplesTokenHandler extends TokenHandler {
+    private Logger log = LoggerFactory.getLogger(getClass());
+
     @Override
     public User parseUserFromToken(String token) {
         try {
@@ -44,8 +48,10 @@ public class BioSamplesTokenHandler extends TokenHandler {
                 return new User(null, null, claims.get("principle", String.class), null, null);
             }
         } catch (Exception e) {
-            throw new RuntimeException("Cannot parse token: " + e.getMessage(), e);
+            log.info("Cannot parse token: " + e.getMessage());
         }
+
+        return new User(null, null, null, null, null);
     }
 
     public Claims decodeJWT(String jwt) {
