@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Contact;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.MailSender;
@@ -34,7 +35,7 @@ public class DeduplicationRunner implements ApplicationRunner {
 
     @Override
     public void run(final ApplicationArguments args) {
-        final List<DeduplicationDao.RowMapping> mappingList = deduplicationDao.getAllSamples();
+        /*final List<DeduplicationDao.RowMapping> mappingList = deduplicationDao.getAllSamples();
         boolean isPassed = true;
 
         try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
@@ -47,7 +48,35 @@ public class DeduplicationRunner implements ApplicationRunner {
         } finally {
             MailSender.sendEmail("De-duplication pipeline", null, isPassed);
             log.info("Completed de-duplicaion pipeline");
+        }*/
+
+        final int rangeStart = 9086000;
+        final int rangeEnd = 9086754;
+
+        for (int i = rangeStart; i < rangeEnd; i++) {
+            String accession = "SAMEA" + i;
+
+            try {
+                Optional<Resource<Sample>> sampleOpt = bioSamplesClient.fetchSampleResource(accession);
+
+                if (sampleOpt.isPresent()) {
+                    Sample sample = sampleOpt.get().getContent();
+
+                    if (sample.getName().startsWith("name_") && matchSampleContact(sample.getContacts())) {
+                        log.info("Match found " + sample.getAccession());
+                        sample = Sample.Builder.fromSample(sample).withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant()).build();
+                    }
+
+                    bioSamplesClient.persistSampleResource(sample);
+                }
+            } catch (Exception e) {
+                log.info("Not found " + accession);
+            }
         }
+    }
+
+    private boolean matchSampleContact(SortedSet<Contact> contacts) {
+        return contacts.stream().anyMatch(contact -> contact.getEmail().equals("dgupta@ebi.ac.uk"));
     }
 
     private void checkDuplicates(final DeduplicationDao.RowMapping pair) {

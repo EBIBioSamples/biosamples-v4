@@ -126,7 +126,8 @@ public class BioSamplesAapService {
 
       log.trace("userAuthentication = " + userAuthentication.getName());
 
-      final Collection<? extends GrantedAuthority> authorities = userAuthentication.getAuthorities();
+      final Collection<? extends GrantedAuthority> authorities =
+          userAuthentication.getAuthorities();
 
       log.trace("userAuthentication = " + authorities);
       log.trace("userAuthentication = " + userAuthentication.getPrincipal());

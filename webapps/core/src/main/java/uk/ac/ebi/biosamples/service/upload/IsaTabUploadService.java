@@ -126,7 +126,7 @@ public class IsaTabUploadService {
       log.info("Writing to file");
       Path temp = Files.createTempFile("upload_result", ".tsv");
       boolean headerHasIdentifier =
-              headers.stream().anyMatch(header -> header.equalsIgnoreCase("Sample Identifier"));
+          headers.stream().anyMatch(header -> header.equalsIgnoreCase("Sample Identifier"));
 
       final List<String> outputFileHeaders = new ArrayList<>(headers);
 
@@ -137,28 +137,28 @@ public class IsaTabUploadService {
       final String[] headerParsed = outputFileHeaders.toArray(new String[outputFileHeaders.size()]);
 
       final Iterable<CSVRecord> records =
-              CSVFormat.TDF
-                      .withHeader(headerParsed)
-                      .withFirstRecordAsHeader()
-                      .withAllowDuplicateHeaderNames()
-                      .withFirstRecordAsHeader()
-                      .withIgnoreEmptyLines()
-                      .withIgnoreHeaderCase()
-                      .withAllowMissingColumnNames()
-                      .withIgnoreSurroundingSpaces()
-                      .withTrim()
-                      .parse(in);
+          CSVFormat.TDF
+              .withHeader(headerParsed)
+              .withFirstRecordAsHeader()
+              .withAllowDuplicateHeaderNames()
+              .withFirstRecordAsHeader()
+              .withIgnoreEmptyLines()
+              .withIgnoreHeaderCase()
+              .withAllowMissingColumnNames()
+              .withIgnoreSurroundingSpaces()
+              .withTrim()
+              .parse(in);
 
       try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8);
-           final CSVPrinter csvPrinter =
-                   new CSVPrinter(writer, CSVFormat.TDF.withHeader(headerParsed));
-           final PrintWriter out = new PrintWriter(writer)) {
+          final CSVPrinter csvPrinter =
+              new CSVPrinter(writer, CSVFormat.TDF.withHeader(headerParsed));
+          final PrintWriter out = new PrintWriter(writer)) {
         for (CSVRecord row : records) {
           if (headerHasIdentifier) {
             csvPrinter.printRecord(row);
           } else {
             csvPrinter.printRecord(
-                    addAccessionToSamplesForPrint(getPrintableListFromCsvRow(row.iterator()), samples));
+                addAccessionToSamplesForPrint(getPrintableListFromCsvRow(row.iterator()), samples));
           }
         }
 
