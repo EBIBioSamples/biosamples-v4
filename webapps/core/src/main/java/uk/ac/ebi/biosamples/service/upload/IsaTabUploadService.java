@@ -171,7 +171,7 @@ public class IsaTabUploadService {
 
       return temp.toFile();
     } catch (final Exception e) {
-      log.info("Writing to file has failed ", e);
+      log.info("Writing to file has failed " + e.getMessage(), e);
 
       e.printStackTrace();
       return null;
