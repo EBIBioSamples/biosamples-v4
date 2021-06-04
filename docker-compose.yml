@@ -375,14 +375,13 @@ services:
 #    - 8085:3020
 
   json-schema-validator:
-    image: ebispot/elixir-jsonsschema-validator:1.3.0
-    command: npm start
+    image: quay.io/ebi-ait/biovalidator:1.0.0
+    command: --server
     ports:
       - 3020:3020
 
   schema-store:
     image: biosamples/json-schema-store:latest
-    command: npm start
     ports:
       - 8085:8085
     links:
