@@ -28,8 +28,8 @@ This document provides information about the local installation, development env
 == Softwares
 
 * Git 2.17.1
-* Java 11+
-* JDK 11+
+* Java 8+
+* JDK 8+
 * Maven 3.6.0
 * Docker 18.6
 

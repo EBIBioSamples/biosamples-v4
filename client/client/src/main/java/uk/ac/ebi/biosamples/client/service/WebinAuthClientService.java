@@ -14,17 +14,16 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import org.apache.commons.lang.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.web.client.RestOperations;
-import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.model.auth.AuthRealm;
 import uk.ac.ebi.biosamples.client.model.auth.AuthRequestWebin;
 
@@ -40,7 +39,7 @@ public class WebinAuthClientService implements ClientService {
 
   private Optional<String> jwt = Optional.empty();
   private Optional<Date> expiry = Optional.empty();
-  private Calendar cal = Calendar.getInstance();
+  private Optional<Date> expiryMinusAnHour = Optional.empty();
 
   @Autowired ObjectMapper objectMapper;
 
@@ -66,11 +65,7 @@ public class WebinAuthClientService implements ClientService {
       return null;
     }
 
-    cal.setTime(new Date());
-    cal.add(Calendar.HOUR, -1);
-    final Date oneHourBack = cal.getTime();
-
-    if (!jwt.isPresent() || (expiry.isPresent() && expiry.get().before(oneHourBack))) {
+    if (!jwt.isPresent() || (expiry.isPresent() && expiryMinusAnHour.get().before(new Date()))) {
       final AuthRequestWebin authRequestWebin =
           new AuthRequestWebin(username, password, authRealms);
       HttpHeaders headers = new HttpHeaders();
@@ -81,13 +76,22 @@ public class WebinAuthClientService implements ClientService {
         entity = new HttpEntity<>(objectMapper.writeValueAsString(authRequestWebin), headers);
 
         final ResponseEntity<String> response =
-                restOperations.exchange(webinAuthUri, HttpMethod.POST, entity, String.class);
+            restOperations.exchange(webinAuthUri, HttpMethod.POST, entity, String.class);
 
         jwt = Optional.of(response.getBody());
 
         final DecodedJWT decodedJwt = JWT.decode(jwt.orElse(null));
 
         expiry = Optional.of(decodedJwt.getExpiresAt());
+
+        log.info("Expiry of JWT is : " + (expiry.isPresent() ? expiry.get() : null));
+
+        if (expiry.isPresent()) {
+          expiryMinusAnHour = Optional.of(DateUtils.addHours(expiry.get(), -2));
+          log.info(
+              "Refresh set to : "
+                  + (expiryMinusAnHour.isPresent() ? expiryMinusAnHour.get() : null));
+        }
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

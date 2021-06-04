@@ -57,7 +57,6 @@ public class IsaTabUploadService {
 
   public synchronized File upload(
       MultipartFile file, String aapDomain, String certificate, String webinId) {
-    log.info("Upload called");
     validationResult = new ValidationResult();
 
     try {
@@ -122,55 +121,61 @@ public class IsaTabUploadService {
     return StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
   }
 
-  private File writeToFile(File fileToBeUploaded, List<String> headers, List<Sample> samples)
-      throws IOException {
-    log.info("Writing to file");
-    Path temp = Files.createTempFile("upload_result", ".tsv");
-    boolean headerHasIdentifier =
-        headers.stream().anyMatch(header -> header.equalsIgnoreCase("Sample Identifier"));
+  private File writeToFile(File fileToBeUploaded, List<String> headers, List<Sample> samples) {
+    try {
+      log.info("Writing to file");
+      Path temp = Files.createTempFile("upload_result", ".tsv");
+      boolean headerHasIdentifier =
+          headers.stream().anyMatch(header -> header.equalsIgnoreCase("Sample Identifier"));
 
-    final List<String> outputFileHeaders = new ArrayList<>(headers);
+      final List<String> outputFileHeaders = new ArrayList<>(headers);
 
-    if (!headerHasIdentifier) {
-      outputFileHeaders.add("Sample Identifier");
-    }
-    final Reader in = new FileReader(fileToBeUploaded);
-    final String[] headerParsed = outputFileHeaders.toArray(new String[outputFileHeaders.size()]);
+      if (!headerHasIdentifier) {
+        outputFileHeaders.add("Sample Identifier");
+      }
+      final Reader in = new FileReader(fileToBeUploaded);
+      final String[] headerParsed = outputFileHeaders.toArray(new String[outputFileHeaders.size()]);
 
-    final Iterable<CSVRecord> records =
-        CSVFormat.TDF
-            .withHeader(headerParsed)
-            .withFirstRecordAsHeader()
-            .withAllowDuplicateHeaderNames()
-            .withFirstRecordAsHeader()
-            .withIgnoreEmptyLines()
-            .withIgnoreHeaderCase()
-            .withAllowMissingColumnNames()
-            .withIgnoreSurroundingSpaces()
-            .withTrim()
-            .parse(in);
+      final Iterable<CSVRecord> records =
+          CSVFormat.TDF
+              .withHeader(headerParsed)
+              .withFirstRecordAsHeader()
+              .withAllowDuplicateHeaderNames()
+              .withFirstRecordAsHeader()
+              .withIgnoreEmptyLines()
+              .withIgnoreHeaderCase()
+              .withAllowMissingColumnNames()
+              .withIgnoreSurroundingSpaces()
+              .withTrim()
+              .parse(in);
 
-    try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8);
-        final CSVPrinter csvPrinter =
-            new CSVPrinter(writer, CSVFormat.TDF.withHeader(headerParsed));
-        final PrintWriter out = new PrintWriter(writer)) {
-      for (CSVRecord row : records) {
-        if (headerHasIdentifier) {
-          csvPrinter.printRecord(row);
-        } else {
-          csvPrinter.printRecord(
-              addAccessionToSamplesForPrint(getPrintableListFromCsvRow(row.iterator()), samples));
+      try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8);
+          final CSVPrinter csvPrinter =
+              new CSVPrinter(writer, CSVFormat.TDF.withHeader(headerParsed));
+          final PrintWriter out = new PrintWriter(writer)) {
+        for (CSVRecord row : records) {
+          if (headerHasIdentifier) {
+            csvPrinter.printRecord(row);
+          } else {
+            csvPrinter.printRecord(
+                addAccessionToSamplesForPrint(getPrintableListFromCsvRow(row.iterator()), samples));
+          }
         }
+
+        out.println("\n\n");
+        out.println("********RECEIPT START********");
+        out.println(String.join("\n", validationResult.getValidationMessagesList()));
+        out.println("********RECEIPT END********");
+        out.println("\n\n");
       }
 
-      out.println("\n\n");
-      out.println("********RECEIPT START********");
-      out.println(String.join("\n", validationResult.getValidationMessagesList()));
-      out.println("********RECEIPT END********");
-      out.println("\n\n");
-    }
+      return temp.toFile();
+    } catch (final Exception e) {
+      log.info("Writing to file has failed " + e.getMessage(), e);
 
-    return temp.toFile();
+      e.printStackTrace();
+      return null;
+    }
   }
 
   private Iterable<?> addAccessionToSamplesForPrint(

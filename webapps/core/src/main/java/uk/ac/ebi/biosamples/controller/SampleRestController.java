@@ -273,11 +273,10 @@ public class SampleRestController {
         Sample.Builder.fromSample(sample).withUpdate(now).withSubmittedVia(submittedVia).build();
 
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    // Validate all samples submitted with WEBIN AUTH
 
-    if (sample.getWebinSubmissionAccountId() != null) {
+    if (webinAuth && !isWebinSuperUser) {
       schemaValidationService.validate(sample);
-    } else if (!bioSamplesAapService.isWriteSuperUser()) {
+    } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
       schemaValidationService.validate(sample);
     }
 
