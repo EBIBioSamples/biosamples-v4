@@ -1,0 +1,776 @@
+{
+  "$id": "https://www.ebi.ac.uk/biosamples/schemas/pha4ge-sars-cov-2/1.0.0",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PHA4GE_SARS-CoV-2_Contextual_Data_Schema.json",
+  "version": "1.0.0",
+  "description": "https://github.com/pha4ge/SARS-CoV-2-Contextual-Data-Specification/blob/master/PHA4GE_SARS-CoV-2_Contextual_Data_Schema.json",
+  "type": "object",
+  "$async": true,
+  "definitions": {
+    "attribute_value": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "ontologyTerms": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri",
+            "isValidTerm": true
+          }
+        },
+        "unit": {
+          "description": "The unit associated with the attribute value",
+          "type": "string"
+        }
+      }
+    },
+    "attribute_value_list": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/attribute_value"
+      }
+    }
+  },
+  "properties": {
+    "characteristics": {
+      "description": "All the characteristics associated to the sample",
+      "type": "object",
+      "properties": {
+        "specimen_collector_sample_id": {
+          "description": "The user-defined name for the sample.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "bioproject_umbrella_accession": {
+          "description": "The INSDC umbrella accession number of the BioProject to which the BioSample belongs.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "pattern": "^PRJ(N|E|D)([a-zA-Z]?)[0-9]+"
+              }
+            }
+          }
+        },
+        "bioproject_accession": {
+          "description": "The INSDC accession number of the BioProject(s) to which the BioSample belongs.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "pattern": "^PRJ(N|E|D)([a-zA-Z]?)[0-9]+"
+              }
+            }
+          }
+        },
+        "biosample_accession": {
+          "description": "The identifier assigned to a BioSample in INSDC archives.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "pattern": "^SAM(D|N|E([AG]?))[0-9]+"
+              }
+            }
+          }
+        },
+        "sra_accession": {
+          "description": "The Sequence Read Archive (SRA), European Nucleotide Archive (ENA) or DDBJ Sequence Read Archive (DRA) identifier linking raw read data, methodological metadata and quality control metrics submitted to the INSDC.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "pattern": "^(SRR|ERR|DRR)[0-9]+"
+              }
+            }
+          }
+        },
+        "genbank_ena_ddbj_accession": {
+          "description": "The GenBank/ENA/DDBJ identifier assigned to the sequence in the INSDC archives.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "pattern": "^([a-zA-Z]{2})\\d*.\\d{1}"
+              }
+            }
+          }
+        },
+        "gisaid_accession": {
+          "description": "The GISAID accession number assigned to the sequence.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "pattern": "^EPI_ISL_\\d*"
+              }
+            }
+          }
+        },
+        "gisaid_virus_name": {
+          "description": "The user-defined GISAID virus name assigned to the sequence.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "host_specimen_voucher": {
+          "description": "Identifier for the physical specimen.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "sample_collected_by": {
+          "description": "The name of the agency that collected the original sample.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "sample_collector_contact_email": {
+          "description": "The email address of the contact responsible for follow-up regarding the sample.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "format": "email"
+              }
+            }
+          }
+        },
+        "sample_collector_contact_address": {
+          "description": "The mailing address of the agency submitting the sample.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "sequence_submitted_by": {
+          "description": "The name of the agency that generated the sequence.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "sequence_submitter_contact_email": {
+          "description": "The email address of the contact responsible for follow-up regarding the sequence.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "format": "email"
+              }
+            }
+          }
+        },
+        "sequence_submitter_contact_address": {
+          "description": "The mailing address of the agency submitting the sequence.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "sample_collection_date": {
+          "description": "The date on which the sample was collected.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        "sample_received_date": {
+          "description": "The date on which the sample was received.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        "geo_loc_name_country": {
+          "description": "Country of origin of the sample.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "geo_loc_name_state_province_territory": {
+          "description": "The state/province/territory of origin of the sample.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "geo_loc_name_county_region": {
+          "description": "The county/region of origin of the sample.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "geo_loc_name_city": {
+          "description": "The city of origin of the sample.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "geo_loc_latitude": {
+          "description": "The latitude coordinates of the geographical location of sample collection.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "geo_loc_longitude": {
+          "description": "The longitude coordinates of the geographical location of sample collection.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "organism": {
+          "description": "Taxonomic name of the organism.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "isolate": {
+          "description": "Identifier of the specific isolate.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "culture_collection": {
+          "description": "The name of the source collection and unique culture identifier.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "purpose_of_sampling": {
+          "description": "The reason that the sample was collected.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "purpose_of_sampling_details": {
+          "description": "Further details pertaining to the reason the sample was collected.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "sample_plan_name": {
+          "description": "The name of the sample plan implemented for sample collection.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "sample_collected_in_quarantine": {
+          "description": "Whether the sample was collected from an individual in quarantine.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "anatomical_material": {
+          "description": "A substance obtained from an anatomical part of an organism e.g. tissue, blood.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "anatomical_part": {
+          "description": "An anatomical part of an organism e.g. oropharynx.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "body_product": {
+          "description": "A substance excreted/secreted from an organism e.g. feces, urine, sweat.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "environmental_material": {
+          "description": "A substance obtained from the natural or man-made environment e.g. soil, water, sewage, door handle, bed handrail, face mask.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "environmental_site": {
+          "description": "An environmental location may describe a site in the natural or built environment e.g. hospital, wet market, bat cave.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "collection_device": {
+          "description": "The instrument or container used to collect the sample e.g. swab.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "collection_method": {
+          "description": "The process used to collect the sample e.g. phlebotomy, necropsy.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "collection_protocol": {
+          "description": "The name and version of a particular protocol used for sampling.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "specimen_processing": {
+          "description": "Any processing applied to the sample during or after receiving the sample.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "lab_host": {
+          "description": "Name and description of the laboratory host used to propagate the source organism or material from which the sample was obtained.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "passage_number": {
+          "description": "passage_number",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "pattern": "\\d+"
+              }
+            }
+          }
+        },
+        "passage_method": {
+          "description": "Description of how organism was passaged.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "biomaterial_extracted": {
+          "description": "The biomaterial extracted from samples for the purpose of sequencing.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "data_abstraction_details": {
+          "description": "A description of how any data elements were altered to preserve patient privacy.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "geo_loc_name_state_province_region": {
+          "description": "State/province/region of origin of the sample.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "host_common_name": {
+          "description": "The commonly used name of the host.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "host_scientific_name": {
+          "description": "The taxonomic, or scientific name of the host.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "host_health_state": {
+          "description": "Health status of the host at the time of sample collection.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "host_health_status_details": {
+          "description": "Further details pertaining to the health or disease status of the host at time of collection.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "host_disease": {
+          "description": "The name of the disease experienced by the host.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "host_disease_outcome": {
+          "description": "Disease outcome in the host.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "host_age": {
+          "description": "Age of host at the time of sampling.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "pattern": "\\d+-\\d+"
+              }
+            }
+          }
+        },
+        "host_age_unit": {
+          "description": "The units used to measure the host's age.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "host_age_bin": {
+          "description": "The age category of the host at the time of sampling.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "pattern": "\\d+-\\d+"
+              }
+            }
+          }
+        },
+        "host_gender": {
+          "description": "The gender of the host at the time of sample collection.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "host_residence_geo_loc_name_country": {
+          "description": "The country where the host resides.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "host_ethnicity": {
+          "description": "The self-identified ethnicity(ies) of the host.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "host_subject_id": {
+          "description": "A unique identifier by which each host can be referred to e.g. #131",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "symptom_onset_date": {
+          "description": "The date on which the symptoms began or were first noted.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        "signs_and_symptoms": {
+          "description": "A perceived change in function or sensation, (loss, disturbance or appearance) indicative of a disease, reported by a patient.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "pre_existing_conditions_and_risk_factors": {
+          "description": "Patient pre-existing conditions and risk factors.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "complications": {
+          "description": "Patient medical complications that are believed to have occurred as a result of host disease.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "host_vaccination_status": {
+          "description": "The vaccination status of the host (fully vaccinated, partially vaccinated, or not vaccinated).",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "vaccine_name": {
+          "description": "The name of the vaccine.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "number_of_vaccine_doses_received": {
+          "description": "The number of doses of the vaccine recived by the host.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "first_dose_vaccination_date": {
+          "description": "The date the host was first vaccinated.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        "last_dose_vacicnation_date": {
+          "description": "The date the host received their last dose of vaccine.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        "location_of_exposure_geo_loc_name_country": {
+          "description": "The country where the host was likely exposed to the causative agent of the illness.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "destination_of_most_recent_travel_city": {
+          "description": "The name of the city that was the destination of most recent travel.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "destination_of_most_recent_travel__state_province_territory": {
+          "description": "The name of the province that was the destination of most recent travel.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "destination_of_most_recent_travel_country": {
+          "description": "The name of the country that was the destination of most recent travel.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "most_recent_travel_departure_date": {
+          "description": "The date of a person's most recent departure from their primary residence (at that time) on a journey to one or more other locations.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        "most_recent_travel_return_date": {
+          "description": "The date of a person's most recent return to some residence from a journey originating at that residence.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        "travel_history": {
+          "description": "Travel history in last six months.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "exposure_event": {
+          "description": "Event leading to exposure.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "exposure_contact_level": {
+          "description": "The exposure transmission contact type.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "host_role": {
+          "description": "The role of the host in relation to the exposure setting.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "exposure_setting": {
+          "description": "The setting leading to exposure.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "exposure_details": {
+          "description": "Additional host exposure information.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "prior_sars_cov_2_infection": {
+          "description": "Whether there was prior SARS-CoV-2 infection.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "prior_sars_cov_2_infection_isolate": {
+          "description": "The identifier of the isolate found in the prior SARS-CoV-2 infection.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "prior_sars_cov_2_infection_date": {
+          "description": "The date of diagnosis of the prior SARS-CoV-2 infection.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        "prior_sars_cov_2_antiviral_treatment": {
+          "description": "Whether there was prior SARS-CoV-2 treatment with an antiviral agent.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "prior_sars_cov_2_antiviral_treatment_agent": {
+          "description": "The name of the antiviral treatment agent administered during the prior SARS-CoV-2 infection.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "prior_sars_cov_2_antiviral_treatment_date": {
+          "description": "The date treatment was first administered during the prior SARS-CoV-2 infection.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        "purpose_of_sequencing": {
+          "description": "The reason that the sample was sequenced.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "purpose_of_sequencing_details": {
+          "description": "The description of why the sample was sequenced providing specific details.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "sequencing_date": {
+          "description": "The date the sample was sequenced.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        "library_id": {
+          "description": "The user-specified identifier for the library prepared for sequencing.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "amplicon_size": {
+          "description": "The length of the amplicon generated by PCR amplification.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "library_preparation_kit": {
+          "description": "The name of the DNA library preparation kit used to generate the library being sequenced.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "flow_cell_barcode": {
+          "description": "The barcode of the flow cell used for sequencing.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "sequencing_instrument": {
+          "description": "The model of the sequencing instrument used.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "sequencing_protocol_name": {
+          "description": "The name and version number of the sequencing protocol used.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "sequencing_protocol": {
+          "description": "The protocol used to generate the sequence.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "sequencing_kit_number": {
+          "description": "The manufacturer's kit number.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "amplicon_pcr_primer_scheme": {
+          "description": "The specifications of the primers (primer sequences, binding positions, fragment size generated etc) used to generate the amplicons to be sequenced.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "raw_sequence_data_processing_method": {
+          "description": "The method used for raw data processing such as removing barcodes, adapter trimming, filtering etc.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "dehosting_method": {
+          "description": "The method used to remove host reads from the pathogen sequence.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "consensus_sequence_name": {
+          "description": "The name of the consensus sequence.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "consensus_sequence_filename": {
+          "description": "The name of the consensus sequence file.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "consensus_sequence_filepath": {
+          "description": "The filepath of the consesnsus sequence file.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "consensus_sequence_software_name": {
+          "description": "The name of software used to generate the consensus sequence.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "consensus_sequence_software_version": {
+          "description": "The version of the software used to generate the consensus sequence.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "breadth_of_coverage_value": {
+          "description": "The percentage of the reference genome covered by the sequenced data, to a prescribed depth.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "depth_of_coverage_value": {
+          "description": "The average number of reads representing a given nucleotide in the reconstructed sequence.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "depth_of_coverage_threshold": {
+          "description": "The threshold used as a cut-off for the depth of coverage.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "r1_fastq_filename": {
+          "description": "The user-specified filename of the r1 FASTQ file.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "r2_fastq_filename": {
+          "description": "The user-specified filename of the r2 FASTQ file.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "r1_fastq_filepath": {
+          "description": "The filepath of the r1 FASTQ file.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "r2_fastq_filepath": {
+          "description": "The filepath of the r2 FASTQ file.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "fast5_filename": {
+          "description": "The user-specified filename of the FAST5 file.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "fast5_filepath": {
+          "description": "The filepath of the FAST5 file.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "number_of_base_pairs_sequenced": {
+          "description": "The number of total base pairs generated by the sequencing process.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "consensus_genome_length": {
+          "description": "Size of the assembled genome described as the number of base pairs.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "reference_genome_accession": {
+          "description": "A persistent, unique identifier of a genome database entry.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "bioinformatics_protocol": {
+          "description": "The name and version number of the bioinformatics protocol used.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "lineage_clade_name": {
+          "description": "The name of the lineage or clade.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "lineage_clade_analysis_software_name": {
+          "description": "The name of the software used to determine the lineage/clade.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "lineage_clade_analysis_software_version": {
+          "description": "The version of the software used to determine the lineage/clade.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "variant_designation": {
+          "description": "The variant classification of the lineage/clade i.e. variant, variant of concern.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "variant_evidence": {
+          "description": "The evidence used to make the variant determination.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "gene_name_1": {
+          "description": "The name of the gene used in the diagnostic RT-PCR test.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "diagnostic_pcr_protocol_1": {
+          "description": "The name and version number of the protocol used for diagnostic marker amplification.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "diagnostic_pcr_ct_value_1": {
+          "description": "The Ct value result from a diagnostic SARS-CoV-2 RT-PCR test.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "gene_name_2": {
+          "description": "The name of the gene used in the diagnostic RT-PCR test.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "diagnostic_pcr_protocol_2": {
+          "description": "The name and version number of the protocol used for diagnostic marker amplification.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "diagnostic_pcr_ct_value_2": {
+          "description": "The cycle threshold (CT) value result from a diagnostic SARS-CoV-2 RT-PCR test.",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "authors": {
+          "description": "Names of individuals contributing to the processes of sample collection, sequence generation, analysis, and data submission.",
+          "$ref": "#/definitions/attribute_value_list"
+        }
+      },
+      "required": [
+        "specimen_collector_sample_id",
+        "sample_collected_by",
+        "sequence_submitted_by",
+        "sample_collection_date",
+        "geo_loc_name_country",
+        "geo_loc_name_state_province_territory",
+        "organism",
+        "isolate",
+        "geo_loc_name_state_province_region",
+        "host_scientific_name",
+        "host_disease",
+        "sequencing_instrument",
+        "consensus_sequence_software_name",
+        "consensus_sequence_software_version"
+      ],
+      "dependencies": {
+        "environment parameter":["environment parameter value"],
+        "environment parameter value":["environment parameter"]
+      },
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "name",
+    "characteristics"
+  ]
+}
