@@ -18,6 +18,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -28,14 +29,21 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
     classes = TestApplication.class,
     properties = {"job.autorun.enabled=false"})
 public class TestConversion {
+    @Qualifier("WEBINCLIENT")
+    @Autowired
+    public BioSamplesClient bioSamplesWebinClient;
 
-  @Autowired public BioSamplesClient bioSamplesClient;
+    @Autowired
+    public BioSamplesClient bioSamplesAapClient;
 
-  @Autowired private EraProDao eraProDao;
+    @Autowired
+    private EraProDao eraProDao;
 
-  @Autowired private EnaElementConverter enaElementConverter;
+    @Autowired
+    private EnaElementConverter enaElementConverter;
 
-  @Autowired private EnaXmlEnhancer enaXmlEnhancer;
+    @Autowired
+    private EnaXmlEnhancer enaXmlEnhancer;
 
   @Test
   @Ignore
@@ -47,7 +55,8 @@ public class TestConversion {
               new EnaCallable(
                   sampleAccession,
                   0,
-                  bioSamplesClient,
+                  bioSamplesWebinClient,
+                  bioSamplesAapClient,
                   enaXmlEnhancer,
                   enaElementConverter,
                   eraProDao,
@@ -73,18 +82,19 @@ public class TestConversion {
         resultSet -> {
           String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
           EnaCallable enaCallable =
-              new EnaCallable(
-                  sampleAccession,
-                  0,
-                  bioSamplesClient,
-                  enaXmlEnhancer,
-                  enaElementConverter,
-                  eraProDao,
-                  "test",
-                  false,
-                  false,
-                  false,
-                  null);
+                  new EnaCallable(
+                          sampleAccession,
+                          0,
+                          bioSamplesWebinClient,
+                          bioSamplesAapClient,
+                          enaXmlEnhancer,
+                          enaElementConverter,
+                          eraProDao,
+                          "test",
+                          false,
+                          false,
+                          false,
+                          null);
           try {
             enaCallable.call();
           } catch (Exception e) {
@@ -101,18 +111,19 @@ public class TestConversion {
         resultSet -> {
           String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
           EnaCallable enaCallable =
-              new EnaCallable(
-                  sampleAccession,
-                  0,
-                  bioSamplesClient,
-                  enaXmlEnhancer,
-                  enaElementConverter,
-                  eraProDao,
-                  "test",
-                  false,
-                  false,
-                  false,
-                  null);
+                  new EnaCallable(
+                          sampleAccession,
+                          0,
+                          bioSamplesWebinClient,
+                          bioSamplesAapClient,
+                          enaXmlEnhancer,
+                          enaElementConverter,
+                          eraProDao,
+                          "test",
+                          false,
+                          false,
+                          false,
+                          null);
           try {
             enaCallable.call();
           } catch (Exception e) {
@@ -129,18 +140,19 @@ public class TestConversion {
         resultSet -> {
           String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
           EnaCallable enaCallable =
-              new EnaCallable(
-                  sampleAccession,
-                  0,
-                  bioSamplesClient,
-                  enaXmlEnhancer,
-                  enaElementConverter,
-                  eraProDao,
-                  "test",
-                  false,
-                  false,
-                  false,
-                  null);
+                  new EnaCallable(
+                          sampleAccession,
+                          0,
+                          bioSamplesWebinClient,
+                          bioSamplesAapClient,
+                          enaXmlEnhancer,
+                          enaElementConverter,
+                          eraProDao,
+                          "test",
+                          false,
+                          false,
+                          false,
+                          null);
           try {
             enaCallable.call();
           } catch (Exception e) {
@@ -156,19 +168,20 @@ public class TestConversion {
     RowCallbackHandler rowCallbackHandler =
         resultSet -> {
           String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-          EnaCallable enaCallable =
-              new EnaCallable(
-                  sampleAccession,
-                  0,
-                  bioSamplesClient,
-                  enaXmlEnhancer,
-                  enaElementConverter,
-                  eraProDao,
-                  "test",
-                  false,
-                  false,
-                  false,
-                  null);
+            EnaCallable enaCallable =
+                    new EnaCallable(
+                            sampleAccession,
+                            0,
+                            bioSamplesWebinClient,
+                            bioSamplesAapClient,
+                            enaXmlEnhancer,
+                            enaElementConverter,
+                            eraProDao,
+                            "test",
+                            false,
+                            false,
+                            false,
+                            null);
           try {
             enaCallable.call();
           } catch (Exception e) {

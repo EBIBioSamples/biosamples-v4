@@ -44,13 +44,15 @@ public class BioSamplesAapService {
   private final SampleService sampleService;
   private final TokenService tokenService;
   private final DomainService domainService;
+  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
 
   public BioSamplesAapService(
       RestTemplateBuilder restTemplateBuilder,
       BioSamplesProperties bioSamplesProperties,
       SampleService sampleService,
       TokenService tokenService,
-      DomainService domainService) {
+      DomainService domainService,
+      BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService) {
     traverson =
         new Traverson(bioSamplesProperties.getBiosamplesClientAapUri(), MediaTypes.HAL_JSON);
     this.tokenService = tokenService;
@@ -58,6 +60,7 @@ public class BioSamplesAapService {
     traverson.setRestOperations(restTemplateBuilder.build());
     this.bioSamplesProperties = bioSamplesProperties;
     this.sampleService = sampleService;
+    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
   }
 
   public String authenticate(String userName, String password) {
@@ -206,9 +209,17 @@ public class BioSamplesAapService {
     // todo remove integration user check
     if (sample.getAccession() != null && !(isWriteSuperUser() || isIntegrationTestUser())) {
       Optional<Sample> oldSample =
-          sampleService.fetch(sample.getAccession(), Optional.empty(), null);
-      if (!oldSample.isPresent() || !usersDomains.contains(oldSample.get().getDomain())) {
-        throw new SampleDomainMismatchException();
+              sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+      final boolean oldSamplePresent = oldSample.isPresent();
+
+      if (!oldSamplePresent || !usersDomains.contains(oldSample.get().getDomain())) {
+        final boolean webinProxyUser = (oldSamplePresent && bioSamplesWebinAuthenticationService.isWebinSuperUser(oldSample.get().getWebinSubmissionAccountId()));
+
+        log.info("WEBIN proxy user " + webinProxyUser);
+
+        if (!webinProxyUser) {
+          throw new SampleDomainMismatchException();
+        }
       }
     }
 

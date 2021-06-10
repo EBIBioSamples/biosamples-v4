@@ -38,7 +38,8 @@ public class EnaCallable implements Callable<Void> {
   private static final String TEMPORARY_KILLED = "temporary_killed";
   public static final String ENA_SRA_ACCESSION = "SRA accession";
   private final String sampleAccession;
-  private final BioSamplesClient bioSamplesClient;
+  private final BioSamplesClient bioSamplesWebinClient;
+  private final BioSamplesClient bioSamplesAapClient;
   private final EnaXmlEnhancer enaXmlEnhancer;
   private final EraProDao eraProDao;
   private final EnaElementConverter enaElementConverter;
@@ -52,7 +53,8 @@ public class EnaCallable implements Callable<Void> {
   public EnaCallable(
       String sampleAccession,
       int statusId,
-      BioSamplesClient bioSamplesClient,
+      BioSamplesClient bioSamplesWebinClient,
+      BioSamplesClient bioSamplesAapClient,
       EnaXmlEnhancer enaXmlEnhancer,
       EnaElementConverter enaElementConverter,
       EraProDao eraProDao,
@@ -63,7 +65,8 @@ public class EnaCallable implements Callable<Void> {
       Set<AbstractData> amrData) {
     this.sampleAccession = sampleAccession;
     this.statusId = statusId;
-    this.bioSamplesClient = bioSamplesClient;
+    this.bioSamplesWebinClient = bioSamplesWebinClient;
+    this.bioSamplesAapClient = bioSamplesAapClient;
     this.enaXmlEnhancer = enaXmlEnhancer;
     this.enaElementConverter = enaElementConverter;
     this.eraProDao = eraProDao;
@@ -116,7 +119,7 @@ public class EnaCallable implements Callable<Void> {
         curationDomainBlankList.add("");
 
         Optional<Resource<Sample>> sampleResult =
-            bioSamplesClient.fetchSampleResource(
+            bioSamplesAapClient.fetchSampleResource(
                 this.sampleAccession, Optional.of(curationDomainBlankList));
 
         if (sampleResult.isPresent()) {
@@ -135,11 +138,11 @@ public class EnaCallable implements Callable<Void> {
                     .withNoExternalReferences()
                     .build();
 
-            bioSamplesClient.persistSampleResource(sample);
+            bioSamplesAapClient.persistSampleResource(sample);
             log.info("Updated sample " + sampleAccession + " with SRA accession");
 
             Iterable<Resource<CurationLink>> curationLinks =
-                bioSamplesClient.fetchCurationLinksOfSample(sampleAccession);
+                    bioSamplesAapClient.fetchCurationLinksOfSample(sampleAccession);
             AtomicBoolean containsEnaLink = new AtomicBoolean(false);
             final List<CurationLink> externalRefDuplicateLinks = new ArrayList<>();
 
@@ -170,7 +173,7 @@ public class EnaCallable implements Callable<Void> {
               externalRefDuplicateLinks.remove(0);
               containsEnaLink.set(true);
 
-              externalRefDuplicateLinks.forEach(bioSamplesClient::deleteCurationLink);
+              externalRefDuplicateLinks.forEach(bioSamplesAapClient::deleteCurationLink);
             }
 
             if (!containsEnaLink.get()) {
@@ -179,7 +182,7 @@ public class EnaCallable implements Callable<Void> {
               Curation enaLinkCuration =
                   Curation.build(null, null, null, Collections.singleton(exRef));
 
-              bioSamplesClient.persistCuration(sampleAccession, enaLinkCuration, webinId, true);
+              bioSamplesAapClient.persistCuration(sampleAccession, enaLinkCuration, webinId, true);
               log.info("Updated sample " + sampleAccession + " with ENA link");
             }
           } else {
@@ -282,7 +285,7 @@ public class EnaCallable implements Callable<Void> {
     if (amrData != null && amrData.size() > 0)
       sample = Sample.Builder.fromSample(sample).withData(amrData).build();
 
-    bioSamplesClient.persistSampleResource(sample);
+    bioSamplesWebinClient.persistSampleResource(sample);
   }
 
   private String handleStatus(int statusId) {
@@ -319,7 +322,7 @@ public class EnaCallable implements Callable<Void> {
 
     try {
       Optional<Resource<Sample>> optionalSampleResource =
-          bioSamplesClient.fetchSampleResource(
+          bioSamplesWebinClient.fetchSampleResource(
               this.sampleAccession, Optional.of(curationDomainBlankList));
 
       if (optionalSampleResource.isPresent()) {
@@ -342,7 +345,7 @@ public class EnaCallable implements Callable<Void> {
                   Attribute.build(
                       "INSDC status", statusId == 5 ? SUPPRESSED : TEMPORARY_SUPPRESSED));
           log.info("Updating status to suppressed of sample: " + this.sampleAccession);
-          bioSamplesClient.persistSampleResource(sample);
+          bioSamplesWebinClient.persistSampleResource(sample);
         }
       } else {
         if (!ifNcbiDdbj()) {
@@ -374,7 +377,7 @@ public class EnaCallable implements Callable<Void> {
 
     try {
       Optional<Resource<Sample>> optionalSampleResource =
-          bioSamplesClient.fetchSampleResource(
+              bioSamplesWebinClient.fetchSampleResource(
               this.sampleAccession, Optional.of(curationDomainBlankList));
 
       if (optionalSampleResource.isPresent()) {
@@ -396,7 +399,7 @@ public class EnaCallable implements Callable<Void> {
               .getAttributes()
               .add(Attribute.build("INSDC status", statusId == 6 ? KILLED : TEMPORARY_KILLED));
           log.info("Updating status to killed of sample: " + this.sampleAccession);
-          bioSamplesClient.persistSampleResource(sample);
+          bioSamplesWebinClient.persistSampleResource(sample);
         }
       } else {
         if (!ifNcbiDdbj()) {
