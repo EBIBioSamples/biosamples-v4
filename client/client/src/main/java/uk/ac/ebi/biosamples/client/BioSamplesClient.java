@@ -99,7 +99,7 @@ public class BioSamplesClient implements AutoCloseable {
     Traverson traverson = new Traverson(uri, MediaTypes.HAL_JSON);
     traverson.setRestOperations(restOperations);
 
-    boolean isWebinSubmission = clientService instanceof WebinAuthClientService ? true : false;
+    boolean isWebinSubmission = clientService instanceof WebinAuthClientService;
 
     sampleRetrievalService =
         new SampleRetrievalService(restOperations, traverson, threadPoolExecutor);

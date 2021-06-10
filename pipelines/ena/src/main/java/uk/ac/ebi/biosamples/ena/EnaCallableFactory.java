@@ -20,20 +20,22 @@ import uk.ac.ebi.biosamples.model.structured.AbstractData;
 
 @Service
 public class EnaCallableFactory {
-  private final BioSamplesClient bioSamplesClient;
+  private final BioSamplesClient bioSamplesWebinClient;
+  private final BioSamplesClient bioSamplesAapClient;
   private final EnaXmlEnhancer enaXmlEnhancer;
   private final EnaElementConverter enaElementConverter;
   private final EraProDao eraProDao;
   private final String webinId;
 
   public EnaCallableFactory(
-      @Qualifier("WEBINCLIENT") BioSamplesClient bioSamplesClient,
+      @Qualifier("WEBINCLIENT") BioSamplesClient bioSamplesWebinClient,
+      BioSamplesClient bioSamplesAapClient,
       EnaXmlEnhancer enaXmlEnhancer,
       EnaElementConverter enaElementConverter,
       EraProDao eraProDao,
       PipelinesProperties pipelinesProperties) {
-
-    this.bioSamplesClient = bioSamplesClient;
+    this.bioSamplesWebinClient = bioSamplesWebinClient;
+    this.bioSamplesAapClient = bioSamplesAapClient;
     this.enaXmlEnhancer = enaXmlEnhancer;
     this.enaElementConverter = enaElementConverter;
     this.eraProDao = eraProDao;
@@ -60,7 +62,8 @@ public class EnaCallableFactory {
     return new EnaCallable(
         accession,
         statusId,
-        bioSamplesClient,
+        bioSamplesWebinClient,
+        bioSamplesAapClient,
         enaXmlEnhancer,
         enaElementConverter,
         eraProDao,
