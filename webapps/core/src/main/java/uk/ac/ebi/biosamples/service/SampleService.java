@@ -394,7 +394,7 @@ public class SampleService {
       } else {
         return oldSample.getSubmitted() != null
             ? oldSample.getSubmitted()
-            : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
+            : sampleToUpdate.getSubmitted();
       }
     } else {
       final String domain = sampleToUpdate.getDomain();
