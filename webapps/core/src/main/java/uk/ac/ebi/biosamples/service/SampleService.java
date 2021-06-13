@@ -392,9 +392,9 @@ public class SampleService {
       if (isFirstTimeMetadataAdded) {
         return sampleToUpdate.getSubmitted();
       } else {
-        return oldSample.getSubmitted() != null
-            ? oldSample.getSubmitted()
-            : sampleToUpdate.getSubmitted();
+        return sampleToUpdate.getSubmitted() != null
+            ? sampleToUpdate.getSubmitted()
+            : oldSample.getSubmitted();
       }
     } else {
       final String domain = sampleToUpdate.getDomain();
