@@ -119,7 +119,7 @@ public class BioSamplesProperties {
   @Value("${biosamples.schemaStore:http://localhost:8085}")
   private String schemaStore;
 
-  @Value("${biosamples.schema.default:ERC100001}")
+  @Value("${biosamples.schema.default:BSDC00001}")
   private String biosamplesDefaultSchema;
 
   public String getBiosamplesClientWebinUsername() {

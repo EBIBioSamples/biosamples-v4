@@ -179,7 +179,6 @@
         "material source DOI": {
           "description": "(DM-51) Digital Object Identifier (DOI) of the material source (ex: doi:10.15454/1.4658436467893904E12).",
           "cardinality": "recommended",
-          "$ref": "#/definitions/attribute_value_list",
           "allOf": [
             {
               "$ref": "#/definitions/attribute_value_list"
@@ -187,8 +186,13 @@
             {
               "type": "array",
               "items": {
-                "type": "string",
-                "pattern": "^doi:.*$"
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "pattern": "^doi:.*$"
+                  }
+                }
               },
               "maxItem": 1
             }

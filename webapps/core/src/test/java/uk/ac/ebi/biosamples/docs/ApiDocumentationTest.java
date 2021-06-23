@@ -257,7 +257,7 @@ public class ApiDocumentationTest {
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
     when(sampleService.store(any(Sample.class), eq(true), eq("AAP"))).thenReturn(sampleWithDomain);
-    when(schemaValidationService.validate(any(Sample.class))).thenReturn("ERC100001");
+    when(schemaValidationService.validate(any(Sample.class))).thenReturn("BSDC00001");
 
     this.mockMvc
         .perform(
@@ -303,7 +303,7 @@ public class ApiDocumentationTest {
         .thenReturn(sampleWithWebinId);
     when(enaTaxonClientService.performTaxonomyValidation(any(Sample.class)))
         .thenReturn(sampleWithWebinId);
-    when(schemaValidationService.validate(any(Sample.class))).thenReturn("ERC100001");
+    when(schemaValidationService.validate(any(Sample.class))).thenReturn("BSDC00001");
 
     this.mockMvc
         .perform(
@@ -345,7 +345,7 @@ public class ApiDocumentationTest {
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
     when(sampleService.store(any(Sample.class), eq(true), eq("AAP"))).thenReturn(sampleWithDomain);
-    when(schemaValidationService.validate(any(Sample.class))).thenReturn("ERC100001");
+    when(schemaValidationService.validate(any(Sample.class))).thenReturn("BSDC00001");
 
     this.mockMvc
         .perform(
@@ -583,7 +583,7 @@ public class ApiDocumentationTest {
             + "\"ontologyTerms\" : [ \"9606\" ]"
             + "} ],"
             + "\"checklist\" : [ {"
-            + "\"text\" : \"ERC100001\""
+            + "\"text\" : \"BSDC00001\""
             + "} ]}"
             + "}";
 
