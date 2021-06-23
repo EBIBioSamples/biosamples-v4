@@ -15,9 +15,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -236,7 +234,8 @@ public class Ncbi implements ApplicationRunner {
           Sample newSample =
               Sample.Builder.fromSample(sample)
                   .withNoData()
-                  .withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant())
+                  .withRelease(Instant.ofEpochSecond(
+                          LocalDateTime.now(ZoneOffset.UTC).plusYears(1000).toEpochSecond(ZoneOffset.UTC)))
                   .build();
           // persist the now private sample
           log.info("Making private " + sample.getAccession());
