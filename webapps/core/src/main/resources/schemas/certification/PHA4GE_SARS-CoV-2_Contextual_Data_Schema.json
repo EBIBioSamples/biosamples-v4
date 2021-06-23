@@ -1,7 +1,7 @@
 {
   "$id": "https://www.ebi.ac.uk/biosamples/schemas/pha4ge-sars-cov-2/1.0.0",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "PHA4GE_SARS-CoV-2_Contextual_Data_Schema.json",
+  "title": "PHA4GE SARS-CoV-2 contextual data schema",
   "version": "1.0.0",
   "description": "https://github.com/pha4ge/SARS-CoV-2-Contextual-Data-Specification/blob/master/PHA4GE_SARS-CoV-2_Contextual_Data_Schema.json",
   "type": "object",

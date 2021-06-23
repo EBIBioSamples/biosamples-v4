@@ -10,8 +10,8 @@ Following are the available checklists for validation. In the future all the ava
 
 Existing BioSamples checklists:
 
-- link:../../schemas/certification/biosamples-minimal.json[ERC100001] : BioSamples minimal checklist
-- link:../../schemas/certification/plant-miappe.json[ERC100002] : Plant MIAPPE checklist
+- link:../../schemas/certification/biosamples-minimal.json[BSDC00001] : BioSamples minimal checklist
+- link:../../schemas/certification/plant-miappe.json[BSDC00002] : Plant MIAPPE checklist
 
 Please refer to the link:../references/api/validate[validation API reference documentation] for examples and API guide.
 
