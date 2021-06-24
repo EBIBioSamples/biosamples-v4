@@ -483,7 +483,7 @@ public class SamplesRestController {
           samples.stream()
               .map(
                   sample ->
-                      bioSamplesWebinAuthenticationService.buildSample(
+                      bioSamplesWebinAuthenticationService.getSampleWithWebinSubmissionAccountIdAdded(
                           sample, webinAccount.getId()))
               .collect(Collectors.toList());
     } else {

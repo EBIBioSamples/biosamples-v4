@@ -28,18 +28,24 @@ public class MessageConfig {
 
   // declare queues
 
-  @Bean
+  @Bean(name = "solrQueue")
   public Queue getQueueToBeIndexedSolr() {
     return QueueBuilder.durable(Messaging.queueToBeIndexedSolr)
         .withArgument("x-dead-letter-exchange", Messaging.exchangeDeadLetter)
         .build();
   }
 
+  @Bean(name = "uploaderQueue")
+  public Queue getFileUploaderQueue() {
+    return QueueBuilder.durable(Messaging.fileUploadQueue)
+            .build();
+  }
+
   // this queue sets up a delay before messages are requeued on the original solr indexing queue
   // do not consume from this queue
   // instead, allow all messages to reach the end of their "lifetime" (time-to-live) and then
   // requeue them as if they were being sent to a dead-letter queue
-  @Bean
+  @Bean(name = "deadLetterQueue")
   public Queue getQueueRetryDeadLetter() {
     return QueueBuilder.durable(Messaging.queueRetryDeadLetter)
         .withArgument("x-message-ttl", 30000) // 60 seconds
@@ -49,24 +55,37 @@ public class MessageConfig {
 
   // declare exchanges
 
-  @Bean
+  @Bean(name = "solrExchange")
   public Exchange getExchangeForIndexingSolr() {
     return ExchangeBuilder.fanoutExchange(Messaging.exchangeForIndexingSolr).durable(true).build();
   }
 
-  @Bean
+  @Bean(name = "uploaderExchange")
+  public Exchange getFileUploaderExchange() {
+    return ExchangeBuilder.fanoutExchange(Messaging.fileUploadExchange).durable(true).build();
+  }
+
+  @Bean(name = "deadLetterExchange")
   public Exchange getExchangeDeadLetter() {
     return ExchangeBuilder.directExchange(Messaging.exchangeDeadLetter).durable(true).build();
   }
 
   // bind queues to exchanges
 
-  @Bean
+  @Bean(name = "solrBindings")
   public Binding bindingForIndexingSolr() {
     return BindingBuilder.bind(getQueueToBeIndexedSolr())
         .to(getExchangeForIndexingSolr())
         .with(Messaging.queueToBeIndexedSolr)
         .noargs();
+  }
+
+  @Bean(name = "uploaderBindings")
+  public Binding bindingForFileUploaderQueues() {
+    return BindingBuilder.bind(getFileUploaderQueue())
+            .to(getFileUploaderExchange())
+            .with(Messaging.fileUploadQueue)
+            .noargs();
   }
 
   // enable messaging in json

@@ -56,7 +56,7 @@ public class LoginController {
       log.info("Login way is " + authRequest.getLoginWay());
       List<String> certificates =
           certifyService.getAllCertificateNames().stream()
-              .filter(certificateName -> certificateName.startsWith("ERC"))
+              .filter(certificateName -> certificateName.startsWith("BSDC"))
               .collect(Collectors.toList());
 
       if (authRequest.getLoginWay().equals("WEBIN")) {

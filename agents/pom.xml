@@ -14,5 +14,6 @@
 
 	<modules>
 		<module>solr</module>
+		<module>uploadworkers</module>
 	</modules>
 </project>

@@ -86,51 +86,65 @@ public class BioSamplesWebinAuthenticationService {
   }
 
   public Sample handleWebinUser(Sample sample, String webinId) {
-    if (webinId != null && !webinId.isEmpty()) { // webin id retrieval failure - throw Exception
-      if (sample.getAccession() != null) { // sample updates, where sample has an accession
-        final String biosamplesClientWebinUsername =
+    final String biosamplesClientWebinUsername =
             bioSamplesProperties.getBiosamplesClientWebinUsername();
 
+    if (webinId != null && !webinId.isEmpty()) { // webin id retrieval failure - throw Exception
+      if (sample.getAccession() != null) { // sample updates, where sample has an accession
         if (webinId.equalsIgnoreCase(
-            biosamplesClientWebinUsername)) { // ENA pipeline submissions, check if submission done
-          // by internal client program
+                biosamplesClientWebinUsername)) { // ENA pipeline submissions, check if submission done
+          // by internal client program (1)
           final String webinSubmissionAccountIdInMetadata =
-              sample.getWebinSubmissionAccountId(); // if true, override submission account id in
-          // sample with original account id from ENA
+                  sample.getWebinSubmissionAccountId(); // if (1) is true, override submission account id in
+          // sample with original account id from sample metadata
 
-          return buildSample(
-              sample,
-              (webinSubmissionAccountIdInMetadata != null
-                      && !webinSubmissionAccountIdInMetadata.isEmpty())
-                  ? webinSubmissionAccountIdInMetadata
-                  : biosamplesClientWebinUsername);
+          return getSampleWithWebinSubmissionAccountIdAdded(
+                  sample,
+                  (webinSubmissionAccountIdInMetadata != null
+                          && !webinSubmissionAccountIdInMetadata.isEmpty())
+                          ? webinSubmissionAccountIdInMetadata
+                          : biosamplesClientWebinUsername);
         } else { // normal sample update - not pipeline, check for old user, if mismatch throw
           // exception, else build the Sample
           Optional<Sample> oldSample =
-              sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+                  sampleService.fetch(sample.getAccession(), Optional.empty(), null);
 
           if (oldSample.isPresent()) {
             final Sample oldSavedSample = oldSample.get();
 
             if (!webinId.equalsIgnoreCase(
-                oldSavedSample.getWebinSubmissionAccountId())) { // original submitter mismatch
+                    oldSavedSample.getWebinSubmissionAccountId())) { // original submitter mismatch
               throw new SampleNotAccessibleException();
             } else {
-              return buildSample(sample, webinId);
+              return getSampleWithWebinSubmissionAccountIdAdded(sample, webinId);
             }
           } else {
-            return buildSample(sample, webinId);
+            return getSampleWithWebinSubmissionAccountIdAdded(sample, webinId);
           }
         }
       } else { // new submission
-        return buildSample(sample, webinId);
+        if (webinId.equalsIgnoreCase(
+                biosamplesClientWebinUsername)) { // new submission by client program (2)
+          final String webinSubmissionAccountIdInMetadata =
+                  sample.getWebinSubmissionAccountId(); // if true (2), override submission account id in
+          // sample with original account id from sample metadata
+
+          return getSampleWithWebinSubmissionAccountIdAdded(
+                  sample,
+                  (webinSubmissionAccountIdInMetadata != null
+                          && !webinSubmissionAccountIdInMetadata.isEmpty())
+                          ? webinSubmissionAccountIdInMetadata
+                          : biosamplesClientWebinUsername);
+        } else {
+          return getSampleWithWebinSubmissionAccountIdAdded(sample, webinId);
+        }
       }
     } else {
       throw new WebinUserLoginUnauthorizedException();
     }
   }
 
-  public Sample buildSample(Sample sample, String webinId) {
+  public Sample getSampleWithWebinSubmissionAccountIdAdded(Sample sample, String webinId) {
     return Sample.Builder.fromSample(sample)
         .withWebinSubmissionAccountId(webinId)
         .withNoDomain()

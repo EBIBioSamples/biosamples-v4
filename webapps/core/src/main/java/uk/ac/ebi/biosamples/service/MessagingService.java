@@ -46,6 +46,12 @@ public class MessagingService {
     this.sampleToMongoSampleConverter = sampleToMongoSampleConverter;
   }
 
+  public void sendFileUploadedMessage(String fileId) {
+    log.info("Uploaded file queued " + fileId);
+
+    amqpTemplate.convertAndSend(Messaging.fileUploadExchange, "", fileId);
+  }
+
   public void fetchThenSendMessage(String accession) {
     fetchThenSendMessage(accession, Collections.emptyList());
   }

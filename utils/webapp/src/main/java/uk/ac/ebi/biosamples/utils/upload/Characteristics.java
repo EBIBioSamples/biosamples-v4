@@ -8,23 +8,21 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.model.upload.validation;
+package uk.ac.ebi.biosamples.utils.upload;
 
-import java.util.Set;
-import java.util.TreeSet;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
-public class ValidationResult {
-  private Set<String> validationMessagesList = new TreeSet<>();
-
-  public void addValidationMessage(String message) {
-    validationMessagesList.add(message);
-  }
-
-  public Set<String> getValidationMessagesList() {
-    return validationMessagesList;
-  }
-
-  public void clear() {
-    validationMessagesList.clear();
-  }
+@Getter
+@Setter
+@EqualsAndHashCode
+@ToString
+public class Characteristics {
+  private static final long serialVersionUID = 1L;
+  String name;
+  String value;
+  String iri;
+  String unit;
 }

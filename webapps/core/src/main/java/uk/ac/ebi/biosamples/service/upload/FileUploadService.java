@@ -10,20 +10,10 @@
 */
 package uk.ac.ebi.biosamples.service.upload;
 
-import static com.google.common.collect.Multimaps.toMultimap;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
@@ -34,15 +24,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.model.upload.Characteristics;
-import uk.ac.ebi.biosamples.model.upload.validation.ValidationResult;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.SchemaValidationService;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
+import uk.ac.ebi.biosamples.utils.upload.Characteristics;
+import uk.ac.ebi.biosamples.utils.upload.FileUploadIsaTabUtils;
+import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
-public class IsaTabUploadService {
+public class FileUploadService {
   private Logger log = LoggerFactory.getLogger(getClass());
+  private FileUploadIsaTabUtils fileUploadIsaTabUtils;
   private ValidationResult validationResult;
 
   @Autowired ObjectMapper objectMapper;
@@ -58,9 +59,9 @@ public class IsaTabUploadService {
   public synchronized File upload(
       MultipartFile file, String aapDomain, String certificate, String webinId) {
     validationResult = new ValidationResult();
+    fileUploadIsaTabUtils = new FileUploadIsaTabUtils();
 
     try {
-      final List<Multimap<String, String>> csvDataMap = new ArrayList<>();
       Path temp = Files.createTempFile("upload", ".tsv");
 
       File fileToBeUploaded = temp.toFile();
@@ -71,35 +72,18 @@ public class IsaTabUploadService {
       FileReader fr = new FileReader(fileToBeUploaded);
       BufferedReader reader = new BufferedReader(fr);
 
-      final CSVParser csvParser = buildParser(reader);
+      final CSVParser csvParser = fileUploadIsaTabUtils.buildParser(reader);
       final List<String> headers = csvParser.getHeaderNames();
-
-      csvParser
-          .getRecords()
-          .forEach(
-              csvRecord -> {
-                final AtomicInteger i = new AtomicInteger(0);
-                final Multimap<String, String> listMultiMap = LinkedListMultimap.create();
-
-                headers.forEach(
-                    header -> {
-                      String record = csvRecord.get(i.get());
-                      listMultiMap.put(header, record);
-                      i.getAndIncrement();
-                    });
-
-                csvDataMap.add(listMultiMap);
-              });
-
+      final List<Multimap<String, String>> csvDataMap = fileUploadIsaTabUtils.getCSVDataInMap(csvParser);
       log.info("CSV data size: " + csvDataMap.size());
 
-      final List<Sample> samples = buildSamples(csvDataMap, aapDomain, webinId, certificate);
+      final List<Sample> samples = buildSamples(csvDataMap, aapDomain, webinId, certificate, validationResult);
 
       final String persistenceMessage = "Number of samples persisted: " + samples.size();
 
-      log.info(persistenceMessage);
+      log.info("Persistance message: " + persistenceMessage);
       validationResult.addValidationMessage(persistenceMessage);
-      log.info(String.join("\n", validationResult.getValidationMessagesList()));
+      log.info("Final message: " + String.join("\n", validationResult.getValidationMessagesList()));
 
       return writeToFile(fileToBeUploaded, headers, samples);
     } catch (Exception e) {
@@ -190,10 +174,11 @@ public class IsaTabUploadService {
   }
 
   private List<Sample> buildSamples(
-      List<Multimap<String, String>> csvDataMap,
-      String aapDomain,
-      String webinId,
-      String certificate) {
+          List<Multimap<String, String>> csvDataMap,
+          String aapDomain,
+          String webinId,
+          String certificate,
+          ValidationResult validationResult) {
     final Map<String, String> sampleNameToAccessionMap = new LinkedHashMap<>();
     final Map<Sample, Multimap<String, String>> sampleToMappedSample = new LinkedHashMap<>();
     final boolean isSchemaValidatorAccessible =
@@ -209,10 +194,10 @@ public class IsaTabUploadService {
                     csvRecordMap, aapDomain, webinId, certificate, isSchemaValidatorAccessible);
 
             if (sample == null) {
-              validationResult.addValidationMessage("Failed to create all samples in the file");
+              this.validationResult.addValidationMessage("Failed to create all samples in the file");
             }
           } catch (Exception e) {
-            validationResult.addValidationMessage("Failed to create all samples in the file");
+            this.validationResult.addValidationMessage("Failed to create all samples in the file");
           }
 
           if (sample != null) {
@@ -222,7 +207,7 @@ public class IsaTabUploadService {
         });
 
     return addRelationshipsAndThenBuildSamples(
-        sampleNameToAccessionMap, sampleToMappedSample, webinId);
+        sampleNameToAccessionMap, sampleToMappedSample, webinId, validationResult);
   }
 
   private boolean isWebinIdUsedToAuthenticate(String webinId) {
@@ -230,27 +215,27 @@ public class IsaTabUploadService {
   }
 
   private List<Sample> addRelationshipsAndThenBuildSamples(
-      Map<String, String> sampleNameToAccessionMap,
-      Map<Sample, Multimap<String, String>> sampleToMappedSample,
-      String webinId) {
+          Map<String, String> sampleNameToAccessionMap,
+          Map<Sample, Multimap<String, String>> sampleToMappedSample,
+          String webinId, ValidationResult validationResult) {
     return sampleToMappedSample.entrySet().stream()
         .map(
             sampleMultimapEntry ->
                 addRelationshipAndThenBuildSample(
-                    sampleNameToAccessionMap, sampleMultimapEntry, webinId))
+                    sampleNameToAccessionMap, sampleMultimapEntry, webinId, validationResult))
         .collect(Collectors.toList());
   }
 
   private Sample addRelationshipAndThenBuildSample(
-      Map<String, String> sampleNameToAccessionMap,
-      Map.Entry<Sample, Multimap<String, String>> sampleMultimapEntry,
-      String webinId) {
+          Map<String, String> sampleNameToAccessionMap,
+          Map.Entry<Sample, Multimap<String, String>> sampleMultimapEntry,
+          String webinId, ValidationResult validationResult) {
     final String authProvider = isWebinIdUsedToAuthenticate(webinId) ? "WEBIN" : "AAP";
     final Multimap<String, String> relationshipMap =
-        parseRelationships(sampleMultimapEntry.getValue());
+        fileUploadIsaTabUtils.parseRelationships(sampleMultimapEntry.getValue());
     Sample sample = sampleMultimapEntry.getKey();
     final List<Relationship> relationships =
-        createRelationships(sample, sampleNameToAccessionMap, relationshipMap);
+        fileUploadIsaTabUtils.createRelationships(sample, sampleNameToAccessionMap, relationshipMap, validationResult);
 
     relationships.forEach(relationship -> log.info(relationship.toString()));
 
@@ -261,30 +246,30 @@ public class IsaTabUploadService {
   }
 
   private Sample buildSample(
-      Multimap<String, String> multiMap,
-      String aapDomain,
-      String webinId,
-      String certificate,
-      boolean isSchemaValidatorAccessible)
+          Multimap<String, String> multiMap,
+          String aapDomain,
+          String webinId,
+          String certificate,
+          boolean isSchemaValidatorAccessible)
       throws JsonProcessingException {
-    final String sampleName = getSampleName(multiMap);
-    final String sampleReleaseDate = getReleaseDate(multiMap);
-    final String accession = getSampleAccession(multiMap);
-    final List<Characteristics> characteristicsList = handleCharacteristics(multiMap);
-    final List<ExternalReference> externalReferenceList = handleExternalReferences(multiMap);
-    final List<Contact> contactsList = handleContacts(multiMap);
+    final String sampleName = fileUploadIsaTabUtils.getSampleName(multiMap);
+    final String sampleReleaseDate = fileUploadIsaTabUtils.getReleaseDate(multiMap);
+    final String accession = fileUploadIsaTabUtils.getSampleAccession(multiMap);
+    final List<Characteristics> characteristicsList = fileUploadIsaTabUtils.handleCharacteristics(multiMap);
+    final List<ExternalReference> externalReferenceList = fileUploadIsaTabUtils.handleExternalReferences(multiMap);
+    final List<Contact> contactsList = fileUploadIsaTabUtils.handleContacts(multiMap);
     final String authProvider = isWebinIdUsedToAuthenticate(webinId) ? "WEBIN" : "AAP";
     boolean basicValidationFailure = false;
     boolean isCertified;
 
     if (sampleName == null || sampleName.isEmpty()) {
-      validationResult.addValidationMessage(
+      this.validationResult.addValidationMessage(
           "All samples in the file must have a sample name, some samples are missing sample name and hence are not created");
       basicValidationFailure = true;
     }
 
     if (sampleReleaseDate == null || sampleReleaseDate.isEmpty()) {
-      validationResult.addValidationMessage(
+      this.validationResult.addValidationMessage(
           "All samples in the file must have a release date "
               + sampleName
               + " doesn't have a release date and is not created");
@@ -347,7 +332,7 @@ public class IsaTabUploadService {
 
         return sample;
       } else {
-        validationResult.addValidationMessage(
+        this.validationResult.addValidationMessage(
             sampleName + " failed validation against " + certificate);
 
         return null;
@@ -357,234 +342,10 @@ public class IsaTabUploadService {
     }
   }
 
-  private List<Contact> handleContacts(Multimap<String, String> multiMap) {
-    List<Contact> contactList = new ArrayList<>();
-
-    multiMap
-        .entries()
-        .forEach(
-            entry -> {
-              final String entryKey = entry.getKey();
-              final String entryValue = entry.getValue();
-
-              log.info(entryKey + " " + entryValue);
-
-              if (entryKey.startsWith("Comment") && entryKey.contains("submission_contact")) {
-                contactList.add(new Contact.Builder().email(entry.getValue()).build());
-              }
-            });
-
-    return contactList;
-  }
-
-  private String getSampleAccession(Multimap<String, String> multiMap) {
-    Optional<String> sampleAccession = multiMap.get("Sample Identifier").stream().findFirst();
-
-    return sampleAccession.orElse(null);
-  }
-
-  private List<ExternalReference> handleExternalReferences(Multimap<String, String> multiMap) {
-    List<ExternalReference> externalReferenceList = new ArrayList<>();
-
-    multiMap
-        .entries()
-        .forEach(
-            entry -> {
-              final String entryKey = entry.getKey();
-              final String entryValue = entry.getValue();
-
-              log.info(entryKey + " " + entryValue);
-
-              if (entryKey.startsWith("Comment") && entryKey.contains("external DB REF")) {
-                externalReferenceList.add(ExternalReference.build(entry.getValue()));
-              }
-            });
-
-    return externalReferenceList;
-  }
-
-  private List<Relationship> createRelationships(
-      Sample sample,
-      Map<String, String> sampleNameToAccessionMap,
-      Multimap<String, String> relationshipMap) {
-    return relationshipMap.entries().stream()
-        .map(entry -> getRelationship(sample, sampleNameToAccessionMap, entry))
-        .filter(Objects::nonNull)
-        .collect(Collectors.toList());
-  }
-
-  private Relationship getRelationship(
-      Sample sample,
-      Map<String, String> sampleNameToAccessionMap,
-      Map.Entry<String, String> entry) {
-    try {
-      final String relationshipTarget = getRelationshipTarget(sampleNameToAccessionMap, entry);
-
-      if (relationshipTarget != null) {
-        return Relationship.build(sample.getAccession(), entry.getKey().trim(), relationshipTarget);
-      } else {
-        validationResult.addValidationMessage(
-            "Failed to add all relationships for " + sample.getAccession());
-        return null;
-      }
-    } catch (Exception e) {
-      log.info("Failed to add relationship");
-      validationResult.addValidationMessage(
-          "Failed to add all relationships for "
-              + sample.getAccession()
-              + " error: "
-              + e.getMessage());
-      return null;
-    }
-  }
-
-  private String getRelationshipTarget(
-      Map<String, String> sampleNameToAccessionMap, Map.Entry<String, String> entry) {
-    final String relationshipTarget = entry.getValue().trim();
-
-    if (relationshipTarget.startsWith("SAM")) {
-      return relationshipTarget;
-    } else {
-      return sampleNameToAccessionMap.get(relationshipTarget);
-    }
-  }
-
   private boolean certify(Sample sample, String certificate) throws JsonProcessingException {
     List<Certificate> certificates =
         certifyService.certify(objectMapper.writeValueAsString(sample), false, certificate);
 
     return certificates.size() != 0;
-  }
-
-  private Multimap<String, String> parseRelationships(Multimap<String, String> multiMap) {
-
-    return multiMap.entries().stream()
-        .filter(
-            e -> {
-              final String entryKey = e.getKey();
-
-              return entryKey.startsWith("Comment") && entryKey.contains("bsd_relationship");
-            })
-        .collect(
-            toMultimap(
-                e -> {
-                  final String key = e.getKey().trim();
-                  return key.substring(key.indexOf(":") + 1, key.length() - 1);
-                },
-                e -> {
-                  final String value = e.getValue();
-
-                  return value != null ? value.trim() : null;
-                },
-                LinkedListMultimap::create));
-
-    // BELOW IS PARKED CODE - DON'T DELETE
-    /*return
-    multiMap.entries().stream()
-            .filter(entry -> {
-                final String entryKey = entry.getKey();
-
-                return entryKey.startsWith("Comment") && entryKey.contains("bsd_relationship");
-            })
-            .collect(
-                    Collectors.toMap(
-                            e -> {
-                                final String key = e.getKey().trim();
-                                return key.substring(key.indexOf(":") + 1, key.length() - 1);
-                            },
-                            e -> {
-                                final String value = e.getValue();
-
-                                return value != null ? value.trim() : null;
-                            },
-                            (u, v) -> u,
-                            LinkedHashMap::new));*/
-  }
-
-  private List<Characteristics> handleCharacteristics(Multimap<String, String> multiMap) {
-    final List<Characteristics> characteristicsList = new ArrayList<>();
-
-    multiMap
-        .entries()
-        .forEach(
-            entry -> {
-              final Characteristics characteristics = new Characteristics();
-              if (entry.getKey().startsWith("Characteristics")) {
-                characteristics.setName(entry.getKey().trim());
-                final String value = entry.getValue();
-
-                characteristics.setValue(value);
-
-                characteristicsList.add(characteristics);
-              }
-            });
-
-    List<String> termRefList =
-        multiMap.entries().stream()
-            .map(
-                entry -> {
-                  if (entry.getKey().startsWith("Term Accession Number")) {
-                    final String value = entry.getValue();
-
-                    return value != null ? value.trim() : null;
-                  } else return null;
-                })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
-
-    List<String> unitList =
-        multiMap.entries().stream()
-            .map(
-                entry -> {
-                  if (entry.getKey().startsWith("Unit")) {
-                    final String value = entry.getValue();
-
-                    return value != null ? value.trim() : null;
-                  } else return null;
-                })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList()); // handle units
-
-    AtomicInteger i = new AtomicInteger(0);
-
-    characteristicsList.forEach(
-        characteristics -> {
-          final int val = i.getAndIncrement();
-
-          if (val < termRefList.size() && termRefList.get(val) != null) {
-            characteristics.setIri(termRefList.get(val));
-          }
-
-          if (val < unitList.size() && unitList.get(val) != null) {
-            characteristics.setUnit(unitList.get(val));
-          }
-        });
-
-    return characteristicsList;
-  }
-
-  private String getSampleName(Multimap<String, String> multiMap) {
-    Optional<String> sampleName = multiMap.get("Sample Name").stream().findFirst();
-
-    return sampleName.orElse(null);
-  }
-
-  private String getReleaseDate(Multimap<String, String> multiMap) {
-    Optional<String> sampleReleaseDate = multiMap.get("Release Date").stream().findFirst();
-
-    return sampleReleaseDate.orElse(null);
-  }
-
-  private CSVParser buildParser(BufferedReader reader) throws IOException {
-    return new CSVParser(
-        reader,
-        CSVFormat.TDF
-            .withAllowDuplicateHeaderNames(true)
-            .withFirstRecordAsHeader()
-            .withIgnoreEmptyLines(true)
-            .withIgnoreHeaderCase(true)
-            .withAllowMissingColumnNames(true)
-            .withIgnoreSurroundingSpaces(true)
-            .withTrim(true));
   }
 }

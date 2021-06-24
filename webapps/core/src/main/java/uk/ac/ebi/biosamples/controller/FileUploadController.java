@@ -31,7 +31,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-import uk.ac.ebi.biosamples.service.upload.IsaTabUploadService;
+import uk.ac.ebi.biosamples.service.upload.FileQueueService;
+import uk.ac.ebi.biosamples.service.upload.FileUploadService;
 import uk.ac.ebi.biosamples.service.upload.UploadInvalidException;
 
 @Controller
@@ -39,35 +40,51 @@ import uk.ac.ebi.biosamples.service.upload.UploadInvalidException;
 public class FileUploadController {
   private Logger log = LoggerFactory.getLogger(getClass());
 
-  @Autowired IsaTabUploadService isaTabUploadService;
+  @Autowired
+  FileUploadService fileUploadService;
+  @Autowired
+  FileQueueService fileQueueService;
+
+  /*@Value("${web.submit.max-files-size-mb}")
+  float maxFilesSizeMb;*/
 
   @PostMapping
   public ResponseEntity<byte[]> upload(
-      @RequestParam("file") MultipartFile file,
-      @Valid String hiddenAapDomain,
-      @Valid String hiddenCertificate,
-      @Valid String webinAccount)
-      throws IOException {
-    try {
-      final File downloadableFile =
-          isaTabUploadService.upload(file, hiddenAapDomain, hiddenCertificate, webinAccount);
-      final byte[] bytes = FileUtils.readFileToByteArray(downloadableFile);
-      final HttpHeaders headers = setResponseHeadersSuccess(downloadableFile);
+          @RequestParam("file") MultipartFile file,
+          @Valid String hiddenAapDomain,
+          @Valid String hiddenCertificate,
+          @Valid String webinAccount)
+          throws IOException {
+    if (!isFileSizeExceeded(file)) {
+      log.info("File size doesn't exceed limits");
 
-      return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
-    } catch (UploadInvalidException e) {
-      log.info("File upload failure " + e.getMessage());
-      final Path temp = Files.createTempFile("failure_result", ".txt");
+      try {
+        final File downloadableFile =
+                fileUploadService.upload(file, hiddenAapDomain, hiddenCertificate, webinAccount);
+        final byte[] bytes = FileUtils.readFileToByteArray(downloadableFile);
+        final HttpHeaders headers = setResponseHeadersSuccess(downloadableFile);
 
-      try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
-        writer.write(e.getMessage());
+        return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+      } catch (UploadInvalidException e) {
+        log.info("File upload failure " + e.getMessage());
+        final Path temp = Files.createTempFile("failure_result", ".txt");
+
+        try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
+          writer.write(e.getMessage());
+        }
+
+        final File failedUploadMessageFile = temp.toFile();
+        final byte[] bytes = FileUtils.readFileToByteArray(failedUploadMessageFile);
+        final HttpHeaders headers = setResponseHeadersFailure(failedUploadMessageFile);
+        return new ResponseEntity<>(bytes, headers, HttpStatus.BAD_REQUEST);
       }
+    } else {
+      log.info("File size exceeds limits - queueing");
 
-      final File failedUploadMessageFile = temp.toFile();
-      final byte[] bytes = FileUtils.readFileToByteArray(failedUploadMessageFile);
-      final HttpHeaders headers = setResponseHeadersFailure(failedUploadMessageFile);
-      return new ResponseEntity<>(bytes, headers, HttpStatus.BAD_REQUEST);
+      fileQueueService.queueFile(file, hiddenAapDomain, hiddenCertificate, webinAccount);
     }
+
+    return null;
   }
 
   private HttpHeaders setResponseHeadersSuccess(File file) {
@@ -99,5 +116,17 @@ public class FileUploadController {
     final HttpHeaders headers = setResponseHeadersSuccess(pathFile);
 
     return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+  }
+
+  private boolean isFileSizeExceeded(
+          MultipartFile file)
+          throws RuntimeException {
+    long sizeBytes = file.getSize();
+    float sizeBytesKb = sizeBytes / 1000;
+    if (sizeBytesKb >= 3) {
+      return true;
+    }
+
+    return false;
   }
 }
