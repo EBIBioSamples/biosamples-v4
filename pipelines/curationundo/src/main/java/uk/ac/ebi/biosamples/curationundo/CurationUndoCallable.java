@@ -74,7 +74,7 @@ public class CurationUndoCallable implements Callable<Void> {
   }
 
   @Override
-  public Void call() throws Exception {
+  public Void call() {
     for (Resource<CurationLink> cl : bioSamplesClient.fetchCurationLinksOfSample(accession)) {
       if (cl.getContent().getDomain().equals("self.BiosampleCuration")
           && (cl.getContent().getCreated().isAfter(instant))) {
