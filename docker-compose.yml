@@ -363,17 +363,6 @@ services:
     - BIOSAMPLES_LEGACYAPIKEY=fooqwerty
     - BIOSAMPLES_NEO_URL=bolt://neo4j:7687
 
-#  json-schema-validator:
-#    volumes:
-#    - logs:/logs
-#    build: ./json-schema-validator
-#    image: json-schema-validator:latest
-#    mem_limit: 250m
-#    links:
-#    - biosamples-webapps-core
-#    ports:
-#    - 8085:3020
-
   json-schema-validator:
     image: quay.io/ebi-ait/biovalidator:1.0.0
     command: --server
@@ -381,7 +370,7 @@ services:
       - 3020:3020
 
   schema-store:
-    image: biosamples/json-schema-store:latest
+    image: biosamples/json-schema-store:1.1.0
     ports:
       - 8085:8085
     links:
