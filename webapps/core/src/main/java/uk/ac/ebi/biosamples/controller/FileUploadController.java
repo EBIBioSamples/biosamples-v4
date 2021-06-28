@@ -25,6 +25,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,7 +34,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.biosamples.service.upload.FileQueueService;
 import uk.ac.ebi.biosamples.service.upload.FileUploadService;
-import uk.ac.ebi.biosamples.service.upload.UploadInvalidException;
+import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
 
 @Controller
 @RequestMapping("/upload")
@@ -48,6 +49,7 @@ public class FileUploadController {
   /*@Value("${web.submit.max-files-size-mb}")
   float maxFilesSizeMb;*/
 
+  @PreAuthorize("isAuthenticated()")
   @PostMapping
   public ResponseEntity<byte[]> upload(
           @RequestParam("file") MultipartFile file,
@@ -82,9 +84,18 @@ public class FileUploadController {
       log.info("File size exceeds limits - queueing");
 
       fileQueueService.queueFile(file, hiddenAapDomain, hiddenCertificate, webinAccount);
-    }
 
-    return null;
+      final Path temp = Files.createTempFile("queue_result", ".txt");
+
+      try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
+        writer.write("Your submission has been queued");
+      }
+
+      final File queuedUploadMessageFile = temp.toFile();
+      final byte[] bytes = FileUtils.readFileToByteArray(queuedUploadMessageFile);
+      final HttpHeaders headers = setResponseHeadersFailure(queuedUploadMessageFile);
+      return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+    }
   }
 
   private HttpHeaders setResponseHeadersSuccess(File file) {

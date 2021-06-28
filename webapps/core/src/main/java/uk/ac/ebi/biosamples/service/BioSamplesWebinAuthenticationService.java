@@ -10,10 +10,6 @@
 */
 package uk.ac.ebi.biosamples.service;
 
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -25,10 +21,11 @@ import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
 
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 @Service
 public class BioSamplesWebinAuthenticationService {
-  private Logger log = LoggerFactory.getLogger(getClass());
-
   private final RestTemplate restTemplate;
   private final SampleService sampleService;
   private final BioSamplesProperties bioSamplesProperties;
@@ -281,13 +278,13 @@ public class BioSamplesWebinAuthenticationService {
   }
 
   @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Unauthorized WEBIN user")
-  private static class WebinUserLoginUnauthorizedException extends RuntimeException {}
+  public static class WebinUserLoginUnauthorizedException extends RuntimeException {}
 
   @ResponseStatus(
       value = HttpStatus.FORBIDDEN,
       reason =
           "This sample is private and not available for browsing. If you think this is an error and/or you should have access please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk")
-  private static class SampleNotAccessibleException extends RuntimeException {}
+  public static class SampleNotAccessibleException extends RuntimeException {}
 
   @ResponseStatus(
       value = HttpStatus.FORBIDDEN,

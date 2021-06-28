@@ -71,9 +71,6 @@ public class SamplesRestController {
   private final SchemaValidationService schemaValidationService;
   private final ENATaxonClientService enaTaxonClientService;
 
-  private static final String NCBI_IMPORT_DOMAIN = "self.BiosampleImportNCBI";
-  private static final String ENA_IMPORT_DOMAIN = "self.BiosampleImportENA";
-
   private Logger log = LoggerFactory.getLogger(getClass());
 
   public SamplesRestController(
@@ -335,8 +332,16 @@ public class SamplesRestController {
    */
   public static Link getCursorLink(
       String text, String[] filter, String cursor, int size, String rel, Class controllerClass) {
+    UriComponentsBuilder builder = getUriComponentsBuilder(text, filter, controllerClass);
+
+    builder.queryParam("cursor", cursor);
+    builder.queryParam("size", size);
+    return new Link(builder.toUriString(), rel);
+  }
+
+  private static UriComponentsBuilder getUriComponentsBuilder(String text, String[] filter, Class controllerClass) {
     UriComponentsBuilder builder =
-        ControllerLinkBuilder.linkTo(controllerClass).toUriComponentsBuilder();
+            ControllerLinkBuilder.linkTo(controllerClass).toUriComponentsBuilder();
 
     if (text != null && text.trim().length() > 0) {
       builder.queryParam("text", text);
@@ -347,10 +352,7 @@ public class SamplesRestController {
         builder.queryParam("filter", filterString);
       }
     }
-
-    builder.queryParam("cursor", cursor);
-    builder.queryParam("size", size);
-    return new Link(builder.toUriString(), rel);
+    return builder;
   }
 
   public static Link getPageLink(
@@ -361,18 +363,7 @@ public class SamplesRestController {
       String[] sort,
       String rel,
       Class controllerClass) {
-    UriComponentsBuilder builder =
-        ControllerLinkBuilder.linkTo(controllerClass).toUriComponentsBuilder();
-
-    if (text != null && text.trim().length() > 0) {
-      builder.queryParam("text", text);
-    }
-
-    if (filter != null) {
-      for (String filterString : filter) {
-        builder.queryParam("filter", filterString);
-      }
-    }
+    UriComponentsBuilder builder = getUriComponentsBuilder(text, filter, controllerClass);
 
     builder.queryParam("page", page);
     builder.queryParam("size", size);
@@ -402,8 +393,6 @@ public class SamplesRestController {
   public ResponseEntity<Object> accessionSample(
       HttpServletRequest request,
       @RequestBody Sample sample,
-      @RequestParam(name = "preAccessioning", required = false, defaultValue = "false")
-          final boolean preAccessioning,
       @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
           String authProvider) {
     log.debug("Received POST for accessioning " + sample);
@@ -413,43 +402,22 @@ public class SamplesRestController {
       final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
       final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService
-              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-              .getBody();
+              bioSamplesWebinAuthenticationService
+                      .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+                      .getBody();
 
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
     } else {
       sample = bioSamplesAapService.handleSampleDomain(sample);
     }
 
-    final Instant release =
-        Instant.ofEpochSecond(
-            LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
-    final Instant update = Instant.now();
-    final SubmittedViaType submittedVia =
-        sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+    sample = privateSampleBuildAndReturn(sample);
 
-    sample =
-        Sample.Builder.fromSample(sample)
-            .withRelease(release)
-            .withUpdate(update)
-            .withSubmittedVia(submittedVia)
-            .build();
+    sample = sampleService.store(sample, false, authProvider);
+    final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
-    /*Pre accessioning is done by other archives to get a BioSamples accession before processing their own pipelines. It is better to check duplicates in pre-accessioning cases
-     * The original case of accession remains unchanged*/
-    if (preAccessioning) {
-      sample = sampleService.store(sample, false, authProvider);
-      final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
-
-      return ResponseEntity.ok(sampleResource.getContent().getAccession());
-    } else {
-      sample = sampleService.store(sample, false, authProvider);
-      final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
-
-      return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
-          .body(sampleResource);
-    }
+    return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
+            .body(sampleResource);
   }
 
   @PreAuthorize("isAuthenticated()")
@@ -505,7 +473,7 @@ public class SamplesRestController {
       }
     }
 
-    final ExecutorService executor = Executors.newFixedThreadPool(samples.size());
+    final ExecutorService executor = Executors.newFixedThreadPool(10);
 
     /*final Map<String, String> outputMap = samples.stream().map(sample -> executor.submit(new SamplePersistence(sample, authProvider))).map(sampleFuture -> {
       try {
@@ -522,7 +490,7 @@ public class SamplesRestController {
             .map(sample -> executor.submit(new SamplePersistence(sample, authProvider)))
             .collect(Collectors.toList());
 
-    log.info("Number of futures " + sampleFutures.size());
+    log.trace("Number of futures " + sampleFutures.size());
 
     final Map<String, String> outputMap =
         sampleFutures.stream()
@@ -557,23 +525,9 @@ public class SamplesRestController {
 
     @Override
     public Sample call() {
-      Logger log = LoggerFactory.getLogger(getClass());
+      sample = privateSampleBuildAndReturn(sample);
 
-      final Instant release =
-          Instant.ofEpochSecond(
-              LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
-      final Instant update = Instant.now();
-      final SubmittedViaType submittedVia =
-          sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
-
-      sample =
-          Sample.Builder.fromSample(sample)
-              .withRelease(release)
-              .withUpdate(update)
-              .withSubmittedVia(submittedVia)
-              .build();
-
-      log.info("Initiating store() for " + sample.getName());
+      log.trace("Initiating store() for " + sample.getName());
       return sampleService.store(sample, false, authProvider);
     }
   }
@@ -670,30 +624,45 @@ public class SamplesRestController {
     // assemble a resource to return
     Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());
     // create the response object with the appropriate status
-    // TODO work out how to avoid using ResponseEntity but also set location header
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
         .body(sampleResource);
   }
 
   private Instant defineCreateDate(final Sample sample) {
     final Instant now = Instant.now();
+    final String domain = sample.getDomain();
+    final Instant create = sample.getCreate();
 
-    return (sample.getDomain() != null && isNcbiOrEnaPipelineImportDomain(sample))
-        ? (sample.getCreate() != null ? sample.getCreate() : now)
+    return (domain != null && sampleService.isPipelineEnaOrNcbiDomain(domain))
+        ? (create != null ? create : now)
         : now;
   }
 
   private Instant defineSubmittedDate(final Sample sample) {
     final Instant now = Instant.now();
+    final String domain = sample.getDomain();
+    final Instant submitted = sample.getSubmitted();
 
-    return (sample.getDomain() != null && isNcbiOrEnaPipelineImportDomain(sample))
-        ? (sample.getSubmitted() != null ? sample.getSubmitted() : now)
+    return (domain != null && sampleService.isPipelineEnaOrNcbiDomain(domain))
+        ? (submitted != null ? submitted : now)
         : now;
   }
 
-  private boolean isNcbiOrEnaPipelineImportDomain(Sample sample) {
-    return sample.getDomain().equalsIgnoreCase(NCBI_IMPORT_DOMAIN)
-        || sample.getDomain().equalsIgnoreCase(ENA_IMPORT_DOMAIN);
+  private Sample privateSampleBuildAndReturn(final Sample sample) {
+    final Instant release =
+            Instant.ofEpochSecond(
+                    LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+    final Instant update = Instant.now();
+    final SubmittedViaType submittedVia =
+            sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+
+    return
+            Sample.Builder.fromSample(sample)
+                    .withRelease(release)
+                    .withUpdate(update)
+                    .withSubmittedVia(submittedVia)
+                    .build();
+
   }
 
   @ResponseStatus(

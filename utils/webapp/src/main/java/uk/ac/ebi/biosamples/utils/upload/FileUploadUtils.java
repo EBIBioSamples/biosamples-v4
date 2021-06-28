@@ -4,19 +4,24 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.model.*;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static com.google.common.collect.Multimaps.toMultimap;
 
-public class FileUploadIsaTabUtils {
+public class FileUploadUtils {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     public List<Multimap<String, String>> getCSVDataInMap(CSVParser csvParser) throws IOException {
@@ -51,19 +56,30 @@ public class FileUploadIsaTabUtils {
                                 .map(
                                         characteristics -> {
                                             final String name = characteristics.getName();
+                                            final String trimmedCharacteristicsName = name.substring(name.indexOf('[') + 1, name.indexOf(']'));
+                                            final String characteristicsValue = characteristics.getValue();
 
-                                            return new Attribute.Builder(
-                                                    name.substring(name.indexOf('[') + 1, name.indexOf(']')),
-                                                    characteristics.getValue())
-                                                    .withTag("attribute")
-                                                    .withUnit(characteristics.getUnit())
-                                                    .withIri(characteristics.getIri())
-                                                    .build();
-                                        })
+                                            if (isValidCharacteristics(name, trimmedCharacteristicsName, characteristicsValue)) {
+
+                                                return new Attribute.Builder(
+                                                        trimmedCharacteristicsName,
+                                                        characteristicsValue)
+                                                        .withTag("attribute")
+                                                        .withUnit(characteristics.getUnit())
+                                                        .withIri(characteristics.getIri())
+                                                        .build();
+                                            } else {
+                                                return null;
+                                            }
+                                        }).filter(Objects::nonNull)
                                 .collect(Collectors.toList()))
                 .withExternalReferences(externalReferenceList)
                 .withContacts(contactsList)
                 .build();
+    }
+
+    private boolean isValidCharacteristics(String name, String trimmedCharacteristicsName, String characteristicsValue) {
+        return (name != null && !trimmedCharacteristicsName.isEmpty()) && (characteristicsValue != null && !characteristicsValue.isEmpty());
     }
 
     public List<Contact> handleContacts(Multimap<String, String> multiMap) {
@@ -136,6 +152,7 @@ public class FileUploadIsaTabUtils {
             } else {
                 validationResult.addValidationMessage(
                         "Failed to add all relationships for " + sample.getAccession());
+
                 return null;
             }
         } catch (Exception e) {
@@ -145,6 +162,7 @@ public class FileUploadIsaTabUtils {
                             + sample.getAccession()
                             + " error: "
                             + e.getMessage());
+
             return null;
         }
     }
@@ -255,6 +273,113 @@ public class FileUploadIsaTabUtils {
 
         return sampleReleaseDate.orElse(null);
     }
+
+    public Sample addChecklistAttributeAndBuildSample(String certificate, Sample sample) {
+        final Set<Attribute> attributeSet = sample.getAttributes();
+        final Attribute attribute =
+                new Attribute.Builder("checklist", certificate.substring(0, certificate.indexOf('(')))
+                        .build();
+
+        attributeSet.add(attribute);
+        sample = Sample.Builder.fromSample(sample).withAttributes(attributeSet).build();
+
+        return sample;
+    }
+
+    public boolean isBasicValidationFailure(String sampleName, String sampleReleaseDate, ValidationResult validationResult) {
+        boolean basicValidationFailure = false;
+
+        if (sampleName == null || sampleName.isEmpty()) {
+            validationResult.addValidationMessage(
+                    "All samples in the file must have a sample name, some samples are missing sample name and hence are not created");
+            basicValidationFailure = true;
+        }
+
+        if (sampleReleaseDate == null || sampleReleaseDate.isEmpty()) {
+            validationResult.addValidationMessage(
+                    "All samples in the file must have a release date "
+                            + sampleName
+                            + " doesn't have a release date and is not created");
+            basicValidationFailure = true;
+        }
+
+        return !basicValidationFailure;
+    }
+
+    private <T> List<T> getPrintableListFromCsvRow(Iterator<T> iterator) {
+        Iterable<T> iterable = () -> iterator;
+
+        return StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
+    }
+
+    public File writeToFile(File fileToBeUploaded, List<String> headers, List<Sample> samples, ValidationResult validationResult) {
+        try {
+            log.info("Writing to file");
+            Path temp = Files.createTempFile("upload_result", ".tsv");
+            boolean headerHasIdentifier =
+                    headers.stream().anyMatch(header -> header.equalsIgnoreCase("Sample Identifier"));
+
+            final List<String> outputFileHeaders = new ArrayList<>(headers);
+
+            if (!headerHasIdentifier) {
+                outputFileHeaders.add("Sample Identifier");
+            }
+            final Reader in = new FileReader(fileToBeUploaded);
+            final String[] headerParsed = outputFileHeaders.toArray(new String[outputFileHeaders.size()]);
+
+            final Iterable<CSVRecord> records =
+                    CSVFormat.TDF
+                            .withHeader(headerParsed)
+                            .withFirstRecordAsHeader()
+                            .withAllowDuplicateHeaderNames()
+                            .withFirstRecordAsHeader()
+                            .withIgnoreEmptyLines()
+                            .withIgnoreHeaderCase()
+                            .withAllowMissingColumnNames()
+                            .withIgnoreSurroundingSpaces()
+                            .withTrim()
+                            .parse(in);
+
+            try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8);
+                 final CSVPrinter csvPrinter =
+                         new CSVPrinter(writer, CSVFormat.TDF.withHeader(headerParsed));
+                 final PrintWriter out = new PrintWriter(writer)) {
+                for (CSVRecord row : records) {
+                    if (headerHasIdentifier) {
+                        csvPrinter.printRecord(row);
+                    } else {
+                        csvPrinter.printRecord(
+                                addAccessionToSamplesForPrint(getPrintableListFromCsvRow(row.iterator()), samples));
+                    }
+                }
+
+                out.println("\n\n");
+                out.println("********RECEIPT START********");
+                out.println(String.join("\n", validationResult.getValidationMessagesList()));
+                out.println("********RECEIPT END********");
+                out.println("\n\n");
+            }
+
+            return temp.toFile();
+        } catch (final Exception e) {
+            log.info("Writing to file has failed " + e.getMessage(), e);
+
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private Iterable<?> addAccessionToSamplesForPrint(
+            List<String> listFromIterator, List<Sample> samples) {
+        String sampleName = listFromIterator.get(1);
+        Optional<Sample> sampleOptional =
+                samples.stream().filter(sample -> sample.getName().equals(sampleName)).findFirst();
+
+        sampleOptional.ifPresent(sample -> listFromIterator.add(sample.getAccession()));
+
+        return listFromIterator;
+    }
+
 
     public CSVParser buildParser(BufferedReader reader) throws IOException {
         return new CSVParser(
