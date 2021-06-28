@@ -8,23 +8,14 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.model.upload.validation;
+package uk.ac.ebi.biosamples.service.upload.exception;
 
-import java.util.Set;
-import java.util.TreeSet;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-public class ValidationResult {
-  private Set<String> validationMessagesList = new TreeSet<>();
-
-  public void addValidationMessage(String message) {
-    validationMessagesList.add(message);
-  }
-
-  public Set<String> getValidationMessagesList() {
-    return validationMessagesList;
-  }
-
-  public void clear() {
-    validationMessagesList.clear();
+@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+public class UploadInvalidException extends RuntimeException {
+  public UploadInvalidException(final String collect) {
+    super(collect);
   }
 }

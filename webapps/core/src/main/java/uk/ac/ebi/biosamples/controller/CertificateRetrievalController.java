@@ -64,13 +64,6 @@ public class CertificateRetrievalController {
                     .collect(Collectors.toList())));
   }
 
-  @GetMapping(
-      value = "/names",
-      produces = {MediaType.APPLICATION_JSON_VALUE})
-  public List<String> getAllCertificateNames() {
-    return certifyService.getAllCertificateNames();
-  }
-
   public Gson getGson() {
     return new GsonBuilder().setPrettyPrinting().create();
   }

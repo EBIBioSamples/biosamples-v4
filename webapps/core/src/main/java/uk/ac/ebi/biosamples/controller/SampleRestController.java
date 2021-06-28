@@ -211,8 +211,6 @@ public class SampleRestController {
       throw new SampleAccessionMismatchException();
     }
 
-    // todo Fix all integration tests to not to use predefined accessions, then remove
-    // isIntegrationTestUser() check
     if (!webinAuth) {
       if (sampleService.isNotExistingAccession(accession)
           && !(bioSamplesAapService.isWriteSuperUser()

@@ -119,7 +119,7 @@ public class SampleService {
     return firstTimeMetadataAdded;
   }
 
-  private boolean isPipelineEnaOrNcbiDomain(String domain) {
+  public boolean isPipelineEnaOrNcbiDomain(String domain) {
     return isPipelineEnaDomain(domain) || isPipelineNcbiDomain(domain);
   }
 

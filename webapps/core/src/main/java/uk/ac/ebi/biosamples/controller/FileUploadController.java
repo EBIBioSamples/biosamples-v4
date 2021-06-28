@@ -25,48 +25,78 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-import uk.ac.ebi.biosamples.service.upload.IsaTabUploadService;
-import uk.ac.ebi.biosamples.service.upload.UploadInvalidException;
+import uk.ac.ebi.biosamples.service.upload.FileQueueService;
+import uk.ac.ebi.biosamples.service.upload.FileUploadService;
+import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
 
 @Controller
 @RequestMapping("/upload")
 public class FileUploadController {
   private Logger log = LoggerFactory.getLogger(getClass());
 
-  @Autowired IsaTabUploadService isaTabUploadService;
+  @Autowired
+  FileUploadService fileUploadService;
+  @Autowired
+  FileQueueService fileQueueService;
 
+  /*@Value("${web.submit.max-files-size-mb}")
+  float maxFilesSizeMb;*/
+
+  @PreAuthorize("isAuthenticated()")
   @PostMapping
   public ResponseEntity<byte[]> upload(
-      @RequestParam("file") MultipartFile file,
-      @Valid String hiddenAapDomain,
-      @Valid String hiddenCertificate,
-      @Valid String webinAccount)
-      throws IOException {
-    try {
-      final File downloadableFile =
-          isaTabUploadService.upload(file, hiddenAapDomain, hiddenCertificate, webinAccount);
-      final byte[] bytes = FileUtils.readFileToByteArray(downloadableFile);
-      final HttpHeaders headers = setResponseHeadersSuccess(downloadableFile);
+          @RequestParam("file") MultipartFile file,
+          @Valid String hiddenAapDomain,
+          @Valid String hiddenCertificate,
+          @Valid String webinAccount)
+          throws IOException {
+    if (!isFileSizeExceeded(file)) {
+      log.info("File size doesn't exceed limits");
 
-      return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
-    } catch (UploadInvalidException e) {
-      log.info("File upload failure " + e.getMessage());
-      final Path temp = Files.createTempFile("failure_result", ".txt");
+      try {
+        final File downloadableFile =
+                fileUploadService.upload(file, hiddenAapDomain, hiddenCertificate, webinAccount);
+        final byte[] bytes = FileUtils.readFileToByteArray(downloadableFile);
+        final HttpHeaders headers = setResponseHeadersSuccess(downloadableFile);
+
+        return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+      } catch (UploadInvalidException e) {
+        log.info("File upload failure " + e.getMessage());
+        final Path temp = Files.createTempFile("failure_result", ".txt");
+
+        try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
+          writer.write(e.getMessage());
+        }
+
+        final File failedUploadMessageFile = temp.toFile();
+        final byte[] bytes = FileUtils.readFileToByteArray(failedUploadMessageFile);
+        final HttpHeaders headers = setResponseHeadersFailure(failedUploadMessageFile);
+
+        return new ResponseEntity<>(bytes, headers, HttpStatus.BAD_REQUEST);
+      }
+    } else {
+      log.info("File size exceeds limits - queueing");
+
+      final String fileId = fileQueueService.queueFile(file, hiddenAapDomain, hiddenCertificate, webinAccount);
+
+      final Path temp = Files.createTempFile("queue_result", ".txt");
 
       try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
-        writer.write(e.getMessage());
+        writer.write("Your submission has been queued and your submission id is " + fileId);
       }
 
-      final File failedUploadMessageFile = temp.toFile();
-      final byte[] bytes = FileUtils.readFileToByteArray(failedUploadMessageFile);
-      final HttpHeaders headers = setResponseHeadersFailure(failedUploadMessageFile);
-      return new ResponseEntity<>(bytes, headers, HttpStatus.BAD_REQUEST);
+      final File queuedUploadMessageFile = temp.toFile();
+      final byte[] bytes = FileUtils.readFileToByteArray(queuedUploadMessageFile);
+      final HttpHeaders headers = setResponseHeadersFailure(queuedUploadMessageFile);
+
+      return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
     }
   }
 
@@ -99,5 +129,13 @@ public class FileUploadController {
     final HttpHeaders headers = setResponseHeadersSuccess(pathFile);
 
     return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+  }
+
+  private boolean isFileSizeExceeded(
+          MultipartFile file)
+          throws RuntimeException {
+    long sizeBytes = file.getSize();
+    float sizeBytesKb = sizeBytes / 1000;
+    return sizeBytesKb >= 3;
   }
 }

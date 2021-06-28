@@ -8,14 +8,21 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.service.upload;
+package uk.ac.ebi.biosamples.utils.upload;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
-@ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class UploadInvalidException extends RuntimeException {
-  public UploadInvalidException(final String collect) {
-    super(collect);
-  }
+@Getter
+@Setter
+@EqualsAndHashCode
+@ToString
+public class Characteristics {
+  private static final long serialVersionUID = 1L;
+  String name;
+  String value;
+  String iri;
+  String unit;
 }

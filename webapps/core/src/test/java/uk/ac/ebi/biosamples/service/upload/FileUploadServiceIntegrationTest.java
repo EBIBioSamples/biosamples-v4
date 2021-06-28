@@ -32,9 +32,9 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.upload.Characteristics;
+import uk.ac.ebi.biosamples.utils.upload.Characteristics;
 
-public class IsaTabUploadServiceIntegrationTest {
+public class FileUploadServiceIntegrationTest {
   public static void main(String[] args) throws IOException {
     byte[] byArray = downloadExampleFile();
     final Logger log = LoggerFactory.getLogger("test_logger");
@@ -282,7 +282,7 @@ public class IsaTabUploadServiceIntegrationTest {
     final Path temp = Files.createTempFile("upload_example", ".tsv");
     final File pathFile = temp.toFile();
     FileUtils.copyInputStreamToFile(
-        IsaTabUploadServiceIntegrationTest.class
+        FileUploadServiceIntegrationTest.class
             .getClassLoader()
             .getResourceAsStream("isa-example.tsv"),
         pathFile);

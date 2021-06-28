@@ -18,6 +18,10 @@ import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +33,12 @@ import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
 import uk.ac.ebi.tsc.aap.client.exception.UserNameOrPasswordWrongException;
+import uk.ac.ebi.tsc.aap.client.security.BioSamplesTokenAuthenticationService;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
 
 @Controller
 @RequestMapping("/login")
@@ -40,6 +50,9 @@ public class LoginController {
 
   @Autowired ObjectMapper objectMapper;
 
+  @Autowired
+  BioSamplesTokenAuthenticationService bioSamplesTokenAuthenticationService;
+
   public LoginController(
       BioSamplesAapService bioSamplesAapService,
       CertifyService certifyService,
@@ -50,13 +63,14 @@ public class LoginController {
   }
 
   @SneakyThrows
+  @PreAuthorize("permitAll()")
   @PostMapping(value = "/auth")
-  public String auth(@ModelAttribute("authRequest") AuthRequest authRequest, ModelMap model) {
+  public String auth(@ModelAttribute("authRequest") AuthRequest authRequest, ModelMap model, HttpServletRequest req) {
     try {
       log.info("Login way is " + authRequest.getLoginWay());
       List<String> certificates =
           certifyService.getAllCertificateNames().stream()
-              .filter(certificateName -> certificateName.startsWith("ERC"))
+              .filter(certificateName -> certificateName.startsWith("BSDC"))
               .collect(Collectors.toList());
 
       if (authRequest.getLoginWay().equals("WEBIN")) {
@@ -78,6 +92,12 @@ public class LoginController {
       } else {
         final String token =
             bioSamplesAapService.authenticate(authRequest.getUserName(), authRequest.getPassword());
+        final Authentication authentication = bioSamplesTokenAuthenticationService.getAuthenticationFromToken(token);
+        SecurityContext sc = SecurityContextHolder.getContext();
+        sc.setAuthentication(authentication);
+
+        HttpSession session = req.getSession(true);
+        session.setAttribute(SPRING_SECURITY_CONTEXT_KEY, sc);
 
         if (token != null) {
           List<String> domains = bioSamplesAapService.getDomains(token);
@@ -101,10 +121,5 @@ public class LoginController {
         return "uploadLogin";
       }
     }
-  }
-
-  @GetMapping(value = "/domains")
-  public @ResponseBody List<String> getDomains(@RequestBody String token) {
-    return bioSamplesAapService.getDomains(token);
   }
 }
