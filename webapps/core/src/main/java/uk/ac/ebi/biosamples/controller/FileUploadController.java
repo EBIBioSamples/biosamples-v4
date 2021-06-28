@@ -78,22 +78,24 @@ public class FileUploadController {
         final File failedUploadMessageFile = temp.toFile();
         final byte[] bytes = FileUtils.readFileToByteArray(failedUploadMessageFile);
         final HttpHeaders headers = setResponseHeadersFailure(failedUploadMessageFile);
+
         return new ResponseEntity<>(bytes, headers, HttpStatus.BAD_REQUEST);
       }
     } else {
       log.info("File size exceeds limits - queueing");
 
-      fileQueueService.queueFile(file, hiddenAapDomain, hiddenCertificate, webinAccount);
+      final String fileId = fileQueueService.queueFile(file, hiddenAapDomain, hiddenCertificate, webinAccount);
 
       final Path temp = Files.createTempFile("queue_result", ".txt");
 
       try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
-        writer.write("Your submission has been queued");
+        writer.write("Your submission has been queued and your submission id is " + fileId);
       }
 
       final File queuedUploadMessageFile = temp.toFile();
       final byte[] bytes = FileUtils.readFileToByteArray(queuedUploadMessageFile);
       final HttpHeaders headers = setResponseHeadersFailure(queuedUploadMessageFile);
+
       return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
     }
   }
@@ -134,10 +136,6 @@ public class FileUploadController {
           throws RuntimeException {
     long sizeBytes = file.getSize();
     float sizeBytesKb = sizeBytes / 1000;
-    if (sizeBytesKb >= 3) {
-      return true;
-    }
-
-    return false;
+    return sizeBytesKb >= 3;
   }
 }

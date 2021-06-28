@@ -79,6 +79,7 @@ public class FileUploadMessageHandler {
             String aapDomain = file.getMetaData().toMap().get("aap_domain").toString();
             String webinId = file.getMetaData().toMap().get("webin_id").toString();
             String checklist = file.getMetaData().toMap().get("certificate").toString();
+
             boolean isWebin = isWebinIdUsedToAuthenticate(webinId);
 
             final Path temp = Files.createTempFile("upload", ".tsv");

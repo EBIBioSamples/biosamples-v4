@@ -24,11 +24,13 @@ public class FileQueueService {
     @Autowired
     MessagingService messagingService;
 
-    public void queueFile(MultipartFile file, String aapDomain, String certificate, String webinId) throws IOException {
+    public String queueFile(MultipartFile file, String aapDomain, String certificate, String webinId) throws IOException {
         log.info("File queued");
         String fileId = persistUploadedFile(file, aapDomain, certificate, webinId);
 
         messagingService.sendFileUploadedMessage(fileId);
+
+        return fileId;
     }
 
     public String persistUploadedFile(MultipartFile file, String aapDomain, String certificate, String webinId) throws IOException {

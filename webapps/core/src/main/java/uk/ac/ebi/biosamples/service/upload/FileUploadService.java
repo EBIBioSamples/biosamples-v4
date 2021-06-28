@@ -63,7 +63,7 @@ public class FileUploadService {
   BioSamplesAapService bioSamplesAapService;
 
   public synchronized File upload(
-      MultipartFile file, String aapDomain, String certificate, String webinId) {
+      MultipartFile file, String aapDomain, String checklist, String webinId) {
     validationResult = new ValidationResult();
     fileUploadUtils = new FileUploadUtils();
     final String authProvider = isWebin(isWebinIdUsedToAuthenticate(webinId));
@@ -85,7 +85,7 @@ public class FileUploadService {
       final List<Multimap<String, String>> csvDataMap = fileUploadUtils.getCSVDataInMap(csvParser);
       log.info("CSV data size: " + csvDataMap.size());
 
-      final List<Sample> samples = buildSamples(csvDataMap, aapDomain, webinId, certificate, validationResult, isWebin);
+      final List<Sample> samples = buildSamples(csvDataMap, aapDomain, webinId, checklist, validationResult, isWebin);
 
       final String persistenceMessage = "Number of samples persisted: " + samples.size();
 
@@ -111,7 +111,7 @@ public class FileUploadService {
           List<Multimap<String, String>> csvDataMap,
           String aapDomain,
           String webinId,
-          String certificate,
+          String checklist,
           ValidationResult validationResult,
           boolean isWebin) {
     final Map<String, String> sampleNameToAccessionMap = new LinkedHashMap<>();
@@ -126,7 +126,7 @@ public class FileUploadService {
           try {
             sample =
                 buildSample(
-                    csvRecordMap, aapDomain, webinId, certificate, isSchemaValidatorAccessible, validationResult, isWebin);
+                    csvRecordMap, aapDomain, webinId, checklist, isSchemaValidatorAccessible, validationResult, isWebin);
 
             if (sample == null) {
               this.validationResult.addValidationMessage("Failed to create all samples in the file");
