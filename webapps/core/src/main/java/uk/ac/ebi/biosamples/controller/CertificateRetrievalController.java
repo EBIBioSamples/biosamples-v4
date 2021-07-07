@@ -33,7 +33,7 @@ import uk.ac.ebi.biosamples.service.certification.CertifyService;
 public class CertificateRetrievalController {
   private Logger log = LoggerFactory.getLogger(getClass());
   @Autowired private CertifyService certifyService;
-  JsonParser jp = new JsonParser();
+  final JsonParser jp = new JsonParser();
 
   @GetMapping(
       value = "/{certificateName}",
