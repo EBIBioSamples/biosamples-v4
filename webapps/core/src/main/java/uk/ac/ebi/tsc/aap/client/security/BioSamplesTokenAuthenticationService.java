@@ -15,10 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import sun.tools.jstat.Token;
 import uk.ac.ebi.tsc.aap.client.model.User;
-
-import javax.servlet.http.HttpServletRequest;
 
 @Service
 @Primary

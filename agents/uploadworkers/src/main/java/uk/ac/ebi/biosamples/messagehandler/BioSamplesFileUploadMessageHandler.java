@@ -44,7 +44,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-public class FileUploadMessageHandler {
+public class BioSamplesFileUploadMessageHandler {
     private Logger log = LoggerFactory.getLogger(getClass());
     private ValidationResult validationResult;
     private FileUploadUtils fileUploadUtils;
