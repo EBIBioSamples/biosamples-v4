@@ -30,7 +30,6 @@
 		<module>curation</module>
 		<module>zooma</module>
 		<module>template</module>
-		<module>legacyxml</module>
 		<module>reindex</module>
 		<module>export</module>
 		<module>copydown</module>

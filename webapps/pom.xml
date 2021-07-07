@@ -14,8 +14,5 @@
 
 	<modules>
 		<module>core</module>
-		<module>sampletab</module>
-		<module>legacyxml</module>
-		<module>legacyjson</module>
 	</modules>
 </project>
