@@ -26,8 +26,6 @@
 		<module>sitemap</module>
 		<module>jsonld</module>
 		<module>ga4gh</module>
-		<module>legacyxml</module>
-		<module>legacyjson</module>
 		<module>structured</module>
 		<module>neo4j</module>
 		<module>curami</module>

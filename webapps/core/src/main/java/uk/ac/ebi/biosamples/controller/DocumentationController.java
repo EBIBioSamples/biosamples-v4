@@ -63,7 +63,6 @@ public class DocumentationController {
   // TODO: Convert this to use ControllerAdvice
   @ModelAttribute
   public void addCoreLink(Model model) {
-    model.addAttribute("sampletabUrl", bioSamplesProperties.getBiosamplesWebappSampletabUri());
     model.addAttribute("recipes", this.cookbookRecipiesMap);
   }
 
