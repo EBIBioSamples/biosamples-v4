@@ -52,10 +52,10 @@ public class FileUploadController {
   @PreAuthorize("isAuthenticated()")
   @PostMapping
   public ResponseEntity<byte[]> upload(
-          @RequestParam("file") MultipartFile file,
-          @Valid String hiddenAapDomain,
-          @Valid String hiddenCertificate,
-          @Valid String webinAccount)
+          @RequestParam("file") final MultipartFile file,
+          @Valid final String hiddenAapDomain,
+          @Valid final String hiddenCertificate,
+          @Valid final String webinAccount)
           throws IOException {
     if (!isFileSizeExceeded(file)) {
       log.info("File size doesn't exceed limits");
@@ -67,9 +67,10 @@ public class FileUploadController {
         final HttpHeaders headers = setResponseHeadersSuccess(downloadableFile);
 
         return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
-      } catch (UploadInvalidException e) {
+      } catch (final UploadInvalidException e) {
         log.info("File upload failure " + e.getMessage());
-        final Path temp = Files.createTempFile("failure_result", ".txt");
+
+        final Path temp = Files.createTempFile("failure_result_bad_req", ".txt");
 
         try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
           writer.write(e.getMessage());
@@ -81,26 +82,53 @@ public class FileUploadController {
 
         return new ResponseEntity<>(bytes, headers, HttpStatus.BAD_REQUEST);
       }
+
+      catch(final Exception e) {
+        log.info("File upload failure - server error " + e.getMessage());
+
+        final Path temp = Files.createTempFile("failure_result_server_error", ".txt");
+
+        try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
+          writer.write(e.getMessage());
+        }
+
+        final File failedUploadMessageFile = temp.toFile();
+        final byte[] bytes = FileUtils.readFileToByteArray(failedUploadMessageFile);
+        final HttpHeaders headers = setResponseHeadersFailure(failedUploadMessageFile);
+
+        return new ResponseEntity<>(bytes, headers, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     } else {
-      log.info("File size exceeds limits - queueing");
-
-      final String fileId = fileQueueService.queueFile(file, hiddenAapDomain, hiddenCertificate, webinAccount);
-
+      log.info("File size exceeds limits - queueing file for async submission");
       final Path temp = Files.createTempFile("queue_result", ".txt");
 
-      try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
-        writer.write("Your submission has been queued and your submission id is " + fileId);
+      try {
+        final String fileId = fileQueueService.queueFile(file, hiddenAapDomain, hiddenCertificate, webinAccount);
+
+        try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
+          writer.write("Your submission has been queued and your submission id is " + fileId);
+        }
+
+        final File queuedUploadMessageFile = temp.toFile();
+        final byte[] bytes = FileUtils.readFileToByteArray(queuedUploadMessageFile);
+        final HttpHeaders headers = setResponseHeadersFailure(queuedUploadMessageFile);
+
+        return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+      } catch (final Exception e) {
+        try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
+          writer.write("Failure processing your submission");
+        }
+
+        final File queuedUploadMessageFile = temp.toFile();
+        final byte[] bytes = FileUtils.readFileToByteArray(queuedUploadMessageFile);
+        final HttpHeaders headers = setResponseHeadersFailure(queuedUploadMessageFile);
+
+        return new ResponseEntity<>(bytes, headers, HttpStatus.INTERNAL_SERVER_ERROR);
       }
-
-      final File queuedUploadMessageFile = temp.toFile();
-      final byte[] bytes = FileUtils.readFileToByteArray(queuedUploadMessageFile);
-      final HttpHeaders headers = setResponseHeadersFailure(queuedUploadMessageFile);
-
-      return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
     }
   }
 
-  private HttpHeaders setResponseHeadersSuccess(File file) {
+  private HttpHeaders setResponseHeadersSuccess(final File file) {
     final HttpHeaders httpHeaders = new HttpHeaders();
 
     httpHeaders.setContentType(new MediaType("text", "csv"));
@@ -109,7 +137,7 @@ public class FileUploadController {
     return httpHeaders;
   }
 
-  private HttpHeaders setResponseHeadersFailure(File file) {
+  private HttpHeaders setResponseHeadersFailure(final File file) {
     final HttpHeaders httpHeaders = new HttpHeaders();
 
     httpHeaders.setContentType(new MediaType("text", "plain"));

@@ -9,9 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
+import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
+import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
 import uk.ac.ebi.biosamples.service.MessagingService;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 
 @Service
@@ -24,27 +28,42 @@ public class FileQueueService {
     @Autowired
     MessagingService messagingService;
 
-    public String queueFile(MultipartFile file, String aapDomain, String certificate, String webinId) throws IOException {
+    @Autowired
+    MongoFileUploadRepository mongoFileUploadRepository;
+
+    public String queueFile(final MultipartFile file, final String aapDomain, final String checklist, final String webinId) {
         log.info("File queued");
-        String fileId = persistUploadedFile(file, aapDomain, certificate, webinId);
 
-        messagingService.sendFileUploadedMessage(fileId);
+        try {
+            final String fileId = persistUploadedFile(file);
+            final boolean isWebin = webinId != null && !webinId.isEmpty();
 
-        return fileId;
+            if (fileId != null) {
+                final MongoFileUpload mongoFileUpload = new MongoFileUpload(fileId, BioSamplesFileUploadSubmissionStatus.ACTIVE, isWebin ? webinId : aapDomain, checklist, isWebin, new ArrayList<>());
+
+                mongoFileUploadRepository.insert(mongoFileUpload);
+                messagingService.sendFileUploadedMessage(fileId);
+
+                return fileId;
+            } else {
+                throw new RuntimeException("Failed to save Submission");
+            }
+        } catch (final Exception e) {
+            final String message = "Failed to save Submission";
+
+            log.error(message, e);
+            throw new RuntimeException(message, e);
+        }
     }
 
-    public String persistUploadedFile(MultipartFile file, String aapDomain, String certificate, String webinId) throws IOException {
+    public String persistUploadedFile(final MultipartFile file) throws IOException {
         final DBObject metaData = new BasicDBObject();
 
-        metaData.put("file_name", file.getName());
         metaData.put("upload_timestamp", new Date());
-        metaData.put("aap_domain", aapDomain);
-        metaData.put("webin_id", webinId);
-        metaData.put("certificate", certificate);
 
         GridFSFile gridFSFile =
                 gridFsTemplate.store(
-                        file.getInputStream(), file.getName(), file.getContentType(), metaData);
+                        file.getInputStream(), file.getOriginalFilename(), file.getContentType(), metaData);
 
         return gridFSFile.getId().toString();
     }

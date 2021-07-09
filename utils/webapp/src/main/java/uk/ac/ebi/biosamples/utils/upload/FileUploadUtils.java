@@ -24,7 +24,7 @@ import static com.google.common.collect.Multimaps.toMultimap;
 public class FileUploadUtils {
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    public List<Multimap<String, String>> getCSVDataInMap(CSVParser csvParser) throws IOException {
+    public List<Multimap<String, String>> getCSVDataInMap(final CSVParser csvParser) throws IOException {
         final List<Multimap<String, String>> csvDataMap = new ArrayList<>();
         final List<String> headers = csvParser.getHeaderNames();
 
@@ -48,7 +48,8 @@ public class FileUploadUtils {
         return csvDataMap;
     }
 
-    public Sample buildSample(String sampleName, String accession, List<Characteristics> characteristicsList, List<ExternalReference> externalReferenceList, List<Contact> contactsList) {
+    public Sample buildSample(final String sampleName, final String accession, final List<Characteristics> characteristicsList, final List<ExternalReference> externalReferenceList,
+                              final List<Contact> contactsList) {
         return new Sample.Builder(sampleName.trim())
                 .withAccession(accession)
                 .withAttributes(
@@ -78,12 +79,12 @@ public class FileUploadUtils {
                 .build();
     }
 
-    private boolean isValidCharacteristics(String name, String trimmedCharacteristicsName, String characteristicsValue) {
+    private boolean isValidCharacteristics(final String name, final String trimmedCharacteristicsName, final String characteristicsValue) {
         return (name != null && !trimmedCharacteristicsName.isEmpty()) && (characteristicsValue != null && !characteristicsValue.isEmpty());
     }
 
-    public List<Contact> handleContacts(Multimap<String, String> multiMap) {
-        List<Contact> contactList = new ArrayList<>();
+    public List<Contact> handleContacts(final Multimap<String, String> multiMap) {
+        final List<Contact> contactList = new ArrayList<>();
 
         multiMap
                 .entries()
@@ -102,13 +103,13 @@ public class FileUploadUtils {
         return contactList;
     }
 
-    public String getSampleAccession(Multimap<String, String> multiMap) {
+    public String getSampleAccession(final Multimap<String, String> multiMap) {
         Optional<String> sampleAccession = multiMap.get("Sample Identifier").stream().findFirst();
 
         return sampleAccession.orElse(null);
     }
 
-    public List<ExternalReference> handleExternalReferences(Multimap<String, String> multiMap) {
+    public List<ExternalReference> handleExternalReferences(final Multimap<String, String> multiMap) {
         List<ExternalReference> externalReferenceList = new ArrayList<>();
 
         multiMap
@@ -129,10 +130,10 @@ public class FileUploadUtils {
     }
 
     public List<Relationship> createRelationships(
-            Sample sample,
-            Map<String, String> sampleNameToAccessionMap,
-            Multimap<String, String> relationshipMap,
-            ValidationResult validationResult) {
+            final Sample sample,
+            final Map<String, String> sampleNameToAccessionMap,
+            final Multimap<String, String> relationshipMap,
+            final ValidationResult validationResult) {
         return relationshipMap.entries().stream()
                 .map(entry -> getRelationship(sample, sampleNameToAccessionMap, entry, validationResult))
                 .filter(Objects::nonNull)
@@ -140,10 +141,10 @@ public class FileUploadUtils {
     }
 
     public Relationship getRelationship(
-            Sample sample,
-            Map<String, String> sampleNameToAccessionMap,
-            Map.Entry<String, String> entry,
-            ValidationResult validationResult) {
+            final Sample sample,
+            final Map<String, String> sampleNameToAccessionMap,
+            final Map.Entry<String, String> entry,
+            final ValidationResult validationResult) {
         try {
             final String relationshipTarget = getRelationshipTarget(sampleNameToAccessionMap, entry);
 
@@ -168,7 +169,7 @@ public class FileUploadUtils {
     }
 
     public String getRelationshipTarget(
-            Map<String, String> sampleNameToAccessionMap, Map.Entry<String, String> entry) {
+            final Map<String, String> sampleNameToAccessionMap, final Map.Entry<String, String> entry) {
         final String relationshipTarget = entry.getValue().trim();
 
         if (relationshipTarget.startsWith("SAM")) {
@@ -178,7 +179,7 @@ public class FileUploadUtils {
         }
     }
 
-    public Multimap<String, String> parseRelationships(Multimap<String, String> multiMap) {
+    public Multimap<String, String> parseRelationships(final Multimap<String, String> multiMap) {
         return multiMap.entries().stream()
                 .filter(
                         e -> {
@@ -200,7 +201,7 @@ public class FileUploadUtils {
                                 LinkedListMultimap::create));
     }
 
-    public List<Characteristics> handleCharacteristics(Multimap<String, String> multiMap) {
+    public List<Characteristics> handleCharacteristics(final Multimap<String, String> multiMap) {
         final List<Characteristics> characteristicsList = new ArrayList<>();
 
         multiMap
@@ -262,22 +263,22 @@ public class FileUploadUtils {
         return characteristicsList;
     }
 
-    public String getSampleName(Multimap<String, String> multiMap) {
-        Optional<String> sampleName = multiMap.get("Sample Name").stream().findFirst();
+    public String getSampleName(final Multimap<String, String> multiMap) {
+        final Optional<String> sampleName = multiMap.get("Sample Name").stream().findFirst();
 
         return sampleName.orElse(null);
     }
 
-    public String getReleaseDate(Multimap<String, String> multiMap) {
-        Optional<String> sampleReleaseDate = multiMap.get("Release Date").stream().findFirst();
+    public String getReleaseDate(final Multimap<String, String> multiMap) {
+        final Optional<String> sampleReleaseDate = multiMap.get("Release Date").stream().findFirst();
 
         return sampleReleaseDate.orElse(null);
     }
 
-    public Sample addChecklistAttributeAndBuildSample(String certificate, Sample sample) {
+    public Sample addChecklistAttributeAndBuildSample(final String checklist, Sample sample) {
         final Set<Attribute> attributeSet = sample.getAttributes();
         final Attribute attribute =
-                new Attribute.Builder("checklist", certificate.substring(0, certificate.indexOf('(')))
+                new Attribute.Builder("checklist", checklist.substring(0, checklist.indexOf('(')))
                         .build();
 
         attributeSet.add(attribute);
@@ -286,7 +287,7 @@ public class FileUploadUtils {
         return sample;
     }
 
-    public boolean isBasicValidationFailure(String sampleName, String sampleReleaseDate, ValidationResult validationResult) {
+    public boolean isBasicValidationFailure(final String sampleName, final String sampleReleaseDate, final ValidationResult validationResult) {
         boolean basicValidationFailure = false;
 
         if (sampleName == null || sampleName.isEmpty()) {
@@ -306,17 +307,17 @@ public class FileUploadUtils {
         return !basicValidationFailure;
     }
 
-    private <T> List<T> getPrintableListFromCsvRow(Iterator<T> iterator) {
-        Iterable<T> iterable = () -> iterator;
+    private <T> List<T> getPrintableListFromCsvRow(final Iterator<T> iterator) {
+        final Iterable<T> iterable = () -> iterator;
 
         return StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
     }
 
-    public File writeToFile(File fileToBeUploaded, List<String> headers, List<Sample> samples, ValidationResult validationResult) {
+    public File writeToFile(final File fileToBeUploaded, final List<String> headers, final List<Sample> samples, ValidationResult validationResult) {
         try {
             log.info("Writing to file");
-            Path temp = Files.createTempFile("upload_result", ".tsv");
-            boolean headerHasIdentifier =
+            final Path temp = Files.createTempFile("upload_result", ".tsv");
+            final boolean headerHasIdentifier =
                     headers.stream().anyMatch(header -> header.equalsIgnoreCase("Sample Identifier"));
 
             final List<String> outputFileHeaders = new ArrayList<>(headers);
@@ -324,6 +325,7 @@ public class FileUploadUtils {
             if (!headerHasIdentifier) {
                 outputFileHeaders.add("Sample Identifier");
             }
+
             final Reader in = new FileReader(fileToBeUploaded);
             final String[] headerParsed = outputFileHeaders.toArray(new String[outputFileHeaders.size()]);
 
@@ -370,9 +372,9 @@ public class FileUploadUtils {
     }
 
     private Iterable<?> addAccessionToSamplesForPrint(
-            List<String> listFromIterator, List<Sample> samples) {
-        String sampleName = listFromIterator.get(1);
-        Optional<Sample> sampleOptional =
+            final List<String> listFromIterator, final List<Sample> samples) {
+        final String sampleName = listFromIterator.get(1);
+        final Optional<Sample> sampleOptional =
                 samples.stream().filter(sample -> sample.getName().equals(sampleName)).findFirst();
 
         sampleOptional.ifPresent(sample -> listFromIterator.add(sample.getAccession()));
@@ -381,7 +383,7 @@ public class FileUploadUtils {
     }
 
 
-    public CSVParser buildParser(BufferedReader reader) throws IOException {
+    public CSVParser buildParser(final BufferedReader reader) throws IOException {
         return new CSVParser(
                 reader,
                 CSVFormat.TDF

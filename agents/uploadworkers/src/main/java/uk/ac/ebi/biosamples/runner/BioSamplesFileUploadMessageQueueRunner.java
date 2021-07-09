@@ -26,7 +26,7 @@ public class BioSamplesFileUploadMessageQueueRunner implements ApplicationRunner
   @Autowired private MessageUtils messageUtils;
 
   @Override
-  public void run(ApplicationArguments args) {
+  public void run(final ApplicationArguments args) {
     while (true) {
       log.trace(
           "Messages remaining in "

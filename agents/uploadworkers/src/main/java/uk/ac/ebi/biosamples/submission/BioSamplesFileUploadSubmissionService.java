@@ -8,26 +8,23 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package uk.ac.ebi.biosamples.messagehandler;
+package uk.ac.ebi.biosamples.submission;
 
 import com.google.common.collect.Multimap;
-import com.mongodb.gridfs.GridFSDBFile;
 import org.apache.commons.csv.CSVParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
+import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
+import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
 import uk.ac.ebi.biosamples.utils.upload.Characteristics;
 import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
 import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
@@ -44,7 +41,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-public class BioSamplesFileUploadMessageHandler {
+public class BioSamplesFileUploadSubmissionService {
     private Logger log = LoggerFactory.getLogger(getClass());
     private ValidationResult validationResult;
     private FileUploadUtils fileUploadUtils;
@@ -57,41 +54,51 @@ public class BioSamplesFileUploadMessageHandler {
     BioSamplesClient bioSamplesWebinClient;
 
     @Autowired
-    private GridFsTemplate gridFsTemplate;
+    BioSamplesFileUploadDataRetrievalService bioSamplesFileUploadDataRetrievalService;
 
-    @RabbitListener(queues = Messaging.fileUploadQueue, containerFactory = "containerFactory")
-    public void receiveMessageFromBioSamplesFileUploaderQueue(String mongoFileId) {
+    @Autowired
+    MongoFileUploadRepository mongoFileUploadRepository;
+
+    @RabbitListener(queues = Messaging.fileUploadQueue, containerFactory = "biosamplesFileUploadSubmissionContainerFactory")
+    public void receiveMessageFromBioSamplesFileUploaderQueue(final String mongoFileId) {
         handleMessage(mongoFileId);
     }
 
-    private synchronized void handleMessage(String mongoFileId) {
+    private synchronized void handleMessage(final String submissionId) {
         try {
             validationResult = new ValidationResult();
             fileUploadUtils = new FileUploadUtils();
 
             log.info(
-                    "File with mongo file id "
-                            + mongoFileId);
+                    "File with file id "
+                            + submissionId);
 
-            final GridFSDBFile file = getUploadedFile(mongoFileId);
+            final BioSamplesSubmissionFile bioSamplesSubmissionFile = bioSamplesFileUploadDataRetrievalService.getFile(submissionId);
+            final MongoFileUpload mongoFileUpload = mongoFileUploadRepository.findOne(submissionId);
 
-            // get file metadata, determine webin aur aap auth and use client accordingly
-            String aapDomain = file.getMetaData().toMap().get("aap_domain").toString();
-            String webinId = file.getMetaData().toMap().get("webin_id").toString();
-            String checklist = file.getMetaData().toMap().get("certificate").toString();
+            // get bioSamplesSubmissionFile metadata, determine webin aur aap auth and use client accordingly
+            final boolean isWebin = mongoFileUpload.isWebin();
+            final String checklist = mongoFileUpload.getChecklist();
 
-            boolean isWebin = isWebinIdUsedToAuthenticate(webinId);
+            String aapDomain = null;
+            String webinId = null;
+
+            if(isWebin) {
+                webinId = mongoFileUpload.getSubmitterDetails();
+            } else {
+                aapDomain = mongoFileUpload.getSubmitterDetails();
+            }
 
             final Path temp = Files.createTempFile("upload", ".tsv");
 
             Files.copy(
-                    file.getInputStream(),
+                    bioSamplesSubmissionFile.getStream(),
                     temp,
                     StandardCopyOption.REPLACE_EXISTING);
 
-            File fileToBeUploaded = temp.toFile();
-            FileReader fr = new FileReader(fileToBeUploaded);
-            BufferedReader reader = new BufferedReader(fr);
+            final File fileToBeUploaded = temp.toFile();
+            final FileReader fr = new FileReader(fileToBeUploaded);
+            final BufferedReader reader = new BufferedReader(fr);
 
             final CSVParser csvParser = fileUploadUtils.buildParser(reader);
             final List<Multimap<String, String>> csvDataMap = fileUploadUtils.getCSVDataInMap(csvParser);
@@ -99,13 +106,17 @@ public class BioSamplesFileUploadMessageHandler {
             log.info("CSV data size: " + csvDataMap.size());
 
             final List<Sample> samples = buildSamples(csvDataMap, aapDomain, webinId, checklist, validationResult, isWebin);
+            final List<String> accessionsList = samples.stream().map(sample -> sample.getAccession()).collect(Collectors.toList());
+            final MongoFileUpload mongoFileUploadCompleted = new MongoFileUpload(mongoFileUpload.getXmlPayloadId(), BioSamplesFileUploadSubmissionStatus.COMPLETED, mongoFileUpload.getSubmitterDetails(), mongoFileUpload.getChecklist(), isWebin, accessionsList);
+
+            mongoFileUploadRepository.save(mongoFileUploadCompleted);
 
             final String persistenceMessage = "Number of samples persisted: " + samples.size();
 
             log.info(persistenceMessage);
             validationResult.addValidationMessage(persistenceMessage);
             log.info(String.join("\n", validationResult.getValidationMessagesList()));
-        } catch (Exception e) {
+        } catch (final Exception e) {
             final String messageForBsdDevTeam =
                     "********FEEDBACK TO BSD DEV TEAM START********"
                             + e.getMessage()
@@ -119,12 +130,12 @@ public class BioSamplesFileUploadMessageHandler {
     }
 
     private List<Sample> buildSamples(
-            List<Multimap<String, String>> csvDataMap,
-            String aapDomain,
-            String webinId,
-            String checklist,
-            ValidationResult validationResult,
-            boolean isWebin) {
+            final List<Multimap<String, String>> csvDataMap,
+            final String aapDomain,
+            final String webinId,
+            final String checklist,
+            final ValidationResult validationResult,
+            final boolean isWebin) {
         final Map<String, String> sampleNameToAccessionMap = new LinkedHashMap<>();
         final Map<Sample, Multimap<String, String>> sampleToMappedSample = new LinkedHashMap<>();
 
@@ -154,15 +165,11 @@ public class BioSamplesFileUploadMessageHandler {
                 sampleNameToAccessionMap, sampleToMappedSample, validationResult, isWebin);
     }
 
-    private boolean isWebinIdUsedToAuthenticate(String webinId) {
-        return webinId != null && webinId.toUpperCase().startsWith("WEBIN");
-    }
-
     private List<Sample> addRelationshipsAndThenBuildSamples(
-            Map<String, String> sampleNameToAccessionMap,
-            Map<Sample, Multimap<String, String>> sampleToMappedSample,
-            ValidationResult validationResult,
-            boolean isWebin) {
+            final Map<String, String> sampleNameToAccessionMap,
+            final Map<Sample, Multimap<String, String>> sampleToMappedSample,
+            final ValidationResult validationResult,
+            final boolean isWebin) {
         return sampleToMappedSample.entrySet().stream()
                 .map(
                         sampleMultimapEntry ->
@@ -172,17 +179,17 @@ public class BioSamplesFileUploadMessageHandler {
     }
 
     private Sample addRelationshipAndThenBuildSample(
-            Map<String, String> sampleNameToAccessionMap,
-            Map.Entry<Sample, Multimap<String, String>> sampleMultimapEntry,
-            ValidationResult validationResult,
-            boolean isWebin) {
+            final Map<String, String> sampleNameToAccessionMap,
+            final Map.Entry<Sample, Multimap<String, String>> sampleMultimapEntry,
+            final ValidationResult validationResult,
+            final boolean isWebin) {
         final Multimap<String, String> relationshipMap =
                 fileUploadUtils.parseRelationships(sampleMultimapEntry.getValue());
         Sample sample = sampleMultimapEntry.getKey();
         final List<Relationship> relationships =
                 fileUploadUtils.createRelationships(sample, sampleNameToAccessionMap, relationshipMap, validationResult);
 
-        relationships.forEach(relationship -> log.trace(relationship.toString()));
+        relationships.forEach(relationship -> log.info(relationship.toString()));
 
         sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
 
@@ -196,11 +203,11 @@ public class BioSamplesFileUploadMessageHandler {
     }
 
     private Sample buildSample(
-            Multimap<String, String> multiMap,
-            String aapDomain,
-            String webinId,
-            String checklist,
-            boolean isWebin) {
+            final Multimap<String, String> multiMap,
+            final String aapDomain,
+            final String webinId,
+            final String checklist,
+            final boolean isWebin) {
         final String sampleName = fileUploadUtils.getSampleName(multiMap);
         final String sampleReleaseDate = fileUploadUtils.getReleaseDate(multiMap);
         final String accession = fileUploadUtils.getSampleAccession(multiMap);
@@ -227,9 +234,5 @@ public class BioSamplesFileUploadMessageHandler {
         }
 
         return null;
-    }
-
-    public GridFSDBFile getUploadedFile(String submissionId) throws IllegalStateException {
-        return gridFsTemplate.findOne(new Query().addCriteria(Criteria.where("_id").is(submissionId)).limit(1));
     }
 }
