@@ -1,19 +1,21 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
-* file except in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0
-* Unless required by applicable law or agreed to in writing, software distributed under the
-* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-* CONDITIONS OF ANY KIND, either express or implied. See the License for the
-* specific language governing permissions and limitations under the License.
-*/
+ * Copyright 2019 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package uk.ac.ebi.biosamples.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,83 +45,84 @@ import static org.springframework.security.web.context.HttpSessionSecurityContex
 @Controller
 @RequestMapping("/login")
 public class LoginController {
-  private final BioSamplesAapService bioSamplesAapService;
-  private final CertifyService certifyService;
-  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
-  private Logger log = LoggerFactory.getLogger(getClass());
+    private final BioSamplesAapService bioSamplesAapService;
+    private final CertifyService certifyService;
+    private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
+    private Logger log = LoggerFactory.getLogger(getClass());
 
-  @Autowired ObjectMapper objectMapper;
+    @Autowired
+    ObjectMapper objectMapper;
 
-  @Autowired
-  BioSamplesTokenAuthenticationService bioSamplesTokenAuthenticationService;
+    @Autowired
+    BioSamplesTokenAuthenticationService bioSamplesTokenAuthenticationService;
 
-  public LoginController(
-      BioSamplesAapService bioSamplesAapService,
-      CertifyService certifyService,
-      BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService) {
-    this.bioSamplesAapService = bioSamplesAapService;
-    this.certifyService = certifyService;
-    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
-  }
-
-  @SneakyThrows
-  @PreAuthorize("permitAll()")
-  @PostMapping(value = "/auth")
-  public String auth(@ModelAttribute("authRequest") AuthRequest authRequest, ModelMap model, HttpServletRequest req) {
-    try {
-      log.info("Login way is " + authRequest.getLoginWay());
-      List<String> certificates =
-          certifyService.getAllCertificateNames().stream()
-              .filter(certificateName -> certificateName.startsWith("BSDC"))
-              .collect(Collectors.toList());
-
-      if (authRequest.getLoginWay().equals("WEBIN")) {
-        final AuthRequestWebin authRequestWebin =
-            new AuthRequestWebin(
-                authRequest.getUserName(), authRequest.getPassword(), Arrays.asList(AuthRealm.ENA));
-        final String token =
-            bioSamplesWebinAuthenticationService
-                .getWebinToken(objectMapper.writeValueAsString(authRequestWebin))
-                .getBody();
-        final SubmissionAccount submissionAccount =
-            bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(token).getBody();
-
-        model.addAttribute("loginmethod", "WEBIN");
-        model.addAttribute("certificates", certificates);
-        model.addAttribute("webinAccount", submissionAccount.getId());
-
-        return "upload";
-      } else {
-        final String token =
-            bioSamplesAapService.authenticate(authRequest.getUserName(), authRequest.getPassword());
-        final Authentication authentication = bioSamplesTokenAuthenticationService.getAuthenticationFromToken(token);
-        SecurityContext sc = SecurityContextHolder.getContext();
-        sc.setAuthentication(authentication);
-
-        HttpSession session = req.getSession(true);
-        session.setAttribute(SPRING_SECURITY_CONTEXT_KEY, sc);
-
-        if (token != null) {
-          List<String> domains = bioSamplesAapService.getDomains(token);
-          model.addAttribute("loginmethod", null);
-          model.addAttribute("domains", domains);
-          model.addAttribute("webinAccount", null);
-          model.addAttribute("certificates", certificates);
-          model.remove("wrongCreds");
-
-          return "upload";
-        }
-      }
-
-      return "uploadLogin";
-    } catch (Exception e) {
-      if (e instanceof UserNameOrPasswordWrongException) {
-        model.addAttribute("wrongCreds", "wrongCreds");
-        return "uploadLogin";
-      } else {
-        model.addAttribute("wrongCreds", "wrongCreds");
-        return "uploadLogin";
-      }
+    public LoginController(
+            final BioSamplesAapService bioSamplesAapService,
+            final CertifyService certifyService,
+            final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService) {
+        this.bioSamplesAapService = bioSamplesAapService;
+        this.certifyService = certifyService;
+        this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     }
-  }
+
+    @SneakyThrows
+    @PreAuthorize("permitAll()")
+    @PostMapping(value = "/auth")
+    public String auth(@ModelAttribute("authRequest") final AuthRequest authRequest, final ModelMap model, final HttpServletRequest req) {
+        try {
+            log.info("Login way is " + authRequest.getLoginWay());
+            List<String> certificates =
+                    certifyService.getAllCertificateNames().stream()
+                            .filter(certificateName -> certificateName.startsWith("BSDC"))
+                            .collect(Collectors.toList());
+
+            if (authRequest.getLoginWay().equals("WEBIN")) {
+                final AuthRequestWebin authRequestWebin =
+                        new AuthRequestWebin(
+                                authRequest.getUserName(), authRequest.getPassword(), Arrays.asList(AuthRealm.ENA));
+                final String token =
+                        bioSamplesWebinAuthenticationService
+                                .getWebinToken(objectMapper.writeValueAsString(authRequestWebin))
+                                .getBody();
+                final SubmissionAccount submissionAccount =
+                        bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(token).getBody();
+
+                model.addAttribute("loginmethod", "WEBIN");
+                model.addAttribute("certificates", certificates);
+                model.addAttribute("webinAccount", submissionAccount.getId());
+
+                return "upload";
+            } else {
+                final String token =
+                        bioSamplesAapService.authenticate(authRequest.getUserName(), authRequest.getPassword());
+                final Authentication authentication = bioSamplesTokenAuthenticationService.getAuthenticationFromToken(token);
+                SecurityContext sc = SecurityContextHolder.getContext();
+                sc.setAuthentication(authentication);
+
+                HttpSession session = req.getSession(true);
+                session.setAttribute(SPRING_SECURITY_CONTEXT_KEY, sc);
+
+                if (token != null) {
+                    List<String> domains = bioSamplesAapService.getDomains(token);
+                    model.addAttribute("loginmethod", null);
+                    model.addAttribute("domains", domains);
+                    model.addAttribute("webinAccount", null);
+                    model.addAttribute("certificates", certificates);
+                    model.remove("wrongCreds");
+
+                    return "upload";
+                }
+            }
+
+            return "uploadLogin";
+        } catch (final Exception e) {
+            if (e instanceof UserNameOrPasswordWrongException) {
+                model.addAttribute("wrongCreds", "wrongCreds");
+                return "uploadLogin";
+            } else {
+                model.addAttribute("wrongCreds", "wrongCreds");
+                return "uploadLogin";
+            }
+        }
+    }
 }

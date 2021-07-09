@@ -184,7 +184,7 @@ public class FileUploadService {
           Multimap<String, String> multiMap,
           String aapDomain,
           String webinId,
-          String certificate,
+          String checklist,
           boolean isSchemaValidatorAccessible, ValidationResult validationResult,
           boolean isWebin)
       throws JsonProcessingException {
@@ -203,9 +203,9 @@ public class FileUploadService {
 
       if (sample != null) {
 
-        sample = fileUploadUtils.addChecklistAttributeAndBuildSample(certificate, sample);
+        sample = fileUploadUtils.addChecklistAttributeAndBuildSample(checklist, sample);
 
-        isCertified = validateSample(certificate, isSchemaValidatorAccessible, sample);
+        isCertified = validateSample(checklist, isSchemaValidatorAccessible, sample);
 
         if (isCertified) {
           final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, false);
@@ -215,7 +215,7 @@ public class FileUploadService {
           return sample;
         } else {
           validationResult.addValidationMessage(
-                  sampleName + " failed validation against " + certificate);
+                  sampleName + " failed validation against " + checklist);
 
           return null;
         }

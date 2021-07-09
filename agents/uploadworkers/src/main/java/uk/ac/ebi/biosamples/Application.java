@@ -30,7 +30,7 @@ public class Application {
         return new Jackson2JsonMessageConverter();
     }
 
-    @Bean("containerFactory")
+    @Bean("biosamplesFileUploadSubmissionContainerFactory")
     public SimpleRabbitListenerContainerFactory containerFactory(
             SimpleRabbitListenerContainerFactoryConfigurer configurer,
             ConnectionFactory connectionFactory) {
