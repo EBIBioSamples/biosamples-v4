@@ -106,13 +106,15 @@ public class SamplesRestController {
       @RequestParam(name = "page", required = false) final Integer page,
       @RequestParam(name = "size", required = false) final Integer size,
       @RequestParam(name = "sort", required = false) final String[] sort,
-      @RequestParam(name = "curationrepo", required = false) final String curationRepo) {
+      @RequestParam(name = "curationrepo", required = false) final String curationRepo,
+      @RequestParam(name = "curationdomain", required = false) String[] curationdomain) {
 
     // Need to decode the %20 and similar from the parameters
     // this is *not* needed for the html controller
     String decodedText = LinkUtils.decodeText(text);
     String[] decodedFilter = LinkUtils.decodeTexts(filter);
     String decodedCursor = LinkUtils.decodeText(cursor);
+    Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
 
     int effectivePage;
 
@@ -150,7 +152,7 @@ public class SamplesRestController {
       log.trace("This cursor = " + decodedCursor);
       CursorArrayList<Sample> samples =
           samplePageService.getSamplesByText(
-              decodedText, filters, domains, decodedCursor, effectiveSize, curationRepo);
+              decodedText, filters, domains, decodedCursor, effectiveSize, curationRepo, decodedCurationDomains);
       log.trace("Next cursor = " + samples.getNextCursorMark());
 
       Resources<Resource<Sample>> resources =
@@ -204,7 +206,7 @@ public class SamplesRestController {
           new Sort(Arrays.stream(effectiveSort).map(this::parseSort).collect(Collectors.toList()));
       Pageable pageable = new PageRequest(effectivePage, effectiveSize, pageSort);
       Page<Sample> pageSample =
-          samplePageService.getSamplesByText(text, filters, domains, pageable, curationRepo);
+          samplePageService.getSamplesByText(text, filters, domains, pageable, curationRepo, decodedCurationDomains);
       Resources<Resource<Sample>> resources =
           populateResources(
               pageSample, effectiveSize, effectivePage, decodedText, decodedFilter, sort);

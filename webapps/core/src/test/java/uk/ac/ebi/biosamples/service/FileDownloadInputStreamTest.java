@@ -49,13 +49,13 @@ public class FileDownloadInputStreamTest {
   public void init() {
     CursorArrayList<Sample> samplePage = new CursorArrayList<>(cursor);
     when(samplePageService.getSamplesByText(
-            emptySamplesText, filters, domains, cursor, pageSize, null))
+            emptySamplesText, filters, domains, cursor, pageSize, null, Optional.empty()))
         .thenReturn(samplePage);
 
     CursorArrayList<Sample> samplePageWithSample = new CursorArrayList<>(cursor);
     samplePageWithSample.add(getTestSample());
     when(samplePageService.getSamplesByText(
-            sampleSearchText, filters, domains, cursor, pageSize, null))
+            sampleSearchText, filters, domains, cursor, pageSize, null, Optional.empty()))
         .thenReturn(samplePageWithSample);
   }
 

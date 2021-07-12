@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.Optional;
 import java.util.Queue;
 import org.apache.commons.io.IOUtils;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -97,7 +98,7 @@ public class FileDownloadInputStream extends InputStream {
 
   private void loadSamples() {
     CursorArrayList<Sample> samplePage =
-        samplePageService.getSamplesByText(text, filters, domains, cursor, PAGE_SIZE, null);
+        samplePageService.getSamplesByText(text, filters, domains, cursor, PAGE_SIZE, null, Optional.empty());
     if (!samplePage.isEmpty()) {
       sampleQueue.addAll(samplePage);
       cursor = samplePage.getNextCursorMark();

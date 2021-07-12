@@ -84,7 +84,6 @@ public class SampleRestController {
       @RequestParam(name = "legacydetails", required = false) String legacydetails,
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
       @RequestParam(name = "curationrepo", required = false) String curationRepo) {
-    log.trace("starting call");
 
     // decode percent-encoding from curation domains
     Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
