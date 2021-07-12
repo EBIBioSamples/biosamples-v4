@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.List;
 import java.util.zip.GZIPOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,7 @@ public class ExportRunner implements ApplicationRunner {
   @Override
   public void run(ApplicationArguments args) throws Exception {
     String jsonSampleFilename = args.getNonOptionArgs().get(0);
+    boolean removeCurations = args.getOptionValues("curationdomain") != null;
     long oldTime = System.nanoTime();
     int sampleCount = 0;
     boolean isPassed = true;
@@ -56,7 +58,7 @@ public class ExportRunner implements ApplicationRunner {
               : new OutputStreamWriter(
                   new GZIPOutputStream(new FileOutputStream(jsonSampleFilename)), "UTF-8"); ) {
         jsonSampleWriter.write("[\n");
-        for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
+      for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll(!removeCurations)) {
           log.trace("Handling " + sampleResource);
           Sample sample = sampleResource.getContent();
           if (sample == null) {
