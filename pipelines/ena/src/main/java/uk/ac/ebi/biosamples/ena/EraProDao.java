@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -95,7 +95,7 @@ public class EraProDao {
   public void doGetSuppressedEnaSamples(RowCallbackHandler rch) {
     String query =
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND "
-                + STATUS_CLAUSE_SUPPRESSED;
+            + STATUS_CLAUSE_SUPPRESSED;
 
     jdbcTemplate.query(query, rch);
   }
@@ -108,7 +108,7 @@ public class EraProDao {
   public void doGetSuppressedNcbiDdbjSamples(RowCallbackHandler rch) {
     String query =
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND "
-                + STATUS_CLAUSE_SUPPRESSED;
+            + STATUS_CLAUSE_SUPPRESSED;
 
     jdbcTemplate.query(query, rch);
   }
@@ -209,7 +209,7 @@ public class EraProDao {
   public void doGetKilledEnaSamples(RowCallbackHandler rch) {
     String query =
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND "
-                + STATUS_CLAUSE_KILLED;
+            + STATUS_CLAUSE_KILLED;
 
     jdbcTemplate.query(query, rch);
   }

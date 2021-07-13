@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -234,8 +234,11 @@ public class Ncbi implements ApplicationRunner {
           Sample newSample =
               Sample.Builder.fromSample(sample)
                   .withNoData()
-                  .withRelease(Instant.ofEpochSecond(
-                          LocalDateTime.now(ZoneOffset.UTC).plusYears(1000).toEpochSecond(ZoneOffset.UTC)))
+                  .withRelease(
+                      Instant.ofEpochSecond(
+                          LocalDateTime.now(ZoneOffset.UTC)
+                              .plusYears(1000)
+                              .toEpochSecond(ZoneOffset.UTC)))
                   .build();
           // persist the now private sample
           log.info("Making private " + sample.getAccession());

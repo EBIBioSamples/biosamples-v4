@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -54,9 +54,7 @@ public class ExternalReferenceService {
     ontologyMap.put("DUO:0000001", ontology);
     ontology = new HashMap<>();
     ontology.put("title", "No restriction");
-    ontology.put(
-        "body",
-        "This data use permission indicates there is no restriction on use.");
+    ontology.put("body", "This data use permission indicates there is no restriction on use.");
     ontologyMap.put("DUO:0000004", ontology);
     ontology = new HashMap<>();
     ontology.put("title", "General research use and clinical care (obsolete)");

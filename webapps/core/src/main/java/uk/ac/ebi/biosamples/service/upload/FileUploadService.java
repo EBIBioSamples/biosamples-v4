@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -13,6 +13,15 @@ package uk.ac.ebi.biosamples.service.upload;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Multimap;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.commons.csv.CSVParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,16 +39,6 @@ import uk.ac.ebi.biosamples.utils.upload.Characteristics;
 import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
 import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 @Service
 public class FileUploadService {
   private Logger log = LoggerFactory.getLogger(getClass());
@@ -56,11 +55,9 @@ public class FileUploadService {
 
   @Autowired JsonSchemaStoreAccessibilityCheckService jsonSchemaStoreAccessibilityCheckService;
 
-  @Autowired
-  BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
+  @Autowired BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
 
-  @Autowired
-  BioSamplesAapService bioSamplesAapService;
+  @Autowired BioSamplesAapService bioSamplesAapService;
 
   public synchronized File upload(
       MultipartFile file, String aapDomain, String checklist, String webinId) {
@@ -85,7 +82,8 @@ public class FileUploadService {
       final List<Multimap<String, String>> csvDataMap = fileUploadUtils.getCSVDataInMap(csvParser);
       log.info("CSV data size: " + csvDataMap.size());
 
-      final List<Sample> samples = buildSamples(csvDataMap, aapDomain, webinId, checklist, validationResult, isWebin);
+      final List<Sample> samples =
+          buildSamples(csvDataMap, aapDomain, webinId, checklist, validationResult, isWebin);
 
       final String persistenceMessage = "Number of samples persisted: " + samples.size();
 
@@ -108,12 +106,12 @@ public class FileUploadService {
   }
 
   private List<Sample> buildSamples(
-          List<Multimap<String, String>> csvDataMap,
-          String aapDomain,
-          String webinId,
-          String checklist,
-          ValidationResult validationResult,
-          boolean isWebin) {
+      List<Multimap<String, String>> csvDataMap,
+      String aapDomain,
+      String webinId,
+      String checklist,
+      ValidationResult validationResult,
+      boolean isWebin) {
     final Map<String, String> sampleNameToAccessionMap = new LinkedHashMap<>();
     final Map<Sample, Multimap<String, String>> sampleToMappedSample = new LinkedHashMap<>();
     final boolean isSchemaValidatorAccessible =
@@ -126,10 +124,17 @@ public class FileUploadService {
           try {
             sample =
                 buildSample(
-                    csvRecordMap, aapDomain, webinId, checklist, isSchemaValidatorAccessible, validationResult, isWebin);
+                    csvRecordMap,
+                    aapDomain,
+                    webinId,
+                    checklist,
+                    isSchemaValidatorAccessible,
+                    validationResult,
+                    isWebin);
 
             if (sample == null) {
-              this.validationResult.addValidationMessage("Failed to create all samples in the file");
+              this.validationResult.addValidationMessage(
+                  "Failed to create all samples in the file");
             }
           } catch (Exception e) {
             this.validationResult.addValidationMessage("Failed to create all samples in the file");
@@ -150,10 +155,10 @@ public class FileUploadService {
   }
 
   private List<Sample> addRelationshipsAndThenBuildSamples(
-          Map<String, String> sampleNameToAccessionMap,
-          Map<Sample, Multimap<String, String>> sampleToMappedSample,
-          ValidationResult validationResult,
-          boolean isWebin) {
+      Map<String, String> sampleNameToAccessionMap,
+      Map<Sample, Multimap<String, String>> sampleToMappedSample,
+      ValidationResult validationResult,
+      boolean isWebin) {
     return sampleToMappedSample.entrySet().stream()
         .map(
             sampleMultimapEntry ->
@@ -163,14 +168,16 @@ public class FileUploadService {
   }
 
   private Sample addRelationshipAndThenBuildSample(
-          Map<String, String> sampleNameToAccessionMap,
-          Map.Entry<Sample, Multimap<String, String>> sampleMultimapEntry,
-          ValidationResult validationResult, boolean isWebin) {
+      Map<String, String> sampleNameToAccessionMap,
+      Map.Entry<Sample, Multimap<String, String>> sampleMultimapEntry,
+      ValidationResult validationResult,
+      boolean isWebin) {
     final Multimap<String, String> relationshipMap =
         fileUploadUtils.parseRelationships(sampleMultimapEntry.getValue());
     Sample sample = sampleMultimapEntry.getKey();
     final List<Relationship> relationships =
-        fileUploadUtils.createRelationships(sample, sampleNameToAccessionMap, relationshipMap, validationResult);
+        fileUploadUtils.createRelationships(
+            sample, sampleNameToAccessionMap, relationshipMap, validationResult);
 
     relationships.forEach(relationship -> log.info(relationship.toString()));
 
@@ -181,23 +188,28 @@ public class FileUploadService {
   }
 
   private Sample buildSample(
-          Multimap<String, String> multiMap,
-          String aapDomain,
-          String webinId,
-          String checklist,
-          boolean isSchemaValidatorAccessible, ValidationResult validationResult,
-          boolean isWebin)
+      Multimap<String, String> multiMap,
+      String aapDomain,
+      String webinId,
+      String checklist,
+      boolean isSchemaValidatorAccessible,
+      ValidationResult validationResult,
+      boolean isWebin)
       throws JsonProcessingException {
     final String sampleName = fileUploadUtils.getSampleName(multiMap);
     final String sampleReleaseDate = fileUploadUtils.getReleaseDate(multiMap);
     final String accession = fileUploadUtils.getSampleAccession(multiMap);
-    final List<Characteristics> characteristicsList = fileUploadUtils.handleCharacteristics(multiMap);
-    final List<ExternalReference> externalReferenceList = fileUploadUtils.handleExternalReferences(multiMap);
+    final List<Characteristics> characteristicsList =
+        fileUploadUtils.handleCharacteristics(multiMap);
+    final List<ExternalReference> externalReferenceList =
+        fileUploadUtils.handleExternalReferences(multiMap);
     final List<Contact> contactsList = fileUploadUtils.handleContacts(multiMap);
     boolean isCertified;
 
     if (fileUploadUtils.isBasicValidationFailure(sampleName, sampleReleaseDate, validationResult)) {
-      Sample sample = fileUploadUtils.buildSample(sampleName, accession, characteristicsList, externalReferenceList, contactsList);
+      Sample sample =
+          fileUploadUtils.buildSample(
+              sampleName, accession, characteristicsList, externalReferenceList, contactsList);
 
       sample = handleAuthentication(aapDomain, webinId, isWebin, sample, validationResult);
 
@@ -210,12 +222,13 @@ public class FileUploadService {
         if (isCertified) {
           final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, false);
           sample = storeSample(sample, isFirstTimeMetadataAdded, isWebin(isWebin));
-          log.info("Sample " + sample.getName() + " created with accession " + sample.getAccession());
+          log.info(
+              "Sample " + sample.getName() + " created with accession " + sample.getAccession());
 
           return sample;
         } else {
           validationResult.addValidationMessage(
-                  sampleName + " failed validation against " + checklist);
+              sampleName + " failed validation against " + checklist);
 
           return null;
         }
@@ -227,25 +240,35 @@ public class FileUploadService {
     }
   }
 
-  private Sample handleAuthentication(String aapDomain, String webinId, boolean isWebin, Sample sample, ValidationResult validationResult) {
+  private Sample handleAuthentication(
+      String aapDomain,
+      String webinId,
+      boolean isWebin,
+      Sample sample,
+      ValidationResult validationResult) {
     try {
       if (isWebin) {
         sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinId);
       } else {
         sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
-        //sample = bioSamplesAapService.handleSampleDomain(sample);
+        // sample = bioSamplesAapService.handleSampleDomain(sample);
       }
 
       return sample;
     } catch (final Exception e) {
       if (e instanceof BioSamplesWebinAuthenticationService.SampleNotAccessibleException) {
-        validationResult.addValidationMessage("Sample " + sample.getName() + " is not accessible by your user");
-      } else if (e instanceof BioSamplesWebinAuthenticationService.WebinUserLoginUnauthorizedException) {
-        validationResult.addValidationMessage("Sample " + sample.getName() + " not persisted as WEBIN user is not authorized");
+        validationResult.addValidationMessage(
+            "Sample " + sample.getName() + " is not accessible by your user");
+      } else if (e
+          instanceof BioSamplesWebinAuthenticationService.WebinUserLoginUnauthorizedException) {
+        validationResult.addValidationMessage(
+            "Sample " + sample.getName() + " not persisted as WEBIN user is not authorized");
       } else if (e instanceof BioSamplesAapService.SampleDomainMismatchException) {
-        validationResult.addValidationMessage("Sample " + sample.getName() + " is not accessible by your user");
+        validationResult.addValidationMessage(
+            "Sample " + sample.getName() + " is not accessible by your user");
       } else if (e instanceof BioSamplesAapService.SampleNotAccessibleException) {
-        validationResult.addValidationMessage("Sample " + sample.getName() + " is not accessible by your user");
+        validationResult.addValidationMessage(
+            "Sample " + sample.getName() + " is not accessible by your user");
       } else {
         validationResult.addValidationMessage("General auth error, please retry");
       }
@@ -262,7 +285,9 @@ public class FileUploadService {
     return sampleService.store(sample, isFirstTimeMetadataAdded, authProvider);
   }
 
-  private boolean validateSample(String certificate, boolean isSchemaValidatorAccessible, Sample sample) throws JsonProcessingException {
+  private boolean validateSample(
+      String certificate, boolean isSchemaValidatorAccessible, Sample sample)
+      throws JsonProcessingException {
     boolean isCertified;
 
     try {
