@@ -503,3 +503,89 @@ code[class^="language"] {
 .duo-tooltip-text-body {
     color: #ffffff;
 }
+
+.upload-container {
+    margin-bottom: 20px;
+}
+
+.upload-tabs-navbar {
+    background-color: #efefef;
+    margin-bottom: 20px;
+    overflow: auto;
+}
+
+.upload-tabs-btn {
+    float: left;
+    font-size: 18px;
+    padding: 10px;
+    background-color: #efefef;
+}
+
+.upload-tabs-btn:hover {
+    background-color: #7d7d7b;
+    cursor: pointer;
+}
+
+.submission-search-box {
+    float: left;
+    width: 70%;
+}
+
+.submission-search-btn {
+    float: right;
+    width: 25%;
+}
+
+#submission-table {
+    margin-top: 10px;
+}
+
+#submission-table table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+#submission-table td, #submission-table th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+#submission-table tr:nth-child(even) {
+    background-color: #dddddd;
+}
+
+.upload-submit-btn {
+    float: right;
+}
+
+.logout-btn {
+    background-color: #adacac;
+    float: right;
+    margin: 3px;
+}
+
+.logout-btn:hover {
+    background-color: #4e4e4e;
+}
+
+.login-wrapper {
+    overflow: auto;
+    margin: 0 auto;
+    padding: 10px 20px;
+    width: 50%;
+    border: 1px solid #cdcdcd;
+    border-radius: 5px;
+}
+
+.login-info{
+    margin-bottom: 20px;
+    text-align: center;
+    padding: 10px;
+    color: #7d7d7b;
+}
+
+.login-button{
+    float: right;
+}
