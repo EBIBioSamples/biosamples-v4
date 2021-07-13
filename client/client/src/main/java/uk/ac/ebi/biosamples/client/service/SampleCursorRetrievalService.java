@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +69,16 @@ public class SampleCursorRetrievalService {
       String jwt,
       StaticViewWrapper.StaticView staticView) {
 
+    return fetchAll(text, filterCollection, jwt, staticView, true);
+  }
+
+  public Iterable<Resource<Sample>> fetchAll(
+          String text,
+          Collection<Filter> filterCollection,
+          String jwt,
+          StaticViewWrapper.StaticView staticView,
+          boolean addCurations) {
+
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
     params.add("text", text);
     for (Filter filter : filterCollection) {
@@ -76,6 +87,9 @@ public class SampleCursorRetrievalService {
     params.add("size", Integer.toString(pageSize));
     if (staticView != null) {
       params.add("curationrepo", staticView.getCurationRepositoryName());
+    }
+    if (!addCurations) {
+      params.add("curationdomain", "");
     }
 
     params = encodePlusInQueryParameters(params);

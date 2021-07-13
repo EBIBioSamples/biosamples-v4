@@ -146,7 +146,8 @@ public class ApiDocumentationTest {
             anyCollectionOf(Filter.class),
             anyCollectionOf(String.class),
             isA(Pageable.class),
-            any(String.class)))
+            any(String.class),
+            any()))
         .thenReturn(samplePage);
     this.mockMvc
         .perform(get("/biosamples/samples").accept(MediaTypes.HAL_JSON))

@@ -77,7 +77,8 @@ public class SamplePageService {
       Collection<Filter> filters,
       Collection<String> domains,
       Pageable pageable,
-      String curationRepo) {
+      String curationRepo,
+      Optional<List<String>> curationDomains) {
     long startTime = System.nanoTime();
     Page<SolrSample> pageSolrSample =
         solrSampleService.fetchSolrSampleByText(text, filters, domains, pageable);
@@ -90,7 +91,7 @@ public class SamplePageService {
         StaticViewWrapper.getStaticView(domains.isEmpty() ? null : domains, curationRepo);
     pageFutureSample =
         pageSolrSample.map(
-            ss -> sampleService.fetchAsync(ss.getAccession(), Optional.empty(), staticViews));
+            ss -> sampleService.fetchAsync(ss.getAccession(), curationDomains, staticViews));
 
     Page<Sample> pageSample =
         pageFutureSample.map(
@@ -118,7 +119,8 @@ public class SamplePageService {
       Collection<String> domains,
       String cursorMark,
       int size,
-      String curationRepo) {
+      String curationRepo,
+      Optional<List<String>> curationDomains) {
     cursorMark = validateCursor(cursorMark);
     size = validatePageSize(size);
 
@@ -130,7 +132,7 @@ public class SamplePageService {
     List<Future<Optional<Sample>>> listFutureSample;
     listFutureSample =
         cursorSolrSample.stream()
-            .map(s -> sampleService.fetchAsync(s.getAccession(), Optional.empty(), staticViews))
+            .map(s -> sampleService.fetchAsync(s.getAccession(), curationDomains, staticViews))
             .collect(Collectors.toList());
 
     List<Sample> listSample = collectSampleFutures(listFutureSample);
