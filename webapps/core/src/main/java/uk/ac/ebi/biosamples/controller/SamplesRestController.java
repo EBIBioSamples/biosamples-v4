@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -341,9 +341,10 @@ public class SamplesRestController {
     return new Link(builder.toUriString(), rel);
   }
 
-  private static UriComponentsBuilder getUriComponentsBuilder(String text, String[] filter, Class controllerClass) {
+  private static UriComponentsBuilder getUriComponentsBuilder(
+      String text, String[] filter, Class controllerClass) {
     UriComponentsBuilder builder =
-            ControllerLinkBuilder.linkTo(controllerClass).toUriComponentsBuilder();
+        ControllerLinkBuilder.linkTo(controllerClass).toUriComponentsBuilder();
 
     if (text != null && text.trim().length() > 0) {
       builder.queryParam("text", text);
@@ -404,9 +405,9 @@ public class SamplesRestController {
       final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
       final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-              bioSamplesWebinAuthenticationService
-                      .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-                      .getBody();
+          bioSamplesWebinAuthenticationService
+              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+              .getBody();
 
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
     } else {
@@ -419,7 +420,7 @@ public class SamplesRestController {
     final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
-            .body(sampleResource);
+        .body(sampleResource);
   }
 
   @PreAuthorize("isAuthenticated()")
@@ -453,8 +454,8 @@ public class SamplesRestController {
           samples.stream()
               .map(
                   sample ->
-                      bioSamplesWebinAuthenticationService.getSampleWithWebinSubmissionAccountIdAdded(
-                          sample, webinAccount.getId()))
+                      bioSamplesWebinAuthenticationService
+                          .getSampleWithWebinSubmissionAccountIdAdded(sample, webinAccount.getId()))
               .collect(Collectors.toList());
     } else {
       if (samples.size() > 0) {
@@ -652,19 +653,17 @@ public class SamplesRestController {
 
   private Sample privateSampleBuildAndReturn(final Sample sample) {
     final Instant release =
-            Instant.ofEpochSecond(
-                    LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+        Instant.ofEpochSecond(
+            LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
     final Instant update = Instant.now();
     final SubmittedViaType submittedVia =
-            sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+        sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
 
-    return
-            Sample.Builder.fromSample(sample)
-                    .withRelease(release)
-                    .withUpdate(update)
-                    .withSubmittedVia(submittedVia)
-                    .build();
-
+    return Sample.Builder.fromSample(sample)
+        .withRelease(release)
+        .withUpdate(update)
+        .withSubmittedVia(submittedVia)
+        .build();
   }
 
   @ResponseStatus(

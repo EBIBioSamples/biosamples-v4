@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -10,6 +10,9 @@
 */
 package uk.ac.ebi.biosamples;
 
+import java.io.StringReader;
+import java.time.Instant;
+import java.util.*;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -23,10 +26,6 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
-
-import java.io.StringReader;
-import java.time.Instant;
-import java.util.*;
 
 @Component
 public class XmlSearchIntegration extends AbstractIntegration {
@@ -57,16 +56,13 @@ public class XmlSearchIntegration extends AbstractIntegration {
   }
 
   @Override
-  protected void phaseThree() {
-  }
+  protected void phaseThree() {}
 
   @Override
-  protected void phaseFour() {
-  }
+  protected void phaseFour() {}
 
   @Override
-  protected void phaseFive() {
-  }
+  protected void phaseFive() {}
 
   private static class XmlSearchTester {
 

@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -41,10 +41,8 @@ import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
 public class FileUploadController {
   private Logger log = LoggerFactory.getLogger(getClass());
 
-  @Autowired
-  FileUploadService fileUploadService;
-  @Autowired
-  FileQueueService fileQueueService;
+  @Autowired FileUploadService fileUploadService;
+  @Autowired FileQueueService fileQueueService;
 
   /*@Value("${web.submit.max-files-size-mb}")
   float maxFilesSizeMb;*/
@@ -52,17 +50,17 @@ public class FileUploadController {
   @PreAuthorize("isAuthenticated()")
   @PostMapping
   public ResponseEntity<byte[]> upload(
-          @RequestParam("file") final MultipartFile file,
-          @Valid final String hiddenAapDomain,
-          @Valid final String hiddenCertificate,
-          @Valid final String webinAccount)
-          throws IOException {
+      @RequestParam("file") final MultipartFile file,
+      @Valid final String hiddenAapDomain,
+      @Valid final String hiddenCertificate,
+      @Valid final String webinAccount)
+      throws IOException {
     if (!isFileSizeExceeded(file)) {
       log.info("File size doesn't exceed limits");
 
       try {
         final File downloadableFile =
-                fileUploadService.upload(file, hiddenAapDomain, hiddenCertificate, webinAccount);
+            fileUploadService.upload(file, hiddenAapDomain, hiddenCertificate, webinAccount);
         final byte[] bytes = FileUtils.readFileToByteArray(downloadableFile);
         final HttpHeaders headers = setResponseHeadersSuccess(downloadableFile);
 
@@ -81,9 +79,7 @@ public class FileUploadController {
         final HttpHeaders headers = setResponseHeadersFailure(failedUploadMessageFile);
 
         return new ResponseEntity<>(bytes, headers, HttpStatus.BAD_REQUEST);
-      }
-
-      catch(final Exception e) {
+      } catch (final Exception e) {
         log.info("File upload failure - server error " + e.getMessage());
 
         final Path temp = Files.createTempFile("failure_result_server_error", ".txt");
@@ -103,7 +99,8 @@ public class FileUploadController {
       final Path temp = Files.createTempFile("queue_result", ".txt");
 
       try {
-        final String fileId = fileQueueService.queueFile(file, hiddenAapDomain, hiddenCertificate, webinAccount);
+        final String fileId =
+            fileQueueService.queueFile(file, hiddenAapDomain, hiddenCertificate, webinAccount);
 
         try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
           writer.write("Your submission has been queued and your submission id is " + fileId);
@@ -159,9 +156,7 @@ public class FileUploadController {
     return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
   }
 
-  private boolean isFileSizeExceeded(
-          MultipartFile file)
-          throws RuntimeException {
+  private boolean isFileSizeExceeded(MultipartFile file) throws RuntimeException {
     long sizeBytes = file.getSize();
     float sizeBytesKb = sizeBytes / 1000;
     return sizeBytesKb >= 3;

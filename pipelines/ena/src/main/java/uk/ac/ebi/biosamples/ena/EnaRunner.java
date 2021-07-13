@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -115,7 +115,7 @@ public class EnaRunner implements ApplicationRunner {
 
       // Handler to append SRA Accession (ENA accession numbers to samples owned by BioSamples)
       try {
-        //importEraBsdAuthoritySamples(fromDate, toDate);
+        // importEraBsdAuthoritySamples(fromDate, toDate);
       } catch (final Exception e) {
         failures.append("Some problems while adding SRA accession to BSD authority samples" + "\n");
       }

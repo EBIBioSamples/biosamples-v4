@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -29,21 +29,17 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
     classes = TestApplication.class,
     properties = {"job.autorun.enabled=false"})
 public class TestConversion {
-    @Qualifier("WEBINCLIENT")
-    @Autowired
-    public BioSamplesClient bioSamplesWebinClient;
+  @Qualifier("WEBINCLIENT")
+  @Autowired
+  public BioSamplesClient bioSamplesWebinClient;
 
-    @Autowired
-    public BioSamplesClient bioSamplesAapClient;
+  @Autowired public BioSamplesClient bioSamplesAapClient;
 
-    @Autowired
-    private EraProDao eraProDao;
+  @Autowired private EraProDao eraProDao;
 
-    @Autowired
-    private EnaElementConverter enaElementConverter;
+  @Autowired private EnaElementConverter enaElementConverter;
 
-    @Autowired
-    private EnaXmlEnhancer enaXmlEnhancer;
+  @Autowired private EnaXmlEnhancer enaXmlEnhancer;
 
   @Test
   @Ignore
@@ -82,19 +78,19 @@ public class TestConversion {
         resultSet -> {
           String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
           EnaCallable enaCallable =
-                  new EnaCallable(
-                          sampleAccession,
-                          0,
-                          bioSamplesWebinClient,
-                          bioSamplesAapClient,
-                          enaXmlEnhancer,
-                          enaElementConverter,
-                          eraProDao,
-                          "test",
-                          false,
-                          false,
-                          false,
-                          null);
+              new EnaCallable(
+                  sampleAccession,
+                  0,
+                  bioSamplesWebinClient,
+                  bioSamplesAapClient,
+                  enaXmlEnhancer,
+                  enaElementConverter,
+                  eraProDao,
+                  "test",
+                  false,
+                  false,
+                  false,
+                  null);
           try {
             enaCallable.call();
           } catch (Exception e) {
@@ -111,19 +107,19 @@ public class TestConversion {
         resultSet -> {
           String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
           EnaCallable enaCallable =
-                  new EnaCallable(
-                          sampleAccession,
-                          0,
-                          bioSamplesWebinClient,
-                          bioSamplesAapClient,
-                          enaXmlEnhancer,
-                          enaElementConverter,
-                          eraProDao,
-                          "test",
-                          false,
-                          false,
-                          false,
-                          null);
+              new EnaCallable(
+                  sampleAccession,
+                  0,
+                  bioSamplesWebinClient,
+                  bioSamplesAapClient,
+                  enaXmlEnhancer,
+                  enaElementConverter,
+                  eraProDao,
+                  "test",
+                  false,
+                  false,
+                  false,
+                  null);
           try {
             enaCallable.call();
           } catch (Exception e) {
@@ -140,19 +136,19 @@ public class TestConversion {
         resultSet -> {
           String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
           EnaCallable enaCallable =
-                  new EnaCallable(
-                          sampleAccession,
-                          0,
-                          bioSamplesWebinClient,
-                          bioSamplesAapClient,
-                          enaXmlEnhancer,
-                          enaElementConverter,
-                          eraProDao,
-                          "test",
-                          false,
-                          false,
-                          false,
-                          null);
+              new EnaCallable(
+                  sampleAccession,
+                  0,
+                  bioSamplesWebinClient,
+                  bioSamplesAapClient,
+                  enaXmlEnhancer,
+                  enaElementConverter,
+                  eraProDao,
+                  "test",
+                  false,
+                  false,
+                  false,
+                  null);
           try {
             enaCallable.call();
           } catch (Exception e) {
@@ -168,20 +164,20 @@ public class TestConversion {
     RowCallbackHandler rowCallbackHandler =
         resultSet -> {
           String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-            EnaCallable enaCallable =
-                    new EnaCallable(
-                            sampleAccession,
-                            0,
-                            bioSamplesWebinClient,
-                            bioSamplesAapClient,
-                            enaXmlEnhancer,
-                            enaElementConverter,
-                            eraProDao,
-                            "test",
-                            false,
-                            false,
-                            false,
-                            null);
+          EnaCallable enaCallable =
+              new EnaCallable(
+                  sampleAccession,
+                  0,
+                  bioSamplesWebinClient,
+                  bioSamplesAapClient,
+                  enaXmlEnhancer,
+                  enaElementConverter,
+                  eraProDao,
+                  "test",
+                  false,
+                  false,
+                  false,
+                  null);
           try {
             enaCallable.call();
           } catch (Exception e) {

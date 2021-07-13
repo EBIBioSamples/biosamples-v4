@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -37,8 +37,7 @@ public class MessageConfig {
 
   @Bean(name = "uploaderQueue")
   public Queue getFileUploaderQueue() {
-    return QueueBuilder.durable(Messaging.fileUploadQueue)
-            .build();
+    return QueueBuilder.durable(Messaging.fileUploadQueue).build();
   }
 
   // this queue sets up a delay before messages are requeued on the original solr indexing queue
@@ -83,9 +82,9 @@ public class MessageConfig {
   @Bean(name = "uploaderBindings")
   public Binding bindingForFileUploaderQueues() {
     return BindingBuilder.bind(getFileUploaderQueue())
-            .to(getFileUploaderExchange())
-            .with(Messaging.fileUploadQueue)
-            .noargs();
+        .to(getFileUploaderExchange())
+        .with(Messaging.fileUploadQueue)
+        .noargs();
   }
 
   // enable messaging in json
