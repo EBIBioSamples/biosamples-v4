@@ -11,40 +11,47 @@
 package uk.ac.ebi.biosamples.mongo.model;
 
 import java.util.List;
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
+import uk.ac.ebi.biosamples.mongo.util.SampleNameAccessionPair;
 
 @Document(collection = "mongoFileUpload")
 public class MongoFileUpload {
-  @Id private final String xmlPayloadId;
+  @Id @JsonIgnore private final String submissionId;
   private final BioSamplesFileUploadSubmissionStatus submissionStatus;
   private final String submitterDetails;
   private final String checklist;
-  private final boolean isWebin;
-  private List<String> accessions;
+  @JsonIgnore private final boolean isWebin;
+  private final List<SampleNameAccessionPair> nameAccessionPairs;
+  @JsonInclude(JsonInclude.Include.NON_NULL) private final String validationMessage;
 
   public MongoFileUpload(
-      String xmlPayloadId,
-      BioSamplesFileUploadSubmissionStatus submissionStatus,
-      String submitterDetails,
-      String checklist,
-      boolean isWebin,
-      List<String> accessions) {
-    this.xmlPayloadId = xmlPayloadId;
+          String submissionId,
+          BioSamplesFileUploadSubmissionStatus submissionStatus,
+          String submitterDetails,
+          String checklist,
+          boolean isWebin,
+          List<SampleNameAccessionPair> nameAccessionPairs, String validationMessage) {
+    this.submissionId = submissionId;
     this.submissionStatus = submissionStatus;
     this.submitterDetails = submitterDetails;
     this.checklist = checklist;
     this.isWebin = isWebin;
-    this.accessions = accessions;
+    this.nameAccessionPairs = nameAccessionPairs;
+    this.validationMessage = validationMessage;
   }
 
   public String getChecklist() {
     return checklist;
   }
 
-  public String getXmlPayloadId() {
-    return xmlPayloadId;
+  public String getSubmissionId() {
+    return submissionId;
   }
 
   public BioSamplesFileUploadSubmissionStatus getSubmissionStatus() {
@@ -59,7 +66,31 @@ public class MongoFileUpload {
     return isWebin;
   }
 
-  public List<String> getAccessions() {
-    return accessions;
+  public List<SampleNameAccessionPair> getNameAccessionPairs() {
+    return nameAccessionPairs;
+  }
+
+  public String getValidationMessage() {
+    return validationMessage;
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) return true;
+    if (!(o instanceof MongoFileUpload)) return false;
+    final MongoFileUpload that = (MongoFileUpload) o;
+
+    return isWebin() == that.isWebin() &&
+            Objects.equals(getSubmissionId(), that.getSubmissionId()) &&
+            getSubmissionStatus() == that.getSubmissionStatus() &&
+            Objects.equals(getSubmitterDetails(), that.getSubmitterDetails()) &&
+            Objects.equals(getChecklist(), that.getChecklist()) &&
+            Objects.equals(getNameAccessionPairs(), that.getNameAccessionPairs()) &&
+            Objects.equals(getValidationMessage(), that.getValidationMessage());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getSubmissionId(), getSubmissionStatus(), getSubmitterDetails(), getChecklist(), isWebin(), getNameAccessionPairs(), getValidationMessage());
   }
 }
