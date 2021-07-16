@@ -152,7 +152,13 @@ public class SamplesRestController {
       log.trace("This cursor = " + decodedCursor);
       CursorArrayList<Sample> samples =
           samplePageService.getSamplesByText(
-              decodedText, filters, domains, decodedCursor, effectiveSize, curationRepo, decodedCurationDomains);
+              decodedText,
+              filters,
+              domains,
+              decodedCursor,
+              effectiveSize,
+              curationRepo,
+              decodedCurationDomains);
       log.trace("Next cursor = " + samples.getNextCursorMark());
 
       Resources<Resource<Sample>> resources =
@@ -206,7 +212,8 @@ public class SamplesRestController {
           new Sort(Arrays.stream(effectiveSort).map(this::parseSort).collect(Collectors.toList()));
       Pageable pageable = new PageRequest(effectivePage, effectiveSize, pageSort);
       Page<Sample> pageSample =
-          samplePageService.getSamplesByText(text, filters, domains, pageable, curationRepo, decodedCurationDomains);
+          samplePageService.getSamplesByText(
+              text, filters, domains, pageable, curationRepo, decodedCurationDomains);
       Resources<Resource<Sample>> resources =
           populateResources(
               pageSample, effectiveSize, effectivePage, decodedText, decodedFilter, sort);

@@ -246,7 +246,9 @@ public class BioSamplesProperties {
     return biosamplesFileUploaderMaxSameTimeUploadFileSize;
   }
 
-  public void setBiosamplesFileUploaderMaxSameTimeUploadFileSize(long biosamplesFileUploaderMaxSameTimeUploadFileSize) {
-    this.biosamplesFileUploaderMaxSameTimeUploadFileSize = biosamplesFileUploaderMaxSameTimeUploadFileSize;
+  public void setBiosamplesFileUploaderMaxSameTimeUploadFileSize(
+      long biosamplesFileUploaderMaxSameTimeUploadFileSize) {
+    this.biosamplesFileUploaderMaxSameTimeUploadFileSize =
+        biosamplesFileUploaderMaxSameTimeUploadFileSize;
   }
 }

@@ -297,8 +297,7 @@ public class FileUploadUtils {
 
   public Sample addChecklistAttributeAndBuildSample(final String checklist, Sample sample) {
     final Set<Attribute> attributeSet = sample.getAttributes();
-    final Attribute attribute =
-        new Attribute.Builder("checklist", checklist).build();
+    final Attribute attribute = new Attribute.Builder("checklist", checklist).build();
 
     attributeSet.add(attribute);
     sample = Sample.Builder.fromSample(sample).withAttributes(attributeSet).build();
@@ -421,13 +420,13 @@ public class FileUploadUtils {
             .withTrim(true));
   }
 
-    public File writeQueueMessageToFile(String submissionId) throws IOException {
-        final Path temp = Files.createTempFile("queue_result", ".txt");
+  public File writeQueueMessageToFile(String submissionId) throws IOException {
+    final Path temp = Files.createTempFile("queue_result", ".txt");
 
-        try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
-            writer.write("Your submission has been queued and your submission id is " + submissionId);
-        }
-
-        return temp.toFile();
+    try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
+      writer.write("Your submission has been queued and your submission id is " + submissionId);
     }
+
+    return temp.toFile();
+  }
 }

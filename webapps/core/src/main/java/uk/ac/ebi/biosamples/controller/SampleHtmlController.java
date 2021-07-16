@@ -135,7 +135,8 @@ public class SampleHtmlController {
 
     Pageable pageable = new PageRequest(page - 1, size);
     Page<Sample> pageSample =
-        samplePageService.getSamplesByText(text, filterCollection, domains, pageable, curationRepo, Optional.empty());
+        samplePageService.getSamplesByText(
+            text, filterCollection, domains, pageable, curationRepo, Optional.empty());
 
     // default to getting 10 values from 10 facets
     // List<Facet> sampleFacets = facetService.getFacets(text, filterCollection, domains, 10,

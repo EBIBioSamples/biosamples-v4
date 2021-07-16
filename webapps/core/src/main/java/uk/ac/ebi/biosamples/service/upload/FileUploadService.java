@@ -11,6 +11,16 @@
 package uk.ac.ebi.biosamples.service.upload;
 
 import com.google.common.collect.Multimap;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.commons.csv.CSVParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,17 +43,6 @@ import uk.ac.ebi.biosamples.utils.upload.Characteristics;
 import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
 import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 @Service
 public class FileUploadService {
   private static final String WEBIN_AUTH = "WEBIN";
@@ -57,14 +56,15 @@ public class FileUploadService {
 
   @Autowired private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
 
-  @Autowired
-  private MongoFileUploadRepository mongoFileUploadRepository;
+  @Autowired private MongoFileUploadRepository mongoFileUploadRepository;
 
-  @Autowired
-  private FileQueueService fileQueueService;
+  @Autowired private FileQueueService fileQueueService;
 
   public synchronized File upload(
-      final MultipartFile file, final String aapDomain, final String checklist, final String webinId) {
+      final MultipartFile file,
+      final String aapDomain,
+      final String checklist,
+      final String webinId) {
     validationResult = new ValidationResult();
     fileUploadUtils = new FileUploadUtils();
     final String authProvider = isWebin(isWebinIdUsedToAuthenticate(webinId));
@@ -85,13 +85,13 @@ public class FileUploadService {
       final List<String> headers = csvParser.getHeaderNames();
 
       validateHeaderPositions(headers);
-      
+
       final List<Multimap<String, String>> csvDataMap = fileUploadUtils.getCSVDataInMap(csvParser);
       final int numSamples = csvDataMap.size();
 
       log.info("CSV data size: " + numSamples);
 
-      if(numSamples > 200) {
+      if (numSamples > 200) {
         log.info("File sample count exceeds limits - queueing file for async submission");
         final String submissionId = fileQueueService.queueFile(file, aapDomain, checklist, webinId);
 
@@ -123,21 +123,25 @@ public class FileUploadService {
 
   private void validateHeaderPositions(final List<String> headers) {
     if (headers.size() > 0) {
-      if ((!headers.get(0).equalsIgnoreCase("Source Name") && (!headers.get(1).equalsIgnoreCase("Sample Name")) && (!headers.get(2).equalsIgnoreCase("Release Date")))) {
-        validationResult.addValidationMessage("ISA tab file must have Source Name as first column, followed by Sample Name and Release Date.");
+      if ((!headers.get(0).equalsIgnoreCase("Source Name")
+          && (!headers.get(1).equalsIgnoreCase("Sample Name"))
+          && (!headers.get(2).equalsIgnoreCase("Release Date")))) {
+        validationResult.addValidationMessage(
+            "ISA tab file must have Source Name as first column, followed by Sample Name and Release Date.");
 
-        throw new UploadInvalidException(String.join("\n", validationResult.getValidationMessagesList()));
+        throw new UploadInvalidException(
+            String.join("\n", validationResult.getValidationMessagesList()));
       }
     }
   }
 
   private List<Sample> buildSamples(
-          final List<Multimap<String, String>> csvDataMap,
-          final String aapDomain,
-          final String webinId,
-          final String checklist,
-          final ValidationResult validationResult,
-          final boolean isWebin) {
+      final List<Multimap<String, String>> csvDataMap,
+      final String aapDomain,
+      final String webinId,
+      final String checklist,
+      final ValidationResult validationResult,
+      final boolean isWebin) {
     final Map<String, String> sampleNameToAccessionMap = new LinkedHashMap<>();
     final Map<Sample, Multimap<String, String>> sampleToMappedSample = new LinkedHashMap<>();
 
@@ -147,13 +151,7 @@ public class FileUploadService {
 
           try {
             sample =
-                buildSample(
-                    csvRecordMap,
-                    aapDomain,
-                    webinId,
-                    checklist,
-                        validationResult,
-                    isWebin);
+                buildSample(csvRecordMap, aapDomain, webinId, checklist, validationResult, isWebin);
 
             if (sample == null) {
               this.validationResult.addValidationMessage(
@@ -178,10 +176,10 @@ public class FileUploadService {
   }
 
   private List<Sample> addRelationshipsAndThenBuildSamples(
-          final Map<String, String> sampleNameToAccessionMap,
-          final Map<Sample, Multimap<String, String>> sampleToMappedSample,
-          final ValidationResult validationResult,
-          final boolean isWebin) {
+      final Map<String, String> sampleNameToAccessionMap,
+      final Map<Sample, Multimap<String, String>> sampleToMappedSample,
+      final ValidationResult validationResult,
+      final boolean isWebin) {
     return sampleToMappedSample.entrySet().stream()
         .map(
             sampleMultimapEntry ->
@@ -191,10 +189,10 @@ public class FileUploadService {
   }
 
   private Sample addRelationshipAndThenBuildSample(
-          final Map<String, String> sampleNameToAccessionMap,
-          final Map.Entry<Sample, Multimap<String, String>> sampleMultimapEntry,
-          final ValidationResult validationResult,
-          final boolean isWebin) {
+      final Map<String, String> sampleNameToAccessionMap,
+      final Map.Entry<Sample, Multimap<String, String>> sampleMultimapEntry,
+      final ValidationResult validationResult,
+      final boolean isWebin) {
     final Multimap<String, String> relationshipMap =
         fileUploadUtils.parseRelationships(sampleMultimapEntry.getValue());
     Sample sample = sampleMultimapEntry.getKey();
@@ -211,12 +209,12 @@ public class FileUploadService {
   }
 
   private Sample buildSample(
-          final Multimap<String, String> multiMap,
-          final String aapDomain,
-          final String webinId,
-          final String checklist,
-          final ValidationResult validationResult,
-          final boolean isWebin) {
+      final Multimap<String, String> multiMap,
+      final String aapDomain,
+      final String webinId,
+      final String checklist,
+      final ValidationResult validationResult,
+      final boolean isWebin) {
     final String sampleName = fileUploadUtils.getSampleName(multiMap);
     final String sampleReleaseDate = fileUploadUtils.getReleaseDate(multiMap);
     final String accession = fileUploadUtils.getSampleAccession(multiMap);
@@ -261,11 +259,11 @@ public class FileUploadService {
   }
 
   private Sample handleAuthentication(
-          final String aapDomain,
-          final String webinId,
-          final boolean isWebin,
-          Sample sample,
-          final ValidationResult validationResult) {
+      final String aapDomain,
+      final String webinId,
+      final boolean isWebin,
+      Sample sample,
+      final ValidationResult validationResult) {
     try {
       if (isWebin) {
         sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinId);
@@ -301,7 +299,8 @@ public class FileUploadService {
     return isWebin ? WEBIN_AUTH : "AAP";
   }
 
-  private Sample storeSample(final Sample sample, final boolean isFirstTimeMetadataAdded, final String authProvider) {
+  private Sample storeSample(
+      final Sample sample, final boolean isFirstTimeMetadataAdded, final String authProvider) {
     return sampleService.store(sample, isFirstTimeMetadataAdded, authProvider);
   }
 
@@ -318,13 +317,20 @@ public class FileUploadService {
     return isValidatedAgainstChecklist;
   }
 
-    public MongoFileUpload getSamples(final String submissionId) {
-      final MongoFileUpload mongoFileUpload = mongoFileUploadRepository.findOne(submissionId);
+  public MongoFileUpload getSamples(final String submissionId) {
+    final MongoFileUpload mongoFileUpload = mongoFileUploadRepository.findOne(submissionId);
 
-      if (mongoFileUpload != null) {
-        return mongoFileUpload;
-      } else {
-        return new MongoFileUpload(submissionId, BioSamplesFileUploadSubmissionStatus.NOT_FOUND, null, null, false, Collections.emptyList(), "Submission not found, please enter a valid submission ID.");
-      }
+    if (mongoFileUpload != null) {
+      return mongoFileUpload;
+    } else {
+      return new MongoFileUpload(
+          submissionId,
+          BioSamplesFileUploadSubmissionStatus.NOT_FOUND,
+          null,
+          null,
+          false,
+          Collections.emptyList(),
+          "Submission not found, please enter a valid submission ID.");
     }
+  }
 }
