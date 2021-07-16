@@ -298,7 +298,7 @@ public class FileUploadUtils {
   public Sample addChecklistAttributeAndBuildSample(final String checklist, Sample sample) {
     final Set<Attribute> attributeSet = sample.getAttributes();
     final Attribute attribute =
-        new Attribute.Builder("checklist", checklist.substring(0, checklist.indexOf('('))).build();
+        new Attribute.Builder("checklist", checklist).build();
 
     attributeSet.add(attribute);
     sample = Sample.Builder.fromSample(sample).withAttributes(attributeSet).build();

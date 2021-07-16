@@ -114,11 +114,12 @@ public class EnaRunner implements ApplicationRunner {
       importEraSamples(fromDate, toDate, sampleToAmrMap);
 
       // Handler to append SRA Accession (ENA accession numbers to samples owned by BioSamples)
-      try {
-        // importEraBsdAuthoritySamples(fromDate, toDate);
+      // TODO check: remove or keep as needed
+      /*try {
+        importEraBsdAuthoritySamples(fromDate, toDate);
       } catch (final Exception e) {
         failures.append("Some problems while adding SRA accession to BSD authority samples" + "\n");
-      }
+      }*/
 
       if (suppressionRunner) {
         try {

@@ -25,6 +25,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,6 +35,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.service.upload.FileQueueService;
 import uk.ac.ebi.biosamples.service.upload.FileUploadService;
@@ -44,11 +46,10 @@ import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
 public class FileUploadController {
   private Logger log = LoggerFactory.getLogger(getClass());
 
-  @Autowired FileUploadService fileUploadService;
-  @Autowired FileQueueService fileQueueService;
-
-  /*@Value("${biosamples.submit.max-files-size-mb}")
-  float maxFilesSizeMb;*/
+  @Autowired private FileUploadService fileUploadService;
+  @Autowired private FileQueueService fileQueueService;
+  @Autowired
+  private BioSamplesProperties bioSamplesProperties;
 
   @PreAuthorize("isAuthenticated()")
   @PostMapping
@@ -175,8 +176,8 @@ public class FileUploadController {
 
   private boolean isFileSizeExceeded(final MultipartFile file) throws RuntimeException {
     final long sizeBytes = file.getSize();
-    final float sizeBytesKb = sizeBytes / 1000;
+    final long sizeBytesKb = sizeBytes / 1000;
 
-    return sizeBytesKb >= 3;
+    return sizeBytesKb >= bioSamplesProperties.getBiosamplesFileUploaderMaxSameTimeUploadFileSize();
   }
 }

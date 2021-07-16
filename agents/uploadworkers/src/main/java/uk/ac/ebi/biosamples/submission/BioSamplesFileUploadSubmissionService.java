@@ -69,7 +69,7 @@ public class BioSamplesFileUploadSubmissionService {
       validationResult = new ValidationResult();
       fileUploadUtils = new FileUploadUtils();
 
-      log.info("File with file id " + submissionId);
+      log.info("Received file with file ID " + submissionId);
 
       final BioSamplesSubmissionFile bioSamplesSubmissionFile =
           bioSamplesFileUploadDataRetrievalService.getFile(submissionId);

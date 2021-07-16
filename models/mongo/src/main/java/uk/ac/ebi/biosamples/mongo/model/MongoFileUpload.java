@@ -16,13 +16,14 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
 import uk.ac.ebi.biosamples.mongo.util.SampleNameAccessionPair;
 
 @Document(collection = "mongoFileUpload")
 public class MongoFileUpload {
-  @Id @JsonIgnore private final String submissionId;
+  @Id @JsonIgnore @Indexed private final String submissionId;
   private final BioSamplesFileUploadSubmissionStatus submissionStatus;
   private final String submitterDetails;
   private final String checklist;
@@ -31,12 +32,12 @@ public class MongoFileUpload {
   @JsonInclude(JsonInclude.Include.NON_NULL) private final String validationMessage;
 
   public MongoFileUpload(
-          String submissionId,
-          BioSamplesFileUploadSubmissionStatus submissionStatus,
-          String submitterDetails,
-          String checklist,
-          boolean isWebin,
-          List<SampleNameAccessionPair> nameAccessionPairs, String validationMessage) {
+          final String submissionId,
+          final BioSamplesFileUploadSubmissionStatus submissionStatus,
+          final String submitterDetails,
+          final String checklist,
+          final boolean isWebin,
+          final List<SampleNameAccessionPair> nameAccessionPairs, String validationMessage) {
     this.submissionId = submissionId;
     this.submissionStatus = submissionStatus;
     this.submitterDetails = submitterDetails;

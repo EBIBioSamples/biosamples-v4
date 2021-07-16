@@ -32,9 +32,7 @@ public class FileQueueService {
   private static final Logger log = LoggerFactory.getLogger(FileQueueService.class);
 
   @Autowired private GridFsTemplate gridFsTemplate;
-
   @Autowired private MessagingService messagingService;
-
   @Autowired private MongoFileUploadRepository mongoFileUploadRepository;
 
   public String queueFile(

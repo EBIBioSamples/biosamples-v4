@@ -42,6 +42,9 @@ public class BioSamplesProperties {
   @Value("${biosamples.client.threadcount.max:8}")
   private int threadCountMax;
 
+  @Value("${biosamples.submit.max-files-size-kb:20}")
+  private long biosamplesFileUploaderMaxSameTimeUploadFileSize;
+
   @Value("${biosamples.client.aap.uri:https://explore.api.aai.ebi.ac.uk/auth}")
   private URI biosamplesClientAapUri;
 
@@ -237,5 +240,13 @@ public class BioSamplesProperties {
 
   public String getBiosamplesDefaultSchema() {
     return biosamplesDefaultSchema;
+  }
+
+  public long getBiosamplesFileUploaderMaxSameTimeUploadFileSize() {
+    return biosamplesFileUploaderMaxSameTimeUploadFileSize;
+  }
+
+  public void setBiosamplesFileUploaderMaxSameTimeUploadFileSize(long biosamplesFileUploaderMaxSameTimeUploadFileSize) {
+    this.biosamplesFileUploaderMaxSameTimeUploadFileSize = biosamplesFileUploaderMaxSameTimeUploadFileSize;
   }
 }

@@ -10,9 +10,29 @@
 */
 package uk.ac.ebi.biosamples.service.upload;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Multimap;
+import org.apache.commons.csv.CSVParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import uk.ac.ebi.biosamples.model.Contact;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
+import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
+import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
+import uk.ac.ebi.biosamples.service.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.SchemaValidationService;
+import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
+import uk.ac.ebi.biosamples.utils.upload.Characteristics;
+import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
+import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -23,45 +43,19 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.apache.commons.csv.CSVParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
-import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
-import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
-import uk.ac.ebi.biosamples.service.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.SchemaValidationService;
-import uk.ac.ebi.biosamples.service.certification.CertifyService;
-import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
-import uk.ac.ebi.biosamples.utils.upload.Characteristics;
-import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
-import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
 
 @Service
 public class FileUploadService {
+  private static final String WEBIN_AUTH = "WEBIN";
   private Logger log = LoggerFactory.getLogger(getClass());
   private FileUploadUtils fileUploadUtils;
   private ValidationResult validationResult;
 
-  @Autowired private ObjectMapper objectMapper;
-
   @Autowired private SampleService sampleService;
-
-  @Autowired private CertifyService certifyService;
 
   @Autowired private SchemaValidationService schemaValidationService;
 
-  @Autowired private JsonSchemaStoreAccessibilityCheckService jsonSchemaStoreAccessibilityCheckService;
-
   @Autowired private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
-
-  @Autowired private BioSamplesAapService bioSamplesAapService;
 
   @Autowired
   private MongoFileUploadRepository mongoFileUploadRepository;
@@ -74,7 +68,7 @@ public class FileUploadService {
     validationResult = new ValidationResult();
     fileUploadUtils = new FileUploadUtils();
     final String authProvider = isWebin(isWebinIdUsedToAuthenticate(webinId));
-    final boolean isWebin = authProvider.equals("WEBIN");
+    final boolean isWebin = authProvider.equals(WEBIN_AUTH);
 
     try {
       final Path temp = Files.createTempFile("upload", ".tsv");
@@ -146,8 +140,6 @@ public class FileUploadService {
           final boolean isWebin) {
     final Map<String, String> sampleNameToAccessionMap = new LinkedHashMap<>();
     final Map<Sample, Multimap<String, String>> sampleToMappedSample = new LinkedHashMap<>();
-    final boolean isSchemaValidatorAccessible =
-        jsonSchemaStoreAccessibilityCheckService.checkJsonSchemaStoreConnectivity();
 
     csvDataMap.forEach(
         csvRecordMap -> {
@@ -160,8 +152,7 @@ public class FileUploadService {
                     aapDomain,
                     webinId,
                     checklist,
-                    isSchemaValidatorAccessible,
-                    validationResult,
+                        validationResult,
                     isWebin);
 
             if (sample == null) {
@@ -183,7 +174,7 @@ public class FileUploadService {
   }
 
   private boolean isWebinIdUsedToAuthenticate(final String webinId) {
-    return webinId != null && webinId.toUpperCase().startsWith("WEBIN");
+    return webinId != null && webinId.toUpperCase().startsWith(WEBIN_AUTH);
   }
 
   private List<Sample> addRelationshipsAndThenBuildSamples(
@@ -224,10 +215,8 @@ public class FileUploadService {
           final String aapDomain,
           final String webinId,
           final String checklist,
-          final boolean isSchemaValidatorAccessible,
           final ValidationResult validationResult,
-          final boolean isWebin)
-      throws JsonProcessingException {
+          final boolean isWebin) {
     final String sampleName = fileUploadUtils.getSampleName(multiMap);
     final String sampleReleaseDate = fileUploadUtils.getReleaseDate(multiMap);
     final String accession = fileUploadUtils.getSampleAccession(multiMap);
@@ -236,7 +225,7 @@ public class FileUploadService {
     final List<ExternalReference> externalReferenceList =
         fileUploadUtils.handleExternalReferences(multiMap);
     final List<Contact> contactsList = fileUploadUtils.handleContacts(multiMap);
-    boolean isCertified;
+    boolean isChecklistValidated;
 
     if (fileUploadUtils.isBasicValidationFailure(sampleName, sampleReleaseDate, validationResult)) {
       Sample sample =
@@ -246,12 +235,11 @@ public class FileUploadService {
       sample = handleAuthentication(aapDomain, webinId, isWebin, sample, validationResult);
 
       if (sample != null) {
-
         sample = fileUploadUtils.addChecklistAttributeAndBuildSample(checklist, sample);
 
-        isCertified = validateSample(checklist, isSchemaValidatorAccessible, sample);
+        isChecklistValidated = validateSample(sample);
 
-        if (isCertified) {
+        if (isChecklistValidated) {
           final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, false);
           sample = storeSample(sample, isFirstTimeMetadataAdded, isWebin(isWebin));
           log.info(
@@ -310,38 +298,24 @@ public class FileUploadService {
   }
 
   private String isWebin(final boolean isWebin) {
-    return isWebin ? "WEBIN" : "AAP";
+    return isWebin ? WEBIN_AUTH : "AAP";
   }
 
   private Sample storeSample(final Sample sample, final boolean isFirstTimeMetadataAdded, final String authProvider) {
     return sampleService.store(sample, isFirstTimeMetadataAdded, authProvider);
   }
 
-  private boolean validateSample(
-          final String certificate, final boolean isSchemaValidatorAccessible, final Sample sample)
-      throws JsonProcessingException {
-    boolean isCertified;
+  private boolean validateSample(final Sample sample) {
+    boolean isValidatedAgainstChecklist = false;
 
     try {
-      if (isSchemaValidatorAccessible) {
-        schemaValidationService.validate(sample);
-        isCertified = true;
-      } else {
-        log.info("Schema validator not accesible, trying certification service");
-        isCertified = certify(sample, certificate);
-      }
+      schemaValidationService.validate(sample);
+      isValidatedAgainstChecklist = true;
     } catch (final Exception schemaValidationException) {
-      log.info("Schema validator failed to validate sample, trying certification service");
-      isCertified = certify(sample, certificate);
+      log.info("Schema validator failed to validate sample");
     }
-    return isCertified;
-  }
 
-  private boolean certify(final Sample sample, final String certificate) throws JsonProcessingException {
-    final List<Certificate> certificates =
-        certifyService.certify(objectMapper.writeValueAsString(sample), false, certificate);
-
-    return certificates.size() != 0;
+    return isValidatedAgainstChecklist;
   }
 
     public MongoFileUpload getSamples(final String submissionId) {
