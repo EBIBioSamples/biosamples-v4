@@ -104,12 +104,15 @@ public class BioSamplesFileUploadSubmissionService {
       final List<Sample> samples =
           buildSamples(csvDataMap, aapDomain, webinId, checklist, validationResult, isWebin);
       final List<SampleNameAccessionPair> accessionsList =
-          samples.stream().map(sample -> new SampleNameAccessionPair(sample.getName(), sample.getAccession())).collect(Collectors.toList());
+          samples.stream()
+              .map(sample -> new SampleNameAccessionPair(sample.getName(), sample.getAccession()))
+              .collect(Collectors.toList());
       final String persistenceMessage = "Number of samples persisted: " + samples.size();
 
       validationResult.addValidationMessage(persistenceMessage);
 
-      final String joinedValidationMessage = String.join("\n", validationResult.getValidationMessagesList());
+      final String joinedValidationMessage =
+          String.join("\n", validationResult.getValidationMessagesList());
 
       log.info(joinedValidationMessage);
 
@@ -120,7 +123,8 @@ public class BioSamplesFileUploadSubmissionService {
               mongoFileUpload.getSubmitterDetails(),
               mongoFileUpload.getChecklist(),
               isWebin,
-              accessionsList, joinedValidationMessage);
+              accessionsList,
+              joinedValidationMessage);
 
       mongoFileUploadRepository.save(mongoFileUploadCompleted);
     } catch (final Exception e) {
@@ -131,13 +135,14 @@ public class BioSamplesFileUploadSubmissionService {
       validationResult.addValidationMessage(messageForBsdDevTeam);
 
       final MongoFileUpload mongoFileUploadFailed =
-              new MongoFileUpload(
-                      submissionId,
-                      BioSamplesFileUploadSubmissionStatus.FAILED,
-                      mongoFileUpload.getSubmitterDetails(),
-                      mongoFileUpload.getChecklist(),
-                      mongoFileUpload.isWebin(),
-                      mongoFileUpload.getNameAccessionPairs(), String.join("\n", validationResult.getValidationMessagesList()));
+          new MongoFileUpload(
+              submissionId,
+              BioSamplesFileUploadSubmissionStatus.FAILED,
+              mongoFileUpload.getSubmitterDetails(),
+              mongoFileUpload.getChecklist(),
+              mongoFileUpload.isWebin(),
+              mongoFileUpload.getNameAccessionPairs(),
+              String.join("\n", validationResult.getValidationMessagesList()));
 
       mongoFileUploadRepository.save(mongoFileUploadFailed);
     } finally {

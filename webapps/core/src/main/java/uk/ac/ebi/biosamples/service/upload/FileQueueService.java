@@ -52,7 +52,8 @@ public class FileQueueService {
                 isWebin ? webinId : aapDomain,
                 checklist,
                 isWebin,
-                new ArrayList<>(), null);
+                new ArrayList<>(),
+                null);
 
         mongoFileUploadRepository.insert(mongoFileUpload);
         messagingService.sendFileUploadedMessage(fileId);

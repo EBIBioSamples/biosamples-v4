@@ -15,7 +15,6 @@ import static org.springframework.security.web.context.HttpSessionSecurityContex
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import lombok.SneakyThrows;
@@ -35,7 +34,6 @@ import uk.ac.ebi.biosamples.model.auth.AuthRequestWebin;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.certification.CertifyService;
 import uk.ac.ebi.biosamples.service.upload.JsonSchemaStoreSchemaRetrievalService;
 import uk.ac.ebi.tsc.aap.client.exception.UserNameOrPasswordWrongException;
 import uk.ac.ebi.tsc.aap.client.security.BioSamplesTokenAuthenticationService;
@@ -48,15 +46,15 @@ public class LoginController {
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final BioSamplesTokenAuthenticationService bioSamplesTokenAuthenticationService;
-  private final JsonSchemaStoreSchemaRetrievalService  jsonSchemaStoreSchemaRetrievalService;
+  private final JsonSchemaStoreSchemaRetrievalService jsonSchemaStoreSchemaRetrievalService;
 
   @Autowired ObjectMapper objectMapper;
 
   public LoginController(
-          final BioSamplesAapService bioSamplesAapService,
-          final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-          final BioSamplesTokenAuthenticationService bioSamplesTokenAuthenticationService,
-          final JsonSchemaStoreSchemaRetrievalService jsonSchemaStoreSchemaRetrievalService) {
+      final BioSamplesAapService bioSamplesAapService,
+      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+      final BioSamplesTokenAuthenticationService bioSamplesTokenAuthenticationService,
+      final JsonSchemaStoreSchemaRetrievalService jsonSchemaStoreSchemaRetrievalService) {
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.bioSamplesTokenAuthenticationService = bioSamplesTokenAuthenticationService;

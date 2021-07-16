@@ -98,7 +98,8 @@ public class FileDownloadInputStream extends InputStream {
 
   private void loadSamples() {
     CursorArrayList<Sample> samplePage =
-        samplePageService.getSamplesByText(text, filters, domains, cursor, PAGE_SIZE, null, Optional.empty());
+        samplePageService.getSamplesByText(
+            text, filters, domains, cursor, PAGE_SIZE, null, Optional.empty());
     if (!samplePage.isEmpty()) {
       sampleQueue.addAll(samplePage);
       cursor = samplePage.getNextCursorMark();

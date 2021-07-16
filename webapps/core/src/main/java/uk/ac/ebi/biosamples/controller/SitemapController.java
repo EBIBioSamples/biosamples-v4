@@ -95,7 +95,12 @@ public class SitemapController {
     Pageable pageRequest = new PageRequest(pageNumber - 1, sitemapPageSize);
     Page<Sample> samplePage =
         samplePageService.getSamplesByText(
-            "", Collections.emptyList(), Collections.emptyList(), pageRequest, null, Optional.empty());
+            "",
+            Collections.emptyList(),
+            Collections.emptyList(),
+            pageRequest,
+            null,
+            Optional.empty());
     XmlUrlSet xmlUrlSet = new XmlUrlSet();
     for (Sample sample : samplePage.getContent()) {
       String location =
