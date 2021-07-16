@@ -34,6 +34,7 @@ import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
 import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
+import uk.ac.ebi.biosamples.mongo.util.SampleNameAccessionPair;
 import uk.ac.ebi.biosamples.utils.upload.Characteristics;
 import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
 import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
@@ -62,15 +63,16 @@ public class BioSamplesFileUploadSubmissionService {
   }
 
   private synchronized void handleMessage(final String submissionId) {
+    final MongoFileUpload mongoFileUpload = mongoFileUploadRepository.findOne(submissionId);
+
     try {
       validationResult = new ValidationResult();
       fileUploadUtils = new FileUploadUtils();
 
-      log.info("File with file id " + submissionId);
+      log.info("Received file with file ID " + submissionId);
 
       final BioSamplesSubmissionFile bioSamplesSubmissionFile =
           bioSamplesFileUploadDataRetrievalService.getFile(submissionId);
-      final MongoFileUpload mongoFileUpload = mongoFileUploadRepository.findOne(submissionId);
 
       // get bioSamplesSubmissionFile metadata, determine webin aur aap auth and use client
       // accordingly
@@ -101,31 +103,43 @@ public class BioSamplesFileUploadSubmissionService {
 
       final List<Sample> samples =
           buildSamples(csvDataMap, aapDomain, webinId, checklist, validationResult, isWebin);
-      final List<String> accessionsList =
-          samples.stream().map(sample -> sample.getAccession()).collect(Collectors.toList());
+      final List<SampleNameAccessionPair> accessionsList =
+          samples.stream().map(sample -> new SampleNameAccessionPair(sample.getName(), sample.getAccession())).collect(Collectors.toList());
+      final String persistenceMessage = "Number of samples persisted: " + samples.size();
+
+      validationResult.addValidationMessage(persistenceMessage);
+
+      final String joinedValidationMessage = String.join("\n", validationResult.getValidationMessagesList());
+
+      log.info(joinedValidationMessage);
+
       final MongoFileUpload mongoFileUploadCompleted =
           new MongoFileUpload(
-              mongoFileUpload.getXmlPayloadId(),
+              submissionId,
               BioSamplesFileUploadSubmissionStatus.COMPLETED,
               mongoFileUpload.getSubmitterDetails(),
               mongoFileUpload.getChecklist(),
               isWebin,
-              accessionsList);
+              accessionsList, joinedValidationMessage);
 
       mongoFileUploadRepository.save(mongoFileUploadCompleted);
-
-      final String persistenceMessage = "Number of samples persisted: " + samples.size();
-
-      log.info(persistenceMessage);
-      validationResult.addValidationMessage(persistenceMessage);
-      log.info(String.join("\n", validationResult.getValidationMessagesList()));
     } catch (final Exception e) {
       final String messageForBsdDevTeam =
           "********FEEDBACK TO BSD DEV TEAM START********"
               + e.getMessage()
               + "********FEEDBACK TO BSD DEV TEAM END********";
       validationResult.addValidationMessage(messageForBsdDevTeam);
-      throw new RuntimeException(String.join("\n", validationResult.getValidationMessagesList()));
+
+      final MongoFileUpload mongoFileUploadFailed =
+              new MongoFileUpload(
+                      submissionId,
+                      BioSamplesFileUploadSubmissionStatus.FAILED,
+                      mongoFileUpload.getSubmitterDetails(),
+                      mongoFileUpload.getChecklist(),
+                      mongoFileUpload.isWebin(),
+                      mongoFileUpload.getNameAccessionPairs(), String.join("\n", validationResult.getValidationMessagesList()));
+
+      mongoFileUploadRepository.save(mongoFileUploadFailed);
     } finally {
       validationResult.clear();
     }
@@ -190,7 +204,7 @@ public class BioSamplesFileUploadSubmissionService {
         fileUploadUtils.createRelationships(
             sample, sampleNameToAccessionMap, relationshipMap, validationResult);
 
-    relationships.forEach(relationship -> log.info(relationship.toString()));
+    relationships.forEach(relationship -> log.trace(relationship.toString()));
 
     sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
 

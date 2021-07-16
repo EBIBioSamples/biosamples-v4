@@ -17,21 +17,26 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import javax.validation.Valid;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.service.upload.FileQueueService;
 import uk.ac.ebi.biosamples.service.upload.FileUploadService;
 import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
@@ -41,11 +46,10 @@ import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
 public class FileUploadController {
   private Logger log = LoggerFactory.getLogger(getClass());
 
-  @Autowired FileUploadService fileUploadService;
-  @Autowired FileQueueService fileQueueService;
-
-  /*@Value("${web.submit.max-files-size-mb}")
-  float maxFilesSizeMb;*/
+  @Autowired private FileUploadService fileUploadService;
+  @Autowired private FileQueueService fileQueueService;
+  @Autowired
+  private BioSamplesProperties bioSamplesProperties;
 
   @PreAuthorize("isAuthenticated()")
   @PostMapping
@@ -145,8 +149,8 @@ public class FileUploadController {
 
   @GetMapping(value = "/downloadExampleFile")
   public ResponseEntity<byte[]> downloadExampleFile() throws IOException {
-    final Path temp = Files.createTempFile("upload_example", ".tsv");
-    final File pathFile = temp.toFile();
+    final Path tempFile = Files.createTempFile("upload_example", ".tsv");
+    final File pathFile = tempFile.toFile();
 
     FileUtils.copyInputStreamToFile(
         this.getClass().getClassLoader().getResourceAsStream("isa-example.tsv"), pathFile);
@@ -156,9 +160,24 @@ public class FileUploadController {
     return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
   }
 
-  private boolean isFileSizeExceeded(MultipartFile file) throws RuntimeException {
-    long sizeBytes = file.getSize();
-    float sizeBytesKb = sizeBytes / 1000;
-    return sizeBytesKb >= 3;
+  @GetMapping(value = "/poll",
+          produces = {MediaType.APPLICATION_JSON_VALUE})
+  public ResponseEntity<String> poll(@RequestParam(value = "searchSubmissionId") final String searchSubmissionId) throws JsonProcessingException {
+    final MongoFileUpload mongoFileUpload = fileUploadService.getSamples(searchSubmissionId);
+    final ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+    final String json = ow.writeValueAsString(mongoFileUpload);
+
+    return ResponseEntity.ok()
+            .header(
+                    HttpHeaders.CONTENT_DISPOSITION,
+                    "attachment; filename=result.json")
+            .body(json);
+  }
+
+  private boolean isFileSizeExceeded(final MultipartFile file) throws RuntimeException {
+    final long sizeBytes = file.getSize();
+    final long sizeBytesKb = sizeBytes / 1000;
+
+    return sizeBytesKb >= bioSamplesProperties.getBiosamplesFileUploaderMaxSameTimeUploadFileSize();
   }
 }

@@ -298,7 +298,7 @@ public class FileUploadUtils {
   public Sample addChecklistAttributeAndBuildSample(final String checklist, Sample sample) {
     final Set<Attribute> attributeSet = sample.getAttributes();
     final Attribute attribute =
-        new Attribute.Builder("checklist", checklist.substring(0, checklist.indexOf('('))).build();
+        new Attribute.Builder("checklist", checklist).build();
 
     attributeSet.add(attribute);
     sample = Sample.Builder.fromSample(sample).withAttributes(attributeSet).build();
@@ -339,7 +339,7 @@ public class FileUploadUtils {
       final File fileToBeUploaded,
       final List<String> headers,
       final List<Sample> samples,
-      ValidationResult validationResult) {
+      final ValidationResult validationResult) {
     try {
       log.info("Writing to file");
       final Path temp = Files.createTempFile("upload_result", ".tsv");
@@ -420,4 +420,14 @@ public class FileUploadUtils {
             .withIgnoreSurroundingSpaces(true)
             .withTrim(true));
   }
+
+    public File writeQueueMessageToFile(String submissionId) throws IOException {
+        final Path temp = Files.createTempFile("queue_result", ".txt");
+
+        try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
+            writer.write("Your submission has been queued and your submission id is " + submissionId);
+        }
+
+        return temp.toFile();
+    }
 }

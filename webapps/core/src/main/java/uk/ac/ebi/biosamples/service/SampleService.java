@@ -354,7 +354,7 @@ public class SampleService {
       final Sample sampleToUpdate, final Sample oldSample, String authProvider) {
     final String domain = sampleToUpdate.getDomain();
 
-    if (isWebinAuthorization(authProvider)) {
+    if (isWebinAuthentication(authProvider)) {
       return (oldSample.getCreate() != null ? oldSample.getCreate() : sampleToUpdate.getCreate());
     } else {
       if (isPipelineNcbiDomain(domain)) {
@@ -369,7 +369,7 @@ public class SampleService {
     }
   }
 
-  public boolean isWebinAuthorization(String authProviderIdentifier) {
+  public boolean isWebinAuthentication(String authProviderIdentifier) {
     return authProviderIdentifier != null && authProviderIdentifier.equalsIgnoreCase("WEBIN");
   }
 
@@ -388,7 +388,7 @@ public class SampleService {
       final Sample oldSample,
       boolean isFirstTimeMetadataAdded,
       String authProvider) {
-    if (isWebinAuthorization(authProvider)) {
+    if (isWebinAuthentication(authProvider)) {
       if (isFirstTimeMetadataAdded) {
         return sampleToUpdate.getSubmitted();
       } else {

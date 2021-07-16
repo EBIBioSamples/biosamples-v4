@@ -32,18 +32,14 @@ public class FileQueueService {
   private static final Logger log = LoggerFactory.getLogger(FileQueueService.class);
 
   @Autowired private GridFsTemplate gridFsTemplate;
-
-  @Autowired MessagingService messagingService;
-
-  @Autowired MongoFileUploadRepository mongoFileUploadRepository;
+  @Autowired private MessagingService messagingService;
+  @Autowired private MongoFileUploadRepository mongoFileUploadRepository;
 
   public String queueFile(
       final MultipartFile file,
       final String aapDomain,
       final String checklist,
       final String webinId) {
-    log.info("File queued");
-
     try {
       final String fileId = persistUploadedFile(file);
       final boolean isWebin = webinId != null && !webinId.isEmpty();
@@ -56,7 +52,7 @@ public class FileQueueService {
                 isWebin ? webinId : aapDomain,
                 checklist,
                 isWebin,
-                new ArrayList<>());
+                new ArrayList<>(), null);
 
         mongoFileUploadRepository.insert(mongoFileUpload);
         messagingService.sendFileUploadedMessage(fileId);

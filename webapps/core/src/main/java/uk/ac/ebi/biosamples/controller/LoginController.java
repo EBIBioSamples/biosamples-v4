@@ -36,28 +36,31 @@ import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
+import uk.ac.ebi.biosamples.service.upload.JsonSchemaStoreSchemaRetrievalService;
 import uk.ac.ebi.tsc.aap.client.exception.UserNameOrPasswordWrongException;
 import uk.ac.ebi.tsc.aap.client.security.BioSamplesTokenAuthenticationService;
 
 @Controller
 @RequestMapping("/login")
 public class LoginController {
-  private final BioSamplesAapService bioSamplesAapService;
-  private final CertifyService certifyService;
-  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private Logger log = LoggerFactory.getLogger(getClass());
+
+  private final BioSamplesAapService bioSamplesAapService;
+  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
+  private final BioSamplesTokenAuthenticationService bioSamplesTokenAuthenticationService;
+  private final JsonSchemaStoreSchemaRetrievalService  jsonSchemaStoreSchemaRetrievalService;
 
   @Autowired ObjectMapper objectMapper;
 
-  @Autowired BioSamplesTokenAuthenticationService bioSamplesTokenAuthenticationService;
-
   public LoginController(
-      final BioSamplesAapService bioSamplesAapService,
-      final CertifyService certifyService,
-      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService) {
+          final BioSamplesAapService bioSamplesAapService,
+          final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+          final BioSamplesTokenAuthenticationService bioSamplesTokenAuthenticationService,
+          final JsonSchemaStoreSchemaRetrievalService jsonSchemaStoreSchemaRetrievalService) {
     this.bioSamplesAapService = bioSamplesAapService;
-    this.certifyService = certifyService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
+    this.bioSamplesTokenAuthenticationService = bioSamplesTokenAuthenticationService;
+    this.jsonSchemaStoreSchemaRetrievalService = jsonSchemaStoreSchemaRetrievalService;
   }
 
   @SneakyThrows
@@ -69,10 +72,7 @@ public class LoginController {
       final HttpServletRequest req) {
     try {
       log.info("Login way is " + authRequest.getLoginWay());
-      List<String> certificates =
-          certifyService.getAllCertificateNames().stream()
-              .filter(certificateName -> certificateName.startsWith("BSDC"))
-              .collect(Collectors.toList());
+      final List<String> checklists = jsonSchemaStoreSchemaRetrievalService.getChecklists();
 
       if (authRequest.getLoginWay().equals("WEBIN")) {
         final AuthRequestWebin authRequestWebin =
@@ -86,8 +86,9 @@ public class LoginController {
             bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(token).getBody();
 
         model.addAttribute("loginmethod", "WEBIN");
-        model.addAttribute("certificates", certificates);
+        model.addAttribute("certificates", checklists);
         model.addAttribute("webinAccount", submissionAccount.getId());
+        model.remove("wrongCreds");
 
         return "upload";
       } else {
@@ -102,11 +103,12 @@ public class LoginController {
         session.setAttribute(SPRING_SECURITY_CONTEXT_KEY, sc);
 
         if (token != null) {
-          List<String> domains = bioSamplesAapService.getDomains(token);
+          final List<String> domains = bioSamplesAapService.getDomains(token);
+
           model.addAttribute("loginmethod", null);
           model.addAttribute("domains", domains);
           model.addAttribute("webinAccount", null);
-          model.addAttribute("certificates", certificates);
+          model.addAttribute("certificates", checklists);
           model.remove("wrongCreds");
 
           return "upload";
