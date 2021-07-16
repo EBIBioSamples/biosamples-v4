@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -12,8 +12,6 @@ package uk.ac.ebi.biosamples.service;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -27,8 +25,6 @@ import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
 
 @Service
 public class BioSamplesWebinAuthenticationService {
-  private Logger log = LoggerFactory.getLogger(getClass());
-
   private final RestTemplate restTemplate;
   private final SampleService sampleService;
   private final BioSamplesProperties bioSamplesProperties;
@@ -86,19 +82,21 @@ public class BioSamplesWebinAuthenticationService {
   }
 
   public Sample handleWebinUser(Sample sample, String webinId) {
+    final String biosamplesClientWebinUsername =
+        bioSamplesProperties.getBiosamplesClientWebinUsername();
+
     if (webinId != null && !webinId.isEmpty()) { // webin id retrieval failure - throw Exception
       if (sample.getAccession() != null) { // sample updates, where sample has an accession
-        final String biosamplesClientWebinUsername =
-            bioSamplesProperties.getBiosamplesClientWebinUsername();
-
         if (webinId.equalsIgnoreCase(
             biosamplesClientWebinUsername)) { // ENA pipeline submissions, check if submission done
-          // by internal client program
+          // by internal client program (1)
           final String webinSubmissionAccountIdInMetadata =
-              sample.getWebinSubmissionAccountId(); // if true, override submission account id in
-          // sample with original account id from ENA
+              sample
+                  .getWebinSubmissionAccountId(); // if (1) is true, override submission account id
+          // in
+          // sample with original account id from sample metadata
 
-          return buildSample(
+          return getSampleWithWebinSubmissionAccountIdAdded(
               sample,
               (webinSubmissionAccountIdInMetadata != null
                       && !webinSubmissionAccountIdInMetadata.isEmpty())
@@ -116,21 +114,36 @@ public class BioSamplesWebinAuthenticationService {
                 oldSavedSample.getWebinSubmissionAccountId())) { // original submitter mismatch
               throw new SampleNotAccessibleException();
             } else {
-              return buildSample(sample, webinId);
+              return getSampleWithWebinSubmissionAccountIdAdded(sample, webinId);
             }
           } else {
-            return buildSample(sample, webinId);
+            return getSampleWithWebinSubmissionAccountIdAdded(sample, webinId);
           }
         }
       } else { // new submission
-        return buildSample(sample, webinId);
+        if (webinId.equalsIgnoreCase(
+            biosamplesClientWebinUsername)) { // new submission by client program (2)
+          final String webinSubmissionAccountIdInMetadata =
+              sample
+                  .getWebinSubmissionAccountId(); // if true (2), override submission account id in
+          // sample with original account id from sample metadata
+
+          return getSampleWithWebinSubmissionAccountIdAdded(
+              sample,
+              (webinSubmissionAccountIdInMetadata != null
+                      && !webinSubmissionAccountIdInMetadata.isEmpty())
+                  ? webinSubmissionAccountIdInMetadata
+                  : biosamplesClientWebinUsername);
+        } else {
+          return getSampleWithWebinSubmissionAccountIdAdded(sample, webinId);
+        }
       }
     } else {
       throw new WebinUserLoginUnauthorizedException();
     }
   }
 
-  public Sample buildSample(Sample sample, String webinId) {
+  public Sample getSampleWithWebinSubmissionAccountIdAdded(Sample sample, String webinId) {
     return Sample.Builder.fromSample(sample)
         .withWebinSubmissionAccountId(webinId)
         .withNoDomain()
@@ -267,13 +280,13 @@ public class BioSamplesWebinAuthenticationService {
   }
 
   @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Unauthorized WEBIN user")
-  private static class WebinUserLoginUnauthorizedException extends RuntimeException {}
+  public static class WebinUserLoginUnauthorizedException extends RuntimeException {}
 
   @ResponseStatus(
       value = HttpStatus.FORBIDDEN,
       reason =
           "This sample is private and not available for browsing. If you think this is an error and/or you should have access please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk")
-  private static class SampleNotAccessibleException extends RuntimeException {}
+  public static class SampleNotAccessibleException extends RuntimeException {}
 
   @ResponseStatus(
       value = HttpStatus.FORBIDDEN,

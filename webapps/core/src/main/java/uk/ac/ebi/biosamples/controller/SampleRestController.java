@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -84,7 +84,6 @@ public class SampleRestController {
       @RequestParam(name = "legacydetails", required = false) String legacydetails,
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
       @RequestParam(name = "curationrepo", required = false) String curationRepo) {
-    log.trace("starting call");
 
     // decode percent-encoding from curation domains
     Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
@@ -211,8 +210,6 @@ public class SampleRestController {
       throw new SampleAccessionMismatchException();
     }
 
-    // todo Fix all integration tests to not to use predefined accessions, then remove
-    // isIntegrationTestUser() check
     if (!webinAuth) {
       if (sampleService.isNotExistingAccession(accession)
           && !(bioSamplesAapService.isWriteSuperUser()

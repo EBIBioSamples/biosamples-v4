@@ -1,4 +1,4 @@
-= [.ebi-color]#How to bulk upload samples to BioSamples using the new drag'n'drop uploader#
+= [.ebi-color]#How to bulk upload samples to BioSamples using the drag'n'drop uploader#
 :last-update-label!:
 
 == Who should read this guide?
@@ -20,7 +20,10 @@ You need an AAP account or a WEBIN submission account to proceed with this recip
 3. Enter the credentials you have setup in the authentication system selected in step 2
 4. Click on the button Sign in to Upload
 
-=== Upload Page
+=== Upload Page (same time and queued uploads)
+
+*Please note*: BioSamples processes file uploads depending on the file size and number of samples in the file.
+If your file size is above 20 KBytes OR your file has more than 200 samples, your submission is likely to be queued.
 
 1. If you have logged in using your AAP credentials then select your AAP domain that you want to use for the submission from the "Select AAP domain" dropdown.
 This is not required for submissions using WEBIN authentication.
@@ -31,10 +34,16 @@ Compliance to biosamples-minimal is a basic system requirement of BioSamples dat
 3. Drag'n'drop the files you want to upload.
 *Please note* you can upload a maximum of 5 files at once
 4. Click on Upload files button
-5. If your upload is successful you will receive a file which will contain all the samples persisted in BioSamples with the accessions.
-The file is exactly the same as your uploaded file but contains the accessions against each sample.
-*Please note* the downloaded file has a receipt section at the end which is a summary of the submission
-6. If your upload fails you will still receive a file which will contain the reason of the failure.
+5. If your upload is successful:
+
+*Same time uploads*: You will receive a file which will contain all the samples persisted in BioSamples with the accessions. The file is exactly the same as your uploaded
+file but contains the accessions against each sample.
+Please note: the downloaded file has a receipt section at the end which is a summary of the submission
+
+*Queued uploads*: You will receive a file which will have a unique submission ID generated
+for the upload. You can later use the View Submissions tab after login to search for your submission using the submission ID received during your file upload. You will receive a JSON format file containing the sample names and the accessions
+
+6.If your upload fails you will still receive a file which will contain the reason of the failure.
 Please contact the BioSamples team at EBI at mailto:biosamples@ebi.ac.uk[biosamples@ebi.ac.uk]
 and we will look into it
 
@@ -151,17 +160,10 @@ This will help us to parse the file correctly
 
 3. We expect all sample names to be unique in the file
 
-4. The uploader sends back a file for download with submission result,
+4. The uploader sends back a file for download with the submission result, in case of same time uploads where the file size is less than 20 KBytes and the file has less than 200 samples, the result file will have the sample metadata and the accessions. In case of queued uploads where the file size is greater than 20 KBytes or the file has more than 200 samples the result file will have a unique submission ID for the upload. The unique submission ID can be used to get the result of the upload using the View Submissions tab.
 
-4.1 In case of SUCCESS - the file contains submitted sample metadata with the accessions and a receipt at the end of the file.
-The receipt has the details on the submission like number of samples persisted and if some error has occurred for some/all samples.
-
-4.2 In case of FAILURE - The downloaded file will contain the error.
-Please revert to the BioSamples team at mailto:biosamples@ebi.ac.uk[biosamples@ebi.ac.uk]
-with the error message and the file you are trying to upload, we will look into it.
-
-5.If you are looking to update existing samples that has been uploaded, you can use the file that was returned to you after your submission.
-Please remember to remove the receipt section
+5. If you are looking to update existing samples that has been uploaded, you can use the file that was returned to you after your submission.
+*Please remember* to remove the receipt section
 
 == Next steps
 
@@ -170,16 +172,9 @@ We call it a Beta version, below are the next planned steps of improvement:
 
 1. Incorporate feedback received from submitters and we also have a release plan as below:
 
-=== Release plan:
+== Future Improvements and Release plan:
 
-|===
-|Topic |Expected date of release
-
-|We are only capable of parsing submission contact email address at the moment, going forward
-we target to parse all contact attributes like first name, last name, consortium, etc, | End of May 2021
-|Better and more interactive UI | Mid of June 2021 |
-
-|===
+TBD based on feedback received from users
 
 == Feedback
 

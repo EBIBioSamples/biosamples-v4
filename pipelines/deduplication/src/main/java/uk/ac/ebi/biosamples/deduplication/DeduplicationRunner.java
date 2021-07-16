@@ -16,6 +16,7 @@ import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.MailSender;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -35,7 +36,7 @@ public class DeduplicationRunner implements ApplicationRunner {
 
     @Override
     public void run(final ApplicationArguments args) {
-        /*final List<DeduplicationDao.RowMapping> mappingList = deduplicationDao.getAllSamples();
+        final List<DeduplicationDao.RowMapping> mappingList = deduplicationDao.getAllSamples();
         boolean isPassed = true;
 
         try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
@@ -48,9 +49,10 @@ public class DeduplicationRunner implements ApplicationRunner {
         } finally {
             MailSender.sendEmail("De-duplication pipeline", null, isPassed);
             log.info("Completed de-duplicaion pipeline");
-        }*/
+        }
+    }
 
-        final int rangeStart = 9086000;
+        /*final int rangeStart = 9086000;
         final int rangeEnd = 9086754;
 
         for (int i = rangeStart; i < rangeEnd; i++) {
@@ -77,7 +79,7 @@ public class DeduplicationRunner implements ApplicationRunner {
 
     private boolean matchSampleContact(SortedSet<Contact> contacts) {
         return contacts.stream().anyMatch(contact -> contact.getEmail().equals("dgupta@ebi.ac.uk"));
-    }
+    }*/
 
     private void checkDuplicates(final DeduplicationDao.RowMapping pair) {
         final String enaId = pair.getEnaId();
@@ -152,7 +154,8 @@ public class DeduplicationRunner implements ApplicationRunner {
         Sample sampleToPrivate;
 
         //sampleToSave = Sample.Builder.fromSample(enaSample).withAttributes(resolveAttributes(enaSample.getAttributes(), aeSample.getAttributes())).build();
-        sampleToPrivate = Sample.Builder.fromSample(aeSample).withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant()).build();
+        sampleToPrivate = Sample.Builder.fromSample(aeSample).withRelease(Instant.ofEpochSecond(
+                LocalDateTime.now(ZoneOffset.UTC).plusYears(1000).toEpochSecond(ZoneOffset.UTC))).build();
 
         //bioSamplesClient.persistSampleResource(sampleToSave);
         //log.info("Submitted sample with accession - " + sampleToSave.getAccession());
@@ -169,7 +172,8 @@ public class DeduplicationRunner implements ApplicationRunner {
             //log.info("Submitted sample with accession - " + sampleToSave.getAccession());
 
             aeSamples.forEach(sample -> {
-                Sample sampleToPrivate = Sample.Builder.fromSample(sample).withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant()).build();
+                Sample sampleToPrivate = Sample.Builder.fromSample(sample).withRelease(Instant.ofEpochSecond(
+                        LocalDateTime.now(ZoneOffset.UTC).plusYears(1000).toEpochSecond(ZoneOffset.UTC))).build();
 
                 bioSamplesClient.persistSampleResource(sampleToPrivate);
                 log.info("Private sample with accession - " + sampleToPrivate.getAccession());

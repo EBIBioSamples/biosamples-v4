@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -41,6 +41,9 @@ public class BioSamplesProperties {
 
   @Value("${biosamples.client.threadcount.max:8}")
   private int threadCountMax;
+
+  @Value("${biosamples.submit.max-files-size-kb:20}")
+  private long biosamplesFileUploaderMaxSameTimeUploadFileSize;
 
   @Value("${biosamples.client.aap.uri:https://explore.api.aai.ebi.ac.uk/auth}")
   private URI biosamplesClientAapUri;
@@ -87,9 +90,6 @@ public class BioSamplesProperties {
   @Value("${biosamples.ols:https://www.ebi.ac.uk/ols}")
   private String ols;
 
-  @Value("${biosamples.webapp.sampletab.uri:http://localhost:8082/biosamples/sampletab}")
-  private URI biosamplesWebappSampletabUri;
-
   @Value("${biosamples.webapp.core.uri:http://localhost:8081/biosamples}")
   private URI biosamplesWebappCoreUri;
 
@@ -119,7 +119,7 @@ public class BioSamplesProperties {
   @Value("${biosamples.schemaStore:http://localhost:8085}")
   private String schemaStore;
 
-  @Value("${biosamples.schema.default:ERC100001}")
+  @Value("${biosamples.schema.default:BSDC00001}")
   private String biosamplesDefaultSchema;
 
   public String getBiosamplesClientWebinUsername() {
@@ -222,10 +222,6 @@ public class BioSamplesProperties {
     return biosamplesWebappCoreUri;
   }
 
-  public URI getBiosamplesWebappSampletabUri() {
-    return biosamplesWebappSampletabUri;
-  }
-
   public URI getUsiCoreUri() {
     return usiCoreUri;
   }
@@ -244,5 +240,15 @@ public class BioSamplesProperties {
 
   public String getBiosamplesDefaultSchema() {
     return biosamplesDefaultSchema;
+  }
+
+  public long getBiosamplesFileUploaderMaxSameTimeUploadFileSize() {
+    return biosamplesFileUploaderMaxSameTimeUploadFileSize;
+  }
+
+  public void setBiosamplesFileUploaderMaxSameTimeUploadFileSize(
+      long biosamplesFileUploaderMaxSameTimeUploadFileSize) {
+    this.biosamplesFileUploaderMaxSameTimeUploadFileSize =
+        biosamplesFileUploaderMaxSameTimeUploadFileSize;
   }
 }

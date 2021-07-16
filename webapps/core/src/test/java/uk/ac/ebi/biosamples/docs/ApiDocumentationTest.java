@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -146,7 +146,8 @@ public class ApiDocumentationTest {
             anyCollectionOf(Filter.class),
             anyCollectionOf(String.class),
             isA(Pageable.class),
-            any(String.class)))
+            any(String.class),
+            any()))
         .thenReturn(samplePage);
     this.mockMvc
         .perform(get("/biosamples/samples").accept(MediaTypes.HAL_JSON))
@@ -257,7 +258,7 @@ public class ApiDocumentationTest {
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
     when(sampleService.store(any(Sample.class), eq(true), eq("AAP"))).thenReturn(sampleWithDomain);
-    when(schemaValidationService.validate(any(Sample.class))).thenReturn("ERC100001");
+    when(schemaValidationService.validate(any(Sample.class))).thenReturn("BSDC00001");
 
     this.mockMvc
         .perform(
@@ -303,7 +304,7 @@ public class ApiDocumentationTest {
         .thenReturn(sampleWithWebinId);
     when(enaTaxonClientService.performTaxonomyValidation(any(Sample.class)))
         .thenReturn(sampleWithWebinId);
-    when(schemaValidationService.validate(any(Sample.class))).thenReturn("ERC100001");
+    when(schemaValidationService.validate(any(Sample.class))).thenReturn("BSDC00001");
 
     this.mockMvc
         .perform(
@@ -345,7 +346,7 @@ public class ApiDocumentationTest {
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
     when(sampleService.store(any(Sample.class), eq(true), eq("AAP"))).thenReturn(sampleWithDomain);
-    when(schemaValidationService.validate(any(Sample.class))).thenReturn("ERC100001");
+    when(schemaValidationService.validate(any(Sample.class))).thenReturn("BSDC00001");
 
     this.mockMvc
         .perform(
@@ -583,7 +584,7 @@ public class ApiDocumentationTest {
             + "\"ontologyTerms\" : [ \"9606\" ]"
             + "} ],"
             + "\"checklist\" : [ {"
-            + "\"text\" : \"ERC100001\""
+            + "\"text\" : \"BSDC00001\""
             + "} ]}"
             + "}";
 

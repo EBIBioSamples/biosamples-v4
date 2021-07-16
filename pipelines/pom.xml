@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.1.4-RC8</version>
+		<version>5.1.5-SNAPSHOT</version>
 	</parent>
 
 	<profiles>
@@ -30,7 +30,6 @@
 		<module>curation</module>
 		<module>zooma</module>
 		<module>template</module>
-		<module>legacyxml</module>
 		<module>reindex</module>
 		<module>export</module>
 		<module>copydown</module>

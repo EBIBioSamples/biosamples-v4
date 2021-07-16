@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -119,7 +119,7 @@ public class SampleService {
     return firstTimeMetadataAdded;
   }
 
-  private boolean isPipelineEnaOrNcbiDomain(String domain) {
+  public boolean isPipelineEnaOrNcbiDomain(String domain) {
     return isPipelineEnaDomain(domain) || isPipelineNcbiDomain(domain);
   }
 
@@ -354,7 +354,7 @@ public class SampleService {
       final Sample sampleToUpdate, final Sample oldSample, String authProvider) {
     final String domain = sampleToUpdate.getDomain();
 
-    if (isWebinAuthorization(authProvider)) {
+    if (isWebinAuthentication(authProvider)) {
       return (oldSample.getCreate() != null ? oldSample.getCreate() : sampleToUpdate.getCreate());
     } else {
       if (isPipelineNcbiDomain(domain)) {
@@ -369,7 +369,7 @@ public class SampleService {
     }
   }
 
-  public boolean isWebinAuthorization(String authProviderIdentifier) {
+  public boolean isWebinAuthentication(String authProviderIdentifier) {
     return authProviderIdentifier != null && authProviderIdentifier.equalsIgnoreCase("WEBIN");
   }
 
@@ -388,7 +388,7 @@ public class SampleService {
       final Sample oldSample,
       boolean isFirstTimeMetadataAdded,
       String authProvider) {
-    if (isWebinAuthorization(authProvider)) {
+    if (isWebinAuthentication(authProvider)) {
       if (isFirstTimeMetadataAdded) {
         return sampleToUpdate.getSubmitted();
       } else {

@@ -16,7 +16,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.1.4-RC8</version>
+		<version>5.1.5-SNAPSHOT</version>
 	</parent>
 
 	<modules>
@@ -26,8 +26,6 @@
 		<module>sitemap</module>
 		<module>jsonld</module>
 		<module>ga4gh</module>
-		<module>legacyxml</module>
-		<module>legacyjson</module>
 		<module>structured</module>
 		<module>neo4j</module>
 		<module>curami</module>

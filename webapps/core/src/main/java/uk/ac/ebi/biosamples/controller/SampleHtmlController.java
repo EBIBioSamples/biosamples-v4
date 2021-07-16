@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -135,7 +135,8 @@ public class SampleHtmlController {
 
     Pageable pageable = new PageRequest(page - 1, size);
     Page<Sample> pageSample =
-        samplePageService.getSamplesByText(text, filterCollection, domains, pageable, curationRepo);
+        samplePageService.getSamplesByText(
+            text, filterCollection, domains, pageable, curationRepo, Optional.empty());
 
     // default to getting 10 values from 10 facets
     // List<Facet> sampleFacets = facetService.getFacets(text, filterCollection, domains, 10,

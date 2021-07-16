@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -10,14 +10,21 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
+import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
@@ -27,37 +34,43 @@ import uk.ac.ebi.biosamples.model.auth.AuthRequestWebin;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.certification.CertifyService;
+import uk.ac.ebi.biosamples.service.upload.JsonSchemaStoreSchemaRetrievalService;
 import uk.ac.ebi.tsc.aap.client.exception.UserNameOrPasswordWrongException;
+import uk.ac.ebi.tsc.aap.client.security.BioSamplesTokenAuthenticationService;
 
 @Controller
 @RequestMapping("/login")
 public class LoginController {
-  private final BioSamplesAapService bioSamplesAapService;
-  private final CertifyService certifyService;
-  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private Logger log = LoggerFactory.getLogger(getClass());
+
+  private final BioSamplesAapService bioSamplesAapService;
+  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
+  private final BioSamplesTokenAuthenticationService bioSamplesTokenAuthenticationService;
+  private final JsonSchemaStoreSchemaRetrievalService jsonSchemaStoreSchemaRetrievalService;
 
   @Autowired ObjectMapper objectMapper;
 
   public LoginController(
-      BioSamplesAapService bioSamplesAapService,
-      CertifyService certifyService,
-      BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService) {
+      final BioSamplesAapService bioSamplesAapService,
+      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+      final BioSamplesTokenAuthenticationService bioSamplesTokenAuthenticationService,
+      final JsonSchemaStoreSchemaRetrievalService jsonSchemaStoreSchemaRetrievalService) {
     this.bioSamplesAapService = bioSamplesAapService;
-    this.certifyService = certifyService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
+    this.bioSamplesTokenAuthenticationService = bioSamplesTokenAuthenticationService;
+    this.jsonSchemaStoreSchemaRetrievalService = jsonSchemaStoreSchemaRetrievalService;
   }
 
   @SneakyThrows
+  @PreAuthorize("permitAll()")
   @PostMapping(value = "/auth")
-  public String auth(@ModelAttribute("authRequest") AuthRequest authRequest, ModelMap model) {
+  public String auth(
+      @ModelAttribute("authRequest") final AuthRequest authRequest,
+      final ModelMap model,
+      final HttpServletRequest req) {
     try {
       log.info("Login way is " + authRequest.getLoginWay());
-      List<String> certificates =
-          certifyService.getAllCertificateNames().stream()
-              .filter(certificateName -> certificateName.startsWith("ERC"))
-              .collect(Collectors.toList());
+      final List<String> checklists = jsonSchemaStoreSchemaRetrievalService.getChecklists();
 
       if (authRequest.getLoginWay().equals("WEBIN")) {
         final AuthRequestWebin authRequestWebin =
@@ -71,20 +84,29 @@ public class LoginController {
             bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(token).getBody();
 
         model.addAttribute("loginmethod", "WEBIN");
-        model.addAttribute("certificates", certificates);
+        model.addAttribute("certificates", checklists);
         model.addAttribute("webinAccount", submissionAccount.getId());
+        model.remove("wrongCreds");
 
         return "upload";
       } else {
         final String token =
             bioSamplesAapService.authenticate(authRequest.getUserName(), authRequest.getPassword());
+        final Authentication authentication =
+            bioSamplesTokenAuthenticationService.getAuthenticationFromToken(token);
+        SecurityContext sc = SecurityContextHolder.getContext();
+        sc.setAuthentication(authentication);
+
+        HttpSession session = req.getSession(true);
+        session.setAttribute(SPRING_SECURITY_CONTEXT_KEY, sc);
 
         if (token != null) {
-          List<String> domains = bioSamplesAapService.getDomains(token);
+          final List<String> domains = bioSamplesAapService.getDomains(token);
+
           model.addAttribute("loginmethod", null);
           model.addAttribute("domains", domains);
           model.addAttribute("webinAccount", null);
-          model.addAttribute("certificates", certificates);
+          model.addAttribute("certificates", checklists);
           model.remove("wrongCreds");
 
           return "upload";
@@ -92,7 +114,7 @@ public class LoginController {
       }
 
       return "uploadLogin";
-    } catch (Exception e) {
+    } catch (final Exception e) {
       if (e instanceof UserNameOrPasswordWrongException) {
         model.addAttribute("wrongCreds", "wrongCreds");
         return "uploadLogin";
@@ -101,10 +123,5 @@ public class LoginController {
         return "uploadLogin";
       }
     }
-  }
-
-  @GetMapping(value = "/domains")
-  public @ResponseBody List<String> getDomains(@RequestBody String token) {
-    return bioSamplesAapService.getDomains(token);
   }
 }

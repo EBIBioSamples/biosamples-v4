@@ -17,14 +17,13 @@ This bugfix release is to ensure that BioSamples authority samples i.e. samples 
 Due to existence of different versions of Elixir validator, there were some output format errors.
 Now on BioSamples will only use Elixir biovalidator.
 
-
 [[v5.1.2]]
 == v5.1.2 Release notes
 === Internal improvements
 Several performance related internal improvements
 
-[[v5.1.0 and v5.1.1]]
-== v5.1.0 and v5.1.1 Release notes
+[[v5.1.1]]
+== v5.1.1 Release notes (v5.1.0 included)
 === New Features
 1. JSON Schema store integration with BioSamples
 +

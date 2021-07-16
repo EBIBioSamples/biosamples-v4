@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -45,6 +45,7 @@ public class ExportRunner implements ApplicationRunner {
   @Override
   public void run(ApplicationArguments args) throws Exception {
     String jsonSampleFilename = args.getNonOptionArgs().get(0);
+    boolean removeCurations = args.getOptionValues("curationdomain") != null;
     long oldTime = System.nanoTime();
     int sampleCount = 0;
     boolean isPassed = true;
@@ -56,7 +57,8 @@ public class ExportRunner implements ApplicationRunner {
               : new OutputStreamWriter(
                   new GZIPOutputStream(new FileOutputStream(jsonSampleFilename)), "UTF-8"); ) {
         jsonSampleWriter.write("[\n");
-        for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
+        for (Resource<Sample> sampleResource :
+            bioSamplesClient.fetchSampleResourceAll(!removeCurations)) {
           log.trace("Handling " + sampleResource);
           Sample sample = sampleResource.getContent();
           if (sample == null) {

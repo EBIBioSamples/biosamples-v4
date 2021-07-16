@@ -20,57 +20,95 @@
 <div layout:fragment="content" id="content">
     <th:block th:include="fragments/header :: masterhead"></th:block>
 
-    <div id="main-content-area" class="row padding-top-xlarge padding-right-xlarge padding-left-xlarge sample">
         <div class="container">
             <div class="row">
-                <div class="col-lg-8 mt-5">
-                    <div th:if="${loginmethod == null}">
-                        <select class="required" id="aapDomain" name="aapDomain">
-                            <option th:value="0" selected disabled><b>Select AAP domain</b></option>
-                            <option th:each="domain : ${domains}" th:value="${domain}" th:text="${domain}"></option>
-                        </select>
+                <div class="upload-container row col-lg-8 padding-top-xlarge padding-right-xlarge padding-left-xlarge sample">
+                    <div class="upload-tabs-navbar">
+                        <div id="upload-nav" class="upload-tabs-btn" onclick="navigateToTab('upload')" style="background-color: #d8d8d8">Submit Samples</div>
+                        <div id="search-nav" class="upload-tabs-btn" onclick="navigateToTab('search')">View Submissions</div>
+                        <b><a class="button logout-btn" th:href="@{/uploadLogin}">Logout</a></b>
                     </div>
-                    <div>
-                        <select class="required" id="certificate" name="certificate">
-                            <option th:value="0" selected disabled><b>Select checklist for validation</b></option>
-                            <option th:each="certificate : ${certificates}" th:value="${certificate}"
-                                    th:text="${certificate}"></option>
-                        </select>
+
+                    <div id="upload" class="upload-tabs">
+                        <div id="main-content-area" class="row padding-right-xlarge padding-left-xlarge sample">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-lg-8 mt-5">
+                                        <div th:if="${loginmethod == null}">
+                                            <select class="required" id="aapDomain" name="aapDomain">
+                                                <option th:value="0" selected disabled><b>Select AAP domain</b></option>
+                                                <option th:each="domain : ${domains}" th:value="${domain}" th:text="${domain}"></option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <select class="required" id="certificate" name="certificate">
+                                                <option th:value="0" selected disabled><b>Select checklist for validation</b></option>
+                                                <option th:each="certificate : ${certificates}" th:value="${certificate}"
+                                                        th:text="${certificate}"></option>
+                                            </select>
+                                        </div>
+                                        <form action="/biosamples/upload" enctype="multipart/form-data" class="dropzone" id="data-upload">
+                                            <input type="hidden" id="hiddenAapDomain" name="hiddenAapDomain">
+                                            <input type="hidden" id="hiddenCertificate" name="hiddenCertificate">
+                                            <input type="hidden" th:value="${webinAccount}" name="webinAccount"/>
+                                            <div>
+                                            </div>
+                                        </form>
+                                        <br/>
+                                        <input type="submit" id="uploadFile" value="Submit" class="button toggle-disabled upload-submit-btn" disabled/>
+                                        <br/><br/><br/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <!--<div id="dropzone">
-                        <form action="/biosamples/upload" class="dropzone needsclick" id="upload">
-                            <input type="hidden" id="hiddenAapDomain" name="hiddenAapDomain">
-                            <input type="hidden" id="hiddenCertificate" name="hiddenCertificate">
-                            <input type="hidden" th:value="${webinAccount}" name="webinAccount"/>
-                            <div class="dz-message needsclick">
-                                <button type="button" class="dz-button">Drop files here or click to upload. <br/>
-                                    You can upload .csv files containing your samples. <br/></button>
-                                <br/>
+
+                    <div id="search" class="upload-tabs" style="display:none">
+                        <form th:action="@{/upload/poll}">
+                            <input type="text" placeholder="Please enter your submission Id for search" id="searchSubmissionId" th:name="searchSubmissionId"
+                                   class="submission-search-box">
+                            <button id="searchSubmissions" class="button submission-search-btn" type="submit" th:name="searchSubmissions" th:value="searchSubmissions">Search</button>
+
+                            <div id="submission-table">
+                               <!-- <table>
+                                    <tr>
+                                        <th>Submission ID</th>
+                                        <th>Submission Status</th>
+                                        <th>Download Link</th>
+                                    </tr>
+                                    <tr>
+                                        <td th:value="${submissionId}"></td>
+                                        <td th:value="${submissionStatus}"></td>
+                                        <td><a>test_link</a></td>
+                                    </tr>
+                                </table>-->
+                                <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
                             </div>
                         </form>
-                        <input type="submit" id="submitFiles" value="Process files"/>
-                    </div>-->
-
-                    <form action="/biosamples/upload" enctype="multipart/form-data" class="dropzone" id="data-upload">
-                        <input type="hidden" id="hiddenAapDomain" name="hiddenAapDomain">
-                        <input type="hidden" id="hiddenCertificate" name="hiddenCertificate">
-                        <input type="hidden" th:value="${webinAccount}" name="webinAccount"/>
-                        <div>
-                        </div>
-                    </form>
-                    <br/>
-                    <input type="submit" id="uploadFile" value="Upload files" class="toggle-disabled" disabled/>
-                    <br/><br/><br/>
-                    <b><a th:href="@{/uploadLogin}"><<< Back</a></b>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-
 </div>
 <th:block th:include="fragments/footer :: footer"></th:block>
 
 <script>
+    function navigateToTab(displayTabId) {
+        var i;
+        var x = document.getElementsByClassName("upload-tabs");
+        for (i = 0; i < x.length; i++) {
+            x[i].style.display = "none";
+        }
+
+        var x = document.getElementsByClassName("upload-tabs-btn");
+        for (i = 0; i < x.length; i++) {
+            x[i].style.backgroundColor = "transparent";
+        }
+
+        document.getElementById(displayTabId).style.display = "block";
+        document.getElementById(displayTabId + '-nav').style.backgroundColor = "#d8d8d8";
+    }
+
     Dropzone.autoDiscover = false;
     /*$("#upload").dropzone({
         success: function (file, response) {

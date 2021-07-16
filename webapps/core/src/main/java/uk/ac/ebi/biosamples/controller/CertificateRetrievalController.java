@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -15,7 +15,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import java.io.IOException;
-import java.util.List;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +32,7 @@ import uk.ac.ebi.biosamples.service.certification.CertifyService;
 public class CertificateRetrievalController {
   private Logger log = LoggerFactory.getLogger(getClass());
   @Autowired private CertifyService certifyService;
-  JsonParser jp = new JsonParser();
+  final JsonParser jp = new JsonParser();
 
   @GetMapping(
       value = "/{certificateName}",
@@ -62,13 +61,6 @@ public class CertificateRetrievalController {
                 certifyService.getAllCertificates().stream()
                     .map(certificate -> new Resource<>(getGson().toJson(jp.parse(certificate))))
                     .collect(Collectors.toList())));
-  }
-
-  @GetMapping(
-      value = "/names",
-      produces = {MediaType.APPLICATION_JSON_VALUE})
-  public List<String> getAllCertificateNames() {
-    return certifyService.getAllCertificateNames();
   }
 
   public Gson getGson() {
