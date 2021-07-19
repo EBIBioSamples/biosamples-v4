@@ -63,7 +63,7 @@ public class SampleTaxIdTest {
     Attribute attribute =
         Attribute.build("Organism", "", null, Collections.singletonList(olsValue), null);
     Sample sample = generateTestSample(Collections.singletonList(attribute));
-    assertTrue(0 == sample.getTaxId());
+    assertTrue(null == sample.getTaxId());
   }
 
   @Test
@@ -79,7 +79,7 @@ public class SampleTaxIdTest {
   public void given_no_ontologyTerm_return_unknown_taxId() {
     Attribute attribute = Attribute.build("Organism", "s", null, Collections.EMPTY_LIST, null);
     Sample sample = generateTestSample(Collections.singletonList(attribute));
-    assertTrue(0 == sample.getTaxId());
+    assertTrue(null == sample.getTaxId());
   }
 
   private Sample generateTestSample(List<Attribute> attributes) {
