@@ -62,7 +62,7 @@ public class BioSamplesFileUploadSubmissionService {
     handleMessage(mongoFileId);
   }
 
-  private synchronized void handleMessage(final String submissionId) {
+  private void handleMessage(final String submissionId) {
     final MongoFileUpload mongoFileUpload = mongoFileUploadRepository.findOne(submissionId);
 
     try {

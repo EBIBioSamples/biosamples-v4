@@ -198,7 +198,7 @@ The ENA import pipeline that imports samples from ENA to BioSamples has been mod
 8. BioSamples sample XML view has been modified to include AMR Antibiogram model as well. Please download the XML from the example sample - https://wwwdev.ebi.ac.uk/biosamples/samples/SAMN09711403 to see the XML modelling of AMR data
 
 
-===Bug Fixes
+=== Bug Fixes
 1. Bug fix in EBI search pipeline to not include killed and suppressed samples in the exported data
 2. Bug fix in NCBI samples to avoid 400 bad requests while processing samples that don't have an organism. Certification service rejects samples without an organism
 3. Bug fix in pipelines to deal with HTTP 404 errors while trying to fetch samples with blank curation domain. Pipeline failure avoided in such cases and error logging is improved

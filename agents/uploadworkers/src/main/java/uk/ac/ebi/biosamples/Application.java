@@ -35,8 +35,8 @@ public class Application {
       SimpleRabbitListenerContainerFactoryConfigurer configurer,
       ConnectionFactory connectionFactory) {
     SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
-    factory.setConcurrentConsumers(10);
-    factory.setMaxConcurrentConsumers(10);
+    factory.setConcurrentConsumers(5);
+    factory.setMaxConcurrentConsumers(5);
     configurer.configure(factory, connectionFactory);
 
     return factory;
