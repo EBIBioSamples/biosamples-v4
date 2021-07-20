@@ -28,6 +28,20 @@
 		<profile>
 			<id>embl-ebi</id>
 		</profile>
+		<profile>
+			<id>gitlab-ci</id>
+			<modules>
+				<module>models</module>
+				<module>messaging</module>
+				<module>agents</module>
+				<module>webapps</module>
+				<module>integration</module>
+				<module>client</module>
+				<module>properties</module>
+				<module>utils</module>
+				<module>scripts</module>
+			</modules>
+		</profile>
 	</profiles>
 
 	<modules>

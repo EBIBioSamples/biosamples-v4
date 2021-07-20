@@ -8,10 +8,10 @@ maven-build:
   image: maven:3.6-jdk-11
   stage: build
   script:
-    - mvn --projects webapps -T 2C -P embl-ebi clean package -Dembedmongo.wait
+    - 'mvn --projects webapps -T 2C -P embl-ebi clean package -Dembedmongo.wait'
 
 deploy:
   image: maven:3.6-jdk-11
   stage: deploy
   script:
-    - 'mvn deploy -s ci_settings.xml'
+    - 'mvn deploy -P gitlab-ci -s ci_settings.xml'

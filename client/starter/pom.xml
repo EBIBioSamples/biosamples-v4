@@ -70,14 +70,14 @@
 			<id>ossrh</id>
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
 		</snapshotRepository> -->
-		<repository>
+		<!--<repository>
 			<id>spotnexus</id>
 			<url>https://www.ebi.ac.uk/spot/nexus/repository/maven-releases/</url>
 		</repository>
 		<snapshotRepository>
 			<id>spotnexus</id>
 			<url>https://www.ebi.ac.uk/spot/nexus/repository/maven-snapshots/</url>
-		</snapshotRepository>
+		</snapshotRepository>-->
 	</distributionManagement>
 
 	<build>
