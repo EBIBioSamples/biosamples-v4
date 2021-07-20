@@ -10,8 +10,8 @@
 */
 package uk.ac.ebi.biosamples.service.upload;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +26,8 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 public class JsonSchemaStoreSchemaRetrievalService {
   @Autowired private BioSamplesProperties bioSamplesProperties;
 
-  public List<String> getChecklists() {
-    final List<String> schemaAccessions = new ArrayList<>();
+  public Map<String, String> getChecklists() {
+    final Map<String, String> schemaAccessions = new TreeMap<>();
     final RestTemplate restTemplate = new RestTemplate();
     final ResponseEntity<String> response;
 
@@ -69,9 +69,10 @@ public class JsonSchemaStoreSchemaRetrievalService {
           final JSONObject schema = schemas.getJSONObject(i);
 
           if (schema != null) {
+            final String schemaName = schema.getString("name");
             final String schemaAccession = schema.getString("accession");
 
-            schemaAccessions.add(schemaAccession);
+            schemaAccessions.put(schemaAccession, schemaName + "(" + schemaAccession + ")");
           }
         }
       }

@@ -39,7 +39,7 @@ public class MongoFileUpload {
       final String checklist,
       final boolean isWebin,
       final List<SampleNameAccessionPair> nameAccessionPairs,
-      String validationMessage) {
+      final String validationMessage) {
     this.submissionId = submissionId;
     this.submissionStatus = submissionStatus;
     this.submitterDetails = submitterDetails;
