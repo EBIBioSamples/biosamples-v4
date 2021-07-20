@@ -7,4 +7,4 @@ maven-build:
   image: maven:3.6-jdk-11
   stage: build
   script:
-    - mvn --projects webapps-core -T 2C -P embl-ebi clean package -Dembedmongo.wait
+    - mvn --projects webapps -T 2C -P embl-ebi clean package -Dembedmongo.wait
