@@ -154,10 +154,14 @@ public class FileUploadService {
                 buildSample(csvRecordMap, aapDomain, webinId, checklist, validationResult, isWebin);
 
             if (sample == null) {
-              validationResult.addValidationMessage("Failed to create sample in the file with sample name " + fileUploadUtils.getSampleName(csvRecordMap));
+              validationResult.addValidationMessage(
+                  "Failed to create sample in the file with sample name "
+                      + fileUploadUtils.getSampleName(csvRecordMap));
             }
           } catch (Exception e) {
-            validationResult.addValidationMessage("Failed to create sample in the file with sample name " + fileUploadUtils.getSampleName(csvRecordMap));
+            validationResult.addValidationMessage(
+                "Failed to create sample in the file with sample name "
+                    + fileUploadUtils.getSampleName(csvRecordMap));
           }
 
           if (sample != null) {
@@ -227,7 +231,12 @@ public class FileUploadService {
     if (fileUploadUtils.isBasicValidationFailure(sampleName, sampleReleaseDate, validationResult)) {
       Sample sample =
           fileUploadUtils.buildSample(
-              sampleName, accession, sampleReleaseDate, characteristicsList, externalReferenceList, contactsList);
+              sampleName,
+              accession,
+              sampleReleaseDate,
+              characteristicsList,
+              externalReferenceList,
+              contactsList);
 
       sample = handleAuthentication(aapDomain, webinId, isWebin, sample, validationResult);
 

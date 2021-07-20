@@ -244,7 +244,7 @@ public class SampleRestController {
       }
     } else {
       if (sampleService.isNotExistingAccession(accession)
-              && !(bioSamplesAapService.isWriteSuperUser()
+          && !(bioSamplesAapService.isWriteSuperUser()
               || bioSamplesAapService.isIntegrationTestUser())) {
         throw new SampleAccessionDoesNotExistException();
       }

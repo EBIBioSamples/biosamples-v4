@@ -28,10 +28,8 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.exception.SchemaValidationException;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
@@ -170,10 +168,14 @@ public class BioSamplesFileUploadSubmissionService {
             sample = buildSample(csvRecordMap, aapDomain, webinId, checklist, isWebin);
 
             if (sample == null) {
-              validationResult.addValidationMessage("Failed to create sample in the file with sample name " + fileUploadUtils.getSampleName(csvRecordMap));
+              validationResult.addValidationMessage(
+                  "Failed to create sample in the file with sample name "
+                      + fileUploadUtils.getSampleName(csvRecordMap));
             }
           } catch (Exception e) {
-            validationResult.addValidationMessage("Failed to create sample in the file with sample name " + fileUploadUtils.getSampleName(csvRecordMap));
+            validationResult.addValidationMessage(
+                "Failed to create sample in the file with sample name "
+                    + fileUploadUtils.getSampleName(csvRecordMap));
           }
 
           if (sample != null) {
@@ -242,7 +244,12 @@ public class BioSamplesFileUploadSubmissionService {
     if (fileUploadUtils.isBasicValidationFailure(sampleName, sampleReleaseDate, validationResult)) {
       Sample sample =
           fileUploadUtils.buildSample(
-              sampleName, accession, sampleReleaseDate, characteristicsList, externalReferenceList, contactsList);
+              sampleName,
+              accession,
+              sampleReleaseDate,
+              characteristicsList,
+              externalReferenceList,
+              contactsList);
 
       sample = fileUploadUtils.addChecklistAttributeAndBuildSample(checklist, sample);
 
@@ -250,7 +257,8 @@ public class BioSamplesFileUploadSubmissionService {
         try {
           sample = Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(webinId).build();
           sample = bioSamplesWebinClient.persistSampleResource(sample).getContent();
-          log.info("Sample " + sample.getName() + " created with accession " + sample.getAccession());
+          log.info(
+              "Sample " + sample.getName() + " created with accession " + sample.getAccession());
         } catch (final Exception e) {
           validationResult.addValidationMessage("Checklist validation failed for some/all samples");
         }
@@ -258,9 +266,11 @@ public class BioSamplesFileUploadSubmissionService {
         try {
           sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
           sample = bioSamplesAapClient.persistSampleResource(sample).getContent();
-          log.info("Sample " + sample.getName() + " created with accession " + sample.getAccession());
+          log.info(
+              "Sample " + sample.getName() + " created with accession " + sample.getAccession());
         } catch (final Exception e) {
-          validationResult.addValidationMessage("Checklist validation failed for some/ all samples");
+          validationResult.addValidationMessage(
+              "Checklist validation failed for some/ all samples");
         }
       }
 

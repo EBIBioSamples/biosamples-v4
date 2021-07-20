@@ -90,9 +90,11 @@ public class FileUploadUtils {
                       }
                     })
                 .filter(Objects::nonNull)
-                .collect(Collectors.toList())).withRelease(sampleReleaseDate)
+                .collect(Collectors.toList()))
+        .withRelease(sampleReleaseDate)
         .withExternalReferences(externalReferenceList)
-        .withContacts(contactsList).withSubmittedVia(SubmittedViaType.FILE_UPLOADER_PLACEHOLDER)
+        .withContacts(contactsList)
+        .withSubmittedVia(SubmittedViaType.FILE_UPLOADER_PLACEHOLDER)
         .build();
   }
 
@@ -161,37 +163,38 @@ public class FileUploadUtils {
         .collect(Collectors.toList());
   }
 
-    public Relationship getRelationship(
-            final Sample sample,
-            final Map<String, String> sampleNameToAccessionMap,
-            final Map.Entry<String, String> entry,
-            final ValidationResult validationResult) {
-        if (sample != null && sample.getAccession() != null) {
-            try {
-                final String relationshipTarget = getRelationshipTarget(sampleNameToAccessionMap, entry);
+  public Relationship getRelationship(
+      final Sample sample,
+      final Map<String, String> sampleNameToAccessionMap,
+      final Map.Entry<String, String> entry,
+      final ValidationResult validationResult) {
+    if (sample != null && sample.getAccession() != null) {
+      try {
+        final String relationshipTarget = getRelationshipTarget(sampleNameToAccessionMap, entry);
 
-                if (relationshipTarget != null) {
-                    return Relationship.build(sample.getAccession(), entry.getKey().trim(), relationshipTarget);
-                } else {
-                    validationResult.addValidationMessage(
-                            "Failed to add all relationships for " + sample.getAccession());
+        if (relationshipTarget != null) {
+          return Relationship.build(
+              sample.getAccession(), entry.getKey().trim(), relationshipTarget);
+        } else {
+          validationResult.addValidationMessage(
+              "Failed to add all relationships for " + sample.getAccession());
 
-                    return null;
-                }
-            } catch (Exception e) {
-                log.info("Failed to add relationship");
-                validationResult.addValidationMessage(
-                        "Failed to add all relationships for "
-                                + sample.getAccession()
-                                + " error: "
-                                + e.getMessage());
-
-                return null;
-            }
+          return null;
         }
+      } catch (Exception e) {
+        log.info("Failed to add relationship");
+        validationResult.addValidationMessage(
+            "Failed to add all relationships for "
+                + sample.getAccession()
+                + " error: "
+                + e.getMessage());
 
         return null;
+      }
     }
+
+    return null;
+  }
 
   public String getRelationshipTarget(
       final Map<String, String> sampleNameToAccessionMap, final Map.Entry<String, String> entry) {
