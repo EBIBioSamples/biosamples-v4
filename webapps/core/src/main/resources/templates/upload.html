@@ -43,8 +43,8 @@
                                         <div>
                                             <select class="required" id="certificate" name="certificate">
                                                 <option th:value="0" selected disabled><b>Select checklist for validation</b></option>
-                                                <option th:each="certificate : ${certificates}" th:value="${certificate}"
-                                                        th:text="${certificate}"></option>
+                                                <option th:each="certificate : ${certificates}" th:value="${certificate.getKey()}"
+                                                        th:text="${certificate.getValue()}"></option>
                                             </select>
                                         </div>
                                         <form action="/biosamples/upload" enctype="multipart/form-data" class="dropzone" id="data-upload">

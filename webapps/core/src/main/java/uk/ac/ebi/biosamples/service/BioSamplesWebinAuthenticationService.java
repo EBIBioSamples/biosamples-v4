@@ -163,7 +163,7 @@ public class BioSamplesWebinAuthenticationService {
     }
   }
 
-  public Sample handleStructuredDataWebinUserInData(Sample sample, String id) {
+  public Sample handleStructuredDataForWebinSubmission(Sample sample, String id) {
     final AtomicBoolean isWebinIdValid = new AtomicBoolean(false);
 
     sample

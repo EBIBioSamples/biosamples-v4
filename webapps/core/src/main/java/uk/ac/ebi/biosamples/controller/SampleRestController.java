@@ -13,6 +13,7 @@ package uk.ac.ebi.biosamples.controller;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.SortedSet;
 import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.ga4gh.phenopacket.PhenopacketConverter;
+import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
@@ -204,18 +206,12 @@ public class SampleRestController {
       @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
           String authProvider) {
     final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+    final SortedSet<AbstractData> abstractData = sample.getData();
     boolean isWebinSuperUser = false;
+    boolean sampleValidationTaskStatus = false;
 
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
       throw new SampleAccessionMismatchException();
-    }
-
-    if (!webinAuth) {
-      if (sampleService.isNotExistingAccession(accession)
-          && !(bioSamplesAapService.isWriteSuperUser()
-              || bioSamplesAapService.isIntegrationTestUser())) {
-        throw new SampleAccessionDoesNotExistException();
-      }
     }
 
     log.debug("Received PUT for " + accession);
@@ -238,7 +234,7 @@ public class SampleRestController {
 
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
 
-      if (sample.getData() != null && sample.getData().size() > 0) {
+      if (abstractData != null && abstractData.size() > 0) {
         if (bioSamplesWebinAuthenticationService.checkIfOriginalSampleWebinSubmitter(
             sample, webinAccountId)) {
           sample = Sample.Builder.fromSample(sample).build();
@@ -247,9 +243,15 @@ public class SampleRestController {
         }
       }
     } else {
+      if (sampleService.isNotExistingAccession(accession)
+              && !(bioSamplesAapService.isWriteSuperUser()
+              || bioSamplesAapService.isIntegrationTestUser())) {
+        throw new SampleAccessionDoesNotExistException();
+      }
+
       sample = bioSamplesAapService.handleSampleDomain(sample);
 
-      if (sample.getData() != null && sample.getData().size() > 0) {
+      if (abstractData != null && abstractData.size() > 0) {
         if (bioSamplesAapService.checkIfOriginalAAPSubmitter(sample)) {
           sample = Sample.Builder.fromSample(sample).build();
         } else if (bioSamplesAapService.isWriteSuperUser()
@@ -266,15 +268,24 @@ public class SampleRestController {
 
     SubmittedViaType submittedVia =
         sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+
     sample =
         Sample.Builder.fromSample(sample).withUpdate(now).withSubmittedVia(submittedVia).build();
 
-    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
+    if (submittedVia == SubmittedViaType.FILE_UPLOADER_PLACEHOLDER) {
+      schemaValidationService.validate(sample);
+      sampleValidationTaskStatus = true;
+    }
 
-    if (webinAuth && !isWebinSuperUser) {
-      schemaValidationService.validate(sample);
-    } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
-      schemaValidationService.validate(sample);
+    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
+    if (!sampleValidationTaskStatus) {
+      if (webinAuth && !isWebinSuperUser) {
+        schemaValidationService.validate(sample);
+      } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
+        if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER_PLACEHOLDER) {
+          schemaValidationService.validate(sample);
+        }
+      }
     }
 
     if (webinAuth && !isWebinSuperUser) {
@@ -325,7 +336,7 @@ public class SampleRestController {
               .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
               .getBody();
       sample =
-          bioSamplesWebinAuthenticationService.handleStructuredDataWebinUserInData(
+          bioSamplesWebinAuthenticationService.handleStructuredDataForWebinSubmission(
               sample, webinAccount.getId());
       sample = sampleService.storeSampleStructuredData(sample, authProvider);
 
