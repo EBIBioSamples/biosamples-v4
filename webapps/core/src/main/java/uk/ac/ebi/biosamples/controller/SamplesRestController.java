@@ -554,7 +554,9 @@ public class SamplesRestController {
     log.debug("Received POST for " + sample);
 
     final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+    final Set<AbstractData> structuredData = sample.getData();
     boolean isWebinSuperUser = false;
+    boolean sampleValidationTaskStatus = false;
 
     if (webinAuth) {
       final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
@@ -574,11 +576,9 @@ public class SamplesRestController {
       isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
 
-      final Set<AbstractData> structuredData = sample.getData();
-
       if (structuredData != null && structuredData.size() > 0) {
         sample =
-            bioSamplesWebinAuthenticationService.handleStructuredDataWebinUserInData(
+            bioSamplesWebinAuthenticationService.handleStructuredDataForWebinSubmission(
                 sample, webinAccountId);
       }
     } else {
@@ -590,8 +590,6 @@ public class SamplesRestController {
       }
 
       sample = bioSamplesAapService.handleSampleDomain(sample);
-
-      final Set<AbstractData> structuredData = sample.getData();
 
       if (!(bioSamplesAapService.isWriteSuperUser()
           || bioSamplesAapService.isIntegrationTestUser())) {
@@ -613,12 +611,20 @@ public class SamplesRestController {
             .withSubmittedVia(submittedVia)
             .build();
 
-    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
+    if (submittedVia == SubmittedViaType.FILE_UPLOADER_PLACEHOLDER) {
+      schemaValidationService.validate(sample);
+      sampleValidationTaskStatus = true;
+    }
 
-    if (webinAuth && !isWebinSuperUser) {
-      schemaValidationService.validate(sample);
-    } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
-      schemaValidationService.validate(sample);
+    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
+    if (!sampleValidationTaskStatus) {
+      if (webinAuth && !isWebinSuperUser) {
+        schemaValidationService.validate(sample);
+      } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
+        if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER_PLACEHOLDER) {
+          schemaValidationService.validate(sample);
+        }
+      }
     }
 
     if (webinAuth && !isWebinSuperUser) {

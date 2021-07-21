@@ -173,11 +173,11 @@ public class SampleService {
     }
 
     if (sample.hasAccession()) {
-      MongoSample mongoOldSample = mongoSampleRepository.findOne(sample.getAccession());
+      final MongoSample mongoOldSample = mongoSampleRepository.findOne(sample.getAccession());
       List<String> existingRelationshipTargets = new ArrayList<>();
 
       if (mongoOldSample != null) {
-        Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
+        final Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
         existingRelationshipTargets =
             getExistingRelationshipTargets(sample.getAccession(), mongoOldSample);
 

@@ -15,6 +15,7 @@ import static org.springframework.security.web.context.HttpSessionSecurityContex
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import lombok.SneakyThrows;
@@ -70,7 +71,7 @@ public class LoginController {
       final HttpServletRequest req) {
     try {
       log.info("Login way is " + authRequest.getLoginWay());
-      final List<String> checklists = jsonSchemaStoreSchemaRetrievalService.getChecklists();
+      final Map<String, String> checklists = jsonSchemaStoreSchemaRetrievalService.getChecklists();
 
       if (authRequest.getLoginWay().equals("WEBIN")) {
         final AuthRequestWebin authRequestWebin =

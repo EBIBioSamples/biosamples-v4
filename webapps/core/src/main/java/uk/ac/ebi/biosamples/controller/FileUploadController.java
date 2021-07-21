@@ -117,7 +117,10 @@ public class FileUploadController {
             fileQueueService.queueFile(file, hiddenAapDomain, hiddenCertificate, webinAccount);
 
         try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
-          writer.write("Your submission has been queued and your submission id is " + fileId);
+          writer.write(
+              "Your submission has been queued and your submission id is "
+                  + fileId
+                  + ". Please use the View Submissions tab and use your submission ID to get the submission result");
         }
 
         final File queuedUploadMessageFile = temp.toFile();

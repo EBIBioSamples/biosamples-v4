@@ -62,7 +62,7 @@ public class BioSamplesFileUploadSubmissionService {
     handleMessage(mongoFileId);
   }
 
-  private synchronized void handleMessage(final String submissionId) {
+  private void handleMessage(final String submissionId) {
     final MongoFileUpload mongoFileUpload = mongoFileUploadRepository.findOne(submissionId);
 
     try {
@@ -112,7 +112,7 @@ public class BioSamplesFileUploadSubmissionService {
       validationResult.addValidationMessage(persistenceMessage);
 
       final String joinedValidationMessage =
-          String.join("\n", validationResult.getValidationMessagesList());
+          String.join(" -- ", validationResult.getValidationMessagesList());
 
       log.info(joinedValidationMessage);
 
@@ -142,7 +142,7 @@ public class BioSamplesFileUploadSubmissionService {
               mongoFileUpload.getChecklist(),
               mongoFileUpload.isWebin(),
               mongoFileUpload.getNameAccessionPairs(),
-              String.join("\n", validationResult.getValidationMessagesList()));
+              String.join(" -- ", validationResult.getValidationMessagesList()));
 
       mongoFileUploadRepository.save(mongoFileUploadFailed);
     } finally {
@@ -168,10 +168,14 @@ public class BioSamplesFileUploadSubmissionService {
             sample = buildSample(csvRecordMap, aapDomain, webinId, checklist, isWebin);
 
             if (sample == null) {
-              validationResult.addValidationMessage("Failed to create all samples in the file");
+              validationResult.addValidationMessage(
+                  "Failed to create sample in the file with sample name "
+                      + fileUploadUtils.getSampleName(csvRecordMap));
             }
           } catch (Exception e) {
-            validationResult.addValidationMessage("Failed to create all samples in the file");
+            validationResult.addValidationMessage(
+                "Failed to create sample in the file with sample name "
+                    + fileUploadUtils.getSampleName(csvRecordMap));
           }
 
           if (sample != null) {
@@ -240,19 +244,35 @@ public class BioSamplesFileUploadSubmissionService {
     if (fileUploadUtils.isBasicValidationFailure(sampleName, sampleReleaseDate, validationResult)) {
       Sample sample =
           fileUploadUtils.buildSample(
-              sampleName, accession, characteristicsList, externalReferenceList, contactsList);
+              sampleName,
+              accession,
+              sampleReleaseDate,
+              characteristicsList,
+              externalReferenceList,
+              contactsList);
 
       sample = fileUploadUtils.addChecklistAttributeAndBuildSample(checklist, sample);
 
       if (isWebin) {
-        sample = Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(webinId).build();
-        sample = bioSamplesWebinClient.persistSampleResource(sample).getContent();
+        try {
+          sample = Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(webinId).build();
+          sample = bioSamplesWebinClient.persistSampleResource(sample).getContent();
+          log.info(
+              "Sample " + sample.getName() + " created with accession " + sample.getAccession());
+        } catch (final Exception e) {
+          validationResult.addValidationMessage("Checklist validation failed for some/all samples");
+        }
       } else {
-        sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
-        sample = bioSamplesAapClient.persistSampleResource(sample).getContent();
+        try {
+          sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
+          sample = bioSamplesAapClient.persistSampleResource(sample).getContent();
+          log.info(
+              "Sample " + sample.getName() + " created with accession " + sample.getAccession());
+        } catch (final Exception e) {
+          validationResult.addValidationMessage(
+              "Checklist validation failed for some/ all samples");
+        }
       }
-
-      log.info("Sample " + sample.getName() + " created with accession " + sample.getAccession());
 
       return sample;
     }
