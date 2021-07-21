@@ -74,10 +74,8 @@ public class LoginController {
 
       if (authRequest.getLoginWay().equals("WEBIN")) {
         final AuthRequestWebin authRequestWebin =
-            new AuthRequestWebin(
-                authRequest.getUserName(), authRequest.getPassword(), Arrays.asList(AuthRealm.ENA));
-        final String token =
-            bioSamplesWebinAuthenticationService
+            new AuthRequestWebin(authRequest.getUserName(), authRequest.getPassword(), Arrays.asList(AuthRealm.ENA));
+        final String token = bioSamplesWebinAuthenticationService
                 .getWebinToken(objectMapper.writeValueAsString(authRequestWebin))
                 .getBody();
         final SubmissionAccount submissionAccount =
@@ -86,14 +84,12 @@ public class LoginController {
         model.addAttribute("loginmethod", "WEBIN");
         model.addAttribute("certificates", checklists);
         model.addAttribute("webinAccount", submissionAccount.getId());
+        model.addAttribute("token", token);
         model.remove("wrongCreds");
 
-        return "upload";
       } else {
-        final String token =
-            bioSamplesAapService.authenticate(authRequest.getUserName(), authRequest.getPassword());
-        final Authentication authentication =
-            bioSamplesTokenAuthenticationService.getAuthenticationFromToken(token);
+        final String token = bioSamplesAapService.authenticate(authRequest.getUserName(), authRequest.getPassword());
+        final Authentication authentication = bioSamplesTokenAuthenticationService.getAuthenticationFromToken(token);
         SecurityContext sc = SecurityContextHolder.getContext();
         sc.setAuthentication(authentication);
 
@@ -107,10 +103,14 @@ public class LoginController {
           model.addAttribute("domains", domains);
           model.addAttribute("webinAccount", null);
           model.addAttribute("certificates", checklists);
+          model.addAttribute("token", token);
           model.remove("wrongCreds");
 
-          return "upload";
+
         }
+
+
+        return "upload";
       }
 
       return "uploadLogin";

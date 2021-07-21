@@ -333,4 +333,11 @@ public class FileUploadService {
           "Submission not found, please enter a valid submission ID.");
     }
   }
+
+  public List<MongoFileUpload> getUserSubmissions(List<String> userRoles) {
+    //todo limit to last 15 submissions, remove accession and details
+    List<MongoFileUpload> uploads = mongoFileUploadRepository.findBySubmitterDetailsIn(userRoles);
+
+    return uploads;
+  }
 }

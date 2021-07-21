@@ -29,5 +29,6 @@
 		<module>structured</module>
 		<module>neo4j</module>
 		<module>curami</module>
+		<module>security</module>
 	</modules>
 </project>
