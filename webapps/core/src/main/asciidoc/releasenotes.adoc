@@ -2,6 +2,34 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+[[v5.1.6]]
+== v5.1.6 Release notes (v5.1.5 included)
+=== New Features
+*File uploader improvements*
++
+BioSamples file uploader has gone through some changes for dealing with larger file uploads.
+Any file upload with over 200 samples are queued and submitters are provided with a submission ID. Submitters can use the submission ID in the View submissions tab and check status of their uploads.
+Once a submission is searched in the View Submissions tab and if the submission ID is valid then the submitter will get a result json file with the submission status and the sample accessions mapped against sample names.
+
+Submissions can have either of the 3 status, ACTIVE, COMPLETED or FAILED.
+
+ACTIVE status: Submission is waiting to be processed or is being processed
+
+COMPLETED status: Submission has completed, if a submission is in COMPLETED status, it is expected that the samples have been created and accessions generated OR samples have failed validation against minimal validation rules of BioSamples database or samples have failed validation against checklist specified by the submitter while doing the file upload
+
+FAILED status: Submission has failed, the submission might have a failed status of the file uploaded was invalid and BioSamples were not able to parse the file or any technical issue in BioSamples database which has prevented the submission from getting processed
+
+*JSON schema-store integration and BioSamples checklist (BSDC) ID space*
+
+BioSamples now has a checklist ID space starting from BSDC00001. This is to clearly distinguish between ENA checklists and BioSamples checklists. We have also imported ENA checklists into BioSamples schema-store preserving ENA checklist IDs. ‘checklist’ attribute in the sample will trigger a validation in sample submission time, where the checklist will be retrieved from the schema-store and validated using the Elixir biovalidator.
+
+=== Internal improvements
+
+1. Submission API’s have gone through some performance improvements for faster responses and we hope it will result in better submission experience
++
+2. Internal pipelines have gone through some fault resilience tests and have been improved accordingly
+
+
 [[v5.1.4]]
 == v5.1.4 Release notes
 === Bug Fixes

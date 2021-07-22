@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.1.6-RC2</version>
+		<version>5.1.6-RC3</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -25,27 +25,27 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-mongo</artifactId>
-			<version>5.1.6-RC2</version>
+			<version>5.1.6-RC3</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-pipeline</artifactId>
-			<version>5.1.6-RC2</version>
+			<version>5.1.6-RC3</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-mongo</artifactId>
-			<version>5.1.6-RC2</version>
+			<version>5.1.6-RC3</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-thread</artifactId>
-			<version>5.1.6-RC2</version>
+			<version>5.1.6-RC3</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-ols</artifactId>
-			<version>5.1.6-RC2</version>
+			<version>5.1.6-RC3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.ben-manes.caffeine</groupId>
