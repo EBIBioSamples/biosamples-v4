@@ -8,7 +8,7 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.service;
+package uk.ac.ebi.biosamples.service.security;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -22,6 +22,8 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
+import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 
 @Service
 public class BioSamplesWebinAuthenticationService {

@@ -29,12 +29,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.auth.AuthRealm;
 import uk.ac.ebi.biosamples.model.auth.AuthRequest;
 import uk.ac.ebi.biosamples.model.auth.AuthRequestWebin;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
-import uk.ac.ebi.biosamples.service.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
+import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.security.AccessControlService;
+import uk.ac.ebi.biosamples.service.upload.FileUploadService;
 import uk.ac.ebi.biosamples.service.upload.JsonSchemaStoreSchemaRetrievalService;
 import uk.ac.ebi.tsc.aap.client.exception.UserNameOrPasswordWrongException;
 import uk.ac.ebi.tsc.aap.client.security.BioSamplesTokenAuthenticationService;
@@ -48,6 +52,8 @@ public class LoginController {
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final BioSamplesTokenAuthenticationService bioSamplesTokenAuthenticationService;
   private final JsonSchemaStoreSchemaRetrievalService jsonSchemaStoreSchemaRetrievalService;
+  private final FileUploadService fileUploadService;
+  private final AccessControlService accessControlService;
 
   @Autowired ObjectMapper objectMapper;
 
@@ -55,11 +61,15 @@ public class LoginController {
       final BioSamplesAapService bioSamplesAapService,
       final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       final BioSamplesTokenAuthenticationService bioSamplesTokenAuthenticationService,
-      final JsonSchemaStoreSchemaRetrievalService jsonSchemaStoreSchemaRetrievalService) {
+      final JsonSchemaStoreSchemaRetrievalService jsonSchemaStoreSchemaRetrievalService,
+      final AccessControlService accessControlService,
+      final FileUploadService fileUploadService) {
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.bioSamplesTokenAuthenticationService = bioSamplesTokenAuthenticationService;
     this.jsonSchemaStoreSchemaRetrievalService = jsonSchemaStoreSchemaRetrievalService;
+    this.accessControlService = accessControlService;
+    this.fileUploadService = fileUploadService;
   }
 
   @SneakyThrows
@@ -109,7 +119,10 @@ public class LoginController {
 
 
         }
-
+        AuthToken authToken = accessControlService.extractToken(token);
+        List<String> userRoles = accessControlService.getUserRoles(authToken);
+        List<MongoFileUpload> uploads = fileUploadService.getUserSubmissions(userRoles);
+        model.addAttribute("submissions", uploads);
 
         return "upload";
       }

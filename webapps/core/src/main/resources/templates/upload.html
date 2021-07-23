@@ -70,8 +70,12 @@
                                    class="submission-search-box">
                             <input type="hidden" id="PollToken" th:value="${token}" name="token"/>
                             <button id="searchSubmissions" class="button submission-search-btn" type="submit" th:name="searchSubmissions" th:value="searchSubmissions">Search</button>
+                        </form>
 
-                            <!--<div id="submission-table">
+                        <br>
+                        <h4>Recent Submissions</h4>
+                        <span>Please log in again to see all immediate submissions.</span>
+                        <div id="submission-table">
                                 <table>
                                     <tr>
                                         <th>Submission ID</th>
@@ -82,17 +86,16 @@
                                     <tr th:each="submission : ${submissions}">
                                         <td th:text="${submission.submissionId}"></td>
                                         <td th:text="${submission.submissionStatus}"></td>
-                                        <td th:text=""></td>
+                                        <td></td>
                                         <td><form th:action="@{/upload/poll}">
-                                            <input type="hidden" th:name="searchSubmissionId">
+                                            <input type="hidden" th:value="${submission.submissionId}" th:name="searchSubmissionId">
                                             <input type="hidden" th:value="${token}" name="token"/>
-                                            <button class="button submission-search-btn" type="submit">Search</button>
+                                            <button class="button submission-download-btn" type="submit">Download</button>
                                         </form>
                                         </td>
                                     </tr>
                                 </table>
-                            </div>-->
-                        </form>
+                            </div>
                     </div>
                 </div>
             </div>

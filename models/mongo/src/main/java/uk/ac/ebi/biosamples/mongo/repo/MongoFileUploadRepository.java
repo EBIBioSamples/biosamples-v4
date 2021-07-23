@@ -10,15 +10,13 @@
 */
 package uk.ac.ebi.biosamples.mongo.repo;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 
 import java.util.List;
 
 public interface MongoFileUploadRepository extends MongoRepository<MongoFileUpload, String> {
-    List<MongoFileUpload> findBySubmitterDetailsIn(List<String> userRoles);
-//
-//    @Query(value="{ 'submitterDetails' : ?0 }",fields="{ 'submitterDetails' : 1, 'submissionStatus' : 1, '_id' : 1}")
-//    List<MongoFileUpload> findBySubmitterDetailsIn(List<String> users);
+    List<MongoFileUpload> findBySubmitterDetailsIn(List<String> userRoles, Pageable page);
 }
