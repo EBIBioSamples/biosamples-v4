@@ -26,8 +26,8 @@ public class MongoFileUpload {
   private final BioSamplesFileUploadSubmissionStatus submissionStatus;
   private final String submitterDetails;
   private final String checklist;
-  @JsonIgnore private final boolean isWebin;
-  private final List<SampleNameAccessionPair> nameAccessionPairs;
+  @JsonIgnore private final boolean isWebinAuthentication;
+  private final List<SampleNameAccessionPair> sampleNameAccessionPairs;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private final String validationMessage;
@@ -37,15 +37,15 @@ public class MongoFileUpload {
       final BioSamplesFileUploadSubmissionStatus submissionStatus,
       final String submitterDetails,
       final String checklist,
-      final boolean isWebin,
-      final List<SampleNameAccessionPair> nameAccessionPairs,
+      final boolean isWebinAuthentication,
+      final List<SampleNameAccessionPair> sampleNameAccessionPairs,
       final String validationMessage) {
     this.submissionId = submissionId;
     this.submissionStatus = submissionStatus;
     this.submitterDetails = submitterDetails;
     this.checklist = checklist;
-    this.isWebin = isWebin;
-    this.nameAccessionPairs = nameAccessionPairs;
+    this.isWebinAuthentication = isWebinAuthentication;
+    this.sampleNameAccessionPairs = sampleNameAccessionPairs;
     this.validationMessage = validationMessage;
   }
 
@@ -65,12 +65,12 @@ public class MongoFileUpload {
     return submitterDetails;
   }
 
-  public boolean isWebin() {
-    return isWebin;
+  public boolean isWebinAuthentication() {
+    return isWebinAuthentication;
   }
 
-  public List<SampleNameAccessionPair> getNameAccessionPairs() {
-    return nameAccessionPairs;
+  public List<SampleNameAccessionPair> getSampleNameAccessionPairs() {
+    return sampleNameAccessionPairs;
   }
 
   public String getValidationMessage() {
@@ -83,12 +83,12 @@ public class MongoFileUpload {
     if (!(o instanceof MongoFileUpload)) return false;
     final MongoFileUpload that = (MongoFileUpload) o;
 
-    return isWebin() == that.isWebin()
+    return isWebinAuthentication() == that.isWebinAuthentication()
         && Objects.equals(getSubmissionId(), that.getSubmissionId())
         && getSubmissionStatus() == that.getSubmissionStatus()
         && Objects.equals(getSubmitterDetails(), that.getSubmitterDetails())
         && Objects.equals(getChecklist(), that.getChecklist())
-        && Objects.equals(getNameAccessionPairs(), that.getNameAccessionPairs())
+        && Objects.equals(getSampleNameAccessionPairs(), that.getSampleNameAccessionPairs())
         && Objects.equals(getValidationMessage(), that.getValidationMessage());
   }
 
@@ -99,8 +99,8 @@ public class MongoFileUpload {
         getSubmissionStatus(),
         getSubmitterDetails(),
         getChecklist(),
-        isWebin(),
-        getNameAccessionPairs(),
+        isWebinAuthentication(),
+        getSampleNameAccessionPairs(),
         getValidationMessage());
   }
 }

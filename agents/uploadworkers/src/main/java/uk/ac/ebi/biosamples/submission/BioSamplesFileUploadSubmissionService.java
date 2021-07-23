@@ -76,7 +76,7 @@ public class BioSamplesFileUploadSubmissionService {
 
       // get bioSamplesSubmissionFile metadata, determine webin aur aap auth and use client
       // accordingly
-      final boolean isWebin = mongoFileUpload.isWebin();
+      final boolean isWebin = mongoFileUpload.isWebinAuthentication();
       final String checklist = mongoFileUpload.getChecklist();
 
       String aapDomain = null;
@@ -140,8 +140,8 @@ public class BioSamplesFileUploadSubmissionService {
               BioSamplesFileUploadSubmissionStatus.FAILED,
               mongoFileUpload.getSubmitterDetails(),
               mongoFileUpload.getChecklist(),
-              mongoFileUpload.isWebin(),
-              mongoFileUpload.getNameAccessionPairs(),
+              mongoFileUpload.isWebinAuthentication(),
+              mongoFileUpload.getSampleNameAccessionPairs(),
               String.join(" -- ", validationResult.getValidationMessagesList()));
 
       mongoFileUploadRepository.save(mongoFileUploadFailed);
@@ -241,7 +241,7 @@ public class BioSamplesFileUploadSubmissionService {
         fileUploadUtils.handleExternalReferences(multiMap);
     final List<Contact> contactsList = fileUploadUtils.handleContacts(multiMap);
 
-    if (fileUploadUtils.isBasicValidationFailure(sampleName, sampleReleaseDate, validationResult)) {
+    if (fileUploadUtils.isValidSample(sampleName, sampleReleaseDate, validationResult)) {
       Sample sample =
           fileUploadUtils.buildSample(
               sampleName,

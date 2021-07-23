@@ -31,7 +31,10 @@ import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.model.*;
 
 public class FileUploadUtils {
-  private Logger log = LoggerFactory.getLogger(getClass());
+    private Logger log = LoggerFactory.getLogger(getClass());
+
+    public static final String WEBIN_AUTH = "WEBIN";
+    public static final String AAP = "AAP";
 
   public List<Multimap<String, String>> getCSVDataInMap(final CSVParser csvParser)
       throws IOException {
@@ -313,16 +316,16 @@ public class FileUploadUtils {
     return sample;
   }
 
-  public boolean isBasicValidationFailure(
+  public boolean isValidSample(
       final String sampleName,
       final String sampleReleaseDate,
       final ValidationResult validationResult) {
-    boolean basicValidationFailure = false;
+    boolean isValidSample = true;
 
     if (sampleName == null || sampleName.isEmpty()) {
       validationResult.addValidationMessage(
           "All samples in the file must have a sample name, some samples are missing sample name and hence are not created");
-      basicValidationFailure = true;
+      isValidSample = false;
     }
 
     if (sampleReleaseDate == null || sampleReleaseDate.isEmpty()) {
@@ -330,10 +333,10 @@ public class FileUploadUtils {
           "All samples in the file must have a release date "
               + sampleName
               + " doesn't have a release date and is not created");
-      basicValidationFailure = true;
+      isValidSample = false;
     }
 
-    return !basicValidationFailure;
+    return isValidSample;
   }
 
   private <T> List<T> getPrintableListFromCsvRow(final Iterator<T> iterator) {
@@ -428,13 +431,16 @@ public class FileUploadUtils {
             .withTrim(true));
   }
 
-  public File writeQueueMessageToFile(String submissionId) throws IOException {
-    final Path temp = Files.createTempFile("queue_result", ".txt");
+    public File writeQueueMessageToFile(final String submissionId) throws IOException {
+        final Path temp = Files.createTempFile("queue_result", ".txt");
 
-    try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
-      writer.write("Your submission has been queued and your submission id is " + submissionId);
+        try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
+            writer.write(
+                    "Your submission has been queued and your submission id is "
+                            + submissionId
+                            + ". Please use the View Submissions tab and use your submission ID to get the submission result.");
+        }
+
+        return temp.toFile();
     }
-
-    return temp.toFile();
-  }
 }
