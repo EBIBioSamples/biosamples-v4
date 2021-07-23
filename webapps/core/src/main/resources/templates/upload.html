@@ -47,10 +47,11 @@
                                                         th:text="${certificate.getValue()}"></option>
                                             </select>
                                         </div>
-                                        <form action="/biosamples/upload" enctype="multipart/form-data" class="dropzone" id="data-upload">
+                                        <form th:action="@{/upload}" enctype="multipart/form-data" class="dropzone" id="data-upload">
                                             <input type="hidden" id="hiddenAapDomain" name="hiddenAapDomain">
                                             <input type="hidden" id="hiddenCertificate" name="hiddenCertificate">
                                             <input type="hidden" th:value="${webinAccount}" name="webinAccount"/>
+                                            <input type="hidden" id="uploadToken" th:value="${token}" name="token"/>
                                             <div>
                                             </div>
                                         </form>
@@ -67,24 +68,34 @@
                         <form th:action="@{/upload/poll}">
                             <input type="text" placeholder="Please enter your submission Id for search" id="searchSubmissionId" th:name="searchSubmissionId"
                                    class="submission-search-box">
+                            <input type="hidden" id="PollToken" th:value="${token}" name="token"/>
                             <button id="searchSubmissions" class="button submission-search-btn" type="submit" th:name="searchSubmissions" th:value="searchSubmissions">Search</button>
+                        </form>
 
-                            <div id="submission-table">
-                               <!-- <table>
+                        <br>
+                        <h4>Recent Submissions</h4>
+                        <span>Please log in again to see all immediate submissions.</span>
+                        <div id="submission-table">
+                                <table>
                                     <tr>
                                         <th>Submission ID</th>
                                         <th>Submission Status</th>
+                                        <th>Submission Date</th>
                                         <th>Download Link</th>
                                     </tr>
-                                    <tr>
-                                        <td th:value="${submissionId}"></td>
-                                        <td th:value="${submissionStatus}"></td>
-                                        <td><a>test_link</a></td>
+                                    <tr th:each="submission : ${submissions}">
+                                        <td th:text="${submission.submissionId}"></td>
+                                        <td th:text="${submission.submissionStatus}"></td>
+                                        <td></td>
+                                        <td><form th:action="@{/upload/poll}">
+                                            <input type="hidden" th:value="${submission.submissionId}" th:name="searchSubmissionId">
+                                            <input type="hidden" th:value="${token}" name="token"/>
+                                            <button class="button submission-download-btn" type="submit">Download</button>
+                                        </form>
+                                        </td>
                                     </tr>
-                                </table>-->
-                                <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+                                </table>
                             </div>
-                        </form>
                     </div>
                 </div>
             </div>
@@ -94,13 +105,13 @@
 
 <script>
     function navigateToTab(displayTabId) {
-        var i;
-        var x = document.getElementsByClassName("upload-tabs");
+        let i;
+        let x = document.getElementsByClassName("upload-tabs");
         for (i = 0; i < x.length; i++) {
             x[i].style.display = "none";
         }
 
-        var x = document.getElementsByClassName("upload-tabs-btn");
+        x = document.getElementsByClassName("upload-tabs-btn");
         for (i = 0; i < x.length; i++) {
             x[i].style.backgroundColor = "transparent";
         }
@@ -124,7 +135,8 @@
         autoProcessQueue: false,
         parallelUploads: 5,
         maxFiles: 5,
-        timeout: 180000
+        timeout: 180000,
+        headers:{"Authorization":'Bearer ' + $('#token').val()},
     });
 
     $('#uploadFile').click(function () {

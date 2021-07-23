@@ -8,15 +8,14 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.mongo.repo;
+package uk.ac.ebi.biosamples.exception;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.repository.MongoRepository;
-import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
+public class AccessControlException extends RuntimeException {
+  public AccessControlException(String message) {
+    super(message);
+  }
 
-import java.util.List;
-
-public interface MongoFileUploadRepository extends MongoRepository<MongoFileUpload, String> {
-    List<MongoFileUpload> findBySubmitterDetailsIn(List<String> userRoles, Pageable page);
+  public AccessControlException(String message, Exception e) {
+    super(message, e);
+  }
 }

@@ -25,6 +25,8 @@ import org.apache.commons.csv.CSVParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.biosamples.model.Contact;
@@ -34,8 +36,8 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
 import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
-import uk.ac.ebi.biosamples.service.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.SchemaValidationService;
 import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
@@ -340,5 +342,11 @@ public class FileUploadService {
           Collections.emptyList(),
           "Submission not found, please enter a valid submission ID.");
     }
+  }
+
+  public List<MongoFileUpload> getUserSubmissions(List<String> userRoles) {
+    //todo remove accession and details from response
+    Pageable page = new PageRequest(0, 10);
+    return mongoFileUploadRepository.findBySubmitterDetailsIn(userRoles, page);
   }
 }

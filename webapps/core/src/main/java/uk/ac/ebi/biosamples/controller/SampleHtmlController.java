@@ -38,6 +38,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.auth.LoginWays;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 
 /**
  * Primary controller for HTML operations.
