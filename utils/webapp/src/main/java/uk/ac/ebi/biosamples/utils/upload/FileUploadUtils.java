@@ -431,16 +431,16 @@ public class FileUploadUtils {
             .withTrim(true));
   }
 
-  public File writeQueueMessageToFile(final String submissionId) throws IOException {
-    final Path temp = Files.createTempFile("queue_result", ".txt");
+    public File writeQueueMessageToFile(final String submissionId) throws IOException {
+        final Path temp = Files.createTempFile("queue_result", ".txt");
 
-      try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
-          writer.write(
-                  "Your submission has been queued and your submission id is "
-                          + submissionId
-                          + ". Please use the View Submissions tab and use your submission ID to get the submission result.");
-      }
+        try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
+            writer.write(
+                    "Your submission has been queued and your submission id is "
+                            + submissionId
+                            + ". Please use the View Submissions tab and use your submission ID to get the submission result.");
+        }
 
-    return temp.toFile();
-  }
+        return temp.toFile();
+    }
 }
