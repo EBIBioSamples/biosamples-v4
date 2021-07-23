@@ -98,6 +98,9 @@ public class LoginController {
         model.addAttribute("token", token);
         model.remove("wrongCreds");
 
+        fetchRecentSubmissions(model, token);
+
+        return "upload";
       } else {
         final String token = bioSamplesAapService.authenticate(authRequest.getUserName(), authRequest.getPassword());
         final Authentication authentication = bioSamplesTokenAuthenticationService.getAuthenticationFromToken(token);
@@ -117,14 +120,10 @@ public class LoginController {
           model.addAttribute("token", token);
           model.remove("wrongCreds");
 
+          fetchRecentSubmissions(model, token);
 
+          return "upload";
         }
-        AuthToken authToken = accessControlService.extractToken(token);
-        List<String> userRoles = accessControlService.getUserRoles(authToken);
-        List<MongoFileUpload> uploads = fileUploadService.getUserSubmissions(userRoles);
-        model.addAttribute("submissions", uploads);
-
-        return "upload";
       }
 
       return "uploadLogin";
@@ -137,5 +136,17 @@ public class LoginController {
         return "uploadLogin";
       }
     }
+  }
+
+  private void fetchRecentSubmissions(final ModelMap model, final String token) {
+    final List<MongoFileUpload> uploads = getSubmissions(token);
+    model.addAttribute("submissions", uploads);
+  }
+
+  private List<MongoFileUpload> getSubmissions(final String token) {
+    final AuthToken authToken = accessControlService.extractToken(token);
+    final List<String> userRoles = accessControlService.getUserRoles(authToken);
+
+    return fileUploadService.getUserSubmissions(userRoles);
   }
 }

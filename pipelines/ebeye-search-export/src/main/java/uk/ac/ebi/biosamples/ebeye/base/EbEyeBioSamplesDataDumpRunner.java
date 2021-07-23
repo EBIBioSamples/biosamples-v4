@@ -10,13 +10,8 @@
 */
 package uk.ac.ebi.biosamples.ebeye.base;
 
-import com.mongodb.*;
-import java.io.File;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -25,6 +20,15 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ebeye.gen.*;
 import uk.ac.ebi.biosamples.model.Sample;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 /*@Component
 public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
@@ -271,10 +275,11 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   }
 }*/
 
-// One time run for COVID-19 only
-
 @Component
 public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
+  // One time run for COVID-19 only
+
+  private static Logger log = LoggerFactory.getLogger(EbEyeBioSamplesDataDumpRunner.class);
   public static final String ENA_LC = "ena";
   public static final String ENA_UC = "ENA";
   @Autowired BioSamplesClient bioSamplesClient;
@@ -301,7 +306,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
                   "Sample not added " + sample.getAccession() + " status " + sampleStatus);
             } else {*/
           sampleList.add(sample);
-          System.out.println("Sample added " + sample.getAccession());
+          log.info("Sample added " + sample.getAccession());
           /*}
           }*/
         });

@@ -47,7 +47,6 @@ import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
 
 @Service
 public class FileUploadService {
-  private static final String WEBIN_AUTH = "WEBIN";
   private Logger log = LoggerFactory.getLogger(getClass());
   private FileUploadUtils fileUploadUtils;
   private ValidationResult validationResult;
@@ -63,14 +62,15 @@ public class FileUploadService {
   @Autowired private FileQueueService fileQueueService;
 
   public synchronized File upload(
-      final MultipartFile file,
-      final String aapDomain,
-      final String checklist,
-      final String webinId) {
-    validationResult = new ValidationResult();
-    fileUploadUtils = new FileUploadUtils();
+          final MultipartFile file,
+          final String aapDomain,
+          final String checklist,
+          final String webinId,
+          final FileUploadUtils fileUploadUtils) {
+    this.validationResult = new ValidationResult();
+    this.fileUploadUtils = fileUploadUtils;
     final String authProvider = isWebin(isWebinIdUsedToAuthenticate(webinId));
-    final boolean isWebin = authProvider.equals(WEBIN_AUTH);
+    final boolean isWebin = authProvider.equals(FileUploadUtils.WEBIN_AUTH);
 
     try {
       final Path temp = Files.createTempFile("upload", ".tsv");
@@ -83,12 +83,12 @@ public class FileUploadService {
       final FileReader fr = new FileReader(fileToBeUploaded);
       final BufferedReader reader = new BufferedReader(fr);
 
-      final CSVParser csvParser = fileUploadUtils.buildParser(reader);
+      final CSVParser csvParser = this.fileUploadUtils.buildParser(reader);
       final List<String> headers = csvParser.getHeaderNames();
 
       validateHeaderPositions(headers);
 
-      final List<Multimap<String, String>> csvDataMap = fileUploadUtils.getCSVDataInMap(csvParser);
+      final List<Multimap<String, String>> csvDataMap = this.fileUploadUtils.getCSVDataInMap(csvParser);
       final int numSamples = csvDataMap.size();
 
       log.info("CSV data size: " + numSamples);
@@ -97,7 +97,7 @@ public class FileUploadService {
         log.info("File sample count exceeds limits - queueing file for async submission");
         final String submissionId = fileQueueService.queueFile(file, aapDomain, checklist, webinId);
 
-        return fileUploadUtils.writeQueueMessageToFile(submissionId);
+        return this.fileUploadUtils.writeQueueMessageToFile(submissionId);
       }
 
       final List<Sample> samples =
@@ -109,7 +109,7 @@ public class FileUploadService {
       validationResult.addValidationMessage(persistenceMessage);
       log.info("Final message: " + String.join("\n", validationResult.getValidationMessagesList()));
 
-      return fileUploadUtils.writeToFile(fileToBeUploaded, headers, samples, validationResult);
+      return this.fileUploadUtils.writeToFile(fileToBeUploaded, headers, samples, validationResult);
     } catch (final Exception e) {
       final String messageForBsdDevTeam =
           "********FEEDBACK TO BSD DEV TEAM START********"
@@ -177,7 +177,7 @@ public class FileUploadService {
   }
 
   private boolean isWebinIdUsedToAuthenticate(final String webinId) {
-    return webinId != null && webinId.toUpperCase().startsWith(WEBIN_AUTH);
+    return webinId != null && webinId.toUpperCase().startsWith(FileUploadUtils.WEBIN_AUTH);
   }
 
   private List<Sample> addRelationshipsAndThenBuildSamples(
@@ -228,9 +228,9 @@ public class FileUploadService {
     final List<ExternalReference> externalReferenceList =
         fileUploadUtils.handleExternalReferences(multiMap);
     final List<Contact> contactsList = fileUploadUtils.handleContacts(multiMap);
-    boolean isChecklistValidated;
+    boolean isValidatedAgainstChecklist;
 
-    if (fileUploadUtils.isBasicValidationFailure(sampleName, sampleReleaseDate, validationResult)) {
+    if (fileUploadUtils.isValidSample(sampleName, sampleReleaseDate, validationResult)) {
       Sample sample =
           fileUploadUtils.buildSample(
               sampleName,
@@ -245,9 +245,9 @@ public class FileUploadService {
       if (sample != null) {
         sample = fileUploadUtils.addChecklistAttributeAndBuildSample(checklist, sample);
 
-        isChecklistValidated = validateSample(sample);
+        isValidatedAgainstChecklist = performChecklistValidation(sample);
 
-        if (isChecklistValidated) {
+        if (isValidatedAgainstChecklist) {
           final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, false);
           sample = storeSample(sample, isFirstTimeMetadataAdded, isWebin(isWebin));
           log.info(
@@ -306,7 +306,7 @@ public class FileUploadService {
   }
 
   private String isWebin(final boolean isWebin) {
-    return isWebin ? WEBIN_AUTH : "AAP";
+    return isWebin ? FileUploadUtils.WEBIN_AUTH : FileUploadUtils.AAP;
   }
 
   private Sample storeSample(
@@ -314,7 +314,7 @@ public class FileUploadService {
     return sampleService.store(sample, isFirstTimeMetadataAdded, authProvider);
   }
 
-  private boolean validateSample(final Sample sample) {
+  private boolean performChecklistValidation(final Sample sample) {
     boolean isValidatedAgainstChecklist = false;
 
     try {
@@ -344,9 +344,9 @@ public class FileUploadService {
     }
   }
 
-  public List<MongoFileUpload> getUserSubmissions(List<String> userRoles) {
-    //todo remove accession and details from response
-    Pageable page = new PageRequest(0, 10);
+  public List<MongoFileUpload> getUserSubmissions(final List<String> userRoles) {
+    //TODO remove accession and details from response
+    final Pageable page = new PageRequest(0, 10);
     return mongoFileUploadRepository.findBySubmitterDetailsIn(userRoles, page);
   }
 }
