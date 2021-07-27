@@ -62,21 +62,13 @@
 	</dependencyManagement>
 
 	<distributionManagement>
-		<!-- <repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
-		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository> -->
 		<repository>
-			<id>spotnexus</id>
-			<url>https://www.ebi.ac.uk/spot/nexus/repository/maven-releases/</url>
+			<id>biosamples-v4</id>
+			<url>https://gitlab.ebi.ac.uk/api/v4/projects/2669/packages/maven</url>
 		</repository>
 		<snapshotRepository>
-			<id>spotnexus</id>
-			<url>https://www.ebi.ac.uk/spot/nexus/repository/maven-snapshots/</url>
+			<id>biosamples-v4</id>
+			<url>https://gitlab.ebi.ac.uk/api/v4/projects/2669/packages/maven</url>
 		</snapshotRepository>
 	</distributionManagement>
 
