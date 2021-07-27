@@ -2,7 +2,7 @@ image: docker:latest
 
 stages:
   - build
-  - deploy
+  - package
 
 maven-build:
   image: maven:3.6-jdk-11
@@ -10,8 +10,8 @@ maven-build:
   script:
     - 'mvn --projects webapps -DskipTests -T 2C -P embl-ebi clean package -Dembedmongo.wait'
 
-deploy:
+maven-package:
   image: maven:3.6-jdk-11
-  stage: deploy
+  stage: package
   script:
     - 'mvn deploy -DskipTests -P gitlab-ci -s ci_settings.xml'
