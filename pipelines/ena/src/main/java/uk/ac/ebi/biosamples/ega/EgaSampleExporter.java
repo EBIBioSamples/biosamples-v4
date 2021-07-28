@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.ega;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.Resource;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class EgaSampleExporter {
+    private final Logger log = LoggerFactory.getLogger(getClass());
     private static final String EGA_SAMPLE_URL = "https://ega-archive.org/metadata/v2/samples/";
     private static final String EGA_DATASET_URL = "https://ega-archive.org/metadata/v2/datasets?queryBy=sample&queryId=";
     private static final String EGA_DUO_URL = "https://ega-archive.org/catalog5/api/datasets/";
@@ -33,24 +36,6 @@ public class EgaSampleExporter {
         this.bioSamplesClient = bioSamplesClient;
     }
 
-    public static void main(String[] args) {
-        String egaId = "EGAD00001006893";
-        HttpHeaders headers = new HttpHeaders();
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<EgaDatasetResponse> response = restTemplate.exchange(
-                EGA_DUO_URL + egaId, HttpMethod.GET, new HttpEntity<Void>(headers), EgaDatasetResponse.class);
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            throw new RuntimeException("Could not retrieve EGA sample");
-        }
-
-        List<DataUseCondition> duoCodes = null;
-        if (response.getBody().getDataUseConditions() != null && !response.getBody().getDataUseConditions().isEmpty()) {
-            duoCodes = response.getBody().getDataUseConditions();
-        }
-
-        System.out.println(duoCodes);
-    }
-
     public Void populateAndSubmitEgaData(String egaId) {
         EgaSample egaSample = getEgaSample(egaId);
         Sample bioSample = getBioSample(egaSample.getBiosampleId());
@@ -59,6 +44,7 @@ public class EgaSampleExporter {
         populateReferences(sampleBuilder, egaId, egaDatasetIds);
         Sample sample = sampleBuilder.build();
         updateSample(sample);
+        log.info("EGA sample imported: {}", sample.getAccession());
 
         return null;
     }
