@@ -137,14 +137,9 @@ public class EgaSampleExporter {
         attributes.add(Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
         attributes.add(Attribute.build("gender", egaSample.getGender(), getGenderIri(egaSample.getGender()), null));
         attributes.add(Attribute.build("subjectId", egaSample.getSubjectId(), null, null));
+        //attributes.add(Attribute.build("phenotype", egaSample.getPhenotype(), null, null));
 
         return Sample.Builder.fromSample(sample).withAttributes(attributes).withRelease(Instant.now());
-
-//        return Sample.Builder.fromSample(sample)
-//                .addAttribute(Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null))
-//                .addAttribute(Attribute.build("subjectId", egaSample.getSubjectId(), null, null))
-//                //.addAttribute(Attribute.build("phenotype", egaSample.getPhenotype(), null, null)) // wait till EGA confirmation to share phenotype
-//                .addAttribute(Attribute.build("gender", egaSample.getGender(), null, null));
     }
 
     public void populateReferences(Sample.Builder sampleBuilder, String egaId, List<String> egaDatasetIds) {
