@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -133,11 +134,11 @@ public class EgaSampleExporter {
     }
 
     public Sample.Builder populateSample(Sample sample, EgaSample egaSample) {
-        List<Attribute> attributes = new ArrayList<>();
+        Set<Attribute> attributes = sample.getAttributes();
         attributes.add(Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
         attributes.add(Attribute.build("gender", egaSample.getGender(), getGenderIri(egaSample.getGender()), null));
         attributes.add(Attribute.build("subjectId", egaSample.getSubjectId(), null, null));
-        //attributes.add(Attribute.build("phenotype", egaSample.getPhenotype(), null, null));
+        //attributes.add(Attribute.build("phenotype", egaSample.getPhenotype(), null, null)); //uncomment when EGA ready to share phenotype
 
         return Sample.Builder.fromSample(sample).withAttributes(attributes).withRelease(Instant.now());
     }
@@ -149,9 +150,6 @@ public class EgaSampleExporter {
             List<String> duoCodes = getDuoCodes(egaDatasetId);
             sampleBuilder.addExternalReference(ExternalReference.build(
                     "https://ega-archive.org/datasets/" + egaDatasetId, new TreeSet<>(duoCodes)));
-            if (!duoCodes.isEmpty()) {
-                System.out.println(sampleBuilder.build());
-            }
         }
     }
 
