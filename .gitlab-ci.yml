@@ -1,12 +1,12 @@
 image: docker:latest
 
 stages:
-#  - build
-#  - package
-  - download-config
-#  - deploy
+  - build
+  - package
+  - config
+  - deploy
 
-build:
+maven-build:
   image: maven:3.6-jdk-11
   stage: build
   script:
@@ -14,7 +14,7 @@ build:
   only:
     - BSD-2130-package-BSD-in-GL
 
-package:
+maven-package:
   image: maven:3.6-jdk-11
   stage: package
   script:
@@ -22,7 +22,9 @@ package:
   only:
     - BSD-2130-package-BSD-in-GL
 
-download-config:
+clone-config:
+  image: maven:3.6-jdk-11
+  stage: config
   script:
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ebi.ac.uk:biosamples/biosamples-internal.git
     - cd ./biosamples-internal && ls
