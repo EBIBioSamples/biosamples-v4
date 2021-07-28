@@ -1,17 +1,47 @@
 image: docker:latest
 
 stages:
-  - build
-  - package
+#  - build
+#  - package
+  - download-config
+#  - deploy
 
-maven-build:
+build:
   image: maven:3.6-jdk-11
   stage: build
   script:
     - 'mvn --projects webapps -DskipTests -T 2C -P embl-ebi clean package -Dembedmongo.wait'
+  only:
+    - BSD-2130-package-BSD-in-GL
 
-maven-package:
+package:
   image: maven:3.6-jdk-11
   stage: package
   script:
     - 'mvn deploy -DskipTests -P gitlab-ci -s ci_settings.xml'
+  only:
+    - BSD-2130-package-BSD-in-GL
+
+download-config:
+  script:
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ebi.ac.uk:biosamples/biosamples-internal.git
+    - cd ./biosamples-internal && ls
+  only:
+    - BSD-2130-package-BSD-in-GL
+
+deploy:
+  image: ubuntu
+  stage: deploy
+  script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+    - eval $(ssh-agent -s)
+    - echo "$BSD_PROD_SSH_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan ebi-cli >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 "rm -rf ~/gitlab/*"
+    - scp -r -v -o StrictHostKeyChecking=no ./target/*.jar tc_spo01@wp-np2-40:~/gitlab/bsd/json-schema-store.jar
+    - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 "~/gitlab/start.sh"
+  only:
+    - BSD-2130-package-BSD-in-GL
