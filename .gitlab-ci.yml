@@ -10,7 +10,6 @@ clone-config:
   stage: config
   script:
     - git clone https://$BSD_INTERNAL_USER:$BSD_INTERNAL_PASS@gitlab.ebi.ac.uk:biosamples/biosamples-internal.git
-    - git clone git@gitlab.ebi.ac.uk:biosamples/biosamples-internal.git
     - cd ./biosamples-internal && ls
   only:
     - BSD-2130-package-BSD-in-GL
