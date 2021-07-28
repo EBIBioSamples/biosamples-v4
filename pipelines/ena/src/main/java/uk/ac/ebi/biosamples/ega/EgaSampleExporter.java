@@ -37,14 +37,18 @@ public class EgaSampleExporter {
     }
 
     public Void populateAndSubmitEgaData(String egaId) {
-        EgaSample egaSample = getEgaSample(egaId);
-        Sample bioSample = getBioSample(egaSample.getBiosampleId());
-        List<String> egaDatasetIds = getEgaDatasets(egaSample.getEgaId());
-        Sample.Builder sampleBuilder = populateSample(bioSample, egaSample);
-        populateReferences(sampleBuilder, egaId, egaDatasetIds);
-        Sample sample = sampleBuilder.build();
-        updateSample(sample);
-        log.info("EGA sample imported: {}", sample.getAccession());
+        try {
+            EgaSample egaSample = getEgaSample(egaId);
+            Sample bioSample = getBioSample(egaSample.getBiosampleId());
+            List<String> egaDatasetIds = getEgaDatasets(egaSample.getEgaId());
+            Sample.Builder sampleBuilder = populateSample(bioSample, egaSample);
+            populateReferences(sampleBuilder, egaId, egaDatasetIds);
+            Sample sample = sampleBuilder.build();
+            updateSample(sample);
+            log.info("EGA sample imported: {}", sample.getAccession());
+        } catch (Exception e) {
+            log.warn("Failed to import EGA sample egaId: {}", egaId, e);
+        }
 
         return null;
     }
