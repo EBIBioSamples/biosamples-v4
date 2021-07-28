@@ -1,26 +1,9 @@
 image: docker:latest
 
 stages:
-  - build
-  - package
   - config
   - deploy
 
-maven-build:
-  image: maven:3.6-jdk-11
-  stage: build
-  script:
-    - 'mvn --projects webapps -DskipTests -T 2C -P embl-ebi clean package -Dembedmongo.wait'
-  only:
-    - BSD-2130-package-BSD-in-GL
-
-maven-package:
-  image: maven:3.6-jdk-11
-  stage: package
-  script:
-    - 'mvn deploy -DskipTests -P gitlab-ci -s ci_settings.xml'
-  only:
-    - BSD-2130-package-BSD-in-GL
 
 clone-config:
   image: maven:3.6-jdk-11
