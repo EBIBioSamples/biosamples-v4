@@ -1,16 +1,38 @@
 image: docker:latest
 
 stages:
+  - build
+  - package
   - config
   - deploy
 
+maven-build:
+  image: maven:3.6-jdk-11
+  stage: build
+  script:
+    - 'mvn --projects webapps -DskipTests -T 2C -P embl-ebi clean package -Dembedmongo.wait'
+  only:
+    - BSD-2130-package-BSD-in-GL
+
+maven-package:
+  image: maven:3.6-jdk-11
+  stage: package
+  script:
+    - 'mvn deploy -DskipTests -P gitlab-ci -s ci_settings.xml'
+  only:
+    - BSD-2130-package-BSD-in-GL
 
 clone-config:
   image: maven:3.6-jdk-11
   stage: config
   script:
     - git clone https://$BSD_INTERNAL_USER:$BSD_INTERNAL_PASS@gitlab.ebi.ac.uk/biosamples/biosamples-internal.git
-    - cd ./biosamples-internal && ls
+    - tar -c -v -f biosamples-internal-script.tar.gz ./biosamples-internal/script/*
+    - tar -c -v -f biosamples-internal-dev.tar.gz ./biosamples-internal/dev/*
+    - tar -c -v -f biosamples-internal-test.tar.gz ./biosamples-internal/test/*
+    - tar -c -v -f biosamples-internal-wwwdev.tar.gz ./biosamples-internal/wwwdev/*
+    - tar -c -v -f biosamples-internal-www.tar.gz ./biosamples-internal/www/*
+    - ls
   only:
     - BSD-2130-package-BSD-in-GL
 
@@ -26,7 +48,8 @@ deploy:
     - ssh-keyscan ebi-cli >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 "rm -rf ~/gitlab/*"
-    - scp -r -v -o StrictHostKeyChecking=no ./target/*.jar tc_spo01@wp-np2-40:~/gitlab/bsd/json-schema-store.jar
+    - scp -r -v -o StrictHostKeyChecking=no ./webapps/core/target/webapps-core*.war tc_spo01@wp-np2-40:~/gitlab/webapps-core.war
+    - scp -r -v -o StrictHostKeyChecking=no ./biosamples-internal-script.tar.gz tc_spo01@wp-np2-40:~/gitlab/biosamples-internal-script.tar.gz
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 "~/gitlab/start.sh"
   only:
     - BSD-2130-package-BSD-in-GL
