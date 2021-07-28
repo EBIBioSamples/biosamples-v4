@@ -11,6 +11,9 @@ maven-build:
   stage: build
   script:
     - 'mvn --projects webapps -DskipTests -T 2C -P embl-ebi clean package -Dembedmongo.wait'
+  artifacts:
+    paths:
+      - ./webapps/core/target/webapps-core*.war
   only:
     - BSD-2130-package-BSD-in-GL
 
@@ -33,6 +36,9 @@ clone-config:
     - tar -c -v -f biosamples-internal-wwwdev.tar.gz ./biosamples-internal/wwwdev/*
     - tar -c -v -f biosamples-internal-www.tar.gz ./biosamples-internal/www/*
     - ls
+  artifacts:
+    paths:
+      - biosamples-internal-script.tar.gz
   only:
     - BSD-2130-package-BSD-in-GL
 
