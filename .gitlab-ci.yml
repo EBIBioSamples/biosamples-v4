@@ -54,6 +54,7 @@ deploy:
     - ssh-keyscan ebi-cli >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
     - apt-get install tree -y
+    - tree
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 "rm -rf ~/gitlab/*"
     - scp -r -v -o StrictHostKeyChecking=no ./webapps/core/target/webapps-core-5.1.7-SNAPSHOT.war tc_spo01@wp-np2-40:~/gitlab/webapps-core.war
     - scp -r -v -o StrictHostKeyChecking=no ./biosamples-internal-script.tar.gz tc_spo01@wp-np2-40:~/gitlab/biosamples-internal-script.tar.gz
