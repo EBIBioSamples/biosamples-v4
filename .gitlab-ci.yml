@@ -25,7 +25,7 @@ maven-package:
   image: maven:3.6-jdk-11
   stage: package
   script:
-    - 'mvn deploy -DskipTests -P gitlab-ci -s ci_settings.xml'
+    - 'mvn deploy -DskipTests -P gitlab-ci -s ci_settings.xml -Dmaven.source.skip=true'
     - mkdir deployment
     - cp webapps/core/target/webapps-core-5.1.7-SNAPSHOT.war deployment/webapps-core.war
     - cp agents/solr/target/agents-solr-*.jar deployment/agents-solr.jar
