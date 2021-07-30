@@ -26,30 +26,30 @@ maven-package:
   stage: package
   script:
     - 'mvn deploy -DskipTests -P gitlab-ci -s ci_settings.xml'
-    - mkdir deployment && cd deployment
-    - cp webapps/core/target/webapps-core-5.1.7-SNAPSHOT.war webapps-core.war
-    - cp agents/solr/target/agents-solr-*.jar agents-solr.jar
+    - mkdir deployment
+    - cp webapps/core/target/webapps-core-5.1.7-SNAPSHOT.war deployment/webapps-core.war
+    - cp agents/solr/target/agents-solr-*.jar deployment/agents-solr.jar
+    - cp agents/uploadworkers/target/agents-uploadworkers-*.jar deployment/agents-uploadworkers.jar
+    - cp pipelines/clearinghouse/target/pipelines-clearinghouse-*.jar deployment/pipelines-clearinghouse.jar
+    - cp pipelines/copydown/target/pipelines-copydown-*.jar deployment/pipelines-copydown.jar
+    - cp pipelines/curami/target/pipelines-curami-*.jar deployment/pipelines-curami.jar
+    - cp pipelines/curatedview/target/pipelines-curated-view-*.jar deployment/pipelines-curated-view.jar
+    - cp pipelines/curation/target/pipelines-curation-*.jar deployment/pipelines-curation.jar
+    - cp pipelines/curationundo/target/pipelines-curation-undo-*.jar deployment/pipelines-curation-undo.jar
+    - cp pipelines/ebeye-search-export/target/pipelines-ebeye-search-export-*.jar deployment/pipelines-ebeye-search-export.jar
+    - cp pipelines/ena/target/pipelines-ena-*.jar deployment/pipelines-ena.jar
+    - cp pipelines/ena-amr/target/pipelines-ena-amr-*.jar deployment/pipelines-ena-amr.jar
+    - cp pipelines/export/target/pipelines-export-*.jar deployment/pipelines-export.jar
+    - cp pipelines/livelist/target/pipelines-livelist-*.jar deployment/pipelines-livelist.jar
+    - cp pipelines/ncbi/target/pipelines-ncbi-*.jar deployment/pipelines-ncbi.jar
+    - cp pipelines/neoexport/target/pipelines-ncbi-*.jar deployment/pipelines-ncbi.jar
+    - cp pipelines/reindex/target/pipelines-reindex-*.jar deployment/pipelines-reindex.jar
+    - cp pipelines/zooma/target/pipelines-zooma-*.jar deployment/pipelines-zooma.jar
     - ls
   artifacts:
     paths:
       - webapps/core/target/webapps-core-5.1.7-SNAPSHOT.war
-      - agents/solr/target/agents-solr-*.jar
-      - agents/uploadworkers/target/agents-uploadworkers-*.jar
-      - pipelines/clearinghouse/target/pipelines-clearinghouse-*.jar
-      - pipelines/copydown/target/pipelines-copydown-*.jar
-      - pipelines/curami/target/pipelines-curami-*.jar
-      - pipelines/curatedview/target/pipelines-curated-view-*.jar
-      - pipelines/curation/target/pipelines-curation-*.jar
-      - pipelines/curationundo/target/pipelines-curation-undo-*.jar
-      - pipelines/ebeye-search-export/target/pipelines-ebeye-search-export-*.jar
-      - pipelines/ena/target/pipelines-ena-*.jar
-      - pipelines/ena-amr/target/pipelines-ena-amr-*.jar
-      - pipelines/export/target/pipelines-export-*.jar
-      - pipelines/livelist/target/pipelines-livelist-*.jar
-      - pipelines/ncbi/target/pipelines-ncbi-*.jar
-      - pipelines/neoexport/target/pipelines-ncbi-*.jar
-      - pipelines/reindex/target/pipelines-reindex-*.jar
-      - pipelines/zooma/target/pipelines-zooma-*.jar
+      - deployment/*
   only:
     - BSD-2130-package-BSD-in-GL
 
@@ -63,10 +63,12 @@ clone-config:
     - tar -c -v -f biosamples-internal-test.tar.gz ./biosamples-internal/test/*
     - tar -c -v -f biosamples-internal-wwwdev.tar.gz ./biosamples-internal/wwwdev/*
     - tar -c -v -f biosamples-internal-www.tar.gz ./biosamples-internal/www/*
+    - cp biosamples-internal-script.tar.gz deployment/biosamples-internal-script.tar.gz
     - ls
   artifacts:
     paths:
       - biosamples-internal-script.tar.gz
+      - deployment/*
   only:
     - BSD-2130-package-BSD-in-GL
 
@@ -74,6 +76,7 @@ deploy:
   image: ubuntu
   stage: deploy
   script:
+    - ls deployment/
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
     - eval $(ssh-agent -s)
     - echo "$BSD_PROD_SSH_KEY" | tr -d '\r' | ssh-add -
