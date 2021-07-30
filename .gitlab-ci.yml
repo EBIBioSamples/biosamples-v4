@@ -36,12 +36,12 @@ maven-package:
     - cp pipelines/curatedview/target/pipelines-curated-view-*.jar deployment/pipelines-curated-view.jar
     - cp pipelines/curation/target/pipelines-curation-*.jar deployment/pipelines-curation.jar
     - cp pipelines/curationundo/target/pipelines-curation-undo-*.jar deployment/pipelines-curation-undo.jar
-    - cp pipelines/ebeye-search-export/target/pipelines-ebeye-search-export-*.jar deployment/pipelines-ebeye-search-export.jar
-    - cp pipelines/ena/target/pipelines-ena-*.jar deployment/pipelines-ena.jar
-    - cp pipelines/ena-amr/target/pipelines-ena-amr-*.jar deployment/pipelines-ena-amr.jar
+#    - cp pipelines/ebeye-search-export/target/pipelines-ebeye-search-export-*.jar deployment/pipelines-ebeye-search-export.jar
+#    - cp pipelines/ena/target/pipelines-ena-*.jar deployment/pipelines-ena.jar
+#    - cp pipelines/ena-amr/target/pipelines-ena-amr-*.jar deployment/pipelines-ena-amr.jar
     - cp pipelines/export/target/pipelines-export-*.jar deployment/pipelines-export.jar
-    - cp pipelines/livelist/target/pipelines-livelist-*.jar deployment/pipelines-livelist.jar
-    - cp pipelines/ncbi/target/pipelines-ncbi-*.jar deployment/pipelines-ncbi.jar
+#    - cp pipelines/livelist/target/pipelines-livelist-*.jar deployment/pipelines-livelist.jar
+#    - cp pipelines/ncbi/target/pipelines-ncbi-*.jar deployment/pipelines-ncbi.jar
     - cp pipelines/neoexport/target/pipelines-ncbi-*.jar deployment/pipelines-ncbi.jar
     - cp pipelines/reindex/target/pipelines-reindex-*.jar deployment/pipelines-reindex.jar
     - cp pipelines/zooma/target/pipelines-zooma-*.jar deployment/pipelines-zooma.jar
