@@ -18,10 +18,6 @@ maven-build:
   stage: build
   script:
     - 'mvn --projects webapps -DskipTests -T 2C -P embl-ebi clean package -Dembedmongo.wait'
-    - ls webapps/core/target/
-  artifacts:
-    paths:
-      - webapps/core/target/webapps-core-5.1.7-SNAPSHOT.war
   only:
     - BSD-2130-package-BSD-in-GL
 
