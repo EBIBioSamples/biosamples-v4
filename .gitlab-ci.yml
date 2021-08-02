@@ -45,7 +45,6 @@ maven-package:
     - cp pipelines/neoexport/target/pipelines-neoexport-*.jar deployment/pipelines-neoexport.jar
     - cp pipelines/reindex/target/pipelines-reindex-*.jar deployment/pipelines-reindex.jar
     - cp pipelines/zooma/target/pipelines-zooma-*.jar deployment/pipelines-zooma.jar
-    - ls
   artifacts:
     paths:
       - deployment
@@ -60,7 +59,6 @@ clone-config:
     - mkdir config
     - cp -r biosamples-internal/script/* deployment/
     - cp -r biosamples-internal/wwwdev/* config/
-    - ls deployment
   artifacts:
     paths:
       - deployment
@@ -80,9 +78,6 @@ deploy:
     - chmod 700 ~/.ssh
     - ssh-keyscan ebi-cli >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
-#    - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 "rm -rf ~/gitlab/*"
-#    - scp -r -v -o StrictHostKeyChecking=no deployment tc_spo01@wp-np2-40:~/gitlab/
-#    - scp -r -v -o StrictHostKeyChecking=no config tc_spo01@wp-np2-40:~/gitlab/
     # stop running services
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 '/mnt/data/biosamples/servers/monit/wp-np2-40.2812/monit.sh stop agents-solr'
     - sleep 60
@@ -113,7 +108,7 @@ deploy:
     - sleep 15
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 '/mnt/data/biosamples/servers/monit/wp-np2-40.2812/monit.sh start all'
     # poll for services
-    - sleep 3000
+    - sleep 300
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 /mnt/data/biosamples/sw/wwwdev/http-status-check -t 3600 -u 'http://wp-np2-40.ebi.ac.uk:8081/biosamples/health'
   only:
     - BSD-2130-package-BSD-in-GL
