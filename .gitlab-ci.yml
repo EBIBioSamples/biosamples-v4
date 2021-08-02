@@ -91,11 +91,11 @@ deploy:
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 '/mnt/data/biosamples/servers/monit/wp-np2-40.2812/stop.sh'
     - sleep 60
     # remove old artifacts
-    - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 'ssh wp-np2-40 'rm -rf /mnt/data/biosamples/sw/wwwdev/*.jar'
-    - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 'ssh wp-np2-40 'rm -rf /mnt/data/biosamples/sw/wwwdev/*.war'
-    - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 'ssh wp-np2-40 'rm -rf /mnt/data/biosamples/sw/wwwdev/*.sh'
-    - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 'ssh wp-np2-40 'rm -rf /mnt/data/biosamples/sw/wwwdev/*.js'
-    - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 'ssh wp-np2-40 'rm -rf /mnt/data/biosamples/sw/wwwdev/*.py'
+    - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 'rm -rf /mnt/data/biosamples/sw/wwwdev/*.jar'
+    - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 'rm -rf /mnt/data/biosamples/sw/wwwdev/*.war'
+    - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 'rm -rf /mnt/data/biosamples/sw/wwwdev/*.sh'
+    - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 'rm -rf /mnt/data/biosamples/sw/wwwdev/*.js'
+    - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 'rm -rf /mnt/data/biosamples/sw/wwwdev/*.py'
     # Copy scripts and other config
     - scp -r -v -o StrictHostKeyChecking=no deployment/* tc_spo01@wp-np2-40:/mnt/data/biosamples/sw/wwwdev/
     - scp -r -v -o StrictHostKeyChecking=no config/* tc_spo01@wp-np2-40:/mnt/data/biosamples/
