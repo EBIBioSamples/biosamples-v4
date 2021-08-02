@@ -14,5 +14,6 @@
 
 	<modules>
 		<module>core</module>
+		<module>core-v2</module>
 	</modules>
 </project>
