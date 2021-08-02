@@ -58,8 +58,9 @@ clone-config:
   script:
     - git clone https://$BSD_INTERNAL_USER:$BSD_INTERNAL_PASS@gitlab.ebi.ac.uk/biosamples/biosamples-internal.git
     - mkdir config
-    - cp biosamples-internal/script/* deployment/
-    - cp biosamples-internal/wwwdev/* config/
+    - cp -r biosamples-internal/script/* deployment/
+    - cp -r biosamples-internal/wwwdev/* config/
+    - ls deployment
   artifacts:
     paths:
       - deployment
@@ -84,6 +85,24 @@ deploy:
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 "rm -rf ~/gitlab/*"
     - scp -r -v -o StrictHostKeyChecking=no deployment tc_spo01@wp-np2-40:~/gitlab/
     - scp -r -v -o StrictHostKeyChecking=no config tc_spo01@wp-np2-40:~/gitlab/
-    - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 "~/gitlab/start.sh"
+#    # Copy scripts and other config
+#    - scp -r -v -o StrictHostKeyChecking=no deployment/* tc_spo01@wp-np2-40:/mnt/data/biosamples/sw/wwwdev/
+#    - scp -r -v -o StrictHostKeyChecking=no config/* tc_spo01@wp-np2-40:/mnt/data/biosamples/
+#    # mark all scripts as executable
+#    - ssh tc_spo01@wp-np2-40 'chmod ug+x /mnt/data/biosamples/sw/wwwdev/*.sh'
+#    - ssh tc_spo01@wp-np2-40 'chmod ug+x /mnt/data/biosamples/servers/*/*/*.sh'
+#    # monit config
+#    - ssh tc_spo01@wp-np2-40 'chmod 0700 /mnt/data/biosamples/servers/monit/*/monit.conf'
+#    - ssh tc_spo01@wp-np2-40 'mkdir -p /mnt/data/biosamples/logs/monit/wp-np2-40.2812'
+#    - ssh tc_spo01@wp-np2-40 'mkdir -p /mnt/data/biosamples/data/monit/wp-np2-40.2812'
+#    # install cron script
+#    - ssh tc_spo01@wp-np2-40 'crontab /mnt/data/biosamples/servers/crontab.wp-np2-40.conf'
+#    # start up and monitor everything
+#    - ssh tc_spo01@wp-np2-40 '/mnt/data/biosamples/servers/monit/wp-np2-40.2812/start.sh'
+#    - sleep 15
+#    - ssh tc_spo01@wp-np2-40 '/mnt/data/biosamples/servers/monit/wp-np2-40.2812/monit.sh start all'
+#    # poll for services
+#    - sleep 3000
+#    - ssh tc_spo01@wp-np2-40 /mnt/data/biosamples/sw/wwwdev/http-status-check -t 3600 -u 'http://wp-np2-40.ebi.ac.uk:8081/biosamples/health'
   only:
     - BSD-2130-package-BSD-in-GL
