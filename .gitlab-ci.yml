@@ -88,7 +88,7 @@ deploy:
     - sleep 60
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 '/mnt/data/biosamples/servers/monit/wp-np2-40.2812/monit.sh stop webapps-core'
     - sleep 60
-    - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 'ssh wp-np2-40 '/mnt/data/biosamples/servers/monit/wp-np2-40.2812/stop.sh'
+    - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 '/mnt/data/biosamples/servers/monit/wp-np2-40.2812/stop.sh'
     - sleep 60
     # remove old artifacts
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-np2-40 'ssh wp-np2-40 'rm -rf /mnt/data/biosamples/sw/wwwdev/*.jar'
