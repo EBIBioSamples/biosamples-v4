@@ -10,6 +10,18 @@
 */
 package uk.ac.ebi.biosamples.ebeye.base;
 
+import java.io.File;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,19 +34,6 @@ import uk.ac.ebi.biosamples.ebeye.gen.*;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import java.io.File;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 /*@Component
 public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
@@ -291,14 +290,15 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   @Autowired BioSamplesClient bioSamplesClient;
   @Autowired EbeyeBioSamplesDataDumpGeneratorDao ebeyeBioSamplesDataDumpGeneratorDao;
 
-    public List<Sample> getSamplesList() {
-        final Iterable<Resource<Sample>> sampleResources =
-                bioSamplesClient.fetchSampleResourceAll("NCBITaxon_2697049", getDateFilters("2020-04-01", "2021-06-01"));
-        final List<Sample> sampleList = new ArrayList<>();
+  public List<Sample> getSamplesList() {
+    final Iterable<Resource<Sample>> sampleResources =
+        bioSamplesClient.fetchSampleResourceAll(
+            "NCBITaxon_2697049", getDateFilters("2020-04-01", "2021-06-01"));
+    final List<Sample> sampleList = new ArrayList<>();
 
-        sampleResources.forEach(
-                sampleResource -> {
-                    final Sample sample = sampleResource.getContent();
+    sampleResources.forEach(
+        sampleResource -> {
+          final Sample sample = sampleResource.getContent();
           /*List<Integer> statusList =
               ebeyeBioSamplesDataDumpGeneratorDao.doGetSampleStatus(sample.getAccession());
 
@@ -314,34 +314,30 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
           }
           }*/
 
-                    sampleList.add(sample);
-                    log.info("Sample added " + sample.getAccession());
-                });
+          sampleList.add(sample);
+          log.info("Sample added " + sample.getAccession());
+        });
 
-        return sampleList;
-    }
+    return sampleList;
+  }
 
-    public static Collection<Filter> getDateFilters(final String from, final String to) {
-        final LocalDate fromDate =
-                LocalDate.parse(
-                        from, DateTimeFormatter.ISO_LOCAL_DATE);
+  public static Collection<Filter> getDateFilters(final String from, final String to) {
+    final LocalDate fromDate = LocalDate.parse(from, DateTimeFormatter.ISO_LOCAL_DATE);
 
-        final LocalDate toDate =
-                LocalDate.parse(
-                        to, DateTimeFormatter.ISO_LOCAL_DATE);
+    final LocalDate toDate = LocalDate.parse(to, DateTimeFormatter.ISO_LOCAL_DATE);
 
-        final Filter dateFilter =
-                new DateRangeFilter.DateRangeFilterBuilder("update")
-                        .from(fromDate.atStartOfDay().toInstant(ZoneOffset.UTC))
-                        .until(toDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))
-                        .build();
-        final Collection<Filter> filters = new ArrayList<>();
-        filters.add(dateFilter);
+    final Filter dateFilter =
+        new DateRangeFilter.DateRangeFilterBuilder("update")
+            .from(fromDate.atStartOfDay().toInstant(ZoneOffset.UTC))
+            .until(toDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))
+            .build();
+    final Collection<Filter> filters = new ArrayList<>();
+    filters.add(dateFilter);
 
-        return filters;
-    }
+    return filters;
+  }
 
-        public void convertSampleToXml(final List<Sample> samples, final File f) throws JAXBException {
+  public void convertSampleToXml(final List<Sample> samples, final File f) throws JAXBException {
     DatabaseType databaseType = new DatabaseType();
 
     databaseType.setName("BioSamples");

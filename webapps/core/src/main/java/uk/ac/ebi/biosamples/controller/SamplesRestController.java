@@ -463,8 +463,8 @@ public class SamplesRestController {
           samples.stream()
               .map(
                   sample ->
-                      bioSamplesWebinAuthenticationService
-                          .getSampleWithWebinSubmissionAccountId(sample, webinAccount.getId()))
+                      bioSamplesWebinAuthenticationService.getSampleWithWebinSubmissionAccountId(
+                          sample, webinAccount.getId()))
               .collect(Collectors.toList());
     } else {
       if (samples.size() > 0) {
@@ -487,12 +487,13 @@ public class SamplesRestController {
 
     final List<Sample> createdSamplesList =
         samples.stream()
-            .map(sample -> {
-              log.trace("Initiating store() for " + sample.getName());
-              sample = privateSampleBuildAndReturn(sample);
-              return sampleService.store(sample, false, authProvider);
-            }).collect(Collectors.toList());
-
+            .map(
+                sample -> {
+                  log.trace("Initiating store() for " + sample.getName());
+                  sample = privateSampleBuildAndReturn(sample);
+                  return sampleService.store(sample, false, authProvider);
+                })
+            .collect(Collectors.toList());
 
     final Map<String, String> outputMap =
         createdSamplesList.stream()

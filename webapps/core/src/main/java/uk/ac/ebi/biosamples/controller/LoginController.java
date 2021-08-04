@@ -35,9 +35,9 @@ import uk.ac.ebi.biosamples.model.auth.AuthRequest;
 import uk.ac.ebi.biosamples.model.auth.AuthRequestWebin;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
+import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.upload.FileUploadService;
 import uk.ac.ebi.biosamples.service.upload.JsonSchemaStoreSchemaRetrievalService;
 import uk.ac.ebi.tsc.aap.client.exception.UserNameOrPasswordWrongException;
@@ -85,8 +85,10 @@ public class LoginController {
 
       if (authRequest.getLoginWay().equals("WEBIN")) {
         final AuthRequestWebin authRequestWebin =
-            new AuthRequestWebin(authRequest.getUserName(), authRequest.getPassword(), Arrays.asList(AuthRealm.ENA));
-        final String token = bioSamplesWebinAuthenticationService
+            new AuthRequestWebin(
+                authRequest.getUserName(), authRequest.getPassword(), Arrays.asList(AuthRealm.ENA));
+        final String token =
+            bioSamplesWebinAuthenticationService
                 .getWebinToken(objectMapper.writeValueAsString(authRequestWebin))
                 .getBody();
         final SubmissionAccount submissionAccount =
@@ -102,8 +104,10 @@ public class LoginController {
 
         return "upload";
       } else {
-        final String token = bioSamplesAapService.authenticate(authRequest.getUserName(), authRequest.getPassword());
-        final Authentication authentication = bioSamplesTokenAuthenticationService.getAuthenticationFromToken(token);
+        final String token =
+            bioSamplesAapService.authenticate(authRequest.getUserName(), authRequest.getPassword());
+        final Authentication authentication =
+            bioSamplesTokenAuthenticationService.getAuthenticationFromToken(token);
         SecurityContext sc = SecurityContextHolder.getContext();
         sc.setAuthentication(authentication);
 
