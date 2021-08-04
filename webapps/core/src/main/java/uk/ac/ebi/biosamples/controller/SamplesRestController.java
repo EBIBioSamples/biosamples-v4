@@ -400,7 +400,7 @@ public class SamplesRestController {
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
       consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   @RequestMapping("/accession")
   public ResponseEntity<Resource<Sample>> accessionSample(
       HttpServletRequest request,
@@ -435,7 +435,7 @@ public class SamplesRestController {
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
       consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   @RequestMapping("/bulk-accession")
   public ResponseEntity<Map<String, String>> bulkAccessionSample(
       HttpServletRequest request,

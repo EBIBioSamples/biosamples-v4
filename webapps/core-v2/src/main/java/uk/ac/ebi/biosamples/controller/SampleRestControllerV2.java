@@ -10,9 +10,6 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import java.time.Instant;
-import java.util.SortedSet;
-import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -25,14 +22,16 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.SampleServiceV2;
 import uk.ac.ebi.biosamples.service.SchemaValidationServiceV2;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapServiceV2;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationServiceV2;
 import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientServiceV2;
 
-public class SampleV2RestController {
+import javax.servlet.http.HttpServletRequest;
+import java.time.Instant;
+
+public class SampleRestControllerV2 {
   private Logger log = LoggerFactory.getLogger(getClass());
 
   private final SampleServiceV2 sampleServiceV2;
@@ -41,7 +40,7 @@ public class SampleV2RestController {
   private final SchemaValidationServiceV2 schemaValidationServiceV2;
   private final ENATaxonClientServiceV2 enaTaxonClientServiceV2;
 
-  public SampleV2RestController(
+  public SampleRestControllerV2(
       final SampleServiceV2 sampleServiceV2,
       final BioSamplesAapServiceV2 bioSamplesAapServiceV2,
       final BioSamplesWebinAuthenticationServiceV2 bioSamplesWebinAuthenticationServiceV2,
@@ -56,14 +55,13 @@ public class SampleV2RestController {
 
   @PreAuthorize("isAuthenticated()")
   @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<Sample> put(
+  public ResponseEntity<Sample> putSampleV2(
       HttpServletRequest request,
       @PathVariable final String accession,
       @RequestBody Sample sample,
       @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
           final String authProvider) {
     final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
-    final SortedSet<AbstractData> abstractData = sample.getData();
     boolean isWebinSuperUser = false;
 
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
@@ -99,7 +97,6 @@ public class SampleV2RestController {
       sample = bioSamplesAapServiceV2.handleSampleDomain(sample);
     }
 
-    // now date is system generated field
     final Instant now = Instant.now();
     final SubmittedViaType submittedVia =
         sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();

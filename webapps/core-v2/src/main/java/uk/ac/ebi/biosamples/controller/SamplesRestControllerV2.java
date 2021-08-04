@@ -41,7 +41,7 @@ import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientServiceV2;
 @ExposesResourceFor(Sample.class)
 @RequestMapping("/v2/samples")
 @CrossOrigin
-public class SamplesV2RestController {
+public class SamplesRestControllerV2 {
   private Logger log = LoggerFactory.getLogger(getClass());
 
   private final SampleServiceV2 sampleServiceV2;
@@ -50,7 +50,7 @@ public class SamplesV2RestController {
   private final SchemaValidationServiceV2 schemaValidationServiceV2;
   private final ENATaxonClientServiceV2 enaTaxonClientServiceV2;
 
-  public SamplesV2RestController(
+  public SamplesRestControllerV2(
       final SampleServiceV2 sampleServiceV2,
       final BioSamplesAapServiceV2 bioSamplesAapServiceV2,
       final BioSamplesWebinAuthenticationServiceV2 bioSamplesWebinAuthenticationServiceV2,
@@ -67,7 +67,7 @@ public class SamplesV2RestController {
   @PostMapping(
       value = "/submit",
       consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<List<Sample>> postSamples(
+  public ResponseEntity<List<Sample>> postSamplesV2(
       final HttpServletRequest request,
       @RequestBody final List<Sample> samples,
       @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
@@ -127,15 +127,15 @@ public class SamplesV2RestController {
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
       consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   @RequestMapping("/accession")
-  public ResponseEntity<Sample> accessionSample(
+  public ResponseEntity<Sample> accessionSampleV2(
       final HttpServletRequest request,
       @RequestBody Sample sample,
       @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
           String authProvider) {
     log.debug("Received POST for accessioning " + sample);
-    if (sample.hasAccession()) throw new SampleWithAccessionSumbissionExceptionV2();
+    if (sample.hasAccession()) throw new SampleWithAccessionSubmissionExceptionV2();
 
     if (authProvider.equalsIgnoreCase("WEBIN")) {
       final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
@@ -150,14 +150,14 @@ public class SamplesV2RestController {
       sample = bioSamplesAapServiceV2.handleSampleDomain(sample);
     }
 
-    sample = privateSampleBuildAndReturn(sample);
+    sample = privateSampleBuildAndReturnV2(sample);
 
     sample = sampleServiceV2.store(sample, false, authProvider);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(sample);
   }
 
-  private Sample privateSampleBuildAndReturn(final Sample sample) {
+  private Sample privateSampleBuildAndReturnV2(final Sample sample) {
     final Instant release =
         Instant.ofEpochSecond(
             LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
@@ -175,9 +175,9 @@ public class SamplesV2RestController {
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
       consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   @RequestMapping("/bulk-accession")
-  public ResponseEntity<Map<String, String>> bulkAccessionSample(
+  public ResponseEntity<Map<String, String>> bulkAccessionSampleV2(
       HttpServletRequest request,
       @RequestBody List<Sample> samples,
       @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
@@ -187,7 +187,7 @@ public class SamplesV2RestController {
     samples.forEach(
         sample -> {
           if (sample.hasAccession()) {
-            throw new SampleWithAccessionSumbissionExceptionV2();
+            throw new SampleWithAccessionSubmissionExceptionV2();
           }
         });
 
@@ -230,7 +230,7 @@ public class SamplesV2RestController {
             .map(
                 sample -> {
                   log.trace("Initiating store() for " + sample.getName());
-                  sample = privateSampleBuildAndReturn(sample);
+                  sample = privateSampleBuildAndReturnV2(sample);
                   return sampleServiceV2.store(sample, false, authProvider);
                 })
             .collect(Collectors.toList());
@@ -246,5 +246,5 @@ public class SamplesV2RestController {
   @ResponseStatus(
       value = HttpStatus.BAD_REQUEST,
       reason = "New sample submission should not contain an accession")
-  public static class SampleWithAccessionSumbissionExceptionV2 extends RuntimeException {}
+  public static class SampleWithAccessionSubmissionExceptionV2 extends RuntimeException {}
 }
