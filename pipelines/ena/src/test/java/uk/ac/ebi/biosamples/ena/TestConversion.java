@@ -23,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -39,6 +40,8 @@ public class TestConversion {
 
   @Autowired private EnaElementConverter enaElementConverter;
 
+  @Autowired private EgaSampleExporter egaSampleExporter;
+
   @Autowired private EnaXmlEnhancer enaXmlEnhancer;
 
   @Test
@@ -50,11 +53,13 @@ public class TestConversion {
           EnaCallable enaCallable =
               new EnaCallable(
                   sampleAccession,
+                  null,
                   0,
                   bioSamplesWebinClient,
                   bioSamplesAapClient,
                   enaXmlEnhancer,
                   enaElementConverter,
+                  egaSampleExporter,
                   eraProDao,
                   "test",
                   false,
@@ -80,11 +85,13 @@ public class TestConversion {
           EnaCallable enaCallable =
               new EnaCallable(
                   sampleAccession,
+                  null,
                   0,
                   bioSamplesWebinClient,
                   bioSamplesAapClient,
                   enaXmlEnhancer,
                   enaElementConverter,
+                  egaSampleExporter,
                   eraProDao,
                   "test",
                   false,
@@ -109,11 +116,13 @@ public class TestConversion {
           EnaCallable enaCallable =
               new EnaCallable(
                   sampleAccession,
+                  null,
                   0,
                   bioSamplesWebinClient,
                   bioSamplesAapClient,
                   enaXmlEnhancer,
                   enaElementConverter,
+                  egaSampleExporter,
                   eraProDao,
                   "test",
                   false,
@@ -138,11 +147,13 @@ public class TestConversion {
           EnaCallable enaCallable =
               new EnaCallable(
                   sampleAccession,
+                  null,
                   0,
                   bioSamplesWebinClient,
                   bioSamplesAapClient,
                   enaXmlEnhancer,
                   enaElementConverter,
+                  egaSampleExporter,
                   eraProDao,
                   "test",
                   false,
@@ -167,11 +178,13 @@ public class TestConversion {
           EnaCallable enaCallable =
               new EnaCallable(
                   sampleAccession,
+                  null,
                   0,
                   bioSamplesWebinClient,
                   bioSamplesAapClient,
                   enaXmlEnhancer,
                   enaElementConverter,
+                  egaSampleExporter,
                   eraProDao,
                   "test",
                   false,
