@@ -23,7 +23,6 @@ import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 
 @Service
 public class BioSamplesWebinAuthenticationService {
@@ -98,7 +97,7 @@ public class BioSamplesWebinAuthenticationService {
           // in
           // sample with original account id from sample metadata
 
-          return getSampleWithWebinSubmissionAccountIdAdded(
+          return getSampleWithWebinSubmissionAccountId(
               sample,
               (webinSubmissionAccountIdInMetadata != null
                       && !webinSubmissionAccountIdInMetadata.isEmpty())
@@ -116,10 +115,10 @@ public class BioSamplesWebinAuthenticationService {
                 oldSavedSample.getWebinSubmissionAccountId())) { // original submitter mismatch
               throw new SampleNotAccessibleException();
             } else {
-              return getSampleWithWebinSubmissionAccountIdAdded(sample, webinId);
+              return getSampleWithWebinSubmissionAccountId(sample, webinId);
             }
           } else {
-            return getSampleWithWebinSubmissionAccountIdAdded(sample, webinId);
+            return getSampleWithWebinSubmissionAccountId(sample, webinId);
           }
         }
       } else { // new submission
@@ -130,14 +129,14 @@ public class BioSamplesWebinAuthenticationService {
                   .getWebinSubmissionAccountId(); // if true (2), override submission account id in
           // sample with original account id from sample metadata
 
-          return getSampleWithWebinSubmissionAccountIdAdded(
+          return getSampleWithWebinSubmissionAccountId(
               sample,
               (webinSubmissionAccountIdInMetadata != null
                       && !webinSubmissionAccountIdInMetadata.isEmpty())
                   ? webinSubmissionAccountIdInMetadata
                   : biosamplesClientWebinUsername);
         } else {
-          return getSampleWithWebinSubmissionAccountIdAdded(sample, webinId);
+          return getSampleWithWebinSubmissionAccountId(sample, webinId);
         }
       }
     } else {
@@ -145,7 +144,7 @@ public class BioSamplesWebinAuthenticationService {
     }
   }
 
-  public Sample getSampleWithWebinSubmissionAccountIdAdded(Sample sample, String webinId) {
+  public Sample getSampleWithWebinSubmissionAccountId(Sample sample, String webinId) {
     return Sample.Builder.fromSample(sample)
         .withWebinSubmissionAccountId(webinId)
         .withNoDomain()

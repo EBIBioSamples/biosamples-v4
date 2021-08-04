@@ -49,3 +49,8 @@ sleep 40
 echo "checking webapps-core is up"
 ./http-status-check -u http://localhost:8081/biosamples/health -t 6000
 
+docker-compose up -d biosamples-webapps-core-v2
+sleep 40
+echo "checking webapps-core-v2 is up"
+./http-status-check -u http://localhost:8082/biosamples/health -t 6000
+

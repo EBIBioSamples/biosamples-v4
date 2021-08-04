@@ -97,7 +97,7 @@ public class FileUploadUtils {
         .withRelease(sampleReleaseDate)
         .withExternalReferences(externalReferenceList)
         .withContacts(contactsList)
-        .withSubmittedVia(SubmittedViaType.FILE_UPLOADER_PLACEHOLDER)
+        .withSubmittedVia(SubmittedViaType.FILE_UPLOADER)
         .build();
   }
 

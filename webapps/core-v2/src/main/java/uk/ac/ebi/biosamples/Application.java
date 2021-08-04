@@ -10,7 +10,6 @@
 */
 package uk.ac.ebi.biosamples;
 
-import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import java.util.concurrent.Executor;
 import javax.servlet.Filter;
 import org.springframework.boot.SpringApplication;
@@ -25,15 +24,12 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.ShallowEtagHeaderFilter;
-import org.thymeleaf.templateresolver.ITemplateResolver;
-import org.thymeleaf.templateresolver.UrlTemplateResolver;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.MongoProperties;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
-import uk.ac.ebi.biosamples.service.AmrTableConverter;
 import uk.ac.ebi.biosamples.service.SampleAsXMLHttpMessageConverter;
 import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
 
@@ -42,7 +38,7 @@ import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
 @EnableCaching
 public class Application extends SpringBootServletInitializer {
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     SpringApplication.run(Application.class, args);
   }
 
@@ -53,15 +49,17 @@ public class Application extends SpringBootServletInitializer {
 
   @Bean
   public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter(
-      SampleToXmlConverter sampleToXmlConverter) {
+      final SampleToXmlConverter sampleToXmlConverter) {
     return new SampleAsXMLHttpMessageConverter(sampleToXmlConverter);
   }
 
   @Bean(name = "threadPoolTaskExecutor")
   public Executor threadPoolTaskExecutor() {
-    ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
+    final ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
+
     ex.setMaxPoolSize(128);
     ex.setQueueCapacity(2056);
+
     return ex;
   }
 
@@ -76,22 +74,12 @@ public class Application extends SpringBootServletInitializer {
     return new Jaxb2RootElementHttpMessageConverter();
   }
 
-  @Bean
-  public CaffeineSpec CaffeineSpec() {
-    return CaffeineSpec.parse("maximumSize=500,expireAfterWrite=60s");
-  }
-
-  @Bean
-  public ITemplateResolver templateResolver() {
-    return new UrlTemplateResolver();
-  }
-
   @Bean(name = "SampleAccessionService")
   public MongoAccessionService mongoSampleAccessionService(
-      MongoSampleRepository mongoSampleRepository,
-      SampleToMongoSampleConverter sampleToMongoSampleConverter,
-      MongoSampleToSampleConverter mongoSampleToSampleConverter,
-      MongoProperties mongoProperties) {
+      final MongoSampleRepository mongoSampleRepository,
+      final SampleToMongoSampleConverter sampleToMongoSampleConverter,
+      final MongoSampleToSampleConverter mongoSampleToSampleConverter,
+      final MongoProperties mongoProperties) {
     return new MongoAccessionService(
         mongoSampleRepository,
         sampleToMongoSampleConverter,
@@ -99,26 +87,6 @@ public class Application extends SpringBootServletInitializer {
         mongoProperties.getAccessionPrefix(),
         mongoProperties.getAccessionMinimum(),
         mongoProperties.getAcessionQueueSize());
-  }
-
-  @Bean(name = "GroupAccessionService")
-  public MongoAccessionService mongoGroupAccessionService(
-      MongoSampleRepository mongoSampleRepository,
-      SampleToMongoSampleConverter sampleToMongoSampleConverter,
-      MongoSampleToSampleConverter mongoSampleToSampleConverter,
-      MongoProperties mongoProperties) {
-    return new MongoAccessionService(
-        mongoSampleRepository,
-        sampleToMongoSampleConverter,
-        mongoSampleToSampleConverter,
-        "SAMEG",
-        mongoProperties.getAccessionMinimum(),
-        mongoProperties.getAcessionQueueSize());
-  }
-
-  @Bean
-  AmrTableConverter amrTableToMapConverter() {
-    return new AmrTableConverter();
   }
 
   @Bean

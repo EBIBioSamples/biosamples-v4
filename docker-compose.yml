@@ -65,6 +65,65 @@ services:
     - 9090:9090
     - 8000:8000
 
+  biosamples-webapps-core-v2:
+    build: .
+    image: biosamples:latest
+    mem_limit: 1g
+    links:
+      - mongo
+      - json-schema-validator
+      - schema-store
+    volumes:
+      - logs:/logs
+    command:
+      - java
+      - -jar
+      - webapps-core-v2-5.1.7-SNAPSHOT.war
+    environment:
+      #AAP certificate
+      - jwt.certificate=public.explore.der
+      - security.basic.path=
+      - aap.domains.url=https://explore.api.aai.ebi.ac.uk
+      - aap.token.url=https://explore.api.aai.ebi.ac.uk/auth
+      #configure other services
+      - spring.data.solr.host=http://solr:8983/solr
+      - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
+      - BIOSAMPLES_NEO_URL=bolt://neo4j:7687
+      - biosamples.schemaValidator=http://json-schema-validator:3020/validate
+      - biosamples.schemaStore=http://schema-store:8085
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
+      - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
+      - SPRING_RABBITMQ_LISTENER_SIMPLE_PREFETCH=100
+      - SPRING_RABBITMQ_LISTENER_SIMPLE_TRANSACTION-SIZE=25
+      - spring.jackson.serialization-inclusion=non_null
+      - spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false
+      - spring.jackson.serialization.indent_output=true
+      #Configure root path to server from
+      - server.servlet.context-path=/biosamples
+      - server.context-path=/biosamples
+      #Enable use behind a proxy with original urls
+      - server.use-forward-headers=true
+      #Improve logging
+      - LOGGING_FILE=/logs/webapps-core.log
+      - server.tomcat.accesslog.enabled=true
+      - server.tomcat.accesslog.directory=/logs
+      - server.tomcat.accesslog.prefix=webapps-core.access
+      - server.tomcat.accesslog.pattern=- %l %u %t \"%r\" %s %b %D %{Content-Type}o
+      #Enable gzip compression of responses
+      - server.compression.enabled=true
+      - server.compression.mime-types=application/json,application/hal+json,application/xml,text/html,application/javascript,text/css
+      #Don't waste CPU compressing very small responses
+      - server.compression.min-response-size=2048
+      # Charset of HTTP requests and responses. Added to the "Content-Type" header if not set explicitly.
+      - spring.http.encoding.charset=UTF-8
+      # Enable http encoding support.
+      - spring.http.encoding.enabled=true
+      # Force the encoding to the configured charset on HTTP requests and responses.
+      - spring.http.encoding.force=true
+    ports:
+      - 8082:8080
+
   biosamples-agents-solr:
     image: biosamples:latest
     mem_limit: 500m
