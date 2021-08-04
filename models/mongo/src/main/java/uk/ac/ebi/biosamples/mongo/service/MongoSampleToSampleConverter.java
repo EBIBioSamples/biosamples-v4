@@ -101,7 +101,8 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
               .withOrganizations(sample.getOrganizations())
               .withContacts(sample.getContacts())
               .withPublications(sample.getPublications())
-              .withCertificates(certificates).withSubmittedVia(sample.getSubmittedVia())
+              .withCertificates(certificates)
+              .withSubmittedVia(sample.getSubmittedVia())
               .build();
     } else {
       convertedSample =
@@ -119,7 +120,8 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
               .withOrganizations(sample.getOrganizations())
               .withContacts(sample.getContacts())
               .withPublications(sample.getPublications())
-              .withCertificates(certificates).withSubmittedVia(sample.getSubmittedVia())
+              .withCertificates(certificates)
+              .withSubmittedVia(sample.getSubmittedVia())
               .build();
     }
 

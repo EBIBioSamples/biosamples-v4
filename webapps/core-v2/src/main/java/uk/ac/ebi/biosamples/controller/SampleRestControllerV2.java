@@ -10,6 +10,8 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
+import java.time.Instant;
+import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -27,9 +29,6 @@ import uk.ac.ebi.biosamples.service.SchemaValidationServiceV2;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapServiceV2;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationServiceV2;
 import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientServiceV2;
-
-import javax.servlet.http.HttpServletRequest;
-import java.time.Instant;
 
 public class SampleRestControllerV2 {
   private Logger log = LoggerFactory.getLogger(getClass());

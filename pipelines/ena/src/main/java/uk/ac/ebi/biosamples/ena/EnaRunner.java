@@ -499,9 +499,11 @@ public class EnaRunner implements ApplicationRunner {
           // update if sample already exists else import
 
           if (amrData.size() > 0) {
-            callable = enaCallableFactory.build(sampleAccession, egaId, 0, false, false, false, amrData);
+            callable =
+                enaCallableFactory.build(sampleAccession, egaId, 0, false, false, false, amrData);
           } else {
-            callable = enaCallableFactory.build(sampleAccession, egaId, 0, false, false, false, null);
+            callable =
+                enaCallableFactory.build(sampleAccession, egaId, 0, false, false, false, null);
           }
 
           if (executorService == null) {

@@ -41,7 +41,7 @@
 		<module>properties</module>
 		<module>utils</module>
 		<module>scripts</module>
-    </modules>
+	</modules>
 
 	<dependencies>
 		<dependency>
