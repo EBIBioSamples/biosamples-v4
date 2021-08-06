@@ -26,20 +26,6 @@
     <profile>
       <id>embl-ebi</id>
     </profile>
-    <profile>
-      <id>gitlab-ci</id>
-      <modules>
-        <module>models</module>
-        <module>messaging</module>
-        <module>agents</module>
-        <module>webapps</module>
-        <module>integration</module>
-        <module>client</module>
-        <module>properties</module>
-        <module>utils</module>
-        <module>scripts</module>
-      </modules>
-    </profile>
   </profiles>
 
   <modules>
@@ -126,26 +112,6 @@
       </snapshots>
     </repository>
     <!-- needed for biosamples -->
-    <repository>
-      <id>spotnexus-relase</id>
-      <url>https://www.ebi.ac.uk/spot/nexus/repository/maven-releases/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>spotnexus-snapshot</id>
-      <url>https://www.ebi.ac.uk/spot/nexus/repository/maven-snapshots/</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
     <repository>
       <id>biosamples-v4</id>
       <url>https://gitlab.ebi.ac.uk/api/v4/projects/2669/packages/maven</url>
