@@ -15,7 +15,7 @@
     <server>
       <id>maven.oracle.com</id>
       <username>dgupta@ebi.ac.uk</username>
-      <password>RIZdip#12345</password>
+      <password>DGalpha#12345</password>
       <configuration>
         <basicAuthScope>
           <host>ANY</host>
