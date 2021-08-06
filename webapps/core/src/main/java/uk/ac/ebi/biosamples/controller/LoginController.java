@@ -93,13 +93,6 @@ public class LoginController {
       } else {
         final String token =
             bioSamplesAapService.authenticate(authRequest.getUserName(), authRequest.getPassword());
-        final Authentication authentication =
-            bioSamplesTokenAuthenticationService.getAuthenticationFromToken(token);
-        SecurityContext sc = SecurityContextHolder.getContext();
-        sc.setAuthentication(authentication);
-
-        HttpSession session = req.getSession(true);
-        session.setAttribute(SPRING_SECURITY_CONTEXT_KEY, sc);
 
         if (token != null) {
           final List<String> domains = bioSamplesAapService.getDomains(token);
