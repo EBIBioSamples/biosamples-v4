@@ -42,6 +42,7 @@ maven-package:
   when: manual
   only:
     - dev
+    - master
 
 clone-config:
   image: maven:3.6-jdk-11
@@ -55,10 +56,12 @@ clone-config:
     paths:
       - deployment
       - config
+  when: manual
   only:
-    - BSD-2130-package-BSD-in-GL
+    - dev
+    - master
 
-deploy:
+deploy-wwwdev:
   image: ubuntu
   stage: deploy
   script:
