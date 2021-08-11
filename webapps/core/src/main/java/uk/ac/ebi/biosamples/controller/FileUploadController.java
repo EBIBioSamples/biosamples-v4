@@ -13,6 +13,14 @@ package uk.ac.ebi.biosamples.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import javax.validation.Valid;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,15 +41,6 @@ import uk.ac.ebi.biosamples.service.upload.FileUploadService;
 import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
 import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
 
-import javax.validation.Valid;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-
 @Controller
 @RequestMapping("/upload")
 public class FileUploadController {
@@ -52,8 +51,11 @@ public class FileUploadController {
   private final BioSamplesProperties bioSamplesProperties;
   private final AccessControlService accessControlService;
 
-  public FileUploadController(FileUploadService fileUploadService, FileQueueService fileQueueService,
-                              BioSamplesProperties bioSamplesProperties, AccessControlService accessControlService) {
+  public FileUploadController(
+      FileUploadService fileUploadService,
+      FileQueueService fileQueueService,
+      BioSamplesProperties bioSamplesProperties,
+      AccessControlService accessControlService) {
     this.fileUploadService = fileUploadService;
     this.fileQueueService = fileQueueService;
     this.bioSamplesProperties = bioSamplesProperties;
@@ -75,7 +77,8 @@ public class FileUploadController {
 
       try {
         final File downloadableFile =
-            fileUploadService.upload(file, hiddenAapDomain, hiddenCertificate, webinAccount, fileUploadUtils);
+            fileUploadService.upload(
+                file, hiddenAapDomain, hiddenCertificate, webinAccount, fileUploadUtils);
         final byte[] bytes = FileUtils.readFileToByteArray(downloadableFile);
         final HttpHeaders headers = setResponseHeadersSuccess(downloadableFile);
 
@@ -181,8 +184,11 @@ public class FileUploadController {
         .body(json);
   }
 
-  @GetMapping(value = "/submissions", produces = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<List<MongoFileUpload>> getSubmissions(@RequestHeader("Authorization") final String token) {
+  @GetMapping(
+      value = "/submissions",
+      produces = {MediaType.APPLICATION_JSON_VALUE})
+  public ResponseEntity<List<MongoFileUpload>> getSubmissions(
+      @RequestHeader("Authorization") final String token) {
     final AuthToken authToken = accessControlService.extractToken(token);
     final List<String> userRoles = accessControlService.getUserRoles(authToken);
     final List<MongoFileUpload> uploads = fileUploadService.getUserSubmissions(userRoles);

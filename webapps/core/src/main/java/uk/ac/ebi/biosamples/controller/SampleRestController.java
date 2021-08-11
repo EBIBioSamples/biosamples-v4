@@ -210,7 +210,6 @@ public class SampleRestController {
     final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
     final SortedSet<AbstractData> abstractData = sample.getData();
     boolean isWebinSuperUser = false;
-    boolean sampleValidationTaskStatus = false;
 
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
       throw new SampleAccessionMismatchException();
@@ -274,20 +273,15 @@ public class SampleRestController {
     sample =
         Sample.Builder.fromSample(sample).withUpdate(now).withSubmittedVia(submittedVia).build();
 
-    if (submittedVia == SubmittedViaType.FILE_UPLOADER_PLACEHOLDER) {
+    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
+    if (webinAuth && !isWebinSuperUser) {
       schemaValidationService.validate(sample);
-      sampleValidationTaskStatus = true;
+    } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
+      schemaValidationService.validate(sample);
     }
 
-    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    if (!sampleValidationTaskStatus) {
-      if (webinAuth && !isWebinSuperUser) {
-        schemaValidationService.validate(sample);
-      } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
-        if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER_PLACEHOLDER) {
-          schemaValidationService.validate(sample);
-        }
-      }
+    if (submittedVia == SubmittedViaType.FILE_UPLOADER) {
+      schemaValidationService.validate(sample);
     }
 
     if (webinAuth && !isWebinSuperUser) {

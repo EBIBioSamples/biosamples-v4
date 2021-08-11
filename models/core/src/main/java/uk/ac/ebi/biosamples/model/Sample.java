@@ -30,7 +30,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
-
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.CharacteristicDeserializer;
 import uk.ac.ebi.biosamples.service.CharacteristicSerializer;
@@ -175,9 +174,11 @@ public class Sample implements Comparable<Sample> {
     Optional<Integer> taxon = Optional.empty();
     for (Attribute attribute : attributes) {
       if ("organism".equalsIgnoreCase(attribute.getType()) && !attribute.getIri().isEmpty()) {
-        taxon = attribute.getIri().stream()
+        taxon =
+            attribute.getIri().stream()
                 .map(this::extractTaxIdFromIri)
-                .filter(i -> i > 0).findFirst();
+                .filter(i -> i > 0)
+                .findFirst();
         break;
       }
     }

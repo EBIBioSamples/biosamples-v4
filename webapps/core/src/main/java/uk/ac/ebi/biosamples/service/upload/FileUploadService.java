@@ -36,10 +36,10 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
 import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.SchemaValidationService;
+import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
 import uk.ac.ebi.biosamples.utils.upload.Characteristics;
 import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
@@ -62,11 +62,11 @@ public class FileUploadService {
   @Autowired private FileQueueService fileQueueService;
 
   public synchronized File upload(
-          final MultipartFile file,
-          final String aapDomain,
-          final String checklist,
-          final String webinId,
-          final FileUploadUtils fileUploadUtils) {
+      final MultipartFile file,
+      final String aapDomain,
+      final String checklist,
+      final String webinId,
+      final FileUploadUtils fileUploadUtils) {
     this.validationResult = new ValidationResult();
     this.fileUploadUtils = fileUploadUtils;
     final String authProvider = isWebin(isWebinIdUsedToAuthenticate(webinId));
@@ -88,7 +88,8 @@ public class FileUploadService {
 
       validateHeaderPositions(headers);
 
-      final List<Multimap<String, String>> csvDataMap = this.fileUploadUtils.getCSVDataInMap(csvParser);
+      final List<Multimap<String, String>> csvDataMap =
+          this.fileUploadUtils.getCSVDataInMap(csvParser);
       final int numSamples = csvDataMap.size();
 
       log.info("CSV data size: " + numSamples);
@@ -345,7 +346,7 @@ public class FileUploadService {
   }
 
   public List<MongoFileUpload> getUserSubmissions(final List<String> userRoles) {
-    //TODO remove accession and details from response
+    // TODO remove accession and details from response
     final Pageable page = new PageRequest(0, 10);
     return mongoFileUploadRepository.findBySubmitterDetailsIn(userRoles, page);
   }

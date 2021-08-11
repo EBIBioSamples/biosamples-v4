@@ -181,7 +181,8 @@ public class BioSamplesAapService {
    * @throws SampleNotAccessibleException
    * @throws DomainMissingException
    */
-  public Sample handleSampleDomain(Sample sample) throws SampleNotAccessibleException, DomainMissingException {
+  public Sample handleSampleDomain(Sample sample)
+      throws SampleNotAccessibleException, DomainMissingException {
     // get the domains the current user has access to
     Set<String> usersDomains = getDomains();
 

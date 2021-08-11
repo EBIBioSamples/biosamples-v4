@@ -10,38 +10,33 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.auth.AuthRealm;
 import uk.ac.ebi.biosamples.model.auth.AuthRequest;
 import uk.ac.ebi.biosamples.model.auth.AuthRequestWebin;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
+import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.upload.FileUploadService;
 import uk.ac.ebi.biosamples.service.upload.JsonSchemaStoreSchemaRetrievalService;
 import uk.ac.ebi.tsc.aap.client.exception.UserNameOrPasswordWrongException;
-import uk.ac.ebi.tsc.aap.client.security.BioSamplesTokenAuthenticationService;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/login")
@@ -50,7 +45,6 @@ public class LoginController {
 
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
-  private final BioSamplesTokenAuthenticationService bioSamplesTokenAuthenticationService;
   private final JsonSchemaStoreSchemaRetrievalService jsonSchemaStoreSchemaRetrievalService;
   private final FileUploadService fileUploadService;
   private final AccessControlService accessControlService;
@@ -58,15 +52,13 @@ public class LoginController {
   @Autowired ObjectMapper objectMapper;
 
   public LoginController(
-      final BioSamplesAapService bioSamplesAapService,
-      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-      final BioSamplesTokenAuthenticationService bioSamplesTokenAuthenticationService,
-      final JsonSchemaStoreSchemaRetrievalService jsonSchemaStoreSchemaRetrievalService,
-      final AccessControlService accessControlService,
-      final FileUploadService fileUploadService) {
+          final BioSamplesAapService bioSamplesAapService,
+          final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+          final JsonSchemaStoreSchemaRetrievalService jsonSchemaStoreSchemaRetrievalService,
+          final AccessControlService accessControlService,
+          final FileUploadService fileUploadService) {
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
-    this.bioSamplesTokenAuthenticationService = bioSamplesTokenAuthenticationService;
     this.jsonSchemaStoreSchemaRetrievalService = jsonSchemaStoreSchemaRetrievalService;
     this.accessControlService = accessControlService;
     this.fileUploadService = fileUploadService;
@@ -76,17 +68,18 @@ public class LoginController {
   @PreAuthorize("permitAll()")
   @PostMapping(value = "/auth")
   public String auth(
-      @ModelAttribute("authRequest") final AuthRequest authRequest,
-      final ModelMap model,
-      final HttpServletRequest req) {
+          @ModelAttribute("authRequest") final AuthRequest authRequest,
+          final ModelMap model) {
     try {
       log.info("Login way is " + authRequest.getLoginWay());
       final Map<String, String> checklists = jsonSchemaStoreSchemaRetrievalService.getChecklists();
 
       if (authRequest.getLoginWay().equals("WEBIN")) {
         final AuthRequestWebin authRequestWebin =
-            new AuthRequestWebin(authRequest.getUserName(), authRequest.getPassword(), Arrays.asList(AuthRealm.ENA));
-        final String token = bioSamplesWebinAuthenticationService
+            new AuthRequestWebin(
+                authRequest.getUserName(), authRequest.getPassword(), Collections.singletonList(AuthRealm.ENA));
+        final String token =
+            bioSamplesWebinAuthenticationService
                 .getWebinToken(objectMapper.writeValueAsString(authRequestWebin))
                 .getBody();
         final SubmissionAccount submissionAccount =
@@ -102,13 +95,8 @@ public class LoginController {
 
         return "upload";
       } else {
-        final String token = bioSamplesAapService.authenticate(authRequest.getUserName(), authRequest.getPassword());
-        final Authentication authentication = bioSamplesTokenAuthenticationService.getAuthenticationFromToken(token);
-        SecurityContext sc = SecurityContextHolder.getContext();
-        sc.setAuthentication(authentication);
-
-        HttpSession session = req.getSession(true);
-        session.setAttribute(SPRING_SECURITY_CONTEXT_KEY, sc);
+        final String token =
+            bioSamplesAapService.authenticate(authRequest.getUserName(), authRequest.getPassword());
 
         if (token != null) {
           final List<String> domains = bioSamplesAapService.getDomains(token);
@@ -129,12 +117,14 @@ public class LoginController {
       return "uploadLogin";
     } catch (final Exception e) {
       if (e instanceof UserNameOrPasswordWrongException) {
-        model.addAttribute("wrongCreds", "wrongCreds");
-        return "uploadLogin";
+        log.info("Uploader login failed - Username or Password wrong");
       } else {
-        model.addAttribute("wrongCreds", "wrongCreds");
-        return "uploadLogin";
+        log.info("Uploader login failed - Undermined exception");
       }
+
+      model.addAttribute("wrongCreds", "wrongCreds");
+
+      return "uploadLogin";
     }
   }
 
