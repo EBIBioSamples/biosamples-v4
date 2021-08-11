@@ -34,6 +34,8 @@ import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 @Service
 public class SampleServiceV2 {
   private static Logger log = LoggerFactory.getLogger(SampleServiceV2.class);
+  private static final String NCBI_IMPORT_DOMAIN = "self.BiosampleImportNCBI";
+  private static final String ENA_IMPORT_DOMAIN = "self.BiosampleImportENA";
 
   @Qualifier("SampleAccessionService")
   @Autowired
@@ -87,6 +89,20 @@ public class SampleServiceV2 {
     }
 
     return firstTimeMetadataAdded;
+  }
+
+  public boolean isPipelineEnaOrNcbiDomain(String domain) {
+    return isPipelineEnaDomain(domain) || isPipelineNcbiDomain(domain);
+  }
+
+  private boolean isPipelineEnaDomain(String domain) {
+    if (domain == null) return false;
+    return domain.equalsIgnoreCase(ENA_IMPORT_DOMAIN);
+  }
+
+  private boolean isPipelineNcbiDomain(String domain) {
+    if (domain == null) return false;
+    return domain.equalsIgnoreCase(NCBI_IMPORT_DOMAIN);
   }
 
   private boolean isFirstTimeMetadataAdded(final MongoSample mongoOldSample) {
