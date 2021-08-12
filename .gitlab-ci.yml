@@ -16,7 +16,7 @@ maven-package:
   image: maven:3.6-jdk-11
   stage: package
   script:
-    - 'mvn deploy -DskipTests -P embl-ebi -s ci_settings.xml -Dmaven.source.skip=true'
+    - 'mvn deploy -P embl-ebi -s ci_settings.xml -Dmaven.source.skip=true'
     - mkdir deployment
     - cp webapps/core/target/webapps-core-5.1.7-SNAPSHOT.war deployment/webapps-core.war
     - cp agents/solr/target/agents-solr-*.jar deployment/agents-solr.jar
@@ -40,9 +40,6 @@ maven-package:
     paths:
       - deployment
   when: manual
-  only:
-    - dev
-    - master
 
 clone-config-preproduction:
   image: maven:3.6-jdk-11
@@ -57,8 +54,6 @@ clone-config-preproduction:
       - deployment
       - config
   when: manual
-  only:
-    - dev
 
 clone-config-production:
   image: maven:3.6-jdk-11
@@ -205,3 +200,85 @@ deploy-production-p2m-servers:
   when: manual
   only:
     - master
+
+  deploy-production-p1m-servers:
+    image: ubuntu
+    stage: deploy
+    script:
+      - ls deployment/
+      - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+      - eval $(ssh-agent -s)
+      - echo "$BSD_PROD_SSH_KEY" | tr -d '\r' | ssh-add -
+      - mkdir -p ~/.ssh
+      - chmod 700 ~/.ssh
+      - ssh-keyscan ebi-cli >> ~/.ssh/known_hosts
+      - chmod 644 ~/.ssh/known_hosts
+      # deploy to wp-p1m-40
+      # stop running services
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 '/mnt/data/biosamples/servers/monit/wp-p1m-40.2812/monit.sh stop agents-solr'
+      - sleep 60
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 '/mnt/data/biosamples/servers/monit/wp-p1m-40.2812/monit.sh stop webapps-core'
+      - sleep 60
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 '/mnt/data/biosamples/servers/monit/wp-p1m-40.2812/stop.sh'
+      - sleep 60
+      # remove old artifacts
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 'rm -rf /mnt/data/biosamples/sw/www/*.jar'
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 'rm -rf /mnt/data/biosamples/sw/www/*.war'
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 'rm -rf /mnt/data/biosamples/sw/www/*.sh'
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 'rm -rf /mnt/data/biosamples/sw/www/*.js'
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 'rm -rf /mnt/data/biosamples/sw/www/*.py'
+      # Copy scripts and other config
+      - scp -r -v -o StrictHostKeyChecking=no deployment/* tc_spo01@wp-p1m-40:/mnt/data/biosamples/sw/www/
+      - scp -r -v -o StrictHostKeyChecking=no config/* tc_spo01@wp-p1m-40:/mnt/data/biosamples/
+      # mark all scripts as executable
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 'chmod ug+x /mnt/data/biosamples/sw/www/*.sh'
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 'chmod ug+x /mnt/data/biosamples/servers/*/*/*.sh'
+      # monit config
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 'chmod 0700 /mnt/data/biosamples/servers/monit/*/monit.conf'
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 'mkdir -p /mnt/data/biosamples/logs/monit/wp-p1m-40.2812'
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 'mkdir -p /mnt/data/biosamples/data/monit/wp-p1m-40.2812'
+      # install cron script
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 'crontab /mnt/data/biosamples/servers/crontab.wp-p1m-40.conf'
+      # start up and monitor everything
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 '/mnt/data/biosamples/servers/monit/wp-p1m-40.2812/start.sh'
+      - sleep 15
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 '/mnt/data/biosamples/servers/monit/wp-p1m-40.2812/monit.sh start all'
+      # poll for services
+      - sleep 300
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 /mnt/data/biosamples/sw/www/http-status-check -t 3600 -u 'http://wp-p1m-40.ebi.ac.uk:8081/biosamples/health'
+      # deploy to wp-p1m-41
+      # stop running services
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 '/mnt/data/biosamples/servers/monit/wp-p1m-41.2812/monit.sh stop agents-solr'
+      - sleep 60
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 '/mnt/data/biosamples/servers/monit/wp-p1m-41.2812/monit.sh stop webapps-core'
+      - sleep 60
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 '/mnt/data/biosamples/servers/monit/wp-p1m-41.2812/stop.sh'
+      - sleep 60
+      # remove old artifacts
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 'rm -rf /mnt/data/biosamples/sw/www/*.jar'
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 'rm -rf /mnt/data/biosamples/sw/www/*.war'
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 'rm -rf /mnt/data/biosamples/sw/www/*.sh'
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 'rm -rf /mnt/data/biosamples/sw/www/*.js'
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 'rm -rf /mnt/data/biosamples/sw/www/*.py'
+      # Copy scripts and other config
+      - scp -r -v -o StrictHostKeyChecking=no deployment/* tc_spo01@wp-p1m-41:/mnt/data/biosamples/sw/www/
+      - scp -r -v -o StrictHostKeyChecking=no config/* tc_spo01@wp-p1m-41:/mnt/data/biosamples/
+      # mark all scripts as executable
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 'chmod ug+x /mnt/data/biosamples/sw/www/*.sh'
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 'chmod ug+x /mnt/data/biosamples/servers/*/*/*.sh'
+      # monit config
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 'chmod 0700 /mnt/data/biosamples/servers/monit/*/monit.conf'
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 'mkdir -p /mnt/data/biosamples/logs/monit/wp-p1m-41.2812'
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 'mkdir -p /mnt/data/biosamples/data/monit/wp-p1m-41.2812'
+      # install cron script
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 'crontab /mnt/data/biosamples/servers/crontab.wp-p1m-41.conf'
+      # start up and monitor everything
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 '/mnt/data/biosamples/servers/monit/wp-p1m-41.2812/start.sh'
+      - sleep 15
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 '/mnt/data/biosamples/servers/monit/wp-p1m-41.2812/monit.sh start all'
+      # poll for services
+      - sleep 3000
+      - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 /mnt/data/biosamples/sw/www/http-status-check -t 3600 -u 'http://wp-p1m-41.ebi.ac.uk:8081/biosamples/health'
+    when: manual
+    only:
+      - master
