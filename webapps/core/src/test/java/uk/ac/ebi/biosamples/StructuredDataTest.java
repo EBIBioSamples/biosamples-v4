@@ -12,6 +12,9 @@ package uk.ac.ebi.biosamples;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.Charset;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +30,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.StreamUtils;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.structured.*;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.SchemaValidationService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
@@ -60,7 +64,25 @@ public class StructuredDataTest {
         StreamUtils.copyToString(
             new ClassPathResource("structured_data_sample.json").getInputStream(),
             Charset.defaultCharset());
-    Sample sample = mapper.readValue(json, Sample.class);
-    Assert.assertEquals(3, sample.getData().size());
+    final Sample sample = mapper.readValue(json, Sample.class);
+    final Set<AbstractData> structuredDataSet = sample.getData();
+
+    Assert.assertEquals(5, structuredDataSet.size());
+
+    List<StructuredTable> structuredTables =
+        structuredDataSet.stream()
+            .map(
+                structuredData -> {
+                  final Object structuredDataObj = structuredData.getStructuredData();
+
+                  if (structuredDataObj instanceof StructuredTable) {
+                    return (StructuredTable) structuredDataObj;
+                  }
+
+                  return null;
+                })
+            .collect(Collectors.toList());
+
+    Assert.assertEquals(5, structuredTables.size());
   }
 }

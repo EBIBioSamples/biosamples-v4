@@ -11,6 +11,10 @@
 package uk.ac.ebi.biosamples.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,10 +38,6 @@ import uk.ac.ebi.biosamples.service.upload.FileUploadService;
 import uk.ac.ebi.biosamples.service.upload.JsonSchemaStoreSchemaRetrievalService;
 import uk.ac.ebi.tsc.aap.client.exception.UserNameOrPasswordWrongException;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 @Controller
 @RequestMapping("/login")
 public class LoginController {
@@ -52,11 +52,11 @@ public class LoginController {
   @Autowired ObjectMapper objectMapper;
 
   public LoginController(
-          final BioSamplesAapService bioSamplesAapService,
-          final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-          final JsonSchemaStoreSchemaRetrievalService jsonSchemaStoreSchemaRetrievalService,
-          final AccessControlService accessControlService,
-          final FileUploadService fileUploadService) {
+      final BioSamplesAapService bioSamplesAapService,
+      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+      final JsonSchemaStoreSchemaRetrievalService jsonSchemaStoreSchemaRetrievalService,
+      final AccessControlService accessControlService,
+      final FileUploadService fileUploadService) {
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.jsonSchemaStoreSchemaRetrievalService = jsonSchemaStoreSchemaRetrievalService;
@@ -68,22 +68,31 @@ public class LoginController {
   @PreAuthorize("permitAll()")
   @PostMapping(value = "/auth")
   public String auth(
-          @ModelAttribute("authRequest") final AuthRequest authRequest,
-          final ModelMap model) {
+      @ModelAttribute("authRequest") final AuthRequest authRequest, final ModelMap model) {
     try {
       log.info("Login way is " + authRequest.getLoginWay());
-      final Map<String, String> checklists = jsonSchemaStoreSchemaRetrievalService.getChecklists();
+      Map<String, String> checklists = new TreeMap<>();
+
+      try {
+        checklists = jsonSchemaStoreSchemaRetrievalService.getChecklists();
+      } catch (final Exception e) {
+        log.info("Couldn't get checklists from JSON schema store", e);
+      }
 
       if (authRequest.getLoginWay().equals("WEBIN")) {
         final AuthRequestWebin authRequestWebin =
             new AuthRequestWebin(
-                authRequest.getUserName(), authRequest.getPassword(), Collections.singletonList(AuthRealm.ENA));
+                authRequest.getUserName(),
+                authRequest.getPassword(),
+                Collections.singletonList(AuthRealm.ENA));
         final String token =
             bioSamplesWebinAuthenticationService
                 .getWebinToken(objectMapper.writeValueAsString(authRequestWebin))
                 .getBody();
         final SubmissionAccount submissionAccount =
             bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(token).getBody();
+
+        log.info("WEBIN token is " + token);
 
         model.addAttribute("loginmethod", "WEBIN");
         model.addAttribute("certificates", checklists);
@@ -97,6 +106,8 @@ public class LoginController {
       } else {
         final String token =
             bioSamplesAapService.authenticate(authRequest.getUserName(), authRequest.getPassword());
+
+        log.info("AAP token is " + token);
 
         if (token != null) {
           final List<String> domains = bioSamplesAapService.getDomains(token);
@@ -119,7 +130,7 @@ public class LoginController {
       if (e instanceof UserNameOrPasswordWrongException) {
         log.info("Uploader login failed - Username or Password wrong");
       } else {
-        log.info("Uploader login failed - Undermined exception");
+        log.info("Uploader login failed - Undetermined exception");
       }
 
       model.addAttribute("wrongCreds", "wrongCreds");
@@ -129,8 +140,13 @@ public class LoginController {
   }
 
   private void fetchRecentSubmissions(final ModelMap model, final String token) {
-    final List<MongoFileUpload> uploads = getSubmissions(token);
-    model.addAttribute("submissions", uploads);
+    try {
+      final List<MongoFileUpload> uploads = getSubmissions(token);
+      model.addAttribute("submissions", uploads);
+    } catch (final Exception e) {
+      log.info("Failed to fetch recent submissions " + e.getMessage());
+      throw new RuntimeException(e);
+    }
   }
 
   private List<MongoFileUpload> getSubmissions(final String token) {
