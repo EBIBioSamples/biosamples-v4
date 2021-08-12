@@ -53,7 +53,7 @@ public class JsonSchemaStoreSchemaRetrievalService {
               String.class);
 
     } catch (final Exception ex) {
-      log.info("JSON schema store inaccessible");
+      log.info("JSON schema store inaccessible", ex);
       throw new RuntimeException("Failed to retrieve schemas from JSON schema store", ex);
     }
 
