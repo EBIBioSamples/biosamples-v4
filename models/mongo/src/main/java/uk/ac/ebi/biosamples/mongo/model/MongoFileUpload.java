@@ -26,7 +26,7 @@ public class MongoFileUpload {
   private final BioSamplesFileUploadSubmissionStatus submissionStatus;
   private final String submitterDetails;
   private final String checklist;
-  @JsonIgnore private final boolean isWebinAuthentication;
+  @JsonIgnore private final boolean isWebin;
   private final List<SampleNameAccessionPair> sampleNameAccessionPairs;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -37,14 +37,14 @@ public class MongoFileUpload {
       final BioSamplesFileUploadSubmissionStatus submissionStatus,
       final String submitterDetails,
       final String checklist,
-      final boolean isWebinAuthentication,
+      final boolean isWebin,
       final List<SampleNameAccessionPair> sampleNameAccessionPairs,
       final String validationMessage) {
     this.submissionId = submissionId;
     this.submissionStatus = submissionStatus;
     this.submitterDetails = submitterDetails;
     this.checklist = checklist;
-    this.isWebinAuthentication = isWebinAuthentication;
+    this.isWebin = isWebin;
     this.sampleNameAccessionPairs = sampleNameAccessionPairs;
     this.validationMessage = validationMessage;
   }
@@ -65,8 +65,8 @@ public class MongoFileUpload {
     return submitterDetails;
   }
 
-  public boolean isWebinAuthentication() {
-    return isWebinAuthentication;
+  public boolean isWebin() {
+    return isWebin;
   }
 
   public List<SampleNameAccessionPair> getSampleNameAccessionPairs() {
@@ -83,7 +83,7 @@ public class MongoFileUpload {
     if (!(o instanceof MongoFileUpload)) return false;
     final MongoFileUpload that = (MongoFileUpload) o;
 
-    return isWebinAuthentication() == that.isWebinAuthentication()
+    return isWebin() == that.isWebin()
         && Objects.equals(getSubmissionId(), that.getSubmissionId())
         && getSubmissionStatus() == that.getSubmissionStatus()
         && Objects.equals(getSubmitterDetails(), that.getSubmitterDetails())
@@ -99,7 +99,7 @@ public class MongoFileUpload {
         getSubmissionStatus(),
         getSubmitterDetails(),
         getChecklist(),
-        isWebinAuthentication(),
+        isWebin(),
         getSampleNameAccessionPairs(),
         getValidationMessage());
   }
