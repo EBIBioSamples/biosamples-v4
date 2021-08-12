@@ -201,7 +201,7 @@ deploy-production-p2m-servers:
   only:
     - master
 
-  deploy-production-p1m-servers:
+deploy-production-p1m-servers:
     image: ubuntu
     stage: deploy
     script:
