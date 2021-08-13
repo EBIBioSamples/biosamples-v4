@@ -41,7 +41,6 @@
             </tr>
             </thead>
             <tbody>
-            <th:block th:each="entry : ${data.getStructuredData()}">
                 <th:block th:each="entry: ${data.getDataAsMap()}">
                     <tr>
                         <td th:each="header: ${data.getHeaders()}">

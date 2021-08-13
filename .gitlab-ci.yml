@@ -118,6 +118,7 @@ deploy-preproduction:
   when: manual
   only:
     - dev
+    - master
 
 deploy-production-p2m-servers:
   image: ubuntu
