@@ -69,7 +69,7 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
 
   @Override
   public List<Map<String, StructuredCell>> getDataAsMap() {
-    return entries.stream().map(StructuredEntry::getDataAsMap).collect(Collectors.toList());
+    return entries.stream().map(StructuredEntry::getDataAsMap).filter(Objects::nonNull).collect(Collectors.toList());
   }
 
   @Override

@@ -74,6 +74,85 @@
       ]
     },
     {
+      "type": "SALMON_DATA",
+      "schema": "https://www.ebi.ac.uk/biosamples/schemas/core/sample.json",
+      "domain": "self.BiosampleIntegrationTest",
+      "content": [
+        {
+          "marker": {
+            "value": "Crypt depth"
+          },
+          "measurement": {
+            "value": "0"
+          },
+          "measurement_units": {
+            "value": "um"
+          },
+          "partner": {
+            "value": "FUB",
+            "iri": "https://www.fu-berlin.de/en/sites/china/ueberfub/forschung/index.html"
+          }
+        },
+        {
+          "marker": {
+            "value": "Villous height",
+            "iri": "http://purl.obolibrary.org/obo/NCIT_C14170"
+          },
+          "measurement": {
+            "value": "0"
+          },
+          "measurement_units": {
+            "value": "um"
+          },
+          "partner": {
+            "value": "FUB",
+            "iri": "https://www.fu-berlin.de/en/sites/china/ueberfub/forschung/index.html"
+          }
+        }
+      ]
+    },
+    {
+      "type": "HEAVY_METALS",
+      "schema": "https://www.ebi.ac.uk/biosamples/schemas/core/sample.json",
+      "domain": "self.BiosampleIntegrationTest",
+      "content": [
+        {
+          "marker": {
+            "value": "Crypt depth"
+          },
+          "measurement": {
+            "value": "0"
+          },
+          "measurement_units": {
+            "value": "um"
+          },
+          "method": {
+            "value": "TEST"
+          },
+          "partner": {
+            "value": "FUB",
+            "iri": "https://www.fu-berlin.de/en/sites/china/ueberfub/forschung/index.html"
+          }
+        },
+        {
+          "marker": {
+            "value": "Villous height",
+            "iri": "http://purl.obolibrary.org/obo/NCIT_C14170"
+          },
+          "measurement": {
+            "value": "0"
+          },
+          "measurement_units": {
+            "value": "um"
+          },
+          "partner": {
+            "value": "FUB",
+            "iri": "https://www.fu-berlin.de/en/sites/china/ueberfub/forschung/index.html"
+          }
+        }
+      ]
+    },
+    {
       "type": "AMR",
       "schema": "https://www.ebi.ac.uk/biosamples/schemas/core/sample.json",
       "domain": "self.BiosampleIntegrationTest",
