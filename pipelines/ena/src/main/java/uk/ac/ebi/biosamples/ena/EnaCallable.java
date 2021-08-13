@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
@@ -38,11 +39,13 @@ public class EnaCallable implements Callable<Void> {
   private static final String TEMPORARY_KILLED = "temporary_killed";
   public static final String ENA_SRA_ACCESSION = "SRA accession";
   private final String sampleAccession;
+  private final String egaId;
   private final BioSamplesClient bioSamplesWebinClient;
   private final BioSamplesClient bioSamplesAapClient;
   private final EnaXmlEnhancer enaXmlEnhancer;
   private final EraProDao eraProDao;
   private final EnaElementConverter enaElementConverter;
+  private final EgaSampleExporter egaSampleExporter;
   private String webinId;
   private Set<AbstractData> amrData;
   private boolean suppressionHandler;
@@ -52,11 +55,13 @@ public class EnaCallable implements Callable<Void> {
 
   public EnaCallable(
       String sampleAccession,
+      String egaId,
       int statusId,
       BioSamplesClient bioSamplesWebinClient,
       BioSamplesClient bioSamplesAapClient,
       EnaXmlEnhancer enaXmlEnhancer,
       EnaElementConverter enaElementConverter,
+      EgaSampleExporter egaSampleExporter,
       EraProDao eraProDao,
       String webinId,
       boolean suppressionHandler,
@@ -64,11 +69,13 @@ public class EnaCallable implements Callable<Void> {
       boolean bsdAuthority,
       Set<AbstractData> amrData) {
     this.sampleAccession = sampleAccession;
+    this.egaId = egaId;
     this.statusId = statusId;
     this.bioSamplesWebinClient = bioSamplesWebinClient;
     this.bioSamplesAapClient = bioSamplesAapClient;
     this.enaXmlEnhancer = enaXmlEnhancer;
     this.enaElementConverter = enaElementConverter;
+    this.egaSampleExporter = egaSampleExporter;
     this.eraProDao = eraProDao;
     this.webinId = webinId;
     this.suppressionHandler = suppressionHandler;
@@ -79,7 +86,9 @@ public class EnaCallable implements Callable<Void> {
 
   @Override
   public Void call() throws Exception {
-    if (suppressionHandler) {
+    if (egaId != null && !egaId.isEmpty()) {
+      return egaSampleExporter.populateAndSubmitEgaData(egaId);
+    } else if (suppressionHandler) {
       return checkAndUpdateSuppressedSample();
     } else if (killedHandler) {
       return checkAndUpdateKilledSamples();

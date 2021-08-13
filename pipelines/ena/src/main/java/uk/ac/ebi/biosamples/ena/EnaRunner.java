@@ -334,7 +334,7 @@ public class EnaRunner implements ApplicationRunner {
       final int statusId = rs.getInt("STATUS_ID");
 
       final Callable<Void> callable =
-          enaCallableFactory.build(sampleAccession, statusId, true, false, false, null);
+          enaCallableFactory.build(sampleAccession, null, statusId, true, false, false, null);
 
       if (executorService == null) {
         try {
@@ -374,7 +374,7 @@ public class EnaRunner implements ApplicationRunner {
       final int statusId = rs.getInt("STATUS_ID");
 
       final Callable<Void> callable =
-          enaCallableFactory.build(sampleAccession, statusId, false, true, false, null);
+          enaCallableFactory.build(sampleAccession, null, statusId, false, true, false, null);
 
       if (executorService == null) {
         try {
@@ -477,6 +477,7 @@ public class EnaRunner implements ApplicationRunner {
     public void processRow(ResultSet rs) throws SQLException {
       final String sampleAccession = rs.getString("BIOSAMPLE_ID");
       final int statusID = rs.getInt("STATUS_ID");
+      final String egaId = rs.getString("EGA_ID");
       final ENAStatus enaStatus = ENAStatus.valueOf(statusID);
       Set<AbstractData> amrData = new HashSet<>();
 
@@ -498,9 +499,11 @@ public class EnaRunner implements ApplicationRunner {
           // update if sample already exists else import
 
           if (amrData.size() > 0) {
-            callable = enaCallableFactory.build(sampleAccession, 0, false, false, false, amrData);
+            callable =
+                enaCallableFactory.build(sampleAccession, egaId, 0, false, false, false, amrData);
           } else {
-            callable = enaCallableFactory.build(sampleAccession, 0, false, false, false, null);
+            callable =
+                enaCallableFactory.build(sampleAccession, egaId, 0, false, false, false, null);
           }
 
           if (executorService == null) {
@@ -595,7 +598,7 @@ public class EnaRunner implements ApplicationRunner {
       final String sampleAccession = rs.getString("BIOSAMPLE_ID");
 
       Callable<Void> callable =
-          enaCallableFactory.build(sampleAccession, 0, false, false, true, null);
+          enaCallableFactory.build(sampleAccession, null, 0, false, false, true, null);
       if (executorService == null) {
         try {
           callable.call();

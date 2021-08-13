@@ -37,8 +37,6 @@ import uk.ac.ebi.biosamples.service.AmrTableConverter;
 import uk.ac.ebi.biosamples.service.SampleAsXMLHttpMessageConverter;
 import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
 
-// import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-
 @SpringBootApplication
 @EnableAsync
 @EnableCaching

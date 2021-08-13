@@ -81,7 +81,6 @@ public class MongoSample {
   protected SortedSet<Publication> publications;
   protected SortedSet<MongoCertificate> certificates;
 
-  //	@JsonSerialize(using = AbstractDataSerializer.class)
   protected Set<AbstractData> data;
   protected SubmittedViaType submittedVia;
 

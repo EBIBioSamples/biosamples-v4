@@ -11,7 +11,6 @@
 package uk.ac.ebi.biosamples.service;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;

@@ -141,7 +141,7 @@ public class BioSamplesFileUploadSubmissionService {
               mongoFileUpload.getSubmitterDetails(),
               mongoFileUpload.getChecklist(),
               mongoFileUpload.isWebin(),
-              mongoFileUpload.getNameAccessionPairs(),
+              mongoFileUpload.getSampleNameAccessionPairs(),
               String.join(" -- ", validationResult.getValidationMessagesList()));
 
       mongoFileUploadRepository.save(mongoFileUploadFailed);
@@ -241,7 +241,7 @@ public class BioSamplesFileUploadSubmissionService {
         fileUploadUtils.handleExternalReferences(multiMap);
     final List<Contact> contactsList = fileUploadUtils.handleContacts(multiMap);
 
-    if (fileUploadUtils.isBasicValidationFailure(sampleName, sampleReleaseDate, validationResult)) {
+    if (fileUploadUtils.isValidSample(sampleName, sampleReleaseDate, validationResult)) {
       Sample sample =
           fileUploadUtils.buildSample(
               sampleName,

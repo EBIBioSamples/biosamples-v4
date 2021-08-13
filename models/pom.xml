@@ -16,7 +16,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.1.6</version>
+		<version>5.1.7-SNAPSHOT</version>
 	</parent>
 
 	<modules>
@@ -29,5 +29,6 @@
 		<module>structured</module>
 		<module>neo4j</module>
 		<module>curami</module>
+		<module>security</module>
 	</modules>
 </project>

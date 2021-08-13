@@ -44,6 +44,8 @@ import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
@@ -398,9 +400,9 @@ public class SamplesRestController {
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
       consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   @RequestMapping("/accession")
-  public ResponseEntity<Object> accessionSample(
+  public ResponseEntity<Resource<Sample>> accessionSample(
       HttpServletRequest request,
       @RequestBody Sample sample,
       @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
@@ -433,13 +435,13 @@ public class SamplesRestController {
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
       consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   @RequestMapping("/bulk-accession")
   public ResponseEntity<Map<String, String>> bulkAccessionSample(
       HttpServletRequest request,
       @RequestBody List<Sample> samples,
       @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider) {
+          final String authProvider) {
     log.debug("Received POST for bulk accessioning of " + samples.size() + " samples");
 
     samples.forEach(
@@ -461,15 +463,15 @@ public class SamplesRestController {
           samples.stream()
               .map(
                   sample ->
-                      bioSamplesWebinAuthenticationService
-                          .getSampleWithWebinSubmissionAccountIdAdded(sample, webinAccount.getId()))
+                      bioSamplesWebinAuthenticationService.getSampleWithWebinSubmissionAccountId(
+                          sample, webinAccount.getId()))
               .collect(Collectors.toList());
     } else {
       if (samples.size() > 0) {
         Sample firstSample = samples.get(0);
         firstSample = bioSamplesAapService.handleSampleDomain(firstSample);
 
-        Sample finalFirstSample = firstSample;
+        final Sample finalFirstSample = firstSample;
 
         samples =
             samples.stream()
@@ -483,63 +485,22 @@ public class SamplesRestController {
       }
     }
 
-    final ExecutorService executor = Executors.newFixedThreadPool(10);
-
-    /*final Map<String, String> outputMap = samples.stream().map(sample -> executor.submit(new SamplePersistence(sample, authProvider))).map(sampleFuture -> {
-      try {
-        return sampleFuture.get();
-      } catch (InterruptedException | ExecutionException e) {
-        log.info("Exception here " + e.getMessage());
-      }
-
-      return null;
-    }).filter(Objects::nonNull).collect(Collectors.toMap(Sample::getName, Sample::getAccession));*/
-
-    final List<Future<Sample>> sampleFutures =
+    final List<Sample> createdSamplesList =
         samples.stream()
-            .map(sample -> executor.submit(new SamplePersistence(sample, authProvider)))
+            .map(
+                sample -> {
+                  log.trace("Initiating store() for " + sample.getName());
+                  sample = privateSampleBuildAndReturn(sample);
+                  return sampleService.store(sample, false, authProvider);
+                })
             .collect(Collectors.toList());
 
-    log.trace("Number of futures " + sampleFutures.size());
-
     final Map<String, String> outputMap =
-        sampleFutures.stream()
-            .map(
-                sampleFuture -> {
-                  try {
-                    return sampleFuture.get();
-                  } catch (InterruptedException | ExecutionException e) {
-                    log.info("Exception here " + e.getMessage());
-                  }
-
-                  return null;
-                })
+        createdSamplesList.stream()
             .filter(Objects::nonNull)
             .collect(Collectors.toMap(Sample::getName, Sample::getAccession));
 
-    /*final Map<String, String> outputMap = samples.stream().map(sample -> checkAndPersistSample(sample, authProvider)).collect(Collectors.toMap(
-            Sample::getName, Sample::getAccession
-    ));*/
-
     return ResponseEntity.ok(outputMap);
-  }
-
-  class SamplePersistence implements Callable<Sample> {
-    Sample sample;
-    String authProvider;
-
-    SamplePersistence(Sample sample, String authProvider) {
-      this.sample = sample;
-      this.authProvider = authProvider;
-    }
-
-    @Override
-    public Sample call() {
-      sample = privateSampleBuildAndReturn(sample);
-
-      log.trace("Initiating store() for " + sample.getName());
-      return sampleService.store(sample, false, authProvider);
-    }
   }
 
   @PreAuthorize("isAuthenticated()")
@@ -556,7 +517,6 @@ public class SamplesRestController {
     final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
     final Set<AbstractData> structuredData = sample.getData();
     boolean isWebinSuperUser = false;
-    boolean sampleValidationTaskStatus = false;
 
     if (webinAuth) {
       final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
@@ -611,20 +571,15 @@ public class SamplesRestController {
             .withSubmittedVia(submittedVia)
             .build();
 
-    if (submittedVia == SubmittedViaType.FILE_UPLOADER_PLACEHOLDER) {
+    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
+    if (webinAuth && !isWebinSuperUser) {
       schemaValidationService.validate(sample);
-      sampleValidationTaskStatus = true;
+    } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
+      schemaValidationService.validate(sample);
     }
 
-    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    if (!sampleValidationTaskStatus) {
-      if (webinAuth && !isWebinSuperUser) {
-        schemaValidationService.validate(sample);
-      } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
-        if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER_PLACEHOLDER) {
-          schemaValidationService.validate(sample);
-        }
-      }
+    if (submittedVia == SubmittedViaType.FILE_UPLOADER) {
+      schemaValidationService.validate(sample);
     }
 
     if (webinAuth && !isWebinSuperUser) {

@@ -6,7 +6,7 @@ This pages contains links to release notes for BioSamples for version 4.0.0 and 
 == v5.1.6 Release notes (v5.1.5 included)
 === New Features
 *File uploader improvements*
-+
+
 BioSamples file uploader has gone through some changes for dealing with larger file uploads.
 Any file upload with over 200 samples are queued and submitters are provided with a submission ID. Submitters can use the submission ID in the View submissions tab and check status of their uploads.
 Once a submission is searched in the View Submissions tab and if the submission ID is valid then the submitter will get a result json file with the submission status and the sample accessions mapped against sample names.

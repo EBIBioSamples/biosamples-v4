@@ -19,11 +19,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import javax.validation.Valid;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,19 +33,34 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
+import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.upload.FileQueueService;
 import uk.ac.ebi.biosamples.service.upload.FileUploadService;
 import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
+import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
 
 @Controller
 @RequestMapping("/upload")
 public class FileUploadController {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
-  @Autowired private FileUploadService fileUploadService;
-  @Autowired private FileQueueService fileQueueService;
-  @Autowired private BioSamplesProperties bioSamplesProperties;
+  private final FileUploadService fileUploadService;
+  private final FileQueueService fileQueueService;
+  private final BioSamplesProperties bioSamplesProperties;
+  private final AccessControlService accessControlService;
+
+  public FileUploadController(
+      FileUploadService fileUploadService,
+      FileQueueService fileQueueService,
+      BioSamplesProperties bioSamplesProperties,
+      AccessControlService accessControlService) {
+    this.fileUploadService = fileUploadService;
+    this.fileQueueService = fileQueueService;
+    this.bioSamplesProperties = bioSamplesProperties;
+    this.accessControlService = accessControlService;
+  }
 
   @PreAuthorize("isAuthenticated()")
   @PostMapping
@@ -55,12 +70,15 @@ public class FileUploadController {
       @Valid final String hiddenCertificate,
       @Valid final String webinAccount)
       throws IOException {
+    final FileUploadUtils fileUploadUtils = new FileUploadUtils();
+
     if (!isFileSizeExceeded(file)) {
       log.info("File size doesn't exceed limits");
 
       try {
         final File downloadableFile =
-            fileUploadService.upload(file, hiddenAapDomain, hiddenCertificate, webinAccount);
+            fileUploadService.upload(
+                file, hiddenAapDomain, hiddenCertificate, webinAccount, fileUploadUtils);
         final byte[] bytes = FileUtils.readFileToByteArray(downloadableFile);
         final HttpHeaders headers = setResponseHeadersSuccess(downloadableFile);
 
@@ -101,15 +119,7 @@ public class FileUploadController {
       try {
         final String fileId =
             fileQueueService.queueFile(file, hiddenAapDomain, hiddenCertificate, webinAccount);
-
-        try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
-          writer.write(
-              "Your submission has been queued and your submission id is "
-                  + fileId
-                  + ". Please use the View Submissions tab and use your submission ID to get the submission result");
-        }
-
-        final File queuedUploadMessageFile = temp.toFile();
+        final File queuedUploadMessageFile = fileUploadUtils.writeQueueMessageToFile(fileId);
         final byte[] bytes = FileUtils.readFileToByteArray(queuedUploadMessageFile);
         final HttpHeaders headers = setResponseHeadersFailure(queuedUploadMessageFile);
 
@@ -172,6 +182,18 @@ public class FileUploadController {
     return ResponseEntity.ok()
         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=result.json")
         .body(json);
+  }
+
+  @GetMapping(
+      value = "/submissions",
+      produces = {MediaType.APPLICATION_JSON_VALUE})
+  public ResponseEntity<List<MongoFileUpload>> getSubmissions(
+      @RequestHeader("Authorization") final String token) {
+    final AuthToken authToken = accessControlService.extractToken(token);
+    final List<String> userRoles = accessControlService.getUserRoles(authToken);
+    final List<MongoFileUpload> uploads = fileUploadService.getUserSubmissions(userRoles);
+
+    return ResponseEntity.ok().body(uploads);
   }
 
   private boolean isFileSizeExceeded(final MultipartFile file) throws RuntimeException {

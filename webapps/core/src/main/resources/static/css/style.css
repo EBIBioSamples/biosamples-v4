@@ -536,6 +536,12 @@ code[class^="language"] {
     width: 25%;
 }
 
+.submission-download-btn {
+    float: left;
+    padding: 8px;
+    margin: 0;
+}
+
 #submission-table {
     margin-top: 10px;
 }

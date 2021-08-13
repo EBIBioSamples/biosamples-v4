@@ -4,7 +4,7 @@
 
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>biosamples-spring-boot-starter</artifactId>
-	<version>5.1.6</version>
+	<version>5.1.7-SNAPSHOT</version>
 
 	<packaging>jar</packaging>
 
@@ -17,7 +17,7 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>client</artifactId>
-			<version>5.1.6</version>
+			<version>5.1.7-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
@@ -62,37 +62,18 @@
 	</dependencyManagement>
 
 	<distributionManagement>
-		<!-- <repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
-		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository> -->
 		<repository>
-			<id>spotnexus</id>
-			<url>https://www.ebi.ac.uk/spot/nexus/repository/maven-releases/</url>
+			<id>biosamples-v4</id>
+			<url>https://gitlab.ebi.ac.uk/api/v4/projects/2669/packages/maven</url>
 		</repository>
 		<snapshotRepository>
-			<id>spotnexus</id>
-			<url>https://www.ebi.ac.uk/spot/nexus/repository/maven-snapshots/</url>
+			<id>biosamples-v4</id>
+			<url>https://gitlab.ebi.ac.uk/api/v4/projects/2669/packages/maven</url>
 		</snapshotRepository>
 	</distributionManagement>
 
 	<build>
 		<plugins>
-			<!--<plugin>
-				<groupId>org.sonatype.plugins</groupId>
-				<artifactId>nexus-staging-maven-plugin</artifactId>
-				<version>1.6.7</version>
-				<extensions>true</extensions>
-				<configuration>
-					<serverId>ossrh</serverId>
-					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-					<autoReleaseAfterClose>true</autoReleaseAfterClose>
-				</configuration>
-			</plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>

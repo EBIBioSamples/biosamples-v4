@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.http.converter.StringHttpMessageConverter;
@@ -24,6 +26,7 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 
 @Service
 public class JsonSchemaStoreSchemaRetrievalService {
+  private Logger log = LoggerFactory.getLogger(getClass());
   @Autowired private BioSamplesProperties bioSamplesProperties;
 
   public Map<String, String> getChecklists() {
@@ -50,10 +53,12 @@ public class JsonSchemaStoreSchemaRetrievalService {
               String.class);
 
     } catch (final Exception ex) {
+      log.info("JSON schema store inaccessible", ex);
       throw new RuntimeException("Failed to retrieve schemas from JSON schema store", ex);
     }
 
     if (response.getStatusCode() != HttpStatus.OK) {
+      log.info("JSON schema store inaccessible");
       throw new RuntimeException(
           "Failed to retrieve schemas from JSON schema store. Response: " + response);
     }

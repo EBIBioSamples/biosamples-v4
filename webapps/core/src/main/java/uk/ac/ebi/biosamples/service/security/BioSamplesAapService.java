@@ -8,7 +8,7 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.service;
+package uk.ac.ebi.biosamples.service.security;
 
 import java.time.Instant;
 import java.util.*;
@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
 import uk.ac.ebi.tsc.aap.client.repo.TokenService;
@@ -182,7 +183,6 @@ public class BioSamplesAapService {
    */
   public Sample handleSampleDomain(Sample sample)
       throws SampleNotAccessibleException, DomainMissingException {
-
     // get the domains the current user has access to
     Set<String> usersDomains = getDomains();
 
@@ -190,18 +190,12 @@ public class BioSamplesAapService {
       // if the sample doesn't have a domain, and the user has one domain, then they must be
       // submitting to that domain
       if (usersDomains.size() == 1) {
-        //				sample = Sample.build(sample.getName(), sample.getAccession(),
-        //						usersDomains.iterator().next(), sample.getRelease(), sample.getUpdate(),
-        //						sample.getAttributes(), sample.getRelationships(),
-        // sample.getExternalReferences(),
-        //						sample.getOrganizations(), sample.getContacts(), sample.getPublications());
         sample =
             Sample.Builder.fromSample(sample)
                 .withDomain(usersDomains.iterator().next())
                 .withNoWebinSubmissionAccountId()
                 .build();
       } else {
-        // if the sample doesn't have a domain, and we can't guess one, then end
         throw new DomainMissingException();
       }
     }

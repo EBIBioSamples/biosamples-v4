@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 
 @Service
@@ -24,6 +25,7 @@ public class EnaCallableFactory {
   private final BioSamplesClient bioSamplesAapClient;
   private final EnaXmlEnhancer enaXmlEnhancer;
   private final EnaElementConverter enaElementConverter;
+  private final EgaSampleExporter egaSampleExporter;
   private final EraProDao eraProDao;
   private final String webinId;
 
@@ -32,12 +34,14 @@ public class EnaCallableFactory {
       BioSamplesClient bioSamplesAapClient,
       EnaXmlEnhancer enaXmlEnhancer,
       EnaElementConverter enaElementConverter,
+      EgaSampleExporter egaSampleExporter,
       EraProDao eraProDao,
       PipelinesProperties pipelinesProperties) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
     this.bioSamplesAapClient = bioSamplesAapClient;
     this.enaXmlEnhancer = enaXmlEnhancer;
     this.enaElementConverter = enaElementConverter;
+    this.egaSampleExporter = egaSampleExporter;
     this.eraProDao = eraProDao;
     this.webinId = pipelinesProperties.getProxyWebinId();
   }
@@ -54,6 +58,7 @@ public class EnaCallableFactory {
    */
   public Callable<Void> build(
       String accession,
+      String egaId,
       int statusId,
       boolean suppressionHandler,
       boolean killedHandler,
@@ -61,11 +66,13 @@ public class EnaCallableFactory {
       Set<AbstractData> amrData) {
     return new EnaCallable(
         accession,
+        egaId,
         statusId,
         bioSamplesWebinClient,
         bioSamplesAapClient,
         enaXmlEnhancer,
         enaElementConverter,
+        egaSampleExporter,
         eraProDao,
         webinId,
         suppressionHandler,
