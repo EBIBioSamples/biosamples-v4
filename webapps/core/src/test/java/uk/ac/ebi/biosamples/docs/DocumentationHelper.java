@@ -188,6 +188,7 @@ public class DocumentationHelper {
                         new StructuredCell(
                             "FUB",
                             "https://www.fu-berlin.de/en/sites/china/ueberfub/forschung/index.html"))
+                    .withMethod(new StructuredCell("TEST", ""))
                     .build())
             .addEntry(
                 new HistologyEntry.Builder()
