@@ -17,6 +17,9 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.exception.AccessControlException;
 import uk.ac.ebi.biosamples.model.AuthToken;
@@ -24,6 +27,7 @@ import uk.ac.ebi.biosamples.model.auth.LoginWays;
 
 @Service
 public class AccessControlService {
+  private Logger log = LoggerFactory.getLogger(getClass());
   private final ObjectMapper objectMapper;
 
   public AccessControlService(ObjectMapper objectMapper) {
@@ -51,7 +55,7 @@ public class AccessControlService {
 
       JsonNode node = objectMapper.readTree(payload);
       if (node.get("iss") != null
-          && "https://explore.aai.ebi.ac.uk/sp".equals(node.get("iss").asText())) {
+          && isIss(node)) {
         authority = LoginWays.AAP;
         user = node.get("sub").asText();
         roles =
@@ -68,6 +72,13 @@ public class AccessControlService {
     }
 
     return authToken;
+  }
+
+  private boolean isIss(JsonNode node) {
+    final String iss = node.get("iss").asText();
+    log.info("ISS is " + iss);
+
+    return "https://explore.aai.ebi.ac.uk/sp".equals(iss) || "https://aai.ebi.ac.uk/sp".equals(iss);
   }
 
   public boolean verifySignature(String token) {
