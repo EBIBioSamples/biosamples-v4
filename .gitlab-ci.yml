@@ -149,6 +149,7 @@ deploy-production-p2m-servers:
     # Copy scripts and other config
     - scp -r -v -o StrictHostKeyChecking=no deployment/* tc_spo01@wp-p2m-40:/mnt/data/biosamples/sw/www/
     - scp -r -v -o StrictHostKeyChecking=no config/* tc_spo01@wp-p2m-40:/mnt/data/biosamples/
+    - scp -r -v -o StrictHostKeyChecking=no /mnt/data/biosamples/sw/www/wp-p2m-40/ tc_spo01@wp-p2m-40:/mnt/data/biosamples/sw/www/
     # mark all scripts as executable
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p2m-40 'chmod ug+x /mnt/data/biosamples/sw/www/*.sh'
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p2m-40 'chmod ug+x /mnt/data/biosamples/servers/*/*/*.sh'
@@ -182,6 +183,7 @@ deploy-production-p2m-servers:
     # Copy scripts and other config
     - scp -r -v -o StrictHostKeyChecking=no deployment/* tc_spo01@wp-p2m-41:/mnt/data/biosamples/sw/www/
     - scp -r -v -o StrictHostKeyChecking=no config/* tc_spo01@wp-p2m-41:/mnt/data/biosamples/
+    - scp -r -v -o StrictHostKeyChecking=no /mnt/data/biosamples/sw/www/wp-p2m-41/ tc_spo01@wp-p2m-40:/mnt/data/biosamples/sw/www/
     # mark all scripts as executable
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p2m-41 'chmod ug+x /mnt/data/biosamples/sw/www/*.sh'
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p2m-41 'chmod ug+x /mnt/data/biosamples/servers/*/*/*.sh'
@@ -196,7 +198,7 @@ deploy-production-p2m-servers:
     - sleep 15
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p2m-41 '/mnt/data/biosamples/servers/monit/wp-p2m-41.2812/monit.sh start all'
     # poll for services
-    - sleep 3000
+    - sleep 300
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p2m-41 /mnt/data/biosamples/sw/www/http-status-check -t 3600 -u 'http://wp-p2m-41.ebi.ac.uk:8081/biosamples/health'
   when: manual
   only:
@@ -231,6 +233,7 @@ deploy-production-p1m-servers:
       # Copy scripts and other config
       - scp -r -v -o StrictHostKeyChecking=no deployment/* tc_spo01@wp-p1m-40:/mnt/data/biosamples/sw/www/
       - scp -r -v -o StrictHostKeyChecking=no config/* tc_spo01@wp-p1m-40:/mnt/data/biosamples/
+      - scp -r -v -o StrictHostKeyChecking=no /mnt/data/biosamples/sw/www/wp-p1m-40/ tc_spo01@wp-p2m-40:/mnt/data/biosamples/sw/www/
       # mark all scripts as executable
       - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 'chmod ug+x /mnt/data/biosamples/sw/www/*.sh'
       - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 'chmod ug+x /mnt/data/biosamples/servers/*/*/*.sh'
@@ -264,6 +267,7 @@ deploy-production-p1m-servers:
       # Copy scripts and other config
       - scp -r -v -o StrictHostKeyChecking=no deployment/* tc_spo01@wp-p1m-41:/mnt/data/biosamples/sw/www/
       - scp -r -v -o StrictHostKeyChecking=no config/* tc_spo01@wp-p1m-41:/mnt/data/biosamples/
+      - scp -r -v -o StrictHostKeyChecking=no /mnt/data/biosamples/sw/www/wp-p1m-41/ tc_spo01@wp-p2m-40:/mnt/data/biosamples/sw/www/
       # mark all scripts as executable
       - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 'chmod ug+x /mnt/data/biosamples/sw/www/*.sh'
       - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 'chmod ug+x /mnt/data/biosamples/servers/*/*/*.sh'
@@ -278,7 +282,7 @@ deploy-production-p1m-servers:
       - sleep 15
       - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 '/mnt/data/biosamples/servers/monit/wp-p1m-41.2812/monit.sh start all'
       # poll for services
-      - sleep 3000
+      - sleep 300
       - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 /mnt/data/biosamples/sw/www/http-status-check -t 3600 -u 'http://wp-p1m-41.ebi.ac.uk:8081/biosamples/health'
     when: manual
     only:
