@@ -100,7 +100,11 @@ public class LoginController {
         model.addAttribute("token", token);
         model.remove("wrongCreds");
 
-        fetchRecentSubmissions(model, token);
+        try {
+          fetchRecentSubmissions(model, token);
+        } catch (final Exception e) {
+          log.info("Failed to fetch recent submissions " + e.getMessage() + " caught");
+        }
 
         return "upload";
       } else {
@@ -119,7 +123,11 @@ public class LoginController {
           model.addAttribute("token", token);
           model.remove("wrongCreds");
 
-          fetchRecentSubmissions(model, token);
+          try {
+            fetchRecentSubmissions(model, token);
+          } catch (final Exception e) {
+            log.info("Failed to fetch recent submissions " + e.getMessage() + " caught");
+          }
 
           return "upload";
         }
@@ -145,14 +153,20 @@ public class LoginController {
       model.addAttribute("submissions", uploads);
     } catch (final Exception e) {
       log.info("Failed to fetch recent submissions " + e.getMessage());
+      model.addAttribute("submissions", null);
       throw new RuntimeException(e);
     }
   }
 
   private List<MongoFileUpload> getSubmissions(final String token) {
-    final AuthToken authToken = accessControlService.extractToken(token);
-    final List<String> userRoles = accessControlService.getUserRoles(authToken);
+    try {
+      final AuthToken authToken = accessControlService.extractToken(token);
+      final List<String> userRoles = accessControlService.getUserRoles(authToken);
 
-    return fileUploadService.getUserSubmissions(userRoles);
+      return fileUploadService.getUserSubmissions(userRoles);
+    } catch (final Exception e) {
+      log.info("Failed in fetch submissions in getSubmissions() " + e.getMessage());
+      throw new RuntimeException(e);
+    }
   }
 }

@@ -346,8 +346,12 @@ public class FileUploadService {
   }
 
   public List<MongoFileUpload> getUserSubmissions(final List<String> userRoles) {
-    // TODO remove accession and details from response
-    final Pageable page = new PageRequest(0, 10);
-    return mongoFileUploadRepository.findBySubmitterDetailsIn(userRoles, page);
+    try {
+      final Pageable page = new PageRequest(0, 10);
+      return mongoFileUploadRepository.findBySubmitterDetailsIn(userRoles, page);
+    } catch (final Exception e) {
+      log.info("Failed in fetch submissions in getUserSubmissions() " + e.getMessage());
+      throw new RuntimeException(e);
+    }
   }
 }
