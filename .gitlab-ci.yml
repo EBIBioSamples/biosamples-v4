@@ -149,7 +149,7 @@ deploy-production-p2m-servers:
     # Copy scripts and other config
     - scp -r -v -o StrictHostKeyChecking=no deployment/* tc_spo01@wp-p2m-40:/mnt/data/biosamples/sw/www/
     - scp -r -v -o StrictHostKeyChecking=no config/* tc_spo01@wp-p2m-40:/mnt/data/biosamples/
-    - scp -r -v -o StrictHostKeyChecking=no /mnt/data/biosamples/sw/www/wp-p2m-40/ tc_spo01@wp-p2m-40:/mnt/data/biosamples/sw/www/
+    - scp -r -v -o StrictHostKeyChecking=no /mnt/data/biosamples/config/sw/www/wp-p2m-40/ tc_spo01@wp-p2m-40:/mnt/data/biosamples/sw/www/
     # mark all scripts as executable
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p2m-40 'chmod ug+x /mnt/data/biosamples/sw/www/*.sh'
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p2m-40 'chmod ug+x /mnt/data/biosamples/servers/*/*/*.sh'
@@ -183,7 +183,7 @@ deploy-production-p2m-servers:
     # Copy scripts and other config
     - scp -r -v -o StrictHostKeyChecking=no deployment/* tc_spo01@wp-p2m-41:/mnt/data/biosamples/sw/www/
     - scp -r -v -o StrictHostKeyChecking=no config/* tc_spo01@wp-p2m-41:/mnt/data/biosamples/
-    - scp -r -v -o StrictHostKeyChecking=no /mnt/data/biosamples/sw/www/wp-p2m-41/ tc_spo01@wp-p2m-40:/mnt/data/biosamples/sw/www/
+    - scp -r -v -o StrictHostKeyChecking=no /mnt/data/biosamples/config/sw/www/wp-p2m-41/ tc_spo01@wp-p2m-41:/mnt/data/biosamples/sw/www/
     # mark all scripts as executable
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p2m-41 'chmod ug+x /mnt/data/biosamples/sw/www/*.sh'
     - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p2m-41 'chmod ug+x /mnt/data/biosamples/servers/*/*/*.sh'
@@ -233,7 +233,7 @@ deploy-production-p1m-servers:
       # Copy scripts and other config
       - scp -r -v -o StrictHostKeyChecking=no deployment/* tc_spo01@wp-p1m-40:/mnt/data/biosamples/sw/www/
       - scp -r -v -o StrictHostKeyChecking=no config/* tc_spo01@wp-p1m-40:/mnt/data/biosamples/
-      - scp -r -v -o StrictHostKeyChecking=no /mnt/data/biosamples/sw/www/wp-p1m-40/ tc_spo01@wp-p2m-40:/mnt/data/biosamples/sw/www/
+      - scp -r -v -o StrictHostKeyChecking=no /mnt/data/biosamples/config/sw/www/wp-p1m-40/ tc_spo01@wp-p1m-40:/mnt/data/biosamples/sw/www/
       # mark all scripts as executable
       - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 'chmod ug+x /mnt/data/biosamples/sw/www/*.sh'
       - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-40 'chmod ug+x /mnt/data/biosamples/servers/*/*/*.sh'
@@ -267,7 +267,7 @@ deploy-production-p1m-servers:
       # Copy scripts and other config
       - scp -r -v -o StrictHostKeyChecking=no deployment/* tc_spo01@wp-p1m-41:/mnt/data/biosamples/sw/www/
       - scp -r -v -o StrictHostKeyChecking=no config/* tc_spo01@wp-p1m-41:/mnt/data/biosamples/
-      - scp -r -v -o StrictHostKeyChecking=no /mnt/data/biosamples/sw/www/wp-p1m-41/ tc_spo01@wp-p2m-40:/mnt/data/biosamples/sw/www/
+      - scp -r -v -o StrictHostKeyChecking=no /mnt/data/biosamples/config/sw/www/wp-p1m-41/ tc_spo01@wp-p1m-41:/mnt/data/biosamples/sw/www/
       # mark all scripts as executable
       - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 'chmod ug+x /mnt/data/biosamples/sw/www/*.sh'
       - ssh -v -o StrictHostKeyChecking=no tc_spo01@wp-p1m-41 'chmod ug+x /mnt/data/biosamples/servers/*/*/*.sh'
