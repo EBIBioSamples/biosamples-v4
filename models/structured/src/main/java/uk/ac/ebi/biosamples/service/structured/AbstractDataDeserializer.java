@@ -63,9 +63,9 @@ public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
     } else if (type == StructuredDataType.CHICKEN_DATA
         || type == StructuredDataType.HISTOLOGY_MARKERS
         || type == StructuredDataType.MOLECULAR_MARKERS
-            || type == StructuredDataType.FATTY_ACIDS
-            || type == StructuredDataType.SALMON_DATA
-            || type == StructuredDataType.HEAVY_METALS) {
+        || type == StructuredDataType.FATTY_ACIDS
+        || type == StructuredDataType.SALMON_DATA
+        || type == StructuredDataType.HEAVY_METALS) {
       StructuredTable.Builder<HistologyEntry> tableBuilder =
           new StructuredTable.Builder<>(schema, domainStr, webinIdStr, type);
       for (Iterator<JsonNode> it = content.elements(); it.hasNext(); ) {

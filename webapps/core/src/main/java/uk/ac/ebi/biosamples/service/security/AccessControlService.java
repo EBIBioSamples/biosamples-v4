@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -54,8 +53,7 @@ public class AccessControlService {
       List<String> roles;
 
       JsonNode node = objectMapper.readTree(payload);
-      if (node.get("iss") != null
-          && isIss(node)) {
+      if (node.get("iss") != null && isIss(node)) {
         authority = LoginWays.AAP;
         user = node.get("sub").asText();
         roles =
