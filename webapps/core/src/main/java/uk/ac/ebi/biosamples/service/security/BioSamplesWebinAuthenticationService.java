@@ -160,8 +160,10 @@ public class BioSamplesWebinAuthenticationService {
   private boolean checkOtherENARegistrationDomains(final String sampleDomain) {
     if (sampleDomain != null) {
       return sampleDomain.equals("self.Webin")
-          || sampleDomain.equals(
-              "3fa5e19ccafc88187d437f92cf29c3b6694c6c6f98efa236c8aa0aeaf5b23f15");
+          || sampleDomain.equals("3fa5e19ccafc88187d437f92cf29c3b6694c6c6f98efa236c8aa0aeaf5b23f15")
+          || sampleDomain.equals("self.BiosampleImportAcccession")
+          || sampleDomain.equals("self.BioSamplesMigration")
+          || sampleDomain.startsWith("self.BioSamples");
     } else {
       return false;
     }
