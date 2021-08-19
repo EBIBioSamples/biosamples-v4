@@ -84,13 +84,13 @@ public class BioSamplesWebinAuthenticationService {
 
   public Sample handleWebinUser(Sample sample, String webinId) {
     final String biosamplesClientWebinUsername =
-            bioSamplesProperties.getBiosamplesClientWebinUsername();
-    final String webinSubmissionAccountIdInMetadata =
-            sample.getWebinSubmissionAccountId();
+        bioSamplesProperties.getBiosamplesClientWebinUsername();
+    final String webinSubmissionAccountIdInMetadata = sample.getWebinSubmissionAccountId();
 
     if (webinId != null && !webinId.isEmpty()) { // webin id retrieval failure - throw Exception
-      final String webinIdToUse = (webinSubmissionAccountIdInMetadata != null
-              && !webinSubmissionAccountIdInMetadata.isEmpty())
+      final String webinIdToUse =
+          (webinSubmissionAccountIdInMetadata != null
+                  && !webinSubmissionAccountIdInMetadata.isEmpty())
               ? webinSubmissionAccountIdInMetadata
               : biosamplesClientWebinUsername;
 
@@ -98,38 +98,36 @@ public class BioSamplesWebinAuthenticationService {
         final Optional<Sample> oldSample = getOldSample(sample);
 
         if (webinId.equalsIgnoreCase(
-                biosamplesClientWebinUsername)) { // ENA pipeline submissions or super user submission
+            biosamplesClientWebinUsername)) { // ENA pipeline submissions or super user submission
           if (oldSample.isPresent()) {
             final Sample oldSavedSample = oldSample.get();
             final String oldSavedSampleWebinSubmissionAccountId =
-                    oldSavedSample.getWebinSubmissionAccountId();
+                oldSavedSample.getWebinSubmissionAccountId();
 
             if (oldSavedSampleWebinSubmissionAccountId != null
-                    && !oldSavedSampleWebinSubmissionAccountId
+                && !oldSavedSampleWebinSubmissionAccountId
                     .isEmpty()) { // if old sample has user info, use it
               if (oldSavedSampleWebinSubmissionAccountId.equals(biosamplesClientWebinUsername)) {
                 return getSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
               } else {
                 return getSampleWithWebinSubmissionAccountId(
-                        sample, oldSavedSampleWebinSubmissionAccountId);
+                    sample, oldSavedSampleWebinSubmissionAccountId);
               }
             } else {
               final String oldSampleDomain = oldSavedSample.getDomain();
 
-              if (sampleService.isPipelineEnaOrNcbiDomain(
-                      oldSampleDomain) || checkOtherENARegistrationDomains(oldSampleDomain)) { // if old sample was a pipeline submission using AAP, or pre registration, allow
+              if (sampleService.isPipelineEnaOrNcbiDomain(oldSampleDomain)
+                  || checkOtherENARegistrationDomains(
+                      oldSampleDomain)) { // if old sample was a pipeline submission using AAP, or
+                // pre registration, allow
                 // webin replacement
-                return getSampleWithWebinSubmissionAccountId(
-                        sample,
-                        webinIdToUse);
+                return getSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
               } else {
                 throw new SampleNotAccessibleException();
               }
             }
           } else {
-            return getSampleWithWebinSubmissionAccountId(
-                    sample,
-                    webinIdToUse);
+            return getSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
           }
         } else { // normal sample update - not pipeline, check for old user, if mismatch throw
           // exception, else build the Sample
@@ -137,7 +135,7 @@ public class BioSamplesWebinAuthenticationService {
             final Sample oldSavedSample = oldSample.get();
 
             if (!webinId.equalsIgnoreCase(
-                    oldSavedSample.getWebinSubmissionAccountId())) { // original submitter mismatch
+                oldSavedSample.getWebinSubmissionAccountId())) { // original submitter mismatch
               throw new SampleNotAccessibleException();
             } else {
               return getSampleWithWebinSubmissionAccountId(sample, webinId);
@@ -148,10 +146,8 @@ public class BioSamplesWebinAuthenticationService {
         }
       } else { // new submission
         if (webinId.equalsIgnoreCase(
-                biosamplesClientWebinUsername)) { // new submission by client program
-          return getSampleWithWebinSubmissionAccountId(
-                  sample,
-                  webinIdToUse);
+            biosamplesClientWebinUsername)) { // new submission by client program
+          return getSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
         } else {
           return getSampleWithWebinSubmissionAccountId(sample, webinId);
         }
@@ -163,7 +159,9 @@ public class BioSamplesWebinAuthenticationService {
 
   private boolean checkOtherENARegistrationDomains(final String sampleDomain) {
     if (sampleDomain != null) {
-      return sampleDomain.equals("self.Webin") || sampleDomain.equals("3fa5e19ccafc88187d437f92cf29c3b6694c6c6f98efa236c8aa0aeaf5b23f15");
+      return sampleDomain.equals("self.Webin")
+          || sampleDomain.equals(
+              "3fa5e19ccafc88187d437f92cf29c3b6694c6c6f98efa236c8aa0aeaf5b23f15");
     } else {
       return false;
     }
