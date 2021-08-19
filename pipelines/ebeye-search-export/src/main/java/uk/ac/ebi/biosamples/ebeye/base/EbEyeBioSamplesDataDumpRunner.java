@@ -303,7 +303,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
               if (attribute.getType().equals("description")) {
                 entryType.setDescription(attribute.getValue());
               } else {
-                if (sample.getTaxId() != 0) {
+                if (sample.getTaxId() != null && sample.getTaxId() != 0) {
                   taxonomyRefType.setDbname("TAXONOMY");
                   taxonomyRefType.setDbkey(sample.getTaxId().toString());
                 }

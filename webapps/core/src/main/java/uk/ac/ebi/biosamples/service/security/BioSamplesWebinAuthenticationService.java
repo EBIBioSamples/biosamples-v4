@@ -85,8 +85,15 @@ public class BioSamplesWebinAuthenticationService {
   public Sample handleWebinUser(Sample sample, String webinId) {
     final String biosamplesClientWebinUsername =
         bioSamplesProperties.getBiosamplesClientWebinUsername();
+    final String webinSubmissionAccountIdInMetadata = sample.getWebinSubmissionAccountId();
 
     if (webinId != null && !webinId.isEmpty()) { // webin id retrieval failure - throw Exception
+      final String webinIdToUse =
+          (webinSubmissionAccountIdInMetadata != null
+                  && !webinSubmissionAccountIdInMetadata.isEmpty())
+              ? webinSubmissionAccountIdInMetadata
+              : biosamplesClientWebinUsername;
+
       if (sample.getAccession() != null) { // sample updates, where sample has an accession
         final Optional<Sample> oldSample = getOldSample(sample);
 
@@ -100,33 +107,27 @@ public class BioSamplesWebinAuthenticationService {
             if (oldSavedSampleWebinSubmissionAccountId != null
                 && !oldSavedSampleWebinSubmissionAccountId
                     .isEmpty()) { // if old sample has user info, use it
-              return getSampleWithWebinSubmissionAccountId(
-                  sample, oldSavedSampleWebinSubmissionAccountId);
-            } else if (sampleService.isPipelineEnaOrNcbiDomain(
-                oldSavedSample
-                    .getDomain())) { // if old sample was a pipeline submission using AAP, allow
-              // webin replacement
-              final String webinSubmissionAccountIdInMetadata =
-                  sample.getWebinSubmissionAccountId();
-
-              return getSampleWithWebinSubmissionAccountId(
-                  sample,
-                  (webinSubmissionAccountIdInMetadata != null
-                          && !webinSubmissionAccountIdInMetadata.isEmpty())
-                      ? webinSubmissionAccountIdInMetadata
-                      : biosamplesClientWebinUsername);
+              if (oldSavedSampleWebinSubmissionAccountId.equals(biosamplesClientWebinUsername)) {
+                return getSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
+              } else {
+                return getSampleWithWebinSubmissionAccountId(
+                    sample, oldSavedSampleWebinSubmissionAccountId);
+              }
             } else {
-              throw new SampleNotAccessibleException();
+              final String oldSampleDomain = oldSavedSample.getDomain();
+
+              if (sampleService.isPipelineEnaOrNcbiDomain(oldSampleDomain)
+                  || checkOtherENARegistrationDomains(
+                      oldSampleDomain)) { // if old sample was a pipeline submission using AAP, or
+                // pre registration, allow
+                // webin replacement
+                return getSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
+              } else {
+                throw new SampleNotAccessibleException();
+              }
             }
           } else {
-            final String webinSubmissionAccountIdInMetadata = sample.getWebinSubmissionAccountId();
-
-            return getSampleWithWebinSubmissionAccountId(
-                sample,
-                (webinSubmissionAccountIdInMetadata != null
-                        && !webinSubmissionAccountIdInMetadata.isEmpty())
-                    ? webinSubmissionAccountIdInMetadata
-                    : biosamplesClientWebinUsername);
+            return getSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
           }
         } else { // normal sample update - not pipeline, check for old user, if mismatch throw
           // exception, else build the Sample
@@ -146,23 +147,23 @@ public class BioSamplesWebinAuthenticationService {
       } else { // new submission
         if (webinId.equalsIgnoreCase(
             biosamplesClientWebinUsername)) { // new submission by client program
-          final String webinSubmissionAccountIdInMetadata =
-              sample.getWebinSubmissionAccountId(); // if new submission by client program, override
-          // submission account id in
-          // sample with original account id from sample metadata
-
-          return getSampleWithWebinSubmissionAccountId(
-              sample,
-              (webinSubmissionAccountIdInMetadata != null
-                      && !webinSubmissionAccountIdInMetadata.isEmpty())
-                  ? webinSubmissionAccountIdInMetadata
-                  : biosamplesClientWebinUsername);
+          return getSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
         } else {
           return getSampleWithWebinSubmissionAccountId(sample, webinId);
         }
       }
     } else {
       throw new WebinUserLoginUnauthorizedException();
+    }
+  }
+
+  private boolean checkOtherENARegistrationDomains(final String sampleDomain) {
+    if (sampleDomain != null) {
+      return sampleDomain.equals("self.Webin")
+          || sampleDomain.equals(
+              "3fa5e19ccafc88187d437f92cf29c3b6694c6c6f98efa236c8aa0aeaf5b23f15");
+    } else {
+      return false;
     }
   }
 
