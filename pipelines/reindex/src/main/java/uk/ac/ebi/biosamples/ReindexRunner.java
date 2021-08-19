@@ -10,8 +10,6 @@
 */
 package uk.ac.ebi.biosamples;
 
-import java.util.*;
-import java.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -19,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.util.CloseableIterator;
 import org.springframework.stereotype.Component;
@@ -26,6 +25,12 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.service.SampleReadService;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
+
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * This runner will get a list of accessions from mongo directly, query the API to get the latest
@@ -61,17 +66,38 @@ public class ReindexRunner implements ApplicationRunner {
   @Override
   public void run(ApplicationArguments args) throws Exception {
     Map<String, Future<Void>> futures = new HashMap<>();
-
+    boolean periodicRun = false;
     ExecutorService executor = null;
+
+    if (args.getOptionNames().contains("periodicRun")) {
+      if (args.getOptionValues("periodicRun").iterator().next().equalsIgnoreCase("true")) {
+        periodicRun = true;
+      }
+    }
+
     try {
       executor = Executors.newFixedThreadPool(128);
 
+      final Query query = new Query();
+
+      if (periodicRun) {
+        final Instant current = Instant.now();
+        final Instant now = Instant.parse(DateTimeFormatter.ISO_INSTANT.format(current.minus(24, ChronoUnit.HOURS)));
+        final Instant then = Instant.parse(DateTimeFormatter.ISO_INSTANT.format(current));
+
+        LOGGER.info("From " + now + " to " + then);
+
+        query.addCriteria(Criteria.where("update")
+                .gte(now)
+                .lt(then));
+      }
+
       try (CloseableIterator<MongoSample> it =
-          mongoOperations.stream(new Query(), MongoSample.class)) {
+          mongoOperations.stream(query, MongoSample.class)) {
         while (it.hasNext()) {
           MongoSample mongoSample = it.next();
           String accession = mongoSample.getAccession();
-          LOGGER.info("handling sample " + accession);
+          LOGGER.info("Handling sample " + accession);
           futures.put(
               accession,
               executor.submit(new AccessionCallable(accession, sampleReadService, amqpTemplate)));

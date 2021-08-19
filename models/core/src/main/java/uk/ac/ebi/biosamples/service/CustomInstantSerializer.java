@@ -30,7 +30,7 @@ public class CustomInstantSerializer extends StdSerializer<Instant> {
 
   @Override
   public void serialize(Instant value, JsonGenerator gen, SerializerProvider arg2)
-      throws IOException, JsonProcessingException {
+      throws IOException {
     gen.writeString(DateTimeFormatter.ISO_INSTANT.format(value));
   }
 }
