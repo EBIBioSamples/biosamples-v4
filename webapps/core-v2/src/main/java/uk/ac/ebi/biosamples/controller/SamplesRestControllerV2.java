@@ -150,14 +150,14 @@ public class SamplesRestControllerV2 {
       sample = bioSamplesAapServiceV2.handleSampleDomain(sample);
     }
 
-    sample = privateSampleBuildAndReturnV2(sample);
+    sample = buildPrivateSampleV2(sample);
 
     sample = sampleServiceV2.store(sample, false, authProvider);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(sample);
   }
 
-  private Sample privateSampleBuildAndReturnV2(final Sample sample) {
+  private Sample buildPrivateSampleV2(final Sample sample) {
     final Instant release =
         Instant.ofEpochSecond(
             LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
@@ -230,7 +230,7 @@ public class SamplesRestControllerV2 {
             .map(
                 sample -> {
                   log.trace("Initiating store() for " + sample.getName());
-                  sample = privateSampleBuildAndReturnV2(sample);
+                  sample = buildPrivateSampleV2(sample);
                   return sampleServiceV2.store(sample, false, authProvider);
                 })
             .collect(Collectors.toList());

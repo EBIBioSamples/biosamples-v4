@@ -423,7 +423,7 @@ public class SamplesRestController {
       sample = bioSamplesAapService.handleSampleDomain(sample);
     }
 
-    sample = privateSampleBuildAndReturn(sample);
+    sample = buildPrivateSample(sample);
 
     sample = sampleService.store(sample, false, authProvider);
     final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
@@ -490,7 +490,7 @@ public class SamplesRestController {
             .map(
                 sample -> {
                   log.trace("Initiating store() for " + sample.getName());
-                  sample = privateSampleBuildAndReturn(sample);
+                  sample = buildPrivateSample(sample);
                   return sampleService.store(sample, false, authProvider);
                 })
             .collect(Collectors.toList());
@@ -619,7 +619,7 @@ public class SamplesRestController {
         : now;
   }
 
-  private Sample privateSampleBuildAndReturn(final Sample sample) {
+  private Sample buildPrivateSample(final Sample sample) {
     final Instant release =
         Instant.ofEpochSecond(
             LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
