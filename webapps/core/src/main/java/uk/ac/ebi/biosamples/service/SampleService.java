@@ -40,9 +40,6 @@ import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
  */
 @Service
 public class SampleService {
-  private static final String VALIDATION_MESSAGE =
-      "Only Sample name, sample accession and sample structured data can be provided through this API";
-  private static final String NO_STRUCTURED_DATA_IS_PROVIDED = "No structured data is provided";
   private static final String NCBI_IMPORT_DOMAIN = "self.BiosampleImportNCBI";
   private static final String ENA_IMPORT_DOMAIN = "self.BiosampleImportENA";
   private static Logger log = LoggerFactory.getLogger(SampleService.class);
@@ -211,12 +208,16 @@ public class SampleService {
   }
 
   public Sample storeSampleStructuredData(Sample newSample, String authProvider) {
-    validateSampleContentsForStructuredDataPatching(newSample);
+    try {
+      sampleValidator.validateSampleContentsForStructuredDataPatching(newSample);
+    } catch (final Exception validationException) {
+      throw new SampleValidationException(validationException.getMessage());
+    }
 
     MongoSample mongoOldSample = mongoSampleRepository.findOne(newSample.getAccession());
 
     if (mongoOldSample != null) {
-      newSample = makeNewSample(newSample, mongoSampleToSampleConverter.convert(mongoOldSample));
+      newSample = buildSample(newSample, mongoSampleToSampleConverter.convert(mongoOldSample));
     } else {
       log.error(
           "Trying to update newSample not in database, accession: {}", newSample.getAccession());
@@ -231,45 +232,7 @@ public class SampleService {
     return fetch(newSample.getAccession(), Optional.empty(), null).get();
   }
 
-  private void validateSampleContentsForStructuredDataPatching(Sample newSample) {
-    assert newSample.getData() != null;
-
-    final String domain = newSample.getDomain();
-
-    if (!(newSample.getData().size() > 0)) {
-      throw new SampleValidationException(NO_STRUCTURED_DATA_IS_PROVIDED);
-    }
-
-    if (newSample.getAttributes() != null && newSample.getAttributes().size() > 0) {
-      throw new SampleValidationException(VALIDATION_MESSAGE);
-    }
-
-    if (newSample.getExternalReferences() != null && newSample.getExternalReferences().size() > 0) {
-      throw new SampleValidationException(VALIDATION_MESSAGE);
-    }
-
-    if (newSample.getRelationships() != null && newSample.getRelationships().size() > 0) {
-      throw new SampleValidationException(VALIDATION_MESSAGE);
-    }
-
-    if (newSample.getContacts() != null && newSample.getContacts().size() > 0) {
-      throw new SampleValidationException(VALIDATION_MESSAGE);
-    }
-
-    if (newSample.getPublications() != null && newSample.getPublications().size() > 0) {
-      throw new SampleValidationException(VALIDATION_MESSAGE);
-    }
-
-    if (domain != null && domain.length() > 0) {
-      throw new SampleValidationException(VALIDATION_MESSAGE);
-    }
-
-    if (!newSample.hasAccession()) {
-      throw new SampleValidationException("Sample doesn't have an accession");
-    }
-  }
-
-  private Sample makeNewSample(Sample newSample, Sample oldSample) {
+  private Sample buildSample(Sample newSample, Sample oldSample) {
     return Sample.Builder.fromSample(oldSample)
         .withData(newSample.getData())
         .withUpdate(Instant.now())
