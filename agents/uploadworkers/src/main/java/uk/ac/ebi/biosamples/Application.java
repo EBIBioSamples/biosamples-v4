@@ -18,6 +18,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.amqp.SimpleRabbitListenerContainerFactoryConfigurer;
 import org.springframework.context.annotation.Bean;
+import uk.ac.ebi.biosamples.mongo.MongoProperties;
+import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
+import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
+import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
+import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 
 @SpringBootApplication
 public class Application {
@@ -40,5 +45,20 @@ public class Application {
     configurer.configure(factory, connectionFactory);
 
     return factory;
+  }
+
+  @Bean(name = "SampleAccessionService")
+  public MongoAccessionService mongoSampleAccessionService(
+      MongoSampleRepository mongoSampleRepository,
+      SampleToMongoSampleConverter sampleToMongoSampleConverter,
+      MongoSampleToSampleConverter mongoSampleToSampleConverter,
+      MongoProperties mongoProperties) {
+    return new MongoAccessionService(
+        mongoSampleRepository,
+        sampleToMongoSampleConverter,
+        mongoSampleToSampleConverter,
+        mongoProperties.getAccessionPrefix(),
+        mongoProperties.getAccessionMinimum(),
+        mongoProperties.getAcessionQueueSize());
   }
 }

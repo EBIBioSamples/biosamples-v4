@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
@@ -99,6 +100,12 @@ public class BioSamplesWebinAuthenticationService {
 
         if (webinId.equalsIgnoreCase(
             biosamplesClientWebinUsername)) { // ENA pipeline submissions or super user submission
+          if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
+            if (oldSample.isPresent() && !sample.getWebinSubmissionAccountId().equals(oldSample.get().getWebinSubmissionAccountId())) {
+              throw new SampleNotAccessibleException();
+            }
+          }
+
           if (oldSample.isPresent()) {
             final Sample oldSavedSample = oldSample.get();
             final String oldSavedSampleWebinSubmissionAccountId =

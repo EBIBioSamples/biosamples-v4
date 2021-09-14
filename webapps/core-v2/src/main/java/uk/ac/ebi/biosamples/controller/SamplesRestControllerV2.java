@@ -32,10 +32,10 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.SampleServiceV2;
-import uk.ac.ebi.biosamples.service.SchemaValidationServiceV2;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapServiceV2;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationServiceV2;
-import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientServiceV2;
+import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
+import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @RestController
 @ExposesResourceFor(Sample.class)
@@ -44,23 +44,23 @@ import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientServiceV2;
 public class SamplesRestControllerV2 {
   private Logger log = LoggerFactory.getLogger(getClass());
 
-  private final SampleServiceV2 sampleServiceV2;
-  private final BioSamplesAapServiceV2 bioSamplesAapServiceV2;
-  private final BioSamplesWebinAuthenticationServiceV2 bioSamplesWebinAuthenticationServiceV2;
-  private final SchemaValidationServiceV2 schemaValidationServiceV2;
-  private final ENATaxonClientServiceV2 enaTaxonClientServiceV2;
+  private final SampleServiceV2 sampleService;
+  private final BioSamplesAapService bioSamplesAapService;
+  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
+  private final SchemaValidationService schemaValidationService;
+  private final ENATaxonClientService enaTaxonClientService;
 
   public SamplesRestControllerV2(
-      final SampleServiceV2 sampleServiceV2,
-      final BioSamplesAapServiceV2 bioSamplesAapServiceV2,
-      final BioSamplesWebinAuthenticationServiceV2 bioSamplesWebinAuthenticationServiceV2,
-      final SchemaValidationServiceV2 schemaValidationServiceV2,
-      final ENATaxonClientServiceV2 enaTaxonClientServiceV2) {
-    this.sampleServiceV2 = sampleServiceV2;
-    this.bioSamplesAapServiceV2 = bioSamplesAapServiceV2;
-    this.bioSamplesWebinAuthenticationServiceV2 = bioSamplesWebinAuthenticationServiceV2;
-    this.schemaValidationServiceV2 = schemaValidationServiceV2;
-    this.enaTaxonClientServiceV2 = enaTaxonClientServiceV2;
+      final SampleServiceV2 sampleService,
+      final BioSamplesAapService bioSamplesAapService,
+      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+      final SchemaValidationService schemaValidationService,
+      final ENATaxonClientService enaTaxonClientService) {
+    this.sampleService = sampleService;
+    this.bioSamplesAapService = bioSamplesAapService;
+    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
+    this.schemaValidationService = schemaValidationService;
+    this.enaTaxonClientService = enaTaxonClientService;
   }
 
   @PreAuthorize("isAuthenticated()")
@@ -82,11 +82,11 @@ public class SamplesRestControllerV2 {
 
       final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationServiceV2
+          bioSamplesWebinAuthenticationService
               .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
               .getBody();
       final String webinAccountId = webinAccount.getId();
-      isWebinSuperUser = bioSamplesWebinAuthenticationServiceV2.isWebinSuperUser(webinAccountId);
+      isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
       final boolean finalIsWebinSuperUser = isWebinSuperUser;
 
       return ResponseEntity.status(HttpStatus.CREATED)
@@ -95,15 +95,15 @@ public class SamplesRestControllerV2 {
                   .map(
                       sample -> {
                         sample =
-                            bioSamplesWebinAuthenticationServiceV2.handleWebinUser(
+                            bioSamplesWebinAuthenticationService.handleWebinUser(
                                 sample, webinAccountId);
 
                         if (!finalIsWebinSuperUser) {
-                          schemaValidationServiceV2.validate(sample);
-                          sample = enaTaxonClientServiceV2.performTaxonomyValidation(sample);
+                          schemaValidationService.validate(sample);
+                          sample = enaTaxonClientService.performTaxonomyValidation(sample);
                         }
 
-                        return sampleServiceV2.store(sample, true, authProvider);
+                        return sampleService.store(sample, true, authProvider);
                       })
                   .collect(Collectors.toList()));
     } else {
@@ -112,13 +112,13 @@ public class SamplesRestControllerV2 {
               samples.stream()
                   .map(
                       sample -> {
-                        sample = bioSamplesAapServiceV2.handleSampleDomain(sample);
+                        sample = bioSamplesAapService.handleSampleDomain(sample);
 
-                        if (!bioSamplesAapServiceV2.isWriteSuperUser()) {
-                          schemaValidationServiceV2.validate(sample);
+                        if (!bioSamplesAapService.isWriteSuperUser()) {
+                          schemaValidationService.validate(sample);
                         }
 
-                        return sampleServiceV2.store(sample, true, authProvider);
+                        return sampleService.store(sample, true, authProvider);
                       })
                   .collect(Collectors.toList()));
     }
@@ -141,18 +141,18 @@ public class SamplesRestControllerV2 {
       final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
       final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationServiceV2
+          bioSamplesWebinAuthenticationService
               .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
               .getBody();
 
-      sample = bioSamplesWebinAuthenticationServiceV2.handleWebinUser(sample, webinAccount.getId());
+      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
     } else {
-      sample = bioSamplesAapServiceV2.handleSampleDomain(sample);
+      sample = bioSamplesAapService.handleSampleDomain(sample);
     }
 
     sample = buildPrivateSampleV2(sample);
 
-    sample = sampleServiceV2.store(sample, false, authProvider);
+    sample = sampleService.store(sample, false, authProvider);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(sample);
   }
@@ -195,7 +195,7 @@ public class SamplesRestControllerV2 {
       final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
       final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationServiceV2
+          bioSamplesWebinAuthenticationService
               .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
               .getBody();
 
@@ -203,13 +203,13 @@ public class SamplesRestControllerV2 {
           samples.stream()
               .map(
                   sample ->
-                      bioSamplesWebinAuthenticationServiceV2.getSampleWithWebinSubmissionAccountId(
+                      bioSamplesWebinAuthenticationService.getSampleWithWebinSubmissionAccountId(
                           sample, webinAccount.getId()))
               .collect(Collectors.toList());
     } else {
       if (samples.size() > 0) {
         Sample firstSample = samples.get(0);
-        firstSample = bioSamplesAapServiceV2.handleSampleDomain(firstSample);
+        firstSample = bioSamplesAapService.handleSampleDomain(firstSample);
 
         final Sample finalFirstSample = firstSample;
 
@@ -231,7 +231,7 @@ public class SamplesRestControllerV2 {
                 sample -> {
                   log.trace("Initiating store() for " + sample.getName());
                   sample = buildPrivateSampleV2(sample);
-                  return sampleServiceV2.store(sample, false, authProvider);
+                  return sampleService.store(sample, false, authProvider);
                 })
             .collect(Collectors.toList());
 
