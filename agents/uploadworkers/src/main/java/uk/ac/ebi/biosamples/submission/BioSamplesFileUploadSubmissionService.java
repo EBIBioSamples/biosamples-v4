@@ -213,7 +213,7 @@ public class BioSamplesFileUploadSubmissionService {
         fileUploadUtils.createRelationships(
             sample, sampleNameToAccessionMap, relationshipMap, validationResult);
 
-    relationships.forEach(relationship -> log.trace(relationship.toString()));
+    relationships.forEach(relationship -> log.info(relationship.toString()));
 
     sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
 

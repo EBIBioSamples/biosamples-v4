@@ -48,10 +48,10 @@ import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 import uk.ac.ebi.biosamples.model.structured.amr.AmrPair;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.SchemaValidationService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
+import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -219,7 +219,7 @@ public class AMRTest {
 
     when(bioSamplesAapService.isWriteSuperUser()).thenReturn(true);
     when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
-    when(bioSamplesAapService.handleStructuredDataDomainInData(any(Sample.class)))
+    when(bioSamplesAapService.handleStructuredDataDomain(any(Sample.class)))
         .thenReturn(testSample);
     when(sampleService.store(testSample, true, "AAP")).thenReturn(testSample);
 
@@ -267,7 +267,7 @@ public class AMRTest {
 
     when(bioSamplesAapService.isWriteSuperUser()).thenReturn(false);
     when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
-    when(bioSamplesAapService.handleStructuredDataDomainInData(any(Sample.class)))
+    when(bioSamplesAapService.handleStructuredDataDomain(any(Sample.class)))
         .thenReturn(testSample);
 
     ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);

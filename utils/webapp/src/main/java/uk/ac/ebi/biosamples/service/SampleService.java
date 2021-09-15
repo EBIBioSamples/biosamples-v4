@@ -23,6 +23,7 @@ import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
@@ -48,10 +49,6 @@ public class SampleService {
   @Qualifier("SampleAccessionService")
   @Autowired
   private MongoAccessionService mongoAccessionService;
-
-  @Qualifier("GroupAccessionService")
-  @Autowired
-  private MongoAccessionService groupAccessionService;
 
   @Autowired private MongoSampleRepository mongoSampleRepository;
   @Autowired private MongoSampleToSampleConverter mongoSampleToSampleConverter;
@@ -158,11 +155,6 @@ public class SampleService {
   // Note, pages of samples will not be cache busted, only single-accession sample retrieval
   // @CacheEvict(cacheNames=WebappProperties.fetchUsing, key="#result.accession")
   public Sample store(Sample sample, boolean isFirstTimeMetadataAdded, String authProvider) {
-    return store(sample, false, isFirstTimeMetadataAdded, authProvider);
-  }
-
-  public Sample store(
-      Sample sample, boolean sampleGroup, boolean isFirstTimeMetadataAdded, String authProvider) {
     Collection<String> errors = sampleValidator.validate(sample);
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
@@ -195,11 +187,7 @@ public class SampleService {
       // deleted relationships
       messagingSerivce.fetchThenSendMessage(sample.getAccession(), existingRelationshipTargets);
     } else {
-      if (sampleGroup) {
-        sample = groupAccessionService.generateAccession(sample);
-      } else {
-        sample = mongoAccessionService.generateAccession(sample);
-      }
+      sample = mongoAccessionService.generateAccession(sample);
       messagingSerivce.fetchThenSendMessage(sample.getAccession());
     }
 
@@ -290,17 +278,51 @@ public class SampleService {
       log.info("New sample is similar to the old sample, accession: {}", oldSample.getAccession());
     }
 
+    // Check if old sample has structured data, if yes, retain
+
+    Set<AbstractData> structuredData = new HashSet<>();
+    boolean applyOldSampleStructuredData = false;
+
+    if (
+    /*sampleToUpdate.getData() != null &&*/ sampleToUpdate.getData().size() < 1) {
+      log.info("No structured data in new sample");
+      if (oldSample.getData() != null && oldSample.getData().size() > 0) {
+        structuredData = oldSample.getData();
+        applyOldSampleStructuredData = true;
+
+        log.info("Old sample has structured data");
+      }
+    } else {
+      log.info("New sample has structured data");
+    }
     // Keep the create date as existing sample -- earlier
     // 13/01/2020 - if the sample has a date, acknowledge it. It can be the actual create date
     // from
     // NCBI, ENA.
 
-    return Sample.Builder.fromSample(sampleToUpdate)
-        .withCreate(defineCreateDate(sampleToUpdate, oldSample, authProvider))
-        .withSubmitted(
-            defineSubmittedDate(sampleToUpdate, oldSample, isFirstTimeMetadataAdded, authProvider))
-        // .withUpdate(defineUpdatedDate(sampleToUpdate, oldSample))
-        .build();
+    if (applyOldSampleStructuredData) {
+      log.info("Applying old sample structured data");
+      log.info("Old sample structured data size is " + structuredData.size());
+
+      return Sample.Builder.fromSample(sampleToUpdate)
+          .withCreate(defineCreateDate(sampleToUpdate, oldSample, authProvider))
+          .withSubmitted(
+              defineSubmittedDate(
+                  sampleToUpdate, oldSample, isFirstTimeMetadataAdded, authProvider))
+          // .withUpdate(defineUpdatedDate(sampleToUpdate, oldSample))
+          .withData(structuredData)
+          .build();
+    } else {
+      log.info("Building new sample");
+
+      return Sample.Builder.fromSample(sampleToUpdate)
+          .withCreate(defineCreateDate(sampleToUpdate, oldSample, authProvider))
+          .withSubmitted(
+              defineSubmittedDate(
+                  sampleToUpdate, oldSample, isFirstTimeMetadataAdded, authProvider))
+          // .withUpdate(defineUpdatedDate(sampleToUpdate, oldSample))
+          .build();
+    }
   }
 
   private Instant defineUpdatedDate(Sample sampleToUpdate, Sample oldSample) {

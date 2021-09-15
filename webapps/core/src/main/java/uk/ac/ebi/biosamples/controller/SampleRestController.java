@@ -37,6 +37,7 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
+import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and write.
@@ -322,7 +323,7 @@ public class SampleRestController {
 
       log.debug("Received PATCH for " + accession);
 
-      sample = bioSamplesAapService.handleStructuredDataDomainInData(sample);
+      sample = bioSamplesAapService.handleStructuredDataDomain(sample);
       sample = sampleService.storeSampleStructuredData(sample, authProvider);
 
       return sampleResourceAssembler.toResource(sample);

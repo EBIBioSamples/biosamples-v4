@@ -291,8 +291,11 @@ public class EnaCallable implements Callable<Void> {
             sample.getRelationships(),
             externalReferences);
 
-    if (amrData != null && amrData.size() > 0)
+    if (amrData != null && amrData.size() > 0) {
       sample = Sample.Builder.fromSample(sample).withData(amrData).build();
+    } else {
+      sample = Sample.Builder.fromSample(sample).withNoData().build();
+    }
 
     bioSamplesWebinClient.persistSampleResource(sample);
   }

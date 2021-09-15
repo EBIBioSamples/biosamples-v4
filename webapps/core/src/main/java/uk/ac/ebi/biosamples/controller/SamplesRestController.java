@@ -49,6 +49,7 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationServic
 import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
+import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and write.
@@ -554,7 +555,7 @@ public class SamplesRestController {
       if (!(bioSamplesAapService.isWriteSuperUser()
           || bioSamplesAapService.isIntegrationTestUser())) {
         if (structuredData != null && structuredData.size() > 0) {
-          sample = bioSamplesAapService.handleStructuredDataDomainInData(sample);
+          sample = bioSamplesAapService.handleStructuredDataDomain(sample);
         }
       }
     }
