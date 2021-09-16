@@ -165,7 +165,7 @@ public class BioSamplesFileUploadSubmissionService {
           Sample sample = null;
 
           try {
-            sample = buildSample(csvRecordMap, aapDomain, webinId, checklist, isWebin);
+            sample = buildAndPersistSample(csvRecordMap, aapDomain, webinId, checklist, isWebin);
 
             if (sample == null) {
               validationResult.addValidationMessage(
@@ -196,12 +196,12 @@ public class BioSamplesFileUploadSubmissionService {
     return sampleToMappedSample.entrySet().stream()
         .map(
             sampleMultimapEntry ->
-                addRelationshipAndThenBuildSample(
+                addRelationshipAndThenBuildAndPersistSample(
                     sampleNameToAccessionMap, sampleMultimapEntry, validationResult, isWebin))
         .collect(Collectors.toList());
   }
 
-  private Sample addRelationshipAndThenBuildSample(
+  private Sample addRelationshipAndThenBuildAndPersistSample(
       final Map<String, String> sampleNameToAccessionMap,
       final Map.Entry<Sample, Multimap<String, String>> sampleMultimapEntry,
       final ValidationResult validationResult,
@@ -226,7 +226,7 @@ public class BioSamplesFileUploadSubmissionService {
     return sample;
   }
 
-  private Sample buildSample(
+  private Sample buildAndPersistSample(
       final Multimap<String, String> multiMap,
       final String aapDomain,
       final String webinId,
@@ -235,6 +235,7 @@ public class BioSamplesFileUploadSubmissionService {
     final String sampleName = fileUploadUtils.getSampleName(multiMap);
     final String sampleReleaseDate = fileUploadUtils.getReleaseDate(multiMap);
     final String accession = fileUploadUtils.getSampleAccession(multiMap);
+    final boolean sampleWithAccession = accession != null ? true : false;
     final List<Characteristics> characteristicsList =
         fileUploadUtils.handleCharacteristics(multiMap);
     final List<ExternalReference> externalReferenceList =
@@ -257,20 +258,31 @@ public class BioSamplesFileUploadSubmissionService {
         try {
           sample = Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(webinId).build();
           sample = bioSamplesWebinClient.persistSampleResource(sample).getContent();
-          log.info(
-              "Sample " + sample.getName() + " created with accession " + sample.getAccession());
+
+          if (sampleWithAccession) {
+            log.info("Updated sample " + sample.getAccession());
+          } else {
+            log.info(
+                "Sample " + sample.getName() + " created with accession " + sample.getAccession());
+          }
         } catch (final Exception e) {
-          validationResult.addValidationMessage("Checklist validation failed for some/all samples");
+          validationResult.addValidationMessage(
+              "Error in persisting sample with name " + sampleName);
         }
       } else {
         try {
           sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
           sample = bioSamplesAapClient.persistSampleResource(sample).getContent();
-          log.info(
-              "Sample " + sample.getName() + " created with accession " + sample.getAccession());
+
+          if (sampleWithAccession) {
+            log.info("Updated sample " + sample.getAccession());
+          } else {
+            log.info(
+                "Sample " + sample.getName() + " created with accession " + sample.getAccession());
+          }
         } catch (final Exception e) {
           validationResult.addValidationMessage(
-              "Checklist validation failed for some/ all samples");
+              "Error in persisting sample with name " + sampleName);
         }
       }
 
