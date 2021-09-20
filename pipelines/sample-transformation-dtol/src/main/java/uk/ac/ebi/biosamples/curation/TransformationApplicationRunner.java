@@ -12,6 +12,7 @@ package uk.ac.ebi.biosamples.curation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.Resource;
@@ -39,6 +40,7 @@ import java.util.concurrent.Future;
 public class TransformationApplicationRunner implements ApplicationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(TransformationApplicationRunner.class);
 
+  @Qualifier("WEBINCLIENT")
   private final BioSamplesClient bioSamplesClient;
   private final PipelinesProperties pipelinesProperties;
   private final PipelineFutureCallback pipelineFutureCallback;
