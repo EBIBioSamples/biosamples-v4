@@ -39,5 +39,6 @@
 		<module>curatedview</module>
 		<module>neoexport</module>
 		<module>clearinghouse</module>
+		<module>sample-transformation-dtol</module>
 	</modules>
 </project>
