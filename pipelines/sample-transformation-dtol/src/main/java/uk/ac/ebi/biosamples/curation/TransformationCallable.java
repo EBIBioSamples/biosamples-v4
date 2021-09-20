@@ -30,10 +30,9 @@ public class TransformationCallable implements Callable<PipelineResult> {
     static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
     private final Sample sample;
-    @Qualifier("WEBINCLIENT")
     private final BioSamplesClient bioSamplesClient;
 
-    public TransformationCallable(BioSamplesClient bioSamplesClient, Sample sample) {
+    public TransformationCallable(@Qualifier("WEBINCLIENT") BioSamplesClient bioSamplesClient, Sample sample) {
         this.bioSamplesClient = bioSamplesClient;
         this.sample = sample;
     }

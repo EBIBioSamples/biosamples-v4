@@ -40,13 +40,12 @@ import java.util.concurrent.Future;
 public class TransformationApplicationRunner implements ApplicationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(TransformationApplicationRunner.class);
 
-  @Qualifier("WEBINCLIENT")
   private final BioSamplesClient bioSamplesClient;
   private final PipelinesProperties pipelinesProperties;
   private final PipelineFutureCallback pipelineFutureCallback;
 
   public TransformationApplicationRunner(
-      BioSamplesClient bioSamplesClient,
+          @Qualifier("WEBINCLIENT") BioSamplesClient bioSamplesClient,
       PipelinesProperties pipelinesProperties) {
     this.bioSamplesClient = bioSamplesClient;
     this.pipelinesProperties = pipelinesProperties;
