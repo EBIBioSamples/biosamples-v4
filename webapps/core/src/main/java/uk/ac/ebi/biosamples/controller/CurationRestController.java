@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -31,11 +31,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.CurationReadService;
-import uk.ac.ebi.biosamples.service.CurationResourceAssembler;
-import uk.ac.ebi.biosamples.service.SamplePageService;
-import uk.ac.ebi.biosamples.service.SampleReadService;
-import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
+import uk.ac.ebi.biosamples.service.*;
 
 @RestController
 @ExposesResourceFor(Curation.class)

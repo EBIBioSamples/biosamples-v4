@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -13,7 +13,6 @@ package uk.ac.ebi.biosamples;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
@@ -29,10 +28,5 @@ public class WebConfiguration extends WebMvcConfigurerAdapter {
   @Override
   public void addResourceHandlers(ResourceHandlerRegistry registry) {
     registry.addResourceHandler("/schemas/**").addResourceLocations("classpath:/schemas/");
-  }
-
-  @Override
-  public void configurePathMatch(PathMatchConfigurer configurer) {
-    configurer.setUseSuffixPatternMatch(false);
   }
 }

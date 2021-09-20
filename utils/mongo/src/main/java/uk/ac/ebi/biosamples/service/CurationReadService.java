@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -141,10 +141,10 @@ public class CurationReadService {
     // update the sample's reviewed date
     Instant reviewed = curationLink.getCreated();
 
-    if(reviewed != null) {
+    if (reviewed != null) {
       Instant update = sample.getUpdate();
 
-      if(update.isAfter(reviewed)) {
+      if (update.isAfter(reviewed)) {
         reviewed = update;
       }
     }
@@ -185,18 +185,12 @@ public class CurationReadService {
       pageNo += 1;
     } while (pageNo < page.getTotalPages());
 
-    boolean failedCuration = false;
     for (CurationLink curation : curationLinks) {
       try {
         sample = applyCurationLinkToSample(sample, curation);
       } catch (IllegalArgumentException e) {
-        failedCuration = true;
         log.trace(e.getMessage());
       }
-    }
-
-    if (failedCuration) {
-      log.debug("Unapplied curation on sample: {}", sample.getAccession());
     }
 
     return sample;

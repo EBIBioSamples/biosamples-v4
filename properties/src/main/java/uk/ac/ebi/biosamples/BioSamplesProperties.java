@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -42,6 +42,9 @@ public class BioSamplesProperties {
   @Value("${biosamples.client.threadcount.max:8}")
   private int threadCountMax;
 
+  @Value("${biosamples.submit.max-files-size-kb:20}")
+  private long biosamplesFileUploaderMaxSameTimeUploadFileSize;
+
   @Value("${biosamples.client.aap.uri:https://explore.api.aai.ebi.ac.uk/auth}")
   private URI biosamplesClientAapUri;
 
@@ -52,6 +55,22 @@ public class BioSamplesProperties {
   // can't use "null" because it will be a string
   @Value("${biosamples.client.aap.password:#{null}}")
   private String biosamplesClientAapPassword;
+
+  @Value(
+      "${biosamples.client.webin.auth.token.uri:https://www.ebi.ac.uk/ena/submit/webin/auth/token}")
+  private URI biosamplesWebinAuthTokenUri;
+
+  @Value(
+      "${biosamples.client.webin.auth.submissionaccount.uri:https://www.ebi.ac.uk/ena/submit/webin/auth/admin/submission-account}")
+  private URI biosamplesWebinAuthFetchSubmissionAccountUri;
+
+  // can't use "null" because it will be a string
+  @Value("${biosamples.client.webin.username:Webin-40894}")
+  private String biosamplesClientWebinUsername;
+
+  // can't use "null" because it will be a string
+  @Value("${biosamples.client.webin.password:#{null}}")
+  private String biosamplesClientWebinPassword;
 
   // max number of cache entries, 0 means no cache is used by the client
   // This multiplied by the cache maxobjectsize value defines the max size of the cache
@@ -70,9 +89,6 @@ public class BioSamplesProperties {
 
   @Value("${biosamples.ols:https://www.ebi.ac.uk/ols}")
   private String ols;
-
-  @Value("${biosamples.webapp.sampletab.uri:http://localhost:8082/biosamples/sampletab}")
-  private URI biosamplesWebappSampletabUri;
 
   @Value("${biosamples.webapp.core.uri:http://localhost:8081/biosamples}")
   private URI biosamplesWebappCoreUri;
@@ -97,8 +113,29 @@ public class BioSamplesProperties {
   @Value("${biosamples.schema.validator.uri:http://localhost:8085/validate}")
   private URI biosamplesSchemaValidatorServiceUri;
 
+  @Value("${biosamples.schemaValidator:http://localhost:3020/validate}")
+  private String schemaValidator;
+
+  @Value("${biosamples.schemaStore:http://localhost:8085}")
+  private String schemaStore;
+
+  @Value("${biosamples.schema.default:BSDC00001}")
+  private String biosamplesDefaultSchema;
+
+  public String getBiosamplesClientWebinUsername() {
+    return biosamplesClientWebinUsername;
+  }
+
+  public String getBiosamplesClientWebinPassword() {
+    return biosamplesClientWebinPassword;
+  }
+
   public URI getBiosamplesClientUri() {
     return biosamplesClientUri;
+  }
+
+  public URI getBiosamplesWebinAuthTokenUri() {
+    return biosamplesWebinAuthTokenUri;
   }
 
   public int getBiosamplesClientPagesize() {
@@ -127,6 +164,10 @@ public class BioSamplesProperties {
 
   public URI getBiosamplesClientAapUri() {
     return biosamplesClientAapUri;
+  }
+
+  public URI getBiosamplesWebinAuthFetchSubmissionAccountUri() {
+    return biosamplesWebinAuthFetchSubmissionAccountUri;
   }
 
   public String getBiosamplesClientAapUsername() {
@@ -181,15 +222,33 @@ public class BioSamplesProperties {
     return biosamplesWebappCoreUri;
   }
 
-  public URI getBiosamplesWebappSampletabUri() {
-    return biosamplesWebappSampletabUri;
-  }
-
   public URI getUsiCoreUri() {
     return usiCoreUri;
   }
 
   public URI getBiosamplesSchemaValidatorServiceUri() {
     return biosamplesSchemaValidatorServiceUri;
+  }
+
+  public String getSchemaValidator() {
+    return schemaValidator;
+  }
+
+  public String getSchemaStore() {
+    return schemaStore;
+  }
+
+  public String getBiosamplesDefaultSchema() {
+    return biosamplesDefaultSchema;
+  }
+
+  public long getBiosamplesFileUploaderMaxSameTimeUploadFileSize() {
+    return biosamplesFileUploaderMaxSameTimeUploadFileSize;
+  }
+
+  public void setBiosamplesFileUploaderMaxSameTimeUploadFileSize(
+      long biosamplesFileUploaderMaxSameTimeUploadFileSize) {
+    this.biosamplesFileUploaderMaxSameTimeUploadFileSize =
+        biosamplesFileUploaderMaxSameTimeUploadFileSize;
   }
 }

@@ -1,0 +1,195 @@
+= [.ebi-color]#How to bulk upload samples to BioSamples using the drag'n'drop uploader#
+:last-update-label!:
+
+== Who should read this guide?
+
+Anyone who wants to create a number of samples in BioSamples, using a easy route without having to go through the technical challenges of using an API.
+If you have set of samples to create as a one off upload, or expect to submit rarely, we recommend using this system.
+If you want to create a sustainable process for syncing samples programmatically, refer to the link:../references/api/submit[BioSamples JSON API]
+
+== Requirements
+
+You need an AAP account or a WEBIN submission account to proceed with this recipe Please refer our link:../guides/authentication[AUTHENTICATION GUIDE] for more information
+
+== Steps to upload
+
+=== Login Page
+
+1. Click on the upload menu to open the uploader login page
+2. Select the radio button, if you wish to use your AAP credentials please select AAP, else select WEBIN
+3. Enter the credentials you have setup in the authentication system selected in step 2
+4. Click on the button Sign in to Upload
+
+=== Upload Page (same time and queued uploads)
+
+*Please note*: BioSamples processes file uploads depending on the file size and number of samples in the file.
+If your file size is above 20 KBytes OR your file has more than 200 samples, your submission is likely to be queued.
+
+1. If you have logged in using your AAP credentials then select your AAP domain that you want to use for the submission from the "Select AAP domain" dropdown.
+This is not required for submissions using WEBIN authentication.
+The dropdown is pre-populated with domains you have access to
+2. Select a checklist that you want to validate the samples against from the "Select checklist for validation" dropdown.
+If you don't have a specific checklist to validate against, please select biosamples-minimal.
+Compliance to biosamples-minimal is a basic system requirement of BioSamples database and this checklist checks if the sample has a valid organism attribute
+3. Drag'n'drop the files you want to upload.
+*Please note* you can upload a maximum of 5 files at once
+4. Click on Upload files button
+5. If your upload is successful:
+
+*Same time uploads*: You will receive a file which will contain all the samples persisted in BioSamples with the accessions. The file is exactly the same as your uploaded
+file but contains the accessions against each sample.
+Please note: the downloaded file has a receipt section at the end which is a summary of the submission
+
+*Queued uploads*: You will receive a file which will have a unique submission ID generated
+for the upload.
+You can use the submission ID in the View submissions tab and check status of your submissions.
+Once a submission is searched in the View Submissions tab and if the submission ID
+is valid then the submitter will get a result json file with the submission status and
+the sample accessions mapped against sample names
+
+Submissions can have either of the 3 status, ACTIVE, COMPLETED or FAILED:
+
+*ACTIVE* status: Submission is waiting to be processed or is being processed
+
+*COMPLETED* status: Submission has completed, if a submission is in COMPLETED status, it is expected that the samples have been created and accessions generated OR samples have failed validation against minimal validation rules of BioSamples database or samples have failed validation against checklist specified by the submitter while doing the file upload
+
+*FAILED* status: Submission has failed, the submission might have a failed status of the file uploaded was invalid and BioSamples were not able to parse the file or any technical issue in BioSamples database which has prevented the submission from getting processed
+
+
+6.If your upload fails you will still receive a file which will contain the reason of the failure.
+Please contact the BioSamples team at EBI at mailto:biosamples@ebi.ac.uk[biosamples@ebi.ac.uk]
+and we will look into it
+
+== Important information related to the file format
+
+1. The file format for uploading sample metadata to BioSamples is ISA-Tab (https://isa-specs.readthedocs.io/en/latest/isatab.html).
+Although ISA-Tab is specifically for Investigation, Study and Assay data, we have tried to use the sample table format specified in the ISA-Tab specification
+2. The ISA-Tab file format is a tab delimited format (TSV)
+
+== Data format
+
+.TSV file Columns
+[width="50%",cols="3,^2,^2,10",frame="topbot",options="header"]
+|===
+|Columns |Description |Mandatory/Optional (column of table)| Mandatory/Optional
+(value in table row while adding sample metadata)
+
+|Source Name | Source Name can be the name/ID of your investigation, study, assay,
+project or even sample. It can be the ID of the donor as well.
+BioSamples doesnt require a source, so ignores this column,
+although you need to include it as a column in the file as
+this is a required column in the ISA-TAB.
+Remember while filling in metadata to the file, adding a value for this column is completely
+optional
+| Mandatory
+| Optional
+
+|Sample Name | The name of the sample, mandatory, and expected to be unique
+for all samples in the TSV file being uploaded
+| Mandatory
+| Mandatory
+
+|Release date | The release date of the sample
+| Mandatory
+| Mandatory
+
+|Characteristics [characteristics name] | Your sample attributes are represented by
+Characteristics, you can have any number of characteristics
+
+*Please note*
+every characteristics
+must be followed by a Term Source REF and Term Accession Number. Details on both are
+the next items in this table | Organism is a mandatory attribute in BioSamples,
+so *Characteristics[Organism]* is mandatory | Valid value for *Characteristics[Organism]* is mandatory
+
+|Term Source REF | Identifies the controlled vocabulary that this term comes from.
+Examples are NCBITAXON, BTO
+| Mandatory
+| Optional
+
+|Term Accession Number | The accession number from the Source (Term Source Ref), example for
+Organism = Homo Sapiens and Term Source Ref = NCBITAXON, the Term Accession Number is
+http://purl.obolibrary.org/obo/NCBITaxon_9606
+| Mandatory
+| Optional
+
+|Comment[bsd_relationship:<relationship_type>] | The sample relationship with any other
+sample in the file or in the BioSamples database
+
+*Please note* If you are trying to establish a relationship between samples that are
+in the same file you are preparing to upload to BioSamples, you can refer samples by sample
+name in the file. If you wish to establish a relationship with a sample that is already in BioSamples
+you need to mention the accession of the sample
+| Optional
+| Optional
+
+|Comment[external DB REF] | The reference to this sample in any other database
+| Optional
+| Optional
+
+|Comment[submission_contact:email] | The email address of the submitter
+| Optional
+| Optional
+
+|Sample Identifier | The ID/ accession of the sample. In case of new sample submission it
+is optional, mandatory if you are looking to update existing samples
+| Optional (for new submissions)
+/ mandatory (for sample updates)
+| Optional (for new submissions)
+/ mandatory (for sample updates)
+|===
+
+== Example file
+
+[width="100%" %header,format=tsv]
+|===
+include::files/isa-example.tsv[]
+|===
+
+After upload is successful, the uploader will send back a file with the sample metadata uploaded and the accessions.
+The accessions are defined by the Sample Identifier field in the TSV post upload.
+
+== Example output file
+
+[width="100%" %header,format=tsv]
+|===
+include::files/isa-result-example.tsv[]
+|===
+
+== Important points to consider before you start uploading sample metadata to BioSamples using the uploader
+
+1. Every Characteristics you choose to provide as column header in the TSV file must have Term Source Ref and Term Accession Number column headers following it.
+While filling up the data (rows) in the file you may choose to provide blank values if you don't have the information for it.
+In the below example you can always opt to not provide the Term Source Ref and Term Accession Number but the column headers must be present as in the example below
+
+    Example : Characteristics[Organism]	Term Source REF	Term Accession Number
+
+2. All samples might not have all the information as per the columns specified in the TSV file, please remember not to miss the tab delimiter if you are not specifying any value.
+Example if you are not specifying Term Source Ref and Term Accession Number for any/ all characteristics please don't forget you need to provide the tab delimiter.
+This will help us to parse the file correctly
+
+    Example : Characteristics[Organism]	Term Source REF	Term Accession Number
+              Homo sapiens
+
+3. We expect all sample names to be unique in the file
+
+4. The uploader sends back a file for download with the submission result, in case of same time uploads where the file size is less than 20 KBytes and the file has less than 200 samples, the result file will have the sample metadata and the accessions. In case of queued uploads where the file size is greater than 20 KBytes or the file has more than 200 samples the result file will have a unique submission ID for the upload. The unique submission ID can be used to get the result of the upload using the View Submissions tab.
+
+5. If you are looking to update existing samples that has been uploaded, you can use the file that was returned to you after your submission.
+*Please remember* to remove the receipt section
+
+== Next steps
+
+This is the first release of our BioSamples drag'n'drop uploader.
+We call it a Beta version, below are the next planned steps of improvement:
+
+1. Incorporate feedback received from submitters and we also have a release plan as below:
+
+== Future Improvements and Release plan:
+
+TBD based on feedback received from users
+
+== Feedback
+
+We welcome your feedback on the uploader, feedback certainly helps us improve.
+Please write to us at mailto:biosamples@ebi.ac.uk[biosamples@ebi.ac.uk] to let us know your inputs and improvement suggestions

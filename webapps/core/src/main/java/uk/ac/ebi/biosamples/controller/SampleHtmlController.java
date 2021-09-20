@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -34,8 +35,10 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.JsonLDDataCatalog;
 import uk.ac.ebi.biosamples.model.JsonLDDataset;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.auth.LoginWays;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 
 /**
  * Primary controller for HTML operations.
@@ -133,7 +136,8 @@ public class SampleHtmlController {
 
     Pageable pageable = new PageRequest(page - 1, size);
     Page<Sample> pageSample =
-        samplePageService.getSamplesByText(text, filterCollection, domains, pageable, curationRepo);
+        samplePageService.getSamplesByText(
+            text, filterCollection, domains, pageable, curationRepo, Optional.empty());
 
     // default to getting 10 values from 10 facets
     // List<Facet> sampleFacets = facetService.getFacets(text, filterCollection, domains, 10,
@@ -146,6 +150,11 @@ public class SampleHtmlController {
       filtersList.addAll(Arrays.asList(filtersArray));
     }
     Collections.sort(filtersList);
+    String downloadURL =
+        "?text="
+            + (text != null ? text : "")
+            + "&filter="
+            + StringUtils.join(filtersList, "&filter=");
 
     JsonLDDataset jsonLDDataset = jsonLDService.getBioSamplesDataset();
 
@@ -155,6 +164,7 @@ public class SampleHtmlController {
     model.addAttribute("filters", filtersList);
     model.addAttribute("paginations", getPaginations(pageSample, uriBuilder));
     model.addAttribute("jsonLD", jsonLDService.jsonLDToString(jsonLDDataset));
+    model.addAttribute("downloadURL", downloadURL);
     //    model.addAttribute(
     //        "facets",
     //        new LazyContextVariable<List<Facet>>() {
@@ -190,9 +200,18 @@ public class SampleHtmlController {
     return "samples_graph";
   }
 
-  @GetMapping(value = "/upload")
-  public String upload(Model model, HttpServletRequest request, HttpServletResponse response) {
-    return "upload";
+  @GetMapping(value = "/uploadLogin")
+  public String login(Model model, HttpServletRequest request, HttpServletResponse response) {
+    LoginWays[] loginWays = LoginWays.values();
+    List<String> logins = new ArrayList<>();
+
+    for (LoginWays loginWay : loginWays) {
+      logins.add(loginWay.toString());
+    }
+
+    model.addAttribute("ways", logins);
+
+    return "uploadLogin";
   }
 
   @GetMapping(value = "/facets")
@@ -399,6 +418,7 @@ public class SampleHtmlController {
 
     String jsonLDString = jsonLDService.jsonLDToString(jsonLDService.sampleToJsonLD(sample.get()));
     model.addAttribute("sample", sample.get());
+    model.addAttribute("schemaStoreUrl", bioSamplesProperties.getSchemaStore());
     model.addAttribute("jsonLD", jsonLDString);
     // becuase thymleaf can only work with timezoned temporals, not instant
     // we need to do the conversion

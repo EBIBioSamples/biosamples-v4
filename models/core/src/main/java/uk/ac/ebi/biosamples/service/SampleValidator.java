@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -22,7 +22,9 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
 public class SampleValidator {
-
+  private static final String VALIDATION_MESSAGE =
+          "Only Sample name, sample accession and sample structured data can be provided through this API";
+  private static final String NO_STRUCTURED_DATA_IS_PROVIDED = "No structured data is provided";
   private final AttributeValidator attributeValidator;
   private final RelationshipValidator relationshipValidator;
 
@@ -36,6 +38,45 @@ public class SampleValidator {
     validate(sample, errors);
     return errors;
   }
+
+  public void validateSampleContentsForStructuredDataPatching(Sample newSample) {
+    assert newSample.getData() != null;
+
+    final String domain = newSample.getDomain();
+
+    if (!(newSample.getData().size() > 0)) {
+      throw new RuntimeException(NO_STRUCTURED_DATA_IS_PROVIDED);
+    }
+
+    if (newSample.getAttributes() != null && newSample.getAttributes().size() > 0) {
+      throw new RuntimeException(VALIDATION_MESSAGE);
+    }
+
+    if (newSample.getExternalReferences() != null && newSample.getExternalReferences().size() > 0) {
+      throw new RuntimeException(VALIDATION_MESSAGE);
+    }
+
+    if (newSample.getRelationships() != null && newSample.getRelationships().size() > 0) {
+      throw new RuntimeException(VALIDATION_MESSAGE);
+    }
+
+    if (newSample.getContacts() != null && newSample.getContacts().size() > 0) {
+      throw new RuntimeException(VALIDATION_MESSAGE);
+    }
+
+    if (newSample.getPublications() != null && newSample.getPublications().size() > 0) {
+      throw new RuntimeException(VALIDATION_MESSAGE);
+    }
+
+    if (domain != null && domain.length() > 0) {
+      throw new RuntimeException(VALIDATION_MESSAGE);
+    }
+
+    if (!newSample.hasAccession()) {
+      throw new RuntimeException("Sample doesn't have an accession");
+    }
+  }
+
 
   public List<String> validate(Map sampleAsMap) {
     List<String> errors = new ArrayList<>();

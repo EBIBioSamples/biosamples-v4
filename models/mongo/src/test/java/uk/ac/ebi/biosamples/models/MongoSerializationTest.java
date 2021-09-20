@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -72,7 +72,7 @@ public class MongoSerializationTest {
 
     Set<AbstractData> structuredData = new HashSet<>();
     AMRTable amrTable =
-        new AMRTable.Builder("http://test", "self.test")
+        new AMRTable.Builder("http://test", "self.test", null)
             .addEntry(
                 new AMREntry.Builder()
                     .withAntibioticName(new AmrPair("ampicillin", ""))
@@ -125,6 +125,7 @@ public class MongoSerializationTest {
         name,
         accession,
         "foozit",
+        "",
         release,
         update,
         create,
@@ -159,7 +160,7 @@ public class MongoSerializationTest {
     Set<AbstractData> data = new HashSet<>();
 
     AMRTable amrTable =
-        new AMRTable.Builder("http://test", "self.test")
+        new AMRTable.Builder("http://test", "self.test", null)
             .addEntry(
                 new AMREntry.Builder()
                     .withAntibioticName(new AmrPair("ampicillin", ""))
@@ -176,6 +177,7 @@ public class MongoSerializationTest {
         name,
         accession,
         domain,
+        "",
         release,
         update,
         create,

@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -21,7 +21,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ena.amr.AmrRunner;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -34,6 +36,9 @@ public class EnaAmrDataProcessService {
   private static final Logger log = LoggerFactory.getLogger(EnaAmrDataProcessService.class);
   public static final ConcurrentLinkedQueue<String> failedQueue =
       new ConcurrentLinkedQueue<String>();
+
+  @Autowired
+  BioSamplesProperties bioSamplesProperties;
 
   public void processAmrData(
       final List<String> lines, final Sample sample, final BioSamplesClient client) {
@@ -61,7 +66,7 @@ public class EnaAmrDataProcessService {
     final Set<AbstractData> structuredData = new HashSet<>();
     final AMRTable.Builder amrTableBuilder =
         new AMRTable.Builder(
-            "http://localhost:8081/biosamples/schemas/amr.json", "self.BiosampleImportENA");
+            "http://localhost:8081/biosamples/schemas/amr.json", null, bioSamplesProperties.getBiosamplesClientWebinUsername());
 
     lines.forEach(
         line -> {

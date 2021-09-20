@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -32,11 +32,13 @@ import uk.ac.ebi.biosamples.service.certification.CertifyService;
 public class CertificateRetrievalController {
   private Logger log = LoggerFactory.getLogger(getClass());
   @Autowired private CertifyService certifyService;
-  JsonParser jp = new JsonParser();
+  final JsonParser jp = new JsonParser();
 
-  @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<String> getCertificate(
-      @RequestParam(value = "certificateName") String certificateName) throws IOException {
+  @GetMapping(
+      value = "/{certificateName}",
+      produces = {MediaType.APPLICATION_JSON_VALUE})
+  public ResponseEntity<String> getCertificate(@PathVariable String certificateName)
+      throws IOException {
     log.info("Fetching certificate with name " + certificateName);
 
     JsonElement je = jp.parse(certifyService.getCertificateByCertificateName(certificateName));
@@ -51,15 +53,12 @@ public class CertificateRetrievalController {
         .body(prettyJsonString);
   }
 
-  @GetMapping(
-      value = "/all",
-      produces = {MediaType.APPLICATION_JSON_VALUE})
+  @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Resources<Resource<String>>> getAllCertificates() {
-
     return ResponseEntity.ok()
         .body(
             new Resources<>(
-                certifyService.getCertificates().stream()
+                certifyService.getAllCertificates().stream()
                     .map(certificate -> new Resource<>(getGson().toJson(jp.parse(certificate))))
                     .collect(Collectors.toList())));
   }

@@ -9,13 +9,11 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.0.5-SNAPSHOT</version>
+		<version>5.1.8-SNAPSHOT</version>
 	</parent>
 
 	<modules>
 		<module>core</module>
-		<module>sampletab</module>
-		<module>legacyxml</module>
-		<module>legacyjson</module>
+		<module>core-v2</module>
 	</modules>
 </project>

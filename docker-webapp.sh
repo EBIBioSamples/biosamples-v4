@@ -36,7 +36,7 @@ echo "checking rabbitmq is up"
 echo "checking mongo is up"
 ./http-status-check -u http://localhost:27017 -t 30
 echo "checking json-schema-validator is up"
-./http-status-check -u http://localhost:8085/validate -t 30
+./http-status-check -u http://localhost:3020/validate -t 30
 echo "checking neo4j is up"
 ./http-status-check -u http://localhost:7474 -t 30
 
@@ -44,19 +44,17 @@ echo "checking neo4j is up"
 #configure solr
 curl http://localhost:8983/solr/samples/config -H 'Content-type:application/json' -d'{"set-property" : {"updateHandler.autoCommit.maxTime":1000, "updateHandler.autoCommit.openSearcher":"true", "updateHandler.autoSoftCommit.maxDocs":1, "query.documentCache.size":1024, "query.filterCache.size":1024, "query.filterCache.autowarmCount":128, "query.queryResultCache.size":1024, "query.queryResultCache.autowarmCount":128}}'
 
-#create an api key for submitting test sampletab documents
-docker-compose run --rm mongo mongo --eval 'db.mongoSampleTabApiKey.insert({"_id" : "fooqwerty", "_class" : "uk.ac.ebi.biosamples.mongo.model.MongoSampleTabApiKey", "userName" : "BioSamples", "publicEmail" : "", "publicUrl" : "", "contactName" : "", "contactEmail" : "", "aapDomain" : "123456789abcdef" });' mongo:27017/biosamples
 #profile any queries that take longer than 100 ms
 docker-compose run --rm mongo mongo --eval 'db.setProfilingLevel(1)' mongo:27017/biosamples
 
 
-docker-compose up -d biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml biosamples-webapps-legacyjson
+docker-compose up -d biosamples-webapps-core
 sleep 40
 echo "checking webapps-core is up"
 ./http-status-check -u http://localhost:8081/biosamples/health -t 600
-echo "checking webapps-sampletab is up"
-./http-status-check -u http://localhost:8082/biosamples/sampletab/health -t 60
-echo "checking webapps-legacyxml is up"
-./http-status-check -u http://localhost:8083/biosamples/xml/health -t 60
-echo "checking webapps-legacyjson is up"
-./http-status-check -u http://localhost:8084/biosamples/api/health -t 60
+
+docker-compose up -d biosamples-webapps-core-v2
+sleep 40
+echo "checking webapps-core-v2 is up"
+./http-status-check -u http://localhost:8082/biosamples/health -t 600
+

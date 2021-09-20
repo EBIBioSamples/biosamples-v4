@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -37,9 +37,7 @@ public class RecommendationService {
   public CuramiRecommendation getRecommendations(Sample sample) {
     SortedSet<String> attributes =
         new TreeSet<>(
-            sample.getAttributes().stream()
-                .map(Attribute::getType)
-                .collect(Collectors.toUnmodifiableList()));
+            sample.getAttributes().stream().map(Attribute::getType).collect(Collectors.toList()));
 
     SortedSet<String> goodAttributes = new TreeSet<>();
     SortedSet<AttributeRecommendation> badAttributes = new TreeSet<>();

@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -26,7 +26,7 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestOperations;
 
-public class AapClientService {
+public class AapClientService implements ClientService {
 
   private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -85,5 +85,10 @@ public class AapClientService {
     }
 
     return jwt.get();
+  }
+
+  @Override
+  public boolean isWebin() {
+    return false;
   }
 }

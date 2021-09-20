@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -11,6 +11,8 @@
 package uk.ac.ebi.biosamples;
 
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -23,6 +25,7 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component
 public class SamplesGraphIntegration extends AbstractIntegration {
+  private Logger log = LoggerFactory.getLogger(this.getClass());
   private final NeoSampleRepository neoSampleRepository;
 
   public SamplesGraphIntegration(BioSamplesClient client, NeoSampleRepository neoSampleRepository) {
@@ -52,6 +55,7 @@ public class SamplesGraphIntegration extends AbstractIntegration {
       samples.add(sample.getContent());
     }
 
+    log.info("Sending {} samples to Neo4j", samples.size());
     for (Sample sample : samples) {
       NeoSample neoSample = NeoSample.build(sample);
       neoSampleRepository.loadSample(neoSample);
@@ -64,8 +68,14 @@ public class SamplesGraphIntegration extends AbstractIntegration {
     GraphNode node = new GraphNode();
     node.setId("a1");
     node.setType("Sample");
-    node.setAttributes(Map.of("organism", "homo sapiens"));
-    query.setNodes(Set.of(node));
+
+    Map<String, String> attributes = new HashMap<>();
+    attributes.put("organism", "homo sapiens");
+    node.setAttributes(attributes);
+
+    Set<GraphNode> nodes = new HashSet<>();
+    nodes.add(node);
+    query.setNodes(nodes);
     query.setLinks(Collections.emptySet());
 
     GraphSearchQuery response = neoSampleRepository.graphSearch(query, 10, 1);

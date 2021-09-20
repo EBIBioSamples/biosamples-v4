@@ -1,0 +1,21 @@
+= [.ebi-color]#Certification#
+:last-update-label!:
+:toc:
+
+== Sample Validation
+
+BioSamples uses JSON Schema to validate samples against predefined checklists.
+A sample could be either validated against a checklist prior to submission or at the submission time.
+Following are the available checklists for validation. In the future all the available checklists in ENA will be included here.
+
+Existing BioSamples checklists:
+
+- link:../../schemas/certification/biosamples-minimal.json[BSDC00001] : BioSamples minimal checklist
+- link:../../schemas/certification/plant-miappe.json[BSDC00002] : Plant MIAPPE checklist
+
+Please refer to the link:../references/api/validate[validation API reference documentation] for examples and API guide.
+
+
+Please contact the BioSamples team at biosamples@ebi.ac.uk if you want to know more about the
+certification service and want to have custom schemas and plans for sample validation
+

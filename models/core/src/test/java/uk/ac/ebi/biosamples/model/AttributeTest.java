@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -11,7 +11,7 @@
 package uk.ac.ebi.biosamples.model;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -47,7 +47,7 @@ public class AttributeTest {
         allOf(
             endsWith("NCBITaxon_291302"),
             startsWith("http://www.ebi.ac.uk/ols/terms?iri="),
-            containsString(URLEncoder.encode(iri, StandardCharsets.UTF_8))));
+            containsString(URLEncoder.encode(iri, StandardCharsets.UTF_8.toString()))));
   }
 
   @Test

@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -68,6 +68,7 @@ public class CurationApplicationService {
         sample.getName(),
         sample.getAccession(),
         sample.getDomain(),
+        sample.getWebinSubmissionAccountId(),
         sample.getRelease(),
         sample.getUpdate(),
         sample.getCreate(),
@@ -85,8 +86,8 @@ public class CurationApplicationService {
   }
 
   public Sample applyAllCurationToSample(Sample sample, Collection<Curation> curations) {
-
     boolean curationApplied = true;
+
     while (curationApplied && curations.size() > 0) {
       Iterator<Curation> it = curations.iterator();
       curationApplied = false;
@@ -100,12 +101,6 @@ public class CurationApplicationService {
           // do nothing, will try again next loop
         }
       }
-    }
-    if (!curationApplied) {
-      // we stopped because we didn't apply any curation
-      // therefore we have some curations that can't be applied
-      // this is a warning
-      log.debug("Unapplied curation on {}", sample.getAccession());
     }
     return sample;
   }

@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -71,18 +71,11 @@ public class BioSamplesClient implements AutoCloseable {
       URI uri,
       RestTemplateBuilder restTemplateBuilder,
       SampleValidator sampleValidator,
-      AapClientService aapClientService,
+      ClientService clientService,
       BioSamplesProperties bioSamplesProperties) {
 
-    this(uri, restTemplateBuilder.build(), sampleValidator, aapClientService, bioSamplesProperties);
-  }
-
-  public BioSamplesClient(
-      URI uri,
-      RestTemplate restOperations,
-      SampleValidator sampleValidator,
-      AapClientService aapClientService,
-      BioSamplesProperties bioSamplesProperties) {
+    RestTemplate restOperations = restTemplateBuilder.build();
+    boolean isWebinSubmission = false;
 
     threadPoolExecutor =
         AdaptiveThreadPoolExecutor.create(
@@ -92,11 +85,17 @@ public class BioSamplesClient implements AutoCloseable {
             bioSamplesProperties.getBiosamplesClientThreadCount(),
             bioSamplesProperties.getBiosamplesClientThreadCountMax());
 
-    if (aapClientService != null) {
-      log.trace("Adding AapClientHttpRequestInterceptor");
-      restOperations.getInterceptors().add(new AapClientHttpRequestInterceptor(aapClientService));
-    } else {
-      log.trace("No AapClientService available");
+    if (clientService != null) {
+      if (clientService instanceof AapClientService) {
+        log.trace("Adding BsdClientHttpRequestInterceptor");
+        restOperations.getInterceptors().add(new BsdClientHttpRequestInterceptor(clientService));
+      } else if (clientService instanceof WebinAuthClientService) {
+        isWebinSubmission = true;
+        log.trace("Adding WebinClientHttpRequestInterceptor");
+        restOperations.getInterceptors().add(new BsdClientHttpRequestInterceptor(clientService));
+      } else {
+        log.trace("No ClientService available");
+      }
     }
 
     Traverson traverson = new Traverson(uri, MediaTypes.HAL_JSON);
@@ -118,31 +117,35 @@ public class BioSamplesClient implements AutoCloseable {
             bioSamplesProperties.getBiosamplesClientPagesize());
 
     sampleSubmissionService =
-        new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
+        new SampleSubmissionService(
+            restOperations, traverson, threadPoolExecutor, isWebinSubmission);
 
     sampleCertificationService =
-            new SampleCertificationService(restOperations, traverson, threadPoolExecutor);
+        new SampleCertificationService(
+            restOperations, traverson, threadPoolExecutor, isWebinSubmission);
 
     sampleGroupSubmissionService =
         new SampleGroupSubmissionService(restOperations, traverson, threadPoolExecutor);
+
     curationRetrievalService =
         new CurationRetrievalService(
             restOperations,
             traverson,
             threadPoolExecutor,
             bioSamplesProperties.getBiosamplesClientPagesize());
+
     curationSubmissionService =
         new CurationSubmissionService(restOperations, traverson, threadPoolExecutor);
 
     this.sampleValidator = sampleValidator;
 
-    if (aapClientService == null) {
+    if (clientService == null) {
       this.publicClient = Optional.empty();
     } else {
       this.publicClient =
           Optional.of(
               new BioSamplesClient(
-                  uri, restOperations, sampleValidator, null, bioSamplesProperties));
+                  uri, restTemplateBuilder, sampleValidator, null, bioSamplesProperties));
     }
   }
 
@@ -150,20 +153,19 @@ public class BioSamplesClient implements AutoCloseable {
     return this.publicClient;
   }
 
-  private static class AapClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
+  private static class BsdClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
 
-    private final AapClientService aapClientService;
+    private final ClientService clientService;
 
-    public AapClientHttpRequestInterceptor(AapClientService aapClientService) {
-      this.aapClientService = aapClientService;
+    public BsdClientHttpRequestInterceptor(ClientService clientService) {
+      this.clientService = clientService;
     }
 
     @Override
     public ClientHttpResponse intercept(
         HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
-      if (aapClientService != null
-          && !request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-        String jwt = aapClientService.getJwt();
+      if (clientService != null && !request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
+        String jwt = clientService.getJwt();
         if (jwt != null) {
           request.getHeaders().set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
         }
@@ -209,6 +211,12 @@ public class BioSamplesClient implements AutoCloseable {
 
   public Iterable<Resource<Sample>> fetchSampleResourceAll() throws RestClientException {
     return sampleCursorRetrievalService.fetchAll("", Collections.emptyList());
+  }
+
+  public Iterable<Resource<Sample>> fetchSampleResourceAll(boolean addCurations)
+      throws RestClientException {
+    return sampleCursorRetrievalService.fetchAll(
+        "", Collections.emptyList(), null, null, addCurations);
   }
 
   public Iterable<Resource<Sample>> fetchSampleResourceAll(String text) throws RestClientException {
@@ -289,7 +297,8 @@ public class BioSamplesClient implements AutoCloseable {
   public Future<Resource<Sample>> persistSampleResourceAsync(
       Sample sample, Boolean setUpdateDate, Boolean setFullDetails) {
     // validate client-side before submission
-    Collection<String> errors = sampleValidator.validate(sample);
+    final Collection<String> errors = sampleValidator.validate(sample);
+
     if (!errors.isEmpty()) {
       log.error("Sample failed validation : {}", errors);
       throw new IllegalArgumentException("Sample not valid: " + String.join(", ", errors));
@@ -325,7 +334,9 @@ public class BioSamplesClient implements AutoCloseable {
   }
 
   public Collection<Resource<Sample>> certifySamples(Collection<Sample> samples) {
-    return samples.stream().map(sample -> sampleCertificationService.submit(sample, null)).collect(Collectors.toList());
+    return samples.stream()
+        .map(sample -> sampleCertificationService.submit(sample, null))
+        .collect(Collectors.toList());
   }
 
   public Iterable<Resource<Curation>> fetchCurationResourceAll() {
@@ -333,9 +344,12 @@ public class BioSamplesClient implements AutoCloseable {
   }
 
   public Resource<CurationLink> persistCuration(
-      String accession, Curation curation, String domain) {
-    log.trace("Persisting curation " + curation + " on " + accession + " in " + domain);
-    return curationSubmissionService.submit(CurationLink.build(accession, curation, domain, null));
+      String accession, Curation curation, String webinIdOrDomain, boolean isWebin) {
+    log.trace("Persisting curation " + curation + " on " + accession + " using " + webinIdOrDomain);
+
+    CurationLink curationLink = buildCurationLink(accession, curation, webinIdOrDomain, isWebin);
+
+    return curationSubmissionService.submit(curationLink, isWebin);
   }
 
   public Iterable<Resource<CurationLink>> fetchCurationLinksOfSample(String accession) {
@@ -427,10 +441,38 @@ public class BioSamplesClient implements AutoCloseable {
   }
 
   public Resource<CurationLink> persistCuration(
-      String accession, Curation curation, String domain, String jwt) {
-    log.trace("Persisting curation {} on {} in {}", curation, accession, domain);
-    return curationSubmissionService.persistCuration(
-        CurationLink.build(accession, curation, domain, null), jwt);
+      String accession, Curation curation, String webinIdOrDomain, String jwt, boolean isWebin) {
+    log.trace("Persisting curation {} on {} in {}", curation, accession, webinIdOrDomain);
+
+    CurationLink curationLink = buildCurationLink(accession, curation, webinIdOrDomain, isWebin);
+
+    return curationSubmissionService.submit(curationLink, isWebin);
+  }
+
+  private CurationLink buildCurationLink(
+      String accession, Curation curation, String webinIdOrDomain, boolean isWebin) {
+    CurationLink curationLink;
+
+    if (isWebin) {
+      log.trace(
+          "Persisting curation "
+              + curation
+              + " on "
+              + accession
+              + " using WEBIN ID "
+              + webinIdOrDomain);
+      curationLink = CurationLink.build(accession, curation, null, webinIdOrDomain, null);
+    } else {
+      log.trace(
+          "Persisting curation "
+              + curation
+              + " on "
+              + accession
+              + " using DOMAIN "
+              + webinIdOrDomain);
+      curationLink = CurationLink.build(accession, curation, webinIdOrDomain, null, null);
+    }
+    return curationLink;
   }
 
   public Iterable<Resource<CurationLink>> fetchCurationLinksOfSample(String accession, String jwt) {

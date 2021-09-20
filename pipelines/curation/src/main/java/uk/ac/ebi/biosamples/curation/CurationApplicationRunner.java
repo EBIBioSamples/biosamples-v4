@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -19,6 +19,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.Resource;
@@ -52,7 +53,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
   @Autowired IriUrlValidatorService iriUrlValidatorService;
 
   public CurationApplicationRunner(
-      BioSamplesClient bioSamplesClient,
+      @Qualifier("AAPCLIENT") BioSamplesClient bioSamplesClient,
       PipelinesProperties pipelinesProperties,
       OlsProcessor olsProcessor,
       CurationApplicationService curationApplicationService,

@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -88,6 +88,14 @@ public class DocumentationHelper {
     return getExampleSampleBuilder().withDomain(getExampleDomain()).build();
   }
 
+  public Sample getExampleSampleWithWebinId() {
+    return getExampleSampleBuilder().withWebinSubmissionAccountId("WEBIN-12345").build();
+  }
+
+  public Sample getExampleSampleWithoutWebinId() {
+    return getExampleSampleBuilder().build();
+  }
+
   public Sample getExampleSampleWithExternalReferences() {
     return getExampleSampleBuilder()
         .addExternalReference(
@@ -127,7 +135,16 @@ public class DocumentationHelper {
     Sample sampleObject = getExampleSampleBuilder().build();
     String domain = getExampleDomain();
 
-    return CurationLink.build(sampleObject.getAccession(), curationObject, domain, Instant.now());
+    return CurationLink.build(
+        sampleObject.getAccession(), curationObject, domain, null, Instant.now());
+  }
+
+  public CurationLink getExampleCurationLinkWithWebinId() {
+    Curation curationObject = getExampleCuration();
+    Sample sampleObject = getExampleSampleBuilder().build();
+
+    return CurationLink.build(
+        sampleObject.getAccession(), curationObject, null, "WEBIN-12345", Instant.now());
   }
 
   public Sample getExampleSampleWithStructuredData() {
@@ -147,7 +164,7 @@ public class DocumentationHelper {
             .withResistancePhenotype("NA")
             .build();
     final AMRTable amrTable =
-        new AMRTable.Builder("test", "self.ExampleDomain")
+        new AMRTable.Builder("test", "self.ExampleDomain", null)
             .withEntries(Arrays.asList(amrEntry))
             .build();
 
@@ -158,7 +175,10 @@ public class DocumentationHelper {
   public Sample getExampleSampleWithStructuredData2() {
     StructuredTable<HistologyEntry> histologyData =
         new StructuredTable.Builder<HistologyEntry>(
-                "www.fake.schema.url", "self.ExampleDomain", StructuredDataType.HISTOLOGY_MARKERS)
+                "www.fake.schema.url",
+                "self.ExampleDomain",
+                null,
+                StructuredDataType.HISTOLOGY_MARKERS)
             .addEntry(
                 new HistologyEntry.Builder()
                     .withMarker(new StructuredCell("Crypt depth", ""))
@@ -168,6 +188,7 @@ public class DocumentationHelper {
                         new StructuredCell(
                             "FUB",
                             "https://www.fu-berlin.de/en/sites/china/ueberfub/forschung/index.html"))
+                    .withMethod(new StructuredCell("TEST", ""))
                     .build())
             .addEntry(
                 new HistologyEntry.Builder()

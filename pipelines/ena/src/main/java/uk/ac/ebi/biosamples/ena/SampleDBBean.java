@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -22,6 +22,8 @@ public class SampleDBBean {
   private String firstPublic;
   private String lastUpdate;
   private String firstCreated;
+  private String submissionAccountId;
+
   private int status;
 
   public String getSampleXml() {
@@ -62,5 +64,13 @@ public class SampleDBBean {
 
   public void setStatus(int status) {
     this.status = status;
+  }
+
+  public String getSubmissionAccountId() {
+    return submissionAccountId;
+  }
+
+  public void setSubmissionAccountId(String submissionAccountId) {
+    this.submissionAccountId = submissionAccountId;
   }
 }

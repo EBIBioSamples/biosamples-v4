@@ -20,34 +20,170 @@
 <div layout:fragment="content" id="content">
     <th:block th:include="fragments/header :: masterhead"></th:block>
 
-    <div id="main-content-area" class="row padding-top-xlarge padding-right-xlarge padding-left-xlarge sample">
         <div class="container">
             <div class="row">
-                <div class="col-lg-8 mt-5">
-                    <div id="dropzone">
-                        <form action="/biosamples/upload" class="dropzone needsclick" id="demo-upload">
-                            <div class="dz-message needsclick">
-                                <button type="button" class="dz-button">Drop files here or click to upload. <br/>
-                                    You can upload .xls files containing your samples. <br/></button>
-                                <br/>
+                <div class="upload-container row col-lg-8 padding-top-xlarge padding-right-xlarge padding-left-xlarge sample">
+                    <div class="upload-tabs-navbar">
+                        <div id="upload-nav" class="upload-tabs-btn" onclick="navigateToTab('upload')" style="background-color: #d8d8d8">Submit Samples</div>
+                        <div id="search-nav" class="upload-tabs-btn" onclick="navigateToTab('search')">View Submissions</div>
+                        <b><a class="button logout-btn" th:href="@{/uploadLogin}">Logout</a></b>
+                    </div>
+
+                    <div id="upload" class="upload-tabs">
+                        <div id="main-content-area" class="row padding-right-xlarge padding-left-xlarge sample">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-lg-8 mt-5">
+                                        <div th:if="${loginmethod == null}">
+                                            <select class="required" id="aapDomain" name="aapDomain">
+                                                <option th:value="0" selected disabled><b>Select AAP domain</b></option>
+                                                <option th:each="domain : ${domains}" th:value="${domain}" th:text="${domain}"></option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <select class="required" id="certificate" name="certificate">
+                                                <option th:value="0" selected disabled><b>Select checklist for validation</b></option>
+                                                <option th:each="certificate : ${certificates}" th:value="${certificate.getKey()}"
+                                                        th:text="${certificate.getValue()}"></option>
+                                            </select>
+                                        </div>
+                                        <form th:action="@{/upload}" enctype="multipart/form-data" class="dropzone" id="data-upload">
+                                            <input type="hidden" id="hiddenAapDomain" name="hiddenAapDomain">
+                                            <input type="hidden" id="hiddenCertificate" name="hiddenCertificate">
+                                            <input type="hidden" th:value="${webinAccount}" name="webinAccount"/>
+                                            <input type="hidden" id="uploadToken" th:value="${token}" name="token"/>
+                                            <div>
+                                            </div>
+                                        </form>
+                                        <br/>
+                                        <input type="submit" id="uploadFile" value="Submit" class="button toggle-disabled upload-submit-btn" disabled/>
+                                        <br/><br/><br/>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <div id="search" class="upload-tabs" style="display:none">
+                        <form th:action="@{/upload/poll}">
+                            <input type="text" placeholder="Please enter your submission Id for search" id="searchSubmissionId" th:name="searchSubmissionId"
+                                   class="submission-search-box">
+                            <input type="hidden" id="PollToken" th:value="${token}" name="token"/>
+                            <button id="searchSubmissions" class="button submission-search-btn" type="submit" th:name="searchSubmissions" th:value="searchSubmissions">Search</button>
                         </form>
+
+                        <br>
+                        <h4>Recent Submissions</h4>
+                        <span>Please log in again to see all immediate submissions.</span>
+                        <div id="submission-table">
+                                <table>
+                                    <tr>
+                                        <th>Submission ID</th>
+                                        <th>Submission Status</th>
+                                        <th>Submission Date</th>
+                                        <th>Download Link</th>
+                                    </tr>
+                                    <tr th:each="submission : ${submissions}">
+                                        <td th:text="${submission.submissionId}"></td>
+                                        <td th:text="${submission.submissionStatus}"></td>
+                                        <td></td>
+                                        <td><form th:action="@{/upload/poll}">
+                                            <input type="hidden" th:value="${submission.submissionId}" th:name="searchSubmissionId">
+                                            <input type="hidden" th:value="${token}" name="token"/>
+                                            <button class="button submission-download-btn" type="submit">Download</button>
+                                        </form>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
 </div>
 <th:block th:include="fragments/footer :: footer"></th:block>
 
 <script>
-    Dropzone.autoDiscover = false;
-    $("#demo-upload").dropzone({
-        success: function (file, response) {
-            toastr.success('File ' + file.name + ' uploaded successfully');
+    function navigateToTab(displayTabId) {
+        let i;
+        let x = document.getElementsByClassName("upload-tabs");
+        for (i = 0; i < x.length; i++) {
+            x[i].style.display = "none";
         }
+
+        x = document.getElementsByClassName("upload-tabs-btn");
+        for (i = 0; i < x.length; i++) {
+            x[i].style.backgroundColor = "transparent";
+        }
+
+        document.getElementById(displayTabId).style.display = "block";
+        document.getElementById(displayTabId + '-nav').style.backgroundColor = "#d8d8d8";
+    }
+
+    Dropzone.autoDiscover = false;
+    /*$("#upload").dropzone({
+        success: function (file, response) {
+            toastr.success('File ' + file.name + ' uploaded successfully')
+
+            if (this.files.length > 1) {
+                this.removeFile(this.files[0]);
+            }
+        }
+    });*/
+
+    var myDropzone = new Dropzone(".dropzone", {
+        autoProcessQueue: false,
+        parallelUploads: 5,
+        maxFiles: 5,
+        timeout: 180000,
+        headers:{"Authorization":'Bearer ' + $('#token').val()},
     });
+
+    $('#uploadFile').click(function () {
+        myDropzone.processQueue();
+    });
+
+    myDropzone.on("success", function (file, response) {
+        /*$(".dz-success-mark svg").css("background", "green");
+        $(".dz-error-mark").css("display", "none");*/
+        toastr.success('File ' + file.name + ' uploaded successfully')
+        myDropzone.removeFile(file);
+        download(response, file.name, "text/csv");
+    });
+
+    myDropzone.on("error", function (file, response) {
+        $(".dz-error-mark svg").css("background", "red");
+        $(".dz-success-mark").css("display", "none");
+        toastr.error("Your file upload has failed");
+        download(response, "failed_response.txt", "text/plain");
+    });
+
+    $("#aapDomain").change(function (e) {
+        $("#hiddenAapDomain").val(e.target.value);
+    });
+
+    $("#certificate").change(function (e) {
+        $("#hiddenCertificate").val(e.target.value);
+    });
+
+    $(document).on('change keyup', '.required', function (e) {
+        let Disabled = true;
+        $(".required").each(function () {
+            let value = this.value
+            if ((value) && (value.trim() != '0')) {
+                Disabled = false
+            } else {
+                Disabled = true
+                return false
+            }
+        });
+
+        if (Disabled) {
+            $('.toggle-disabled').prop("disabled", true);
+        } else {
+            $('.toggle-disabled').prop("disabled", false);
+        }
+    })
 </script>
 </body>
 </html>

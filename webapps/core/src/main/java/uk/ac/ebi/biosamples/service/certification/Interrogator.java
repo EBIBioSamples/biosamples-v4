@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -16,10 +16,12 @@ import java.util.List;
 import org.everit.json.schema.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.certification.Checklist;
 import uk.ac.ebi.biosamples.model.certification.InterrogationResult;
 import uk.ac.ebi.biosamples.model.certification.SampleDocument;
+import uk.ac.ebi.biosamples.validation.ValidatorI;
 
 @Service
 public class Interrogator {
@@ -27,9 +29,9 @@ public class Interrogator {
   private static Logger EVENTS = LoggerFactory.getLogger("events");
 
   private ConfigLoader configLoader;
-  private Validator validator;
+  private ValidatorI validator;
 
-  public Interrogator(ConfigLoader configLoader, Validator validator) {
+  public Interrogator(ConfigLoader configLoader, @Qualifier("javaValidator") ValidatorI validator) {
     this.validator = validator;
     this.configLoader = configLoader;
   }

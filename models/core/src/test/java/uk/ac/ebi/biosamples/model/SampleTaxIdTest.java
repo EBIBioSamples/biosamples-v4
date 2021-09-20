@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -63,7 +63,7 @@ public class SampleTaxIdTest {
     Attribute attribute =
         Attribute.build("Organism", "", null, Collections.singletonList(olsValue), null);
     Sample sample = generateTestSample(Collections.singletonList(attribute));
-    assertTrue(0 == sample.getTaxId());
+    assertTrue(null == sample.getTaxId());
   }
 
   @Test
@@ -79,7 +79,7 @@ public class SampleTaxIdTest {
   public void given_no_ontologyTerm_return_unknown_taxId() {
     Attribute attribute = Attribute.build("Organism", "s", null, Collections.EMPTY_LIST, null);
     Sample sample = generateTestSample(Collections.singletonList(attribute));
-    assertTrue(0 == sample.getTaxId());
+    assertTrue(null == sample.getTaxId());
   }
 
   private Sample generateTestSample(List<Attribute> attributes) {
@@ -88,6 +88,7 @@ public class SampleTaxIdTest {
       attributeSet.add(attribute);
     }
     return Sample.build(
+        "",
         "",
         "",
         "",

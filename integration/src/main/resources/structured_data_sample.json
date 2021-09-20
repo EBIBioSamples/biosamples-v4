@@ -29,6 +29,9 @@
           "measurement": {
             "value": "0.000"
           },
+          "method": {
+            "value": "TEST"
+          },
           "measurement_units": {
             "value": "log pg/mg feather"
           },

@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -152,9 +152,11 @@ public class PhenopacketConverter {
   private List<Disease> populateDiseases(List<PhenopacketAttribute> diseases) {
     List<Disease> diseaseList = new ArrayList<>();
     for (PhenopacketAttribute disease : diseases) {
-      Disease.Builder builder = Disease.newBuilder();
-      builder.setTerm(phenopacketConversionHelper.getOntology(disease));
-      diseaseList.add(builder.build());
+      if (disease.getOntologyId() != null) {
+        Disease.Builder builder = Disease.newBuilder();
+        builder.setTerm(phenopacketConversionHelper.getOntology(disease));
+        diseaseList.add(builder.build());
+      }
     }
     return diseaseList;
   }
@@ -436,6 +438,8 @@ public class PhenopacketConverter {
         normalisedAttribute =
             phenopacketConversionHelper.convertAttribute("disease", "ibd", "MONDO:0005265", "ibd");
       }
+    } else if ("Biosamples inferred disease".equalsIgnoreCase(attribute.getType())) {
+      normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", attribute);
     }
 
     return normalisedAttribute;

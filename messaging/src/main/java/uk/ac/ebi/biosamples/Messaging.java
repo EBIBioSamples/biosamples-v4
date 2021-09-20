@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -14,6 +14,8 @@ public class Messaging {
 
   public static final String queueToBeIndexedSolr = "biosamples.tobeindexed.solr";
   public static final String exchangeForIndexingSolr = "biosamples.forindexing.solr";
+  public static final String fileUploadQueue = "biosamples.uploaded.files";
+  public static final String fileUploadExchange = "biosamples.uploaded.files.exchange";
   public static final String queueRetryDeadLetter = "biosamples.deadletter.retry";
   public static final String exchangeDeadLetter = "biosamples.deadletter";
 }

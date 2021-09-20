@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -54,9 +54,16 @@ public class ContactComparisonTest {
             .url("ttcorp.com")
             .build();
 
+    Contact thirdContact = new Contact.Builder().email("tt@ttcorp.com").build();
+
+    Contact fourthContact = new Contact.Builder().email("tu@ttcorp.com").build();
+
     Assert.assertEquals(
         firstContact.compareTo(secondContact), oldComparison(firstContact, secondContact));
     Assert.assertEquals(firstContact.compareTo(secondContact), -1);
+
+    Assert.assertEquals(
+        thirdContact.compareTo(fourthContact), oldComparison(thirdContact, fourthContact));
   }
 
   private int oldComparison(Contact first, Contact second) {

@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -10,7 +10,6 @@
 */
 package uk.ac.ebi.biosamples.service.certification;
 
-import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -30,7 +29,6 @@ public class CertifyService {
   private Certifier certifier;
   private Recorder recorder;
   private ConfigLoader configLoader;
-  private JsonParser jp = new JsonParser();
 
   public CertifyService(
       Certifier certifier,
@@ -51,6 +49,20 @@ public class CertifyService {
     Set<CertificationResult> certificationResults = new LinkedHashSet<>();
     SampleDocument rawSampleDocument = identifier.identify(data);
     certificationResults.add(certifier.certify(rawSampleDocument, isJustCertification));
+    return getCertificatesFromCertificationResults(certificationResults);
+  }
+
+  public List<Certificate> certify(
+      String data, boolean isJustCertification, String inputChecklist) {
+    Set<CertificationResult> certificationResults = new LinkedHashSet<>();
+    SampleDocument rawSampleDocument = identifier.identify(data);
+    certificationResults.add(
+        certifier.certify(rawSampleDocument, isJustCertification, inputChecklist));
+    return getCertificatesFromCertificationResults(certificationResults);
+  }
+
+  private List<Certificate> getCertificatesFromCertificationResults(
+      Set<CertificationResult> certificationResults) {
     List<Certificate> certificates = new ArrayList<>();
 
     certificationResults.forEach(
@@ -66,7 +78,6 @@ public class CertifyService {
                               checklist.getName(), checklist.getVersion(), checklist.getFileName());
                       certificates.add(cert);
                     }));
-
     return certificates;
   }
 
@@ -105,8 +116,7 @@ public class CertifyService {
   }
 
   public String getCertificateByCertificateName(String certificateName) throws IOException {
-    final Optional<Checklist> matchedChecklist =
-        getMatchedChecklistByCertificateName(certificateName);
+    final Optional<Checklist> matchedChecklist = getChecklistByCertificateName(certificateName);
     String fileName = null;
 
     if (matchedChecklist.isPresent()) {
@@ -125,8 +135,7 @@ public class CertifyService {
   }
 
   public String getCertificateFileNameByCertificateName(String certificateName) {
-    final Optional<Checklist> matchedChecklist =
-        getMatchedChecklistByCertificateName(certificateName);
+    final Optional<Checklist> matchedChecklist = getChecklistByCertificateName(certificateName);
     String fileName = null;
 
     if (matchedChecklist.isPresent()) {
@@ -140,13 +149,13 @@ public class CertifyService {
     return "";
   }
 
-  private Optional<Checklist> getMatchedChecklistByCertificateName(String certificateName) {
+  private Optional<Checklist> getChecklistByCertificateName(String certificateName) {
     return configLoader.config.getChecklists().stream()
         .filter(checklist -> checklist.getName().equals(certificateName))
         .findFirst();
   }
 
-  public List<String> getCertificates() {
+  public List<String> getAllCertificates() {
     return configLoader.config.getChecklists().stream()
         .map(
             checklist -> {
@@ -160,6 +169,12 @@ public class CertifyService {
 
               return null;
             })
+        .collect(Collectors.toList());
+  }
+
+  public List<String> getAllCertificateNames() {
+    return configLoader.config.getChecklists().stream()
+        .map(checklist -> checklist.getName() /*+ "-" + checklist.getVersion()*/)
         .collect(Collectors.toList());
   }
 }

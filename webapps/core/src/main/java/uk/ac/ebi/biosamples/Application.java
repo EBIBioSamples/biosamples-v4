@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -23,6 +23,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.ShallowEtagHeaderFilter;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 import org.thymeleaf.templateresolver.UrlTemplateResolver;
@@ -35,8 +36,6 @@ import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.service.AmrTableConverter;
 import uk.ac.ebi.biosamples.service.SampleAsXMLHttpMessageConverter;
 import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
-
-// import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 @SpringBootApplication
 @EnableAsync
@@ -120,5 +119,10 @@ public class Application extends SpringBootServletInitializer {
   @Bean
   AmrTableConverter amrTableToMapConverter() {
     return new AmrTableConverter();
+  }
+
+  @Bean
+  public RestTemplate restTemplate() {
+    return new RestTemplate();
   }
 }

@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -35,36 +35,36 @@ public class PipelineTest {
   public void given_ncbi_sample_run_pipeline_for_SAMN03894263() throws IOException {
       String data = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("json/ncbi-SAMN03894263.json"), "UTF8");
       BioSamplesCertificationComplainceResult rr = pipeline.run(data);
-      assertEquals(3, rr.getCertificates().size());
+      assertEquals(3, rr.getAllCertificates().size());
   }
 
   @Test
   public void given_ncbi_sample_run_pipeline_for_SAMN03894261() throws IOException {
       String data = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("json/ncbi-SAMN03894261.json"), "UTF8");
       BioSamplesCertificationComplainceResult rr = pipeline.run(data);
-      assertEquals(3, rr.getCertificates().size());
+      assertEquals(3, rr.getAllCertificates().size());
   }
 
   @Test
   public void given_ncbi_sample_run_pipeline_for_SAMD00141632() throws IOException {
       String data = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("json/ncbi-SAMD00141632.json"), "UTF8");
       BioSamplesCertificationComplainceResult rr = pipeline.run(data);
-      assertEquals(3, rr.getCertificates().size());
+      assertEquals(3, rr.getAllCertificates().size());
   }
 
   @Test
   public void given_ncbi_sample_run_pipeline_for_SAMD00000001() throws IOException {
       String data = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("json/ncbi-SAMD00000001.json"), "UTF8");
       BioSamplesCertificationComplainceResult rr = pipeline.run(data);
-      assertEquals(3, rr.getCertificates().size());
-      assertNotEquals(rr.getCertificates().get(0).getChecklist(), rr.getCertificates().get(1).getChecklist());
+      assertEquals(3, rr.getAllCertificates().size());
+      assertNotEquals(rr.getAllCertificates().get(0).getChecklist(), rr.getAllCertificates().get(1).getChecklist());
   }
 
   @Test
   public void given_ncbi_sample_run_pipeline_for_SAMD00000001_non_pretty() throws IOException {
       String data = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("json/ncbi-SAMD00000001-non-pretty.json"), "UTF8");
       BioSamplesCertificationComplainceResult rr = pipeline.run(data);
-      assertEquals(3, rr.getCertificates().size());
-      assertNotEquals(rr.getCertificates().get(0).getChecklist(), rr.getCertificates().get(1).getChecklist());
+      assertEquals(3, rr.getAllCertificates().size());
+      assertNotEquals(rr.getAllCertificates().get(0).getChecklist(), rr.getAllCertificates().get(1).getChecklist());
   }*/
 }

@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -33,7 +33,9 @@ public class EraProDao {
 
   private Logger log = LoggerFactory.getLogger(getClass());
 
-  private static final String STATUS_CLAUSE = "STATUS_ID IN (4, 5, 6, 7, 8)";
+  private static final String STATUS_CLAUSE = "STATUS_ID IN (3, 4, 5, 6, 7, 8)";
+  private static final String STATUS_CLAUSE_SUPPRESSED = "STATUS_ID IN (5, 7)";
+  private static final String STATUS_CLAUSE_KILLED = "STATUS_ID IN (6, 8)";
 
   /**
    * Return a set of BioSamples accessions that have been updated or made public within the
@@ -62,7 +64,7 @@ public class EraProDao {
 
   public void doSampleCallback(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
     String query =
-        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' "
+        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' "
             + "AND "
             + STATUS_CLAUSE
             + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
@@ -92,7 +94,8 @@ public class EraProDao {
    */
   public void doGetSuppressedEnaSamples(RowCallbackHandler rch) {
     String query =
-        "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 5";
+        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND "
+            + STATUS_CLAUSE_SUPPRESSED;
 
     jdbcTemplate.query(query, rch);
   }
@@ -104,7 +107,8 @@ public class EraProDao {
    */
   public void doGetSuppressedNcbiDdbjSamples(RowCallbackHandler rch) {
     String query =
-        "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 5";
+        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND "
+            + STATUS_CLAUSE_SUPPRESSED;
 
     jdbcTemplate.query(query, rch);
   }
@@ -138,7 +142,8 @@ public class EraProDao {
               + "to_char(LAST_UPDATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS LAST_UPDATED, "
               + "to_char(FIRST_PUBLIC, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_PUBLIC,  "
               + " to_char(FIRST_CREATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_CREATED, "
-              + "STATUS_ID "
+              + "STATUS_ID, "
+              + "SUBMISSION_ACCOUNT_ID "
               + "FROM SAMPLE "
               + "WHERE BIOSAMPLE_ID = ? "
               + "AND SAMPLE_ID LIKE 'ERS%'";
@@ -196,13 +201,15 @@ public class EraProDao {
         sampleBean.setLastUpdate(rs.getString("LAST_UPDATED"));
         sampleBean.setFirstCreated(rs.getString("FIRST_CREATED"));
         sampleBean.setStatus(rs.getInt("STATUS_ID"));
+        sampleBean.setSubmissionAccountId(rs.getString("SUBMISSION_ACCOUNT_ID"));
 
         return sampleBean;
       };
 
   public void doGetKilledEnaSamples(RowCallbackHandler rch) {
     String query =
-        "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 6";
+        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND "
+            + STATUS_CLAUSE_KILLED;
 
     jdbcTemplate.query(query, rch);
   }

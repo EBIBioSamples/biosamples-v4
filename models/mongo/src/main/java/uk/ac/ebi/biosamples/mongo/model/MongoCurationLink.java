@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -35,15 +35,23 @@ public class MongoCurationLink implements Comparable<MongoCurationLink> {
 
   private final String domain;
 
+  private final String webinSubmissionAccountId;
+
   @Indexed(background = true)
   protected final Instant created;
 
   private final Curation curation;
 
   private MongoCurationLink(
-      String sample, String domain, Curation curation, String hash, Instant created) {
+      String sample,
+      String domain,
+      String webinSubmissionAccountId,
+      Curation curation,
+      String hash,
+      Instant created) {
     this.sample = sample;
     this.domain = domain;
+    this.webinSubmissionAccountId = webinSubmissionAccountId;
     this.curation = curation;
     this.hash = hash;
     this.created = created;
@@ -59,6 +67,10 @@ public class MongoCurationLink implements Comparable<MongoCurationLink> {
 
   public String getDomain() {
     return domain;
+  }
+
+  public String getWebinSubmissionAccountId() {
+    return webinSubmissionAccountId;
   }
 
   public String getHash() {
@@ -83,7 +95,7 @@ public class MongoCurationLink implements Comparable<MongoCurationLink> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(sample, domain, curation);
+    return Objects.hash(sample, domain, webinSubmissionAccountId, curation);
   }
 
   @Override
@@ -118,6 +130,7 @@ public class MongoCurationLink implements Comparable<MongoCurationLink> {
       @JsonProperty("sample") String sample,
       @JsonProperty("curation") Curation curation,
       @JsonProperty("domain") String domain,
+      @JsonProperty("webinSubmissionAccountId") String webinSubmissionAccountId,
       @JsonProperty("created") @JsonDeserialize(using = CustomInstantDeserializer.class)
           Instant created) {
 
@@ -131,6 +144,6 @@ public class MongoCurationLink implements Comparable<MongoCurationLink> {
     // TODO hash on domain
     // TODO synchronized with CurationLink
 
-    return new MongoCurationLink(sample, domain, curation, hash, created);
+    return new MongoCurationLink(sample, domain, webinSubmissionAccountId, curation, hash, created);
   }
 }

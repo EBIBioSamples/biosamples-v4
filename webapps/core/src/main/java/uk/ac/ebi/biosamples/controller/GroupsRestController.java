@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -21,9 +21,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 
 @RestController
 @RequestMapping("/groups")
@@ -61,7 +61,7 @@ public class GroupsRestController {
             .withSubmittedVia(submittedVia)
             .build();
 
-    sample = sampleService.store(sample, true);
+    sample = sampleService.store(sample, true, "");
     Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
         .body(sampleResource);
@@ -83,7 +83,7 @@ public class GroupsRestController {
     sample =
         Sample.Builder.fromSample(sample).withUpdate(update).withSubmittedVia(submittedVia).build();
 
-    sample = sampleService.store(sample, true);
+    sample = sampleService.store(sample, true, "");
     return sampleResourceAssembler.toResource(sample);
   }
 }

@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -12,6 +12,7 @@ package uk.ac.ebi.biosamples.certification.service;
 
 import static org.junit.Assert.assertEquals;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Collections;
 import org.apache.commons.io.IOUtils;
@@ -19,10 +20,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.certification.InterrogationResult;
 import uk.ac.ebi.biosamples.model.certification.SampleDocument;
 import uk.ac.ebi.biosamples.service.certification.*;
+import uk.ac.ebi.biosamples.service.certification.Validator;
+import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
+import uk.ac.ebi.biosamples.validation.ValidatorI;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -32,13 +39,18 @@ import uk.ac.ebi.biosamples.service.certification.*;
       Curator.class,
       Certifier.class,
       Validator.class,
+      ValidatorI.class,
+      ElixirSchemaValidator.class,
+      RestTemplate.class,
+      BioSamplesProperties.class,
+      ObjectMapper.class,
       Applicator.class
     },
     properties = {"job.autorun.enabled=false"})
 public class InterrogatorTest {
   @Autowired private Interrogator interrogator;
-
   @Autowired private ConfigLoader configLoader;
+  @MockBean ElixirSchemaValidator validator;
 
   @Test
   public void given_ncbi_sample_return_ncbi_checklist_as_a_match() throws IOException {

@@ -1,0 +1,136 @@
+/*
+* Copyright 2021 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
+package uk.ac.ebi.biosamples.controller;
+
+import java.time.Instant;
+import javax.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
+import org.springframework.web.bind.annotation.*;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
+import uk.ac.ebi.biosamples.service.SampleServiceV2;
+import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
+import uk.ac.ebi.biosamples.validation.SchemaValidationService;
+
+public class SampleRestControllerV2 {
+  private Logger log = LoggerFactory.getLogger(getClass());
+
+  private final SampleServiceV2 sampleService;
+  private final BioSamplesAapService bioSamplesAapService;
+  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
+  private final SchemaValidationService schemaValidationService;
+  private final ENATaxonClientService enaTaxonClientService;
+
+  public SampleRestControllerV2(
+      final SampleServiceV2 sampleService,
+      final BioSamplesAapService bioSamplesAapService,
+      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+      final SchemaValidationService schemaValidationService,
+      final ENATaxonClientService enaTaxonClientService) {
+    this.sampleService = sampleService;
+    this.bioSamplesAapService = bioSamplesAapService;
+    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
+    this.schemaValidationService = schemaValidationService;
+    this.enaTaxonClientService = enaTaxonClientService;
+  }
+
+  @PreAuthorize("isAuthenticated()")
+  @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
+  public ResponseEntity<Sample> putSampleV2(
+      HttpServletRequest request,
+      @PathVariable final String accession,
+      @RequestBody Sample sample,
+      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
+          final String authProvider) {
+    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+    boolean isWebinSuperUser = false;
+
+    if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
+      throw new SampleAccessionMismatchExceptionV2();
+    }
+
+    log.debug("Received PUT for " + accession);
+
+    if (authProvider.equalsIgnoreCase("WEBIN")) {
+      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
+      final Authentication authentication = bearerTokenExtractor.extract(request);
+      final SubmissionAccount webinAccount =
+          bioSamplesWebinAuthenticationService
+              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+              .getBody();
+
+      final String webinAccountId = webinAccount.getId();
+
+      isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
+
+      if (sampleService.isNotExistingAccession(accession) && !isWebinSuperUser) {
+        throw new SampleAccessionMismatchExceptionV2();
+      }
+
+      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
+    } else {
+      if (sampleService.isNotExistingAccession(accession)
+          && !(bioSamplesAapService.isWriteSuperUser()
+              || bioSamplesAapService.isIntegrationTestUser())) {
+        throw new SampleAccessionMismatchExceptionV2();
+      }
+
+      sample = bioSamplesAapService.handleSampleDomain(sample);
+    }
+
+    final Instant now = Instant.now();
+    final SubmittedViaType submittedVia =
+        sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+
+    sample =
+        Sample.Builder.fromSample(sample).withUpdate(now).withSubmittedVia(submittedVia).build();
+
+    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
+    if (webinAuth && !isWebinSuperUser) {
+      schemaValidationService.validate(sample);
+    } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
+      schemaValidationService.validate(sample);
+    }
+
+    if (submittedVia == SubmittedViaType.FILE_UPLOADER) {
+      schemaValidationService.validate(sample);
+    }
+
+    if (webinAuth && !isWebinSuperUser) {
+      sample = enaTaxonClientService.performTaxonomyValidation(sample);
+    }
+
+    final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample);
+
+    if (isFirstTimeMetadataAdded) {
+      sample = Sample.Builder.fromSample(sample).withSubmitted(now).build();
+    }
+
+    sample = sampleService.store(sample, isFirstTimeMetadataAdded, authProvider);
+
+    return ResponseEntity.status(HttpStatus.OK).body(sample);
+  }
+
+  @ResponseStatus(
+      value = HttpStatus.BAD_REQUEST,
+      reason = "Sample accession must match URL accession") // 400
+  public static class SampleAccessionMismatchExceptionV2 extends RuntimeException {}
+}

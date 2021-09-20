@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -13,6 +13,7 @@ package uk.ac.ebi.biosamples.certification.service;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Collections;
 import org.apache.commons.io.IOUtils;
@@ -21,9 +22,15 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.certification.*;
 import uk.ac.ebi.biosamples.service.certification.*;
+import uk.ac.ebi.biosamples.service.certification.Validator;
+import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
+import uk.ac.ebi.biosamples.validation.ValidatorI;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -33,6 +40,11 @@ import uk.ac.ebi.biosamples.service.certification.*;
       Certifier.class,
       ConfigLoader.class,
       Validator.class,
+      ValidatorI.class,
+      ElixirSchemaValidator.class,
+      RestTemplate.class,
+      BioSamplesProperties.class,
+      ObjectMapper.class,
       Applicator.class,
       NullRecorder.class
     },
@@ -41,6 +53,8 @@ public class FileRecorderTest {
   @Qualifier("nullRecorder")
   @Autowired
   private Recorder recorder;
+
+  @MockBean ElixirSchemaValidator validator;
 
   @Test
   public void given_certificate_save_to_file() throws IOException {

@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -36,7 +36,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.curation.service.IriUrlValidatorService;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -51,8 +50,6 @@ public class SampleCurationCallableTest {
   @Autowired private ObjectMapper objectMapper;
 
   @Autowired private OlsProcessor olsProcessor;
-
-  @Autowired private BioSamplesProperties bioSamplesProperties;
 
   private MockRestServiceServer mockServer;
 

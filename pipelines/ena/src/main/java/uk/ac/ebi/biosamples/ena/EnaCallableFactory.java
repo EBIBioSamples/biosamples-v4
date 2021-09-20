@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -12,37 +12,45 @@ package uk.ac.ebi.biosamples.ena;
 
 import java.util.Set;
 import java.util.concurrent.Callable;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 
 @Service
 public class EnaCallableFactory {
-  private final BioSamplesClient bioSamplesClient;
+  private final BioSamplesClient bioSamplesWebinClient;
+  private final BioSamplesClient bioSamplesAapClient;
   private final EnaXmlEnhancer enaXmlEnhancer;
   private final EnaElementConverter enaElementConverter;
+  private final EgaSampleExporter egaSampleExporter;
   private final EraProDao eraProDao;
-  private final String domain;
+  private final String webinId;
 
   public EnaCallableFactory(
-      BioSamplesClient bioSamplesClient,
+      @Qualifier("WEBINCLIENT") BioSamplesClient bioSamplesWebinClient,
+      BioSamplesClient bioSamplesAapClient,
       EnaXmlEnhancer enaXmlEnhancer,
       EnaElementConverter enaElementConverter,
+      EgaSampleExporter egaSampleExporter,
       EraProDao eraProDao,
       PipelinesProperties pipelinesProperties) {
-
-    this.bioSamplesClient = bioSamplesClient;
+    this.bioSamplesWebinClient = bioSamplesWebinClient;
+    this.bioSamplesAapClient = bioSamplesAapClient;
     this.enaXmlEnhancer = enaXmlEnhancer;
     this.enaElementConverter = enaElementConverter;
+    this.egaSampleExporter = egaSampleExporter;
     this.eraProDao = eraProDao;
-    this.domain = pipelinesProperties.getEnaDomain();
+    this.webinId = pipelinesProperties.getProxyWebinId();
   }
 
   /**
    * Builds callable for dealing most ENA samples
    *
    * @param accession The accession passed
+   * @param statusId sample status
    * @param suppressionHandler Is running to set samples to SUPPRESSED
    * @param bsdAuthority Indicates its running for samples submitted through BioSamples
    * @param amrData The AMR {@link AbstractData} of the sample
@@ -50,17 +58,23 @@ public class EnaCallableFactory {
    */
   public Callable<Void> build(
       String accession,
+      String egaId,
+      int statusId,
       boolean suppressionHandler,
       boolean killedHandler,
       boolean bsdAuthority,
       Set<AbstractData> amrData) {
     return new EnaCallable(
         accession,
-        bioSamplesClient,
+        egaId,
+        statusId,
+        bioSamplesWebinClient,
+        bioSamplesAapClient,
         enaXmlEnhancer,
         enaElementConverter,
+        egaSampleExporter,
         eraProDao,
-        domain,
+        webinId,
         suppressionHandler,
         killedHandler,
         bsdAuthority,

@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -25,18 +25,16 @@ public class NcbiCurationCallableFactory {
     this.domain = pipelinesProperties.getEnaDomain();
   }
 
-  public NcbiCurationCallable build(String accession) {
-    return new NcbiCurationCallable(accession, bioSamplesClient, domain);
-  }
-
   /**
    * Builds a callable for dealing samples that are SUPPRESSED
    *
    * @param accession The accession passed
+   * @param statusId The sample status
    * @param suppressionHandler true for this case
    * @return the callable, {@link NcbiCurationCallable}
    */
-  public NcbiCurationCallable build(String accession, boolean suppressionHandler) {
-    return new NcbiCurationCallable(accession, bioSamplesClient, domain, suppressionHandler);
+  public NcbiCurationCallable build(String accession, int statusId, boolean suppressionHandler) {
+    return new NcbiCurationCallable(
+        accession, statusId, bioSamplesClient, domain, suppressionHandler);
   }
 }

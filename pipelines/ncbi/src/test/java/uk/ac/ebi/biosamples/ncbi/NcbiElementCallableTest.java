@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -37,7 +37,8 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 @ActiveProfiles("test")
 public class NcbiElementCallableTest {
 
-  @MockBean BioSamplesClient bioSamplesClient;
+  @MockBean(name = "AAPCLIENT")
+  BioSamplesClient bioSamplesClient;
 
   TestUtilities testUtils = new TestUtilities();
   TaxonomyService taxonService = new TaxonomyService();

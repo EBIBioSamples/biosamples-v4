@@ -11,6 +11,18 @@
       "version": "1.2.0",
       "file": "schemas/certification/plant-miappe.json",
       "block": "false"
+    },
+    {
+      "name": "BSDC00001(biosamples-minimal)",
+      "version": "0.0.1",
+      "file": "schemas/certification/biosamples-minimal.json",
+      "block": "true"
+    },
+    {
+      "name": "BSDC00002(plant-miappe)",
+      "version": "1.2.0",
+      "file": "schemas/certification/plant-miappe.json",
+      "block": "false"
     }
   ],
   "plans": [

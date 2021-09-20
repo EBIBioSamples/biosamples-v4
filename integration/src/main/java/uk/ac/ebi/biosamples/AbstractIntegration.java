@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -31,6 +31,7 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
   protected final String defaultIntegrationSubmissionDomain = "self.BiosampleIntegrationTest";
   protected int exitCode = 1;
   protected final BioSamplesClient client;
+  protected final BioSamplesClient publicClient;
 
   protected abstract void phaseOne();
 
@@ -44,6 +45,10 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
 
   public AbstractIntegration(BioSamplesClient client) {
     this.client = client;
+    this.publicClient =
+        client
+            .getPublicClient()
+            .orElseThrow(() -> new IntegrationTestFailException("Could not create public client"));
   }
 
   @Override
@@ -89,7 +94,7 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
     Optional<Sample> optionalSample;
     Filter nameFilter = FilterBuilder.create().onName(name).build();
     Iterator<Resource<Sample>> resourceIterator =
-        client.fetchSampleResourceAll(Collections.singletonList(nameFilter)).iterator();
+        publicClient.fetchSampleResourceAll(Collections.singletonList(nameFilter)).iterator();
 
     if (resourceIterator.hasNext()) {
       optionalSample = Optional.of(resourceIterator.next().getContent());

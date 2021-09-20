@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -57,7 +57,7 @@ public class SitemapIntegration extends AbstractIntegration {
   protected void phaseTwo() {
     List<Resource<Sample>> samples = new ArrayList<>();
     Map<String, Boolean> lookupTable = new HashMap<>();
-    for (Resource<Sample> sample : client.fetchSampleResourceAll()) {
+    for (Resource<Sample> sample : publicClient.fetchSampleResourceAll()) {
       samples.add(sample);
       lookupTable.put(sample.getContent().getAccession(), Boolean.FALSE);
     }

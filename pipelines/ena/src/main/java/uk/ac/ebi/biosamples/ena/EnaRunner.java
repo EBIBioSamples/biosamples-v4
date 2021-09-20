@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -55,6 +55,7 @@ public class EnaRunner implements ApplicationRunner {
   public void run(ApplicationArguments args) {
     boolean isPassed = true;
     boolean includeAmr = true;
+    StringBuilder failures = new StringBuilder();
 
     if (args.getOptionNames().contains("includeAmr")) {
       if (args.getOptionValues("includeAmr").iterator().next().equalsIgnoreCase("false")) {
@@ -102,7 +103,7 @@ public class EnaRunner implements ApplicationRunner {
 
       if (args.getOptionNames().contains("killedRunner")) {
         if (args.getOptionValues("killedRunner").iterator().next().equalsIgnoreCase("false")) {
-          suppressionRunner = false;
+          killedRunner = false;
         }
       }
 
@@ -113,17 +114,36 @@ public class EnaRunner implements ApplicationRunner {
       importEraSamples(fromDate, toDate, sampleToAmrMap);
 
       // Handler to append SRA Accession (ENA accession numbers to samples owned by BioSamples)
-      importEraBsdAuthoritySamples(fromDate, toDate);
+      // TODO check: remove or keep as needed
+      /*try {
+        importEraBsdAuthoritySamples(fromDate, toDate);
+      } catch (final Exception e) {
+        failures.append("Some problems while adding SRA accession to BSD authority samples" + "\n");
+      }*/
 
       if (suppressionRunner) {
-        // handler for suppressed ENA samples
-        handleSuppressedEnaSamples();
-        // handler for suppressed NCBI/DDBJ samples
-        handleSuppressedNcbiDdbjSamples();
+        try {
+          // handler for suppressed ENA samples
+          handleSuppressedEnaSamples();
+        } catch (final Exception e) {
+          failures.append("Some problems in ENA samples suppression runner" + "\n");
+        }
+
+        try {
+          // handler for suppressed NCBI/DDBJ samples
+          handleSuppressedNcbiDdbjSamples();
+        } catch (final Exception e) {
+          failures.append("Some problems in ENA samples suppression runner" + "\n");
+        }
       }
 
       if (killedRunner) {
-        handleKilledEnaSamples();
+        try {
+          // handler for killed ENA samples
+          handleKilledEnaSamples();
+        } catch (final Exception e) {
+          failures.append("Some problems in ENA samples killed runner" + "\n");
+        }
       }
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);
@@ -311,9 +331,10 @@ public class EnaRunner implements ApplicationRunner {
     @Override
     public void processRow(ResultSet rs) throws SQLException {
       final String sampleAccession = rs.getString("BIOSAMPLE_ID");
+      final int statusId = rs.getInt("STATUS_ID");
 
       final Callable<Void> callable =
-          enaCallableFactory.build(sampleAccession, true, false, false, null);
+          enaCallableFactory.build(sampleAccession, null, statusId, true, false, false, null);
 
       if (executorService == null) {
         try {
@@ -350,9 +371,10 @@ public class EnaRunner implements ApplicationRunner {
     @Override
     public void processRow(ResultSet rs) throws SQLException {
       final String sampleAccession = rs.getString("BIOSAMPLE_ID");
+      final int statusId = rs.getInt("STATUS_ID");
 
       final Callable<Void> callable =
-          enaCallableFactory.build(sampleAccession, false, true, false, null);
+          enaCallableFactory.build(sampleAccession, null, statusId, false, true, false, null);
 
       if (executorService == null) {
         try {
@@ -389,8 +411,10 @@ public class EnaRunner implements ApplicationRunner {
     @Override
     public void processRow(ResultSet rs) throws SQLException {
       final String sampleAccession = rs.getString("BIOSAMPLE_ID");
+      final int statusId = rs.getInt("STATUS_ID");
 
-      final Callable<Void> callable = ncbiCurationCallableFactory.build(sampleAccession, true);
+      final Callable<Void> callable =
+          ncbiCurationCallableFactory.build(sampleAccession, statusId, true);
 
       if (executorService == null) {
         try {
@@ -424,6 +448,7 @@ public class EnaRunner implements ApplicationRunner {
     }
 
     private enum ENAStatus {
+      CANCELLED(3),
       PUBLIC(4),
       SUPPRESSED(5),
       KILLED(6),
@@ -452,6 +477,7 @@ public class EnaRunner implements ApplicationRunner {
     public void processRow(ResultSet rs) throws SQLException {
       final String sampleAccession = rs.getString("BIOSAMPLE_ID");
       final int statusID = rs.getInt("STATUS_ID");
+      final String egaId = rs.getString("EGA_ID");
       final ENAStatus enaStatus = ENAStatus.valueOf(statusID);
       Set<AbstractData> amrData = new HashSet<>();
 
@@ -461,10 +487,11 @@ public class EnaRunner implements ApplicationRunner {
 
       switch (enaStatus) {
         case PUBLIC:
-
         case SUPPRESSED:
-
         case TEMPORARY_SUPPRESSED:
+        case KILLED:
+        case TEMPORARY_KILLED:
+        case CANCELLED:
           log.info(
               String.format(
                   "%s is being handled as status is %s", sampleAccession, enaStatus.name()));
@@ -472,10 +499,13 @@ public class EnaRunner implements ApplicationRunner {
           // update if sample already exists else import
 
           if (amrData.size() > 0) {
-            callable = enaCallableFactory.build(sampleAccession, false, false, false, amrData);
+            callable =
+                enaCallableFactory.build(sampleAccession, egaId, 0, false, false, false, amrData);
           } else {
-            callable = enaCallableFactory.build(sampleAccession, false, false, false, null);
+            callable =
+                enaCallableFactory.build(sampleAccession, egaId, 0, false, false, false, null);
           }
+
           if (executorService == null) {
             try {
               callable.call();
@@ -486,6 +516,7 @@ public class EnaRunner implements ApplicationRunner {
             }
           } else {
             futures.put(sampleAccession, executorService.submit(callable));
+
             try {
               ThreadUtils.checkFutures(futures, 100);
             } catch (ExecutionException e) {
@@ -495,14 +526,6 @@ public class EnaRunner implements ApplicationRunner {
             }
           }
 
-          break;
-
-        case KILLED:
-
-        case TEMPORARY_KILLED:
-          log.info(
-              String.format(
-                  "%s would be handled as status is %s", sampleAccession, enaStatus.name()));
           break;
 
         default:
@@ -532,7 +555,7 @@ public class EnaRunner implements ApplicationRunner {
     public void processRow(ResultSet rs) throws SQLException {
       String sampleAccession = rs.getString("BIOSAMPLE_ID");
 
-      Callable<Void> callable = ncbiCallableFactory.build(sampleAccession);
+      Callable<Void> callable = ncbiCallableFactory.build(sampleAccession, 0, false);
 
       if (executorService == null) {
         try {
@@ -574,7 +597,8 @@ public class EnaRunner implements ApplicationRunner {
     public void processRow(ResultSet rs) throws SQLException {
       final String sampleAccession = rs.getString("BIOSAMPLE_ID");
 
-      Callable<Void> callable = enaCallableFactory.build(sampleAccession, false, false, true, null);
+      Callable<Void> callable =
+          enaCallableFactory.build(sampleAccession, null, 0, false, false, true, null);
       if (executorService == null) {
         try {
           callable.call();

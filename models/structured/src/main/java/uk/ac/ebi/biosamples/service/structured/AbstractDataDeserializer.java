@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -43,12 +43,17 @@ public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
     StructuredDataType type =
         StructuredDataType.valueOf(rootNode.get("type").asText().toUpperCase());
     JsonNode domain = rootNode.get("domain");
+    JsonNode webinSubmissionAccountId = rootNode.get("webinSubmissionAccountId");
     JsonNode content = rootNode.get("content");
     String domainStr = (domain != null && !domain.isNull()) ? domain.asText() : null;
+    String webinIdStr =
+        (webinSubmissionAccountId != null && !webinSubmissionAccountId.isNull())
+            ? webinSubmissionAccountId.asText()
+            : null;
 
     // Deserialize the object based on the datatype
     if (type == StructuredDataType.AMR) {
-      AMRTable.Builder tableBuilder = new AMRTable.Builder(schema, domainStr);
+      AMRTable.Builder tableBuilder = new AMRTable.Builder(schema, domainStr, webinIdStr);
       for (Iterator<JsonNode> it = content.elements(); it.hasNext(); ) {
         JsonNode amrRowObject = it.next();
         AMREntry entry = this.objectMapper.treeToValue(amrRowObject, AMREntry.class);
@@ -58,9 +63,11 @@ public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
     } else if (type == StructuredDataType.CHICKEN_DATA
         || type == StructuredDataType.HISTOLOGY_MARKERS
         || type == StructuredDataType.MOLECULAR_MARKERS
-        || type == StructuredDataType.FATTY_ACIDS) {
+        || type == StructuredDataType.FATTY_ACIDS
+        || type == StructuredDataType.SALMON_DATA
+        || type == StructuredDataType.HEAVY_METALS) {
       StructuredTable.Builder<HistologyEntry> tableBuilder =
-          new StructuredTable.Builder<>(schema, domainStr, type);
+          new StructuredTable.Builder<>(schema, domainStr, webinIdStr, type);
       for (Iterator<JsonNode> it = content.elements(); it.hasNext(); ) {
         JsonNode amrRowObject = it.next();
         HistologyEntry entry = this.objectMapper.treeToValue(amrRowObject, HistologyEntry.class);

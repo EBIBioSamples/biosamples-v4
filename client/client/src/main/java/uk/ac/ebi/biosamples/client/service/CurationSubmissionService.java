@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -42,12 +42,19 @@ public class CurationSubmissionService {
     this.executor = executor;
   }
 
-  public Resource<CurationLink> submit(CurationLink curationLink) throws RestClientException {
-    return persistCuration(curationLink, null);
+  public Resource<CurationLink> submit(CurationLink curationLink, boolean isWebin)
+      throws RestClientException {
+    return persistCuration(curationLink, null, isWebin);
   }
 
-  public Resource<CurationLink> persistCuration(CurationLink curationLink, String jwt)
-      throws RestClientException {
+  public Resource<CurationLink> persistCuration(
+      CurationLink curationLink, String jwt, boolean isWebin) throws RestClientException {
+    String addWebinRequestParam = "";
+
+    if (isWebin) {
+      addWebinRequestParam = "?authProvider=WEBIN";
+    }
+
     URI target =
         URI.create(
             traverson
@@ -55,7 +62,8 @@ public class CurationSubmissionService {
                 .follow(Hop.rel("sample").withParameter("accession", curationLink.getSample()))
                 .follow("curationLinks")
                 .asLink()
-                .getHref());
+                .getHref()
+                .concat(addWebinRequestParam));
 
     log.trace("POSTing to " + target + " " + curationLink);
 

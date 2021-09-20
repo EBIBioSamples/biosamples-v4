@@ -29,6 +29,28 @@
             </div>
             <div class="content-search-header-results" th:if="${page.getTotalElements() != 0}">showing [[${start} + 1]] to [[${start} + ${page.getNumberOfElements()}]] of [[${page.getTotalElements()}]] samples</div>
             <div class="content-search-header-results" th:if="${page.getTotalElements() == 0}">No results found</div>
+            <div class="content-search-download">
+                <form method="get" action="/download" th:action="@{'/download'}">
+                    <select name="count" id="download-size" class="content-search-download-select">
+                        <option value="10">10</option>
+                        <option value="100">100</option>
+                        <option value="1000">1,000</option>
+                        <option value="10000">10,000</option>
+                        <option value="100000">100,000</option>
+                    </select>
+                    <select name="format" id="download-format" class="content-search-download-select">
+                        <option value="json">JSON</option>
+                        <option value="xml">XML</option>
+                        <option value="accessions">accessions</option>
+                    </select>
+                    <input type="hidden" name="text" th:value="${text}" />
+                    <div th:each="filter: ${filters}" style="display:none">
+                        <input type="hidden" name="filter" th:value="${filter}" />
+                    </div>
+                    <button type="submit" class="button content-search-download-button"> <i class="icon icon-common icon-download"></i>
+                    </button>
+                </form>
+            </div>
         </div>
         <div class="small-12 search-results">
             <div class="sr__facets" id="facet_div">

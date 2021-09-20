@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -191,7 +191,7 @@ public class AmrDataLoaderService {
     final Set<AbstractData> structuredData = new HashSet<>();
     final AMRTable.Builder amrTableBuilder =
         new AMRTable.Builder(
-            "http://localhost:8081/biosamples/schemas/amr.json", "self.BiosampleImportENA");
+            "http://localhost:8081/biosamples/schemas/amr.json", "self.BiosampleImportENA", null);
 
     lines.forEach(
         line -> {

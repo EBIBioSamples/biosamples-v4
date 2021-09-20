@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -122,7 +122,8 @@ public class RestStaticViewIntegration extends AbstractIntegration {
     client.persistCuration(
         test2.getAccession(),
         Curation.build(attributesPre, attributesPost, null, null),
-        defaultIntegrationSubmissionDomain);
+        defaultIntegrationSubmissionDomain,
+        false);
 
     attributesPre = new HashSet<>();
     attributesPre.add(Attribute.build("organism", "Homo sapiens"));
@@ -133,7 +134,8 @@ public class RestStaticViewIntegration extends AbstractIntegration {
     client.persistCuration(
         test2.getAccession(),
         Curation.build(attributesPre, attributesPost, null, null),
-        defaultIntegrationSubmissionDomain);
+        defaultIntegrationSubmissionDomain,
+        false);
 
     SortedSet<Relationship> relationships = new TreeSet<>();
     relationships.add(

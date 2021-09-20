@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.Resource;
@@ -50,7 +51,9 @@ public class AmrRunner implements ApplicationRunner {
   public static final String TAB = "\t";
 
   @Autowired EnaAmrDataProcessService enaAmrDataProcessService;
-  @Autowired BioSamplesClient bioSamplesClient;
+  @Autowired
+  @Qualifier("WEBINCLIENT")
+  BioSamplesClient bioSamplesClient;
 
   @Override
   public void run(final ApplicationArguments args) {
@@ -160,7 +163,8 @@ public class AmrRunner implements ApplicationRunner {
 
   private static void dealWithSemicolon(
       final String value, final AccessionFtpUrlPair accessionFtpUrlPair) {
-    final int index = value.indexOf(';');
+    // Commented because ENA's storing storing representation of AMR files has changed, no parsing required
+    /*final int index = value.indexOf(';');
     final String option1 = value.substring(index + 1);
     final String option2 = value.substring(0, index);
 
@@ -168,7 +172,9 @@ public class AmrRunner implements ApplicationRunner {
       accessionFtpUrlPair.setFtpUrl(HTTP + option1);
     } else {
       accessionFtpUrlPair.setFtpUrl(HTTP + option2);
-    }
+    }*/
+
+    accessionFtpUrlPair.setFtpUrl(HTTP + value);
   }
 
   private void downloadFtpContent(final List<AccessionFtpUrlPair> pairList) {

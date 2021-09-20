@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -73,11 +73,13 @@ public class MockBioSamplesClient extends BioSamplesClient {
     }
   }
 
+  @Override
   public Resource<CurationLink> persistCuration(
-      String accession, Curation curation, String domain) {
-    log.trace("Mocking persisting curation " + curation + " on " + accession + " in " + domain);
+      String accession, Curation curation, String webinIdOrDomain, boolean isWebin) {
+    log.trace(
+        "Mocking persisting curation " + curation + " on " + accession + " in " + webinIdOrDomain);
     if (logCurations) {
-      logCuration(accession, domain, curation);
+      logCuration(accession, webinIdOrDomain, curation);
     }
     List<Curation> sampleCurations = curations.get(accession);
     if (sampleCurations == null) {

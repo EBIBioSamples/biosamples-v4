@@ -291,6 +291,24 @@ code[class^="language"] {
     margin-top: 1.5rem;
 }
 
+.content-search-download {
+    float: right;
+    margin-top: 1rem;
+    margin-right: 1rem;
+}
+
+.content-search-download-select {
+    width: 120px;
+    height: 30px;
+    float: left;
+    margin-left: 5px;
+}
+
+.content-search-download-button {
+    padding: 0.5em 0.5em;
+    margin-left: 5px;
+}
+
 .biosamples-pagination {
     margin-top: 0.8rem;
 }
@@ -458,4 +476,122 @@ code[class^="language"] {
 .sample-attribute-table-column {
     width: 33%;
     vertical-align: top;
+}
+
+.duo-tooltip .duo-tooltip-text {
+    visibility: hidden;
+    width: 320px;
+    background-color: gray;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    opacity: 90%;
+    position: absolute;
+    z-index: 1;
+}
+
+.duo-tooltip:hover .duo-tooltip-text  {
+    visibility: visible;
+}
+
+.duo-tooltip-text-title {
+    color: #ffa200;
+    font-weight: bold;
+}
+
+.duo-tooltip-text-body {
+    color: #ffffff;
+}
+
+.upload-container {
+    margin-bottom: 20px;
+}
+
+.upload-tabs-navbar {
+    background-color: #efefef;
+    margin-bottom: 20px;
+    overflow: auto;
+}
+
+.upload-tabs-btn {
+    float: left;
+    font-size: 18px;
+    padding: 10px;
+    background-color: #efefef;
+}
+
+.upload-tabs-btn:hover {
+    background-color: #7d7d7b;
+    cursor: pointer;
+}
+
+.submission-search-box {
+    float: left;
+    width: 70%;
+}
+
+.submission-search-btn {
+    float: right;
+    width: 25%;
+}
+
+.submission-download-btn {
+    float: left;
+    padding: 8px;
+    margin: 0;
+}
+
+#submission-table {
+    margin-top: 10px;
+}
+
+#submission-table table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+#submission-table td, #submission-table th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+#submission-table tr:nth-child(even) {
+    background-color: #dddddd;
+}
+
+.upload-submit-btn {
+    float: right;
+}
+
+.logout-btn {
+    background-color: #adacac;
+    float: right;
+    margin: 3px;
+}
+
+.logout-btn:hover {
+    background-color: #4e4e4e;
+}
+
+.login-wrapper {
+    overflow: auto;
+    margin: 0 auto;
+    padding: 10px 20px;
+    width: 50%;
+    border: 1px solid #cdcdcd;
+    border-radius: 5px;
+}
+
+.login-info{
+    margin-bottom: 20px;
+    text-align: center;
+    padding: 10px;
+    color: #7d7d7b;
+}
+
+.login-button{
+    float: right;
 }

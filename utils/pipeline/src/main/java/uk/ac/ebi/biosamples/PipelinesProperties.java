@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -52,6 +52,9 @@ public class PipelinesProperties {
   @Value("${biosamples.pipelines.ena.domain:self.BiosampleImportENA}")
   private String enaDomain;
 
+  @Value("${biosamples.pipelines.ena.webin_id:Webin-40894}")
+  private String proxyWebinId;
+
   @Value("${biosamples.pipelines.accession.domain:self.BiosampleImportAcccession}")
   private String accessionDomain;
 
@@ -63,6 +66,16 @@ public class PipelinesProperties {
 
   @Value("${biosamples.pipelines.copydown.domain:self.BiosampleCopydown}")
   private String copydownDomain;
+
+  @Value("${biosamples.schemaValidator:http://localhost:3020/validate}")
+  private String schemaValidator;
+
+  @Value("${biosamples.schemaStore:http://localhost:8085/api/v2/schemas}")
+  private String schemaStore;
+
+  public String getProxyWebinId() {
+    return proxyWebinId;
+  }
 
   public String getNcbiFile() {
     return ncbiFile;
@@ -126,5 +139,13 @@ public class PipelinesProperties {
 
   public String getZooma() {
     return zooma;
+  }
+
+  public String getSchemaValidator() {
+    return schemaValidator;
+  }
+
+  public String getSchemaStore() {
+    return schemaStore;
   }
 }

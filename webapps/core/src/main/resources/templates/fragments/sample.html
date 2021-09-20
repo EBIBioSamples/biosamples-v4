@@ -17,7 +17,18 @@
 				</thead>
                 <tbody>
                     <tr th:each="attribute : ${attributes}" th:with="iriUrl = ${@httpOlsUrlResolutionService.getIriOls(attribute.iri)}">
-                        <td class="sample-attribute-table-column" th:text="${attribute.type}">Attribute Type</td>
+                        <td class="sample-attribute-table-column"
+                            th:if="${not attribute.type.equals('Biosamples inferred disease') and not attribute.type.equals('checklist')}"
+                            th:text="${attribute.type}">Attribute Type
+                        </td>
+                        <td th:if="${attribute.type.equals('Biosamples inferred disease')}">
+                            <a th:href="@{/docs/guides/curation}"
+                               th:text="${attribute.type}"></a>
+                        </td>
+                        <td th:if="${attribute.type.equals('checklist')}">
+                            <a th:href="@{/docs/guides/validation}"
+                               th:text="${attribute.type}"></a>
+                        </td>
 
                         <td
                                 th:if="${not #strings.isEmpty(iriUrl) and #strings.isEmpty(attribute.unit)}"><a
@@ -83,9 +94,14 @@
                        th:text="${@externalReferenceService.getNickname(externalReference)}"></a>
                 </td>
                 <td>
-                    <div th:each="duo : ${externalReference.duo}">
+                    <div th:each="duo : ${externalReference.duo}" class="duo-tooltip">
                         <a class="duo-badge shield" th:href="${@externalReferenceService.getDuoUrl(duo)}"
                            th:text="${duo}"></a>
+                        <span class="duo-tooltip-text">
+                            <div class="duo-tooltip-text-title" th:text="${@externalReferenceService.getOntologyTitle(duo)}"></div>
+<!--                            <h4>hello</h4>-->
+                            <p class="duo-tooltip-text-body" th:text="${@externalReferenceService.getOntologyDescription(duo)}"></p>
+                        </span>
                     </div>
                 </td>
             </tr>
@@ -190,7 +206,7 @@
                 <tr th:each = "certificate : ${certificates}">
                     <td th:text="${#strings.defaultString(certificate.name, 'No name available')}"></td>
                     <td th:text="${#strings.defaultString(certificate.version, 'No version available')}"></td>
-                    <td><a th:href="@{'/certificates?certificateName='+${certificate.name}}" download
+                    <td><a th:href="@{${schemaStoreUrl} + '/id?id=' + ${certificate.fileName}}" target="_blank" rel="noopener noreferrer"
                            th:text="${#strings.defaultString(certificate.fileName, 'No file name available')}"></a></td>
                 </tr>
                 </tbody>

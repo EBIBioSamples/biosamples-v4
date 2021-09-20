@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -20,22 +20,25 @@ import java.util.*;
 
 @JsonDeserialize(builder = HistologyEntry.Builder.class)
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-@JsonPropertyOrder({"marker", "measurement", "measurement_units", "partner"})
+@JsonPropertyOrder({"marker", "measurement", "measurement_units", "partner", "method"})
 public class HistologyEntry extends StructuredEntry implements Comparable<HistologyEntry> {
   private final StructuredCell marker;
   private final StructuredCell measurement;
   private final StructuredCell measurementUnits;
   private final StructuredCell partner;
+  private final StructuredCell method;
 
   private HistologyEntry(
       StructuredCell marker,
       StructuredCell measurement,
       StructuredCell measurementUnits,
-      StructuredCell partner) {
+      StructuredCell partner,
+      StructuredCell method) {
     this.marker = marker;
     this.measurement = measurement;
     this.measurementUnits = measurementUnits;
     this.partner = partner;
+    this.method = method;
   }
 
   public StructuredCell getMarker() {
@@ -54,18 +57,29 @@ public class HistologyEntry extends StructuredEntry implements Comparable<Histol
     return partner;
   }
 
+  public StructuredCell getMethod() {
+    return method;
+  }
+
   @Override
   public Map<String, StructuredCell> getDataAsMap() {
     // keys must match DataType.HISTOLOGY.getHeaders()
-    return Map.of(
-        "Marker",
-        marker,
-        "Measurement",
-        measurement,
-        "Measurement Units",
-        measurementUnits,
-        "Partner",
-        partner);
+    Map<String, StructuredCell> keyToStructuredCellMap = new HashMap<>();
+
+    keyToStructuredCellMap.put("Marker", getNullSafeStructuredCell(marker));
+    keyToStructuredCellMap.put("Measurement", getNullSafeStructuredCell(measurement));
+    keyToStructuredCellMap.put("Measurement Units", getNullSafeStructuredCell(measurementUnits));
+    keyToStructuredCellMap.put("Partner", getNullSafeStructuredCell(partner));
+    keyToStructuredCellMap.put("Method", getNullSafeStructuredCell(method));
+
+    return keyToStructuredCellMap;
+  }
+
+  private StructuredCell getNullSafeStructuredCell(final StructuredCell inputCell) {
+    return inputCell != null
+        ? new StructuredCell(
+            inputCell.getValue(), inputCell.getIri() != null ? inputCell.getIri() : "")
+        : new StructuredCell("", "");
   }
 
   public int compareTo(HistologyEntry other) {
@@ -85,6 +99,10 @@ public class HistologyEntry extends StructuredEntry implements Comparable<Histol
     if (cmp != 0) {
       return cmp;
     }
+    cmp = this.method.compareTo(other.method);
+    if (cmp != 0) {
+      return cmp;
+    }
     return this.partner.compareTo(other.partner);
   }
 
@@ -96,6 +114,7 @@ public class HistologyEntry extends StructuredEntry implements Comparable<Histol
       return Objects.equals(this.getMarker(), other.getMarker())
           && Objects.equals(this.getMeasurement(), other.getMeasurement())
           && Objects.equals(this.getMeasurementUnits(), other.getMeasurementUnits())
+          && Objects.equals(this.getMethod(), other.getMethod())
           && Objects.equals(this.getPartner(), other.getPartner());
     }
 
@@ -104,7 +123,7 @@ public class HistologyEntry extends StructuredEntry implements Comparable<Histol
 
   @Override
   public int hashCode() {
-    return Objects.hash(marker, measurement, measurementUnits, partner);
+    return Objects.hash(marker, measurement, measurementUnits, method, partner);
   }
 
   @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
@@ -112,6 +131,7 @@ public class HistologyEntry extends StructuredEntry implements Comparable<Histol
     private StructuredCell marker;
     private StructuredCell measurement;
     private StructuredCell measurementUnits;
+    private StructuredCell method;
     private StructuredCell partner;
 
     @JsonCreator
@@ -143,8 +163,15 @@ public class HistologyEntry extends StructuredEntry implements Comparable<Histol
       return this;
     }
 
+    @JsonProperty
+    public Builder withMethod(StructuredCell method) {
+      this.method = method;
+      return this;
+    }
+
     public HistologyEntry build() {
-      return new HistologyEntry(this.marker, this.measurement, this.measurementUnits, this.partner);
+      return new HistologyEntry(
+          this.marker, this.measurement, this.measurementUnits, this.partner, this.method);
     }
   }
 }

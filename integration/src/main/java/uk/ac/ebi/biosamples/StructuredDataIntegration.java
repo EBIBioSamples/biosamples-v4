@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -60,7 +60,7 @@ public class StructuredDataIntegration extends AbstractIntegration {
   protected void phaseTwo() {
     Optional<Resource<Sample>> sampleResource =
         client.fetchSampleResource("StructuredDataIntegration_sample_1");
-    if (sampleResource.isEmpty()) {
+    if (!sampleResource.isPresent()) {
       throw new IntegrationTestFailException(
           "Expected structured data sample not present", Phase.TWO);
     }
@@ -81,7 +81,7 @@ public class StructuredDataIntegration extends AbstractIntegration {
                 .parallelStream()
                 .filter(entry -> entry.getMarker().getValue().equalsIgnoreCase("Cortisol"))
                 .findFirst();
-        if (optionalEntry.isEmpty()) {
+        if (!optionalEntry.isPresent()) {
           throw new IntegrationTestFailException(
               "Structured data content verification failed", Phase.TWO);
         }

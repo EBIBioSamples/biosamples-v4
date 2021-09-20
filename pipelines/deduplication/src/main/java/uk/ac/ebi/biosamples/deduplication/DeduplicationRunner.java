@@ -10,11 +10,13 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Contact;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.MailSender;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -50,6 +52,35 @@ public class DeduplicationRunner implements ApplicationRunner {
         }
     }
 
+        /*final int rangeStart = 9086000;
+        final int rangeEnd = 9086754;
+
+        for (int i = rangeStart; i < rangeEnd; i++) {
+            String accession = "SAMEA" + i;
+
+            try {
+                Optional<Resource<Sample>> sampleOpt = bioSamplesClient.fetchSampleResource(accession);
+
+                if (sampleOpt.isPresent()) {
+                    Sample sample = sampleOpt.get().getContent();
+
+                    if (sample.getName().startsWith("name_") && matchSampleContact(sample.getContacts())) {
+                        log.info("Match found " + sample.getAccession());
+                        sample = Sample.Builder.fromSample(sample).withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant()).build();
+                    }
+
+                    bioSamplesClient.persistSampleResource(sample);
+                }
+            } catch (Exception e) {
+                log.info("Not found " + accession);
+            }
+        }
+    }
+
+    private boolean matchSampleContact(SortedSet<Contact> contacts) {
+        return contacts.stream().anyMatch(contact -> contact.getEmail().equals("dgupta@ebi.ac.uk"));
+    }*/
+
     private void checkDuplicates(final DeduplicationDao.RowMapping pair) {
         final String enaId = pair.getEnaId();
         final Iterator<Resource<Sample>> it = bioSamplesClient.fetchSampleResourceAll(enaId).iterator();
@@ -59,11 +90,11 @@ public class DeduplicationRunner implements ApplicationRunner {
         int enaAeSamplesCount = enaAeSamples.size();
 
         if (enaAeSamplesCount == 0) {
-            log.info("No sample for this ERS " + enaId);
+            log.info("No sample for this SRS " + enaId);
         } else if (enaAeSamplesCount == 1) {
-            log.info("Not the ENA-AE duplication case, only 1 sample in BSD for this ERS " + enaId);
+            log.info("Not the SRS-AE duplication case, only 1 sample in BSD for this SRS " + enaId);
         } else if (enaAeSamplesCount == 2) {
-            log.info("ENA-AE Duplicate found " + enaId);
+            log.info("SRS-AE Duplicate found " + enaId);
             for (Sample sample : enaAeSamples) {
                 if (sample.getAccession().equals(pair.getBioSampleId())) {
                     enaSample = sample;
@@ -79,7 +110,7 @@ public class DeduplicationRunner implements ApplicationRunner {
                 log.info("Already set to private, no action required " + enaId);
             else mergeSamples(enaSample, aeSample);
         } else {
-            log.info("More than 2 samples fetched for the ERS " + enaId);
+            log.info("More than 2 samples fetched for the SRS " + enaId);
 
             for (Sample sample : enaAeSamples) {
                 if (sample.getAccession().equals(pair.getBioSampleId())) {
@@ -119,14 +150,15 @@ public class DeduplicationRunner implements ApplicationRunner {
     }
 
     private void mergeAttributesAndSubmit(final Sample enaSample, final Sample aeSample) {
-        Sample sampleToSave;
+        //Sample sampleToSave;
         Sample sampleToPrivate;
 
-        sampleToSave = Sample.Builder.fromSample(enaSample).withAttributes(resolveAttributes(enaSample.getAttributes(), aeSample.getAttributes())).build();
-        sampleToPrivate = Sample.Builder.fromSample(aeSample).withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant()).build();
+        //sampleToSave = Sample.Builder.fromSample(enaSample).withAttributes(resolveAttributes(enaSample.getAttributes(), aeSample.getAttributes())).build();
+        sampleToPrivate = Sample.Builder.fromSample(aeSample).withRelease(Instant.ofEpochSecond(
+                LocalDateTime.now(ZoneOffset.UTC).plusYears(1000).toEpochSecond(ZoneOffset.UTC))).build();
 
-        bioSamplesClient.persistSampleResource(sampleToSave);
-        log.info("Submitted sample with accession - " + sampleToSave.getAccession());
+        //bioSamplesClient.persistSampleResource(sampleToSave);
+        //log.info("Submitted sample with accession - " + sampleToSave.getAccession());
 
         bioSamplesClient.persistSampleResource(sampleToPrivate);
         log.info("Private sample with accession - " + sampleToPrivate.getAccession());
@@ -134,13 +166,14 @@ public class DeduplicationRunner implements ApplicationRunner {
 
     private void mergeAttributesAndSubmit(final Sample enaSample, final List<Sample> aeSamples) {
         try {
-            Sample sampleToSave = Sample.Builder.fromSample(enaSample).build();
+            //Sample sampleToSave = Sample.Builder.fromSample(enaSample).build();
 
-            bioSamplesClient.persistSampleResource(sampleToSave);
-            log.info("Submitted sample with accession - " + sampleToSave.getAccession());
+            //bioSamplesClient.persistSampleResource(sampleToSave);
+            //log.info("Submitted sample with accession - " + sampleToSave.getAccession());
 
             aeSamples.forEach(sample -> {
-                Sample sampleToPrivate = Sample.Builder.fromSample(sample).withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant()).build();
+                Sample sampleToPrivate = Sample.Builder.fromSample(sample).withRelease(Instant.ofEpochSecond(
+                        LocalDateTime.now(ZoneOffset.UTC).plusYears(1000).toEpochSecond(ZoneOffset.UTC))).build();
 
                 bioSamplesClient.persistSampleResource(sampleToPrivate);
                 log.info("Private sample with accession - " + sampleToPrivate.getAccession());
@@ -150,6 +183,7 @@ public class DeduplicationRunner implements ApplicationRunner {
         }
     }
 
+    /*Not required for SRS*/
     private Set<Attribute> resolveAttributes(final SortedSet<Attribute> enaSample, final SortedSet<Attribute> aeSample) {
         final Set<Attribute> setOfAttributes = new HashSet<>(enaSample);
 

@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +95,12 @@ public class SitemapController {
     Pageable pageRequest = new PageRequest(pageNumber - 1, sitemapPageSize);
     Page<Sample> samplePage =
         samplePageService.getSamplesByText(
-            "", Collections.emptyList(), Collections.emptyList(), pageRequest, null);
+            "",
+            Collections.emptyList(),
+            Collections.emptyList(),
+            pageRequest,
+            null,
+            Optional.empty());
     XmlUrlSet xmlUrlSet = new XmlUrlSet();
     for (Sample sample : samplePage.getContent()) {
       String location =
@@ -139,7 +145,7 @@ public class SitemapController {
     Collection<Filter> filters = Collections.emptyList();
     Collection<String> domains = Collections.emptyList();
     Page<Sample> samplePage =
-        samplePageService.getSamplesByText("", filters, domains, pageable, null);
+        samplePageService.getSamplesByText("", filters, domains, pageable, null, Optional.empty());
     return samplePage.getTotalElements();
   }
 }

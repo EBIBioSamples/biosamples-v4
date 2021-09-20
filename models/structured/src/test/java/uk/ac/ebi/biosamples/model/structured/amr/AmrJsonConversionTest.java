@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -59,7 +59,7 @@ public class AmrJsonConversionTest {
   @Test
   public void testAmrTableSerializer() throws IOException {
     AMRTable.Builder tableBuilder =
-        new AMRTable.Builder("http://some-fake-schema.com", "self.test");
+        new AMRTable.Builder("http://some-fake-schema.com", "self.test", null);
     tableBuilder.addEntry(
         new AMREntry.Builder()
             .withAntibioticName(new AmrPair("A"))
@@ -111,7 +111,7 @@ public class AmrJsonConversionTest {
 
   @Test
   public void testAMRDeserialization() throws Exception {
-    AMRTable.Builder tableBuilder = new AMRTable.Builder("test", "self.test");
+    AMRTable.Builder tableBuilder = new AMRTable.Builder("test", "self.test", null);
     tableBuilder.addEntry(
         new AMREntry.Builder()
             .withAntibioticName(new AmrPair("ampicillin", "test.org"))

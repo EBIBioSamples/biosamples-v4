@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -16,10 +16,14 @@ import java.util.List;
 
 public enum StructuredDataType {
   AMR(Collections.emptyList()),
-  CHICKEN_DATA(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner")),
-  HISTOLOGY_MARKERS(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner")),
-  MOLECULAR_MARKERS(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner")),
-  FATTY_ACIDS(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner"));
+  CHICKEN_DATA(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner", "Method")),
+  HISTOLOGY_MARKERS(
+      Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner", "Method")),
+  MOLECULAR_MARKERS(
+      Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner", "Method")),
+  FATTY_ACIDS(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner", "Method")),
+  HEAVY_METALS(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner", "Method")),
+  SALMON_DATA(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner", "Method"));
 
   private final List<String> headers;
 
