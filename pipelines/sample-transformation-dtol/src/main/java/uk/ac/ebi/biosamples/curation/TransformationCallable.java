@@ -12,6 +12,7 @@ package uk.ac.ebi.biosamples.curation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.hateoas.Resource;
 import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -29,6 +30,7 @@ public class TransformationCallable implements Callable<PipelineResult> {
     static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
     private final Sample sample;
+    @Qualifier("WEBINCLIENT")
     private final BioSamplesClient bioSamplesClient;
 
     public TransformationCallable(BioSamplesClient bioSamplesClient, Sample sample) {
