@@ -10,6 +10,11 @@
 */
 package uk.ac.ebi.biosamples;
 
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -25,12 +30,6 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.service.SampleReadService;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
-
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.concurrent.*;
 
 /**
  * This runner will get a list of accessions from mongo directly, query the API to get the latest
@@ -82,18 +81,17 @@ public class ReindexRunner implements ApplicationRunner {
 
       if (periodicRun) {
         final Instant current = Instant.now();
-        final Instant now = Instant.parse(DateTimeFormatter.ISO_INSTANT.format(current.minus(24, ChronoUnit.HOURS)));
+        final Instant now =
+            Instant.parse(
+                DateTimeFormatter.ISO_INSTANT.format(current.minus(24, ChronoUnit.HOURS)));
         final Instant then = Instant.parse(DateTimeFormatter.ISO_INSTANT.format(current));
 
         LOGGER.info("From " + now + " to " + then);
 
-        query.addCriteria(Criteria.where("update")
-                .gte(now)
-                .lt(then));
+        query.addCriteria(Criteria.where("update").gte(now).lt(then));
       }
 
-      try (CloseableIterator<MongoSample> it =
-          mongoOperations.stream(query, MongoSample.class)) {
+      try (CloseableIterator<MongoSample> it = mongoOperations.stream(query, MongoSample.class)) {
         while (it.hasNext()) {
           MongoSample mongoSample = it.next();
           String accession = mongoSample.getAccession();
