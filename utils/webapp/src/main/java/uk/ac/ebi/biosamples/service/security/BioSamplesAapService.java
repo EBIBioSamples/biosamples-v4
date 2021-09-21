@@ -224,7 +224,7 @@ public class BioSamplesAapService {
     if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
       if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
         final Optional<Sample> oldSample =
-                sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+            sampleService.fetch(sample.getAccession(), Optional.empty(), null);
 
         if (oldSample.isPresent() && !domain.equals(oldSample.get().getDomain())) {
           throw new SampleDomainMismatchException();
@@ -236,10 +236,7 @@ public class BioSamplesAapService {
       return sample;
     } else {
       log.warn(
-          "User asked to submit sample to domain "
-              + domain
-              + " but has access to "
-              + usersDomains);
+          "User asked to submit sample to domain " + domain + " but has access to " + usersDomains);
       throw new SampleNotAccessibleException();
     }
   }

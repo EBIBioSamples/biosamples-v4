@@ -101,7 +101,10 @@ public class BioSamplesWebinAuthenticationService {
         if (webinId.equalsIgnoreCase(
             biosamplesClientWebinUsername)) { // ENA pipeline submissions or super user submission
           if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-            if (oldSample.isPresent() && !sample.getWebinSubmissionAccountId().equals(oldSample.get().getWebinSubmissionAccountId())) {
+            if (oldSample.isPresent()
+                && !sample
+                    .getWebinSubmissionAccountId()
+                    .equals(oldSample.get().getWebinSubmissionAccountId())) {
               throw new SampleNotAccessibleException();
             }
           }

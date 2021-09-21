@@ -23,7 +23,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 @Service
 public class SampleValidator {
   private static final String VALIDATION_MESSAGE =
-          "Only Sample name, sample accession and sample structured data can be provided through this API";
+      "Only Sample name, sample accession and sample structured data can be provided through this API";
   private static final String NO_STRUCTURED_DATA_IS_PROVIDED = "No structured data is provided";
   private final AttributeValidator attributeValidator;
   private final RelationshipValidator relationshipValidator;
@@ -76,7 +76,6 @@ public class SampleValidator {
       throw new RuntimeException("Sample doesn't have an accession");
     }
   }
-
 
   public List<String> validate(Map sampleAsMap) {
     List<String> errors = new ArrayList<>();

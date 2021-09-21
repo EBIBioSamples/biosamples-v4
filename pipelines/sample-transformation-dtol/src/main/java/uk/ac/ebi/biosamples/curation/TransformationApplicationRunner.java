@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -10,6 +10,12 @@
 */
 package uk.ac.ebi.biosamples.curation;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,13 +35,6 @@ import uk.ac.ebi.biosamples.utils.ArgUtils;
 import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Future;
-
 @Component
 public class TransformationApplicationRunner implements ApplicationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(TransformationApplicationRunner.class);
@@ -45,7 +44,7 @@ public class TransformationApplicationRunner implements ApplicationRunner {
   private final PipelineFutureCallback pipelineFutureCallback;
 
   public TransformationApplicationRunner(
-          @Qualifier("WEBINCLIENT") BioSamplesClient bioSamplesClient,
+      @Qualifier("WEBINCLIENT") BioSamplesClient bioSamplesClient,
       PipelinesProperties pipelinesProperties) {
     this.bioSamplesClient = bioSamplesClient;
     this.pipelinesProperties = pipelinesProperties;
@@ -75,8 +74,7 @@ public class TransformationApplicationRunner implements ApplicationRunner {
         Sample sample = sampleResource.getContent();
         Objects.requireNonNull(sample);
 
-        Callable<PipelineResult> task =
-                new TransformationCallable(bioSamplesClient, sample);
+        Callable<PipelineResult> task = new TransformationCallable(bioSamplesClient, sample);
         futures.put(sample.getAccession(), executorService.submit(task));
 
         if (++sampleCount % 5000 == 0) {
@@ -95,7 +93,9 @@ public class TransformationApplicationRunner implements ApplicationRunner {
       LOG.info("Total samples processed {}", sampleCount);
       LOG.info("Total samples modified {}", pipelineFutureCallback.getTotalCount());
       LOG.info("Pipeline finished at {}", endTime);
-      LOG.info("Pipeline total running time {} seconds", Duration.between(startTime, endTime).getSeconds());
+      LOG.info(
+          "Pipeline total running time {} seconds",
+          Duration.between(startTime, endTime).getSeconds());
 
       MailSender.sendEmail("DTOL relationship transformation", handleFailedSamples(), isPassed);
     }
