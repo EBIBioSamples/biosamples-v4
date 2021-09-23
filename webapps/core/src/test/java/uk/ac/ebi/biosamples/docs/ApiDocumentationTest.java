@@ -61,6 +61,7 @@ import uk.ac.ebi.biosamples.service.certification.Identifier;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
+import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -376,7 +377,7 @@ public class ApiDocumentationTest {
     when(sampleService.fetch(
             eq(sampleWithDomainAndData.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sampleWithDomainAndData));
-    when(aapService.handleStructuredDataDomainInData(sampleWithDomainAndData))
+    when(aapService.handleStructuredDataDomain(sampleWithDomainAndData))
         .thenReturn(sampleWithDomainAndData);
     when(sampleService.storeSampleStructuredData(eq(sampleWithDomainAndData), eq("AAP")))
         .thenReturn(sampleWithDomainAndData);
@@ -408,7 +409,7 @@ public class ApiDocumentationTest {
     when(sampleService.fetch(
             eq(sampleWithDomainAndData.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sampleWithDomainAndData));
-    when(aapService.handleStructuredDataDomainInData(sampleWithDomainAndData))
+    when(aapService.handleStructuredDataDomain(sampleWithDomainAndData))
         .thenReturn(sampleWithDomainAndData);
     when(sampleService.storeSampleStructuredData(eq(sampleWithDomainAndData), eq("AAP")))
         .thenReturn(sampleWithDomainAndData);

@@ -29,10 +29,11 @@ public class HistologyEntry extends StructuredEntry implements Comparable<Histol
   private final StructuredCell method;
 
   private HistologyEntry(
-          StructuredCell marker,
-          StructuredCell measurement,
-          StructuredCell measurementUnits,
-          StructuredCell partner, StructuredCell method) {
+      StructuredCell marker,
+      StructuredCell measurement,
+      StructuredCell measurementUnits,
+      StructuredCell partner,
+      StructuredCell method) {
     this.marker = marker;
     this.measurement = measurement;
     this.measurementUnits = measurementUnits;
@@ -75,7 +76,10 @@ public class HistologyEntry extends StructuredEntry implements Comparable<Histol
   }
 
   private StructuredCell getNullSafeStructuredCell(final StructuredCell inputCell) {
-    return inputCell != null ? new StructuredCell(inputCell.getValue(), inputCell.getIri() != null ? inputCell.getIri() : "") : new StructuredCell("", "");
+    return inputCell != null
+        ? new StructuredCell(
+            inputCell.getValue(), inputCell.getIri() != null ? inputCell.getIri() : "")
+        : new StructuredCell("", "");
   }
 
   public int compareTo(HistologyEntry other) {
@@ -110,7 +114,7 @@ public class HistologyEntry extends StructuredEntry implements Comparable<Histol
       return Objects.equals(this.getMarker(), other.getMarker())
           && Objects.equals(this.getMeasurement(), other.getMeasurement())
           && Objects.equals(this.getMeasurementUnits(), other.getMeasurementUnits())
-              && Objects.equals(this.getMethod(), other.getMethod())
+          && Objects.equals(this.getMethod(), other.getMethod())
           && Objects.equals(this.getPartner(), other.getPartner());
     }
 
@@ -166,7 +170,8 @@ public class HistologyEntry extends StructuredEntry implements Comparable<Histol
     }
 
     public HistologyEntry build() {
-      return new HistologyEntry(this.marker, this.measurement, this.measurementUnits, this.partner, this.method);
+      return new HistologyEntry(
+          this.marker, this.measurement, this.measurementUnits, this.partner, this.method);
     }
   }
 }

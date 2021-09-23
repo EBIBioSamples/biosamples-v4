@@ -8,10 +8,10 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.service;
+package uk.ac.ebi.biosamples.validation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.everit.json.schema.ValidationException;
+import javax.validation.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,17 +21,16 @@ import uk.ac.ebi.biosamples.exception.SampleValidationException;
 import uk.ac.ebi.biosamples.exception.SchemaValidationException;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.validation.ValidatorI;
 
 @Service
-public class SchemaValidationServiceV2 {
+public class SchemaValidationService {
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final BioSamplesProperties bioSamplesProperties;
   private final ObjectMapper objectMapper;
   private final ValidatorI validator;
 
-  public SchemaValidationServiceV2(
+  public SchemaValidationService(
       ObjectMapper mapper,
       BioSamplesProperties bioSamplesProperties,
       @Qualifier("elixirValidator") ValidatorI validator) {
@@ -40,8 +39,8 @@ public class SchemaValidationServiceV2 {
     this.validator = validator;
   }
 
-  public String validate(final Sample sample) {
-    final String schemaId =
+  public String validate(Sample sample) {
+    String schemaId =
         sample.getCharacteristics().stream()
             .filter(s -> s.getType().equalsIgnoreCase("checklist"))
             // to search
@@ -50,8 +49,7 @@ public class SchemaValidationServiceV2 {
             .orElse(bioSamplesProperties.getBiosamplesDefaultSchema());
 
     try {
-      final String sampleString = this.objectMapper.writeValueAsString(sample);
-
+      String sampleString = this.objectMapper.writeValueAsString(sample);
       return validator.validateById(schemaId, sampleString);
     } catch (ValidationException | SampleValidationException e) {
       throw new SchemaValidationException("Checklist validation failed: " + e.getMessage(), e);

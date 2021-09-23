@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
@@ -184,9 +185,10 @@ public class BioSamplesAapService {
   public Sample handleSampleDomain(Sample sample)
       throws SampleNotAccessibleException, DomainMissingException {
     // get the domains the current user has access to
-    Set<String> usersDomains = getDomains();
+    final Set<String> usersDomains = getDomains();
+    final String domain = sample.getDomain();
 
-    if (sample.getDomain() == null || sample.getDomain().length() == 0) {
+    if (domain == null || domain.length() == 0) {
       // if the sample doesn't have a domain, and the user has one domain, then they must be
       // submitting to that domain
       if (usersDomains.size() == 1) {
@@ -202,7 +204,7 @@ public class BioSamplesAapService {
 
     // todo remove integration user check
     if (sample.getAccession() != null && !(isWriteSuperUser() || isIntegrationTestUser())) {
-      Optional<Sample> oldSample =
+      final Optional<Sample> oldSample =
           sampleService.fetch(sample.getAccession(), Optional.empty(), null);
       final boolean oldSamplePresent = oldSample.isPresent();
 
@@ -212,8 +214,6 @@ public class BioSamplesAapService {
                 && bioSamplesWebinAuthenticationService.isWebinSuperUser(
                     oldSample.get().getWebinSubmissionAccountId()));
 
-        log.info("WEBIN proxy user " + webinProxyUser);
-
         if (!webinProxyUser) {
           throw new SampleDomainMismatchException();
         }
@@ -222,15 +222,21 @@ public class BioSamplesAapService {
 
     // check sample is assigned to a domain that the authenticated user has access to
     if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
+      if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
+        final Optional<Sample> oldSample =
+            sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+
+        if (oldSample.isPresent() && !domain.equals(oldSample.get().getDomain())) {
+          throw new SampleDomainMismatchException();
+        }
+      }
+
       return sample;
-    } else if (usersDomains.contains(sample.getDomain())) {
+    } else if (usersDomains.contains(domain)) {
       return sample;
     } else {
       log.warn(
-          "User asked to submit sample to domain "
-              + sample.getDomain()
-              + " but has access to "
-              + usersDomains);
+          "User asked to submit sample to domain " + domain + " but has access to " + usersDomains);
       throw new SampleNotAccessibleException();
     }
   }
@@ -241,7 +247,7 @@ public class BioSamplesAapService {
    * @throws StructuredDataNotAccessibleException
    * @throws StructuredDataDomainMissingException
    */
-  public Sample handleStructuredDataDomainInData(Sample sample)
+  public Sample handleStructuredDataDomain(Sample sample)
       throws StructuredDataNotAccessibleException, StructuredDataDomainMissingException {
     // get the domains the current user has access to
     final Set<String> usersDomains = getDomains();

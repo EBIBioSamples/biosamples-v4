@@ -25,31 +25,31 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.SampleServiceV2;
-import uk.ac.ebi.biosamples.service.SchemaValidationServiceV2;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapServiceV2;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationServiceV2;
-import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientServiceV2;
+import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
+import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 public class SampleRestControllerV2 {
   private Logger log = LoggerFactory.getLogger(getClass());
 
-  private final SampleServiceV2 sampleServiceV2;
-  private final BioSamplesAapServiceV2 bioSamplesAapServiceV2;
-  private final BioSamplesWebinAuthenticationServiceV2 bioSamplesWebinAuthenticationServiceV2;
-  private final SchemaValidationServiceV2 schemaValidationServiceV2;
-  private final ENATaxonClientServiceV2 enaTaxonClientServiceV2;
+  private final SampleServiceV2 sampleService;
+  private final BioSamplesAapService bioSamplesAapService;
+  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
+  private final SchemaValidationService schemaValidationService;
+  private final ENATaxonClientService enaTaxonClientService;
 
   public SampleRestControllerV2(
-      final SampleServiceV2 sampleServiceV2,
-      final BioSamplesAapServiceV2 bioSamplesAapServiceV2,
-      final BioSamplesWebinAuthenticationServiceV2 bioSamplesWebinAuthenticationServiceV2,
-      final SchemaValidationServiceV2 schemaValidationServiceV2,
-      final ENATaxonClientServiceV2 enaTaxonClientServiceV2) {
-    this.sampleServiceV2 = sampleServiceV2;
-    this.bioSamplesAapServiceV2 = bioSamplesAapServiceV2;
-    this.bioSamplesWebinAuthenticationServiceV2 = bioSamplesWebinAuthenticationServiceV2;
-    this.schemaValidationServiceV2 = schemaValidationServiceV2;
-    this.enaTaxonClientServiceV2 = enaTaxonClientServiceV2;
+      final SampleServiceV2 sampleService,
+      final BioSamplesAapService bioSamplesAapService,
+      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+      final SchemaValidationService schemaValidationService,
+      final ENATaxonClientService enaTaxonClientService) {
+    this.sampleService = sampleService;
+    this.bioSamplesAapService = bioSamplesAapService;
+    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
+    this.schemaValidationService = schemaValidationService;
+    this.enaTaxonClientService = enaTaxonClientService;
   }
 
   @PreAuthorize("isAuthenticated()")
@@ -73,27 +73,27 @@ public class SampleRestControllerV2 {
       final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
       final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationServiceV2
+          bioSamplesWebinAuthenticationService
               .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
               .getBody();
 
       final String webinAccountId = webinAccount.getId();
 
-      isWebinSuperUser = bioSamplesWebinAuthenticationServiceV2.isWebinSuperUser(webinAccountId);
+      isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
 
-      if (sampleServiceV2.isNotExistingAccession(accession) && !isWebinSuperUser) {
+      if (sampleService.isNotExistingAccession(accession) && !isWebinSuperUser) {
         throw new SampleAccessionMismatchExceptionV2();
       }
 
-      sample = bioSamplesWebinAuthenticationServiceV2.handleWebinUser(sample, webinAccountId);
+      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
     } else {
-      if (sampleServiceV2.isNotExistingAccession(accession)
-          && !(bioSamplesAapServiceV2.isWriteSuperUser()
-              || bioSamplesAapServiceV2.isIntegrationTestUser())) {
+      if (sampleService.isNotExistingAccession(accession)
+          && !(bioSamplesAapService.isWriteSuperUser()
+              || bioSamplesAapService.isIntegrationTestUser())) {
         throw new SampleAccessionMismatchExceptionV2();
       }
 
-      sample = bioSamplesAapServiceV2.handleSampleDomain(sample);
+      sample = bioSamplesAapService.handleSampleDomain(sample);
     }
 
     final Instant now = Instant.now();
@@ -105,26 +105,26 @@ public class SampleRestControllerV2 {
 
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
     if (webinAuth && !isWebinSuperUser) {
-      schemaValidationServiceV2.validate(sample);
-    } else if (!webinAuth && !bioSamplesAapServiceV2.isWriteSuperUser()) {
-      schemaValidationServiceV2.validate(sample);
+      schemaValidationService.validate(sample);
+    } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
+      schemaValidationService.validate(sample);
     }
 
     if (submittedVia == SubmittedViaType.FILE_UPLOADER) {
-      schemaValidationServiceV2.validate(sample);
+      schemaValidationService.validate(sample);
     }
 
     if (webinAuth && !isWebinSuperUser) {
-      sample = enaTaxonClientServiceV2.performTaxonomyValidation(sample);
+      sample = enaTaxonClientService.performTaxonomyValidation(sample);
     }
 
-    final boolean isFirstTimeMetadataAdded = sampleServiceV2.beforeStore(sample);
+    final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample);
 
     if (isFirstTimeMetadataAdded) {
       sample = Sample.Builder.fromSample(sample).withSubmitted(now).build();
     }
 
-    sample = sampleServiceV2.store(sample, isFirstTimeMetadataAdded, authProvider);
+    sample = sampleService.store(sample, isFirstTimeMetadataAdded, authProvider);
 
     return ResponseEntity.status(HttpStatus.OK).body(sample);
   }

@@ -37,6 +37,7 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
+import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and write.
@@ -162,10 +163,6 @@ public class SampleRestController {
       @RequestParam(name = "curationrepo", required = false) final String curationRepo) {
     Sample sample = this.getSampleHal(accession, "true", null, curationRepo).getContent();
     if (!sample.getAccession().matches("SAMEG\\d+")) {
-      //			sample = Sample.build(sample.getName(),sample.getAccession(), sample.getDomain(),
-      //					sample.getRelease(), sample.getUpdate(), sample.getCharacteristics(),
-      // sample.getRelationships(),
-      //					sample.getExternalReferences(), null, null, null);
       sample =
           Sample.Builder.fromSample(sample)
               .withNoOrganisations()
@@ -174,28 +171,8 @@ public class SampleRestController {
               .build();
     }
 
-    // TODO cache control
     return sample;
   }
-
-  //    @PreAuthorize("isAuthenticated()")
-  //	  @CrossOrigin(methods = RequestMethod.GET)
-  //    @GetMapping(produces = "application/ld+json")
-  //    public JsonLDRecord getJsonLDSample(@PathVariable String accession) {
-  //		Optional<Sample> sample = sampleService.fetch(accession);
-  //		if (!sample.isPresent()) {
-  //			throw new SampleNotFoundException();
-  //		}
-  //		bioSamplesAapService.checkAccessible(sample.get());
-  //
-  //        // check if the release date is in the future and if so return it as
-  //        // private
-  //        if (sample.get().getRelease().isAfter(Instant.now())) {
-  //			throw new SampleNotAccessibleException();
-  //        }
-  //
-  //		return jsonLDService.sampleToJsonLD(sample.get());
-  //    }
 
   @PreAuthorize("isAuthenticated()")
   @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
@@ -346,7 +323,7 @@ public class SampleRestController {
 
       log.debug("Received PATCH for " + accession);
 
-      sample = bioSamplesAapService.handleStructuredDataDomainInData(sample);
+      sample = bioSamplesAapService.handleStructuredDataDomain(sample);
       sample = sampleService.storeSampleStructuredData(sample, authProvider);
 
       return sampleResourceAssembler.toResource(sample);

@@ -49,6 +49,7 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationServic
 import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
+import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and write.
@@ -423,7 +424,7 @@ public class SamplesRestController {
       sample = bioSamplesAapService.handleSampleDomain(sample);
     }
 
-    sample = privateSampleBuildAndReturn(sample);
+    sample = buildPrivateSample(sample);
 
     sample = sampleService.store(sample, false, authProvider);
     final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
@@ -490,7 +491,7 @@ public class SamplesRestController {
             .map(
                 sample -> {
                   log.trace("Initiating store() for " + sample.getName());
-                  sample = privateSampleBuildAndReturn(sample);
+                  sample = buildPrivateSample(sample);
                   return sampleService.store(sample, false, authProvider);
                 })
             .collect(Collectors.toList());
@@ -554,7 +555,7 @@ public class SamplesRestController {
       if (!(bioSamplesAapService.isWriteSuperUser()
           || bioSamplesAapService.isIntegrationTestUser())) {
         if (structuredData != null && structuredData.size() > 0) {
-          sample = bioSamplesAapService.handleStructuredDataDomainInData(sample);
+          sample = bioSamplesAapService.handleStructuredDataDomain(sample);
         }
       }
     }
@@ -619,7 +620,7 @@ public class SamplesRestController {
         : now;
   }
 
-  private Sample privateSampleBuildAndReturn(final Sample sample) {
+  private Sample buildPrivateSample(final Sample sample) {
     final Instant release =
         Instant.ofEpochSecond(
             LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));

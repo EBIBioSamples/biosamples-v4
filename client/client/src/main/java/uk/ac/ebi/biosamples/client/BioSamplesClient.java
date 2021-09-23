@@ -75,6 +75,7 @@ public class BioSamplesClient implements AutoCloseable {
       BioSamplesProperties bioSamplesProperties) {
 
     RestTemplate restOperations = restTemplateBuilder.build();
+    boolean isWebinSubmission = false;
 
     threadPoolExecutor =
         AdaptiveThreadPoolExecutor.create(
@@ -89,6 +90,7 @@ public class BioSamplesClient implements AutoCloseable {
         log.trace("Adding BsdClientHttpRequestInterceptor");
         restOperations.getInterceptors().add(new BsdClientHttpRequestInterceptor(clientService));
       } else if (clientService instanceof WebinAuthClientService) {
+        isWebinSubmission = true;
         log.trace("Adding WebinClientHttpRequestInterceptor");
         restOperations.getInterceptors().add(new BsdClientHttpRequestInterceptor(clientService));
       } else {
@@ -98,8 +100,6 @@ public class BioSamplesClient implements AutoCloseable {
 
     Traverson traverson = new Traverson(uri, MediaTypes.HAL_JSON);
     traverson.setRestOperations(restOperations);
-
-    boolean isWebinSubmission = clientService instanceof WebinAuthClientService;
 
     sampleRetrievalService =
         new SampleRetrievalService(restOperations, traverson, threadPoolExecutor);
@@ -126,12 +126,14 @@ public class BioSamplesClient implements AutoCloseable {
 
     sampleGroupSubmissionService =
         new SampleGroupSubmissionService(restOperations, traverson, threadPoolExecutor);
+
     curationRetrievalService =
         new CurationRetrievalService(
             restOperations,
             traverson,
             threadPoolExecutor,
             bioSamplesProperties.getBiosamplesClientPagesize());
+
     curationSubmissionService =
         new CurationSubmissionService(restOperations, traverson, threadPoolExecutor);
 

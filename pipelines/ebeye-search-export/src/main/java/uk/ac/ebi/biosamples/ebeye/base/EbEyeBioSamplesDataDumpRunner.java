@@ -241,10 +241,10 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     entryType.setAdditionalFields(additionalFieldsType);
 
     entryType.setDates(getDates(sample));
-    entryType.setCrossReferences(getCrossReferences(sample));
+    entryType.setCrossReferences(getCrossReferences(sample, covidRun));
   }
 
-  private CrossReferencesType getCrossReferences(final Sample sample) {
+  private CrossReferencesType getCrossReferences(final Sample sample, final boolean covidRun) {
     final CrossReferencesType crossReferencesType = new CrossReferencesType();
 
     sample
@@ -263,13 +263,26 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
               crossReferencesType.getRef().add(refType);
             });
 
-    crossReferencesType.getRef().add(taxonomyRefType);
+    if (covidRun) {
+      crossReferencesType.getRef().add(getTaxonomyCrossReferenceCovid(sample.getTaxId()));
+    } else {
+      crossReferencesType.getRef().add(taxonomyRefType);
+    }
 
     return crossReferencesType;
   }
 
+  private RefType getTaxonomyCrossReferenceCovid(int taxId) {
+    RefType refType = new RefType();
+
+    refType.setDbname("TAXONOMY");
+    refType.setDbkey(String.valueOf(taxId));
+
+    return refType;
+  }
+
   private String extractEnaAccession(final String url) {
-    return url.substring(36);
+    return url.substring(39);
   }
 
   private DatesType getDates(final Sample sample) {
@@ -303,7 +316,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
               if (attribute.getType().equals("description")) {
                 entryType.setDescription(attribute.getValue());
               } else {
-                if (sample.getTaxId() != 0) {
+                if (sample.getTaxId() != null && sample.getTaxId() != 0) {
                   taxonomyRefType.setDbname("TAXONOMY");
                   taxonomyRefType.setDbkey(sample.getTaxId().toString());
                 }
@@ -357,7 +370,6 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
 
   public static Collection<Filter> getDateFiltersCovid(final String from, final String to) {
     final LocalDate fromDate = LocalDate.parse(from, DateTimeFormatter.ISO_LOCAL_DATE);
-
     final LocalDate toDate = LocalDate.parse(to, DateTimeFormatter.ISO_LOCAL_DATE);
 
     final Filter dateFilter =
