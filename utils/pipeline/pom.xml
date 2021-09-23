@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.1.8-SNAPSHOT</version>
+		<version>5.1.8-RC1</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -16,7 +16,7 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>biosamples-spring-boot-starter</artifactId>
-			<version>5.1.8-SNAPSHOT</version>
+			<version>5.1.8-RC1</version>
 		</dependency>
 
 		<dependency>
