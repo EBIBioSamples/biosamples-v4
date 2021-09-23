@@ -12,7 +12,7 @@ Please use Mélanie Courtot, Luca Cherubin, Adam Faulconbridge, Daniel Vaughan, 
 BioSamples content is updated daily. Information directly submitted or updated in a source should be reflected within 48 hours. However, occasionally daily updates may be missed due to unexpected circumstances.
 
 == What pattern do BioSamples accessions follow?
-BioSample accessions always begin with `SAM`. The next letter is either `E` or `N` or `D` depending if the sample information was originally submitted to EBI or NCBI or DDBJ respectively. After that, there may be an `A` or a `G` to denote an Assay sample or a Group of samples. Finally there is a numeric component that may or may not be zero-padded.
+BioSample accessions always begin with `SAM`. The next letter is either `E` or `N` or `D` depending if the sample information was originally submitted to EMBL-EBI or NCBI or DDBJ respectively. After that, there may be an `A` or a `G` to denote an Assay sample or a Group of samples. Finally there is a numeric component that may or may not be zero-padded.
 
 == Why are some BioSamples linked to RRIDs?
 
