@@ -10,6 +10,7 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.Link;
@@ -71,17 +72,18 @@ public class AccessionsRestController {
       Integer effectiveSize) {
     resources.add(
         SamplesRestController.getPageLink(
-            text, filter, effectivePage, effectiveSize, null, Link.REL_SELF, this.getClass()));
+                text, filter, Optional.empty(), effectivePage, effectiveSize, null, Link.REL_SELF, this.getClass()));
 
     // if theres more than one page, link to first and last
     if (pageAccessions.getTotalPages() > 1) {
       resources.add(
           SamplesRestController.getPageLink(
-              text, filter, 0, effectiveSize, null, Link.REL_FIRST, this.getClass()));
+              text, filter, Optional.empty(), 0, effectiveSize, null, Link.REL_FIRST, this.getClass()));
       resources.add(
           SamplesRestController.getPageLink(
               text,
               filter,
+              Optional.empty(),
               pageAccessions.getTotalPages(),
               effectiveSize,
               null,
@@ -94,6 +96,7 @@ public class AccessionsRestController {
           SamplesRestController.getPageLink(
               text,
               filter,
+              Optional.empty(),
               effectivePage - 1,
               effectiveSize,
               null,
@@ -107,6 +110,7 @@ public class AccessionsRestController {
           SamplesRestController.getPageLink(
               text,
               filter,
+              Optional.empty(),
               effectivePage + 1,
               effectiveSize,
               null,
