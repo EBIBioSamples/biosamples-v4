@@ -178,6 +178,7 @@ public class SamplesRestController {
           getCursorLink(
               decodedText,
               decodedFilter,
+              decodedCurationDomains,
               decodedCursor,
               effectiveSize,
               Link.REL_SELF,
@@ -189,6 +190,7 @@ public class SamplesRestController {
             getCursorLink(
                 decodedText,
                 decodedFilter,
+                decodedCurationDomains,
                 samples.getNextCursorMark(),
                 effectiveSize,
                 Link.REL_NEXT,
@@ -219,7 +221,7 @@ public class SamplesRestController {
               text, filters, domains, pageable, curationRepo, decodedCurationDomains);
       Resources<Resource<Sample>> resources =
           populateResources(
-              pageSample, effectiveSize, effectivePage, decodedText, decodedFilter, sort);
+              pageSample, effectiveSize, effectivePage, decodedText, decodedFilter, sort, decodedCurationDomains);
 
       return ResponseEntity.ok().cacheControl(cacheControl).body(resources);
     }
@@ -231,7 +233,8 @@ public class SamplesRestController {
       int effectivePage,
       String decodedText,
       String[] decodedFilter,
-      String[] sort) {
+      String[] sort,
+      Optional<List<String>> decodedCurationDomains) {
     PageMetadata pageMetadata =
         new PageMetadata(
             effectiveSize,
@@ -253,7 +256,7 @@ public class SamplesRestController {
     if (pageSample.getTotalPages() > 1) {
       resources.add(
           getPageLink(
-              decodedText, decodedFilter, 0, effectiveSize, sort, Link.REL_FIRST, this.getClass()));
+              decodedText, decodedFilter, decodedCurationDomains, 0, effectiveSize, sort, Link.REL_FIRST, this.getClass()));
     }
     // if there was a previous page, link to it
     if (effectivePage > 0) {
@@ -261,6 +264,7 @@ public class SamplesRestController {
           getPageLink(
               decodedText,
               decodedFilter,
+              decodedCurationDomains,
               effectivePage - 1,
               effectiveSize,
               sort,
@@ -272,6 +276,7 @@ public class SamplesRestController {
         getPageLink(
             decodedText,
             decodedFilter,
+            decodedCurationDomains,
             effectivePage,
             effectiveSize,
             sort,
@@ -284,6 +289,7 @@ public class SamplesRestController {
           getPageLink(
               decodedText,
               decodedFilter,
+              decodedCurationDomains,
               effectivePage + 1,
               effectiveSize,
               sort,
@@ -296,6 +302,7 @@ public class SamplesRestController {
           getPageLink(
               decodedText,
               decodedFilter,
+              decodedCurationDomains,
               pageSample.getTotalPages(),
               effectiveSize,
               sort,
@@ -305,7 +312,7 @@ public class SamplesRestController {
     // if we are on the first page and not sorting
     if (effectivePage == 0 && (sort == null || sort.length == 0)) {
       resources.add(
-          getCursorLink(decodedText, decodedFilter, "*", effectiveSize, "cursor", this.getClass()));
+          getCursorLink(decodedText, decodedFilter, decodedCurationDomains, "*", effectiveSize, "cursor", this.getClass()));
     }
     // if there is no search term, and on first page, add a link to use search
     // TODO
@@ -343,8 +350,8 @@ public class SamplesRestController {
    * manual manipulation for greater control
    */
   public static Link getCursorLink(
-      String text, String[] filter, String cursor, int size, String rel, Class controllerClass) {
-    UriComponentsBuilder builder = getUriComponentsBuilder(text, filter, controllerClass);
+      String text, String[] filter, Optional<List<String>> decodedCurationDomains, String cursor, int size, String rel, Class controllerClass) {
+    UriComponentsBuilder builder = getUriComponentsBuilder(text, filter, decodedCurationDomains, controllerClass);
 
     builder.queryParam("cursor", cursor);
     builder.queryParam("size", size);
@@ -352,7 +359,7 @@ public class SamplesRestController {
   }
 
   private static UriComponentsBuilder getUriComponentsBuilder(
-      String text, String[] filter, Class controllerClass) {
+      String text, String[] filter, Optional<List<String>> decodedCurationDomains, Class controllerClass) {
     UriComponentsBuilder builder =
         ControllerLinkBuilder.linkTo(controllerClass).toUriComponentsBuilder();
 
@@ -365,18 +372,30 @@ public class SamplesRestController {
         builder.queryParam("filter", filterString);
       }
     }
+
+    if (decodedCurationDomains.isPresent()) {
+      if (decodedCurationDomains.get().isEmpty()) {
+        builder.queryParam("curationdomain", "");
+      } else {
+        for (String d : decodedCurationDomains.get()) {
+          builder.queryParam("curationdomain", d);
+        }
+      }
+    }
+
     return builder;
   }
 
   public static Link getPageLink(
       String text,
       String[] filter,
+      Optional<List<String>> decodedCurationDomains,
       int page,
       int size,
       String[] sort,
       String rel,
       Class controllerClass) {
-    UriComponentsBuilder builder = getUriComponentsBuilder(text, filter, controllerClass);
+    UriComponentsBuilder builder = getUriComponentsBuilder(text, filter, decodedCurationDomains, controllerClass);
 
     builder.queryParam("page", page);
     builder.queryParam("size", size);
