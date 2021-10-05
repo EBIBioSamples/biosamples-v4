@@ -16,7 +16,7 @@ maven-package:
   image: maven:3.6-jdk-11
   stage: package
   script:
-    - 'mvn -e deploy -P embl-ebi -s ci_settings.xml -Dmaven.source.skip=true'
+    - 'mvn -e deploy -P embl-ebi -s ci_settings.xml -Dmaven.source.skip=true -DskipTests=true'
     - mkdir deployment
     - cp webapps/core/target/webapps-core-*.war deployment/webapps-core.war
     - cp agents/solr/target/agents-solr-*.jar deployment/agents-solr.jar
