@@ -11,6 +11,8 @@
 package uk.ac.ebi.biosamples.controller;
 
 import java.util.Collection;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityLinks;
@@ -76,7 +78,7 @@ public class SampleAutocompleteRestController {
     resource.add(getLink(text, filter, rows, Link.REL_SELF));
     resource.add(
         SamplesRestController.getPageLink(
-            text, filter, 0, 20, null, "samples", SamplesRestController.class));
+                text, filter, Optional.empty(), 0, 20, null, "samples", SamplesRestController.class));
     return ResponseEntity.ok().body(resource);
   }
 
