@@ -387,7 +387,7 @@ public class PhenopacketConverter {
     } else if ("COVID-19".equalsIgnoreCase(attribute.getType())) {
       if ("no".equalsIgnoreCase(attribute.getValue())
               || "false".equalsIgnoreCase(attribute.getValue())
-              || "negative".equalsIgnoreCase(attribute.getValue()) {
+              || "negative".equalsIgnoreCase(attribute.getValue())) {
         normalisedAttribute =
                 phenopacketConversionHelper.convertAttributeWithNegation(
                         "disease", "COVID-19", "MONDO:0100096", "COVID-19");
@@ -441,7 +441,7 @@ public class PhenopacketConverter {
                 "disease", "cancer", "MONDO:0004992", "cancer");
       }
     } else if ("ibd".equalsIgnoreCase(attribute.getType())
-          || ("inflammatory bowel disease".equalsIgnoreCase(attribute.getType())) {
+          || ("inflammatory bowel disease".equalsIgnoreCase(attribute.getType()))) {
       if ("no".equalsIgnoreCase(attribute.getValue())
           || "false".equalsIgnoreCase(attribute.getValue())) {
         normalisedAttribute =
