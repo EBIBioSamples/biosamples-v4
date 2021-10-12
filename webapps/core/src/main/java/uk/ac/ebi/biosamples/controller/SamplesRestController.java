@@ -221,7 +221,13 @@ public class SamplesRestController {
               text, filters, domains, pageable, curationRepo, decodedCurationDomains);
       Resources<Resource<Sample>> resources =
           populateResources(
-              pageSample, effectiveSize, effectivePage, decodedText, decodedFilter, sort, decodedCurationDomains);
+              pageSample,
+              effectiveSize,
+              effectivePage,
+              decodedText,
+              decodedFilter,
+              sort,
+              decodedCurationDomains);
 
       return ResponseEntity.ok().cacheControl(cacheControl).body(resources);
     }
@@ -256,7 +262,14 @@ public class SamplesRestController {
     if (pageSample.getTotalPages() > 1) {
       resources.add(
           getPageLink(
-              decodedText, decodedFilter, decodedCurationDomains, 0, effectiveSize, sort, Link.REL_FIRST, this.getClass()));
+              decodedText,
+              decodedFilter,
+              decodedCurationDomains,
+              0,
+              effectiveSize,
+              sort,
+              Link.REL_FIRST,
+              this.getClass()));
     }
     // if there was a previous page, link to it
     if (effectivePage > 0) {
@@ -312,7 +325,14 @@ public class SamplesRestController {
     // if we are on the first page and not sorting
     if (effectivePage == 0 && (sort == null || sort.length == 0)) {
       resources.add(
-          getCursorLink(decodedText, decodedFilter, decodedCurationDomains, "*", effectiveSize, "cursor", this.getClass()));
+          getCursorLink(
+              decodedText,
+              decodedFilter,
+              decodedCurationDomains,
+              "*",
+              effectiveSize,
+              "cursor",
+              this.getClass()));
     }
     // if there is no search term, and on first page, add a link to use search
     // TODO
@@ -350,8 +370,15 @@ public class SamplesRestController {
    * manual manipulation for greater control
    */
   public static Link getCursorLink(
-      String text, String[] filter, Optional<List<String>> decodedCurationDomains, String cursor, int size, String rel, Class controllerClass) {
-    UriComponentsBuilder builder = getUriComponentsBuilder(text, filter, decodedCurationDomains, controllerClass);
+      String text,
+      String[] filter,
+      Optional<List<String>> decodedCurationDomains,
+      String cursor,
+      int size,
+      String rel,
+      Class controllerClass) {
+    UriComponentsBuilder builder =
+        getUriComponentsBuilder(text, filter, decodedCurationDomains, controllerClass);
 
     builder.queryParam("cursor", cursor);
     builder.queryParam("size", size);
@@ -359,7 +386,10 @@ public class SamplesRestController {
   }
 
   private static UriComponentsBuilder getUriComponentsBuilder(
-      String text, String[] filter, Optional<List<String>> decodedCurationDomains, Class controllerClass) {
+      String text,
+      String[] filter,
+      Optional<List<String>> decodedCurationDomains,
+      Class controllerClass) {
     UriComponentsBuilder builder =
         ControllerLinkBuilder.linkTo(controllerClass).toUriComponentsBuilder();
 
@@ -395,7 +425,8 @@ public class SamplesRestController {
       String[] sort,
       String rel,
       Class controllerClass) {
-    UriComponentsBuilder builder = getUriComponentsBuilder(text, filter, decodedCurationDomains, controllerClass);
+    UriComponentsBuilder builder =
+        getUriComponentsBuilder(text, filter, decodedCurationDomains, controllerClass);
 
     builder.queryParam("page", page);
     builder.queryParam("size", size);
@@ -510,6 +541,7 @@ public class SamplesRestController {
             .map(
                 sample -> {
                   log.trace("Initiating store() for " + sample.getName());
+                  
                   sample = buildPrivateSample(sample);
                   return sampleService.store(sample, false, authProvider);
                 })
@@ -558,7 +590,7 @@ public class SamplesRestController {
 
       if (structuredData != null && structuredData.size() > 0) {
         sample =
-            bioSamplesWebinAuthenticationService.handleStructuredDataForWebinSubmission(
+            bioSamplesWebinAuthenticationService.handleStructuredDataAccesibility(
                 sample, webinAccountId);
       }
     } else {

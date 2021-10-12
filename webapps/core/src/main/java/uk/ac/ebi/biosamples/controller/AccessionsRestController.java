@@ -72,13 +72,27 @@ public class AccessionsRestController {
       Integer effectiveSize) {
     resources.add(
         SamplesRestController.getPageLink(
-                text, filter, Optional.empty(), effectivePage, effectiveSize, null, Link.REL_SELF, this.getClass()));
+            text,
+            filter,
+            Optional.empty(),
+            effectivePage,
+            effectiveSize,
+            null,
+            Link.REL_SELF,
+            this.getClass()));
 
     // if theres more than one page, link to first and last
     if (pageAccessions.getTotalPages() > 1) {
       resources.add(
           SamplesRestController.getPageLink(
-              text, filter, Optional.empty(), 0, effectiveSize, null, Link.REL_FIRST, this.getClass()));
+              text,
+              filter,
+              Optional.empty(),
+              0,
+              effectiveSize,
+              null,
+              Link.REL_FIRST,
+              this.getClass()));
       resources.add(
           SamplesRestController.getPageLink(
               text,
