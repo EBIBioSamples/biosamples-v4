@@ -322,7 +322,7 @@ public class AMRTest {
         .thenReturn(ResponseEntity.ok(submissionAccount));
     when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class)))
         .thenReturn(testSample);
-    when(bioSamplesWebinAuthenticationService.handleStructuredDataForWebinSubmission(
+    when(bioSamplesWebinAuthenticationService.handleStructuredDataAccesibility(
             any(Sample.class), eq("Webin-57176")))
         .thenReturn(testSample);
 

@@ -85,14 +85,19 @@ public class SampleRestController {
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public Resource<Sample> getSampleHal(
+      HttpServletRequest request,
       @PathVariable String accession,
       @RequestParam(name = "legacydetails", required = false) String legacydetails,
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
-      @RequestParam(name = "curationrepo", required = false) String curationRepo) {
-
+      @RequestParam(name = "curationrepo", required = false) String curationRepo,
+      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
+          String authProvider) {
+    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
     // decode percent-encoding from curation domains
-    Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
-    Optional<Boolean> decodedLegacyDetails;
+    final Optional<List<String>> decodedCurationDomains =
+        LinkUtils.decodeTextsToArray(curationdomain);
+    final Optional<Boolean> decodedLegacyDetails;
+
     if ("true".equals(legacydetails)) {
       decodedLegacyDetails = Optional.of(Boolean.TRUE);
     } else {
@@ -101,9 +106,20 @@ public class SampleRestController {
 
     // convert it into the format to return
     Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains, curationRepo);
-    if (sample.isPresent()) {
-      bioSamplesAapService.checkAccessible(sample.get());
 
+    if (sample.isPresent()) {
+      if (webinAuth) {
+        final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
+        final Authentication authentication = bearerTokenExtractor.extract(request);
+        final SubmissionAccount webinAccount =
+            bioSamplesWebinAuthenticationService
+                .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+                .getBody();
+
+        bioSamplesWebinAuthenticationService.checkSampleAccessibility(sample.get(), webinAccount.getId());
+      } else {
+        bioSamplesAapService.checkAccessible(sample.get());
+      }
       // TODO If user is not Read super user, reduce the fields to show
       if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
         sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
@@ -161,7 +177,8 @@ public class SampleRestController {
   public Sample getSampleXml(
       @PathVariable String accession,
       @RequestParam(name = "curationrepo", required = false) final String curationRepo) {
-    Sample sample = this.getSampleHal(accession, "true", null, curationRepo).getContent();
+    Sample sample =
+        this.getSampleHal(null, accession, "true", null, curationRepo, "AAP").getContent();
     if (!sample.getAccession().matches("SAMEG\\d+")) {
       sample =
           Sample.Builder.fromSample(sample)
@@ -194,7 +211,7 @@ public class SampleRestController {
 
     log.debug("Received PUT for " + accession);
 
-    if (authProvider.equalsIgnoreCase("WEBIN")) {
+    if (webinAuth) {
       final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
       final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
@@ -213,7 +230,7 @@ public class SampleRestController {
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
 
       if (abstractData != null && abstractData.size() > 0) {
-        if (bioSamplesWebinAuthenticationService.checkIfOriginalSampleWebinSubmitter(
+        if (bioSamplesWebinAuthenticationService.findIfOriginalSampleWebinSubmitter(
             sample, webinAccountId)) {
           sample = Sample.Builder.fromSample(sample).build();
         } else {
@@ -309,7 +326,7 @@ public class SampleRestController {
               .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
               .getBody();
       sample =
-          bioSamplesWebinAuthenticationService.handleStructuredDataForWebinSubmission(
+          bioSamplesWebinAuthenticationService.handleStructuredDataAccesibility(
               sample, webinAccount.getId());
       sample = sampleService.storeSampleStructuredData(sample, authProvider);
 

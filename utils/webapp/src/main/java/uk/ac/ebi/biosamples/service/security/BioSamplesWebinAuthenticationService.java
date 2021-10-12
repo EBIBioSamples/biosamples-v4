@@ -10,6 +10,7 @@
 */
 package uk.ac.ebi.biosamples.service.security;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.springframework.http.*;
@@ -167,6 +168,7 @@ public class BioSamplesWebinAuthenticationService {
     }
   }
 
+  /*Only used for sample migration purposes*/
   private boolean checkOtherENARegistrationDomains(final String sampleDomain) {
     if (sampleDomain != null) {
       return sampleDomain.equals("self.Webin")
@@ -203,7 +205,7 @@ public class BioSamplesWebinAuthenticationService {
     }
   }
 
-  public Sample handleStructuredDataForWebinSubmission(Sample sample, String id) {
+  public Sample handleStructuredDataAccesibility(Sample sample, String id) {
     final AtomicBoolean isWebinIdValid = new AtomicBoolean(false);
 
     sample
@@ -219,7 +221,7 @@ public class BioSamplesWebinAuthenticationService {
             });
 
     if (sample.hasAccession()) {
-      isWebinIdValid.set(checkStructureDataAccessibilityForSubmitter(sample, id));
+      isWebinIdValid.set(checkStructureDataAccessibility(sample, id));
     } else {
       sample
           .getData()
@@ -237,7 +239,7 @@ public class BioSamplesWebinAuthenticationService {
     else throw new StructuredDataNotAccessibleException();
   }
 
-  public boolean checkIfOriginalSampleWebinSubmitter(Sample sample, String id) {
+  public boolean findIfOriginalSampleWebinSubmitter(Sample sample, String id) {
     final AtomicBoolean isWebinIdValid = new AtomicBoolean(false);
 
     sample
@@ -253,14 +255,14 @@ public class BioSamplesWebinAuthenticationService {
             });
 
     if (sample.hasAccession()) {
-      isWebinIdValid.set(checkStructureDataAccessibilityForSubmitter(sample, id));
+      isWebinIdValid.set(checkStructureDataAccessibility(sample, id));
     }
 
     if (isWebinIdValid.get()) return true;
     else throw new StructuredDataNotAccessibleException();
   }
 
-  private boolean checkStructureDataAccessibilityForSubmitter(Sample sample, String id) {
+  private boolean checkStructureDataAccessibility(Sample sample, String id) {
     final AtomicBoolean isWebinIdValid = new AtomicBoolean(false);
     final Optional<Sample> oldSample = getOldSample(sample);
 
@@ -313,8 +315,24 @@ public class BioSamplesWebinAuthenticationService {
     return isWebinIdValid.get();
   }
 
-  public boolean isWebinSuperUser(String webinId) {
+  public boolean isWebinSuperUser(final String webinId) {
     return webinId.equalsIgnoreCase(bioSamplesProperties.getBiosamplesClientWebinUsername());
+  }
+
+  public void checkSampleAccessibility(final Sample sample, final String webinId) {
+    if (sample.getRelease().isBefore(Instant.now())) {
+      // release date in past, accessible
+    } else {
+      final String webinSubmissionAccountId = sample.getWebinSubmissionAccountId();
+
+      if (webinSubmissionAccountId == null) {
+        throw new SampleNotAccessibleException();
+      } else if (webinSubmissionAccountId.equals(webinId)) {
+        // if the current user belongs to a domain that owns the sample, accessible
+      } else {
+        throw new SampleNotAccessibleException();
+      }
+    }
   }
 
   @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Unauthorized WEBIN user")
