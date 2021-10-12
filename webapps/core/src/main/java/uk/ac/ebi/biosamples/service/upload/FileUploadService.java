@@ -29,10 +29,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
 import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
@@ -40,7 +37,6 @@ import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
-import uk.ac.ebi.biosamples.utils.upload.Characteristics;
 import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
 import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
@@ -222,25 +218,11 @@ public class FileUploadService {
       final ValidationResult validationResult,
       final boolean isWebin) {
     final String sampleName = fileUploadUtils.getSampleName(multiMap);
-    final String sampleReleaseDate = fileUploadUtils.getReleaseDate(multiMap);
-    final String accession = fileUploadUtils.getSampleAccession(multiMap);
-    final List<Characteristics> characteristicsList =
-        fileUploadUtils.handleCharacteristics(multiMap);
-    final List<ExternalReference> externalReferenceList =
-        fileUploadUtils.handleExternalReferences(multiMap);
-    final List<Contact> contactsList = fileUploadUtils.handleContacts(multiMap);
     boolean isValidatedAgainstChecklist;
 
-    if (fileUploadUtils.isValidSample(sampleName, sampleReleaseDate, validationResult)) {
-      Sample sample =
-          fileUploadUtils.buildSample(
-              sampleName,
-              accession,
-              sampleReleaseDate,
-              characteristicsList,
-              externalReferenceList,
-              contactsList);
+    Sample sample = fileUploadUtils.buildSample(multiMap, validationResult);
 
+    if (sample != null) {
       sample = handleAuthentication(aapDomain, webinId, isWebin, sample, validationResult);
 
       if (sample != null) {

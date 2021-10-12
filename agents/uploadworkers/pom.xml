@@ -41,10 +41,6 @@
 			<version>5.1.11-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-			<groupId>com.github.ben-manes.caffeine</groupId>
-			<artifactId>caffeine</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-mongo</artifactId>
 			<version>5.1.11-SNAPSHOT</version>
