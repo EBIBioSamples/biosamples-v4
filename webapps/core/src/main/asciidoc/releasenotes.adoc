@@ -2,6 +2,15 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+[[v5.1.11]]
+== v5.1.11 Release notes
+=== New Features
+
+=== Internal improvements
+
+=== Bug Fixes
+1. Fix of private sample GET using WEBIN authentication.
+It was not possible to GET private samples using WEBIN authentication. This release has the fix for the issue.
 
 [[v5.1.10]]
 == v5.1.10 Release notes
@@ -11,7 +20,8 @@ This pages contains links to release notes for BioSamples for version 4.0.0 and 
 
 === Bug Fixes
 1. Fixing of missing curationdomain query parameter in HAL section of the sample page API.
-This has lead to returning samples with curations in biosamples-client when using sample page service with no-curations flag.
+This has lead to returning samples with curations in biosamples-client when using sample page service with no-curations flag and
+consequently some samples might have overwritten with curations applied.
 
 [[v5.1.6]]
 == v5.1.6 Release notes (v5.1.5 included)
