@@ -95,7 +95,7 @@ public class FileUploadUtils {
       final List<Characteristics> characteristicsList,
       final List<ExternalReference> externalReferenceList,
       final List<Contact> contactsList,
-      List<Publication> publicationsList) {
+      final List<Publication> publicationsList) {
     return new Sample.Builder(sampleName.trim())
         .withAccession(accession)
         .withAttributes(
