@@ -62,12 +62,40 @@ public class FileUploadUtils {
   }
 
   public Sample buildSample(
+      final Multimap<String, String> multiMap, final ValidationResult validationResult) {
+    final String sampleName = getSampleName(multiMap);
+    final String sampleReleaseDate = getReleaseDate(multiMap);
+    final String accession = getSampleAccession(multiMap);
+    final List<Characteristics> characteristicsList = handleCharacteristics(multiMap);
+    final List<ExternalReference> externalReferenceList = handleExternalReferences(multiMap);
+    final List<Contact> contactsList = handleContacts(multiMap);
+    final List<Publication> publicationsList = handlePublications(multiMap);
+
+    if (isValidSample(sampleName, sampleReleaseDate, validationResult)) {
+      final Sample sample =
+          buildSample(
+              sampleName,
+              accession,
+              sampleReleaseDate,
+              characteristicsList,
+              externalReferenceList,
+              contactsList,
+              publicationsList);
+
+      return sample;
+    }
+
+    return null;
+  }
+
+  private Sample buildSample(
       final String sampleName,
       final String accession,
       final String sampleReleaseDate,
       final List<Characteristics> characteristicsList,
       final List<ExternalReference> externalReferenceList,
-      final List<Contact> contactsList) {
+      final List<Contact> contactsList,
+      final List<Publication> publicationsList) {
     return new Sample.Builder(sampleName.trim())
         .withAccession(accession)
         .withAttributes(
@@ -97,6 +125,7 @@ public class FileUploadUtils {
         .withRelease(sampleReleaseDate)
         .withExternalReferences(externalReferenceList)
         .withContacts(contactsList)
+        .withPublications(publicationsList)
         .withSubmittedVia(SubmittedViaType.FILE_UPLOADER)
         .build();
   }
@@ -127,6 +156,26 @@ public class FileUploadUtils {
             });
 
     return contactList;
+  }
+
+  public List<Publication> handlePublications(Multimap<String, String> multiMap) {
+    final List<Publication> publicationList = new ArrayList<>();
+
+    multiMap
+        .entries()
+        .forEach(
+            entry -> {
+              final String entryKey = entry.getKey();
+              final String entryValue = entry.getValue();
+
+              log.trace(entryKey + " " + entryValue);
+
+              if (entryKey.startsWith("Comment") && entryKey.contains("publication")) {
+                publicationList.add(new Publication.Builder().pubmed_id(entry.getValue()).build());
+              }
+            });
+
+    return publicationList;
   }
 
   public String getSampleAccession(final Multimap<String, String> multiMap) {

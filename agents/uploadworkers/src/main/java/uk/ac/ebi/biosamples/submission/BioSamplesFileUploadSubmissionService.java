@@ -35,7 +35,6 @@ import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
 import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
 import uk.ac.ebi.biosamples.mongo.util.SampleNameAccessionPair;
-import uk.ac.ebi.biosamples.utils.upload.Characteristics;
 import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
 import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
 
@@ -233,25 +232,12 @@ public class BioSamplesFileUploadSubmissionService {
       final String checklist,
       final boolean isWebin) {
     final String sampleName = fileUploadUtils.getSampleName(multiMap);
-    final String sampleReleaseDate = fileUploadUtils.getReleaseDate(multiMap);
     final String accession = fileUploadUtils.getSampleAccession(multiMap);
     final boolean sampleWithAccession = accession != null ? true : false;
-    final List<Characteristics> characteristicsList =
-        fileUploadUtils.handleCharacteristics(multiMap);
-    final List<ExternalReference> externalReferenceList =
-        fileUploadUtils.handleExternalReferences(multiMap);
-    final List<Contact> contactsList = fileUploadUtils.handleContacts(multiMap);
 
-    if (fileUploadUtils.isValidSample(sampleName, sampleReleaseDate, validationResult)) {
-      Sample sample =
-          fileUploadUtils.buildSample(
-              sampleName,
-              accession,
-              sampleReleaseDate,
-              characteristicsList,
-              externalReferenceList,
-              contactsList);
+    Sample sample = fileUploadUtils.buildSample(multiMap, validationResult);
 
+    if (sample != null) {
       sample = fileUploadUtils.addChecklistAttributeAndBuildSample(checklist, sample);
 
       if (isWebin) {

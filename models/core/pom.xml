@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.1.10</version>
+		<version>5.1.11-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -19,7 +19,7 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-xml</artifactId>
-			<version>5.1.10</version>
+			<version>5.1.11-SNAPSHOT</version>
 		</dependency>
 
 		<!-- need this for Jackson2ObjectMapperBuilder -->
@@ -43,7 +43,7 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-structured</artifactId>
-			<version>5.1.10</version>
+			<version>5.1.11-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>

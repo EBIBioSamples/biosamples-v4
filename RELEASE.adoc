@@ -2,6 +2,15 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+[[v5.1.11]]
+== v5.1.11 Release notes
+=== New Features
+
+=== Internal improvements
+
+=== Bug Fixes
+1. Fix of private sample GET using WEBIN authentication.
+It was not possible to GET private samples using WEBIN authentication. This release has the fix for the issue.
 
 [[v5.1.10]]
 == v5.1.10 Release notes

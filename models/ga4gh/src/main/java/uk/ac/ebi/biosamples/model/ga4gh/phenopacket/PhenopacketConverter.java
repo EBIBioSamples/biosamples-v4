@@ -386,15 +386,15 @@ public class PhenopacketConverter {
       }
     } else if ("COVID-19".equalsIgnoreCase(attribute.getType())) {
       if ("no".equalsIgnoreCase(attribute.getValue())
-              || "false".equalsIgnoreCase(attribute.getValue())
-              || "negative".equalsIgnoreCase(attribute.getValue())) {
+          || "false".equalsIgnoreCase(attribute.getValue())
+          || "negative".equalsIgnoreCase(attribute.getValue())) {
         normalisedAttribute =
-                phenopacketConversionHelper.convertAttributeWithNegation(
-                        "disease", "COVID-19", "MONDO:0100096", "COVID-19");
+            phenopacketConversionHelper.convertAttributeWithNegation(
+                "disease", "COVID-19", "MONDO:0100096", "COVID-19");
       } else {
         normalisedAttribute =
-                phenopacketConversionHelper.convertAttribute(
-                        "disease", "COVID-19", "MONDO:0100096", "COVID-19");
+            phenopacketConversionHelper.convertAttribute(
+                "disease", "COVID-19", "MONDO:0100096", "COVID-19");
       }
     } else if ("liver disease".equalsIgnoreCase(attribute.getType())) {
       if ("no".equalsIgnoreCase(attribute.getValue())
@@ -441,15 +441,22 @@ public class PhenopacketConverter {
                 "disease", "cancer", "MONDO:0004992", "cancer");
       }
     } else if ("ibd".equalsIgnoreCase(attribute.getType())
-          || ("inflammatory bowel disease".equalsIgnoreCase(attribute.getType()))) {
+        || ("inflammatory bowel disease".equalsIgnoreCase(attribute.getType()))) {
       if ("no".equalsIgnoreCase(attribute.getValue())
           || "false".equalsIgnoreCase(attribute.getValue())) {
         normalisedAttribute =
             phenopacketConversionHelper.convertAttributeWithNegation(
-                "disease", "inflammatory bowel disease", "MONDO:0005265", "inflammatory bowel disease");
+                "disease",
+                "inflammatory bowel disease",
+                "MONDO:0005265",
+                "inflammatory bowel disease");
       } else {
         normalisedAttribute =
-            phenopacketConversionHelper.convertAttribute("disease", "inflammatory bowel disease", "MONDO:0005265", "inflammatory bowel disease");
+            phenopacketConversionHelper.convertAttribute(
+                "disease",
+                "inflammatory bowel disease",
+                "MONDO:0005265",
+                "inflammatory bowel disease");
       }
     } else if ("Biosamples inferred disease".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", attribute);
