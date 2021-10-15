@@ -116,7 +116,8 @@ public class SampleRestController {
                 .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
                 .getBody();
 
-        bioSamplesWebinAuthenticationService.checkSampleAccessibility(sample.get(), webinAccount.getId());
+        bioSamplesWebinAuthenticationService.checkSampleAccessibility(
+            sample.get(), webinAccount.getId());
       } else {
         bioSamplesAapService.checkAccessible(sample.get());
       }

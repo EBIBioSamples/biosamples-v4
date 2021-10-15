@@ -541,7 +541,7 @@ public class SamplesRestController {
             .map(
                 sample -> {
                   log.trace("Initiating store() for " + sample.getName());
-                  
+
                   sample = buildPrivateSample(sample);
                   return sampleService.store(sample, false, authProvider);
                 })
