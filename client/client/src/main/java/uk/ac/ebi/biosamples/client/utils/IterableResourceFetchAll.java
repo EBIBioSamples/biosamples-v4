@@ -10,22 +10,13 @@
 */
 package uk.ac.ebi.biosamples.client.utils;
 
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.function.IntFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.hateoas.client.Traverson.TraversalBuilder;
@@ -39,16 +30,27 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriTemplate;
 
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.function.IntFunction;
+
 // import org.springframework.hateoas.UriTemplate;
 
-public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
+public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
 
   private Logger log = LoggerFactory.getLogger(getClass());
 
   private final Traverson traverson;
   private final RestOperations restOperations;
   private final Hop[] hops;
-  private final ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference;
+  private final ParameterizedTypeReference<PagedModel<EntityModel<T>>> parameterizedTypeReference;
   private final MultiValueMap<String, String> params;
   private final ExecutorService executor;
   private final String jwt;
@@ -67,7 +69,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
       ExecutorService executor,
       Traverson traverson,
       RestOperations restOperations,
-      ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference,
+      ParameterizedTypeReference<PagedModel<EntityModel<T>>> parameterizedTypeReference,
       MultiValueMap<String, String> params,
       String... rels) {
     this(
@@ -101,7 +103,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
       ExecutorService executor,
       Traverson traverson,
       RestOperations restOperations,
-      ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference,
+      ParameterizedTypeReference<PagedModel<EntityModel<T>>> parameterizedTypeReference,
       MultiValueMap<String, String> params,
       Hop... hops) {
     this.executor = executor;
@@ -117,7 +119,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
       ExecutorService executor,
       Traverson traverson,
       RestOperations restOperations,
-      ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference,
+      ParameterizedTypeReference<PagedModel<EntityModel<T>>> parameterizedTypeReference,
       String jwt,
       MultiValueMap<String, String> params,
       String... rels) {
@@ -143,7 +145,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
       ExecutorService executor,
       Traverson traverson,
       RestOperations restOperations,
-      ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference,
+      ParameterizedTypeReference<PagedModel<EntityModel<T>>> parameterizedTypeReference,
       String jwt,
       MultiValueMap<String, String> params,
       Hop... hops) {
@@ -156,7 +158,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
     this.jwt = jwt;
   }
 
-  public Iterator<Resource<T>> iterator() {
+  public Iterator<EntityModel<T>> iterator() {
 
     TraversalBuilder traversonBuilder = null;
     for (Hop hop : hops) {
@@ -181,37 +183,37 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
     }
     RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
 
-    ResponseEntity<PagedResources<Resource<T>>> responseEntity =
+    ResponseEntity<PagedModel<EntityModel<T>>> responseEntity =
         restOperations.exchange(requestEntity, parameterizedTypeReference);
     return new IteratorResourceFetchAll<T>(
         responseEntity.getBody(), restOperations, parameterizedTypeReference, executor, jwt);
   }
 
-  private static class IteratorResourceFetchAll<U> implements Iterator<Resource<U>> {
+  private static class IteratorResourceFetchAll<U> implements Iterator<EntityModel<U>> {
 
     private Logger log = LoggerFactory.getLogger(getClass());
 
     private final RestOperations restOperations;
     private final ExecutorService executor;
-    private final ParameterizedTypeReference<PagedResources<Resource<U>>>
+    private final ParameterizedTypeReference<PagedModel<EntityModel<U>>>
         parameterizedTypeReference;
-    private PagedResources<Resource<U>> page;
-    private Iterator<Resource<U>> pageIterator;
-    private Future<PagedResources<Resource<U>>> nextPageFuture;
+    private PagedModel<EntityModel<U>> page;
+    private Iterator<EntityModel<U>> pageIterator;
+    private Future<PagedModel<EntityModel<U>>> nextPageFuture;
     private final String jwt;
 
     public IteratorResourceFetchAll(
-        PagedResources<Resource<U>> page,
+        PagedModel<EntityModel<U>> page,
         RestOperations restOperations,
-        ParameterizedTypeReference<PagedResources<Resource<U>>> parameterizedTypeReference,
+        ParameterizedTypeReference<PagedModel<EntityModel<U>>> parameterizedTypeReference,
         ExecutorService executor) {
       this(page, restOperations, parameterizedTypeReference, executor, null);
     }
 
     public IteratorResourceFetchAll(
-        PagedResources<Resource<U>> page,
+        PagedModel<EntityModel<U>> page,
         RestOperations restOperations,
-        ParameterizedTypeReference<PagedResources<Resource<U>>> parameterizedTypeReference,
+        ParameterizedTypeReference<PagedModel<EntityModel<U>>> parameterizedTypeReference,
         ExecutorService executor,
         String jwt) {
 
@@ -228,7 +230,9 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
       // pre-emptively grab the next page as a future
       if (nextPageFuture == null && page.hasLink(Link.REL_NEXT)) {
 
-        Link nextLink = page.getLink(Link.REL_NEXT);
+        Optional<Link> nextLinkOpt = page.getLink(Link.REL_NEXT);
+        Link nextLink = nextLinkOpt.get();
+
         URI uri;
         if (nextLink.isTemplated()) {
           UriTemplate uriTemplate = new UriTemplate(nextLink.getHref());
@@ -263,7 +267,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
     }
 
     @Override
-    public Resource<U> next() {
+    public EntityModel<U> next() {
       if (pageIterator.hasNext()) {
         return pageIterator.next();
       }
@@ -287,19 +291,19 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
       throw new NoSuchElementException();
     }
 
-    private static class NextPageCallable<V> implements Callable<PagedResources<Resource<V>>> {
+    private static class NextPageCallable<V> implements Callable<PagedModel<EntityModel<V>>> {
 
       private Logger log = LoggerFactory.getLogger(getClass());
 
       private final RestOperations restOperations;
       private final URI uri;
-      private final ParameterizedTypeReference<PagedResources<Resource<V>>>
+      private final ParameterizedTypeReference<PagedModel<EntityModel<V>>>
           parameterizedTypeReference;
       private final String jwt;
 
       public NextPageCallable(
           RestOperations restOperations,
-          ParameterizedTypeReference<PagedResources<Resource<V>>> parameterizedTypeReference,
+          ParameterizedTypeReference<PagedModel<EntityModel<V>>> parameterizedTypeReference,
           URI uri) {
         this.restOperations = restOperations;
         this.uri = uri;
@@ -309,7 +313,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 
       public NextPageCallable(
           RestOperations restOperations,
-          ParameterizedTypeReference<PagedResources<Resource<V>>> parameterizedTypeReference,
+          ParameterizedTypeReference<PagedModel<EntityModel<V>>> parameterizedTypeReference,
           URI uri,
           String jwt) {
         this.restOperations = restOperations;
@@ -319,7 +323,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
       }
 
       @Override
-      public PagedResources<Resource<V>> call() throws Exception {
+      public PagedModel<EntityModel<V>> call() throws Exception {
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
         if (jwt != null) {
@@ -327,7 +331,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
         }
         RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
 
-        ResponseEntity<PagedResources<Resource<V>>> responseEntity =
+        ResponseEntity<PagedModel<EntityModel<V>>> responseEntity =
             restOperations.exchange(requestEntity, parameterizedTypeReference);
         return responseEntity.getBody();
       }

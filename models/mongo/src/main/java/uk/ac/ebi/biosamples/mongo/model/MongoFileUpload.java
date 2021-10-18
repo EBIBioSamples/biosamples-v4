@@ -17,13 +17,13 @@ import java.util.Objects;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
+import uk.ac.ebi.biosamples.mongo.util.BioSamplesUploadStatus;
 import uk.ac.ebi.biosamples.mongo.util.SampleNameAccessionPair;
 
 @Document(collection = "mongoFileUpload")
 public class MongoFileUpload {
   @Id @JsonIgnore @Indexed private final String submissionId;
-  private final BioSamplesFileUploadSubmissionStatus submissionStatus;
+  private final BioSamplesUploadStatus submissionStatus;
   private final String submitterDetails;
   private final String checklist;
   @JsonIgnore private final boolean isWebin;
@@ -34,7 +34,7 @@ public class MongoFileUpload {
 
   public MongoFileUpload(
       final String submissionId,
-      final BioSamplesFileUploadSubmissionStatus submissionStatus,
+      final BioSamplesUploadStatus submissionStatus,
       final String submitterDetails,
       final String checklist,
       final boolean isWebin,
@@ -57,7 +57,7 @@ public class MongoFileUpload {
     return submissionId;
   }
 
-  public BioSamplesFileUploadSubmissionStatus getSubmissionStatus() {
+  public BioSamplesUploadStatus getSubmissionStatus() {
     return submissionStatus;
   }
 

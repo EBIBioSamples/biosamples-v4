@@ -10,16 +10,17 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Accession;
 import uk.ac.ebi.biosamples.service.AccessionsService;
+
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/accessions")
@@ -34,7 +35,7 @@ public class AccessionsRestController {
 
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<Resources<Accession>> getAccessions(
+  public ResponseEntity<CollectionModel<Accession>> getAccessions(
       @RequestParam(name = "text", required = false) String text,
       @RequestParam(name = "filter", required = false) String[] filter,
       @RequestParam(name = "page", required = false) final Integer page,
@@ -46,15 +47,15 @@ public class AccessionsRestController {
     Page<String> pageAccessions =
         accessionsService.getAccessions(text, filter, effectivePage, effectiveSize);
 
-    PagedResources.PageMetadata pageMetadata =
-        new PagedResources.PageMetadata(
+    PagedModel.PageMetadata pageMetadata =
+        new PagedModel.PageMetadata(
             effectiveSize,
             pageAccessions.getNumber(),
             pageAccessions.getTotalElements(),
             pageAccessions.getTotalPages());
 
-    Resources<Accession> resources =
-        new PagedResources<>(
+    CollectionModel<Accession> resources =
+        new PagedModel<>(
             pageAccessions.getContent().stream().map(Accession::build).collect(Collectors.toList()),
             pageMetadata);
     addRelLinks(pageAccessions, resources, text, filter, effectivePage, effectiveSize);
@@ -64,20 +65,20 @@ public class AccessionsRestController {
 
   private void addRelLinks(
       Page<String> pageAccessions,
-      Resources<Accession> resources,
+      CollectionModel<Accession> resources,
       String text,
       String[] filter,
       Integer effectivePage,
       Integer effectiveSize) {
     resources.add(
         SamplesRestController.getPageLink(
-            text, filter, effectivePage, effectiveSize, null, Link.REL_SELF, this.getClass()));
+            text, filter, effectivePage, effectiveSize, null, Link.REL_SELF.value(), this.getClass()));
 
     // if theres more than one page, link to first and last
     if (pageAccessions.getTotalPages() > 1) {
       resources.add(
           SamplesRestController.getPageLink(
-              text, filter, 0, effectiveSize, null, Link.REL_FIRST, this.getClass()));
+              text, filter, 0, effectiveSize, null, Link.REL_FIRST.value(), this.getClass()));
       resources.add(
           SamplesRestController.getPageLink(
               text,
@@ -85,7 +86,7 @@ public class AccessionsRestController {
               pageAccessions.getTotalPages(),
               effectiveSize,
               null,
-              Link.REL_LAST,
+              Link.REL_LAST.value(),
               this.getClass()));
     }
     // if there was a previous page, link to it
@@ -97,7 +98,7 @@ public class AccessionsRestController {
               effectivePage - 1,
               effectiveSize,
               null,
-              Link.REL_PREVIOUS,
+              Link.REL_PREVIOUS.value(),
               this.getClass()));
     }
 
@@ -110,7 +111,7 @@ public class AccessionsRestController {
               effectivePage + 1,
               effectiveSize,
               null,
-              Link.REL_NEXT,
+              Link.REL_NEXT.value(),
               this.getClass()));
     }
   }

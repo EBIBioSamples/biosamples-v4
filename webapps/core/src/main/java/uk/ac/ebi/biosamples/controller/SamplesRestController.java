@@ -26,8 +26,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.hateoas.*;
-import org.springframework.hateoas.PagedResources.PageMetadata;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.hateoas.server.ExposesResourceFor;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -102,7 +102,7 @@ public class SamplesRestController {
   // must return a ResponseEntity so that cache headers can be set
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<Resources<Resource<Sample>>> searchHal(
+  public ResponseEntity<CollectionModel<EntityModel<Sample>>> searchHal(
       @RequestParam(name = "text", required = false) String text,
       @RequestParam(name = "filter", required = false) String[] filter,
       @RequestParam(name = "cursor", required = false) String cursor,
@@ -164,8 +164,8 @@ public class SamplesRestController {
               decodedCurationDomains);
       log.trace("Next cursor = " + samples.getNextCursorMark());
 
-      Resources<Resource<Sample>> resources =
-          new Resources<>(
+      CollectionModel<EntityModel<Sample>> resources =
+          new CollectionModel<>(
               samples.stream()
                   .map(
                       s ->
@@ -180,7 +180,7 @@ public class SamplesRestController {
               decodedFilter,
               decodedCursor,
               effectiveSize,
-              Link.REL_SELF,
+              Link.REL_SELF.value(),
               this.getClass()));
       // only display the next link if there is a next cursor to go to
       if (!LinkUtils.decodeText(samples.getNextCursorMark()).equals(decodedCursor)
@@ -191,7 +191,7 @@ public class SamplesRestController {
                 decodedFilter,
                 samples.getNextCursorMark(),
                 effectiveSize,
-                Link.REL_NEXT,
+                Link.REL_NEXT.value(),
                 this.getClass()));
       }
 
@@ -217,7 +217,7 @@ public class SamplesRestController {
       Page<Sample> pageSample =
           samplePageService.getSamplesByText(
               text, filters, domains, pageable, curationRepo, decodedCurationDomains);
-      Resources<Resource<Sample>> resources =
+      CollectionModel<EntityModel<Sample>> resources =
           populateResources(
               pageSample, effectiveSize, effectivePage, decodedText, decodedFilter, sort);
 
@@ -225,21 +225,21 @@ public class SamplesRestController {
     }
   }
 
-  private Resources<Resource<Sample>> populateResources(
+  private CollectionModel<EntityModel<Sample>> populateResources(
       Page<Sample> pageSample,
       int effectiveSize,
       int effectivePage,
       String decodedText,
       String[] decodedFilter,
       String[] sort) {
-    PageMetadata pageMetadata =
-        new PageMetadata(
+    PagedModel.PageMetadata pageMetadata =
+        new PagedModel.PageMetadata(
             effectiveSize,
             pageSample.getNumber(),
             pageSample.getTotalElements(),
             pageSample.getTotalPages());
-    Resources<Resource<Sample>> resources =
-        new PagedResources<>(
+    CollectionModel<EntityModel<Sample>> resources =
+        new PagedModel<>(
             pageSample.getContent().stream()
                 .map(
                     s ->
@@ -264,7 +264,7 @@ public class SamplesRestController {
               effectivePage - 1,
               effectiveSize,
               sort,
-              Link.REL_PREVIOUS,
+              Link.REL_PREVIOUS.value(),
               this.getClass()));
     }
 
@@ -275,7 +275,7 @@ public class SamplesRestController {
             effectivePage,
             effectiveSize,
             sort,
-            Link.REL_SELF,
+            Link.REL_SELF.value(),
             this.getClass()));
 
     // if there is a next page, link to it
@@ -287,7 +287,7 @@ public class SamplesRestController {
               effectivePage + 1,
               effectiveSize,
               sort,
-              Link.REL_NEXT,
+              Link.REL_NEXT.value(),
               this.getClass()));
     }
     // if theres more than one page, link to first and last
@@ -299,7 +299,7 @@ public class SamplesRestController {
               pageSample.getTotalPages(),
               effectiveSize,
               sort,
-              Link.REL_LAST,
+              Link.REL_LAST.value(),
               this.getClass()));
     }
     // if we are on the first page and not sorting
@@ -320,7 +320,7 @@ public class SamplesRestController {
         SampleAutocompleteRestController.getLink(decodedText, decodedFilter, null, "autocomplete"));
 
     UriComponentsBuilder uriComponentsBuilder =
-        ControllerLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
+        WebMvcLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
     // This is a bit of a hack, but best we can do for now...
     resources.add(
         new Link(uriComponentsBuilder.build(true).toUriString() + "/{accession}", "sample"));
@@ -354,7 +354,7 @@ public class SamplesRestController {
   private static UriComponentsBuilder getUriComponentsBuilder(
       String text, String[] filter, Class controllerClass) {
     UriComponentsBuilder builder =
-        ControllerLinkBuilder.linkTo(controllerClass).toUriComponentsBuilder();
+        WebMvcLinkBuilder.linkTo(controllerClass).toUriComponentsBuilder();
 
     if (text != null && text.trim().length() > 0) {
       builder.queryParam("text", text);
@@ -403,7 +403,7 @@ public class SamplesRestController {
       consumes = {MediaType.APPLICATION_JSON_VALUE},
       produces = {MediaType.APPLICATION_JSON_VALUE})
   @RequestMapping("/accession")
-  public ResponseEntity<Resource<Sample>> accessionSample(
+  public ResponseEntity<EntityModel<Sample>> accessionSample(
       HttpServletRequest request,
       @RequestBody Sample sample,
       @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
@@ -427,9 +427,9 @@ public class SamplesRestController {
     sample = buildPrivateSample(sample);
 
     sample = sampleService.store(sample, false, authProvider);
-    final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
+    final EntityModel<Sample> sampleResource = sampleResourceAssembler.toModel(sample);
 
-    return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
+    return ResponseEntity.created(URI.create(sampleResource.getLink("self").get().getHref()))
         .body(sampleResource);
   }
 
@@ -506,7 +506,7 @@ public class SamplesRestController {
 
   @PreAuthorize("isAuthenticated()")
   @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<Resource<Sample>> post(
+  public ResponseEntity<EntityModel<Sample>> post(
       HttpServletRequest request,
       @RequestBody Sample sample,
       @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
@@ -594,9 +594,9 @@ public class SamplesRestController {
     sample = sampleService.store(sample, true, authProvider);
 
     // assemble a resource to return
-    Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());
+    EntityModel<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());
     // create the response object with the appropriate status
-    return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
+    return ResponseEntity.created(URI.create(sampleResource.getLink("self").get().getHref()))
         .body(sampleResource);
   }
 

@@ -10,11 +10,9 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import java.net.URI;
-import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +22,9 @@ import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
+
+import java.net.URI;
+import java.time.Instant;
 
 @RestController
 @RequestMapping("/groups")
@@ -45,7 +46,7 @@ public class GroupsRestController {
 
   @PreAuthorize("isAuthenticated()")
   @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<Resource<Sample>> post(@RequestBody Sample sample) {
+  public ResponseEntity<EntityModel<Sample>> post(@RequestBody Sample sample) {
     if (sample.hasAccession()) {
       throw new SamplesRestController.SampleWithAccessionSumbissionException();
     }
@@ -62,8 +63,8 @@ public class GroupsRestController {
             .build();
 
     sample = sampleService.store(sample, true, "");
-    Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());
-    return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
+    EntityModel<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());
+    return ResponseEntity.created(URI.create(sampleResource.getLink("self").get().getHref()))
         .body(sampleResource);
   }
 
@@ -71,7 +72,7 @@ public class GroupsRestController {
   @PutMapping(
       path = "/{accession}",
       consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public Resource<Sample> put(@PathVariable String accession, @RequestBody Sample sample) {
+  public EntityModel<Sample> put(@PathVariable String accession, @RequestBody Sample sample) {
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
       throw new SampleRestController.SampleAccessionMismatchException();
     }
@@ -84,6 +85,6 @@ public class GroupsRestController {
         Sample.Builder.fromSample(sample).withUpdate(update).withSubmittedVia(submittedVia).build();
 
     sample = sampleService.store(sample, true, "");
-    return sampleResourceAssembler.toResource(sample);
+    return sampleResourceAssembler.toModel(sample);
   }
 }

@@ -12,14 +12,11 @@ package uk.ac.ebi.biosamples.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Instant;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.ExposesResourceFor;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.ExposesResourceFor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +30,10 @@ import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+
+import javax.servlet.http.HttpServletRequest;
+import java.time.Instant;
+import java.util.List;
 
 @RestController
 @ExposesResourceFor(Sample.class)
@@ -48,7 +49,7 @@ public class CertificationController {
   @Autowired private SampleResourceAssembler sampleResourceAssembler;
 
   @PutMapping("{accession}/certify")
-  public Resource<Sample> certify(
+  public EntityModel<Sample> certify(
       HttpServletRequest request,
       @RequestBody Sample sample,
       @PathVariable String accession,
@@ -112,7 +113,7 @@ public class CertificationController {
 
     // assemble a resource to return
     // create the response object with the appropriate status
-    return sampleResourceAssembler.toResource(sample);
+    return sampleResourceAssembler.toModel(sample);
   }
 
   @PostMapping("/checkCompliance")

@@ -35,7 +35,7 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
-import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
+import uk.ac.ebi.biosamples.mongo.util.BioSamplesUploadStatus;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
@@ -336,7 +336,7 @@ public class FileUploadService {
     } else {
       return new MongoFileUpload(
           submissionId,
-          BioSamplesFileUploadSubmissionStatus.NOT_FOUND,
+          BioSamplesUploadStatus.NOT_FOUND,
           null,
           null,
           false,

@@ -10,16 +10,11 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-import java.util.SortedSet;
-import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.ExposesResourceFor;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.server.ExposesResourceFor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,12 +27,20 @@ import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.ga4gh.phenopacket.PhenopacketConverter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
-import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.service.SampleManipulationService;
+import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
+import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
+
+import javax.servlet.http.HttpServletRequest;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.SortedSet;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and write.
@@ -84,7 +87,7 @@ public class SampleRestController {
   @PreAuthorize("isAuthenticated()")
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-  public Resource<Sample> getSampleHal(
+  public EntityModel<Sample> getSampleHal(
       @PathVariable String accession,
       @RequestParam(name = "legacydetails", required = false) String legacydetails,
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
@@ -176,7 +179,7 @@ public class SampleRestController {
 
   @PreAuthorize("isAuthenticated()")
   @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public Resource<Sample> put(
+  public EntityModel<Sample> put(
       HttpServletRequest request,
       @PathVariable String accession,
       @RequestBody Sample sample,
@@ -280,13 +283,13 @@ public class SampleRestController {
 
     // assemble a resource to return
     // create the response object with the appropriate status
-    return sampleResourceAssembler.toResource(sample);
+    return sampleResourceAssembler.toModel(sample);
   }
 
   /*At this moment this patching is only for structured data*/
   @PreAuthorize("isAuthenticated()")
   @PatchMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public Resource<Sample> patchStructuredData(
+  public EntityModel<Sample> patchStructuredData(
       HttpServletRequest request,
       @PathVariable String accession,
       @RequestBody Sample sample,
@@ -313,7 +316,7 @@ public class SampleRestController {
               sample, webinAccount.getId());
       sample = sampleService.storeSampleStructuredData(sample, authProvider);
 
-      return sampleResourceAssembler.toResource(sample);
+      return sampleResourceAssembler.toModel(sample);
     } else {
       if (sampleService.isNotExistingAccession(accession)
           && !(bioSamplesAapService.isWriteSuperUser()
@@ -326,7 +329,7 @@ public class SampleRestController {
       sample = bioSamplesAapService.handleStructuredDataDomain(sample);
       sample = sampleService.storeSampleStructuredData(sample, authProvider);
 
-      return sampleResourceAssembler.toResource(sample);
+      return sampleResourceAssembler.toModel(sample);
     }
   }
 

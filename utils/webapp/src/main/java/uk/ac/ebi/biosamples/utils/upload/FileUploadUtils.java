@@ -402,7 +402,6 @@ public class FileUploadUtils {
     } catch (final Exception e) {
       log.info("Writing to file has failed " + e.getMessage(), e);
 
-      e.printStackTrace();
       return null;
     }
   }

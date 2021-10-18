@@ -43,6 +43,22 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 @Component
 public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   private static Logger log = LoggerFactory.getLogger(EbEyeBioSamplesDataDumpRunner.class);
+  private static final String[] NON_APPLICABLE_SYNONYMS = {
+    "n/a",
+    "na",
+    "n.a",
+    "none",
+    "unknown",
+    "--",
+    ".",
+    "null",
+    "missing",
+    "not applicable",
+    "not_applicable",
+    "not provided",
+    "not_provided"
+  };
+
   private static final String BIOSAMPLES = "biosamples";
   private static final String MONGO_SAMPLE = "mongoSample";
   private static final String ENA_LC = "ena";
@@ -238,8 +254,8 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     } else {
       getAdditionalFields(sample, entryType, additionalFieldsType);
     }
-    entryType.setAdditionalFields(additionalFieldsType);
 
+    entryType.setAdditionalFields(additionalFieldsType);
     entryType.setDates(getDates(sample));
     entryType.setCrossReferences(getCrossReferences(sample, covidRun));
   }
@@ -340,19 +356,31 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
             attribute -> {
               final FieldType fieldType = new FieldType();
 
-              if (attribute.getType().equals("description")) {
+              final String type = attribute.getType();
+
+              if (type.equals("description")) {
                 entryType.setDescription(attribute.getValue());
               } else {
-                if (attribute.getType().equalsIgnoreCase("host")) {
+                if (type.equalsIgnoreCase("host")) {
                   fieldType.setName(
                       removeOtherSpecialCharactersFromAttributeNames(
                           removeSpacesFromAttributeNames("host_scientific_name")));
                   fieldType.setValue(attribute.getValue());
                   additionalFieldsType.getFieldOrHierarchicalField().add(fieldType);
+                } else if ((type.toLowerCase().equals("collection date"))
+                    || (type.toLowerCase().contains("collection")
+                        && type.toLowerCase().contains("date"))) {
+                  if (attribute.getValue() != null
+                      && isNotApplicableSynonym(attribute.getValue())) {
+                    fieldType.setName(
+                        removeOtherSpecialCharactersFromAttributeNames(
+                            removeSpacesFromAttributeNames("collection_date")));
+                    fieldType.setValue(attribute.getValue());
+                  }
                 } else {
                   fieldType.setName(
                       removeOtherSpecialCharactersFromAttributeNames(
-                          removeSpacesFromAttributeNames(attribute.getType())));
+                          removeSpacesFromAttributeNames(type)));
                   fieldType.setValue(attribute.getValue());
                   additionalFieldsType.getFieldOrHierarchicalField().add(fieldType);
                 }
@@ -366,6 +394,18 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
 
   private String removeOtherSpecialCharactersFromAttributeNames(String type) {
     return type.trim().replaceAll("[^a-zA-Z0-9\\s+_-]", "");
+  }
+
+  public static boolean isNotApplicableSynonym(String string) {
+    String lsString = string.toLowerCase().trim();
+
+    return stringContainsItemFromList(lsString);
+  }
+
+  private static boolean stringContainsItemFromList(String value) {
+    return Arrays.stream(EbEyeBioSamplesDataDumpRunner.NON_APPLICABLE_SYNONYMS)
+        .parallel()
+        .anyMatch(value::equals);
   }
 
   public static Collection<Filter> getDateFiltersCovid(final String from, final String to) {

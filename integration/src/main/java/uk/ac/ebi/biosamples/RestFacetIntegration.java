@@ -17,7 +17,7 @@ import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
@@ -51,7 +51,7 @@ public class RestFacetIntegration extends AbstractIntegration {
     Sample aeSampleTest = getArrayExpressSampleTest();
 
     // put a sample
-    Resource<Sample> resource = client.persistSampleResource(sampleTest1);
+    EntityModel<Sample> resource = client.persistSampleResource(sampleTest1);
     sampleTest1 =
         Sample.Builder.fromSample(sampleTest1)
             .withAccession(resource.getContent().getAccession())

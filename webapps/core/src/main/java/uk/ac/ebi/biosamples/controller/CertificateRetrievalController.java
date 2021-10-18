@@ -14,18 +14,22 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import java.io.IOException;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
+
+import java.io.IOException;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/certificates", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -54,12 +58,12 @@ public class CertificateRetrievalController {
   }
 
   @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<Resources<Resource<String>>> getAllCertificates() {
+  public ResponseEntity<CollectionModel<EntityModel<String>>> getAllCertificates() {
     return ResponseEntity.ok()
         .body(
-            new Resources<>(
+            new CollectionModel<>(
                 certifyService.getAllCertificates().stream()
-                    .map(certificate -> new Resource<>(getGson().toJson(jp.parse(certificate))))
+                    .map(certificate -> new EntityModel(getGson().toJson(jp.parse(certificate))))
                     .collect(Collectors.toList())));
   }
 

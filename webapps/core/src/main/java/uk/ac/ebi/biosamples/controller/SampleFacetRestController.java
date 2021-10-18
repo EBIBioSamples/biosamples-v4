@@ -15,11 +15,11 @@ import java.util.Collections;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.EntityLinks;
-import org.springframework.hateoas.ExposesResourceFor;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.Resources;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.hateoas.server.EntityLinks;
+import org.springframework.hateoas.server.ExposesResourceFor;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -54,7 +54,7 @@ public class SampleFacetRestController {
 
   @CrossOrigin
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<Resources<Facet>> getFacetsHal(
+  public ResponseEntity<CollectionModel<Facet>> getFacetsHal(
       @RequestParam(name = "text", required = false) String text,
       @RequestParam(name = "filter", required = false) String[] filter) {
 
@@ -67,7 +67,7 @@ public class SampleFacetRestController {
     //    	PagedResources<StringListFacet> resources = new PagedResources<>(
     //    			sampleFacets,
     //				new PagedResources.PageMetadata(10, 1, 10, 5));
-    Resources<Facet> resources = new Resources<>(sampleFacets);
+    CollectionModel<Facet> resources = new CollectionModel<>(sampleFacets);
 
     // Links for the entire page
     // this is hacky, but no clear way to do this in spring-hateoas currently
@@ -77,15 +77,15 @@ public class SampleFacetRestController {
     // name
     resources.add(
         LinkUtils.cleanLink(
-            ControllerLinkBuilder.linkTo(
-                    ControllerLinkBuilder.methodOn(SampleFacetRestController.class)
+            WebMvcLinkBuilder.linkTo(
+                    WebMvcLinkBuilder.methodOn(SampleFacetRestController.class)
                         .getFacetsHal(text, filter))
                 .withSelfRel()));
 
     resources.add(
         LinkUtils.cleanLink(
-            ControllerLinkBuilder.linkTo(
-                    ControllerLinkBuilder.methodOn(SamplesRestController.class)
+                WebMvcLinkBuilder.linkTo(
+                        WebMvcLinkBuilder.methodOn(SamplesRestController.class)
                         .searchHal(text, filter, null, null, null, null, null, null))
                 .withRel("samples")));
 

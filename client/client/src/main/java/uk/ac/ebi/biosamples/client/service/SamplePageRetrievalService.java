@@ -19,9 +19,9 @@ import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -41,9 +41,9 @@ public class SamplePageRetrievalService {
   public static final DateTimeFormatter solrFormatter =
       DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 
-  private static final ParameterizedTypeReference<PagedResources<Resource<Sample>>>
+  private static final ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>
       parameterizedTypeReferencePagedResourcesSample =
-          new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {};
+          new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {};
 
   private final Traverson traverson;
   private final ExecutorService executor;
@@ -58,12 +58,12 @@ public class SamplePageRetrievalService {
     this.pageSize = pageSize;
   }
 
-  public PagedResources<Resource<Sample>> search(
+  public PagedModel<EntityModel<Sample>> search(
       String text, Collection<Filter> filters, int page, int size) {
     return search(text, filters, page, size, null);
   }
 
-  public PagedResources<Resource<Sample>> search(
+  public PagedModel<EntityModel<Sample>> search(
       String text, Collection<Filter> filters, int page, int size, String jwt) {
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
     // TODO use shared constants here
@@ -90,9 +90,9 @@ public class SamplePageRetrievalService {
     }
     RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
 
-    ResponseEntity<PagedResources<Resource<Sample>>> responseEntity =
+    ResponseEntity<PagedModel<EntityModel<Sample>>> responseEntity =
         restOperations.exchange(
-            requestEntity, new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {});
+            requestEntity, new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {});
 
     if (!responseEntity.getStatusCode().is2xxSuccessful()) {
       throw new RuntimeException("Problem GETing samples");

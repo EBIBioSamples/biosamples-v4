@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
-import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
+import uk.ac.ebi.biosamples.mongo.util.BioSamplesUploadStatus;
 import uk.ac.ebi.biosamples.service.MessagingService;
 
 @Service
@@ -48,7 +48,7 @@ public class FileQueueService {
         final MongoFileUpload mongoFileUpload =
             new MongoFileUpload(
                 fileId,
-                BioSamplesFileUploadSubmissionStatus.ACTIVE,
+                BioSamplesUploadStatus.ACTIVE,
                 isWebin ? webinId : aapDomain,
                 checklist,
                 isWebin,

@@ -10,16 +10,13 @@
 */
 package uk.ac.ebi.biosamples.client.service;
 
-import java.net.URI;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -30,6 +27,10 @@ import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.model.Sample;
+
+import java.net.URI;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 
 public class SampleCertificationService {
 
@@ -52,7 +53,7 @@ public class SampleCertificationService {
   }
 
   /** @param jwt json web token authorizing access to the domain the sample is assigned to */
-  public Resource<Sample> submit(Sample sample, String jwt) throws RestClientException {
+  public EntityModel<Sample> submit(Sample sample, String jwt) throws RestClientException {
     try {
       return new CertifyCallable(sample, jwt).call();
     } catch (RestClientException e) {
@@ -62,7 +63,7 @@ public class SampleCertificationService {
     }
   }
 
-  private class CertifyCallable implements Callable<Resource<Sample>> {
+  private class CertifyCallable implements Callable<EntityModel<Sample>> {
     private final Sample sample;
     private final String jwt;
 
@@ -72,12 +73,12 @@ public class SampleCertificationService {
     }
 
     @Override
-    public Resource<Sample> call() {
-      PagedResources<Resource<Sample>> pagedSamples =
+    public EntityModel<Sample> call() {
+      PagedModel<EntityModel<Sample>> pagedSamples =
           traverson
               .follow("samples")
-              .toObject(new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {});
-      Link sampleLink = pagedSamples.getLink("sample");
+              .toObject(new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {});
+      Link sampleLink = pagedSamples.getLink("sample").get();
 
       if (sampleLink == null) {
         log.warn("Problem handling page " + pagedSamples);
@@ -100,12 +101,12 @@ public class SampleCertificationService {
 
       RequestEntity<Sample> requestEntity = bodyBuilder.body(sample);
 
-      ResponseEntity<Resource<Sample>> responseEntity;
+      ResponseEntity<EntityModel<Sample>> responseEntity;
 
       try {
         responseEntity =
             restOperations.exchange(
-                requestEntity, new ParameterizedTypeReference<Resource<Sample>>() {});
+                requestEntity, new ParameterizedTypeReference<EntityModel<Sample>>() {});
       } catch (RestClientResponseException e) {
         log.error(
             "Unable to PUT to "

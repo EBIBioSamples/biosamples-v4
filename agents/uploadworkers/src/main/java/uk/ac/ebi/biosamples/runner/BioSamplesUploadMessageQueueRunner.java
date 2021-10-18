@@ -20,7 +20,7 @@ import uk.ac.ebi.biosamples.MessageUtils;
 import uk.ac.ebi.biosamples.Messaging;
 
 @Component
-public class BioSamplesFileUploadMessageQueueRunner implements ApplicationRunner {
+public class BioSamplesUploadMessageQueueRunner implements ApplicationRunner {
   private Logger log = LoggerFactory.getLogger(this.getClass());
 
   @Autowired private MessageUtils messageUtils;

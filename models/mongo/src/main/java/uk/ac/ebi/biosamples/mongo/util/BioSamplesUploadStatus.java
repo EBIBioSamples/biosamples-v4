@@ -10,7 +10,7 @@
 */
 package uk.ac.ebi.biosamples.mongo.util;
 
-public enum BioSamplesFileUploadSubmissionStatus {
+public enum BioSamplesUploadStatus {
   ACTIVE,
   FAILED,
   COMPLETED,

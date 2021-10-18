@@ -13,14 +13,6 @@ package uk.ac.ebi.biosamples.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import javax.validation.Valid;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +32,14 @@ import uk.ac.ebi.biosamples.service.upload.FileQueueService;
 import uk.ac.ebi.biosamples.service.upload.FileUploadService;
 import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
 import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
 @Controller
 @RequestMapping("/upload")
@@ -66,9 +66,9 @@ public class FileUploadController {
   @PostMapping
   public ResponseEntity<byte[]> upload(
       @RequestParam("file") final MultipartFile file,
-      @Valid final String hiddenAapDomain,
-      @Valid final String hiddenCertificate,
-      @Valid final String webinAccount)
+      final String hiddenAapDomain,
+      final String hiddenCertificate,
+      final String webinAccount)
       throws IOException {
     final FileUploadUtils fileUploadUtils = new FileUploadUtils();
 

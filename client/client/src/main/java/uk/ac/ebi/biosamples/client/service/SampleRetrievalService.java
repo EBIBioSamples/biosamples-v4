@@ -10,24 +10,12 @@
 */
 package uk.ac.ebi.biosamples.client.service;
 
-import java.net.URI;
-import java.time.format.DateTimeFormatter;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.hateoas.client.Traverson.TraversalBuilder;
@@ -39,6 +27,14 @@ import org.springframework.web.client.RestOperations;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 
+import java.net.URI;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+
 public class SampleRetrievalService {
 
   private final Logger log = LoggerFactory.getLogger(getClass());
@@ -46,9 +42,9 @@ public class SampleRetrievalService {
   public static final DateTimeFormatter solrFormatter =
       DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 
-  private static final ParameterizedTypeReference<PagedResources<Resource<Sample>>>
+  private static final ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>
       parameterizedTypeReferencePagedResourcesSample =
-          new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {};
+          new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {};
 
   private final Traverson traverson;
   private final ExecutorService executor;
@@ -64,20 +60,20 @@ public class SampleRetrievalService {
   /**
    * This will get an existing sample from biosamples using the accession
    *
-   * @param sample
+   * @param accession
    * @return
    */
-  public Future<Optional<Resource<Sample>>> fetch(
+  public Future<Optional<EntityModel<Sample>>> fetch(
       String accession, Optional<List<String>> curationDomains) {
     return executor.submit(new FetchCallable(accession, curationDomains));
   }
 
-  public Future<Optional<Resource<Sample>>> fetch(
+  public Future<Optional<EntityModel<Sample>>> fetch(
       String accession, Optional<List<String>> curationDomains, String jwt) {
     return executor.submit(new FetchCallable(accession, curationDomains, jwt));
   }
 
-  public Future<Optional<Resource<Sample>>> fetch(
+  public Future<Optional<EntityModel<Sample>>> fetch(
       String accession,
       Optional<List<String>> curationDomains,
       String jwt,
@@ -85,7 +81,7 @@ public class SampleRetrievalService {
     return executor.submit(new FetchCallable(accession, curationDomains, jwt, staticView));
   }
 
-  private class FetchCallable implements Callable<Optional<Resource<Sample>>> {
+  private class FetchCallable implements Callable<Optional<EntityModel<Sample>>> {
 
     private final String accession;
     private final Optional<List<String>> curationDomains;
@@ -118,7 +114,7 @@ public class SampleRetrievalService {
     }
 
     @Override
-    public Optional<Resource<Sample>> call() throws Exception {
+    public Optional<EntityModel<Sample>> call() throws Exception {
 
       URI uri;
 
@@ -154,11 +150,11 @@ public class SampleRetrievalService {
       }
       RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
 
-      ResponseEntity<Resource<Sample>> responseEntity = null;
+      ResponseEntity<EntityModel<Sample>> responseEntity = null;
       try {
         responseEntity =
             restOperations.exchange(
-                requestEntity, new ParameterizedTypeReference<Resource<Sample>>() {});
+                requestEntity, new ParameterizedTypeReference<EntityModel<Sample>>() {});
       } catch (HttpStatusCodeException e) {
         if (e.getStatusCode().equals(HttpStatus.FORBIDDEN)
             || e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
@@ -173,15 +169,15 @@ public class SampleRetrievalService {
     }
   }
 
-  public Iterable<Optional<Resource<Sample>>> fetchAll(Iterable<String> accessions) {
+  public Iterable<Optional<EntityModel<Sample>>> fetchAll(Iterable<String> accessions) {
     return new IterableResourceFetch(accessions);
   }
 
-  public Iterable<Optional<Resource<Sample>>> fetchAll(Iterable<String> accessions, String jwt) {
+  public Iterable<Optional<EntityModel<Sample>>> fetchAll(Iterable<String> accessions, String jwt) {
     return new IterableResourceFetch(accessions);
   }
 
-  private class IterableResourceFetch implements Iterable<Optional<Resource<Sample>>> {
+  private class IterableResourceFetch implements Iterable<Optional<EntityModel<Sample>>> {
 
     private final Iterable<String> accessions;
     private final String jwt;
@@ -197,14 +193,14 @@ public class SampleRetrievalService {
     }
 
     @Override
-    public Iterator<Optional<Resource<Sample>>> iterator() {
+    public Iterator<Optional<EntityModel<Sample>>> iterator() {
       return new IteratorResourceFetch(accessions.iterator());
     }
 
-    private class IteratorResourceFetch implements Iterator<Optional<Resource<Sample>>> {
+    private class IteratorResourceFetch implements Iterator<Optional<EntityModel<Sample>>> {
 
       private final Iterator<String> accessions;
-      private final Queue<Future<Optional<Resource<Sample>>>> queue = new LinkedList<>();
+      private final Queue<Future<Optional<EntityModel<Sample>>>> queue = new LinkedList<>();
       // TODO application property this
       private final int queueMaxSize = 1000;
 
@@ -223,7 +219,7 @@ public class SampleRetrievalService {
       }
 
       @Override
-      public Optional<Resource<Sample>> next() {
+      public Optional<EntityModel<Sample>> next() {
         if (!hasNext()) {
           throw new NoSuchElementException();
         }
@@ -236,7 +232,7 @@ public class SampleRetrievalService {
         }
 
         // get the end of the queue and wait for it to finish if needed
-        Future<Optional<Resource<Sample>>> future = queue.poll();
+        Future<Optional<EntityModel<Sample>>> future = queue.poll();
         // this shouldn't happen, but best to check
         if (future == null) {
           throw new NoSuchElementException();

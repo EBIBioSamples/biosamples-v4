@@ -10,16 +10,12 @@
 */
 package uk.ac.ebi.biosamples.client.service;
 
-import java.net.URI;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -30,6 +26,11 @@ import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.model.Sample;
+
+import java.net.URI;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 public class SampleGroupSubmissionService {
   private static final Logger LOGGER = LoggerFactory.getLogger(SampleGroupSubmissionService.class);
@@ -50,7 +51,7 @@ public class SampleGroupSubmissionService {
    * @param jwt json web token authorizing access to the domain the sample is assigned to
    * @return sample wrapped in resource
    */
-  public Resource<Sample> submit(Sample sample, String jwt) throws RestClientException {
+  public EntityModel<Sample> submit(Sample sample, String jwt) throws RestClientException {
     try {
       return new SubmitCallable(sample, jwt).call();
     } catch (RestClientException e) {
@@ -65,12 +66,12 @@ public class SampleGroupSubmissionService {
    * @param jwt json web token authorizing access to the domain the sample is assigned to
    * @return sample wrapped in resource
    */
-  public Future<Resource<Sample>> submitAsync(Sample sample, String jwt)
+  public Future<EntityModel<Sample>> submitAsync(Sample sample, String jwt)
       throws RestClientException {
     return executor.submit(new SubmitCallable(sample, jwt));
   }
 
-  private class SubmitCallable implements Callable<Resource<Sample>> {
+  private class SubmitCallable implements Callable<EntityModel<Sample>> {
     private final Sample sample;
     private final String jwt;
 
@@ -80,7 +81,7 @@ public class SampleGroupSubmissionService {
     }
 
     @Override
-    public Resource<Sample> call() throws Exception {
+    public EntityModel<Sample> call() throws Exception {
       boolean update = sample.getAccession() != null;
 
       Link sampleLink = traverson.follow("groups").asLink();
@@ -94,11 +95,11 @@ public class SampleGroupSubmissionService {
       }
       RequestEntity<Sample> requestEntity = bodyBuilder.body(sample);
 
-      ResponseEntity<Resource<Sample>> responseEntity;
+      ResponseEntity<EntityModel<Sample>> responseEntity;
       try {
         responseEntity =
             restOperations.exchange(
-                requestEntity, new ParameterizedTypeReference<Resource<Sample>>() {});
+                requestEntity, new ParameterizedTypeReference<EntityModel<Sample>>() {});
       } catch (RestClientResponseException e) {
         LOGGER.error(
             "Failed to persist sample group, uri: {}, body: {}, response: {}",

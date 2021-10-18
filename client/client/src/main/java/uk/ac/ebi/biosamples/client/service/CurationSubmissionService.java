@@ -10,13 +10,11 @@
 */
 package uk.ac.ebi.biosamples.client.service;
 
-import java.net.URI;
-import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.HttpHeaders;
@@ -26,6 +24,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 import uk.ac.ebi.biosamples.model.CurationLink;
+
+import java.net.URI;
+import java.util.concurrent.ExecutorService;
 
 public class CurationSubmissionService {
 
@@ -42,12 +43,12 @@ public class CurationSubmissionService {
     this.executor = executor;
   }
 
-  public Resource<CurationLink> submit(CurationLink curationLink, boolean isWebin)
+  public EntityModel<CurationLink> submit(CurationLink curationLink, boolean isWebin)
       throws RestClientException {
     return persistCuration(curationLink, null, isWebin);
   }
 
-  public Resource<CurationLink> persistCuration(
+  public EntityModel<CurationLink> persistCuration(
       CurationLink curationLink, String jwt, boolean isWebin) throws RestClientException {
     String addWebinRequestParam = "";
 
@@ -76,9 +77,9 @@ public class CurationSubmissionService {
     }
     RequestEntity<CurationLink> requestEntity = bodyBuilder.body(curationLink);
 
-    ResponseEntity<Resource<CurationLink>> responseEntity =
+    ResponseEntity<EntityModel<CurationLink>> responseEntity =
         restOperations.exchange(
-            requestEntity, new ParameterizedTypeReference<Resource<CurationLink>>() {});
+            requestEntity, new ParameterizedTypeReference<EntityModel<CurationLink>>() {});
 
     return responseEntity.getBody();
   }
