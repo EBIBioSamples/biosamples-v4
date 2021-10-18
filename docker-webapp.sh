@@ -43,6 +43,7 @@ echo "checking neo4j is up"
 
 #configure solr
 curl http://localhost:8983/solr/samples/config -H 'Content-type:application/json' -d'{"set-property" : {"updateHandler.autoCommit.maxTime":1000, "updateHandler.autoCommit.openSearcher":"true", "updateHandler.autoSoftCommit.maxDocs":1, "query.documentCache.size":1024, "query.filterCache.size":1024, "query.filterCache.autowarmCount":128, "query.queryResultCache.size":1024, "query.queryResultCache.autowarmCount":128}}'
+#curl http://localhost:8983/solr/samples/config -H 'Content-type:application/json' -d'{"add-initparams" : {"name" : "my-init", "path" : "/select,/browse", "defaults":{ "df":"full_text_search autocomplete_ss" ,"q.op":"OR"}}}'
 
 #profile any queries that take longer than 100 ms
 docker-compose run --rm mongo mongo --eval 'db.setProfilingLevel(1)' mongo:27017/biosamples

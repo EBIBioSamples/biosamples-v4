@@ -122,13 +122,21 @@ public class SolrSampleService {
       searchTerm = "*:*";
     }
     // build a query out of the users string and any facets
-    Query query = new SimpleQuery(searchTerm);
+    Query query = new SimpleQuery("keywords_ss:" + searchTerm);
     query.addProjectionOnField(new SimpleField("id"));
 
     // boosting accession to bring accession matches to the top
     Criteria boostId = new Criteria("id").is(searchTerm).boost((float) 5);
     boostId.setPartIsOr(true);
     query.addCriteria(boostId);
+
+    Criteria autocompleteSearch = new Criteria("autocomplete_ss").is(searchTerm);
+    autocompleteSearch.setPartIsOr(true);
+    query.addCriteria(autocompleteSearch);
+
+    Criteria keywordsSearch = new Criteria("keywords_ss").is(searchTerm);
+    keywordsSearch.setPartIsOr(true);
+    query.addCriteria(keywordsSearch);
 
     Optional<FilterQuery> publicFilterQuery = solrFilterService.getPublicFilterQuery(domains);
     publicFilterQuery.ifPresent(query::addFilterQuery);

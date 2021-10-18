@@ -121,6 +121,10 @@ public class SolrSample {
   @Indexed(name = "keywords_ss")
   protected List<String> keywords;
 
+  /** Used for full text search and should be configured as df (default field) in Solr */
+  @Indexed(name = "full_text_search")
+  protected List<String> fullTextSearch;
+
   public SolrSample() {}
 
   public String getAccession() {
@@ -185,6 +189,10 @@ public class SolrSample {
 
   public List<String> getKeywords() {
     return keywords;
+  }
+
+  public List<String> getFullTextSearch() {
+    return fullTextSearch;
   }
 
   @Override
@@ -297,6 +305,10 @@ public class SolrSample {
 
     sample.keywords = new ArrayList<>();
     sample.keywords.addAll(keywords);
+
+    sample.fullTextSearch = new ArrayList<>();
+    sample.fullTextSearch.addAll(sample.autocompleteTerms);
+    sample.fullTextSearch.addAll(sample.keywords);
 
     return sample;
   }
