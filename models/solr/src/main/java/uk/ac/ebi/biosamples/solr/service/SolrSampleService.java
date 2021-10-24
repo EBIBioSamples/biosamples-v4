@@ -72,10 +72,11 @@ public class SolrSampleService {
       String searchTerm,
       Collection<Filter> filters,
       Collection<String> domains,
+      String webinSubmissionAccountId,
       Pageable pageable) {
     Page<SolrSample> result;
     try {
-      Query query = buildQuery(searchTerm, filters, domains);
+      Query query = buildQuery(searchTerm, filters, domains, webinSubmissionAccountId);
       query.setPageRequest(pageable);
       query.setTimeAllowed(TIMEALLOWED * 1000);
       // return the samples from solr that match the query
@@ -84,7 +85,7 @@ public class SolrSampleService {
       // If it is not possible to use the search as a filter treat search string as text
       String escapedSearchTerm =
           searchTerm == null ? null : ClientUtils.escapeQueryChars(searchTerm);
-      Query query = buildQuery(escapedSearchTerm, filters, domains);
+      Query query = buildQuery(escapedSearchTerm, filters, domains, webinSubmissionAccountId);
       query.setPageRequest(pageable);
       query.setTimeAllowed(TIMEALLOWED * 1000);
       // return the samples from solr that match the query
@@ -106,16 +107,17 @@ public class SolrSampleService {
       String searchTerm,
       Collection<Filter> filters,
       Collection<String> domains,
+      String webinSubmissionAccountId,
       String cursorMark,
       int size) {
-    Query query = buildQuery(searchTerm, filters, domains);
+    Query query = buildQuery(searchTerm, filters, domains, webinSubmissionAccountId);
     query.addSort(new Sort("id")); // this must match the field in solr
 
     return solrSampleRepository.findByQueryCursorMark(query, cursorMark, size);
   }
 
   private Query buildQuery(
-      String searchTerm, Collection<Filter> filters, Collection<String> domains) {
+      String searchTerm, Collection<Filter> filters, Collection<String> domains, String webinSubmissionAccountId) {
 
     // default to search all
     if (searchTerm == null || searchTerm.trim().length() == 0) {
@@ -130,7 +132,7 @@ public class SolrSampleService {
     boostId.setPartIsOr(true);
     query.addCriteria(boostId);
 
-    Optional<FilterQuery> publicFilterQuery = solrFilterService.getPublicFilterQuery(domains);
+    Optional<FilterQuery> publicFilterQuery = solrFilterService.getPublicFilterQuery(domains, webinSubmissionAccountId);
     publicFilterQuery.ifPresent(query::addFilterQuery);
 
     Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
@@ -154,7 +156,7 @@ public class SolrSampleService {
 
     // filter out non-public
     Optional<FilterQuery> publicSampleFilterQuery =
-        solrFilterService.getPublicFilterQuery(Collections.EMPTY_LIST);
+        solrFilterService.getPublicFilterQuery(Collections.EMPTY_LIST, null);
     publicSampleFilterQuery.ifPresent(query::addFilterQuery);
 
     query.setPageRequest(new PageRequest(0, 1));

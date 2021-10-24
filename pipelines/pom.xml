@@ -40,5 +40,8 @@
 		<module>neoexport</module>
 		<module>clearinghouse</module>
 		<module>sample-transformation-dtol</module>
+		<module>ena</module>
+		<module>ncbi</module>
+		<module>ebeye-search-export</module>
 	</modules>
 </project>

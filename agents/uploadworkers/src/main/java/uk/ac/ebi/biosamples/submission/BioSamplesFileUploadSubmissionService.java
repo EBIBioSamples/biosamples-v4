@@ -96,7 +96,7 @@ public class BioSamplesFileUploadSubmissionService {
       final BufferedReader reader = new BufferedReader(fr);
 
       final CSVParser csvParser = fileUploadUtils.buildParser(reader);
-      final List<Multimap<String, String>> csvDataMap = fileUploadUtils.getCSVDataInMap(csvParser);
+      final List<Multimap<String, String>> csvDataMap = fileUploadUtils.getISATABDataInMap(csvParser);
 
       log.info("CSV data size: " + csvDataMap.size());
 

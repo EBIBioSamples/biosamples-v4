@@ -85,7 +85,7 @@ public class FileUploadService {
       validateHeaderPositions(headers);
 
       final List<Multimap<String, String>> csvDataMap =
-          this.fileUploadUtils.getCSVDataInMap(csvParser);
+          fileUploadUtils.getISATABDataInMap(csvParser);
       final int numSamples = csvDataMap.size();
 
       log.info("CSV data size: " + numSamples);
@@ -94,7 +94,7 @@ public class FileUploadService {
         log.info("File sample count exceeds limits - queueing file for async submission");
         final String submissionId = fileQueueService.queueFile(file, aapDomain, checklist, webinId);
 
-        return this.fileUploadUtils.writeQueueMessageToFile(submissionId);
+        return fileUploadUtils.writeQueueMessageToFile(submissionId);
       }
 
       final List<Sample> samples =
@@ -106,7 +106,7 @@ public class FileUploadService {
       validationResult.addValidationMessage(persistenceMessage);
       log.info("Final message: " + String.join("\n", validationResult.getValidationMessagesList()));
 
-      return this.fileUploadUtils.writeToFile(fileToBeUploaded, headers, samples, validationResult);
+      return fileUploadUtils.writeToFile(fileToBeUploaded, headers, samples, validationResult);
     } catch (final Exception e) {
       final String messageForBsdDevTeam =
           "********FEEDBACK TO BSD DEV TEAM START********"
