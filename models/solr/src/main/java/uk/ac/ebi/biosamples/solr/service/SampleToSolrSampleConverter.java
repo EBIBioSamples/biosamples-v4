@@ -13,6 +13,7 @@ package uk.ac.ebi.biosamples.solr.service;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,14 +48,17 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
     Map<String, List<String>> externalReferencesData = new HashMap<>();
     List<String> keywords = new ArrayList<>();
 
+    attributeValues.put(SolrFieldService.encodeFieldName("name"), Collections.singletonList(sample.getName().toLowerCase()));
+    attributeValues.put(SolrFieldService.encodeFieldName("accession"), Collections.singletonList(sample.getAccession().toLowerCase()));
+
     if (sample.getCharacteristics() != null && sample.getCharacteristics().size() > 0) {
 
       for (Attribute attr : sample.getCharacteristics()) {
 
-        final String key = SolrFieldService.encodeFieldName(attr.getType());
+        final String key = SolrFieldService.encodeFieldName(attr.getType().toLowerCase());
         // key = SolrSampleService.attributeTypeToField(key);
 
-        String value = attr.getValue();
+        String value = attr.getValue().toLowerCase();
         // if its longer than 255 characters, don't add it to solr
         // solr cant index long things well, and its probably not useful for search
         if (value.length() > 255) {
@@ -70,6 +74,9 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
           value = value + " (" + attr.getUnit() + ")";
         }
         attributeValues.get(key).add(value);
+//        if (!value.equals(value.toLowerCase())) {
+//          attributeValues.get(key).add(value.toLowerCase());
+//        }
 
         // TODO this can't differentiate which iris go with which attribute if there
         // are multiple attributes with the same type
@@ -152,7 +159,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
         if (!outgoingRelationships.containsKey(key)) {
           outgoingRelationships.put(key, new ArrayList<>());
         }
-        outgoingRelationships.get(key).add(rel.getTarget());
+        outgoingRelationships.get(key).add(rel.getTarget().toLowerCase());
       }
     }
 
@@ -166,7 +173,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
         if (!incomingRelationships.containsKey(key)) {
           incomingRelationships.put(key, new ArrayList<>());
         }
-        incomingRelationships.get(key).add(rel.getSource());
+        incomingRelationships.get(key).add(rel.getSource().toLowerCase());
       }
     }
 
@@ -197,9 +204,9 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
             });
 
     return SolrSample.build(
-        sample.getName(),
+        sample.getName().toLowerCase(),
         sample.getAccession(),
-        sample.getDomain(),
+        sample.getDomain().toLowerCase(),
         releaseSolr,
         updateSolr,
         null,
