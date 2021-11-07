@@ -76,6 +76,7 @@ public class CurationApplicationService {
         sample.getReviewed(),
         attributes,
         sample.getData(),
+        sample.getStructuredData(),
         sample.getRelationships(),
         externalReferences,
         sample.getOrganizations(),

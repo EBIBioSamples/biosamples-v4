@@ -1,8 +1,12 @@
 package uk.ac.ebi.biosamples.model.structured;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class StructuredDataTable {
   private String domain;
@@ -75,5 +79,11 @@ public class StructuredDataTable {
     }
 
     return type.equalsIgnoreCase(other.type);
+  }
+
+  public SortedSet<String> getHeaders() {
+    SortedSet<String> headers = new TreeSet<>();
+    content.forEach(row -> headers.addAll(row.keySet()));
+    return headers;
   }
 }

@@ -52,28 +52,28 @@ import java.util.Set;
 public class StructuredDataService {
   private static final Logger log = LoggerFactory.getLogger(StructuredDataService.class);
 
-  private final SampleService sampleService;
+  private final MongoSampleRepository mongoSampleRepository;
   private final MongoStructuredDataRepository mongoStructuredDataRepository;
   private final MongoStructuredDataToStructuredDataConverter mongoStructuredDataToStructuredDataConverter;
   private final StructuredDataToMongoStructuredDataConverter structuredDataToMongoStructuredDataConverter;
 
-  public StructuredDataService(SampleService sampleService,
+  public StructuredDataService(MongoSampleRepository mongoSampleRepository,
                                MongoStructuredDataRepository mongoStructuredDataRepository,
                                MongoStructuredDataToStructuredDataConverter mongoStructuredDataToStructuredDataConverter,
                                StructuredDataToMongoStructuredDataConverter structuredDataToMongoStructuredDataConverter) {
-    this.sampleService = sampleService;
+    this.mongoSampleRepository = mongoSampleRepository;
     this.mongoStructuredDataRepository = mongoStructuredDataRepository;
     this.mongoStructuredDataToStructuredDataConverter = mongoStructuredDataToStructuredDataConverter;
     this.structuredDataToMongoStructuredDataConverter = structuredDataToMongoStructuredDataConverter;
   }
 
-  public StructuredData getStructuredData(String accession) {
+  public Optional<StructuredData> getStructuredData(String accession) {
     MongoStructuredData mongoData = mongoStructuredDataRepository.findOne(accession);
     if (mongoData == null) {
-      throw new SampleNotFoundException();
+      return Optional.empty();
     }
 
-    return mongoStructuredDataToStructuredDataConverter.convert(mongoData);
+    return Optional.of(mongoStructuredDataToStructuredDataConverter.convert(mongoData));
   }
 
   public StructuredData saveStructuredData(StructuredData structuredData) {
@@ -96,7 +96,7 @@ public class StructuredDataService {
   }
 
   private void validate(StructuredData structuredData) {
-    if (structuredData.getAccession() == null || sampleService.isNotExistingAccession(structuredData.getAccession())) {
+    if (structuredData.getAccession() == null || !isExistingAccession(structuredData.getAccession())) {
       log.info("Structured data validation failed: Misisng accession {}", structuredData.getAccession());
       throw new SampleValidationException("Missing accession. Structured data should have an accession");
     }
@@ -112,6 +112,10 @@ public class StructuredDataService {
         throw new SampleValidationException("Empty structured data type. Type must be specified.");
       }
     });
+  }
+
+  private boolean isExistingAccession(String accession) {
+    return mongoSampleRepository.findOne(accession) != null;
   }
 
 }

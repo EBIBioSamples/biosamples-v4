@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.exception.SampleAccessionMismatchException;
+import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.StructuredDataService;
@@ -64,7 +65,8 @@ public class StructuredDataRestController {
       throw new SampleAccessionMismatchException();
     }
 
-    return new Resource<>(structuredDataService.getStructuredData(accession));
+    return new Resource<>(structuredDataService.getStructuredData(accession)
+                                               .orElseThrow(() -> new SampleNotFoundException()));
   }
 
   @PreAuthorize("isAuthenticated()")
