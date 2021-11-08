@@ -59,7 +59,8 @@ public class StructuredDataRestController {
     this.structuredDataService = structuredDataService;
   }
 
-  @GetMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
+  @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping()
   public Resource<StructuredData> get(@PathVariable String accession) {
     if (accession == null || accession.isEmpty()) {
       throw new SampleAccessionMismatchException();

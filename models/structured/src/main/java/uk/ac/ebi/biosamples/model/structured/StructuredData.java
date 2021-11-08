@@ -1,11 +1,21 @@
 package uk.ac.ebi.biosamples.model.structured;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
+import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
+
 import java.time.Instant;
+import java.util.Objects;
 import java.util.Set;
 
 public class StructuredData {
   protected String accession;
+  @JsonSerialize(using = CustomInstantSerializer.class)
+  @JsonDeserialize(using = CustomInstantDeserializer.class)
   protected Instant create;
+  @JsonSerialize(using = CustomInstantSerializer.class)
+  @JsonDeserialize(using = CustomInstantDeserializer.class)
   protected Instant update;
   protected Set<StructuredDataTable> data;
 
@@ -44,5 +54,27 @@ public class StructuredData {
     structuredData.update = update;
     structuredData.data = data;
     return structuredData;
+  }
+
+  @Override
+  public boolean equals(Object object) {
+    if (object instanceof StructuredData) {
+      StructuredData o = (StructuredData) object;
+      if (accession.equals(o.getAccession())) {
+        return data.equals(o.getData());
+      }
+    }
+
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(accession, data);
+  }
+
+  @Override
+  public String toString() {
+    return "{ StructuredData: { accession: " + accession + "}}";
   }
 }

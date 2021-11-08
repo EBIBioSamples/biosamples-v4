@@ -40,5 +40,6 @@
 		<module>neoexport</module>
 		<module>clearinghouse</module>
 		<module>sample-transformation-dtol</module>
+		<module>structured-data-migration</module>
 	</modules>
 </project>
