@@ -36,7 +36,7 @@ public class FileUploadUtils {
   public static final String WEBIN_AUTH = "WEBIN";
   public static final String AAP = "AAP";
 
-  public List<Multimap<String, String>> getCSVDataInMap(final CSVParser csvParser)
+  public List<Multimap<String, String>> getISATABDataInMap(final CSVParser csvParser)
       throws IOException {
     final List<Multimap<String, String>> csvDataMap = new ArrayList<>();
     final List<String> headers = csvParser.getHeaderNames();
@@ -140,6 +140,7 @@ public class FileUploadUtils {
 
   public List<Contact> handleContacts(final Multimap<String, String> multiMap) {
     final List<Contact> contactList = new ArrayList<>();
+    final Contact.Builder contactBuilder = new Contact.Builder();
 
     multiMap
         .entries()
@@ -148,18 +149,66 @@ public class FileUploadUtils {
               final String entryKey = entry.getKey();
               final String entryValue = entry.getValue();
 
-              log.trace(entryKey + " " + entryValue);
+              if (entryKey.startsWith("Comment[submission_contact:")) {
+                if (entryKey.contains("email")) {
+                  contactBuilder.email(entryValue).build();
+                }
 
-              if (entryKey.startsWith("Comment") && entryKey.contains("submission_contact")) {
-                contactList.add(new Contact.Builder().email(entry.getValue()).build());
+                if (entryKey.contains("name")) {
+                  contactBuilder.name(entryValue).build();
+                }
+
+                if (entryKey.contains("affiliation")) {
+                  contactBuilder.affiliation(entryValue).build();
+                }
+
+                if (entryKey.contains("role")) {
+                  contactBuilder.role(entryValue).build();
+                }
+
+                if (entryKey.contains("url")) {
+                  contactBuilder.url(entryValue).build();
+                }
               }
             });
+    contactList.add(contactBuilder.build());
 
     return contactList;
   }
 
-  public List<Publication> handlePublications(Multimap<String, String> multiMap) {
+  public List<Publication> handlePublications(final Multimap<String, String> multiMap) {
+    final List<String> publicationDois = handlePublicationDois(multiMap);
+    final List<String> publicationPubMedIds = handlePublicationPubMedIds(multiMap);
     final List<Publication> publicationList = new ArrayList<>();
+
+    final int pubMedSize = publicationPubMedIds.size();
+    final int doiSize = publicationDois.size();
+
+    if (pubMedSize >= doiSize) {
+      for (int iter = 0; iter < pubMedSize; iter++) {
+        publicationList.add(buildPublication(publicationDois, publicationPubMedIds, iter));
+      }
+    } else {
+      for (int iter = 0; iter < doiSize; iter++) {
+        publicationList.add(buildPublication(publicationDois, publicationPubMedIds, iter));
+      }
+    }
+
+    return publicationList;
+  }
+
+  private Publication buildPublication(
+      List<String> publicationDois, List<String> publicationPubMedIds, int iter) {
+    final Publication.Builder publicationBuilder = new Publication.Builder();
+
+    publicationBuilder.pubmed_id(publicationPubMedIds.get(iter));
+    publicationBuilder.doi(publicationDois.get(iter));
+
+    return publicationBuilder.build();
+  }
+
+  private List<String> handlePublicationPubMedIds(Multimap<String, String> multiMap) {
+    final List<String> pubMedIds = new ArrayList<>();
 
     multiMap
         .entries()
@@ -168,14 +217,34 @@ public class FileUploadUtils {
               final String entryKey = entry.getKey();
               final String entryValue = entry.getValue();
 
-              log.trace(entryKey + " " + entryValue);
-
-              if (entryKey.startsWith("Comment") && entryKey.contains("publication")) {
-                publicationList.add(new Publication.Builder().pubmed_id(entry.getValue()).build());
+              if (entryKey.startsWith("Comment[publication:")) {
+                if (entryKey.contains("pubmed_id")) {
+                  pubMedIds.add((entryValue != null && !entryValue.isEmpty()) ? entryValue : "");
+                }
               }
             });
 
-    return publicationList;
+    return pubMedIds;
+  }
+
+  private List<String> handlePublicationDois(Multimap<String, String> multiMap) {
+    final List<String> dois = new ArrayList<>();
+
+    multiMap
+        .entries()
+        .forEach(
+            entry -> {
+              final String entryKey = entry.getKey();
+              final String entryValue = entry.getValue();
+
+              if (entryKey.startsWith("Comment[publication:")) {
+                if (entryKey.contains("doi")) {
+                  dois.add((entryValue != null && !entryValue.isEmpty()) ? entryValue : "");
+                }
+              }
+            });
+
+    return dois;
   }
 
   public String getSampleAccession(final Multimap<String, String> multiMap) {

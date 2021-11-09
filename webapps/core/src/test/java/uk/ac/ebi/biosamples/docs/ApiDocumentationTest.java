@@ -148,6 +148,7 @@ public class ApiDocumentationTest {
             any(String.class),
             anyCollectionOf(Filter.class),
             anyCollectionOf(String.class),
+            any(String.class),
             isA(Pageable.class),
             any(String.class),
             any()))
