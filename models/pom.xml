@@ -30,5 +30,6 @@
 		<module>neo4j</module>
 		<module>curami</module>
 		<module>security</module>
+		<module>common</module>
 	</modules>
 </project>

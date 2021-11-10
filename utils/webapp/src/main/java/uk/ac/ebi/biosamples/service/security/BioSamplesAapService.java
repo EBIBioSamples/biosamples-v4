@@ -30,6 +30,7 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
@@ -270,6 +271,21 @@ public class BioSamplesAapService {
     if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) return sample;
     else if (isDomainValid.get()) return sample;
     else throw new StructuredDataNotAccessibleException();
+  }
+
+  public void handleStructuredDataDomain(StructuredData structuredData) {
+    final Set<String> usersDomains = getDomains();
+    if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
+      return;
+    }
+
+    structuredData.getData().forEach(data -> {
+      if (data.getDomain() == null) {
+        throw new StructuredDataDomainMissingException();
+      } else if (!usersDomains.contains(data.getDomain())) {
+        throw new SampleDomainMismatchException();
+      }
+    });
   }
 
   /**

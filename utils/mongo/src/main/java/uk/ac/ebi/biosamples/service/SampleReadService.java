@@ -21,10 +21,14 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.StaticViewWrapper;
+import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+import uk.ac.ebi.biosamples.mongo.model.MongoStructuredData;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
+import uk.ac.ebi.biosamples.mongo.repo.MongoStructuredDataRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoInverseRelationshipService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
+import uk.ac.ebi.biosamples.mongo.service.MongoStructuredDataToStructuredDataConverter;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 
 /**
@@ -45,6 +49,8 @@ public class SampleReadService {
 
   private final CurationReadService curationReadService;
   private final MongoInverseRelationshipService mongoInverseRelationshipService;
+  private final MongoStructuredDataRepository mongoStructuredDataRepository;
+  private final MongoStructuredDataToStructuredDataConverter mongoStructuredDataToStructuredDataConverter;
 
   private final ExecutorService executorService;
 
@@ -53,11 +59,15 @@ public class SampleReadService {
       MongoSampleToSampleConverter mongoSampleToSampleConverter,
       CurationReadService curationReadService,
       MongoInverseRelationshipService mongoInverseRelationshipService,
+      MongoStructuredDataRepository mongoStructuredDataRepository,
+      MongoStructuredDataToStructuredDataConverter mongoStructuredDataToStructuredDataConverter,
       BioSamplesProperties bioSamplesProperties) {
     this.mongoSampleRepository = mongoSampleRepository;
     this.mongoSampleToSampleConverter = mongoSampleToSampleConverter;
     this.curationReadService = curationReadService;
     this.mongoInverseRelationshipService = mongoInverseRelationshipService;
+    this.mongoStructuredDataRepository = mongoStructuredDataRepository;
+    this.mongoStructuredDataToStructuredDataConverter = mongoStructuredDataToStructuredDataConverter;
     executorService =
         AdaptiveThreadPoolExecutor.create(
             10000,
@@ -135,6 +145,13 @@ public class SampleReadService {
       //            mongoSample =
       // mongoInverseRelationshipService.addInverseRelationships(mongoSample);
       sample = mongoSampleToSampleConverter.convert(mongoSample);
+    }
+
+    //todo add structured data
+    MongoStructuredData mongoStructuredData = mongoStructuredDataRepository.findOne(accession);
+    if (mongoStructuredData != null) {
+      StructuredData structuredData = mongoStructuredDataToStructuredDataConverter.convert(mongoStructuredData);
+      sample = Sample.Builder.fromSample(sample).withStructuredData(structuredData.getData()).build();
     }
 
     return sample == null ? Optional.empty() : Optional.of(sample);

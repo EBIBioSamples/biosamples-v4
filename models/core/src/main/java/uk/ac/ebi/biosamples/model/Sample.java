@@ -31,6 +31,8 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.model.structured.StructuredData;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.service.CharacteristicDeserializer;
 import uk.ac.ebi.biosamples.service.CharacteristicSerializer;
 import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
@@ -71,6 +73,7 @@ public class Sample implements Comparable<Sample> {
 
   protected SortedSet<Attribute> attributes;
   protected SortedSet<AbstractData> data;
+  protected Set<StructuredDataTable> structuredData;
   protected SortedSet<Relationship> relationships;
   protected SortedSet<ExternalReference> externalReferences;
 
@@ -210,6 +213,11 @@ public class Sample implements Comparable<Sample> {
   @JsonProperty("data")
   public SortedSet<AbstractData> getData() {
     return data;
+  }
+
+  @JsonProperty("structuredData")
+  public Set<StructuredDataTable> getStructuredData() {
+    return structuredData;
   }
 
   @JsonProperty("relationships")
@@ -457,6 +465,7 @@ public class Sample implements Comparable<Sample> {
         reviewed,
         attributes,
         null,
+        null,
         relationships,
         externalReferences,
         null,
@@ -492,6 +501,7 @@ public class Sample implements Comparable<Sample> {
         reviewed,
         attributes,
         null,
+        null,
         relationships,
         externalReferences,
         null,
@@ -520,7 +530,8 @@ public class Sample implements Comparable<Sample> {
           Instant reviewed,
       @JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class)
           Collection<Attribute> attributes,
-      @JsonProperty("data") Collection<AbstractData> structuredData,
+      @JsonProperty("data") Collection<AbstractData> data,
+      @JsonProperty("structuredData") Collection<StructuredDataTable> structuredData,
       @JsonProperty("relationships") Collection<Relationship> relationships,
       @JsonProperty("externalReferences") Collection<ExternalReference> externalReferences,
       @JsonProperty("organization") Collection<Organization> organizations,
@@ -594,8 +605,12 @@ public class Sample implements Comparable<Sample> {
     }
 
     sample.data = new TreeSet<>();
+    if (data != null) {
+      sample.data.addAll(data);
+    }
+    sample.structuredData = new HashSet<>();
     if (structuredData != null) {
-      sample.data.addAll(structuredData);
+      sample.structuredData.addAll(structuredData);
     }
 
     if (submittedVia != null) {
@@ -631,6 +646,7 @@ public class Sample implements Comparable<Sample> {
     protected SortedSet<Publication> publications = new TreeSet<>();
     protected SortedSet<Certificate> certificates = new TreeSet<>();
     protected Set<AbstractData> data = new TreeSet<>();
+    protected Set<StructuredDataTable> structuredData = new HashSet<>();
 
     public Builder(String name, String accession) {
       this.name = name;
@@ -753,6 +769,15 @@ public class Sample implements Comparable<Sample> {
         this.data = new TreeSet<>(data);
       } else {
         this.data = new TreeSet<>();
+      }
+      return this;
+    }
+
+    public Builder withStructuredData(Set<StructuredDataTable> structuredData) {
+      if (structuredData != null) {
+        this.structuredData = structuredData;
+      } else {
+        this.structuredData = new HashSet<>();
       }
       return this;
     }
@@ -932,6 +957,11 @@ public class Sample implements Comparable<Sample> {
       return this;
     }
 
+    public Builder withNoStructuredData() {
+      structuredData = new HashSet<>();
+      return this;
+    }
+
     public Builder withNoExternalReferences() {
       this.externalReferences = new TreeSet<>();
       return this;
@@ -965,6 +995,7 @@ public class Sample implements Comparable<Sample> {
           reviewed,
           attributes,
           data,
+          structuredData,
           relationships,
           externalReferences,
           organizations,
@@ -1005,6 +1036,7 @@ public class Sample implements Comparable<Sample> {
           .withReviewed(sample.getReviewed())
           .withAttributes(sample.getAttributes())
           .withData(sample.getData())
+          .withStructuredData(sample.getStructuredData())
           .withRelationships(sample.getRelationships())
           .withExternalReferences(sample.getExternalReferences())
           .withOrganizations(sample.getOrganizations())
