@@ -41,5 +41,8 @@
 		<module>clearinghouse</module>
 		<module>sample-transformation-dtol</module>
 		<module>structured-data-migration</module>
+		<module>ena</module>
+		<module>ncbi</module>
+		<module>ebeye-search-export</module>
 	</modules>
 </project>

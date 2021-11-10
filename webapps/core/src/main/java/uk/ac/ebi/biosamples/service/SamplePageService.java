@@ -76,12 +76,13 @@ public class SamplePageService {
       String text,
       Collection<Filter> filters,
       Collection<String> domains,
+      String webinSubmissionAccountId,
       Pageable pageable,
       String curationRepo,
       Optional<List<String>> curationDomains) {
     long startTime = System.nanoTime();
     Page<SolrSample> pageSolrSample =
-        solrSampleService.fetchSolrSampleByText(text, filters, domains, pageable);
+        solrSampleService.fetchSolrSampleByText(text, filters, domains, webinSubmissionAccountId, pageable);
     long endTime = System.nanoTime();
     log.trace("Got solr page in " + ((endTime - startTime) / 1000000) + "ms");
 
@@ -117,6 +118,7 @@ public class SamplePageService {
       String text,
       Collection<Filter> filters,
       Collection<String> domains,
+      String webinSubmissionAccountId,
       String cursorMark,
       int size,
       String curationRepo,
@@ -125,7 +127,7 @@ public class SamplePageService {
     size = validatePageSize(size);
 
     CursorArrayList<SolrSample> cursorSolrSample =
-        solrSampleService.fetchSolrSampleByText(text, filters, domains, cursorMark, size);
+        solrSampleService.fetchSolrSampleByText(text, filters, domains, webinSubmissionAccountId, cursorMark, size);
 
     StaticViewWrapper.StaticView staticViews =
         StaticViewWrapper.getStaticView(domains.isEmpty() ? null : domains, curationRepo);

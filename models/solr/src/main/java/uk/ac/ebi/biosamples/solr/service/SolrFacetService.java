@@ -67,7 +67,7 @@ public class SolrFacetService {
 
     // Add domains and release date filters
     Optional<FilterQuery> domainAndPublicFilterQuery =
-        solrFilterService.getPublicFilterQuery(domains);
+        solrFilterService.getPublicFilterQuery(domains, null);
     domainAndPublicFilterQuery.ifPresent(query::addFilterQuery);
 
     // Add all the provided filters
@@ -148,7 +148,7 @@ public class SolrFacetService {
 
     // Add domains and release date filters
     Optional<FilterQuery> domainAndPublicFilterQuery =
-        solrFilterService.getPublicFilterQuery(domains);
+        solrFilterService.getPublicFilterQuery(domains, null);
     domainAndPublicFilterQuery.ifPresent(query::addFilterQuery);
 
     // Add all the provided filters
@@ -261,7 +261,7 @@ public class SolrFacetService {
 
     // Add domains and release date filters
     Optional<FilterQuery> domainAndPublicFilterQuery =
-        solrFilterService.getPublicFilterQuery(domains);
+        solrFilterService.getPublicFilterQuery(domains, null);
     domainAndPublicFilterQuery.ifPresent(query::addFilterQuery);
 
     // Add all the provided filters
