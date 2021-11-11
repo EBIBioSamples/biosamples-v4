@@ -35,13 +35,13 @@ public class FileQueueService {
   @Autowired private MessagingService messagingService;
   @Autowired private MongoFileUploadRepository mongoFileUploadRepository;
 
-  public String queueFile(
+  public String queueFileinMongoAndSendMessageToRabbitMq(
       final MultipartFile file,
       final String aapDomain,
       final String checklist,
       final String webinId) {
     try {
-      final String fileId = persistUploadedFile(file);
+      final String fileId = persistUploadedFileInMongo(file);
       final boolean isWebin = webinId != null && !webinId.isEmpty();
 
       if (fileId != null) {
@@ -70,7 +70,7 @@ public class FileQueueService {
     }
   }
 
-  public String persistUploadedFile(final MultipartFile file) throws IOException {
+  public String persistUploadedFileInMongo(final MultipartFile file) throws IOException {
     final DBObject metaData = new BasicDBObject();
 
     metaData.put("upload_timestamp", new Date());
