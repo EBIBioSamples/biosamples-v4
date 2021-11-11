@@ -123,10 +123,42 @@ code[class^="language"] {
    text-justify: inter-character;
 }
 
+.home-example-card {
+    border: 1px solid #8f8f8f;
+    padding: 8px;
+    text-overflow: ellipsis;
+    /*position: relative;*/
+}
+
+.home-example-card:hover {
+    border: 1px solid black;
+}
+
+.home-example-card-content {
+    height: 300px;
+}
+
 .data-content-search {
     text-align: center;
-    background: #cccccc;
+    background: #006b70;
+    color: #ffffff;
+    margin: 5px 15px;
 }
+
+.data-content-search a,
+.data-content-search a:link,
+.data-content-search a:hover,
+.data-content-search a:active,
+.data-content-search a:visited {
+    text-decoration: none;
+    background: #006b70;
+    color: white;
+    padding: 5px;
+    text-align: center;
+    display: inline-block;
+    border: 1px solid #006b70;
+}
+
 
 .data-content-img {
     margin: auto;
