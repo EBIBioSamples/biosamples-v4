@@ -15,27 +15,32 @@ import java.io.InputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.gridfs.GridFsCriteria;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.BioSamplesSubmissionFile;
+import uk.ac.ebi.biosamples.model.SubmissionFile;
 
 @Service
-public class BioSamplesFileUploadDataRetrievalService {
+public class FileUploadStorageService {
   @Autowired private GridFsTemplate gridFsTemplate;
 
-  public BioSamplesSubmissionFile getFile(final String submissionId) throws IllegalStateException {
+  public SubmissionFile getFile(final String submissionId) throws IllegalStateException {
     final GridFSDBFile file =
         gridFsTemplate.findOne(
             new Query().addCriteria(Criteria.where("_id").is(submissionId)).limit(1));
 
     if (file != null) {
       final InputStream fileStream = file.getInputStream();
-      final BioSamplesSubmissionFile bioSamplesSubmissionFile =
-          new BioSamplesSubmissionFile(file.getFilename(), fileStream);
+      final SubmissionFile submissionFile =
+          new SubmissionFile(file.getFilename(), fileStream);
 
-      return bioSamplesSubmissionFile;
+      return submissionFile;
     }
 
     return null;
+  }
+
+  public void deleteFile(final String submissionId) throws IllegalStateException {
+    gridFsTemplate.delete(new Query().addCriteria(Criteria.where("_id").is(submissionId)).limit(1));
   }
 }
