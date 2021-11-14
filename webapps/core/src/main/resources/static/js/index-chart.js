@@ -1,4 +1,21 @@
 function drawCharts() {
+  let url = "http://localhost:8090/";
+  let yearlyRecords;
+
+  let yearlyGrowthUrl = url + "/stat/sample/growth";
+  fetch(yearlyGrowthUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+    // body: JSON.stringify(data)
+  })
+    .then(response => response.json())
+    .then(data =>  {
+      yearlyRecords = data;
+      console.log(data)
+    });
+
   const labels = ['2016', '2017', '2018', '2019', '2020', '2021'];
   const data = [6, 7, 9, 11, 15, 20];
   drawYearlySamples(labels, data);
@@ -10,8 +27,8 @@ function drawCharts() {
 }
 
 function drawYearlySamples(labels, data) {
-  const ctx = document.getElementById('myChart').getContext('2d');
-  const myChart = new Chart(ctx, {
+  const ctx = document.getElementById('yearly-growth-chart').getContext('2d');
+  const yearlyGrowthChart = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: labels,
@@ -39,10 +56,10 @@ function drawYearlySamples(labels, data) {
 }
 
 function drawOrganismPieChart(chartLabels, chartData) {
-  var canvas = document.getElementById("myChart2");
-  var ctx2 = canvas.getContext('2d');
+  let canvas = document.getElementById("organism-distribution-chart");
+  let ctx = canvas.getContext('2d');
 
-  var data = {
+  let data = {
     labels: chartLabels,
     datasets: [
       {
@@ -56,7 +73,6 @@ function drawOrganismPieChart(chartLabels, chartData) {
           '#733232',
           '#737373'],
         data: chartData,
-// Notice the borderColor
         borderColor:	['black'],
         borderWidth: [1,1]
       }
@@ -64,18 +80,17 @@ function drawOrganismPieChart(chartLabels, chartData) {
   };
 
   // Notice the rotation from the documentation.
-  var options = {
+  let options = {
     responsive: false,
     title: {
       display: true,
-      text: 'What happens when you lend your favorite t-shirt to a girl ?',
+      text: 'BioSamples Organims Distribution',
       position: 'bottom'
     },
     rotation: -0.7 * Math.PI
   };
 
-  // Chart declaration:
-  var myBarChart = new Chart(ctx2, {
+  let organismChart = new Chart(ctx, {
     type: 'pie',
     data: data,
     options: options

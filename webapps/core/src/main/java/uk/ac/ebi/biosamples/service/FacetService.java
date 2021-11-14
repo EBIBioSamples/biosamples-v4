@@ -39,6 +39,16 @@ public class FacetService {
       Collection<String> domains,
       int noOfFacets,
       int noOfFacetValues) {
+    return getFacets(text, filters, domains, noOfFacets, noOfFacetValues, null);
+  }
+
+  public List<Facet> getFacets(
+      String text,
+      Collection<Filter> filters,
+      Collection<String> domains,
+      int noOfFacets,
+      int noOfFacetValues,
+      String facetField) {
     Pageable facetPageable = new PageRequest(0, noOfFacets);
     Pageable facetValuePageable = new PageRequest(0, noOfFacetValues);
     // TODO if a facet is enabled as a filter, then that value will be the only filter displayed
@@ -49,7 +59,7 @@ public class FacetService {
     String escapedText = text == null ? null : ClientUtils.escapeQueryChars(text);
     List<Facet> facets =
         solrFacetService.getFacets(
-            escapedText, filters, domains, facetPageable, facetValuePageable);
+            escapedText, filters, domains, facetPageable, facetValuePageable, facetField);
     long endTime = System.nanoTime();
     log.trace("Got solr facets in " + ((endTime - startTime) / 1000000) + "ms");
 

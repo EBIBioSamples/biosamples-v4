@@ -627,3 +627,15 @@ code[class^="language"] {
 .login-button{
     float: right;
 }
+
+#yearly-growth-chart-wrapper {
+    margin: 0 auto;
+}
+
+#organism-distribution-chart-wrapper {
+    margin: 0 auto;
+}
+
+.home-charts {
+    margin: 0 auto;
+}

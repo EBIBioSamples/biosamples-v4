@@ -44,5 +44,6 @@
 		<module>ena</module>
 		<module>ncbi</module>
 		<module>ebeye-search-export</module>
+		<module>analytics</module>
 	</modules>
 </project>
