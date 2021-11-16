@@ -19,7 +19,6 @@ maven-package:
     - 'mvn -e deploy -P embl-ebi -s ci_settings.xml'
     - mkdir deployment
     - cp webapps/core/target/webapps-core-*.war deployment/webapps-core.war
-    - cp webapps/core/target/generated-snippets/* deployment/generated-snippets/
     - cp agents/solr/target/agents-solr-*.jar deployment/agents-solr.jar
     - cp agents/uploadworkers/target/agents-uploadworkers-*.jar deployment/agents-uploadworkers.jar
     - cp pipelines/clearinghouse/target/pipelines-clearinghouse-*.jar deployment/pipelines-clearinghouse.jar
