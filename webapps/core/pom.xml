@@ -251,7 +251,7 @@
 				<executions>
 					<execution>
 						<id>output-html</id>
-						<phase>package</phase>
+						<phase>prepare-package</phase>
 						<goals>
 							<goal>process-asciidoc</goal>
 						</goals>
