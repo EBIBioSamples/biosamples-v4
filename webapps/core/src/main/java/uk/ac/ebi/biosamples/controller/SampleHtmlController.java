@@ -87,22 +87,22 @@ public class SampleHtmlController {
   @GetMapping(value = "/")
   public String index(Model model) {
 
-    String jsonStats;
-    String jsonYearlyGrowth;
-    try {
-      ObjectMapper mapper = new ObjectMapper();
-      jsonStats = mapper.writeValueAsString(statService.getStats());
-      jsonYearlyGrowth = mapper.writeValueAsString(statService.getBioSamplesYearlyGrowth());
-    } catch (JsonProcessingException e) {
-      jsonStats = "{}";
-      jsonYearlyGrowth = "{}";
-    }
+//    String jsonStats;
+//    String jsonYearlyGrowth;
+//    try {
+//      ObjectMapper mapper = new ObjectMapper();
+//      jsonStats = mapper.writeValueAsString(statService.getStats());
+//      jsonYearlyGrowth = mapper.writeValueAsString(statService.getBioSamplesYearlyGrowth());
+//    } catch (JsonProcessingException e) {
+//      jsonStats = "{}";
+//      jsonYearlyGrowth = "{}";
+//    }
 
 
     JsonLDDataCatalog dataCatalog = jsonLDService.getBioSamplesDataCatalog();
     model.addAttribute("jsonLD", jsonLDService.jsonLDToString(dataCatalog));
-    model.addAttribute("stats", jsonStats);
-    model.addAttribute("yearlyGrowth", jsonYearlyGrowth);
+//    model.addAttribute("stats", jsonStats);
+//    model.addAttribute("yearlyGrowth", jsonYearlyGrowth);
     return "index";
   }
 
