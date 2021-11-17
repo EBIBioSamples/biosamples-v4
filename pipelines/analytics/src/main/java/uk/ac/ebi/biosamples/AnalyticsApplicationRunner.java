@@ -22,6 +22,7 @@ import uk.ac.ebi.biosamples.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleAnalytics;
 import uk.ac.ebi.biosamples.model.facet.Facet;
+import uk.ac.ebi.biosamples.model.facet.content.LabelCountEntry;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountListContent;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.repo.MongoCurationRuleRepository;
@@ -86,6 +87,7 @@ public class AnalyticsApplicationRunner implements ApplicationRunner {
     addToFacets("organism", sampleAnalytics);
     addToFacets("tissue", sampleAnalytics);
     addToFacets("sex", sampleAnalytics);
+    addToFacets("external reference", sampleAnalytics);
 
 
     Instant endTime = Instant.now();
@@ -102,11 +104,17 @@ public class AnalyticsApplicationRunner implements ApplicationRunner {
     List<Facet> facetList = facetService.getFacets("", Collections.emptyList(), Collections.emptyList(), 1, 10, facetField);
     for (Facet facet : facetList) {
       String label = facet.getLabel();
+      Long totalCount = facet.getCount();
+      Long existingFacetSum = 0L;
       Map<String, Map<String, Long>> facetListMap = sampleAnalytics.getFacets();
       if (facet.getContent() instanceof LabelCountListContent) {
         Map<String, Long> facetMap = new HashMap<>();
         facetListMap.put(label, facetMap);
-        ((LabelCountListContent) facet.getContent()).forEach(e -> facetMap.put(e.getLabel(), e.getCount()));
+        for (LabelCountEntry e : (LabelCountListContent) facet.getContent()) {
+          facetMap.put(e.getLabel(), e.getCount());
+          existingFacetSum += e.getCount();
+        }
+        facetMap.put("other", totalCount - existingFacetSum);
       }
     }
   }

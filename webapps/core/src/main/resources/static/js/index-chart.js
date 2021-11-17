@@ -1,29 +1,24 @@
-function drawCharts() {
-  let url = "http://localhost:8090/";
-  let yearlyRecords;
+function drawCharts(stats, yearlyGrowth) {
+  console.log(stats);
+  console.log(yearlyGrowth);
 
-  let yearlyGrowthUrl = url + "/stat/sample/growth";
-  fetch(yearlyGrowthUrl, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json'
-    }
-    // body: JSON.stringify(data)
-  })
-    .then(response => response.json())
-    .then(data =>  {
-      yearlyRecords = data;
-      console.log(data)
-    });
+  let growthLabels = [];
+  let grwothData = [];
+  for (const k in yearlyGrowth) {
+    growthLabels.push(k);
+    grwothData.push(yearlyGrowth[k]);
+  }
+  drawYearlySamples(growthLabels, grwothData);
 
-  const labels = ['2016', '2017', '2018', '2019', '2020', '2021'];
-  const data = [6, 7, 9, 11, 15, 20];
-  drawYearlySamples(labels, data);
+  let organismLabels = [];
+  let organimsData = [];
+  let organismFacets = stats['sampleAnalytics']['facets']['organism'];
+  for (const k in organismFacets) {
+    organismLabels.push(k);
+    organimsData.push(organismFacets[k]);
+  }
+  drawOrganismPieChart(organismLabels, organimsData);
 
-  const chartLables = ["Homo Sapiens", "Severe acute respiratory syndrome coronavirus 2", "Mus musculus", "human gut metagenome", "soil metagenome", "metagenome", "other"];
-  // const chartData = [30, 15, 10, 8, 5, 2, 30];
-  const chartData = [7318661, 2326920, 2326920, 383267, 362051, 246320, 8000000];
-  drawOrganismPieChart(chartLables, chartData);
 }
 
 function drawYearlySamples(labels, data) {
@@ -33,7 +28,7 @@ function drawYearlySamples(labels, data) {
     data: {
       labels: labels,
       datasets: [{
-        label: 'Number of samples in the database',
+        label: 'Number of samples (millions) ',
         data: data,
         backgroundColor: [
           '#007c8229'

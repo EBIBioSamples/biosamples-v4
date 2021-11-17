@@ -48,6 +48,11 @@ public class AnalyticsService {
     return analyticsRepository.findMongoAnalyticsByIdBetween(startString, endString);
   }
 
+
+  public MongoAnalytics getLatestAnalytics() {
+    return analyticsRepository.findFirstByOrderByCollectionDateDesc();
+  }
+
   public void mergeSampleAnalytics(Instant runTime, SampleAnalytics sampleAnalytics) {
     String pipelineRunDate = getApproximateRunDateAsString(runTime);
     LOG.info("Saving sample types for date: {}", pipelineRunDate);

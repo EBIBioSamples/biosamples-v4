@@ -27,6 +27,15 @@ public class StatController {
   @GetMapping(
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
+  @RequestMapping("/basic")
+  public MongoAnalytics getFacets() {
+    return statService.getStats();
+  }
+
+  @CrossOrigin
+  @GetMapping(
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   @RequestMapping("/facets")
   public List<Facet> getFacets(
       @RequestParam(name = "text", required = false) String text,

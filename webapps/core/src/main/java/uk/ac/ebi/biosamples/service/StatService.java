@@ -35,6 +35,12 @@ public class StatService {
     this.solrFieldService = solrFieldService;
   }
 
+  public MongoAnalytics getStats() {
+    MongoAnalytics mongoAnalytics = analyticsService.getLatestAnalytics();
+    return mongoAnalytics;
+  }
+
+
   public Map<String, Integer> getBasicStat() {
     Map<String, Integer> statMap = new HashMap<>();
     statMap.put("totalSampleCount", 0);
@@ -63,13 +69,13 @@ public class StatService {
   //this is not ideal, but we have hardcoded the data growth in this function
   public Map<String, Integer> getBioSamplesYearlyGrowth() {
     Map<String, Integer> growthMap = new HashMap<>();
-    growthMap.put("2015", 100);
-    growthMap.put("2016", 200);
-    growthMap.put("2017", 500);
-    growthMap.put("2018", 1000);
-    growthMap.put("2019", 2000);
-    growthMap.put("2020", 5000);
-    growthMap.put("2021", 8000);
+    growthMap.put("2015", 3);
+    growthMap.put("2016", 4);
+    growthMap.put("2017", 7);
+    growthMap.put("2018", 9);
+    growthMap.put("2019", 12);
+    growthMap.put("2020", 15);
+    growthMap.put("2021", 20);
     return growthMap;
   }
 

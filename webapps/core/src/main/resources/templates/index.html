@@ -16,7 +16,7 @@
 	<script th:if="${jsonLD != null}" type="application/ld+json" th:utext="${jsonLD}"> </script>
 </head>
 
-<body th:onload="|drawCharts()|">
+<body th:onload="|drawCharts(${stats}, ${yearlyGrowth})|">
 <!--<body>-->
 	<th:block th:include="fragments/header :: header"></th:block>
 	<div layout:fragment="content" id="content" >
@@ -47,11 +47,13 @@
 			<div class="row">
 				<div id="sample-curation-graph" class="medium-12 large-6 columns">
 					<div id="yearly-growth-chart-wrapper">
+						<div class="home-chart-title">sample growth</div>
 						<canvas id="yearly-growth-chart" width="450" height="320" class="home-charts"></canvas>
 					</div>
 				</div>
 				<div id="sample-type-chart" class="medium-12 large-6 columns">
 					<div id="organism-distribution-chart-wrapper">
+						<div class="home-chart-title">organism distribution</div>
 						<canvas id="organism-distribution-chart" width="450" height="300" class="home-charts"></canvas>
 					</div>
 				</div>
