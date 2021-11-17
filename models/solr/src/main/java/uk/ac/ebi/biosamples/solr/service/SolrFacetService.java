@@ -129,7 +129,8 @@ public class SolrFacetService {
       Collection<Filter> filters,
       Collection<String> domains,
       Pageable facetFieldPageInfo,
-      Pageable facetValuesPageInfo) {
+      Pageable facetValuesPageInfo,
+      String facetField) {
     boolean isLandingPage = false;
     // default to search all
     if (searchTerm == null || searchTerm.trim().length() == 0) {
@@ -156,16 +157,16 @@ public class SolrFacetService {
     optionalFilter.ifPresent(query::addFilterQuery);
 
     List<Entry<SolrSampleField, Long>> allFacetFields =
-        getFacetFields(facetFieldPageInfo, query, isLandingPage);
+        getFacetFields(facetFieldPageInfo, query, isLandingPage, facetField);
 
-    List<Entry<SolrSampleField, Long>> rangeFacetFields =
-        FacetHelper.RANGE_FACETING_FIELDS.stream()
-            .map(
-                s ->
-                    new SimpleEntry<>(
-                        this.solrFieldService.decodeField(s + FacetHelper.get_encoding_suffix(s)),
-                        0L))
-            .collect(Collectors.toList());
+    List<Entry<SolrSampleField, Long>> rangeFacetFields = Collections.emptyList();
+    if (facetField == null) {
+      FacetHelper.RANGE_FACETING_FIELDS.stream()
+                                       .map(s -> new SimpleEntry<>(
+                                           this.solrFieldService.decodeField(
+                                               s + FacetHelper.get_encoding_suffix(s)), 0L))
+                                       .collect(Collectors.toList());
+    }
 
     if (!allFacetFields.isEmpty()) {
       allFacetFields
@@ -184,13 +185,26 @@ public class SolrFacetService {
     return facets;
   }
 
+  public List<Facet> getFacets(
+      String searchTerm,
+      Collection<Filter> filters,
+      Collection<String> domains,
+      Pageable facetFieldPageInfo,
+      Pageable facetValuesPageInfo) {
+
+    return getFacets(searchTerm, filters, domains, facetFieldPageInfo, facetValuesPageInfo, null);
+  }
+
   private List<Entry<SolrSampleField, Long>> getFacetFields(
-      Pageable facetFieldPageInfo, FacetQuery query, boolean isLandingPage) {
+      Pageable facetFieldPageInfo, FacetQuery query, boolean isLandingPage, String facetField) {
     int facetLimit = 10;
     List<Entry<SolrSampleField, Long>> allFacetFields;
 
     // short-circuit for landing search page
-    if (isLandingPage) {
+    if (facetField != null) {
+      allFacetFields = Collections.singletonList(new SimpleEntry<>(solrFieldService.decodeField(
+          SolrFieldService.encodeFieldName(facetField) + FacetHelper.get_encoding_suffix(facetField)), 0L));
+    } else if (isLandingPage) {
       allFacetFields =
           FacetHelper.FACETING_FIELDS.stream()
               .limit(facetLimit)

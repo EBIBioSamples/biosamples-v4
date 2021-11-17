@@ -17,6 +17,9 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +61,7 @@ public class SampleHtmlController {
   private final JsonLDService jsonLDService;
   private final FacetService facetService;
   private final FilterService filterService;
+  private final StatService statService;
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesProperties bioSamplesProperties;
 
@@ -67,6 +71,7 @@ public class SampleHtmlController {
       JsonLDService jsonLDService,
       FacetService facetService,
       FilterService filterService,
+      StatService statService,
       BioSamplesAapService bioSamplesAapService,
       BioSamplesProperties bioSamplesProperties) {
     this.sampleService = sampleService;
@@ -74,6 +79,7 @@ public class SampleHtmlController {
     this.jsonLDService = jsonLDService;
     this.facetService = facetService;
     this.filterService = filterService;
+    this.statService = statService;
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesProperties = bioSamplesProperties;
   }
@@ -81,8 +87,22 @@ public class SampleHtmlController {
   @GetMapping(value = "/")
   public String index(Model model) {
 
+//    String jsonStats;
+//    String jsonYearlyGrowth;
+//    try {
+//      ObjectMapper mapper = new ObjectMapper();
+//      jsonStats = mapper.writeValueAsString(statService.getStats());
+//      jsonYearlyGrowth = mapper.writeValueAsString(statService.getBioSamplesYearlyGrowth());
+//    } catch (JsonProcessingException e) {
+//      jsonStats = "{}";
+//      jsonYearlyGrowth = "{}";
+//    }
+
+
     JsonLDDataCatalog dataCatalog = jsonLDService.getBioSamplesDataCatalog();
     model.addAttribute("jsonLD", jsonLDService.jsonLDToString(dataCatalog));
+//    model.addAttribute("stats", jsonStats);
+//    model.addAttribute("yearlyGrowth", jsonYearlyGrowth);
     return "index";
   }
 
