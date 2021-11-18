@@ -103,7 +103,7 @@ public class BioSamplesWebinAuthenticationService {
         final Optional<Sample> oldSample = getOldSample(sample);
 
         if (webinId.equalsIgnoreCase(
-            biosamplesClientWebinUsername)) { // ENA pipeline submissions or super user submission
+            biosamplesClientWebinUsername)) { // ENA pipeline submissions or super user submission (via FILE UPLOADER)
           if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
             if (oldSample.isPresent()
                 && !sample

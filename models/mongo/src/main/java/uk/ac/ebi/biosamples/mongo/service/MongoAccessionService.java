@@ -135,7 +135,7 @@ public class MongoAccessionService {
     while (itCandidate.hasNext()) {
       String accessionCandidate = itCandidate.next();
       if (mongoSampleRepository.exists(accessionCandidate)) {
-        log.warn("Removing accession " + accessionCandidate + " from queue because now assigned");
+        log.debug("Removing accession " + accessionCandidate + " from queue because now assigned");
         itCandidate.remove();
       }
     }

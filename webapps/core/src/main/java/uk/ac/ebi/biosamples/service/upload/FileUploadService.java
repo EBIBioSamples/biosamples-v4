@@ -50,6 +50,8 @@ public class FileUploadService {
 
   @Autowired private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
 
+  @Autowired private BioSamplesAapService bioSamplesAapService;
+
   @Autowired private MongoFileUploadRepository mongoFileUploadRepository;
 
   @Autowired private FileQueueService fileQueueService;
@@ -285,24 +287,24 @@ public class FileUploadService {
         sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinId);
       } else {
         sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
-        // sample = bioSamplesAapService.handleSampleDomain(sample);
+        sample = bioSamplesAapService.handleSampleDomain(sample);
       }
 
       return sample;
     } catch (final Exception e) {
       if (e instanceof BioSamplesWebinAuthenticationService.SampleNotAccessibleException) {
         validationResult.addValidationMessage(
-                "Sample " + sample.getName() + " is not accessible by your user");
+                "Sample " + sample.getName() + " is not accessible for you");
       } else if (e
               instanceof BioSamplesWebinAuthenticationService.WebinUserLoginUnauthorizedException) {
         validationResult.addValidationMessage(
                 "Sample " + sample.getName() + " not persisted as WEBIN user is not authorized");
       } else if (e instanceof BioSamplesAapService.SampleDomainMismatchException) {
         validationResult.addValidationMessage(
-                "Sample " + sample.getName() + " is not accessible by your user");
+                "Sample " + sample.getName() + " is not accessible for you");
       } else if (e instanceof BioSamplesAapService.SampleNotAccessibleException) {
         validationResult.addValidationMessage(
-                "Sample " + sample.getName() + " is not accessible by your user");
+                "Sample " + sample.getName() + " is not accessible for you");
       } else {
         validationResult.addValidationMessage("General auth error, please retry");
       }
