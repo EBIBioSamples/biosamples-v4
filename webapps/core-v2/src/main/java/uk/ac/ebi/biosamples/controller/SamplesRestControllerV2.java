@@ -16,6 +16,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -49,6 +50,8 @@ public class SamplesRestControllerV2 {
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final SchemaValidationService schemaValidationService;
   private final ENATaxonClientService enaTaxonClientService;
+
+  private final int maxThreads = 10;
 
   public SamplesRestControllerV2(
       final SampleServiceV2 sampleService,
@@ -182,50 +185,66 @@ public class SamplesRestControllerV2 {
       @RequestBody List<Sample> samples,
       @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
           final String authProvider) {
-    log.debug("Received POST for bulk accessioning of " + samples.size() + " samples");
+    log.info("Received POST for bulk accessioning of " + samples.size() + " samples");
 
-    samples.forEach(
-        sample -> {
-          if (sample.hasAccession()) {
-            throw new SampleWithAccessionSubmissionExceptionV2();
-          }
-        });
+    try {
+      samples.forEach(
+              sample -> {
+                if (sample.hasAccession()) {
+                  throw new SampleWithAccessionSubmissionExceptionV2();
+                }
+              });
 
-    if (authProvider.equalsIgnoreCase("WEBIN")) {
-      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
-      final Authentication authentication = bearerTokenExtractor.extract(request);
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService
-              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-              .getBody();
-
-      samples =
-          samples.stream()
-              .map(
-                  sample ->
-                      bioSamplesWebinAuthenticationService.getSampleWithWebinSubmissionAccountId(
-                          sample, webinAccount.getId()))
-              .collect(Collectors.toList());
-    } else {
-      if (samples.size() > 0) {
-        Sample firstSample = samples.get(0);
-        firstSample = bioSamplesAapService.handleSampleDomain(firstSample);
-
-        final Sample finalFirstSample = firstSample;
+      if (authProvider.equalsIgnoreCase("WEBIN")) {
+        final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
+        final Authentication authentication = bearerTokenExtractor.extract(request);
+        final SubmissionAccount webinAccount =
+                bioSamplesWebinAuthenticationService
+                        .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+                        .getBody();
 
         samples =
-            samples.stream()
-                .map(
-                    sample ->
-                        Sample.Builder.fromSample(sample)
-                            .withDomain(finalFirstSample.getDomain())
-                            .withNoWebinSubmissionAccountId()
-                            .build())
-                .collect(Collectors.toList());
-      }
-    }
+                samples.stream()
+                        .map(
+                                sample ->
+                                        bioSamplesWebinAuthenticationService.getSampleWithWebinSubmissionAccountId(
+                                                sample, webinAccount.getId()))
+                        .collect(Collectors.toList());
+      } else {
+        if (samples.size() > 0) {
+          Sample firstSample = samples.get(0);
+          firstSample = bioSamplesAapService.handleSampleDomain(firstSample);
 
-    final List<Sample> createdSamplesList =
+          final Sample finalFirstSample = firstSample;
+
+          samples =
+                  samples.stream()
+                          .map(
+                                  sample ->
+                                          Sample.Builder.fromSample(sample)
+                                                  .withDomain(finalFirstSample.getDomain())
+                                                  .withNoWebinSubmissionAccountId()
+                                                  .build())
+                          .collect(Collectors.toList());
+        }
+      }
+
+      final ExecutorService executor = Executors.newFixedThreadPool(maxThreads);
+      final List<Future<Sample>> sampleFutures = samples.stream().map(sample -> executor.submit(new SamplePersistence(sample, authProvider))).collect(Collectors.toList());
+
+      log.info("Number of samples created " + sampleFutures.size());
+
+      final Map<String, String> outputMap = sampleFutures.stream().map(sampleFuture -> {
+        try {
+          return sampleFuture.get();
+        } catch (InterruptedException | ExecutionException e) {
+          log.info("Exception here " + e.getMessage());
+        }
+
+        return null;
+      }).filter(Objects::nonNull).collect(Collectors.toMap(Sample::getName, Sample::getAccession));
+
+    /*final List<Sample> createdSamplesList =
         samples.stream()
             .map(
                 sample -> {
@@ -238,13 +257,60 @@ public class SamplesRestControllerV2 {
     final Map<String, String> outputMap =
         createdSamplesList.stream()
             .filter(Objects::nonNull)
-            .collect(Collectors.toMap(Sample::getName, Sample::getAccession));
+            .collect(Collectors.toMap(Sample::getName, Sample::getAccession));*/
 
-    return ResponseEntity.ok(outputMap);
+      return ResponseEntity.ok(outputMap);
+    } catch (final Exception e) {
+      log.info("Failed to assign accessions to " + samples.size() + " samples");
+      
+      throw new BulkAccessionFailureExceptionV2(e.getMessage());
+    }
+  }
+
+  class SamplePersistence implements Callable<Sample> {
+    Sample sample;
+    String authProvider;
+
+    SamplePersistence(Sample sample, String authProvider) {
+      this.sample = sample;
+      this.authProvider = authProvider;
+    }
+
+    @Override
+    public Sample call() {
+      Logger log = LoggerFactory.getLogger(getClass());
+
+      final Instant release =
+              Instant.ofEpochSecond(
+                      LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+      final Instant update = Instant.now();
+      final SubmittedViaType submittedVia =
+              sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+
+      sample =
+              Sample.Builder.fromSample(sample)
+                      .withRelease(release)
+                      .withUpdate(update)
+                      .withSubmittedVia(submittedVia)
+                      .build();
+
+      log.info("Initiating store() for " + sample.getName());
+
+      return sampleService.store(sample, false, authProvider);
+    }
   }
 
   @ResponseStatus(
       value = HttpStatus.BAD_REQUEST,
       reason = "New sample submission should not contain an accession")
   public static class SampleWithAccessionSubmissionExceptionV2 extends RuntimeException {}
+
+  @ResponseStatus(
+          value = HttpStatus.SERVICE_UNAVAILABLE,
+          reason = "Bulk accessioning failure")
+  public static class BulkAccessionFailureExceptionV2 extends RuntimeException {
+    public BulkAccessionFailureExceptionV2(String message) {
+      super(message);
+    }
+  }
 }
