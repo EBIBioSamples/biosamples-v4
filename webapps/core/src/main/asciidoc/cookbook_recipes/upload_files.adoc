@@ -127,7 +127,51 @@ you need to mention the accession of the sample
 | Optional
 | Optional
 
+|Comment[submission_contact:name] | The names of the submitter
+| Optional
+| Optional
+
 |Comment[submission_contact:email] | The email address of the submitter
+| Optional
+| Optional* (*in case you are providing a contact information, email address of the contact is mandatory*)
+
+|Comment[submission_contact:affiliation] | The affiliation of the submitter
+| Optional
+| Optional
+
+|Comment[submission_contact:role] | The role of the submitter
+| Optional
+| Optional
+
+|Comment[submission_contact:url] | The URL of the submitter
+| Optional
+| Optional
+
+|Comment[publication:doi] | The DOI of the publication
+| Optional
+| Optional
+
+|Comment[publication:pubmed_id] | The PubMed Id of the publication
+| Optional
+| Optional
+
+|Comment[submission_organization:email] | The email address of the submitting organization
+| Optional
+| Optional* (*in case you are providing a organization information, name of the organization is mandatory*)
+
+|Comment[submission_organization:name] | The name of the submitting organization
+| Optional
+| Optional
+
+|Comment[submission_organization:address] | The address of the submitting organization
+| Optional
+| Optional
+
+|Comment[submission_organization:role] | The role of the submitting organization
+| Optional
+| Optional
+
+|Comment[submission_organization:url] | The email address of the submitting organization
 | Optional
 | Optional
 
@@ -177,13 +221,6 @@ This will help us to parse the file correctly
 
 5. If you are looking to update existing samples that has been uploaded, you can use the file that was returned to you after your submission.
 *Please remember* to remove the receipt section
-
-== Next steps
-
-This is the first release of our BioSamples drag'n'drop uploader.
-We call it a Beta version, below are the next planned steps of improvement:
-
-1. Incorporate feedback received from submitters and we also have a release plan as below:
 
 == Future Improvements and Release plan:
 

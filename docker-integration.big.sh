@@ -5,6 +5,7 @@ set -e
 
 
 docker-compose up -d biosamples-agents-solr
+docker-compose up -d biosamples-agents-upload-workers
 
 ARGS=--spring.profiles.active=big
 for X in 1 2 3 4 5
