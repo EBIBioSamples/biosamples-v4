@@ -15,6 +15,9 @@ import java.util.*;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.structured.HistologyEntry;
 import uk.ac.ebi.biosamples.model.structured.StructuredCell;
+import uk.ac.ebi.biosamples.model.structured.StructuredData;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
 import uk.ac.ebi.biosamples.model.structured.StructuredTable;
 import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
@@ -145,6 +148,22 @@ public class DocumentationHelper {
 
     return CurationLink.build(
         sampleObject.getAccession(), curationObject, null, "WEBIN-12345", Instant.now());
+  }
+
+  public StructuredData getExampleStructuredData() {
+    Set<Map<String, StructuredDataEntry>> dataContent = new HashSet<>();
+    Map<String, StructuredDataEntry> dataMap = new HashMap<>();
+    dataMap.put("Marker", StructuredDataEntry.build("value_1", "http://purl.obolibrary.org/obo/value_1"));
+    dataMap.put("Measurement", StructuredDataEntry.build("value_1", null));
+    dataMap.put("Measurement Units", StructuredDataEntry.build("value_1", null));
+    dataMap.put("Partner", StructuredDataEntry.build("value_1", null));
+    dataMap.put("Method", StructuredDataEntry.build("value_1", null));
+    dataContent.add(dataMap);
+
+    Set<StructuredDataTable> structuredDataTableSet = new HashSet<>();
+    structuredDataTableSet.add(StructuredDataTable.build("self.ExampleDomain", null, "CHICKEN_DATA", null, dataContent));
+
+    return StructuredData.build("SAMFAKE123456", Instant.now(), structuredDataTableSet);
   }
 
   public Sample getExampleSampleWithStructuredData() {
