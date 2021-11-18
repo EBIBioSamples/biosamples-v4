@@ -1,7 +1,7 @@
 package uk.ac.ebi.biosamples.model.structured;
 
-import java.util.HashSet;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -81,6 +81,7 @@ public class StructuredDataTable {
     return type.equalsIgnoreCase(other.type);
   }
 
+  @JsonIgnore
   public SortedSet<String> getHeaders() {
     SortedSet<String> headers = new TreeSet<>();
     content.forEach(row -> headers.addAll(row.keySet()));
