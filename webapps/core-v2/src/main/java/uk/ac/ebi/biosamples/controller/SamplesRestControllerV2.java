@@ -189,27 +189,27 @@ public class SamplesRestControllerV2 {
 
     try {
       samples.forEach(
-              sample -> {
-                if (sample.hasAccession()) {
-                  throw new SampleWithAccessionSubmissionExceptionV2();
-                }
-              });
+          sample -> {
+            if (sample.hasAccession()) {
+              throw new SampleWithAccessionSubmissionExceptionV2();
+            }
+          });
 
       if (authProvider.equalsIgnoreCase("WEBIN")) {
         final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
         final Authentication authentication = bearerTokenExtractor.extract(request);
         final SubmissionAccount webinAccount =
-                bioSamplesWebinAuthenticationService
-                        .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-                        .getBody();
+            bioSamplesWebinAuthenticationService
+                .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+                .getBody();
 
         samples =
-                samples.stream()
-                        .map(
-                                sample ->
-                                        bioSamplesWebinAuthenticationService.getSampleWithWebinSubmissionAccountId(
-                                                sample, webinAccount.getId()))
-                        .collect(Collectors.toList());
+            samples.stream()
+                .map(
+                    sample ->
+                        bioSamplesWebinAuthenticationService.getSampleWithWebinSubmissionAccountId(
+                            sample, webinAccount.getId()))
+                .collect(Collectors.toList());
       } else {
         if (samples.size() > 0) {
           Sample firstSample = samples.get(0);
@@ -218,51 +218,59 @@ public class SamplesRestControllerV2 {
           final Sample finalFirstSample = firstSample;
 
           samples =
-                  samples.stream()
-                          .map(
-                                  sample ->
-                                          Sample.Builder.fromSample(sample)
-                                                  .withDomain(finalFirstSample.getDomain())
-                                                  .withNoWebinSubmissionAccountId()
-                                                  .build())
-                          .collect(Collectors.toList());
+              samples.stream()
+                  .map(
+                      sample ->
+                          Sample.Builder.fromSample(sample)
+                              .withDomain(finalFirstSample.getDomain())
+                              .withNoWebinSubmissionAccountId()
+                              .build())
+                  .collect(Collectors.toList());
         }
       }
 
       final ExecutorService executor = Executors.newFixedThreadPool(maxThreads);
-      final List<Future<Sample>> sampleFutures = samples.stream().map(sample -> executor.submit(new SamplePersistence(sample, authProvider))).collect(Collectors.toList());
+      final List<Future<Sample>> sampleFutures =
+          samples.stream()
+              .map(sample -> executor.submit(new SamplePersistence(sample, authProvider)))
+              .collect(Collectors.toList());
 
       log.info("Number of samples created " + sampleFutures.size());
 
-      final Map<String, String> outputMap = sampleFutures.stream().map(sampleFuture -> {
-        try {
-          return sampleFuture.get();
-        } catch (InterruptedException | ExecutionException e) {
-          log.info("Exception here " + e.getMessage());
-        }
+      final Map<String, String> outputMap =
+          sampleFutures.stream()
+              .map(
+                  sampleFuture -> {
+                    try {
+                      return sampleFuture.get();
+                    } catch (InterruptedException | ExecutionException e) {
+                      log.info("Exception here " + e.getMessage());
+                    }
 
-        return null;
-      }).filter(Objects::nonNull).collect(Collectors.toMap(Sample::getName, Sample::getAccession));
+                    return null;
+                  })
+              .filter(Objects::nonNull)
+              .collect(Collectors.toMap(Sample::getName, Sample::getAccession));
 
-    /*final List<Sample> createdSamplesList =
-        samples.stream()
-            .map(
-                sample -> {
-                  log.trace("Initiating store() for " + sample.getName());
-                  sample = buildPrivateSampleV2(sample);
-                  return sampleService.store(sample, false, authProvider);
-                })
-            .collect(Collectors.toList());
+      /*final List<Sample> createdSamplesList =
+          samples.stream()
+              .map(
+                  sample -> {
+                    log.trace("Initiating store() for " + sample.getName());
+                    sample = buildPrivateSampleV2(sample);
+                    return sampleService.store(sample, false, authProvider);
+                  })
+              .collect(Collectors.toList());
 
-    final Map<String, String> outputMap =
-        createdSamplesList.stream()
-            .filter(Objects::nonNull)
-            .collect(Collectors.toMap(Sample::getName, Sample::getAccession));*/
+      final Map<String, String> outputMap =
+          createdSamplesList.stream()
+              .filter(Objects::nonNull)
+              .collect(Collectors.toMap(Sample::getName, Sample::getAccession));*/
 
       return ResponseEntity.ok(outputMap);
     } catch (final Exception e) {
       log.info("Failed to assign accessions to " + samples.size() + " samples");
-      
+
       throw new BulkAccessionFailureExceptionV2(e.getMessage());
     }
   }
@@ -281,18 +289,18 @@ public class SamplesRestControllerV2 {
       Logger log = LoggerFactory.getLogger(getClass());
 
       final Instant release =
-              Instant.ofEpochSecond(
-                      LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+          Instant.ofEpochSecond(
+              LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
       final Instant update = Instant.now();
       final SubmittedViaType submittedVia =
-              sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+          sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
 
       sample =
-              Sample.Builder.fromSample(sample)
-                      .withRelease(release)
-                      .withUpdate(update)
-                      .withSubmittedVia(submittedVia)
-                      .build();
+          Sample.Builder.fromSample(sample)
+              .withRelease(release)
+              .withUpdate(update)
+              .withSubmittedVia(submittedVia)
+              .build();
 
       log.info("Initiating store() for " + sample.getName());
 
@@ -305,9 +313,7 @@ public class SamplesRestControllerV2 {
       reason = "New sample submission should not contain an accession")
   public static class SampleWithAccessionSubmissionExceptionV2 extends RuntimeException {}
 
-  @ResponseStatus(
-          value = HttpStatus.SERVICE_UNAVAILABLE,
-          reason = "Bulk accessioning failure")
+  @ResponseStatus(value = HttpStatus.SERVICE_UNAVAILABLE, reason = "Bulk accessioning failure")
   public static class BulkAccessionFailureExceptionV2 extends RuntimeException {
     public BulkAccessionFailureExceptionV2(String message) {
       super(message);

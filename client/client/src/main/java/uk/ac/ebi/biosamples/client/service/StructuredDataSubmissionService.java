@@ -10,10 +10,11 @@
 */
 package uk.ac.ebi.biosamples.client.service;
 
+import java.net.URI;
+import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
@@ -23,11 +24,7 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
-import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
-
-import java.net.URI;
-import java.util.concurrent.ExecutorService;
 
 public class StructuredDataSubmissionService {
 
@@ -44,7 +41,8 @@ public class StructuredDataSubmissionService {
     this.executor = executor;
   }
 
-  public Resource<StructuredData> submit(StructuredData structuredData, boolean isWebin) throws RestClientException {
+  public Resource<StructuredData> submit(StructuredData structuredData, boolean isWebin)
+      throws RestClientException {
     return persistStructuredData(structuredData, null, isWebin);
   }
 
@@ -69,8 +67,7 @@ public class StructuredDataSubmissionService {
     log.info("PUTing to " + target + " " + structuredData);
 
     RequestEntity.BodyBuilder bodyBuilder =
-        RequestEntity.put(target)
-            .contentType(MediaType.APPLICATION_JSON);
+        RequestEntity.put(target).contentType(MediaType.APPLICATION_JSON);
     if (jwt != null) {
       bodyBuilder.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
     }

@@ -90,7 +90,8 @@ public class SampleRestController {
       @RequestParam(name = "legacydetails", required = false) String legacydetails,
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
       @RequestParam(name = "curationrepo", required = false) String curationRepo,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP") String authProvider) {
+      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
+          String authProvider) {
     final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
     // decode percent-encoding from curation domains
     final Optional<List<String>> decodedCurationDomains =

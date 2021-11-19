@@ -16,12 +16,14 @@ import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.mongo.model.MongoStructuredData;
 
 @Service
-public class MongoStructuredDataToStructuredDataConverter implements Converter<MongoStructuredData, StructuredData> {
+public class MongoStructuredDataToStructuredDataConverter
+    implements Converter<MongoStructuredData, StructuredData> {
   @Override
   public StructuredData convert(MongoStructuredData mongoStructuredData) {
-    return StructuredData.build(mongoStructuredData.getAccession(),
-                                mongoStructuredData.getCreate(),
-                                mongoStructuredData.getUpdate(),
-                                mongoStructuredData.getData());
+    return StructuredData.build(
+        mongoStructuredData.getAccession(),
+        mongoStructuredData.getCreate(),
+        mongoStructuredData.getUpdate(),
+        mongoStructuredData.getData());
   }
 }

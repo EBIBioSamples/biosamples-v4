@@ -190,10 +190,10 @@ public class BioSamplesAapService {
     final String domain = sample.getDomain();
     Optional<Sample> oldSample = Optional.empty();
 
-    // Get the old sample while sample updates, domain needs to be compared with old sample domain for some cases
-    if(sample.getAccession() != null) {
-      oldSample =
-              sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+    // Get the old sample while sample updates, domain needs to be compared with old sample domain
+    // for some cases
+    if (sample.getAccession() != null) {
+      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty(), null);
     }
 
     // check if FILE UPLOADER submission, domain changes are not allowed, handled differently
@@ -209,10 +209,10 @@ public class BioSamplesAapService {
         // submitting to that domain
         if (usersDomains.size() == 1) {
           sample =
-                  Sample.Builder.fromSample(sample)
-                          .withDomain(usersDomains.iterator().next())
-                          .withNoWebinSubmissionAccountId()
-                          .build();
+              Sample.Builder.fromSample(sample)
+                  .withDomain(usersDomains.iterator().next())
+                  .withNoWebinSubmissionAccountId()
+                  .build();
         } else {
           throw new DomainMissingException();
         }
@@ -225,9 +225,9 @@ public class BioSamplesAapService {
 
         if (!oldSamplePresent || !usersDomains.contains(oldSample.get().getDomain())) {
           final boolean webinProxyUser =
-                  (oldSamplePresent
-                          && bioSamplesWebinAuthenticationService.isWebinSuperUser(
-                          oldSample.get().getWebinSubmissionAccountId()));
+              (oldSamplePresent
+                  && bioSamplesWebinAuthenticationService.isWebinSuperUser(
+                      oldSample.get().getWebinSubmissionAccountId()));
 
           if (!webinProxyUser) {
             throw new SampleDomainMismatchException();
@@ -242,7 +242,10 @@ public class BioSamplesAapService {
         return sample;
       } else {
         log.warn(
-                "User asked to submit sample to domain " + domain + " but has access to " + usersDomains);
+            "User asked to submit sample to domain "
+                + domain
+                + " but has access to "
+                + usersDomains);
         throw new SampleNotAccessibleException();
       }
     }
@@ -285,13 +288,16 @@ public class BioSamplesAapService {
       return;
     }
 
-    structuredData.getData().forEach(data -> {
-      if (data.getDomain() == null) {
-        throw new StructuredDataDomainMissingException();
-      } else if (!usersDomains.contains(data.getDomain())) {
-        throw new SampleDomainMismatchException();
-      }
-    });
+    structuredData
+        .getData()
+        .forEach(
+            data -> {
+              if (data.getDomain() == null) {
+                throw new StructuredDataDomainMissingException();
+              } else if (!usersDomains.contains(data.getDomain())) {
+                throw new SampleDomainMismatchException();
+              }
+            });
   }
 
   /**

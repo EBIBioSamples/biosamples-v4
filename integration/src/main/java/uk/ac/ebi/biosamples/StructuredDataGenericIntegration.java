@@ -1,17 +1,23 @@
 /*
- * Copyright 2021 EMBL - European Bioinformatics Institute
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- */
+* Copyright 2021 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
@@ -23,13 +29,6 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 import uk.ac.ebi.biosamples.utils.TestUtilities;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 @Component
 public class StructuredDataGenericIntegration extends AbstractIntegration {
@@ -54,17 +53,17 @@ public class StructuredDataGenericIntegration extends AbstractIntegration {
       Resource<Sample> resource = client.persistSampleResource(testSample);
       Sample testSampleWithAccession =
           Sample.Builder.fromSample(testSample)
-                        .withAccession(resource.getContent().getAccession())
-                        .build();
+              .withAccession(resource.getContent().getAccession())
+              .build();
 
       accession = resource.getContent().getAccession();
       if (!testSampleWithAccession.equals(resource.getContent())) {
         throw new IntegrationTestFailException(
             "Expected response ("
-            + resource.getContent()
-            + ") to equal submission ("
-            + testSample
-            + ")");
+                + resource.getContent()
+                + ") to equal submission ("
+                + testSample
+                + ")");
       }
     }
 
@@ -97,15 +96,20 @@ public class StructuredDataGenericIntegration extends AbstractIntegration {
     Sample sampleTest1 = getSampleTest1();
     Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest1.getName());
     if (!optionalSample.isPresent()) {
-      throw new IntegrationTestFailException("Cant find sample " + sampleTest1.getName(), Phase.TWO);
+      throw new IntegrationTestFailException(
+          "Cant find sample " + sampleTest1.getName(), Phase.TWO);
     } else {
 
     }
 
-    Sample sample = optionalSample.orElseThrow(
-        () -> new IntegrationTestFailException("Cant find sample " + sampleTest1.getName(), Phase.TWO));
+    Sample sample =
+        optionalSample.orElseThrow(
+            () ->
+                new IntegrationTestFailException(
+                    "Cant find sample " + sampleTest1.getName(), Phase.TWO));
     if (sample.getStructuredData().isEmpty()) {
-      throw new IntegrationTestFailException("No structured data in sample " + sampleTest1.getName(), Phase.TWO);
+      throw new IntegrationTestFailException(
+          "No structured data in sample " + sampleTest1.getName(), Phase.TWO);
     }
   }
 

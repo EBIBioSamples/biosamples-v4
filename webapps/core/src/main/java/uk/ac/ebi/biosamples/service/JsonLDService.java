@@ -57,7 +57,13 @@ public class JsonLDService {
     try {
       Method method =
           SampleRestController.class.getMethod(
-              "getSampleHal", HttpServletRequest.class, String.class, String.class, String[].class, String.class, String.class);
+              "getSampleHal",
+              HttpServletRequest.class,
+              String.class,
+              String.class,
+              String[].class,
+              String.class,
+              String.class);
       String sampleUrl = linkTo(method, sample.getAccession()).toUri().toString();
       jsonLDSample.setUrl(sampleUrl);
       jsonLDSample.setId(sampleUrl);

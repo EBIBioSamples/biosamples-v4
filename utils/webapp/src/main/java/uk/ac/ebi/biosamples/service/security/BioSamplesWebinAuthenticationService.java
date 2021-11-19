@@ -26,8 +26,6 @@ import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService.SampleDomainMismatchException;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService.StructuredDataDomainMissingException;
 
 @Service
 public class BioSamplesWebinAuthenticationService {
@@ -103,7 +101,8 @@ public class BioSamplesWebinAuthenticationService {
         final Optional<Sample> oldSample = getOldSample(sample);
 
         if (webinId.equalsIgnoreCase(
-            biosamplesClientWebinUsername)) { // ENA pipeline submissions or super user submission (via FILE UPLOADER)
+            biosamplesClientWebinUsername)) { // ENA pipeline submissions or super user submission
+          // (via FILE UPLOADER)
           if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
             if (oldSample.isPresent()
                 && !sample
@@ -243,13 +242,17 @@ public class BioSamplesWebinAuthenticationService {
   }
 
   public void handleStructuredDataAccesibility(StructuredData structuredData, String id) {
-    structuredData.getData().forEach(data -> {
-      if (data.getWebinSubmissionAccountId() == null || data.getWebinSubmissionAccountId().isEmpty()) {
-        throw new StructuredDataWebinIdMissingException();
-      } else if (!id.equalsIgnoreCase(data.getWebinSubmissionAccountId())) {
-        throw new WebinUserLoginUnauthorizedException();
-      }
-    });
+    structuredData
+        .getData()
+        .forEach(
+            data -> {
+              if (data.getWebinSubmissionAccountId() == null
+                  || data.getWebinSubmissionAccountId().isEmpty()) {
+                throw new StructuredDataWebinIdMissingException();
+              } else if (!id.equalsIgnoreCase(data.getWebinSubmissionAccountId())) {
+                throw new WebinUserLoginUnauthorizedException();
+              }
+            });
   }
 
   public boolean findIfOriginalSampleWebinSubmitter(Sample sample, String id) {

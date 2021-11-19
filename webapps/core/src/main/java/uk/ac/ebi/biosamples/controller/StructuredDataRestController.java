@@ -1,15 +1,16 @@
 /*
- * Copyright 2021 EMBL - European Bioinformatics Institute
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- */
+* Copyright 2021 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.controller;
 
+import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.ExposesResourceFor;
@@ -34,11 +35,7 @@ import uk.ac.ebi.biosamples.service.StructuredDataService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 
-import javax.servlet.http.HttpServletRequest;
-
-/**
- * Structured data operations
- */
+/** Structured data operations */
 @RestController
 @ExposesResourceFor(StructuredData.class)
 @RequestMapping("/structureddata/{accession}")
@@ -66,17 +63,20 @@ public class StructuredDataRestController {
       throw new SampleAccessionMismatchException();
     }
 
-    return new Resource<>(structuredDataService.getStructuredData(accession)
-                                               .orElseThrow(() -> new SampleNotFoundException()));
+    return new Resource<>(
+        structuredDataService
+            .getStructuredData(accession)
+            .orElseThrow(() -> new SampleNotFoundException()));
   }
 
   @PreAuthorize("isAuthenticated()")
-  @PutMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
+  @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public Resource<StructuredData> put(
       HttpServletRequest request,
       @PathVariable String accession,
       @RequestBody StructuredData structuredData,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP") String authProvider) {
+      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
+          String authProvider) {
 
     log.info("PUT request for structured data: {}", accession);
     if (structuredData.getAccession() == null || !structuredData.getAccession().equals(accession)) {
@@ -86,10 +86,12 @@ public class StructuredDataRestController {
     if ("WEBIN".equalsIgnoreCase(authProvider)) {
       final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
       final Authentication authentication = bearerTokenExtractor.extract(request);
-      final SubmissionAccount webinAccount = bioSamplesWebinAuthenticationService
-          .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-          .getBody();
-      bioSamplesWebinAuthenticationService.handleStructuredDataAccesibility(structuredData, webinAccount.getId());
+      final SubmissionAccount webinAccount =
+          bioSamplesWebinAuthenticationService
+              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+              .getBody();
+      bioSamplesWebinAuthenticationService.handleStructuredDataAccesibility(
+          structuredData, webinAccount.getId());
     } else {
       bioSamplesAapService.handleStructuredDataDomain(structuredData);
     }

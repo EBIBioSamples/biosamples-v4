@@ -1,15 +1,25 @@
 /*
- * Copyright 2021 EMBL - European Bioinformatics Institute
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- */
+* Copyright 2021 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.curation;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -29,17 +39,6 @@ import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
 import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Future;
 
 @Component
 public class MigrationApplicationRunner implements ApplicationRunner {
@@ -69,12 +68,12 @@ public class MigrationApplicationRunner implements ApplicationRunner {
     boolean isPassed = true;
 
     try (AdaptiveThreadPoolExecutor executorService =
-             AdaptiveThreadPoolExecutor.create(
-                 100,
-                 10000,
-                 true,
-                 pipelinesProperties.getThreadCount(),
-                 pipelinesProperties.getThreadCountMax())) {
+        AdaptiveThreadPoolExecutor.create(
+            100,
+            10000,
+            true,
+            pipelinesProperties.getThreadCount(),
+            pipelinesProperties.getThreadCountMax())) {
 
       Map<String, Future<PipelineResult>> futures = new HashMap<>();
       filters.add(new AttributeFilter.Builder("project name").withValue("DTOL").build());
@@ -84,7 +83,8 @@ public class MigrationApplicationRunner implements ApplicationRunner {
         for (MongoSample mongoSample : samplePage) {
           if (!mongoSample.getData().isEmpty()) {
             Callable<PipelineResult> task =
-                new MigrationCallable(mongoSample, mongoSampleRepository, mongoStructuredDataRepository);
+                new MigrationCallable(
+                    mongoSample, mongoSampleRepository, mongoStructuredDataRepository);
             futures.put(mongoSample.getAccession(), executorService.submit(task));
           }
 

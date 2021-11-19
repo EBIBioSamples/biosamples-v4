@@ -101,7 +101,5 @@ public class SampleAnalytics {
     return facets;
   }
 
-  public void addToFacets() {
-
-  }
+  public void addToFacets() {}
 }

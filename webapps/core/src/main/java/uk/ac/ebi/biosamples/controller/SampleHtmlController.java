@@ -17,9 +17,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,22 +84,21 @@ public class SampleHtmlController {
   @GetMapping(value = "/")
   public String index(Model model) {
 
-//    String jsonStats;
-//    String jsonYearlyGrowth;
-//    try {
-//      ObjectMapper mapper = new ObjectMapper();
-//      jsonStats = mapper.writeValueAsString(statService.getStats());
-//      jsonYearlyGrowth = mapper.writeValueAsString(statService.getBioSamplesYearlyGrowth());
-//    } catch (JsonProcessingException e) {
-//      jsonStats = "{}";
-//      jsonYearlyGrowth = "{}";
-//    }
-
+    //    String jsonStats;
+    //    String jsonYearlyGrowth;
+    //    try {
+    //      ObjectMapper mapper = new ObjectMapper();
+    //      jsonStats = mapper.writeValueAsString(statService.getStats());
+    //      jsonYearlyGrowth = mapper.writeValueAsString(statService.getBioSamplesYearlyGrowth());
+    //    } catch (JsonProcessingException e) {
+    //      jsonStats = "{}";
+    //      jsonYearlyGrowth = "{}";
+    //    }
 
     JsonLDDataCatalog dataCatalog = jsonLDService.getBioSamplesDataCatalog();
     model.addAttribute("jsonLD", jsonLDService.jsonLDToString(dataCatalog));
-//    model.addAttribute("stats", jsonStats);
-//    model.addAttribute("yearlyGrowth", jsonYearlyGrowth);
+    //    model.addAttribute("stats", jsonStats);
+    //    model.addAttribute("yearlyGrowth", jsonYearlyGrowth);
     return "index";
   }
 

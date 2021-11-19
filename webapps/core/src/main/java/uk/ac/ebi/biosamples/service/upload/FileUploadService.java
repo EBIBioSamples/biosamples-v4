@@ -1,13 +1,13 @@
 /*
- * Copyright 2021 EMBL - European Bioinformatics Institute
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- */
+* Copyright 2021 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.service.upload;
 
 import com.google.common.collect.Multimap;
@@ -57,11 +57,11 @@ public class FileUploadService {
   @Autowired private FileQueueService fileQueueService;
 
   public synchronized File upload(
-          final MultipartFile file,
-          final String aapDomain,
-          final String checklist,
-          final String webinId,
-          final FileUploadUtils fileUploadUtils) {
+      final MultipartFile file,
+      final String aapDomain,
+      final String checklist,
+      final String webinId,
+      final FileUploadUtils fileUploadUtils) {
     this.validationResult = new ValidationResult();
     this.fileUploadUtils = fileUploadUtils;
     final String authProvider = isWebin(isWebinIdUsedToAuthenticate(webinId));
@@ -71,14 +71,14 @@ public class FileUploadService {
       final String uniqueUploadId = UUID.randomUUID().toString();
 
       final MongoFileUpload mongoFileUploadInitial =
-              new MongoFileUpload(
-                      uniqueUploadId,
-                      BioSamplesFileUploadSubmissionStatus.ACTIVE,
-                      isWebin ? webinId : aapDomain,
-                      checklist,
-                      isWebin,
-                      new ArrayList<>(),
-                      null);
+          new MongoFileUpload(
+              uniqueUploadId,
+              BioSamplesFileUploadSubmissionStatus.ACTIVE,
+              isWebin ? webinId : aapDomain,
+              checklist,
+              isWebin,
+              new ArrayList<>(),
+              null);
 
       mongoFileUploadRepository.insert(mongoFileUploadInitial);
 
@@ -98,20 +98,22 @@ public class FileUploadService {
       validateHeaderPositions(headers);
 
       final List<Multimap<String, String>> csvDataMap =
-              fileUploadUtils.getISATABDataInMap(csvParser);
+          fileUploadUtils.getISATABDataInMap(csvParser);
       final int numSamples = csvDataMap.size();
 
       log.info("CSV data size: " + numSamples);
 
       if (numSamples > 200) {
         log.info("File sample count exceeds limits - queueing file for async submission");
-        final String submissionId = fileQueueService.queueFileinMongoAndSendMessageToRabbitMq(file, aapDomain, checklist, webinId);
+        final String submissionId =
+            fileQueueService.queueFileinMongoAndSendMessageToRabbitMq(
+                file, aapDomain, checklist, webinId);
 
         return fileUploadUtils.writeQueueMessageToFile(submissionId);
       }
 
       final List<Sample> samples =
-              buildSamples(csvDataMap, aapDomain, webinId, checklist, validationResult, isWebin);
+          buildSamples(csvDataMap, aapDomain, webinId, checklist, validationResult, isWebin);
 
       final String persistenceMessage = "Number of samples persisted: " + samples.size();
 
@@ -120,26 +122,26 @@ public class FileUploadService {
       log.info("Final message: " + String.join("\n", validationResult.getValidationMessagesList()));
 
       final MongoFileUpload mongoFileUploadCompleted =
-              new MongoFileUpload(
-                      uniqueUploadId,
-                      BioSamplesFileUploadSubmissionStatus.COMPLETED,
-                      isWebin ? webinId : aapDomain,
-                      checklist,
-                      isWebin,
-                      new ArrayList<>(),
-                      null);
+          new MongoFileUpload(
+              uniqueUploadId,
+              BioSamplesFileUploadSubmissionStatus.COMPLETED,
+              isWebin ? webinId : aapDomain,
+              checklist,
+              isWebin,
+              new ArrayList<>(),
+              null);
 
       mongoFileUploadRepository.save(mongoFileUploadCompleted);
 
       return fileUploadUtils.writeToFile(fileToBeUploaded, headers, samples, validationResult);
     } catch (final Exception e) {
       final String messageForBsdDevTeam =
-              "********FEEDBACK TO BSD DEV TEAM START********"
-                      + e.getMessage()
-                      + "********FEEDBACK TO BSD DEV TEAM END********";
+          "********FEEDBACK TO BSD DEV TEAM START********"
+              + e.getMessage()
+              + "********FEEDBACK TO BSD DEV TEAM END********";
       validationResult.addValidationMessage(messageForBsdDevTeam);
       throw new UploadInvalidException(
-              String.join("\n", validationResult.getValidationMessagesList()));
+          String.join("\n", validationResult.getValidationMessagesList()));
     } finally {
       validationResult.clear();
     }
@@ -148,54 +150,54 @@ public class FileUploadService {
   private void validateHeaderPositions(final List<String> headers) {
     if (headers.size() > 0) {
       if ((!headers.get(0).equalsIgnoreCase("Source Name")
-              && (!headers.get(1).equalsIgnoreCase("Sample Name"))
-              && (!headers.get(2).equalsIgnoreCase("Release Date")))) {
+          && (!headers.get(1).equalsIgnoreCase("Sample Name"))
+          && (!headers.get(2).equalsIgnoreCase("Release Date")))) {
         validationResult.addValidationMessage(
-                "ISA tab file must have Source Name as first column, followed by Sample Name and Release Date.");
+            "ISA tab file must have Source Name as first column, followed by Sample Name and Release Date.");
 
         throw new UploadInvalidException(
-                String.join("\n", validationResult.getValidationMessagesList()));
+            String.join("\n", validationResult.getValidationMessagesList()));
       }
     }
   }
 
   private List<Sample> buildSamples(
-          final List<Multimap<String, String>> csvDataMap,
-          final String aapDomain,
-          final String webinId,
-          final String checklist,
-          final ValidationResult validationResult,
-          final boolean isWebin) {
+      final List<Multimap<String, String>> csvDataMap,
+      final String aapDomain,
+      final String webinId,
+      final String checklist,
+      final ValidationResult validationResult,
+      final boolean isWebin) {
     final Map<String, String> sampleNameToAccessionMap = new LinkedHashMap<>();
     final Map<Sample, Multimap<String, String>> sampleToMappedSample = new LinkedHashMap<>();
 
     csvDataMap.forEach(
-            csvRecordMap -> {
-              Sample sample = null;
+        csvRecordMap -> {
+          Sample sample = null;
 
-              try {
-                sample =
-                        buildSample(csvRecordMap, aapDomain, webinId, checklist, validationResult, isWebin);
+          try {
+            sample =
+                buildSample(csvRecordMap, aapDomain, webinId, checklist, validationResult, isWebin);
 
-                if (sample == null) {
-                  validationResult.addValidationMessage(
-                          "Failed to create sample in the file with sample name "
-                                  + fileUploadUtils.getSampleName(csvRecordMap));
-                }
-              } catch (Exception e) {
-                validationResult.addValidationMessage(
-                        "Failed to create sample in the file with sample name "
-                                + fileUploadUtils.getSampleName(csvRecordMap));
-              }
+            if (sample == null) {
+              validationResult.addValidationMessage(
+                  "Failed to create sample in the file with sample name "
+                      + fileUploadUtils.getSampleName(csvRecordMap));
+            }
+          } catch (Exception e) {
+            validationResult.addValidationMessage(
+                "Failed to create sample in the file with sample name "
+                    + fileUploadUtils.getSampleName(csvRecordMap));
+          }
 
-              if (sample != null) {
-                sampleNameToAccessionMap.put(sample.getName(), sample.getAccession());
-                sampleToMappedSample.put(sample, csvRecordMap);
-              }
-            });
+          if (sample != null) {
+            sampleNameToAccessionMap.put(sample.getName(), sample.getAccession());
+            sampleToMappedSample.put(sample, csvRecordMap);
+          }
+        });
 
     return addRelationshipsAndThenBuildSamples(
-            sampleNameToAccessionMap, sampleToMappedSample, validationResult, isWebin);
+        sampleNameToAccessionMap, sampleToMappedSample, validationResult, isWebin);
   }
 
   private boolean isWebinIdUsedToAuthenticate(final String webinId) {
@@ -203,29 +205,29 @@ public class FileUploadService {
   }
 
   private List<Sample> addRelationshipsAndThenBuildSamples(
-          final Map<String, String> sampleNameToAccessionMap,
-          final Map<Sample, Multimap<String, String>> sampleToMappedSample,
-          final ValidationResult validationResult,
-          final boolean isWebin) {
+      final Map<String, String> sampleNameToAccessionMap,
+      final Map<Sample, Multimap<String, String>> sampleToMappedSample,
+      final ValidationResult validationResult,
+      final boolean isWebin) {
     return sampleToMappedSample.entrySet().stream()
-            .map(
-                    sampleMultimapEntry ->
-                            addRelationshipAndThenBuildSample(
-                                    sampleNameToAccessionMap, sampleMultimapEntry, validationResult, isWebin))
-            .collect(Collectors.toList());
+        .map(
+            sampleMultimapEntry ->
+                addRelationshipAndThenBuildSample(
+                    sampleNameToAccessionMap, sampleMultimapEntry, validationResult, isWebin))
+        .collect(Collectors.toList());
   }
 
   private Sample addRelationshipAndThenBuildSample(
-          final Map<String, String> sampleNameToAccessionMap,
-          final Map.Entry<Sample, Multimap<String, String>> sampleMultimapEntry,
-          final ValidationResult validationResult,
-          final boolean isWebin) {
+      final Map<String, String> sampleNameToAccessionMap,
+      final Map.Entry<Sample, Multimap<String, String>> sampleMultimapEntry,
+      final ValidationResult validationResult,
+      final boolean isWebin) {
     final Multimap<String, String> relationshipMap =
-            fileUploadUtils.parseRelationships(sampleMultimapEntry.getValue());
+        fileUploadUtils.parseRelationships(sampleMultimapEntry.getValue());
     Sample sample = sampleMultimapEntry.getKey();
     final List<Relationship> relationships =
-            fileUploadUtils.createRelationships(
-                    sample, sampleNameToAccessionMap, relationshipMap, validationResult);
+        fileUploadUtils.createRelationships(
+            sample, sampleNameToAccessionMap, relationshipMap, validationResult);
 
     relationships.forEach(relationship -> log.info(relationship.toString()));
 
@@ -236,12 +238,12 @@ public class FileUploadService {
   }
 
   private Sample buildSample(
-          final Multimap<String, String> multiMap,
-          final String aapDomain,
-          final String webinId,
-          final String checklist,
-          final ValidationResult validationResult,
-          final boolean isWebin) {
+      final Multimap<String, String> multiMap,
+      final String aapDomain,
+      final String webinId,
+      final String checklist,
+      final ValidationResult validationResult,
+      final boolean isWebin) {
     final String sampleName = fileUploadUtils.getSampleName(multiMap);
     boolean isValidatedAgainstChecklist;
 
@@ -259,12 +261,12 @@ public class FileUploadService {
           final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, false);
           sample = storeSample(sample, isFirstTimeMetadataAdded, isWebin(isWebin));
           log.info(
-                  "Sample " + sample.getName() + " created with accession " + sample.getAccession());
+              "Sample " + sample.getName() + " created with accession " + sample.getAccession());
 
           return sample;
         } else {
           validationResult.addValidationMessage(
-                  sampleName + " failed validation against " + checklist);
+              sampleName + " failed validation against " + checklist);
 
           return null;
         }
@@ -277,11 +279,11 @@ public class FileUploadService {
   }
 
   private Sample handleAuthentication(
-          final String aapDomain,
-          final String webinId,
-          final boolean isWebin,
-          Sample sample,
-          final ValidationResult validationResult) {
+      final String aapDomain,
+      final String webinId,
+      final boolean isWebin,
+      Sample sample,
+      final ValidationResult validationResult) {
     try {
       if (isWebin) {
         sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinId);
@@ -294,17 +296,17 @@ public class FileUploadService {
     } catch (final Exception e) {
       if (e instanceof BioSamplesWebinAuthenticationService.SampleNotAccessibleException) {
         validationResult.addValidationMessage(
-                "Sample " + sample.getName() + " is not accessible for you");
+            "Sample " + sample.getName() + " is not accessible for you");
       } else if (e
-              instanceof BioSamplesWebinAuthenticationService.WebinUserLoginUnauthorizedException) {
+          instanceof BioSamplesWebinAuthenticationService.WebinUserLoginUnauthorizedException) {
         validationResult.addValidationMessage(
-                "Sample " + sample.getName() + " not persisted as WEBIN user is not authorized");
+            "Sample " + sample.getName() + " not persisted as WEBIN user is not authorized");
       } else if (e instanceof BioSamplesAapService.SampleDomainMismatchException) {
         validationResult.addValidationMessage(
-                "Sample " + sample.getName() + " is not accessible for you");
+            "Sample " + sample.getName() + " is not accessible for you");
       } else if (e instanceof BioSamplesAapService.SampleNotAccessibleException) {
         validationResult.addValidationMessage(
-                "Sample " + sample.getName() + " is not accessible for you");
+            "Sample " + sample.getName() + " is not accessible for you");
       } else {
         validationResult.addValidationMessage("General auth error, please retry");
       }
@@ -318,7 +320,7 @@ public class FileUploadService {
   }
 
   private Sample storeSample(
-          final Sample sample, final boolean isFirstTimeMetadataAdded, final String authProvider) {
+      final Sample sample, final boolean isFirstTimeMetadataAdded, final String authProvider) {
     return sampleService.store(sample, isFirstTimeMetadataAdded, authProvider);
   }
 
@@ -342,13 +344,13 @@ public class FileUploadService {
       return mongoFileUpload;
     } else {
       return new MongoFileUpload(
-              submissionId,
-              BioSamplesFileUploadSubmissionStatus.NOT_FOUND,
-              null,
-              null,
-              false,
-              Collections.emptyList(),
-              "Submission not found, please enter a valid submission ID.");
+          submissionId,
+          BioSamplesFileUploadSubmissionStatus.NOT_FOUND,
+          null,
+          null,
+          false,
+          Collections.emptyList(),
+          "Submission not found, please enter a valid submission ID.");
     }
   }
 

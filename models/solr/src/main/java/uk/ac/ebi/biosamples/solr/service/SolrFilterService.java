@@ -141,7 +141,8 @@ public class SolrFilterService {
    * @param domains a collection of domains
    * @return a filter query for public and domain relevant samples
    */
-  public Optional<FilterQuery> getPublicFilterQuery(Collection<String> domains, String webinSubmissionAccountId) {
+  public Optional<FilterQuery> getPublicFilterQuery(
+      Collection<String> domains, String webinSubmissionAccountId) {
     // check if this is a read superuser
     if (domains.contains(bioSamplesProperties.getBiosamplesAapSuperRead())) {
       return Optional.empty();
@@ -160,7 +161,8 @@ public class SolrFilterService {
 
     if (webinSubmissionAccountId != null && !webinSubmissionAccountId.isEmpty()) {
       // user can only see private samples inside its own domain
-      publicSampleCriteria = publicSampleCriteria.or(new Criteria("webinId").in(webinSubmissionAccountId));
+      publicSampleCriteria =
+          publicSampleCriteria.or(new Criteria("webinId").in(webinSubmissionAccountId));
     }
 
     filterQuery.addCriteria(publicSampleCriteria);
