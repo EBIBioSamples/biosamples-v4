@@ -15,7 +15,6 @@ import java.io.InputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.gridfs.GridFsCriteria;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.SubmissionFile;
@@ -31,8 +30,7 @@ public class FileUploadStorageService {
 
     if (file != null) {
       final InputStream fileStream = file.getInputStream();
-      final SubmissionFile submissionFile =
-          new SubmissionFile(file.getFilename(), fileStream);
+      final SubmissionFile submissionFile = new SubmissionFile(file.getFilename(), fileStream);
 
       return submissionFile;
     }

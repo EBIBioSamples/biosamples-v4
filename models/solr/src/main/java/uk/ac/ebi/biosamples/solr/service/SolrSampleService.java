@@ -117,7 +117,10 @@ public class SolrSampleService {
   }
 
   private Query buildQuery(
-      String searchTerm, Collection<Filter> filters, Collection<String> domains, String webinSubmissionAccountId) {
+      String searchTerm,
+      Collection<Filter> filters,
+      Collection<String> domains,
+      String webinSubmissionAccountId) {
 
     // default to search all
     if (searchTerm == null || searchTerm.trim().length() == 0) {
@@ -132,7 +135,8 @@ public class SolrSampleService {
     boostId.setPartIsOr(true);
     query.addCriteria(boostId);
 
-    Optional<FilterQuery> publicFilterQuery = solrFilterService.getPublicFilterQuery(domains, webinSubmissionAccountId);
+    Optional<FilterQuery> publicFilterQuery =
+        solrFilterService.getPublicFilterQuery(domains, webinSubmissionAccountId);
     publicFilterQuery.ifPresent(query::addFilterQuery);
 
     Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);

@@ -139,7 +139,8 @@ public class BioSamplesClient implements AutoCloseable {
     curationSubmissionService =
         new CurationSubmissionService(restOperations, traverson, threadPoolExecutor);
 
-    structuredDataSubmissionService = new StructuredDataSubmissionService(restOperations, traverson, threadPoolExecutor);
+    structuredDataSubmissionService =
+        new StructuredDataSubmissionService(restOperations, traverson, threadPoolExecutor);
 
     this.sampleValidator = sampleValidator;
 

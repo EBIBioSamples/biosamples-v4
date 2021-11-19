@@ -1,12 +1,14 @@
+/*
+* Copyright 2021 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.service;
-
-import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.facet.Facet;
-import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.mongo.model.MongoAnalytics;
-import uk.ac.ebi.biosamples.mongo.repo.MongoAnalyticsRepository;
-import uk.ac.ebi.biosamples.solr.service.SolrFacetService;
-import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -14,6 +16,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.model.facet.Facet;
+import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.mongo.model.MongoAnalytics;
+import uk.ac.ebi.biosamples.solr.service.SolrFacetService;
+import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
 
 @Service
 public class StatService {
@@ -24,10 +32,12 @@ public class StatService {
   private final SolrFacetService solrFacetService;
   private final SolrFieldService solrFieldService;
 
-  public StatService(FacetService facetService, FilterService filterService,
-                     AnalyticsService analyticsService,
-                     SolrFacetService solrFacetService,
-                     SolrFieldService solrFieldService) {
+  public StatService(
+      FacetService facetService,
+      FilterService filterService,
+      AnalyticsService analyticsService,
+      SolrFacetService solrFacetService,
+      SolrFieldService solrFieldService) {
     this.facetService = facetService;
     this.filterService = filterService;
     this.analyticsService = analyticsService;
@@ -39,7 +49,6 @@ public class StatService {
     MongoAnalytics mongoAnalytics = analyticsService.getLatestAnalytics();
     return mongoAnalytics;
   }
-
 
   public Map<String, Integer> getBasicStat() {
     Map<String, Integer> statMap = new HashMap<>();
@@ -66,7 +75,7 @@ public class StatService {
     return analyticsService.getAnalytics(from, to);
   }
 
-  //this is not ideal, but we have hardcoded the data growth in this function
+  // this is not ideal, but we have hardcoded the data growth in this function
   public Map<String, Integer> getBioSamplesYearlyGrowth() {
     Map<String, Integer> growthMap = new HashMap<>();
     growthMap.put("2015", 3);
@@ -78,5 +87,4 @@ public class StatService {
     growthMap.put("2021", 20);
     return growthMap;
   }
-
 }

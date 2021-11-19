@@ -378,7 +378,8 @@ public class ApiDocumentationTest {
   public void putStructuredData() throws Exception {
     StructuredData structuredData = faker.getExampleStructuredData();
     when(structuredDataService.saveStructuredData(eq(structuredData))).thenReturn(structuredData);
-    when(structuredDataService.getStructuredData(eq(structuredData.getAccession()))).thenReturn(Optional.of(structuredData));
+    when(structuredDataService.getStructuredData(eq(structuredData.getAccession())))
+        .thenReturn(Optional.of(structuredData));
     doNothing().when(aapService).handleStructuredDataDomain(eq(structuredData));
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
@@ -386,9 +387,7 @@ public class ApiDocumentationTest {
 
     mockMvc
         .perform(
-            put(
-                    "/biosamples/structureddata/"
-                        + structuredData.getAccession())
+            put("/biosamples/structureddata/" + structuredData.getAccession())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(serialize(structuredData))
                 .header("Authorization", "Bearer $TOKEN"))

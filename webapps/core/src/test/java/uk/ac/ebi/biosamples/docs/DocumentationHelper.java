@@ -153,7 +153,8 @@ public class DocumentationHelper {
   public StructuredData getExampleStructuredData() {
     Set<Map<String, StructuredDataEntry>> dataContent = new HashSet<>();
     Map<String, StructuredDataEntry> dataMap = new HashMap<>();
-    dataMap.put("Marker", StructuredDataEntry.build("value_1", "http://purl.obolibrary.org/obo/value_1"));
+    dataMap.put(
+        "Marker", StructuredDataEntry.build("value_1", "http://purl.obolibrary.org/obo/value_1"));
     dataMap.put("Measurement", StructuredDataEntry.build("value_1", null));
     dataMap.put("Measurement Units", StructuredDataEntry.build("value_1", null));
     dataMap.put("Partner", StructuredDataEntry.build("value_1", null));
@@ -161,7 +162,8 @@ public class DocumentationHelper {
     dataContent.add(dataMap);
 
     Set<StructuredDataTable> structuredDataTableSet = new HashSet<>();
-    structuredDataTableSet.add(StructuredDataTable.build("self.ExampleDomain", null, "CHICKEN_DATA", null, dataContent));
+    structuredDataTableSet.add(
+        StructuredDataTable.build("self.ExampleDomain", null, "CHICKEN_DATA", null, dataContent));
 
     return StructuredData.build("SAMFAKE123456", Instant.now(), structuredDataTableSet);
   }

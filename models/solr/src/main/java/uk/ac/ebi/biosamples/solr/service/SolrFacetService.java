@@ -162,10 +162,12 @@ public class SolrFacetService {
     List<Entry<SolrSampleField, Long>> rangeFacetFields = Collections.emptyList();
     if (facetField == null) {
       FacetHelper.RANGE_FACETING_FIELDS.stream()
-                                       .map(s -> new SimpleEntry<>(
-                                           this.solrFieldService.decodeField(
-                                               s + FacetHelper.get_encoding_suffix(s)), 0L))
-                                       .collect(Collectors.toList());
+          .map(
+              s ->
+                  new SimpleEntry<>(
+                      this.solrFieldService.decodeField(s + FacetHelper.get_encoding_suffix(s)),
+                      0L))
+          .collect(Collectors.toList());
     }
 
     if (!allFacetFields.isEmpty()) {
@@ -202,8 +204,13 @@ public class SolrFacetService {
 
     // short-circuit for landing search page
     if (facetField != null) {
-      allFacetFields = Collections.singletonList(new SimpleEntry<>(solrFieldService.decodeField(
-          SolrFieldService.encodeFieldName(facetField) + FacetHelper.get_encoding_suffix(facetField)), 0L));
+      allFacetFields =
+          Collections.singletonList(
+              new SimpleEntry<>(
+                  solrFieldService.decodeField(
+                      SolrFieldService.encodeFieldName(facetField)
+                          + FacetHelper.get_encoding_suffix(facetField)),
+                  0L));
     } else if (isLandingPage) {
       allFacetFields =
           FacetHelper.FACETING_FIELDS.stream()

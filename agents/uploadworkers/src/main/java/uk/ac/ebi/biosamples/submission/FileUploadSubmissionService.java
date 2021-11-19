@@ -50,8 +50,7 @@ public class FileUploadSubmissionService {
   @Qualifier("WEBINCLIENT")
   BioSamplesClient bioSamplesWebinClient;
 
-  @Autowired
-  FileUploadStorageService fileUploadStorageService;
+  @Autowired FileUploadStorageService fileUploadStorageService;
 
   @Autowired MongoFileUploadRepository mongoFileUploadRepository;
 
@@ -71,8 +70,7 @@ public class FileUploadSubmissionService {
 
       log.info("Received file with file ID " + submissionId);
 
-      final SubmissionFile submissionFile =
-          fileUploadStorageService.getFile(submissionId);
+      final SubmissionFile submissionFile = fileUploadStorageService.getFile(submissionId);
 
       // get submissionFile metadata, determine webin aur aap auth and use client
       // accordingly
@@ -97,7 +95,8 @@ public class FileUploadSubmissionService {
       final BufferedReader reader = new BufferedReader(fr);
 
       final CSVParser csvParser = fileUploadUtils.buildParser(reader);
-      final List<Multimap<String, String>> csvDataMap = fileUploadUtils.getISATABDataInMap(csvParser);
+      final List<Multimap<String, String>> csvDataMap =
+          fileUploadUtils.getISATABDataInMap(csvParser);
 
       log.info("CSV data size: " + csvDataMap.size());
 
@@ -150,7 +149,8 @@ public class FileUploadSubmissionService {
     }
   }
 
-  private void performFinalActions(final String submissionId, final MongoFileUpload mongoFileUploadCompleted) {
+  private void performFinalActions(
+      final String submissionId, final MongoFileUpload mongoFileUploadCompleted) {
     mongoFileUploadRepository.save(mongoFileUploadCompleted);
     fileUploadStorageService.deleteFile(submissionId);
   }

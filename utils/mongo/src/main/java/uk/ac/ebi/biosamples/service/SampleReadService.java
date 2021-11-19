@@ -50,7 +50,8 @@ public class SampleReadService {
   private final CurationReadService curationReadService;
   private final MongoInverseRelationshipService mongoInverseRelationshipService;
   private final MongoStructuredDataRepository mongoStructuredDataRepository;
-  private final MongoStructuredDataToStructuredDataConverter mongoStructuredDataToStructuredDataConverter;
+  private final MongoStructuredDataToStructuredDataConverter
+      mongoStructuredDataToStructuredDataConverter;
 
   private final ExecutorService executorService;
 
@@ -67,7 +68,8 @@ public class SampleReadService {
     this.curationReadService = curationReadService;
     this.mongoInverseRelationshipService = mongoInverseRelationshipService;
     this.mongoStructuredDataRepository = mongoStructuredDataRepository;
-    this.mongoStructuredDataToStructuredDataConverter = mongoStructuredDataToStructuredDataConverter;
+    this.mongoStructuredDataToStructuredDataConverter =
+        mongoStructuredDataToStructuredDataConverter;
     executorService =
         AdaptiveThreadPoolExecutor.create(
             10000,
@@ -147,11 +149,13 @@ public class SampleReadService {
       sample = mongoSampleToSampleConverter.convert(mongoSample);
     }
 
-    //todo add structured data
+    // todo add structured data
     MongoStructuredData mongoStructuredData = mongoStructuredDataRepository.findOne(accession);
     if (mongoStructuredData != null) {
-      StructuredData structuredData = mongoStructuredDataToStructuredDataConverter.convert(mongoStructuredData);
-      sample = Sample.Builder.fromSample(sample).withStructuredData(structuredData.getData()).build();
+      StructuredData structuredData =
+          mongoStructuredDataToStructuredDataConverter.convert(mongoStructuredData);
+      sample =
+          Sample.Builder.fromSample(sample).withStructuredData(structuredData.getData()).build();
     }
 
     return sample == null ? Optional.empty() : Optional.of(sample);

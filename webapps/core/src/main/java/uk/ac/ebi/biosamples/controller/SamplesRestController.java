@@ -103,7 +103,7 @@ public class SamplesRestController {
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Resources<Resource<Sample>>> searchHal(
-          HttpServletRequest request,
+      HttpServletRequest request,
       @RequestParam(name = "text", required = false) String text,
       @RequestParam(name = "filter", required = false) String[] filter,
       @RequestParam(name = "cursor", required = false) String cursor,
@@ -113,7 +113,7 @@ public class SamplesRestController {
       @RequestParam(name = "curationrepo", required = false) final String curationRepo,
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
       @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-              String authProvider) {
+          String authProvider) {
     final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
     // Need to decode the %20 and similar from the parameters
     // this is *not* needed for the html controller
@@ -129,9 +129,9 @@ public class SamplesRestController {
       final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
       final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-              bioSamplesWebinAuthenticationService
-                      .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-                      .getBody();
+          bioSamplesWebinAuthenticationService
+              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+              .getBody();
       webinSubmissionAccountId = webinAccount.getId();
     }
 
@@ -233,7 +233,13 @@ public class SamplesRestController {
       Pageable pageable = new PageRequest(effectivePage, effectiveSize, pageSort);
       Page<Sample> pageSample =
           samplePageService.getSamplesByText(
-              text, filters, domains, webinSubmissionAccountId, pageable, curationRepo, decodedCurationDomains);
+              text,
+              filters,
+              domains,
+              webinSubmissionAccountId,
+              pageable,
+              curationRepo,
+              decodedCurationDomains);
       Resources<Resource<Sample>> resources =
           populateResources(
               pageSample,

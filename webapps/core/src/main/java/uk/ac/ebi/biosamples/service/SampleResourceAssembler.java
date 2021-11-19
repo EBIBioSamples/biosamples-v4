@@ -85,10 +85,9 @@ public class SampleResourceAssembler implements ResourceAssembler<Sample, Resour
   }
 
   private Link getStructuredDataLink(String accession) {
-    return ControllerLinkBuilder.linkTo(ControllerLinkBuilder
-                                            .methodOn(StructuredDataRestController.class)
-                                            .get(accession))
-                                .withRel("structuredData");
+    return ControllerLinkBuilder.linkTo(
+            ControllerLinkBuilder.methodOn(StructuredDataRestController.class).get(accession))
+        .withRel("structuredData");
   }
 
   public Resource<Sample> toResource(
