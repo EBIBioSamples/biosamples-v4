@@ -17,7 +17,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-core-5.1.11-RC1.war
+    - webapps-core-5.1.13-SNAPSHOT.war
     environment:
     #AAP certificate
     - jwt.certificate=public.explore.der
@@ -78,7 +78,7 @@ services:
     command:
       - java
       - -jar
-      - webapps-core-v2-5.1.11-RC1.war
+      - webapps-core-v2-5.1.13-SNAPSHOT.jar
     environment:
       #AAP certificate
       - jwt.certificate=public.explore.der
@@ -135,7 +135,7 @@ services:
     command:
     - java
     - -jar
-    - agents-solr-5.1.11-RC1.jar
+    - agents-solr-5.1.13-SNAPSHOT.jar
     environment:
     - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
@@ -150,6 +150,31 @@ services:
     - spring.cache.cache-names=ols_ancestors_synonyms
     - spring.cache.caffeine.spec=maximumSize=500,expireAfterAccess=600s
 
+  biosamples-agents-upload-workers:
+    image: biosamples:latest
+    mem_limit: 500m
+    links:
+      - rabbitmq
+    volumes:
+      - logs:/logs
+    command:
+      - java
+      - -jar
+      - agents-uploadworkers-5.1.13-SNAPSHOT.jar
+    environment:
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
+      - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
+      - SPRING_RABBITMQ_LISTENER_CONCURRENCY=16
+      - SPRING_RABBITMQ_LISTENER_MAX-CONCURRENCY=32
+      - SPRING_RABBITMQ_LISTENER_SIMPLE_PREFETCH=128
+      - SPRING_RABBITMQ_LISTENER_SIMPLE_TRANSACTION-SIZE=32
+      - SPRING_DATA_SOLR_HOST=http://solr:8983/solr
+      - BIOSAMPLES_AGENT_SOLR_STAYALIVE=true
+      - LOGGING_FILE=/logs/agents-solr.log
+      - spring.cache.cache-names=ols_ancestors_synonyms
+      - spring.cache.caffeine.spec=maximumSize=500,expireAfterAccess=600s
+
   biosamples-pipelines-ena:
     image: biosamples:latest
     mem_limit: 500m
@@ -160,7 +185,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-ena-5.1.11-RC1.jar
+    - pipelines-ena-5.1.13-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ena.log
@@ -175,7 +200,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-ncbi-5.1.11-RC1.jar
+    - pipelines-ncbi-5.1.13-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ncbi.log
@@ -190,7 +215,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-accession-5.1.11-RC1.jar
+    - pipelines-accession-5.1.13-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-accession.log
@@ -205,7 +230,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-copydown-5.1.11-RC1.jar
+    - pipelines-copydown-5.1.13-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-copydown.log
@@ -220,7 +245,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-curation-5.1.11-RC1.jar
+    - pipelines-curation-5.1.13-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-curation.log
@@ -237,7 +262,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-zooma-5.1.11-RC1.jar
+    - pipelines-zooma-5.1.13-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-zooma.log
@@ -254,7 +279,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-reindex-5.1.11-RC1.jar
+    - pipelines-reindex-5.1.13-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-reindex.log
@@ -272,7 +297,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-export-5.1.11-RC1.jar
+    - pipelines-export-5.1.13-SNAPSHOT.jar
     - --gzip
     - /export/export.json.gzip
     environment:
@@ -290,7 +315,7 @@ services:
     command:
     - java
     - -jar
-    - integration-5.1.11-RC1.jar
+    - integration-5.1.13-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/integration.log

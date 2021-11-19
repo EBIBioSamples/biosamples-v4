@@ -200,6 +200,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
         sample.getName(),
         sample.getAccession(),
         sample.getDomain(),
+        sample.getWebinSubmissionAccountId(),
         releaseSolr,
         updateSolr,
         null,

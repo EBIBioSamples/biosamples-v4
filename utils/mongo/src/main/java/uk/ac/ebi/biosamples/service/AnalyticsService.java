@@ -13,6 +13,7 @@ package uk.ac.ebi.biosamples.service;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -47,13 +48,51 @@ public class AnalyticsService {
     return analyticsRepository.findMongoAnalyticsByIdBetween(startString, endString);
   }
 
-  public void persistSampleAnalytics(Instant runTime, SampleAnalytics sampleAnalytics) {
+  public MongoAnalytics getLatestAnalytics() {
+    return analyticsRepository.findFirstByOrderByCollectionDateDesc();
+  }
+
+  public void mergeSampleAnalytics(Instant runTime, SampleAnalytics sampleAnalytics) {
     String pipelineRunDate = getApproximateRunDateAsString(runTime);
     LOG.info("Saving sample types for date: {}", pipelineRunDate);
+    LocalDate localDate = runTime.atZone(ZoneId.systemDefault()).toLocalDate();
+    //    LocalDate localDate = LocalDate.ofInstant(runTime, ZoneId.systemDefault());
 
     MongoAnalytics analyticsRecord = analyticsRepository.findOne(pipelineRunDate);
     if (analyticsRecord == null) {
-      analyticsRecord = new MongoAnalytics(pipelineRunDate);
+      analyticsRecord =
+          new MongoAnalytics(
+              pipelineRunDate,
+              localDate.getYear(),
+              localDate.getMonthValue(),
+              localDate.getDayOfMonth());
+    } else {
+      SampleAnalytics oldSampleAnalytics = analyticsRecord.getSampleAnalytics();
+      if (oldSampleAnalytics != null) {
+        sampleAnalytics.getCenter().putAll(oldSampleAnalytics.getCenter());
+        sampleAnalytics.getChannel().putAll(oldSampleAnalytics.getChannel());
+        sampleAnalytics.setProcessedRecords(oldSampleAnalytics.getProcessedRecords());
+        sampleAnalytics.setDateRange(oldSampleAnalytics.getDateRange());
+      }
+    }
+
+    analyticsRecord.setSampleAnalytics(sampleAnalytics);
+    analyticsRepository.save(analyticsRecord);
+  }
+
+  public void persistSampleAnalytics(Instant runTime, SampleAnalytics sampleAnalytics) {
+    String pipelineRunDate = getApproximateRunDateAsString(runTime);
+    LOG.info("Saving sample types for date: {}", pipelineRunDate);
+    LocalDate localDate = runTime.atZone(ZoneId.systemDefault()).toLocalDate();
+
+    MongoAnalytics analyticsRecord = analyticsRepository.findOne(pipelineRunDate);
+    if (analyticsRecord == null) {
+      analyticsRecord =
+          new MongoAnalytics(
+              pipelineRunDate,
+              localDate.getYear(),
+              localDate.getMonthValue(),
+              localDate.getDayOfMonth());
     }
     analyticsRecord.setSampleAnalytics(sampleAnalytics);
     analyticsRepository.save(analyticsRecord);
@@ -62,10 +101,17 @@ public class AnalyticsService {
   public void persistPipelineAnalytics(PipelineAnalytics pipelineAnalytics) {
     String pipelineRunDate = getApproximateRunDateAsString(pipelineAnalytics.getStartTime());
     LOG.info("Saving {} analytics for date: {}", pipelineAnalytics.getName(), pipelineRunDate);
+    LocalDate localDate =
+        pipelineAnalytics.getStartTime().atZone(ZoneId.systemDefault()).toLocalDate();
 
     MongoAnalytics analyticsRecord = analyticsRepository.findOne(pipelineRunDate);
     if (analyticsRecord == null) {
-      analyticsRecord = new MongoAnalytics(pipelineRunDate);
+      analyticsRecord =
+          new MongoAnalytics(
+              pipelineRunDate,
+              localDate.getYear(),
+              localDate.getMonthValue(),
+              localDate.getDayOfMonth());
     }
     analyticsRecord.addPipelineAnalytics(pipelineAnalytics);
     analyticsRepository.save(analyticsRecord);

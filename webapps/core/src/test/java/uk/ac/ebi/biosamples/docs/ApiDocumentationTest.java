@@ -55,6 +55,7 @@ import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.certification.*;
 import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
 import uk.ac.ebi.biosamples.service.certification.Identifier;
@@ -96,6 +97,8 @@ public class ApiDocumentationTest {
   @MockBean private Identifier identifier;
 
   @MockBean private SchemaValidationService schemaValidationService;
+
+  @MockBean private StructuredDataService structuredDataService;
 
   private DocumentationHelper faker;
 
@@ -148,6 +151,7 @@ public class ApiDocumentationTest {
             any(String.class),
             anyCollectionOf(Filter.class),
             anyCollectionOf(String.class),
+            any(String.class),
             isA(Pageable.class),
             any(String.class),
             any()))
@@ -361,6 +365,36 @@ public class ApiDocumentationTest {
         .andDo(
             document(
                 "post-sample-with-external-references",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint())));
+  }
+
+  /**
+   * Generate the snippets for submitting structured data to BioSamples
+   *
+   * @throws Exception
+   */
+  @Test
+  public void putStructuredData() throws Exception {
+    StructuredData structuredData = faker.getExampleStructuredData();
+    when(structuredDataService.saveStructuredData(eq(structuredData))).thenReturn(structuredData);
+    when(structuredDataService.getStructuredData(eq(structuredData.getAccession())))
+        .thenReturn(Optional.of(structuredData));
+    doNothing().when(aapService).handleStructuredDataDomain(eq(structuredData));
+    when(aapService.isWriteSuperUser()).thenReturn(true);
+    when(aapService.isIntegrationTestUser()).thenReturn(false);
+    doNothing().when(aapService).checkAccessible(isA(Sample.class));
+
+    mockMvc
+        .perform(
+            put("/biosamples/structureddata/" + structuredData.getAccession())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(serialize(structuredData))
+                .header("Authorization", "Bearer $TOKEN"))
+        .andExpect(status().is2xxSuccessful())
+        .andDo(
+            document(
+                "put-structured-data",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint())));
   }

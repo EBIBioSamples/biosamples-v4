@@ -16,7 +16,7 @@ maven-package:
   image: maven:3.6-jdk-11
   stage: package
   script:
-    - 'mvn -e deploy -P embl-ebi -s ci_settings.xml -Dmaven.source.skip=true -DskipTests=true'
+    - 'mvn -e deploy -P embl-ebi -s ci_settings.xml -Dmaven.source.skip=true'
     - mkdir deployment
     - cp webapps/core/target/webapps-core-*.war deployment/webapps-core.war
     - cp agents/solr/target/agents-solr-*.jar deployment/agents-solr.jar
@@ -36,7 +36,7 @@ maven-package:
     - cp pipelines/neoexport/target/pipelines-neoexport-*.jar deployment/pipelines-neoexport.jar
     - cp pipelines/reindex/target/pipelines-reindex-*.jar deployment/pipelines-reindex.jar
     - cp pipelines/zooma/target/pipelines-zooma-*.jar deployment/pipelines-zooma.jar
-    - cp pipelines/sample-transformation-dtol/target/pipelines-sample-transformation-dtol-*.jar deployment/sample-transformation-dtol.jar
+    - cp pipelines/sample-transformation-dtol/target/pipelines-sample-transformation-dtol-*.jar deployment/pipelines-sample-transformation-dtol.jar
   artifacts:
     paths:
       - deployment

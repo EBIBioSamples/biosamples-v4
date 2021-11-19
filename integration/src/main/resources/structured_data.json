@@ -1,0 +1,88 @@
+{
+  "accession": "SAMEA100021",
+  "data" : [ {
+    "domain" : "self.BiosampleIntegrationTest",
+    "type" : "AMR",
+    "schema" : "https://www.ebi.ac.uk/biosamples/schemas/core/sample.json",
+    "content" : [ {
+      "species" : {
+        "value" : "Escherichia coli",
+        "iri" : ""
+      },
+      "antibiotic_name" : {
+        "value" : "ampicillin",
+        "iri" : "test.org"
+      }
+    }, {
+      "species" : {
+        "value" : "Escherichia coli",
+        "iri" : ""
+      },
+      "antibiotic_name" : {
+        "value" : "amoxicillin-clavulanic acid",
+        "iri" : "test.org"
+      }
+    } ]
+  }, {
+    "domain" : "self.BiosampleIntegrationTest",
+    "type" : "CHICKEN_DATA",
+    "schema" : "https://www.ebi.ac.uk/biosamples/schemas/core/sample.json",
+    "content" : [ {
+      "marker" : {
+        "value" : "Cortisol edit 1",
+        "iri" : "http://purl.obolibrary.org/obo/NCIT_C2290"
+      },
+      "measurement" : {
+        "value" : "0.000",
+        "iri" : null
+      },
+      "measurement_units" : {
+        "value" : "log pg/mg feather",
+        "iri" : null
+      },
+      "partner" : {
+        "value" : "IRTA",
+        "iri" : "http://www.irta.cat/en/"
+      }
+    } ]
+  }, {
+    "domain" : "self.BiosampleIntegrationTest",
+    "type" : "HISTOLOGY_MARKERS",
+    "schema" : "https://www.ebi.ac.uk/biosamples/schemas/core/sample.json",
+    "content" : [ {
+      "marker" : {
+        "value" : "Crypt depth",
+        "iri" : null
+      },
+      "measurement" : {
+        "value" : "0",
+        "iri" : null
+      },
+      "measurement_units" : {
+        "value" : "um",
+        "iri" : null
+      },
+      "partner" : {
+        "value" : "FUB",
+        "iri" : "https://www.fu-berlin.de/en/sites/china/ueberfub/forschung/index.html"
+      }
+    }, {
+      "marker" : {
+        "value" : "Villous height",
+        "iri" : "http://purl.obolibrary.org/obo/NCIT_C14170"
+      },
+      "measurement" : {
+        "value" : "0",
+        "iri" : null
+      },
+      "measurement_units" : {
+        "value" : "um",
+        "iri" : null
+      },
+      "partner" : {
+        "value" : "FUB",
+        "iri" : "https://www.fu-berlin.de/en/sites/china/ueberfub/forschung/index.html"
+      }
+    } ]
+  } ]
+}

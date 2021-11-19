@@ -16,7 +16,7 @@
 	<script th:if="${jsonLD != null}" type="application/ld+json" th:utext="${jsonLD}"> </script>
 </head>
 
-<!--<body th:onload="|drawGraphs()|">--> <!--uncomment this when completely add index page graphs-->
+<!--<body th:onload="|drawCharts(${stats}, ${yearlyGrowth})|">-->
 <body>
 	<th:block th:include="fragments/header :: header"></th:block>
 	<div layout:fragment="content" id="content" >
@@ -24,7 +24,7 @@
 		<div id="main-content-area" class="row padding-top-xlarge padding-left-xlarge padding-right-xlarge">
 			<div class="row">
 <!--				<div class="warning-msg">-->
-<!--					Please note that the BioSamples team will be out of the office from December 21st 2020 to January 3rd 2021. Replies to Helpdesk requests will be delayed during this period.-->
+<!--					Please note that the BioSamples team will be out of the office from December 20st 2021 to January 4th 2022. Replies to Helpdesk requests will be delayed during this period.-->
 <!--					&lt;!&ndash;<b>Planned Maintenance</b>-->
 <!--					<p>Some of our services are currently undergoing planned maintenance which is due to complete on 30th April 2020.-->
 <!--						There should be no impact on our users.-->
@@ -44,14 +44,20 @@
 				</p>
 			</div>
 
-			<div class="row">
-				<div id="sample-curation-graph" class="medium-12 large-6 columns">
-
-				</div>
-				<div id="sample-type-chart" class="medium-12 large-6 columns">
-
-				</div>
-			</div>
+<!--			<div class="row">-->
+<!--				<div id="sample-curation-graph" class="medium-12 large-6 columns">-->
+<!--					<div id="yearly-growth-chart-wrapper">-->
+<!--						<div class="home-chart-title">sample growth</div>-->
+<!--						<canvas id="yearly-growth-chart" width="450" height="320" class="home-charts"></canvas>-->
+<!--					</div>-->
+<!--				</div>-->
+<!--				<div id="sample-type-chart" class="medium-12 large-6 columns">-->
+<!--					<div id="organism-distribution-chart-wrapper">-->
+<!--						<div class="home-chart-title">organism distribution</div>-->
+<!--						<canvas id="organism-distribution-chart" width="450" height="300" class="home-charts"></canvas>-->
+<!--					</div>-->
+<!--				</div>-->
+<!--			</div>-->
 
 			<div class="row">
 				<h3 class="icon icon-generic icon-spacer" data-icon="L">Info</h3>
@@ -67,66 +73,92 @@
 			<div class="row">
 				<h3 class="icon icon-generic icon-spacer" data-icon="g">Data Content</h3>
 				<div class="data-content">
+
 					<div class="small-12 medium-3 large-3 data-content__entry">
-						<div class="data-logo">
-							<a th:href="@{/samples}+'?text=NCBITaxon_2697049'">
-								<img src="images/covid.png" alt="covid image" title="COVID-19" class="data-content-img"/>
-							</a>
-						</div>
-						<div class="data-search-link data-content-search">
-							<a th:href="@{/samples}+'?text=NCBITaxon_2697049'">search for covid-19 samples</a>
-						</div>
-						<div class="data-description padding-top-small">
-							Coronavirus disease 2019 (COVID-19) is an infectious disease caused by severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2).
+						<div class="home-example-card">
+							<div class="home-example-card-content">
+								<div class="data-logo">
+									<a th:href="@{/samples}+'?text=NCBITaxon_2697049'">
+										<img src="images/covid.png" alt="covid image" title="COVID-19" class="data-content-img"/>
+									</a>
+								</div>
+								<div class="data-description padding-top-small">
+									Coronavirus disease 2019 (COVID-19) is an infectious disease caused by severe acute respiratory
+									syndrome
+									coronavirus 2 (SARS-CoV-2).
+								</div>
+							</div>
+							<div class="data-content-search">
+								<a th:href="@{/samples}+'?text=NCBITaxon_2697049'">search for covid-19 samples</a>
+							</div>
 						</div>
 					</div>
+
 					<div class="small-12 medium-3 large-3 data-content__entry">
-						<div class="data-logo">
-							<a href="//www.ebisc.org">
-								<img src="images/logo_ebisc.png" alt="EBiSC logo" title="EBiSC" class="data-content-img"/>
-							</a>
-						</div>
-						<div class="data-search-link data-content-search">
-							<a th:href="@{/samples}+'?filter=attr%3Aproject%3AEBiSC'" href="samples?filter=attr%3Aproject%3AEBiSC">search for EBiSC samples</a>
-						</div>
-						<div class="data-description padding-top-small">
-							EBiSC has been designed to
-							address the increasing demand for quality-controlled,
-							disease-relevant, research-grade iPSC lines, data and cell
-							services.
+						<div class="home-example-card">
+							<div class="home-example-card-content">
+								<div class="data-logo">
+									<a href="//www.ebisc.org">
+										<img src="images/logo_ebisc.png" alt="EBiSC logo" title="EBiSC" class="data-content-img"/>
+									</a>
+								</div>
+								<div class="data-description padding-top-small">
+									EBiSC has been designed to
+									address the increasing demand for quality-controlled,
+									disease-relevant, research-grade iPSC lines, data and cell
+									services.
+								</div>
+							</div>
+							<div class="data-content-search">
+								<a th:href="@{/samples}+'?filter=attr%3Aproject%3AEBiSC'" href="samples?filter=attr%3Aproject%3AEBiSC">search
+									for EBiSC samples</a>
+							</div>
 						</div>
 					</div>
+
 					<div class="small-12 medium-3 large-3 data-content__entry">
-						<div class="data-logo">
-							<a href="//www.faang.org">
-								<img src="images/logo_faang.png" alt="FAANG logo" title="FAANG" class="data-content-img"/>
-							</a>
-						</div>
-						<div class="data-search-link data-content-search">
-							<a th:href="@{/samples}+'?filter=attr%3Aproject%3AFAANG'" href="samples?filter=attr%3Aproject%3AFAANG">search for FAANG samples</a>
-						</div>
-						<div class="data-description padding-top-small">
-							Functional Annotation of Animal
-							Genomes. A coordinated international action to accelerate genome
-							to phenome research..
+						<div class="home-example-card">
+							<div class="home-example-card-content">
+								<div class="data-logo">
+									<a href="//www.faang.org">
+										<img src="images/logo_faang.png" alt="FAANG logo" title="FAANG" class="data-content-img"/>
+									</a>
+								</div>
+								<div class="data-description padding-top-small">
+									Functional Annotation of Animal
+									Genomes. A coordinated international action to accelerate genome
+									to phenome research..
+								</div>
+							</div>
+							<div class="data-content-search">
+								<a th:href="@{/samples}+'?filter=attr%3Aproject%3AFAANG'" href="samples?filter=attr%3Aproject%3AFAANG">search
+									for FAANG samples</a>
+							</div>
 						</div>
 					</div>
+
 					<div class="small-12 medium-3 large-3 data-content__entry">
-						<div class="data-logo">
-							<a href="//www.hipsci.org">
-								<img src="images/logo_hipsci.png" alt="HipSci logo" title="HipSci" class="data-content-img"/>
-							</a>
-						</div>
-						<div class="data-search-link data-content-search">
-							<a th:href="@{/samples}+'?filter=attr%3Aproject%3AHipSci'" href="samples?filter=attr%3Aproject%3AHipSci">search for HipSci samples</a>
-						</div>
-						<div class="data-description padding-top-small">
-							HipSci brings together diverse
-							constituents in genomics, proteomics, cell biology and clinical
-							genetics to create a UK national iPS cell resource and use it to
-							carry out cellular genetic studies.
+						<div class="home-example-card">
+							<div class="home-example-card-content">
+								<div class="data-logo">
+									<a href="//www.hipsci.org">
+										<img src="images/logo_hipsci.png" alt="HipSci logo" title="HipSci" class="data-content-img"/>
+									</a>
+								</div>
+								<div class="data-description padding-top-small">
+									HipSci brings together diverse
+									constituents in genomics, proteomics, cell biology and clinical
+									genetics to create a UK national iPS cell resource and use it to
+									carry out cellular genetic studies.
+								</div>
+							</div>
+							<div class="data-content-search">
+								<a th:href="@{/samples}+'?filter=attr%3Aproject%3AHipSci'"
+									 href="samples?filter=attr%3Aproject%3AHipSci">search for HipSci samples</a>
+							</div>
 						</div>
 					</div>
+
 				</div>
 			</div>
 		</div>

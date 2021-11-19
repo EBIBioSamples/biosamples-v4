@@ -16,10 +16,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.csv.CSVParser;
 import org.slf4j.Logger;
@@ -53,6 +50,8 @@ public class FileUploadService {
 
   @Autowired private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
 
+  @Autowired private BioSamplesAapService bioSamplesAapService;
+
   @Autowired private MongoFileUploadRepository mongoFileUploadRepository;
 
   @Autowired private FileQueueService fileQueueService;
@@ -69,6 +68,20 @@ public class FileUploadService {
     final boolean isWebin = authProvider.equals(FileUploadUtils.WEBIN_AUTH);
 
     try {
+      final String uniqueUploadId = UUID.randomUUID().toString();
+
+      final MongoFileUpload mongoFileUploadInitial =
+          new MongoFileUpload(
+              uniqueUploadId,
+              BioSamplesFileUploadSubmissionStatus.ACTIVE,
+              isWebin ? webinId : aapDomain,
+              checklist,
+              isWebin,
+              new ArrayList<>(),
+              null);
+
+      mongoFileUploadRepository.insert(mongoFileUploadInitial);
+
       final Path temp = Files.createTempFile("upload", ".tsv");
 
       File fileToBeUploaded = temp.toFile();
@@ -85,16 +98,18 @@ public class FileUploadService {
       validateHeaderPositions(headers);
 
       final List<Multimap<String, String>> csvDataMap =
-          this.fileUploadUtils.getCSVDataInMap(csvParser);
+          fileUploadUtils.getISATABDataInMap(csvParser);
       final int numSamples = csvDataMap.size();
 
       log.info("CSV data size: " + numSamples);
 
       if (numSamples > 200) {
         log.info("File sample count exceeds limits - queueing file for async submission");
-        final String submissionId = fileQueueService.queueFile(file, aapDomain, checklist, webinId);
+        final String submissionId =
+            fileQueueService.queueFileinMongoAndSendMessageToRabbitMq(
+                file, aapDomain, checklist, webinId);
 
-        return this.fileUploadUtils.writeQueueMessageToFile(submissionId);
+        return fileUploadUtils.writeQueueMessageToFile(submissionId);
       }
 
       final List<Sample> samples =
@@ -106,7 +121,19 @@ public class FileUploadService {
       validationResult.addValidationMessage(persistenceMessage);
       log.info("Final message: " + String.join("\n", validationResult.getValidationMessagesList()));
 
-      return this.fileUploadUtils.writeToFile(fileToBeUploaded, headers, samples, validationResult);
+      final MongoFileUpload mongoFileUploadCompleted =
+          new MongoFileUpload(
+              uniqueUploadId,
+              BioSamplesFileUploadSubmissionStatus.COMPLETED,
+              isWebin ? webinId : aapDomain,
+              checklist,
+              isWebin,
+              new ArrayList<>(),
+              null);
+
+      mongoFileUploadRepository.save(mongoFileUploadCompleted);
+
+      return fileUploadUtils.writeToFile(fileToBeUploaded, headers, samples, validationResult);
     } catch (final Exception e) {
       final String messageForBsdDevTeam =
           "********FEEDBACK TO BSD DEV TEAM START********"
@@ -262,24 +289,24 @@ public class FileUploadService {
         sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinId);
       } else {
         sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
-        // sample = bioSamplesAapService.handleSampleDomain(sample);
+        sample = bioSamplesAapService.handleSampleDomain(sample);
       }
 
       return sample;
     } catch (final Exception e) {
       if (e instanceof BioSamplesWebinAuthenticationService.SampleNotAccessibleException) {
         validationResult.addValidationMessage(
-            "Sample " + sample.getName() + " is not accessible by your user");
+            "Sample " + sample.getName() + " is not accessible for you");
       } else if (e
           instanceof BioSamplesWebinAuthenticationService.WebinUserLoginUnauthorizedException) {
         validationResult.addValidationMessage(
             "Sample " + sample.getName() + " not persisted as WEBIN user is not authorized");
       } else if (e instanceof BioSamplesAapService.SampleDomainMismatchException) {
         validationResult.addValidationMessage(
-            "Sample " + sample.getName() + " is not accessible by your user");
+            "Sample " + sample.getName() + " is not accessible for you");
       } else if (e instanceof BioSamplesAapService.SampleNotAccessibleException) {
         validationResult.addValidationMessage(
-            "Sample " + sample.getName() + " is not accessible by your user");
+            "Sample " + sample.getName() + " is not accessible for you");
       } else {
         validationResult.addValidationMessage("General auth error, please retry");
       }

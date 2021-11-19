@@ -23,6 +23,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
 import uk.ac.ebi.biosamples.service.SampleService;
 
@@ -101,6 +102,7 @@ public class BioSamplesWebinAuthenticationService {
 
         if (webinId.equalsIgnoreCase(
             biosamplesClientWebinUsername)) { // ENA pipeline submissions or super user submission
+          // (via FILE UPLOADER)
           if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
             if (oldSample.isPresent()
                 && !sample
@@ -237,6 +239,20 @@ public class BioSamplesWebinAuthenticationService {
 
     if (isWebinIdValid.get()) return sample;
     else throw new StructuredDataNotAccessibleException();
+  }
+
+  public void handleStructuredDataAccesibility(StructuredData structuredData, String id) {
+    structuredData
+        .getData()
+        .forEach(
+            data -> {
+              if (data.getWebinSubmissionAccountId() == null
+                  || data.getWebinSubmissionAccountId().isEmpty()) {
+                throw new StructuredDataWebinIdMissingException();
+              } else if (!id.equalsIgnoreCase(data.getWebinSubmissionAccountId())) {
+                throw new WebinUserLoginUnauthorizedException();
+              }
+            });
   }
 
   public boolean findIfOriginalSampleWebinSubmitter(Sample sample, String id) {
