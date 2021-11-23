@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.Attribute;
@@ -117,7 +119,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 
     // turn external reference into additional attributes for facet & filter
     for (ExternalReference externalReference : sample.getExternalReferences()) {
-      String externalReferenceNickname = externalReferenceService.getNickname(externalReference);
+      String externalReferenceNickname = externalReferenceService.getNickname(externalReference).toLowerCase();
       String externalReferenceNicknameKey =
           SolrFieldService.encodeFieldName(externalReferenceNickname);
       String key = SolrFieldService.encodeFieldName("external reference");
@@ -132,7 +134,11 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
         if (!attributeValues.containsKey(keyDuo)) {
           attributeValues.put(keyDuo, new ArrayList<>());
         }
-        attributeValues.get(keyDuo).addAll(externalReference.getDuo());
+        attributeValues.get(keyDuo).addAll(
+            externalReference.getDuo()
+                             .stream()
+                             .map(s -> s.toLowerCase())
+                             .collect(Collectors.toList()));
       }
 
       // Add the external reference data id
@@ -145,7 +151,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
         if (!externalReferencesData.containsKey(externalReferenceNicknameKey)) {
           externalReferencesData.put(externalReferenceNicknameKey, new ArrayList<>());
         }
-        externalReferencesData.get(externalReferenceNicknameKey).add(externalReferenceDataId.get());
+        externalReferencesData.get(externalReferenceNicknameKey).add(externalReferenceDataId.get().toLowerCase());
       }
     }
 
