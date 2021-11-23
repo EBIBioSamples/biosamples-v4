@@ -21,6 +21,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.controller.SampleCurationLinksRestController;
 import uk.ac.ebi.biosamples.controller.SampleRestController;
+import uk.ac.ebi.biosamples.controller.StructuredDataRestController;
 import uk.ac.ebi.biosamples.model.Sample;
 
 /**
@@ -83,6 +84,12 @@ public class SampleResourceAssembler implements ResourceAssembler<Sample, Resour
         .withRel("curationLink");
   }
 
+  private Link getStructuredDataLink(String accession) {
+    return ControllerLinkBuilder.linkTo(
+            ControllerLinkBuilder.methodOn(StructuredDataRestController.class).get(accession))
+        .withRel("structuredData");
+  }
+
   public Resource<Sample> toResource(
       Sample sample,
       Optional<Boolean> legacydetails,
@@ -96,6 +103,7 @@ public class SampleResourceAssembler implements ResourceAssembler<Sample, Resour
     // add link to curationLinks on this sample
     sampleResource.add(getCurationLinksLink(sample.getAccession()));
     sampleResource.add(getCurationLinkLink(sample.getAccession()));
+    sampleResource.add(getStructuredDataLink(sample.getAccession()));
     return sampleResource;
   }
 

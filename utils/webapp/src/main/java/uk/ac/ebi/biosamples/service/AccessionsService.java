@@ -50,7 +50,7 @@ public class AccessionsService {
       final List<String> accessions) {
     final Page<SolrSample> pageSolrSample =
         solrSampleService.fetchSolrSampleByText(
-            decodedText, filtersAfterDecode, Collections.EMPTY_LIST, pageable);
+            decodedText, filtersAfterDecode, Collections.EMPTY_LIST, null, pageable);
     return pageSolrSample.map(SolrSample::getAccession);
   }
 }

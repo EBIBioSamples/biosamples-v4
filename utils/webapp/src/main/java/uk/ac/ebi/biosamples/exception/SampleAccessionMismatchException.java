@@ -8,30 +8,18 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.model;
+package uk.ac.ebi.biosamples.exception;
 
-import java.io.InputStream;
-
-public class BioSamplesSubmissionFile {
-  private final String fileName;
-  private final InputStream stream;
-
-  public BioSamplesSubmissionFile(final String fileName, final InputStream stream) {
+public class SampleAccessionMismatchException extends RuntimeException {
+  public SampleAccessionMismatchException() {
     super();
-    this.fileName = fileName;
-    this.stream = stream;
   }
 
-  public String getFileName() {
-    return fileName;
+  public SampleAccessionMismatchException(String message) {
+    super(message);
   }
 
-  public InputStream getStream() {
-    return stream;
-  }
-
-  @Override
-  public String toString() {
-    return "BioSamplesSubmissionFile [title=" + fileName + "]";
+  public SampleAccessionMismatchException(String message, Exception e) {
+    super(message, e);
   }
 }

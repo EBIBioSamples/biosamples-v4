@@ -30,6 +30,7 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.repo.DomainService;
@@ -184,60 +185,69 @@ public class BioSamplesAapService {
    */
   public Sample handleSampleDomain(Sample sample)
       throws SampleNotAccessibleException, DomainMissingException {
-    // get the domains the current user has access to
+    // Get the domains the current user has access to
     final Set<String> usersDomains = getDomains();
     final String domain = sample.getDomain();
+    Optional<Sample> oldSample = Optional.empty();
 
-    if (domain == null || domain.length() == 0) {
-      // if the sample doesn't have a domain, and the user has one domain, then they must be
-      // submitting to that domain
-      if (usersDomains.size() == 1) {
-        sample =
-            Sample.Builder.fromSample(sample)
-                .withDomain(usersDomains.iterator().next())
-                .withNoWebinSubmissionAccountId()
-                .build();
+    // Get the old sample while sample updates, domain needs to be compared with old sample domain
+    // for some cases
+    if (sample.getAccession() != null) {
+      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+    }
+
+    // check if FILE UPLOADER submission, domain changes are not allowed, handled differently
+    if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
+      if (oldSample.isPresent() && !domain.equals(oldSample.get().getDomain())) {
+        throw new SampleDomainMismatchException();
       } else {
-        throw new DomainMissingException();
+        return sample;
       }
-    }
-
-    // todo remove integration user check
-    if (sample.getAccession() != null && !(isWriteSuperUser() || isIntegrationTestUser())) {
-      final Optional<Sample> oldSample =
-          sampleService.fetch(sample.getAccession(), Optional.empty(), null);
-      final boolean oldSamplePresent = oldSample.isPresent();
-
-      if (!oldSamplePresent || !usersDomains.contains(oldSample.get().getDomain())) {
-        final boolean webinProxyUser =
-            (oldSamplePresent
-                && bioSamplesWebinAuthenticationService.isWebinSuperUser(
-                    oldSample.get().getWebinSubmissionAccountId()));
-
-        if (!webinProxyUser) {
-          throw new SampleDomainMismatchException();
-        }
-      }
-    }
-
-    // check sample is assigned to a domain that the authenticated user has access to
-    if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
-      if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-        final Optional<Sample> oldSample =
-            sampleService.fetch(sample.getAccession(), Optional.empty(), null);
-
-        if (oldSample.isPresent() && !domain.equals(oldSample.get().getDomain())) {
-          throw new SampleDomainMismatchException();
+    } else { // non FILE UPLOADER submissions
+      if (domain == null || domain.length() == 0) {
+        // if the sample doesn't have a domain, and the user has one domain, then they must be
+        // submitting to that domain
+        if (usersDomains.size() == 1) {
+          sample =
+              Sample.Builder.fromSample(sample)
+                  .withDomain(usersDomains.iterator().next())
+                  .withNoWebinSubmissionAccountId()
+                  .build();
+        } else {
+          throw new DomainMissingException();
         }
       }
 
-      return sample;
-    } else if (usersDomains.contains(domain)) {
-      return sample;
-    } else {
-      log.warn(
-          "User asked to submit sample to domain " + domain + " but has access to " + usersDomains);
-      throw new SampleNotAccessibleException();
+      // TODO: Review the webin user check, Dipayan
+      // Non super user submission
+      if (sample.getAccession() != null && !(isWriteSuperUser() || isIntegrationTestUser())) {
+        final boolean oldSamplePresent = oldSample.isPresent();
+
+        if (!oldSamplePresent || !usersDomains.contains(oldSample.get().getDomain())) {
+          final boolean webinProxyUser =
+              (oldSamplePresent
+                  && bioSamplesWebinAuthenticationService.isWebinSuperUser(
+                      oldSample.get().getWebinSubmissionAccountId()));
+
+          if (!webinProxyUser) {
+            throw new SampleDomainMismatchException();
+          }
+        }
+      }
+
+      // Super user submission
+      if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
+        return sample;
+      } else if (usersDomains.contains(domain)) {
+        return sample;
+      } else {
+        log.warn(
+            "User asked to submit sample to domain "
+                + domain
+                + " but has access to "
+                + usersDomains);
+        throw new SampleNotAccessibleException();
+      }
     }
   }
 
@@ -270,6 +280,24 @@ public class BioSamplesAapService {
     if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) return sample;
     else if (isDomainValid.get()) return sample;
     else throw new StructuredDataNotAccessibleException();
+  }
+
+  public void handleStructuredDataDomain(StructuredData structuredData) {
+    final Set<String> usersDomains = getDomains();
+    if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
+      return;
+    }
+
+    structuredData
+        .getData()
+        .forEach(
+            data -> {
+              if (data.getDomain() == null) {
+                throw new StructuredDataDomainMissingException();
+              } else if (!usersDomains.contains(data.getDomain())) {
+                throw new SampleDomainMismatchException();
+              }
+            });
   }
 
   /**

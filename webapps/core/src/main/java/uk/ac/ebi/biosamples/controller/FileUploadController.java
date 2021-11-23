@@ -118,7 +118,8 @@ public class FileUploadController {
 
       try {
         final String fileId =
-            fileQueueService.queueFile(file, hiddenAapDomain, hiddenCertificate, webinAccount);
+            fileQueueService.queueFileinMongoAndSendMessageToRabbitMq(
+                file, hiddenAapDomain, hiddenCertificate, webinAccount);
         final File queuedUploadMessageFile = fileUploadUtils.writeQueueMessageToFile(fileId);
         final byte[] bytes = FileUtils.readFileToByteArray(queuedUploadMessageFile);
         final HttpHeaders headers = setResponseHeadersFailure(queuedUploadMessageFile);

@@ -98,6 +98,7 @@ public class SitemapController {
             "",
             Collections.emptyList(),
             Collections.emptyList(),
+            null,
             pageRequest,
             null,
             Optional.empty());
@@ -145,7 +146,8 @@ public class SitemapController {
     Collection<Filter> filters = Collections.emptyList();
     Collection<String> domains = Collections.emptyList();
     Page<Sample> samplePage =
-        samplePageService.getSamplesByText("", filters, domains, pageable, null, Optional.empty());
+        samplePageService.getSamplesByText(
+            "", filters, domains, null, pageable, null, Optional.empty());
     return samplePage.getTotalElements();
   }
 }

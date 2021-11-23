@@ -103,6 +103,7 @@ public class SamplesRestController {
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Resources<Resource<Sample>>> searchHal(
+      HttpServletRequest request,
       @RequestParam(name = "text", required = false) String text,
       @RequestParam(name = "filter", required = false) String[] filter,
       @RequestParam(name = "cursor", required = false) String cursor,
@@ -110,16 +111,29 @@ public class SamplesRestController {
       @RequestParam(name = "size", required = false) final Integer size,
       @RequestParam(name = "sort", required = false) final String[] sort,
       @RequestParam(name = "curationrepo", required = false) final String curationRepo,
-      @RequestParam(name = "curationdomain", required = false) String[] curationdomain) {
-
+      @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
+      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
+          String authProvider) {
+    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
     // Need to decode the %20 and similar from the parameters
     // this is *not* needed for the html controller
     String decodedText = LinkUtils.decodeText(text);
     String[] decodedFilter = LinkUtils.decodeTexts(filter);
     String decodedCursor = LinkUtils.decodeText(cursor);
     Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
+    String webinSubmissionAccountId = null;
 
     int effectivePage;
+
+    if (webinAuth) {
+      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
+      final Authentication authentication = bearerTokenExtractor.extract(request);
+      final SubmissionAccount webinAccount =
+          bioSamplesWebinAuthenticationService
+              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+              .getBody();
+      webinSubmissionAccountId = webinAccount.getId();
+    }
 
     if (page == null) {
       effectivePage = 0;
@@ -158,6 +172,7 @@ public class SamplesRestController {
               decodedText,
               filters,
               domains,
+              webinSubmissionAccountId,
               decodedCursor,
               effectiveSize,
               curationRepo,
@@ -218,7 +233,13 @@ public class SamplesRestController {
       Pageable pageable = new PageRequest(effectivePage, effectiveSize, pageSort);
       Page<Sample> pageSample =
           samplePageService.getSamplesByText(
-              text, filters, domains, pageable, curationRepo, decodedCurationDomains);
+              text,
+              filters,
+              domains,
+              webinSubmissionAccountId,
+              pageable,
+              curationRepo,
+              decodedCurationDomains);
       Resources<Resource<Sample>> resources =
           populateResources(
               pageSample,

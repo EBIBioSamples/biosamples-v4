@@ -2,6 +2,47 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+[[v5.1.12]]
+== v5.1.12 Release notes
+=== New Features
+*Private sample search using Webin Authentication*
+
+Private sample submitted using Webin Authentication can now be searched using the GET API, it covers:
+
+Single private sample search using accession
+Filtered search result containing only private samples
+Filtered search results containing a mix of private and public samples
+
+Example API calls,
+
+For 1.1 - curl 'https://www.ebi.ac.uk/biosamples/samples/<accession>?authProvider=WEBIN' -i -X GET -H "Content-Type: application/json;charset=UTF-8" -H "Accept: application/hal+json" -H "Authorization: Bearer $TOKEN"
+
+For 1.2 and 1.3 - curl 'http:// www.ebi.ac.uk/biosamples/samples?filter=attr:<attribute_name>:<attribute_value>&authProvider=WEBIN' -i -X GET -H "Content-Type: application/json;charset=UTF-8" -H "Accept: application/hal+json" -H "Authorization: Bearer $TOKEN"
+
+To get the Webin Authentication token,
+
+TOKEN=$(curl --location --request POST 'https://www.ebi.ac.uk/ena/submit/webin/auth/token' --header 'Content-Type: application/json' --data-raw '{
+"authRealms": [
+"ENA"
+],
+"password": "<password_here>",
+"username": "<username_here>"
+}')
+
+*Additional field support for the drag’n’drop uploader*
+
+Publications, contacts and organizations can now be added to sample metadata for submission using the drag’n’drop uploader. For more details please refer - https://www.ebi.ac.uk/biosamples/docs/cookbook/upload_files.html
+
+*Generic structured data submission model*
+
+We have refactored structured data API to accept generic data structures. Previous structured data API only accepted a predefined set of types and hence each new type required code changes. Furthermore, structured data is completely decoupled from the sample in the persistence layer to fully reflect different ownership models they have. More details about the API can be found in our documentation here https://www.ebi.ac.uk/biosamples/docs/references/api/submit#_submit_structured_data_to_sample.
+
+=== Bug Fixes
+BioSamples API documentation has been fixed to include the http requests and http response snippets
+
+=== New V2 endpoints
+Improved V2 submission and accession endpoints will be deployed with this release. This will be first integrated with ENA for accessioning. The endpoints will be monitored for performance. Depending on the reliability metrics the endpoints will be documented and made available for users. Expected date of general availability is December 10, 2021, if performance results are as expected. Target availability is 99.5%.
+
 [[v5.1.11]]
 == v5.1.11 Release notes
 === New Features

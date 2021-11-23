@@ -39,7 +39,7 @@ import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
 import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
 
 @Service
-public class BioSamplesFileUploadSubmissionService {
+public class FileUploadSubmissionService {
   private Logger log = LoggerFactory.getLogger(getClass());
   private ValidationResult validationResult;
   private FileUploadUtils fileUploadUtils;
@@ -50,7 +50,7 @@ public class BioSamplesFileUploadSubmissionService {
   @Qualifier("WEBINCLIENT")
   BioSamplesClient bioSamplesWebinClient;
 
-  @Autowired BioSamplesFileUploadDataRetrievalService bioSamplesFileUploadDataRetrievalService;
+  @Autowired FileUploadStorageService fileUploadStorageService;
 
   @Autowired MongoFileUploadRepository mongoFileUploadRepository;
 
@@ -70,10 +70,9 @@ public class BioSamplesFileUploadSubmissionService {
 
       log.info("Received file with file ID " + submissionId);
 
-      final BioSamplesSubmissionFile bioSamplesSubmissionFile =
-          bioSamplesFileUploadDataRetrievalService.getFile(submissionId);
+      final SubmissionFile submissionFile = fileUploadStorageService.getFile(submissionId);
 
-      // get bioSamplesSubmissionFile metadata, determine webin aur aap auth and use client
+      // get submissionFile metadata, determine webin aur aap auth and use client
       // accordingly
       final boolean isWebin = mongoFileUpload.isWebin();
       final String checklist = mongoFileUpload.getChecklist();
@@ -89,14 +88,15 @@ public class BioSamplesFileUploadSubmissionService {
 
       final Path temp = Files.createTempFile("upload", ".tsv");
 
-      Files.copy(bioSamplesSubmissionFile.getStream(), temp, StandardCopyOption.REPLACE_EXISTING);
+      Files.copy(submissionFile.getStream(), temp, StandardCopyOption.REPLACE_EXISTING);
 
       final File fileToBeUploaded = temp.toFile();
       final FileReader fr = new FileReader(fileToBeUploaded);
       final BufferedReader reader = new BufferedReader(fr);
 
       final CSVParser csvParser = fileUploadUtils.buildParser(reader);
-      final List<Multimap<String, String>> csvDataMap = fileUploadUtils.getCSVDataInMap(csvParser);
+      final List<Multimap<String, String>> csvDataMap =
+          fileUploadUtils.getISATABDataInMap(csvParser);
 
       log.info("CSV data size: " + csvDataMap.size());
 
@@ -125,7 +125,7 @@ public class BioSamplesFileUploadSubmissionService {
               accessionsList,
               joinedValidationMessage);
 
-      mongoFileUploadRepository.save(mongoFileUploadCompleted);
+      performFinalActions(submissionId, mongoFileUploadCompleted);
     } catch (final Exception e) {
       final String messageForBsdDevTeam =
           "********FEEDBACK TO BSD DEV TEAM START********"
@@ -143,10 +143,16 @@ public class BioSamplesFileUploadSubmissionService {
               mongoFileUpload.getSampleNameAccessionPairs(),
               String.join(" -- ", validationResult.getValidationMessagesList()));
 
-      mongoFileUploadRepository.save(mongoFileUploadFailed);
+      performFinalActions(submissionId, mongoFileUploadFailed);
     } finally {
       validationResult.clear();
     }
+  }
+
+  private void performFinalActions(
+      final String submissionId, final MongoFileUpload mongoFileUploadCompleted) {
+    mongoFileUploadRepository.save(mongoFileUploadCompleted);
+    fileUploadStorageService.deleteFile(submissionId);
   }
 
   private List<Sample> buildSamples(

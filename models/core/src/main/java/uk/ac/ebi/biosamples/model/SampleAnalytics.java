@@ -19,14 +19,25 @@ import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
 public class SampleAnalytics {
+  protected long totalRecords;
   private String dateRange;
   private long processedRecords;
   protected Map<String, Long> center;
   protected Map<String, Long> channel;
+  protected Map<String, Map<String, Long>> facets;
 
   public SampleAnalytics() {
-    this.center = new HashMap<>();
-    this.channel = new HashMap<>();
+    center = new HashMap<>();
+    channel = new HashMap<>();
+    facets = new HashMap<>();
+  }
+
+  public long getTotalRecords() {
+    return totalRecords;
+  }
+
+  public void setTotalRecords(long totalRecords) {
+    this.totalRecords = totalRecords;
   }
 
   public String getDateRange() {
@@ -85,4 +96,10 @@ public class SampleAnalytics {
       channel.put(accessionPrefix, 1L);
     }
   }
+
+  public Map<String, Map<String, Long>> getFacets() {
+    return facets;
+  }
+
+  public void addToFacets() {}
 }

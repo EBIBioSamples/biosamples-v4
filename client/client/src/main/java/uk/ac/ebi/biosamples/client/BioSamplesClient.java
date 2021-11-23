@@ -40,6 +40,7 @@ import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 
@@ -60,6 +61,7 @@ public class BioSamplesClient implements AutoCloseable {
   private final CurationRetrievalService curationRetrievalService;
   private final CurationSubmissionService curationSubmissionService;
   private final SampleCertificationService sampleCertificationService;
+  private final StructuredDataSubmissionService structuredDataSubmissionService;
 
   private final SampleValidator sampleValidator;
 
@@ -136,6 +138,9 @@ public class BioSamplesClient implements AutoCloseable {
 
     curationSubmissionService =
         new CurationSubmissionService(restOperations, traverson, threadPoolExecutor);
+
+    structuredDataSubmissionService =
+        new StructuredDataSubmissionService(restOperations, traverson, threadPoolExecutor);
 
     this.sampleValidator = sampleValidator;
 
@@ -491,5 +496,9 @@ public class BioSamplesClient implements AutoCloseable {
       throw new IllegalArgumentException("Sample not valid: " + String.join(", ", errors));
     }
     return sampleGroupSubmissionService.submitAsync(sample, jwt);
+  }
+
+  public Resource<StructuredData> persistStructuredData(StructuredData structuredData) {
+    return structuredDataSubmissionService.persistStructuredData(structuredData, null, false);
   }
 }

@@ -18,4 +18,6 @@ import uk.ac.ebi.biosamples.mongo.model.MongoAnalytics;
 public interface MongoAnalyticsRepository extends MongoRepository<MongoAnalytics, String> {
   @Query("{ '_id' : { $gt: ?0, $lt: ?1 } }")
   List<MongoAnalytics> findMongoAnalyticsByIdBetween(String start, String end);
+
+  MongoAnalytics findFirstByOrderByCollectionDateDesc();
 }
