@@ -7,7 +7,8 @@
 <section th:fragment="structured_data_table(data)">
     <th:block th:each="entry: ${data}">
         <h3 th:text="'Structured Data (' + ${entry.getType()} + ')'"></h3>
-        <table>
+        <div class="structured-table-scroll">
+        <table class="structured-table">
             <thead>
             <tr>
                 <th th:each="header: ${data.getHeaders()}" th:text="${header}"></th>
@@ -17,16 +18,19 @@
             <th:block th:each="row: ${data.getContent()}">
                 <tr>
                     <td th:each="header: ${data.getHeaders()}">
-                        <a th:if="${not #strings.isEmpty(row.get(header).getIri())}"
+                        <a th:if="${row.get(header) != null and not #strings.isEmpty(row.get(header).getIri())}"
                            th:href="${row.get(header).getIri()}"
                            th:text="${row.get(header).getValue()}" target="_blank"></a>
-                        <span th:if="${#strings.isEmpty(row.get(header).getIri())}"
+                        <span th:if="${row.get(header) != null and #strings.isEmpty(row.get(header).getIri())}"
                               th:text="${row.get(header).getValue()}"></span>
+                        <span th:if="${row.get(header) == null}"
+                              th:text="${''}"></span>
                     </td>
                 </tr>
             </th:block>
             </tbody>
         </table>
+        </div>
     </th:block>
 </section>
 </body>
