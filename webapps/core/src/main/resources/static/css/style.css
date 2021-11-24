@@ -645,3 +645,8 @@ code[class^="language"] {
     color: gray;
     margin-top: 20px;
 }
+
+.structured-table {
+    display: block;
+    overflow-x: auto;
+}
