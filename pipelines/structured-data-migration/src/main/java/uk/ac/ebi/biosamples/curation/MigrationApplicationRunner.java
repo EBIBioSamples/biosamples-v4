@@ -81,7 +81,7 @@ public class MigrationApplicationRunner implements ApplicationRunner {
       Page<MongoSample> samplePage = mongoSampleRepository.findAll(new PageRequest(0, 100));
       while (samplePage != null) {
         for (MongoSample mongoSample : samplePage) {
-          if (!mongoSample.getData().isEmpty()) {
+          if (mongoSample.getData() != null && !mongoSample.getData().isEmpty()) {
             Callable<PipelineResult> task =
                 new MigrationCallable(
                     mongoSample, mongoSampleRepository, mongoStructuredDataRepository);

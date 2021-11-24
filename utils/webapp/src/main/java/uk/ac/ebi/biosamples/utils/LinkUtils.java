@@ -14,6 +14,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,19 @@ import org.springframework.web.util.UriUtils;
 public class LinkUtils {
 
   private static Logger log = LoggerFactory.getLogger(LinkUtils.class);
+
+  public static String decodeSearchText(String text) {
+    if (text != null) {
+      try {
+        // URLDecoder doesn't work right...
+        // text = URLDecoder.decode(text, "UTF-8");
+        text = UriUtils.decode(text, "UTF-8").toLowerCase();
+      } catch (UnsupportedEncodingException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return text;
+  }
 
   public static String decodeText(String text) {
     if (text != null) {
