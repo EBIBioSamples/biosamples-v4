@@ -17,11 +17,13 @@
             <th:block th:each="row: ${data.getContent()}">
                 <tr>
                     <td th:each="header: ${data.getHeaders()}">
-                        <a th:if="${not #strings.isEmpty(row.get(header).getIri())}"
+                        <a th:if="${row.get(header) != null and not #strings.isEmpty(row.get(header).getIri())}"
                            th:href="${row.get(header).getIri()}"
                            th:text="${row.get(header).getValue()}" target="_blank"></a>
-                        <span th:if="${#strings.isEmpty(row.get(header).getIri())}"
+                        <span th:if="${row.get(header) != null and #strings.isEmpty(row.get(header).getIri())}"
                               th:text="${row.get(header).getValue()}"></span>
+                        <span th:if="${row.get(header) == null}"
+                              th:text="${''}"></span>
                     </td>
                 </tr>
             </th:block>
