@@ -46,6 +46,7 @@ clone-config-preproduction:
     - mkdir config
     - cp -r biosamples-internal/script/* deployment/
     - cp -r biosamples-internal/wwwdev/* config/
+    - cp biosamples-internal/deployment/deploy.sh ./
   artifacts:
     paths:
       - deployment
