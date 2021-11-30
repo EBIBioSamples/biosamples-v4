@@ -36,7 +36,7 @@ maven-package:
   artifacts:
     paths:
       - deployment
-  when: manual
+#  when: manual
 
 clone-config-preproduction:
   image: maven:3.6-jdk-11
@@ -51,6 +51,7 @@ clone-config-preproduction:
     paths:
       - deployment
       - config
+      - deploy.sh
   when: manual
 
 clone-config-production:
