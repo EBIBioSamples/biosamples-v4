@@ -52,6 +52,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
   private final MultiValueMap<String, String> params;
   private final ExecutorService executor;
   private final String jwt;
+  private boolean isWebinSubmission;
 
   /**
    * ParameterizedTypeReference must be ParameterizedTypeReference<PagedResources<Resource<T>>> but
@@ -119,6 +120,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
       RestOperations restOperations,
       ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference,
       String jwt,
+      boolean isWebinSubmission,
       MultiValueMap<String, String> params,
       String... rels) {
     this(
@@ -127,6 +129,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
         restOperations,
         parameterizedTypeReference,
         jwt,
+        isWebinSubmission,
         params,
         Arrays.stream(rels)
             .map(rel -> Hop.rel(rel))
@@ -145,6 +148,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
       RestOperations restOperations,
       ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference,
       String jwt,
+      boolean isWebinSubmission,
       MultiValueMap<String, String> params,
       Hop... hops) {
     this.executor = executor;
@@ -154,6 +158,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
     this.parameterizedTypeReference = parameterizedTypeReference;
     this.params = params;
     this.jwt = jwt;
+    this.isWebinSubmission = isWebinSubmission;
   }
 
   public Iterator<Resource<T>> iterator() {
@@ -173,6 +178,16 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
             .queryParams(params)
             .build()
             .toUri();
+
+    if (isWebinSubmission) {
+      UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUri(uri);
+
+      if (isWebinSubmission) {
+        uriComponentsBuilder.queryParam("authProvider", "WEBIN");
+      }
+
+      uri = uriComponentsBuilder.build(true).toUri();
+    }
 
     MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
     headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
