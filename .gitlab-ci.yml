@@ -77,7 +77,7 @@ deploy-preproduction:
   stage: deploy
   script:
     - chmod +x deploy.sh
-    - ./deploy.sh tc_spo01 wp-np2-40
+    - ./deploy.sh bsd_dev wp-np2-40
   when: manual
   only:
     - gitlab_ci_improvements
