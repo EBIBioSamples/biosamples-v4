@@ -35,7 +35,7 @@ public class AccessionsService {
   public Page<String> getAccessions(
       final String text, final String[] requestfilters, final Integer page, final Integer size) {
     final PageRequest pageable = new PageRequest(page, size);
-    final String decodedText = LinkUtils.decodeText(text);
+    final String decodedText = LinkUtils.decodeSearchText(text);
     final String[] decodedFilter = LinkUtils.decodeTexts(requestfilters);
     final Collection<Filter> filtersAfterDecode = filterService.getFiltersCollection(decodedFilter);
     final List<String> accessions = new ArrayList<>();

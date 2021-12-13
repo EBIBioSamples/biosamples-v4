@@ -2,6 +2,16 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+
+[[v5.1.13]]
+== v5.1.13 Release notes
+=== Internal improvements
+1. Update the release process and move away from SPOT infrastructure
+
+=== Note
+Update holiday message - Please note that the BioSamples team will be out of the office from December 20th 2021
+to January 3rd 2022. Replies to Helpdesk requests will be delayed during this period.
+
 [[v5.1.12]]
 == v5.1.12 Release notes
 === New Features

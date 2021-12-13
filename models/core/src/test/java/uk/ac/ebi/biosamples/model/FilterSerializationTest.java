@@ -38,7 +38,7 @@ public class FilterSerializationTest {
   public void testAttributeFilterDeserialization() {
     String stringToTest = "attr:organism:Homo sapiens";
     Filter expectedFilter =
-        FilterBuilder.create().onAttribute("organism").withValue("Homo sapiens").build();
+        FilterBuilder.create().onAttribute("organism").withValue("homo sapiens").build();
 
     Filter attributeFilter = FilterBuilder.create().buildFromString(stringToTest);
     assertEquals(attributeFilter, expectedFilter);
@@ -98,8 +98,8 @@ public class FilterSerializationTest {
     String stringToTest = "extd:ENA:E-MTAB-123123";
     Filter expectedFilter =
         FilterBuilder.create()
-            .onDataFromExternalReference("ENA")
-            .withValue("E-MTAB-123123")
+            .onDataFromExternalReference("ena")
+            .withValue("e-mtab-123123")
             .build();
     Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
     assertEquals(expectedFilter, actualFilter);
@@ -109,7 +109,7 @@ public class FilterSerializationTest {
   public void testRelationFilterSerialization() {
     String stringToTest = "rel:derive From:SAMEA123123";
     Filter expectedFilter =
-        FilterBuilder.create().onRelation("derive From").withValue("SAMEA123123").build();
+        FilterBuilder.create().onRelation("derive from").withValue("samea123123").build();
     Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
     assertEquals(expectedFilter, actualFilter);
   }
@@ -118,7 +118,7 @@ public class FilterSerializationTest {
   public void testInverseRelationFilterSerialization() {
     String stringToTest = "rrel:derive From:SAMEA123123";
     Filter expectedFilter =
-        FilterBuilder.create().onInverseRelation("derive From").withValue("SAMEA123123").build();
+        FilterBuilder.create().onInverseRelation("derive from").withValue("samea123123").build();
     Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
     assertEquals(expectedFilter, actualFilter);
   }
@@ -126,7 +126,7 @@ public class FilterSerializationTest {
   @Test
   public void testNameFilterSerialization() {
     String stringToTest = "name:Test filter 2";
-    Filter expectedFilter = FilterBuilder.create().onName("Test filter 2").build();
+    Filter expectedFilter = FilterBuilder.create().onName("test filter 2").build();
     Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
     assertEquals(expectedFilter, actualFilter);
   }
@@ -134,7 +134,7 @@ public class FilterSerializationTest {
   @Test
   public void testWildcardFilterSerialization() {
     String stringToTest = "name:Test filter *";
-    Filter expectedFilter = FilterBuilder.create().onName("Test filter *").build();
+    Filter expectedFilter = FilterBuilder.create().onName("test filter *").build();
     Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
     assertEquals(expectedFilter, actualFilter);
   }
@@ -142,7 +142,7 @@ public class FilterSerializationTest {
   @Test
   public void testEscapeSerialization() {
     String stringToTest = "attr:(?\\:O)organism";
-    Filter expectedFilter = FilterBuilder.create().onAttribute("(?:O)organism").build();
+    Filter expectedFilter = FilterBuilder.create().onAttribute("(?:o)organism").build();
     Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
     assertEquals(expectedFilter, actualFilter);
   }

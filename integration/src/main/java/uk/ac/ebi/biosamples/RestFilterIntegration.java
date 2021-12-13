@@ -227,7 +227,7 @@ public class RestFilterIntegration extends AbstractIntegration {
 
     log.info("Getting sample 2 using filter on attribute");
     attributeFilter =
-        FilterBuilder.create().onAttribute("testAttribute").withValue("filterMe").build();
+        FilterBuilder.create().onAttribute("testAttribute").withValue("filterMe_1").build();
     samplePage =
         client.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
     if (samplePage.getMetadata().getTotalElements() != 1) {
@@ -436,7 +436,8 @@ public class RestFilterIntegration extends AbstractIntegration {
 
     SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
-        Attribute.build("testAttribute", "filterMe", "http://www.ebi.ac.uk/efo/EFO_0001071", null));
+        Attribute.build(
+            "testAttribute", "filterMe_1", "http://www.ebi.ac.uk/efo/EFO_0001071", null));
     attributes.add(Attribute.build("Organism", "Human"));
 
     return new Sample.Builder(name)

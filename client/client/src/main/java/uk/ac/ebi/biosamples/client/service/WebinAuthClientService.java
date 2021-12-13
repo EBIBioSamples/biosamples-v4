@@ -57,6 +57,10 @@ public class WebinAuthClientService implements ClientService {
   }
 
   public synchronized String getJwt() {
+    if (objectMapper == null) {
+      objectMapper = new ObjectMapper();
+    }
+
     if (username == null
         || username.trim().length() == 0
         || password == null

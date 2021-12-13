@@ -33,6 +33,8 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
   protected final BioSamplesClient client;
   protected final BioSamplesClient publicClient;
 
+  protected BioSamplesClient webinClient;
+
   protected abstract void phaseOne();
 
   protected abstract void phaseTwo();
@@ -42,6 +44,15 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
   protected abstract void phaseFour();
 
   protected abstract void phaseFive();
+
+  public AbstractIntegration(BioSamplesClient client, BioSamplesClient webinClient) {
+    this.client = client;
+    this.publicClient =
+        client
+            .getPublicClient()
+            .orElseThrow(() -> new IntegrationTestFailException("Could not create public client"));
+    this.webinClient = webinClient;
+  }
 
   public AbstractIntegration(BioSamplesClient client) {
     this.client = client;
