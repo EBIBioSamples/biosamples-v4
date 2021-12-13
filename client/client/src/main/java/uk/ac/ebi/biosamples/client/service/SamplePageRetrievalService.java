@@ -49,18 +49,33 @@ public class SamplePageRetrievalService {
   private final ExecutorService executor;
   private final RestOperations restOperations;
   private final int pageSize;
+  private final boolean isWebinSubmission;
 
   public SamplePageRetrievalService(
-      RestOperations restOperations, Traverson traverson, ExecutorService executor, int pageSize) {
+      RestOperations restOperations,
+      Traverson traverson,
+      ExecutorService executor,
+      int pageSize,
+      boolean isWebinSubmission) {
     this.restOperations = restOperations;
     this.traverson = traverson;
     this.executor = executor;
     this.pageSize = pageSize;
+    this.isWebinSubmission = isWebinSubmission;
   }
 
   public PagedResources<Resource<Sample>> search(
       String text, Collection<Filter> filters, int page, int size) {
     return search(text, filters, page, size, null);
+  }
+
+  private URI getSampleRetrievalURIWithWebinAsAuthProvider(URI uri) {
+    UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUri(uri);
+
+    if (isWebinSubmission) {
+      uriComponentsBuilder.queryParam("authProvider", "WEBIN");
+    }
+    return uriComponentsBuilder.build(true).toUri();
   }
 
   public PagedResources<Resource<Sample>> search(
@@ -70,6 +85,7 @@ public class SamplePageRetrievalService {
     params.add("page", Integer.toString(page));
     params.add("size", Integer.toString(size));
     params.add("text", !text.isEmpty() ? text : "*:*");
+
     for (Filter filter : filters) {
       params.add("filter", filter.getSerialization());
     }
@@ -81,6 +97,11 @@ public class SamplePageRetrievalService {
             .queryParams(params)
             .build()
             .toUri();
+
+    if (isWebinSubmission) {
+      uri = getSampleRetrievalURIWithWebinAsAuthProvider(uri);
+    }
+
     log.trace("GETing " + uri);
 
     MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();

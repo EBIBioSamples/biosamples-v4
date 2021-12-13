@@ -55,6 +55,7 @@ public class CurationRetrievalService {
         restOperations,
         new ParameterizedTypeReference<PagedResources<Resource<Curation>>>() {},
         jwt,
+        false,
         params,
         "curations");
   }
@@ -72,6 +73,7 @@ public class CurationRetrievalService {
         restOperations,
         new ParameterizedTypeReference<PagedResources<Resource<CurationLink>>>() {},
         jwt,
+        false,
         params,
         Hop.rel("samples"),
         Hop.rel("sample").withParameter("accession", accession),

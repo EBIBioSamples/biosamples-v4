@@ -36,6 +36,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
+import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 
@@ -53,28 +54,33 @@ public class SampleRetrievalService {
   private final Traverson traverson;
   private final ExecutorService executor;
   private final RestOperations restOperations;
+  private final boolean isWebinSubmission;
 
   public SampleRetrievalService(
-      RestOperations restOperations, Traverson traverson, ExecutorService executor) {
+      RestOperations restOperations,
+      Traverson traverson,
+      ExecutorService executor,
+      boolean isWebinSubmission) {
     this.restOperations = restOperations;
     this.traverson = traverson;
     this.executor = executor;
+    this.isWebinSubmission = isWebinSubmission;
   }
 
   /**
    * This will get an existing sample from biosamples using the accession
    *
-   * @param sample
+   * @param accession
    * @return
    */
   public Future<Optional<Resource<Sample>>> fetch(
       String accession, Optional<List<String>> curationDomains) {
-    return executor.submit(new FetchCallable(accession, curationDomains));
+    return executor.submit(new FetchCallable(accession, curationDomains, isWebinSubmission));
   }
 
   public Future<Optional<Resource<Sample>>> fetch(
       String accession, Optional<List<String>> curationDomains, String jwt) {
-    return executor.submit(new FetchCallable(accession, curationDomains, jwt));
+    return executor.submit(new FetchCallable(accession, curationDomains, jwt, isWebinSubmission));
   }
 
   public Future<Optional<Resource<Sample>>> fetch(
@@ -82,7 +88,8 @@ public class SampleRetrievalService {
       Optional<List<String>> curationDomains,
       String jwt,
       StaticViewWrapper.StaticView staticView) {
-    return executor.submit(new FetchCallable(accession, curationDomains, jwt, staticView));
+    return executor.submit(
+        new FetchCallable(accession, curationDomains, jwt, staticView, isWebinSubmission));
   }
 
   private class FetchCallable implements Callable<Optional<Resource<Sample>>> {
@@ -91,18 +98,14 @@ public class SampleRetrievalService {
     private final Optional<List<String>> curationDomains;
     private final String jwt;
     private final StaticViewWrapper.StaticView staticView;
+    private final boolean isWebinSubmission;
 
-    public FetchCallable(String accession, Optional<List<String>> curationDomains) {
+    public FetchCallable(
+        String accession, Optional<List<String>> curationDomains, boolean isWebinSubmission) {
       this.accession = accession;
       this.curationDomains = curationDomains;
+      this.isWebinSubmission = isWebinSubmission;
       this.jwt = null;
-      this.staticView = StaticViewWrapper.StaticView.SAMPLES_CURATED;
-    }
-
-    public FetchCallable(String accession, Optional<List<String>> curationDomains, String jwt) {
-      this.accession = accession;
-      this.curationDomains = curationDomains;
-      this.jwt = jwt;
       this.staticView = StaticViewWrapper.StaticView.SAMPLES_CURATED;
     }
 
@@ -110,11 +113,34 @@ public class SampleRetrievalService {
         String accession,
         Optional<List<String>> curationDomains,
         String jwt,
-        StaticViewWrapper.StaticView staticView) {
+        boolean isWebinSubmission) {
+      this.accession = accession;
+      this.curationDomains = curationDomains;
+      this.jwt = jwt;
+      this.isWebinSubmission = isWebinSubmission;
+      this.staticView = StaticViewWrapper.StaticView.SAMPLES_CURATED;
+    }
+
+    public FetchCallable(
+        String accession,
+        Optional<List<String>> curationDomains,
+        String jwt,
+        StaticViewWrapper.StaticView staticView,
+        boolean isWebinSubmission) {
       this.accession = accession;
       this.curationDomains = curationDomains;
       this.jwt = jwt;
       this.staticView = staticView;
+      this.isWebinSubmission = isWebinSubmission;
+    }
+
+    private URI getSampleRetrievalURIWithWebinAsAuthProvider(URI uri) {
+      UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUri(uri);
+
+      if (isWebinSubmission) {
+        uriComponentsBuilder.queryParam("authProvider", "WEBIN");
+      }
+      return uriComponentsBuilder.build(true).toUri();
     }
 
     @Override
@@ -145,9 +171,14 @@ public class SampleRetrievalService {
         uri = URI.create(traversalBuilder.asLink().getHref());
       }
 
-      log.trace("GETing " + uri);
+      if (isWebinSubmission) {
+        uri = getSampleRetrievalURIWithWebinAsAuthProvider(uri);
+      }
+
+      log.info("GETing " + uri);
 
       MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+
       headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
       if (jwt != null) {
         headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);

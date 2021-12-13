@@ -104,19 +104,22 @@ public class BioSamplesClient implements AutoCloseable {
     traverson.setRestOperations(restOperations);
 
     sampleRetrievalService =
-        new SampleRetrievalService(restOperations, traverson, threadPoolExecutor);
+        new SampleRetrievalService(
+            restOperations, traverson, threadPoolExecutor, isWebinSubmission);
     samplePageRetrievalService =
         new SamplePageRetrievalService(
             restOperations,
             traverson,
             threadPoolExecutor,
-            bioSamplesProperties.getBiosamplesClientPagesize());
+            bioSamplesProperties.getBiosamplesClientPagesize(),
+            isWebinSubmission);
     sampleCursorRetrievalService =
         new SampleCursorRetrievalService(
             restOperations,
             traverson,
             threadPoolExecutor,
-            bioSamplesProperties.getBiosamplesClientPagesize());
+            bioSamplesProperties.getBiosamplesClientPagesize(),
+            isWebinSubmission);
 
     sampleSubmissionService =
         new SampleSubmissionService(
@@ -136,6 +139,7 @@ public class BioSamplesClient implements AutoCloseable {
             threadPoolExecutor,
             bioSamplesProperties.getBiosamplesClientPagesize());
 
+    /*In CurationSubmissionService and StructuredDataSubmissionService webin auth is handled more elegantly, replicate it in all other services*/
     curationSubmissionService =
         new CurationSubmissionService(restOperations, traverson, threadPoolExecutor);
 

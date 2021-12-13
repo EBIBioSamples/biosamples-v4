@@ -436,7 +436,8 @@ public class RestFilterIntegration extends AbstractIntegration {
 
     SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
-        Attribute.build("testAttribute", "filterMe_1", "http://www.ebi.ac.uk/efo/EFO_0001071", null));
+        Attribute.build(
+            "testAttribute", "filterMe_1", "http://www.ebi.ac.uk/efo/EFO_0001071", null));
     attributes.add(Attribute.build("Organism", "Human"));
 
     return new Sample.Builder(name)

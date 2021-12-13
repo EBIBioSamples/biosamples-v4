@@ -44,13 +44,19 @@ public class SampleCursorRetrievalService {
   private final ExecutorService executor;
   private final RestOperations restOperations;
   private final int pageSize;
+  private final boolean isWebinSubmission;
 
   public SampleCursorRetrievalService(
-      RestOperations restOperations, Traverson traverson, ExecutorService executor, int pageSize) {
+      RestOperations restOperations,
+      Traverson traverson,
+      ExecutorService executor,
+      int pageSize,
+      boolean isWebinSubmission) {
     this.restOperations = restOperations;
     this.traverson = traverson;
     this.executor = executor;
     this.pageSize = pageSize;
+    this.isWebinSubmission = isWebinSubmission;
   }
 
   public Iterable<Resource<Sample>> fetchAll(String text, Collection<Filter> filterCollection) {
@@ -99,6 +105,7 @@ public class SampleCursorRetrievalService {
         restOperations,
         parameterizedTypeReferencePagedResourcesSample,
         jwt,
+        isWebinSubmission,
         params,
         "samples",
         "cursor");

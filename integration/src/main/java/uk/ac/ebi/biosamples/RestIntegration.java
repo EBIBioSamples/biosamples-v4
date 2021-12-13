@@ -17,6 +17,7 @@ import java.util.*;
 import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
@@ -43,14 +44,17 @@ public class RestIntegration extends AbstractIntegration {
   private final RestTemplate restTemplate;
   private BioSamplesProperties clientProperties;
   private final BioSamplesClient annonymousClient;
+  private BioSamplesClient webinClient;
 
   public RestIntegration(
       BioSamplesClient client,
       RestTemplateBuilder restTemplateBuilder,
-      BioSamplesProperties clientProperties) {
-    super(client);
+      BioSamplesProperties clientProperties,
+      @Qualifier("WEBINCLIENT") BioSamplesClient webinClient) {
+    super(client, webinClient);
     this.restTemplate = restTemplateBuilder.build();
     this.clientProperties = clientProperties;
+    this.webinClient = webinClient;
     this.annonymousClient =
         new BioSamplesClient(
             this.clientProperties.getBiosamplesClientUri(),
@@ -199,6 +203,22 @@ public class RestIntegration extends AbstractIntegration {
               + sampleTest2
               + ")",
           Phase.TWO);
+    }
+
+    // test private sample create and fetch using webin auth
+    Sample webinSampleTest1 = getWebinSampleTest1();
+    Resource<Sample> webinSampleResource =
+        this.webinClient.persistSampleResource(webinSampleTest1, false, true);
+    String webinSampleAccession = webinSampleResource.getContent().getAccession();
+
+    Optional<Resource<Sample>> webinSamplePostPersistance =
+        this.webinClient.fetchSampleResource(webinSampleAccession);
+
+    if (!webinSamplePostPersistance.isPresent()) {
+      throw new IntegrationTestFailException(
+          "Private sample submitted using webin auth not retrieved", Phase.THREE);
+    } else {
+      log.info("Found private sample by webin account");
     }
   }
 
@@ -389,6 +409,66 @@ public class RestIntegration extends AbstractIntegration {
         .withUpdate(update)
         .withRelease(release)
         .withDomain(defaultIntegrationSubmissionDomain)
+        .withAttributes(attributes)
+        .withRelationships(relationships)
+        .withExternalReferences(externalReferences)
+        .withOrganizations(organizations)
+        .withContacts(contacts)
+        .withPublications(publications)
+        .build();
+  }
+
+  private Sample getWebinSampleTest1() {
+    String name = "RestIntegration_sample_1";
+    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    Instant release = Instant.parse("2116-04-01T11:36:57.00Z");
+
+    SortedSet<Attribute> attributes = new TreeSet<>();
+    attributes.add(
+        Attribute.build(
+            "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+    attributes.add(Attribute.build("age", "3", null, Collections.emptyList(), "year"));
+    attributes.add(Attribute.build("organism part", "lung"));
+    attributes.add(Attribute.build("organism part", "heart"));
+    attributes.add(
+        Attribute.build(
+            "sex",
+            "female",
+            null,
+            Sets.newHashSet(
+                "http://purl.obolibrary.org/obo/PATO_0000383",
+                "http://www.ebi.ac.uk/efo/EFO_0001265"),
+            null));
+
+    SortedSet<Relationship> relationships = new TreeSet<>();
+    SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+    externalReferences.add(ExternalReference.build("http://www.google.com"));
+
+    SortedSet<Organization> organizations = new TreeSet<>();
+    organizations.add(
+        new Organization.Builder()
+            .name("Jo Bloggs Inc")
+            .role("user")
+            .email("help@jobloggs.com")
+            .url("http://www.jobloggs.com")
+            .build());
+
+    SortedSet<Contact> contacts = new TreeSet<>();
+    contacts.add(
+        new Contact.Builder()
+            .name("Joe Bloggs")
+            .role("Submitter")
+            .email("jobloggs@joblogs.com")
+            .build());
+
+    SortedSet<Publication> publications = new TreeSet<>();
+    publications.add(
+        new Publication.Builder().doi("10.1093/nar/gkt1081").pubmed_id("24265224").build());
+
+    return new Sample.Builder(name)
+        .withUpdate(update)
+        .withRelease(release)
+        .withWebinSubmissionAccountId("Webin-40894")
         .withAttributes(attributes)
         .withRelationships(relationships)
         .withExternalReferences(externalReferences)
