@@ -89,8 +89,8 @@ deploy-production-p2m-servers:
   stage: deploy
   script:
     - chmod +x deploy.sh
-    - ./deploy.sh tc_spo01 wp-p2m-40
-    - ./deploy.sh tc_spo01 wp-p2m-41
+    - ./deploy.sh bsd_prod wp-p2m-40
+    - ./deploy.sh bsd_prod wp-p2m-41
   when: manual
   only:
     - master
@@ -100,8 +100,8 @@ deploy-production-p1m-servers:
     stage: deploy
     script:
       - chmod +x deploy.sh
-      - ./deploy.sh tc_spo01 wp-p1m-40
-      - ./deploy.sh tc_spo01 wp-p1m-41
+      - ./deploy.sh bsd_prod wp-p1m-40
+      - ./deploy.sh bsd_prod wp-p1m-41
     when: manual
     only:
       - master
