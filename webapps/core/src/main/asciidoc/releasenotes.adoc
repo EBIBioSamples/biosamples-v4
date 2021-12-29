@@ -3,6 +3,12 @@
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
+[[v5.1.14]]
+== v5.1.14 Release notes
+=== Bug Fixes
+1. Fix bug with search indexing
+
+
 [[v5.1.13]]
 == v5.1.13 Release notes
 === Internal improvements
