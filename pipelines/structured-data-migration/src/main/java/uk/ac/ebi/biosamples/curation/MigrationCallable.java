@@ -124,7 +124,7 @@ public class MigrationCallable implements Callable<PipelineResult> {
             structuredDataTableSet);
 
     mongoSample.getData().removeAll(mongoSample.getData());
-//    mongoSampleRepository.save(mongoSample);
+    //    mongoSampleRepository.save(mongoSample);
     mongoStructuredDataRepository.save(mongoStructuredData);
     modifiedRecords++;
 
