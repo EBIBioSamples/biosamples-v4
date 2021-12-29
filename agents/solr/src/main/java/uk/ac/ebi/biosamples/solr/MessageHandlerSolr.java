@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -82,8 +81,8 @@ public class MessageHandlerSolr {
       // expand ontology terms from OLS
       for (List<String> iris : solrSample.getAttributeIris().values()) {
         for (String iri : iris) {
-          solrSample.getKeywords().addAll(toLowerCase(olsProcessor.ancestorsAndSynonyms("efo", iri)));
-          solrSample.getKeywords().addAll(toLowerCase(olsProcessor.ancestorsAndSynonyms("NCBITaxon", iri)));
+          solrSample.getKeywords().addAll(olsProcessor.ancestorsAndSynonyms("efo", iri));
+          solrSample.getKeywords().addAll(olsProcessor.ancestorsAndSynonyms("NCBITaxon", iri));
         }
       }
 
