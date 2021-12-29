@@ -50,17 +50,17 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
     Map<String, List<String>> externalReferencesData = new HashMap<>();
     List<String> keywords = new ArrayList<>();
 
-    attributeValues.put(SolrFieldService.encodeFieldName("name"), Collections.singletonList(sample.getName().toLowerCase()));
-    attributeValues.put(SolrFieldService.encodeFieldName("accession"), Collections.singletonList(sample.getAccession().toLowerCase()));
+   /* attributeValues.put(SolrFieldService.encodeFieldName("name"), Collections.singletonList(sample.getName().toLowerCase()));
+    attributeValues.put(SolrFieldService.encodeFieldName("accession"), Collections.singletonList(sample.getAccession().toLowerCase()));*/
 
     if (sample.getCharacteristics() != null && sample.getCharacteristics().size() > 0) {
 
       for (Attribute attr : sample.getCharacteristics()) {
 
-        final String key = SolrFieldService.encodeFieldName(attr.getType().toLowerCase());
+        final String key = SolrFieldService.encodeFieldName(attr.getType());
         // key = SolrSampleService.attributeTypeToField(key);
 
-        String value = attr.getValue().toLowerCase();
+        String value = attr.getValue();
         // if its longer than 255 characters, don't add it to solr
         // solr cant index long things well, and its probably not useful for search
         if (value.length() > 255) {
@@ -119,7 +119,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 
     // turn external reference into additional attributes for facet & filter
     for (ExternalReference externalReference : sample.getExternalReferences()) {
-      String externalReferenceNickname = externalReferenceService.getNickname(externalReference).toLowerCase();
+      String externalReferenceNickname = externalReferenceService.getNickname(externalReference);
       String externalReferenceNicknameKey =
           SolrFieldService.encodeFieldName(externalReferenceNickname);
       String key = SolrFieldService.encodeFieldName("external reference");
@@ -135,10 +135,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
           attributeValues.put(keyDuo, new ArrayList<>());
         }
         attributeValues.get(keyDuo).addAll(
-            externalReference.getDuo()
-                             .stream()
-                             .map(s -> s.toLowerCase())
-                             .collect(Collectors.toList()));
+            externalReference.getDuo());
       }
 
       // Add the external reference data id
@@ -151,7 +148,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
         if (!externalReferencesData.containsKey(externalReferenceNicknameKey)) {
           externalReferencesData.put(externalReferenceNicknameKey, new ArrayList<>());
         }
-        externalReferencesData.get(externalReferenceNicknameKey).add(externalReferenceDataId.get().toLowerCase());
+        externalReferencesData.get(externalReferenceNicknameKey).add(externalReferenceDataId.get());
       }
     }
 
@@ -165,7 +162,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
         if (!outgoingRelationships.containsKey(key)) {
           outgoingRelationships.put(key, new ArrayList<>());
         }
-        outgoingRelationships.get(key).add(rel.getTarget().toLowerCase());
+        outgoingRelationships.get(key).add(rel.getTarget());
       }
     }
 
@@ -179,7 +176,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
         if (!incomingRelationships.containsKey(key)) {
           incomingRelationships.put(key, new ArrayList<>());
         }
-        incomingRelationships.get(key).add(rel.getSource().toLowerCase());
+        incomingRelationships.get(key).add(rel.getSource());
       }
     }
 
@@ -210,9 +207,9 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
             });
 
     return SolrSample.build(
-        sample.getName().toLowerCase(),
+        sample.getName(),
         sample.getAccession(),
-        sample.getDomain().toLowerCase(),
+        sample.getDomain(),
         sample.getWebinSubmissionAccountId(),
         releaseSolr,
         updateSolr,

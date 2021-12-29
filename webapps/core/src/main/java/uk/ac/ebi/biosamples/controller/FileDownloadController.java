@@ -60,7 +60,7 @@ public class FileDownloadController {
       HttpServletRequest request) {
     LOG.info(
         "Sample bulk download request: text = {}, filters = {}", text, Arrays.toString(filter));
-    String decodedText = LinkUtils.decodeSearchText(text);
+    String decodedText = LinkUtils.decodeText(text);
     Collection<Filter> filters = filterService.getFiltersCollection(LinkUtils.decodeTexts(filter));
     Collection<String> domains = bioSamplesAapService.getDomains();
 
