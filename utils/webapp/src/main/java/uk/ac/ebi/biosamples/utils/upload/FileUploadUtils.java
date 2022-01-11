@@ -263,11 +263,13 @@ public class FileUploadUtils {
 
     if (pubMedSize >= doiSize) {
       for (int iter = 0; iter < pubMedSize; iter++) {
-        publicationList.add(buildPublication(publicationDois, publicationPubMedIds, iter));
+        publicationList.add(
+            buildPublication(publicationDois, publicationPubMedIds, iter, pubMedSize, doiSize));
       }
     } else {
       for (int iter = 0; iter < doiSize; iter++) {
-        publicationList.add(buildPublication(publicationDois, publicationPubMedIds, iter));
+        publicationList.add(
+            buildPublication(publicationDois, publicationPubMedIds, iter, pubMedSize, doiSize));
       }
     }
 
@@ -275,11 +277,15 @@ public class FileUploadUtils {
   }
 
   private Publication buildPublication(
-      final List<String> publicationDois, final List<String> publicationPubMedIds, final int iter) {
+      final List<String> publicationDois,
+      final List<String> publicationPubMedIds,
+      final int iter,
+      final int pubMedSize,
+      final int doiSize) {
     final Publication.Builder publicationBuilder = new Publication.Builder();
 
-    publicationBuilder.pubmed_id(publicationPubMedIds.get(iter));
-    publicationBuilder.doi(publicationDois.get(iter));
+    publicationBuilder.pubmed_id(iter >= pubMedSize ? null : publicationPubMedIds.get(iter));
+    publicationBuilder.doi(iter >= doiSize ? null : publicationDois.get(iter));
 
     return publicationBuilder.build();
   }
@@ -301,7 +307,9 @@ public class FileUploadUtils {
               }
             });
 
-    return pubMedIds;
+    return pubMedIds.stream()
+        .filter(pubMedId -> pubMedId != null && pubMedId.length() > 0)
+        .collect(Collectors.toList());
   }
 
   private List<String> handlePublicationDois(final Multimap<String, String> multiMap) {
@@ -321,17 +329,19 @@ public class FileUploadUtils {
               }
             });
 
-    return dois;
+    return dois.stream()
+        .filter(doi -> doi != null && doi.length() > 0)
+        .collect(Collectors.toList());
   }
 
   public String getSampleAccession(final Multimap<String, String> multiMap) {
-    Optional<String> sampleAccession = multiMap.get("Sample Identifier").stream().findFirst();
+    final Optional<String> sampleAccession = multiMap.get("Sample Identifier").stream().findFirst();
 
     return sampleAccession.orElse(null);
   }
 
   public List<ExternalReference> handleExternalReferences(final Multimap<String, String> multiMap) {
-    List<ExternalReference> externalReferenceList = new ArrayList<>();
+    final List<ExternalReference> externalReferenceList = new ArrayList<>();
 
     multiMap
         .entries()
@@ -343,7 +353,9 @@ public class FileUploadUtils {
               log.trace(entryKey + " " + entryValue);
 
               if (entryKey.startsWith("Comment") && entryKey.contains("external DB REF")) {
-                externalReferenceList.add(ExternalReference.build(entry.getValue()));
+                if (entryValue != null && !entryValue.isEmpty()) {
+                  externalReferenceList.add(ExternalReference.build(entryValue));
+                }
               }
             });
 
