@@ -67,7 +67,7 @@
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>models-curami</artifactId>
+			<artifactId>commons</artifactId>
 			<version>5.1.15-SNAPSHOT</version>
 		</dependency>
 		<!-- use Thymleaf for HTML templating -->

@@ -22,8 +22,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.AttributeRecommendation;
-import uk.ac.ebi.biosamples.model.CuramiRecommendation;
+import uk.ac.ebi.biosamples.models.curami.AttributeRecommendation;
+import uk.ac.ebi.biosamples.models.curami.CuramiRecommendation;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @RunWith(SpringRunner.class)

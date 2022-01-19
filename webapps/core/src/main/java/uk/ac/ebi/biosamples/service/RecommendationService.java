@@ -17,9 +17,11 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.AttributeRecommendation;
-import uk.ac.ebi.biosamples.model.CuramiRecommendation;
+import uk.ac.ebi.biosamples.models.curami.AttributeRecommendation;
+import uk.ac.ebi.biosamples.models.curami.CuramiRecommendation;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.utils.curami.CuramiUtils;
+import uk.ac.ebi.biosamples.utils.curami.DataLoader;
 
 @Service
 public class RecommendationService {
