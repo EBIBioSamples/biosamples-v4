@@ -15,7 +15,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -33,8 +33,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
@@ -126,13 +124,12 @@ public class SamplesRestController {
     int effectivePage;
 
     if (webinAuth) {
-      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
-      final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService
-              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-              .getBody();
-      webinSubmissionAccountId = webinAccount.getId();
+          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+
+      if (webinAccount != null) {
+        webinSubmissionAccountId = webinAccount.getId();
+      }
     }
 
     if (page == null) {
@@ -483,12 +480,12 @@ public class SamplesRestController {
     if (sample.hasAccession()) throw new SampleWithAccessionSumbissionException();
 
     if (authProvider.equalsIgnoreCase("WEBIN")) {
-      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
-      final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService
-              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-              .getBody();
+          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+
+      if (webinAccount == null) {
+        throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
+      }
 
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
     } else {
@@ -524,12 +521,12 @@ public class SamplesRestController {
         });
 
     if (authProvider.equalsIgnoreCase("WEBIN")) {
-      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
-      final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService
-              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-              .getBody();
+          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+
+      if (webinAccount == null) {
+        throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
+      }
 
       samples =
           samples.stream()
@@ -592,21 +589,21 @@ public class SamplesRestController {
     boolean isWebinSuperUser = false;
 
     if (webinAuth) {
-      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
+      final SubmissionAccount webinAccount =
+          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+
+      if (webinAccount == null) {
+        throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
+      }
+
+      final String webinAccountId = webinAccount.getId();
+
+      isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
 
       if (sample.hasAccession()) {
         throw new SampleWithAccessionSumbissionException();
       }
 
-      final Authentication authentication = bearerTokenExtractor.extract(request);
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService
-              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-              .getBody();
-
-      final String webinAccountId = webinAccount.getId();
-
-      isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
 
       if (structuredData != null && structuredData.size() > 0) {
@@ -616,9 +613,6 @@ public class SamplesRestController {
       }
     } else {
       if (sample.hasAccession() && !bioSamplesAapService.isWriteSuperUser()) {
-        // Throw an error only if the user is not a super user and is trying to post a sample
-        // with an
-        // accession
         throw new SampleWithAccessionSumbissionException();
       }
 
@@ -645,19 +639,9 @@ public class SamplesRestController {
             .build();
 
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    if (webinAuth && !isWebinSuperUser) {
-      schemaValidationService.validate(sample);
-    } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
-      schemaValidationService.validate(sample);
-    }
-
-    if (submittedVia == SubmittedViaType.FILE_UPLOADER) {
-      schemaValidationService.validate(sample);
-    }
-
-    if (webinAuth && !isWebinSuperUser) {
-      sample = enaTaxonClientService.performTaxonomyValidation(sample);
-    }
+    sample =
+        validateSampleAgainstExternalValidationServices(
+            sample, webinAuth, isWebinSuperUser, submittedVia);
 
     if (!setFullDetails) {
       sample = sampleManipulationService.removeLegacyFields(sample);
@@ -670,6 +654,25 @@ public class SamplesRestController {
     // create the response object with the appropriate status
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
         .body(sampleResource);
+  }
+
+  private Sample validateSampleAgainstExternalValidationServices(
+      @RequestBody Sample sample,
+      boolean webinAuth,
+      boolean isWebinSuperUser,
+      SubmittedViaType submittedVia) {
+    if (webinAuth && !isWebinSuperUser) {
+      schemaValidationService.validate(sample);
+      sample = enaTaxonClientService.performTaxonomyValidation(sample);
+    } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
+      schemaValidationService.validate(sample);
+    }
+
+    if (submittedVia == SubmittedViaType.FILE_UPLOADER) {
+      schemaValidationService.validate(sample);
+    }
+
+    return sample;
   }
 
   private Instant defineCreateDate(final Sample sample) {

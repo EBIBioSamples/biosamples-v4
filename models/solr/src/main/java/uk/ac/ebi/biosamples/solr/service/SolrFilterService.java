@@ -160,7 +160,7 @@ public class SolrFilterService {
     }
 
     if (webinSubmissionAccountId != null && !webinSubmissionAccountId.isEmpty()) {
-      // user can only see private samples inside its own domain
+      // user can only see private samples submitted by them using their webin auth tokens
       publicSampleCriteria =
           publicSampleCriteria.or(new Criteria("webinId").in(webinSubmissionAccountId));
     }
