@@ -162,6 +162,11 @@ services:
       - -jar
       - agents-uploadworkers-5.1.15-SNAPSHOT.jar
     environment:
+      #AAP certificate
+      - jwt.certificate=public.explore.der
+      - security.basic.path=
+      - aap.domains.url=https://explore.api.aai.ebi.ac.uk
+      - aap.token.url=https://explore.api.aai.ebi.ac.uk/auth
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
       - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
@@ -169,9 +174,8 @@ services:
       - SPRING_RABBITMQ_LISTENER_MAX-CONCURRENCY=32
       - SPRING_RABBITMQ_LISTENER_SIMPLE_PREFETCH=128
       - SPRING_RABBITMQ_LISTENER_SIMPLE_TRANSACTION-SIZE=32
-      - SPRING_DATA_SOLR_HOST=http://solr:8983/solr
-      - BIOSAMPLES_AGENT_SOLR_STAYALIVE=true
-      - LOGGING_FILE=/logs/agents-solr.log
+      - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
+      - LOGGING_FILE=/logs/agents-uploadworkers.log
       - spring.cache.cache-names=ols_ancestors_synonyms
       - spring.cache.caffeine.spec=maximumSize=500,expireAfterAccess=600s
 

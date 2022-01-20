@@ -16,7 +16,8 @@ do
 
 done
 
-#leave the agent up at the end
+#leave the agents up at the end
 docker-compose up -d biosamples-agents-solr
+docker-compose up -d biosamples-agents-upload-workers
 
 echo "Successfully completed"

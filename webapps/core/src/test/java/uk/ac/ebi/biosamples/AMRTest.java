@@ -25,6 +25,7 @@ import java.nio.charset.Charset;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -320,6 +321,9 @@ public class AMRTest {
 
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
         .thenReturn(ResponseEntity.ok(submissionAccount));
+    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(
+            any(HttpServletRequest.class)))
+        .thenReturn((submissionAccount));
     when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class)))
         .thenReturn(testSample);
     when(bioSamplesWebinAuthenticationService.handleStructuredDataAccesibility(

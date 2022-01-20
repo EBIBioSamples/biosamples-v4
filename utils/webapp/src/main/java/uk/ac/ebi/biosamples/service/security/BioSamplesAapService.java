@@ -306,7 +306,7 @@ public class BioSamplesAapService {
    * @throws StructuredDataNotAccessibleException
    * @throws StructuredDataDomainMissingException
    */
-  public boolean checkIfOriginalAAPSubmitter(Sample sample)
+  public boolean isSampleOwner(Sample sample)
       throws StructuredDataNotAccessibleException, StructuredDataDomainMissingException {
     // get the domains the current user has access to
     final Set<String> usersDomains = getDomains();

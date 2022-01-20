@@ -10,8 +10,6 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import java.time.Instant;
-import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -24,23 +22,26 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
-import uk.ac.ebi.biosamples.service.SampleServiceV2;
+import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
+import javax.servlet.http.HttpServletRequest;
+import java.time.Instant;
+
 public class SampleRestControllerV2 {
   private Logger log = LoggerFactory.getLogger(getClass());
 
-  private final SampleServiceV2 sampleService;
+  private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final SchemaValidationService schemaValidationService;
   private final ENATaxonClientService enaTaxonClientService;
 
   public SampleRestControllerV2(
-      final SampleServiceV2 sampleService,
+      final SampleService sampleService,
       final BioSamplesAapService bioSamplesAapService,
       final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       final SchemaValidationService schemaValidationService,
@@ -118,7 +119,7 @@ public class SampleRestControllerV2 {
       sample = enaTaxonClientService.performTaxonomyValidation(sample);
     }
 
-    final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample);
+    final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, isWebinSuperUser);
 
     if (isFirstTimeMetadataAdded) {
       sample = Sample.Builder.fromSample(sample).withSubmitted(now).build();

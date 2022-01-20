@@ -10,8 +10,6 @@
 */
 package uk.ac.ebi.biosamples.service;
 
-import java.time.Instant;
-import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.StaticViewWrapper;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
@@ -32,6 +31,9 @@ import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleStructuredDataCentricConverter;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
+
+import java.time.Instant;
+import java.util.*;
 
 /**
  * Service layer business logic for centralising repository access and conversions between different
@@ -84,10 +86,17 @@ public class SampleService {
 
   private boolean beforeStoreCheck(Sample sample, boolean isWebinSuperUser) {
     boolean firstTimeMetadataAdded;
-
     final String domain = sample.getDomain();
+    boolean isFirstTimeMetadataAddedIfWebinSuperUserSubmission = true;
 
-    if (isPipelineEnaOrNcbiDomain(domain) || isWebinSuperUser)
+    if (isWebinSuperUser) {
+      if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
+        isFirstTimeMetadataAddedIfWebinSuperUserSubmission =
+            isFirstTimeMetadataAddedForNonImportedSamples(sample);
+      }
+    }
+
+    if (isPipelineEnaOrNcbiDomain(domain) || isFirstTimeMetadataAddedIfWebinSuperUserSubmission)
       firstTimeMetadataAdded = false; // imported sample - never submitted first time to BSD
     else {
       firstTimeMetadataAdded = isFirstTimeMetadataAddedForNonImportedSamples(sample);
@@ -142,6 +151,18 @@ public class SampleService {
     }
 
     if (oldSample.getOrganizations().size() > 0) {
+      firstTimeMetadataAdded = false;
+    }
+
+    if (oldSample.getData().size() > 0) {
+      firstTimeMetadataAdded = false;
+    }
+
+    if (oldSample.getExternalReferences().size() > 0) {
+      firstTimeMetadataAdded = false;
+    }
+
+    if (oldSample.getStructuredData().size() > 0) {
       firstTimeMetadataAdded = false;
     }
 
