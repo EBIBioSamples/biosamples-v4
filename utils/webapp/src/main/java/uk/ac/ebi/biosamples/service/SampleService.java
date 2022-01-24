@@ -10,6 +10,8 @@
 */
 package uk.ac.ebi.biosamples.service;
 
+import java.time.Instant;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +33,6 @@ import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleStructuredDataCentricConverter;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
-
-import java.time.Instant;
-import java.util.*;
 
 /**
  * Service layer business logic for centralising repository access and conversions between different

@@ -99,8 +99,15 @@ public class MessageHandlerSolr {
   static boolean isIndexingCandidate(Sample sample) {
     for (Attribute attribute : sample.getAttributes()) {
       if (attribute.getType().equals("INSDC status")) {
-        List<String> publicStatuses = Arrays.asList("public", "live");
-        if (!publicStatuses.contains(attribute.getValue())) {
+        List<String> indexableStatuses =
+            Arrays.asList(
+                "public",
+                "live",
+                "suppressed",
+                "killed",
+                "temporary_suppressed",
+                "temporary_killed");
+        if (!indexableStatuses.contains(attribute.getValue())) {
           LOGGER.debug(
               String.format(
                   "not indexing %s as INSDC status is %s",

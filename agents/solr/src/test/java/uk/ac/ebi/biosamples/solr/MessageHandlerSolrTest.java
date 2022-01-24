@@ -82,7 +82,7 @@ public class MessageHandlerSolrTest {
   @Test
   public void should_not_index_suppressed_sample() throws Exception {
     Attribute attribute = Attribute.build("INSDC status", "suppressed");
-    assertFalse(
+    assertTrue(
         MessageHandlerSolr.isIndexingCandidate(
             (generateTestSample("suppressed-example", Collections.singletonList(attribute)))));
   }
