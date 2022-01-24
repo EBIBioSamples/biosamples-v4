@@ -135,8 +135,8 @@ public class SolrFilterService {
   }
 
   /**
-   * Return a filter query for public samples (released in the past) or samples part of the provided
-   * domains
+   * Return a filter query for public samples (released in the past) or samples part of the
+   * provided, and their own samples using auth domains
    *
    * @param domains a collection of domains
    * @return a filter query for public and domain relevant samples
@@ -144,7 +144,10 @@ public class SolrFilterService {
   public Optional<FilterQuery> getPublicFilterQuery(
       Collection<String> domains, String webinSubmissionAccountId) {
     // check if this is a read superuser
-    if (domains.contains(bioSamplesProperties.getBiosamplesAapSuperRead())) {
+    if ((domains != null && domains.contains(bioSamplesProperties.getBiosamplesAapSuperRead()))
+        || (webinSubmissionAccountId != null
+            && webinSubmissionAccountId.equalsIgnoreCase(
+                bioSamplesProperties.getBiosamplesClientWebinUsername()))) {
       return Optional.empty();
     }
 

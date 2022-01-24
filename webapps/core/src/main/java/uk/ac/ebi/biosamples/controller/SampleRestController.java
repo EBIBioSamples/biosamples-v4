@@ -197,6 +197,10 @@ public class SampleRestController {
           boolean setFullDetails,
       @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
           String authProvider) {
+    if (sample == null) {
+      throw new RuntimeException("No sample provided");
+    }
+
     final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
     final SortedSet<AbstractData> abstractData = sample.getData();
     boolean isWebinSuperUser = false;

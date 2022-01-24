@@ -12,6 +12,7 @@ package uk.ac.ebi.biosamples.controller;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
@@ -20,32 +21,52 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Accession;
+import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.AccessionsService;
+import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 
 @RestController
 @RequestMapping("/accessions")
 @CrossOrigin
 public class AccessionsRestController {
-
+  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final AccessionsService accessionsService;
 
-  public AccessionsRestController(AccessionsService accessionsService) {
+  public AccessionsRestController(
+      BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+      AccessionsService accessionsService) {
+    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.accessionsService = accessionsService;
   }
 
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Resources<Accession>> getAccessions(
+      HttpServletRequest request,
       @RequestParam(name = "text", required = false) String text,
       @RequestParam(name = "filter", required = false) String[] filter,
       @RequestParam(name = "page", required = false) final Integer page,
-      @RequestParam(name = "size", required = false) final Integer size) {
+      @RequestParam(name = "size", required = false) final Integer size,
+      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
+          String authProvider) {
+    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+    String webinSubmissionAccountId = null;
+
+    if (webinAuth) {
+      final SubmissionAccount webinAccount =
+          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+
+      if (webinAccount != null) {
+        webinSubmissionAccountId = webinAccount.getId();
+      }
+    }
 
     int effectiveSize = size == null ? 100 : size;
     int effectivePage = page == null ? 0 : page;
 
     Page<String> pageAccessions =
-        accessionsService.getAccessions(text, filter, effectivePage, effectiveSize);
+        accessionsService.getAccessions(
+            text, filter, webinSubmissionAccountId, effectivePage, effectiveSize);
 
     PagedResources.PageMetadata pageMetadata =
         new PagedResources.PageMetadata(
