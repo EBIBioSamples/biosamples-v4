@@ -157,7 +157,7 @@ public class SolrFilterService {
     // can use .and("release_dt").isNotNull(); to filter out non-null
     // but nothing should be null and this slows search
 
-    if (!domains.isEmpty()) {
+    if (domains != null && !domains.isEmpty()) {
       // user can only see private samples inside its own domain
       publicSampleCriteria = publicSampleCriteria.or(new Criteria("domain_s").in(domains));
     }

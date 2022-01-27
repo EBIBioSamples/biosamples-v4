@@ -33,7 +33,8 @@ public class AccessionsService {
   public Page<String> getAccessions(
       final String text,
       final String[] requestfilters,
-      String webinSubmissionAccountId,
+      final Collection<String> domains,
+      final String webinSubmissionAccountId,
       final Integer page,
       final Integer size) {
     final PageRequest pageable = new PageRequest(page, size);
@@ -41,19 +42,21 @@ public class AccessionsService {
     final String[] decodedFilter = LinkUtils.decodeTexts(requestfilters);
     final Collection<Filter> filtersAfterDecode = filterService.getFiltersCollection(decodedFilter);
 
-    return fetchAccessions(pageable, decodedText, filtersAfterDecode, webinSubmissionAccountId);
+    return fetchAccessions(
+        pageable, decodedText, filtersAfterDecode, domains, webinSubmissionAccountId);
   }
 
   private Page<String> fetchAccessions(
       final PageRequest pageable,
       final String decodedText,
       final Collection<Filter> filtersAfterDecode,
+      final Collection<String> domains,
       final String webinSubmissionAccountId) {
     final Page<SolrSample> pageSolrSample =
         solrSampleService.fetchSolrSampleByText(
             decodedText,
             filtersAfterDecode,
-            Collections.EMPTY_LIST,
+            (domains != null && !domains.isEmpty()) ? domains : Collections.emptySet(),
             webinSubmissionAccountId,
             pageable);
     return pageSolrSample.map(SolrSample::getAccession);

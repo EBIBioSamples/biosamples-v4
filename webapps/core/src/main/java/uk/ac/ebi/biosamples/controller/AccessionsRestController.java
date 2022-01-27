@@ -10,6 +10,7 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
@@ -23,18 +24,22 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Accession;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.AccessionsService;
+import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 
 @RestController
 @RequestMapping("/accessions")
 @CrossOrigin
 public class AccessionsRestController {
+  private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final AccessionsService accessionsService;
 
   public AccessionsRestController(
+      BioSamplesAapService bioSamplesAapService,
       BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       AccessionsService accessionsService) {
+    this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.accessionsService = accessionsService;
   }
@@ -51,6 +56,7 @@ public class AccessionsRestController {
           String authProvider) {
     final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
     String webinSubmissionAccountId = null;
+    Collection<String> domains = null;
 
     if (webinAuth) {
       final SubmissionAccount webinAccount =
@@ -59,6 +65,8 @@ public class AccessionsRestController {
       if (webinAccount != null) {
         webinSubmissionAccountId = webinAccount.getId();
       }
+    } else {
+      domains = bioSamplesAapService.getDomains();
     }
 
     int effectiveSize = size == null ? 100 : size;
@@ -66,7 +74,7 @@ public class AccessionsRestController {
 
     Page<String> pageAccessions =
         accessionsService.getAccessions(
-            text, filter, webinSubmissionAccountId, effectivePage, effectiveSize);
+            text, filter, domains, webinSubmissionAccountId, effectivePage, effectiveSize);
 
     PagedResources.PageMetadata pageMetadata =
         new PagedResources.PageMetadata(
@@ -79,7 +87,8 @@ public class AccessionsRestController {
         new PagedResources<>(
             pageAccessions.getContent().stream().map(Accession::build).collect(Collectors.toList()),
             pageMetadata);
-    addRelLinks(pageAccessions, resources, text, filter, effectivePage, effectiveSize);
+    addRelLinks(
+        pageAccessions, resources, text, filter, effectivePage, effectiveSize, authProvider);
 
     return ResponseEntity.ok().body(resources);
   }
@@ -90,11 +99,13 @@ public class AccessionsRestController {
       String text,
       String[] filter,
       Integer effectivePage,
-      Integer effectiveSize) {
+      Integer effectiveSize,
+      String authProvider) {
     resources.add(
         SamplesRestController.getPageLink(
             text,
             filter,
+            authProvider,
             Optional.empty(),
             effectivePage,
             effectiveSize,
@@ -108,6 +119,7 @@ public class AccessionsRestController {
           SamplesRestController.getPageLink(
               text,
               filter,
+              authProvider,
               Optional.empty(),
               0,
               effectiveSize,
@@ -118,6 +130,7 @@ public class AccessionsRestController {
           SamplesRestController.getPageLink(
               text,
               filter,
+              authProvider,
               Optional.empty(),
               pageAccessions.getTotalPages(),
               effectiveSize,
@@ -131,6 +144,7 @@ public class AccessionsRestController {
           SamplesRestController.getPageLink(
               text,
               filter,
+              authProvider,
               Optional.empty(),
               effectivePage - 1,
               effectiveSize,
@@ -145,6 +159,7 @@ public class AccessionsRestController {
           SamplesRestController.getPageLink(
               text,
               filter,
+              authProvider,
               Optional.empty(),
               effectivePage + 1,
               effectiveSize,

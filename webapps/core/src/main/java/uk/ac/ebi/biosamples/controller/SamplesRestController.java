@@ -120,6 +120,7 @@ public class SamplesRestController {
     String decodedCursor = LinkUtils.decodeText(cursor);
     Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
     String webinSubmissionAccountId = null;
+    Collection<String> domains = null;
 
     int effectivePage;
 
@@ -130,6 +131,8 @@ public class SamplesRestController {
       if (webinAccount != null) {
         webinSubmissionAccountId = webinAccount.getId();
       }
+    } else {
+      domains = bioSamplesAapService.getDomains();
     }
 
     if (page == null) {
@@ -147,7 +150,6 @@ public class SamplesRestController {
     }
 
     Collection<Filter> filters = filterService.getFiltersCollection(decodedFilter);
-    Collection<String> domains = bioSamplesAapService.getDomains();
 
     // Note - EBI load balancer does cache but doesn't add age header, so clients could cache up
     // to
@@ -158,7 +160,7 @@ public class SamplesRestController {
     // if the user has access to any domains, then mark the response as private as must be using
     // AAP
     // and responses will be different
-    if (domains.size() > 0) {
+    if (domains != null && domains.size() > 0) {
       cacheControl.cachePrivate();
     }
 
@@ -168,7 +170,7 @@ public class SamplesRestController {
           samplePageService.getSamplesByText(
               decodedText,
               filters,
-              domains,
+              (domains != null && domains.size() > 0) ? domains : Collections.emptySet(),
               webinSubmissionAccountId,
               decodedCursor,
               effectiveSize,
@@ -242,6 +244,7 @@ public class SamplesRestController {
               pageSample,
               effectiveSize,
               effectivePage,
+              authProvider,
               decodedText,
               decodedFilter,
               sort,
@@ -255,6 +258,7 @@ public class SamplesRestController {
       Page<Sample> pageSample,
       int effectiveSize,
       int effectivePage,
+      String authProvider,
       String decodedText,
       String[] decodedFilter,
       String[] sort,
@@ -282,6 +286,7 @@ public class SamplesRestController {
           getPageLink(
               decodedText,
               decodedFilter,
+              authProvider,
               decodedCurationDomains,
               0,
               effectiveSize,
@@ -295,6 +300,7 @@ public class SamplesRestController {
           getPageLink(
               decodedText,
               decodedFilter,
+              authProvider,
               decodedCurationDomains,
               effectivePage - 1,
               effectiveSize,
@@ -307,6 +313,7 @@ public class SamplesRestController {
         getPageLink(
             decodedText,
             decodedFilter,
+            authProvider,
             decodedCurationDomains,
             effectivePage,
             effectiveSize,
@@ -320,6 +327,7 @@ public class SamplesRestController {
           getPageLink(
               decodedText,
               decodedFilter,
+              authProvider,
               decodedCurationDomains,
               effectivePage + 1,
               effectiveSize,
@@ -333,6 +341,7 @@ public class SamplesRestController {
           getPageLink(
               decodedText,
               decodedFilter,
+              authProvider,
               decodedCurationDomains,
               pageSample.getTotalPages(),
               effectiveSize,
@@ -437,6 +446,7 @@ public class SamplesRestController {
   public static Link getPageLink(
       String text,
       String[] filter,
+      String authProvider,
       Optional<List<String>> decodedCurationDomains,
       int page,
       int size,
@@ -448,6 +458,7 @@ public class SamplesRestController {
 
     builder.queryParam("page", page);
     builder.queryParam("size", size);
+    builder.queryParam("authProvider", authProvider);
 
     if (sort != null) {
       for (String sortString : sort) {
