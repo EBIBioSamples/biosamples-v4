@@ -353,7 +353,7 @@ public class FileUploadUtils {
               log.trace(entryKey + " " + entryValue);
 
               if (entryKey.startsWith("Comment") && entryKey.contains("external DB REF")) {
-                if (entryValue != null && !entryValue.isEmpty()) {
+                if (entryValue != null && !entryValue.isEmpty() && entryValue.length() > 1) {
                   externalReferenceList.add(ExternalReference.build(entryValue));
                 }
               }
