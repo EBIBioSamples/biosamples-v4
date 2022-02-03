@@ -215,6 +215,49 @@ public class SampleService {
     return fetch(sample.getAccession(), Optional.empty(), null).get();
   }
 
+  public Sample storeV2(Sample sample, boolean isFirstTimeMetadataAdded, String authProvider) {
+    Collection<String> errors = sampleValidator.validate(sample);
+
+    if (!errors.isEmpty()) {
+      log.error("Sample validation failed : {}", errors);
+      throw new SampleValidationException(String.join("|", errors));
+    }
+
+    if (sample.hasAccession()) {
+      final MongoSample mongoOldSample = mongoSampleRepository.findOne(sample.getAccession());
+
+      if (mongoOldSample != null) {
+        final Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
+
+        sample =
+            compareWithExistingAndUpdateSample(
+                sample, oldSample, isFirstTimeMetadataAdded, authProvider);
+      } else {
+        log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
+      }
+
+      MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
+
+      mongoSample = mongoSampleRepository.save(mongoSample);
+      sample = mongoSampleToSampleConverter.convert(mongoSample);
+    } else {
+      sample = mongoAccessionService.generateAccession(sample);
+    }
+
+    return sample;
+  }
+
+  public Sample accessionV2(Sample sample, boolean isFirstTimeMetadataAdded, String authProvider) {
+    Collection<String> errors = sampleValidator.validate(sample);
+
+    if (!errors.isEmpty()) {
+      log.error("Sample validation failed : {}", errors);
+      throw new SampleValidationException(String.join("|", errors));
+    }
+
+    return mongoAccessionService.generateAccession(sample);
+  }
+
   public Sample storeSampleStructuredData(Sample newSample, String authProvider) {
     try {
       sampleValidator.validateSampleContentsForStructuredDataPatching(newSample);

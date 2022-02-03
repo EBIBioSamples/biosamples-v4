@@ -10,6 +10,15 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.ExposesResourceFor;
@@ -17,8 +26,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
@@ -28,16 +35,6 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
-
-import javax.servlet.http.HttpServletRequest;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 @RestController
 @ExposesResourceFor(Sample.class)
@@ -80,13 +77,13 @@ public class SamplesRestControllerV2 {
     boolean isWebinSuperUser;
 
     if (webinAuth) {
-      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
-
-      final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService
-              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-              .getBody();
+          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+
+      if (webinAccount == null) {
+        throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
+      }
+
       final String webinAccountId = webinAccount.getId();
       isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
       final boolean finalIsWebinSuperUser = isWebinSuperUser;
@@ -105,7 +102,7 @@ public class SamplesRestControllerV2 {
                           sample = enaTaxonClientService.performTaxonomyValidation(sample);
                         }
 
-                        return sampleService.store(sample, true, authProvider);
+                        return sampleService.storeV2(sample, true, authProvider);
                       })
                   .collect(Collectors.toList()));
     } else {
@@ -120,7 +117,7 @@ public class SamplesRestControllerV2 {
                           schemaValidationService.validate(sample);
                         }
 
-                        return sampleService.store(sample, true, authProvider);
+                        return sampleService.storeV2(sample, true, authProvider);
                       })
                   .collect(Collectors.toList()));
     }
@@ -140,12 +137,12 @@ public class SamplesRestControllerV2 {
     if (sample.hasAccession()) throw new SampleWithAccessionSubmissionExceptionV2();
 
     if (authProvider.equalsIgnoreCase("WEBIN")) {
-      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
-      final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService
-              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-              .getBody();
+          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+
+      if (webinAccount == null) {
+        throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
+      }
 
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
     } else {
@@ -154,7 +151,7 @@ public class SamplesRestControllerV2 {
 
     sample = buildPrivateSampleV2(sample);
 
-    sample = sampleService.store(sample, false, authProvider);
+    sample = sampleService.storeV2(sample, false, authProvider);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(sample);
   }
@@ -195,12 +192,12 @@ public class SamplesRestControllerV2 {
           });
 
       if (authProvider.equalsIgnoreCase("WEBIN")) {
-        final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
-        final Authentication authentication = bearerTokenExtractor.extract(request);
         final SubmissionAccount webinAccount =
-            bioSamplesWebinAuthenticationService
-                .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-                .getBody();
+            bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+
+        if (webinAccount == null) {
+          throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
+        }
 
         samples =
             samples.stream()
@@ -304,7 +301,7 @@ public class SamplesRestControllerV2 {
 
       log.info("Initiating store() for " + sample.getName());
 
-      return sampleService.store(sample, false, authProvider);
+      return sampleService.storeV2(sample, false, authProvider);
     }
   }
 

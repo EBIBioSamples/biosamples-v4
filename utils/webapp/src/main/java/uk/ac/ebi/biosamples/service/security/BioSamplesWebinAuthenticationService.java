@@ -348,7 +348,8 @@ public class BioSamplesWebinAuthenticationService {
   }
 
   public boolean isWebinSuperUser(final String webinId) {
-    return webinId.equalsIgnoreCase(bioSamplesProperties.getBiosamplesClientWebinUsername());
+    return webinId != null
+        && webinId.equalsIgnoreCase(bioSamplesProperties.getBiosamplesClientWebinUsername());
   }
 
   public void checkSampleAccessibility(

@@ -532,19 +532,19 @@ public class SamplesRestController {
         });
 
     if (authProvider.equalsIgnoreCase("WEBIN")) {
-      final SubmissionAccount webinAccount =
+      /*final SubmissionAccount webinAccount =
           bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
 
       if (webinAccount == null) {
         throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
-      }
+      }*/
 
       samples =
           samples.stream()
               .map(
                   sample ->
                       bioSamplesWebinAuthenticationService.getSampleWithWebinSubmissionAccountId(
-                          sample, webinAccount.getId()))
+                          sample, bioSamplesProperties.getBiosamplesClientWebinUsername()))
               .collect(Collectors.toList());
     } else {
       if (samples.size() > 0) {
@@ -572,7 +572,10 @@ public class SamplesRestController {
                   log.trace("Initiating store() for " + sample.getName());
 
                   sample = buildPrivateSample(sample);
-                  return sampleService.store(sample, false, authProvider);
+                  /*
+                  Call the storeV2 from SampleService, it doesn't do a lot of housekeeping like reporting to Rabbit, saving to MongoSampleCurated etc which is not required for bulk-accessioning
+                   */
+                  return sampleService.accessionV2(sample, false, authProvider);
                 })
             .collect(Collectors.toList());
 
