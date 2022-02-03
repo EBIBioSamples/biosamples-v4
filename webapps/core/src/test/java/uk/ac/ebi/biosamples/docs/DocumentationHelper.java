@@ -80,7 +80,7 @@ public class DocumentationHelper {
   }
 
   public Sample.Builder getExampleSampleBuilder() {
-    return new Sample.Builder("FakeSample", "SAMFAKE123456");
+    return new Sample.Builder("FakeSample", "SAMEA12345");
   }
 
   public Sample getExampleSample() {

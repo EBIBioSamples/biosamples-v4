@@ -18,13 +18,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
-import uk.ac.ebi.biosamples.service.SampleServiceV2;
+import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
@@ -33,14 +31,14 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 public class SampleRestControllerV2 {
   private Logger log = LoggerFactory.getLogger(getClass());
 
-  private final SampleServiceV2 sampleService;
+  private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final SchemaValidationService schemaValidationService;
   private final ENATaxonClientService enaTaxonClientService;
 
   public SampleRestControllerV2(
-      final SampleServiceV2 sampleService,
+      final SampleService sampleService,
       final BioSamplesAapService bioSamplesAapService,
       final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       final SchemaValidationService schemaValidationService,
@@ -70,12 +68,12 @@ public class SampleRestControllerV2 {
     log.debug("Received PUT for " + accession);
 
     if (authProvider.equalsIgnoreCase("WEBIN")) {
-      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
-      final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService
-              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-              .getBody();
+          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+
+      if (webinAccount == null) {
+        throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
+      }
 
       final String webinAccountId = webinAccount.getId();
 
@@ -118,13 +116,13 @@ public class SampleRestControllerV2 {
       sample = enaTaxonClientService.performTaxonomyValidation(sample);
     }
 
-    final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample);
+    final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, isWebinSuperUser);
 
     if (isFirstTimeMetadataAdded) {
       sample = Sample.Builder.fromSample(sample).withSubmitted(now).build();
     }
 
-    sample = sampleService.store(sample, isFirstTimeMetadataAdded, authProvider);
+    sample = sampleService.storeV2(sample, isFirstTimeMetadataAdded, authProvider);
 
     return ResponseEntity.status(HttpStatus.OK).body(sample);
   }

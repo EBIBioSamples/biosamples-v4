@@ -8,7 +8,7 @@
 	<parent>
 		<artifactId>biosamples</artifactId>
 		<groupId>uk.ac.ebi.biosamples</groupId>
-		<version>5.1.14-RC1</version>
+		<version>5.1.15-SNAPSHOT</version>
 	</parent>
 
 	<modules>

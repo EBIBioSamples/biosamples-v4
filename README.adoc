@@ -217,7 +217,7 @@ To delete all docker images use:
 
 NOTE: this will remove everything not just things for this project
 
-== Client useage
+== Client usage
 
 There is a spring client, and a spring-boot starter module, for use with
 BioSamples. To use these in a maven project, add the following to the

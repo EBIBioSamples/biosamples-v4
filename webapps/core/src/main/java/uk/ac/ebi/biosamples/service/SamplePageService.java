@@ -90,7 +90,8 @@ public class SamplePageService {
     startTime = System.nanoTime();
     Page<Future<Optional<Sample>>> pageFutureSample;
     StaticViewWrapper.StaticView staticViews =
-        StaticViewWrapper.getStaticView(domains.isEmpty() ? null : domains, curationRepo);
+        StaticViewWrapper.getStaticView(
+            (domains != null && domains.isEmpty()) ? domains : null, curationRepo);
     pageFutureSample =
         pageSolrSample.map(
             ss -> sampleService.fetchAsync(ss.getAccession(), curationDomains, staticViews));
@@ -132,7 +133,8 @@ public class SamplePageService {
             text, filters, domains, webinSubmissionAccountId, cursorMark, size);
 
     StaticViewWrapper.StaticView staticViews =
-        StaticViewWrapper.getStaticView(domains.isEmpty() ? null : domains, curationRepo);
+        StaticViewWrapper.getStaticView(
+            (domains != null && !domains.isEmpty()) ? domains : null, curationRepo);
     List<Future<Optional<Sample>>> listFutureSample;
     listFutureSample =
         cursorSolrSample.stream()
