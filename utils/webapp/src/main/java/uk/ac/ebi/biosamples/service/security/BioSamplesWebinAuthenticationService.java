@@ -222,40 +222,6 @@ public class BioSamplesWebinAuthenticationService {
     }
   }
 
-  public Sample handleStructuredDataAccesibility(final Sample sample, String id) {
-    final AtomicBoolean isWebinIdValid = new AtomicBoolean(false);
-
-    sample
-        .getData()
-        .forEach(
-            data -> {
-              if (data.getDataType() != null) {
-                final String structuredDataWebinId = data.getWebinSubmissionAccountId();
-
-                if (structuredDataWebinId == null)
-                  throw new StructuredDataWebinIdMissingException();
-              }
-            });
-
-    if (sample.hasAccession()) {
-      isWebinIdValid.set(checkStructureDataAccessibility(sample, id));
-    } else {
-      sample
-          .getData()
-          .forEach(
-              data -> {
-                if (data.getDataType() != null) {
-                  if (id.equalsIgnoreCase(data.getWebinSubmissionAccountId())) {
-                    isWebinIdValid.set(true);
-                  }
-                }
-              });
-    }
-
-    if (isWebinIdValid.get()) return sample;
-    else throw new StructuredDataNotAccessibleException();
-  }
-
   public void handleStructuredDataAccesibility(
       final StructuredData structuredData, final String id) {
     structuredData

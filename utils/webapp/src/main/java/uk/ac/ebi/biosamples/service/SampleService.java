@@ -258,31 +258,6 @@ public class SampleService {
     return mongoAccessionService.generateAccession(sample);
   }
 
-  public Sample storeSampleStructuredData(Sample newSample, String authProvider) {
-    try {
-      sampleValidator.validateSampleContentsForStructuredDataPatching(newSample);
-    } catch (final Exception validationException) {
-      throw new SampleValidationException(validationException.getMessage());
-    }
-
-    MongoSample mongoOldSample = mongoSampleRepository.findOne(newSample.getAccession());
-
-    if (mongoOldSample != null) {
-      newSample = buildSample(newSample, mongoSampleToSampleConverter.convert(mongoOldSample));
-    } else {
-      log.error(
-          "Trying to update newSample not in database, accession: {}", newSample.getAccession());
-    }
-
-    MongoSample mongoSample = structuredDataConverter.convert(newSample, authProvider);
-    mongoSample = mongoSampleRepository.save(mongoSample);
-    newSample = mongoSampleToSampleConverter.convert(mongoSample);
-
-    // return the newSample in case we have modified it i.e accessioned
-    // do a fetch to return it with curation objects and inverse relationships
-    return fetch(newSample.getAccession(), Optional.empty(), null).get();
-  }
-
   private Sample buildSample(Sample newSample, Sample oldSample) {
     return Sample.Builder.fromSample(oldSample)
         .withData(newSample.getData())
