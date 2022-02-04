@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.StaticViewWrapper;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
@@ -84,10 +85,17 @@ public class SampleService {
 
   private boolean beforeStoreCheck(Sample sample, boolean isWebinSuperUser) {
     boolean firstTimeMetadataAdded;
-
     final String domain = sample.getDomain();
+    boolean isFirstTimeMetadataAddedIfWebinSuperUserSubmission = true;
 
-    if (isPipelineEnaOrNcbiDomain(domain) || isWebinSuperUser)
+    if (isWebinSuperUser) {
+      if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
+        isFirstTimeMetadataAddedIfWebinSuperUserSubmission =
+            isFirstTimeMetadataAddedForNonImportedSamples(sample);
+      }
+    }
+
+    if (isPipelineEnaOrNcbiDomain(domain) || isFirstTimeMetadataAddedIfWebinSuperUserSubmission)
       firstTimeMetadataAdded = false; // imported sample - never submitted first time to BSD
     else {
       firstTimeMetadataAdded = isFirstTimeMetadataAddedForNonImportedSamples(sample);
@@ -145,6 +153,18 @@ public class SampleService {
       firstTimeMetadataAdded = false;
     }
 
+    if (oldSample.getData().size() > 0) {
+      firstTimeMetadataAdded = false;
+    }
+
+    if (oldSample.getExternalReferences().size() > 0) {
+      firstTimeMetadataAdded = false;
+    }
+
+    if (oldSample.getStructuredData().size() > 0) {
+      firstTimeMetadataAdded = false;
+    }
+
     return firstTimeMetadataAdded;
   }
 
@@ -193,6 +213,49 @@ public class SampleService {
 
     // do a fetch to return it with accession, curation objects, inverse relationships
     return fetch(sample.getAccession(), Optional.empty(), null).get();
+  }
+
+  public Sample storeV2(Sample sample, boolean isFirstTimeMetadataAdded, String authProvider) {
+    Collection<String> errors = sampleValidator.validate(sample);
+
+    if (!errors.isEmpty()) {
+      log.error("Sample validation failed : {}", errors);
+      throw new SampleValidationException(String.join("|", errors));
+    }
+
+    if (sample.hasAccession()) {
+      final MongoSample mongoOldSample = mongoSampleRepository.findOne(sample.getAccession());
+
+      if (mongoOldSample != null) {
+        final Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
+
+        sample =
+            compareWithExistingAndUpdateSample(
+                sample, oldSample, isFirstTimeMetadataAdded, authProvider);
+      } else {
+        log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
+      }
+
+      MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
+
+      mongoSample = mongoSampleRepository.save(mongoSample);
+      sample = mongoSampleToSampleConverter.convert(mongoSample);
+    } else {
+      sample = mongoAccessionService.generateAccession(sample);
+    }
+
+    return sample;
+  }
+
+  public Sample accessionV2(Sample sample, boolean isFirstTimeMetadataAdded, String authProvider) {
+    Collection<String> errors = sampleValidator.validate(sample);
+
+    if (!errors.isEmpty()) {
+      log.error("Sample validation failed : {}", errors);
+      throw new SampleValidationException(String.join("|", errors));
+    }
+
+    return mongoAccessionService.generateAccession(sample);
   }
 
   public Sample storeSampleStructuredData(Sample newSample, String authProvider) {

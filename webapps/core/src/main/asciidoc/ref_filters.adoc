@@ -25,7 +25,7 @@ Filter based on samples' attributes and attribute's value
 |===
 
 ==== Example
-- link:/biosamples/samples?filter=attr:Organism:Homo+Sapies[`filter=attr:Organism:Homo+Sapiens`, window="_blank"]
+- link:/biosamples/samples?filter=attr:Organism:Homo+Sapiens[`filter=attr:Organism:Homo+Sapiens`, window="_blank"]
 - link:/biosamples/samples?filter=attr:organism+part:liver[`filter=attr:organism+part:liver`, window="_blank"]
 
 //==== Notes

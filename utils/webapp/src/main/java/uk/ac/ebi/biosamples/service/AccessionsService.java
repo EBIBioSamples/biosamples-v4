@@ -10,10 +10,8 @@
 */
 package uk.ac.ebi.biosamples.service;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -33,24 +31,34 @@ public class AccessionsService {
   }
 
   public Page<String> getAccessions(
-      final String text, final String[] requestfilters, final Integer page, final Integer size) {
+      final String text,
+      final String[] requestfilters,
+      final Collection<String> domains,
+      final String webinSubmissionAccountId,
+      final Integer page,
+      final Integer size) {
     final PageRequest pageable = new PageRequest(page, size);
     final String decodedText = LinkUtils.decodeText(text);
     final String[] decodedFilter = LinkUtils.decodeTexts(requestfilters);
     final Collection<Filter> filtersAfterDecode = filterService.getFiltersCollection(decodedFilter);
-    final List<String> accessions = new ArrayList<>();
 
-    return fetchAccessions(pageable, decodedText, filtersAfterDecode, accessions);
+    return fetchAccessions(
+        pageable, decodedText, filtersAfterDecode, domains, webinSubmissionAccountId);
   }
 
   private Page<String> fetchAccessions(
       final PageRequest pageable,
       final String decodedText,
       final Collection<Filter> filtersAfterDecode,
-      final List<String> accessions) {
+      final Collection<String> domains,
+      final String webinSubmissionAccountId) {
     final Page<SolrSample> pageSolrSample =
         solrSampleService.fetchSolrSampleByText(
-            decodedText, filtersAfterDecode, Collections.EMPTY_LIST, null, pageable);
+            decodedText,
+            filtersAfterDecode,
+            (domains != null && !domains.isEmpty()) ? domains : Collections.emptySet(),
+            webinSubmissionAccountId,
+            pageable);
     return pageSolrSample.map(SolrSample::getAccession);
   }
 }

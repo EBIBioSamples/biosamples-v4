@@ -37,9 +37,6 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
   private MongoRelationshipToRelationshipConverter mongoRelationshipToRelationshipConverter;
 
   @Autowired private MongoCertificateToCertificateConverter mongoCertificateToCertificateConverter;
-
-  private Logger log = LoggerFactory.getLogger(getClass());
-
   private static Logger LOGGER = LoggerFactory.getLogger(MongoSampleToSampleConverter.class);
 
   @Override

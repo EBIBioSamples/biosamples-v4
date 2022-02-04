@@ -26,13 +26,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
-import uk.ac.ebi.biosamples.service.SampleServiceV2;
+import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
@@ -45,16 +43,14 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 public class SamplesRestControllerV2 {
   private Logger log = LoggerFactory.getLogger(getClass());
 
-  private final SampleServiceV2 sampleService;
+  private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final SchemaValidationService schemaValidationService;
   private final ENATaxonClientService enaTaxonClientService;
 
-  private final int maxThreads = 10;
-
   public SamplesRestControllerV2(
-      final SampleServiceV2 sampleService,
+      final SampleService sampleService,
       final BioSamplesAapService bioSamplesAapService,
       final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       final SchemaValidationService schemaValidationService,
@@ -81,13 +77,13 @@ public class SamplesRestControllerV2 {
     boolean isWebinSuperUser;
 
     if (webinAuth) {
-      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
-
-      final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService
-              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-              .getBody();
+          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+
+      if (webinAccount == null) {
+        throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
+      }
+
       final String webinAccountId = webinAccount.getId();
       isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
       final boolean finalIsWebinSuperUser = isWebinSuperUser;
@@ -106,7 +102,7 @@ public class SamplesRestControllerV2 {
                           sample = enaTaxonClientService.performTaxonomyValidation(sample);
                         }
 
-                        return sampleService.store(sample, true, authProvider);
+                        return sampleService.storeV2(sample, true, authProvider);
                       })
                   .collect(Collectors.toList()));
     } else {
@@ -121,7 +117,7 @@ public class SamplesRestControllerV2 {
                           schemaValidationService.validate(sample);
                         }
 
-                        return sampleService.store(sample, true, authProvider);
+                        return sampleService.storeV2(sample, true, authProvider);
                       })
                   .collect(Collectors.toList()));
     }
@@ -141,12 +137,12 @@ public class SamplesRestControllerV2 {
     if (sample.hasAccession()) throw new SampleWithAccessionSubmissionExceptionV2();
 
     if (authProvider.equalsIgnoreCase("WEBIN")) {
-      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
-      final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService
-              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-              .getBody();
+          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+
+      if (webinAccount == null) {
+        throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
+      }
 
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
     } else {
@@ -155,7 +151,7 @@ public class SamplesRestControllerV2 {
 
     sample = buildPrivateSampleV2(sample);
 
-    sample = sampleService.store(sample, false, authProvider);
+    sample = sampleService.storeV2(sample, false, authProvider);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(sample);
   }
@@ -196,12 +192,12 @@ public class SamplesRestControllerV2 {
           });
 
       if (authProvider.equalsIgnoreCase("WEBIN")) {
-        final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
-        final Authentication authentication = bearerTokenExtractor.extract(request);
         final SubmissionAccount webinAccount =
-            bioSamplesWebinAuthenticationService
-                .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-                .getBody();
+            bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+
+        if (webinAccount == null) {
+          throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
+        }
 
         samples =
             samples.stream()
@@ -229,6 +225,7 @@ public class SamplesRestControllerV2 {
         }
       }
 
+      final int maxThreads = 10;
       final ExecutorService executor = Executors.newFixedThreadPool(maxThreads);
       final List<Future<Sample>> sampleFutures =
           samples.stream()
@@ -304,7 +301,7 @@ public class SamplesRestControllerV2 {
 
       log.info("Initiating store() for " + sample.getName());
 
-      return sampleService.store(sample, false, authProvider);
+      return sampleService.storeV2(sample, false, authProvider);
     }
   }
 

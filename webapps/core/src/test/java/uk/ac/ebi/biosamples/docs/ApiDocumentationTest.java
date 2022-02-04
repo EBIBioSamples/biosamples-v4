@@ -30,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.servlet.http.HttpServletRequest;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -307,6 +308,9 @@ public class ApiDocumentationTest {
         .thenReturn(sampleWithWebinId);
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
         .thenReturn(ResponseEntity.ok(submissionAccount));
+    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(
+            any(HttpServletRequest.class)))
+        .thenReturn((submissionAccount));
     when(sampleService.store(any(Sample.class), eq(true), eq("WEBIN")))
         .thenReturn(sampleWithWebinId);
     when(enaTaxonClientService.performTaxonomyValidation(any(Sample.class)))
@@ -540,6 +544,9 @@ public class ApiDocumentationTest {
 
     when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class)))
         .thenReturn(sampleWithWebinId);
+    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(
+            any(HttpServletRequest.class)))
+        .thenReturn((submissionAccount));
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
         .thenReturn(ResponseEntity.ok(submissionAccount));
     when(sampleService.store(any(Sample.class), eq(false), eq("WEBIN")))
@@ -886,6 +893,9 @@ public class ApiDocumentationTest {
 
     when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class)))
         .thenReturn(sampleWithWebinId);
+    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(
+            any(HttpServletRequest.class)))
+        .thenReturn(submissionAccount);
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
         .thenReturn(ResponseEntity.ok(submissionAccount));
 

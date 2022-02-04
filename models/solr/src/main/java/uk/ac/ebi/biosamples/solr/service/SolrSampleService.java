@@ -121,7 +121,6 @@ public class SolrSampleService {
       Collection<Filter> filters,
       Collection<String> domains,
       String webinSubmissionAccountId) {
-
     // default to search all
     if (searchTerm == null || searchTerm.trim().length() == 0) {
       searchTerm = "*:*";
