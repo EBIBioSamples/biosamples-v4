@@ -33,8 +33,6 @@ maven-package:
     - cp pipelines/reindex/target/pipelines-reindex-*.jar deployment/pipelines-reindex.jar
     - cp pipelines/zooma/target/pipelines-zooma-*.jar deployment/pipelines-zooma.jar
     - cp pipelines/sample-transformation-dtol/target/pipelines-sample-transformation-dtol-*.jar deployment/pipelines-sample-transformation-dtol.jar
-  tags:
-    - dind
   artifacts:
     paths:
       - deployment
@@ -49,8 +47,6 @@ clone-config-preproduction:
     - cp -r biosamples-internal/script/* deployment/
     - cp -r biosamples-internal/wwwdev/* config/
     - cp biosamples-internal/deployment/deploy.sh ./
-  tags:
-    - dind
   artifacts:
     paths:
       - deployment
@@ -67,8 +63,6 @@ clone-config-production:
     - cp -r biosamples-internal/script/* deployment/
     - cp -r biosamples-internal/www/* config/
     - cp biosamples-internal/deployment/deploy.sh ./
-  tags:
-    - dind
   artifacts:
     paths:
       - deployment
@@ -84,8 +78,6 @@ deploy-preproduction:
   script:
     - chmod +x deploy.sh
     - ./deploy.sh bsd_dev wp-np2-40
-  tags:
-    - dind
   when: manual
   only:
     - gitlab_ci_improvements
@@ -99,8 +91,6 @@ deploy-production-p2m-servers:
     - chmod +x deploy.sh
     - ./deploy.sh bsd_prod wp-p2m-40
     - ./deploy.sh bsd_prod wp-p2m-41
-  tags:
-    - dind
   when: manual
   only:
     - master
@@ -112,8 +102,6 @@ deploy-production-p1m-servers:
     - chmod +x deploy.sh
     - ./deploy.sh bsd_prod wp-p1m-40
     - ./deploy.sh bsd_prod wp-p1m-41
-  tags:
-    - dind
   when: manual
   only:
     - master
