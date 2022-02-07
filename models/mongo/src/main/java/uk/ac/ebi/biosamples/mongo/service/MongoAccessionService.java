@@ -128,6 +128,7 @@ public class MongoAccessionService {
   @PostConstruct
   @Scheduled(fixedDelay = 100, initialDelay = 1000)
   public synchronized void prepareAccessions() {
+    log.info("Populating accessions in pool");
     long startTime = System.nanoTime();
 
     // check that all accessions are still available
@@ -178,6 +179,6 @@ public class MongoAccessionService {
     }
 
     long endTime = System.nanoTime();
-    log.trace("Populated accession pool in " + ((endTime - startTime) / 1000000) + "ms");
+    log.info("Populated accession pool in " + ((endTime - startTime) / 1000000) + "ms");
   }
 }
