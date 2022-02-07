@@ -101,21 +101,6 @@ public class Application extends SpringBootServletInitializer {
         mongoProperties.getAcessionQueueSize());
   }
 
-  @Bean(name = "GroupAccessionService")
-  public MongoAccessionService mongoGroupAccessionService(
-      MongoSampleRepository mongoSampleRepository,
-      SampleToMongoSampleConverter sampleToMongoSampleConverter,
-      MongoSampleToSampleConverter mongoSampleToSampleConverter,
-      MongoProperties mongoProperties) {
-    return new MongoAccessionService(
-        mongoSampleRepository,
-        sampleToMongoSampleConverter,
-        mongoSampleToSampleConverter,
-        "SAMEG",
-        mongoProperties.getAccessionMinimum(),
-        mongoProperties.getAcessionQueueSize());
-  }
-
   @Bean
   AmrTableConverter amrTableToMapConverter() {
     return new AmrTableConverter();
