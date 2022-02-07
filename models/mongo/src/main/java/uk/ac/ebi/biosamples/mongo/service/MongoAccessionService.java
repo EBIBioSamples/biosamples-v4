@@ -126,7 +126,7 @@ public class MongoAccessionService {
   }
 
   @PostConstruct
-  @Scheduled(fixedDelay = 100, initialDelay = 1000)
+  @Scheduled(fixedDelay = 1000)
   public synchronized void prepareAccessions() {
     log.info("Populating accessions in pool");
     long startTime = System.nanoTime();
