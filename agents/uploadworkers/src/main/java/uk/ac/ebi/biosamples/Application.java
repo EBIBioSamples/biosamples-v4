@@ -59,6 +59,6 @@ public class Application {
         mongoSampleToSampleConverter,
         mongoProperties.getAccessionPrefix(),
         mongoProperties.getAccessionMinimum(),
-        mongoProperties.getAcessionQueueSize());
+        mongoProperties.getAccessionQueueSizeForLowerPriorityServices());
   }
 }
