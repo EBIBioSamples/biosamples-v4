@@ -34,6 +34,7 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
 
@@ -351,16 +352,14 @@ public class NcbiBaseConverterTests {
   }
 
   @Test
-  public void given_ncbi_sample_with_multiple_amr_tables_it_converts_it_correctly()
-      throws DocumentException {
+  public void given_ncbi_sample_with_multiple_amr_tables_it_converts_it_correctly() throws DocumentException {
     Element ncbiSampleWithMultipleAMR =
         readBioSampleElementFromXml("/examples/ncbi_amr_sample_with_multiple_amr_entries.xml");
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(
-            ncbiSampleWithMultipleAMR, new HashSet<>());
+    Set<StructuredDataTable> amrDataSet =
+        conversionService.convertNcbiXmlElementToStructuredData(ncbiSampleWithMultipleAMR, Collections.emptySet());
 
-    assertNotNull(sampleToTest);
-    assertThat(sampleToTest.getData(), hasSize(2));
+    assertNotNull(amrDataSet);
+    assertEquals(2, amrDataSet.size());
   }
 
   public Element readBioSampleElementFromXml(String pathToFile) throws DocumentException {
