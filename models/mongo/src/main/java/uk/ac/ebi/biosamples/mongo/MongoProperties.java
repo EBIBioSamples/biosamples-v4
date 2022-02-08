@@ -31,6 +31,9 @@ public class MongoProperties {
   @Value("${biosamples.accession.queuesize:2000}")
   private int accessionQueueSize;
 
+  @Value("${biosamples.accession.lowprioaccessionqueuesize:100}")
+  private int accessionQueueSizeForLowerPriorityServices;
+
   public String getAccessionPrefix() {
     return accessionPrefix;
   }
@@ -41,6 +44,10 @@ public class MongoProperties {
 
   public int getAcessionQueueSize() {
     return accessionQueueSize;
+  }
+
+  public int getAccessionQueueSizeForLowerPriorityServices() {
+    return accessionQueueSizeForLowerPriorityServices;
   }
 
   public String getSampleWriteConcern() {

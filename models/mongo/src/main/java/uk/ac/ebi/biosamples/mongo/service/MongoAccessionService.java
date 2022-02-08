@@ -126,7 +126,7 @@ public class MongoAccessionService {
   }
 
   @PostConstruct
-  @Scheduled(fixedDelay = 100)
+  @Scheduled(fixedDelay = 500)
   public synchronized void prepareAccessions() {
     long startTime = System.nanoTime();
 
@@ -178,6 +178,6 @@ public class MongoAccessionService {
     }
 
     long endTime = System.nanoTime();
-    log.trace("Populated accession pool in " + ((endTime - startTime) / 1000000) + "ms");
+    log.info("Populated accession pool in " + ((endTime - startTime) / 1000000) + "ms");
   }
 }
