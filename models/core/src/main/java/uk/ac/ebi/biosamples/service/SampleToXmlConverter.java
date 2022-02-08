@@ -30,14 +30,15 @@ import uk.ac.ebi.biosamples.model.Publication;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.model.structured.StructuredData;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 
 @Service
 public class SampleToXmlConverter implements Converter<Sample, Document> {
 
-  private final Namespace xmlns =
-      Namespace.get("http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0");
+  private final Namespace xmlns = Namespace.get("http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0");
   private final Namespace xsi = Namespace.get("xsi", "http://www.w3.org/2001/XMLSchema-instance");
   private final ExternalReferenceService externalReferenceService;
 
@@ -199,6 +200,11 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
         Element databaseId = database.addElement(QName.get("ID", xmlns));
         databaseId.setText(pathSegments.get(pathSegments.size() - 1));
       }
+    }
+
+    for (StructuredDataTable data : source.getStructuredData()) {
+      Element amrParent = bioSample.addElement(QName.get("Table", xmlns)).addAttribute("name", "Antibiogram");
+      Element amrHeader = amrParent.addElement(QName.get("Header", xmlns));
     }
 
     for (AbstractData data : source.getData()) {

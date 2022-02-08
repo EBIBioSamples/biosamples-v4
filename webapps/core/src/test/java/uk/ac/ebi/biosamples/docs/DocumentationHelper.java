@@ -10,19 +10,27 @@
 */
 package uk.ac.ebi.biosamples.docs;
 
-import java.time.Instant;
-import java.util.*;
-import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.model.structured.HistologyEntry;
-import uk.ac.ebi.biosamples.model.structured.StructuredCell;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.CurationLink;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
-import uk.ac.ebi.biosamples.model.structured.StructuredTable;
-import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
-import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
-import uk.ac.ebi.biosamples.model.structured.amr.AmrPair;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 public class DocumentationHelper {
 
@@ -151,82 +159,32 @@ public class DocumentationHelper {
   }
 
   public StructuredData getExampleStructuredData() {
+    Set<StructuredDataTable> structuredDataTableSet = new HashSet<>();
     Set<Map<String, StructuredDataEntry>> dataContent = new HashSet<>();
     Map<String, StructuredDataEntry> dataMap = new HashMap<>();
-    dataMap.put(
-        "Marker", StructuredDataEntry.build("value_1", "http://purl.obolibrary.org/obo/value_1"));
+    dataMap.put("Marker", StructuredDataEntry.build("value_1", "http://purl.obolibrary.org/obo/value_1"));
     dataMap.put("Measurement", StructuredDataEntry.build("value_1", null));
     dataMap.put("Measurement Units", StructuredDataEntry.build("value_1", null));
     dataMap.put("Partner", StructuredDataEntry.build("value_1", null));
     dataMap.put("Method", StructuredDataEntry.build("value_1", null));
     dataContent.add(dataMap);
+    structuredDataTableSet.add(StructuredDataTable.build("self.ExampleDomain", null, "CHICKEN_DATA", null, dataContent));
 
-    Set<StructuredDataTable> structuredDataTableSet = new HashSet<>();
-    structuredDataTableSet.add(
-        StructuredDataTable.build("self.ExampleDomain", null, "CHICKEN_DATA", null, dataContent));
+    dataContent = new HashSet<>();
+    dataMap = new HashMap<>();
+    dataMap.put("antibioticName", StructuredDataEntry.build("nalidixic acid", "http://purl.obolibrary.org/obo/value_1"));
+    dataMap.put("resistancePhenotype", StructuredDataEntry.build("intermediate", null));
+    dataMap.put("measurementSign ", StructuredDataEntry.build("==", null));
+    dataMap.put("measurement", StructuredDataEntry.build("17", null));
+    dataMap.put("measurementUnits", StructuredDataEntry.build("mm", null));
+    dataMap.put("laboratoryTypingMethod", StructuredDataEntry.build("disk diffusion", null));
+    dataMap.put("platform", StructuredDataEntry.build("missing", null));
+    dataMap.put("laboratoryTypingMethodVersionOrReagent", StructuredDataEntry.build("missing", null));
+    dataMap.put("vendor", StructuredDataEntry.build("Becton Dickinson", null));
+    dataMap.put("astStandard", StructuredDataEntry.build("CLSI", null));
+    dataContent.add(dataMap);
+    structuredDataTableSet.add(StructuredDataTable.build("self.ExampleDomain", null, "AMR", null, dataContent));
 
     return StructuredData.build("SAMFAKE123456", Instant.now(), structuredDataTableSet);
-  }
-
-  public Sample getExampleSampleWithStructuredData() {
-    return getExampleSampleWithStructuredDataBuilder().build();
-  }
-
-  private Sample.Builder getExampleSampleWithStructuredDataBuilder() {
-    final AMREntry amrEntry =
-        new AMREntry.Builder()
-            .withAntibioticName(new AmrPair("ExampleAntibiotic"))
-            .withAstStandard("ExampleASTStandard")
-            .withSpecies(new AmrPair("ExampleOrganism"))
-            .withLaboratoryTypingMethod("NA")
-            .withMeasurement("0")
-            .withMeasurementUnits("mg/L")
-            .withMeasurementSign("+")
-            .withResistancePhenotype("NA")
-            .build();
-    final AMRTable amrTable =
-        new AMRTable.Builder("test", "self.ExampleDomain", null)
-            .withEntries(Arrays.asList(amrEntry))
-            .build();
-
-    return new Sample.Builder("FakeSampleWithStructuredData", "SAMFAKE123456")
-        .withData(Arrays.asList(amrTable));
-  }
-
-  public Sample getExampleSampleWithStructuredData2() {
-    StructuredTable<HistologyEntry> histologyData =
-        new StructuredTable.Builder<HistologyEntry>(
-                "www.fake.schema.url",
-                "self.ExampleDomain",
-                null,
-                StructuredDataType.HISTOLOGY_MARKERS)
-            .addEntry(
-                new HistologyEntry.Builder()
-                    .withMarker(new StructuredCell("Crypt depth", ""))
-                    .withMeasurement(new StructuredCell("0", ""))
-                    .withMeasurementUnits(new StructuredCell("um", ""))
-                    .withPartner(
-                        new StructuredCell(
-                            "FUB",
-                            "https://www.fu-berlin.de/en/sites/china/ueberfub/forschung/index.html"))
-                    .withMethod(new StructuredCell("TEST", ""))
-                    .build())
-            .addEntry(
-                new HistologyEntry.Builder()
-                    .withMarker(
-                        new StructuredCell(
-                            "Villous height", "http://purl.obolibrary.org/obo/NCIT_C14170"))
-                    .withMeasurement(new StructuredCell("0", ""))
-                    .withMeasurementUnits(new StructuredCell("um", ""))
-                    .withPartner(
-                        new StructuredCell(
-                            "FUB",
-                            "https://www.fu-berlin.de/en/sites/china/ueberfub/forschung/index.html"))
-                    .build())
-            .build();
-
-    return new Sample.Builder("FakeSampleWithStructuredData", "SAMFAKE123456")
-        .withData(Arrays.asList(histologyData))
-        .build();
   }
 }

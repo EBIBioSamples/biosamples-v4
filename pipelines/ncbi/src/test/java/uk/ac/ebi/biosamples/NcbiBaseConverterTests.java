@@ -359,7 +359,7 @@ public class NcbiBaseConverterTests {
         conversionService.convertNcbiXmlElementToStructuredData(ncbiSampleWithMultipleAMR, Collections.emptySet());
 
     assertNotNull(amrDataSet);
-    assertEquals(2, amrDataSet.size());
+    assertEquals(2, amrDataSet.size()); // todo fix this test. Can there be 2 Tables for same data type?
   }
 
   public Element readBioSampleElementFromXml(String pathToFile) throws DocumentException {
