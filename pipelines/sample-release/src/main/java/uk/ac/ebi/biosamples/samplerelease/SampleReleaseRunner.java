@@ -51,13 +51,16 @@ public class SampleReleaseRunner implements ApplicationRunner {
   }
 
   private void doGetSamplesToRelease() throws Exception {
-    log.info("Starting sample release pipeline");
+    final String webinEraServiceSampleReleaseGetUrl =
+        pipelinesProperties.getWebinEraServiceSampleReleaseGet();
+    log.info(
+        "Starting sample release pipeline, Getting from " + webinEraServiceSampleReleaseGetUrl);
 
     final Map<String, Future<String>> futures = new HashMap<>();
 
     final ResponseEntity<List<String>> response =
         restTemplate.exchange(
-            pipelinesProperties.getWebinEraServiceSampleReleaseGet(),
+            webinEraServiceSampleReleaseGetUrl,
             HttpMethod.GET,
             new HttpEntity<>(SampleReleaseUtil.createHeaders("era", "password")),
             new ParameterizedTypeReference<List<String>>() {});
