@@ -21,7 +21,6 @@
 				<module>ena</module>
 				<module>ncbi</module>
 				<module>ebeye-search-export</module>
-				<module>livelist</module>
 				<module>ena-amr</module>
 			</modules>
 		</profile>
@@ -39,6 +38,7 @@
 		<module>curatedview</module>
 		<module>neoexport</module>
 		<module>clearinghouse</module>
+		<module>sample-release</module>
 		<module>sample-transformation-dtol</module>
 		<module>structured-data-migration</module>
 		<module>ena</module>
