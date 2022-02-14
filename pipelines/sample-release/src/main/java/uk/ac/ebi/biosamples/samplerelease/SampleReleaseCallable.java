@@ -11,9 +11,7 @@
 package uk.ac.ebi.biosamples.samplerelease;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
@@ -34,6 +32,7 @@ public class SampleReleaseCallable implements Callable<String> {
   private final BioSamplesClient bioSamplesClient;
   private final RestTemplate restTemplate;
   private final String accession;
+  private final List<String> curationDomainBlankList;
 
   static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
@@ -46,6 +45,8 @@ public class SampleReleaseCallable implements Callable<String> {
     this.restTemplate = restTemplate;
     this.pipelinesProperties = pipelinesProperties;
     this.accession = accession;
+
+    curationDomainBlankList = new ArrayList<>();
   }
 
   @Override
@@ -55,14 +56,18 @@ public class SampleReleaseCallable implements Callable<String> {
     try {
       log.info("Handling sample with accession " + accession);
       final Optional<Resource<Sample>> optionalSampleResource =
-          bioSamplesClient.fetchSampleResource(accession);
+          bioSamplesClient.fetchSampleResource(accession, Optional.of(curationDomainBlankList));
 
       if (optionalSampleResource.isPresent()) {
         Sample sample = optionalSampleResource.get().getContent();
-        bioSamplesClient
-            .persistSampleResource(
-                Sample.Builder.fromSample(sample).withRelease(Instant.now()).build())
-            .getContent();
+        log.info("Sample with accession " + sample.getAccession() + " exists in BioSamples");
+
+        if (sample.getRelease().isAfter(Instant.now())) {
+          bioSamplesClient
+              .persistSampleResource(
+                  Sample.Builder.fromSample(sample).withRelease(Instant.now()).build())
+              .getContent();
+        }
 
         params.put("biosampleAccession", accession);
 
