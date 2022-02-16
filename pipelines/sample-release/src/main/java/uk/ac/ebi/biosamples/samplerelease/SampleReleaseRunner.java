@@ -13,8 +13,7 @@ package uk.ac.ebi.biosamples.samplerelease;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,19 +29,22 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 @Component
 public class SampleReleaseRunner implements ApplicationRunner {
   private static final Logger log = LoggerFactory.getLogger(SampleReleaseRunner.class);
-  private final BioSamplesClient bioSamplesClient;
+  private final BioSamplesClient bioSamplesWebinClient;
+  private final BioSamplesClient bioSamplesAapClient;
 
   @Autowired private RestTemplate restTemplate;
   @Autowired private PipelinesProperties pipelinesProperties;
 
-  public SampleReleaseRunner(@Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesClient) {
-    this.bioSamplesClient = bioSamplesClient;
+  public SampleReleaseRunner(
+      @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesWebinClient,
+      @Qualifier("AAPCLIENT") final BioSamplesClient bioSamplesAapClient) {
+    this.bioSamplesWebinClient = bioSamplesWebinClient;
+    this.bioSamplesAapClient = bioSamplesAapClient;
   }
 
   @Override
@@ -73,33 +75,36 @@ public class SampleReleaseRunner implements ApplicationRunner {
             + " samples from webin-era-service to be made public in BioSamples");
 
     if (response.getStatusCode().is2xxSuccessful()) {
-      try (final AdaptiveThreadPoolExecutor executorService =
-          AdaptiveThreadPoolExecutor.create(
-              100,
-              10000,
-              true,
-              pipelinesProperties.getThreadCount(),
-              pipelinesProperties.getThreadCountMax())) {
+      final ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+      try {
         response
             .getBody()
             .forEach(
                 accession -> {
                   final Callable<String> task =
                       new SampleReleaseCallable(
-                          bioSamplesClient, restTemplate, pipelinesProperties, accession);
+                          bioSamplesWebinClient,
+                          bioSamplesAapClient,
+                          pipelinesProperties,
+                          restTemplate,
+                          accession);
 
                   futures.put(accession, executorService.submit(task));
                 });
-      } catch (final Exception e) {
-        log.info("Sample release pipeline failed ", e);
-      } finally {
+
+        log.info("waiting for futures");
+        ThreadUtils.checkFutures(futures, 0);
+
         log.info(
             "Pipeline completed, samples failed are -> \n"
                 + SampleReleaseCallable.failedQueue.stream().collect(Collectors.joining("\n")));
+      } catch (final Exception e) {
+        log.info("Sample release pipeline failed ", e);
+      } finally {
+        executorService.shutdown();
+        executorService.awaitTermination(1, TimeUnit.MINUTES);
       }
     }
-
-    log.info("waiting for futures");
-    ThreadUtils.checkFutures(futures, 0);
   }
 }
