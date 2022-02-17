@@ -247,7 +247,7 @@ public class SampleService {
     return sample;
   }
 
-  public Sample accessionV2(Sample sample, boolean isFirstTimeMetadataAdded, String authProvider) {
+  public Sample accessionV2(Sample sample) {
     Collection<String> errors = sampleValidator.validate(sample);
 
     if (!errors.isEmpty()) {

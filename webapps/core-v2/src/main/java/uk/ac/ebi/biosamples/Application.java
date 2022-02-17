@@ -86,7 +86,7 @@ public class Application extends SpringBootServletInitializer {
         mongoSampleToSampleConverter,
         mongoProperties.getAccessionPrefix(),
         mongoProperties.getAccessionMinimum(),
-        mongoProperties.getAcessionQueueSize());
+        mongoProperties.getAccessionQueueSizeForLowerPriorityServices());
   }
 
   @Bean

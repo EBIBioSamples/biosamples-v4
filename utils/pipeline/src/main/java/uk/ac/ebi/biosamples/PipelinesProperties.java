@@ -73,6 +73,22 @@ public class PipelinesProperties {
   @Value("${biosamples.schemaStore:http://localhost:8085/api/v2/schemas}")
   private String schemaStore;
 
+  @Value(
+      "${biosample.pipelines.samplerelease.get:http://wwwint.ebi.ac.uk/webin/era/service/test/biosample/release/}")
+  private String webinEraServiceSampleReleaseGet;
+
+  @Value(
+      "${biosample.pipelines.samplerelease.delete:http://wwwint.ebi.ac.uk/webin/era/service/test/biosample/release/{biosampleAccession}}")
+  private String webinEraServiceSampleReleaseDelete;
+
+  public String getWebinEraServiceSampleReleaseGet() {
+    return webinEraServiceSampleReleaseGet;
+  }
+
+  public String getWebinEraServiceSampleReleaseDelete() {
+    return webinEraServiceSampleReleaseDelete;
+  }
+
   public String getProxyWebinId() {
     return proxyWebinId;
   }

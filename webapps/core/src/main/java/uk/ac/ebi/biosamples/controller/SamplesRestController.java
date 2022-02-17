@@ -574,9 +574,9 @@ public class SamplesRestController {
 
                   sample = buildPrivateSample(sample);
                   /*
-                  Call the storeV2 from SampleService, it doesn't do a lot of housekeeping like reporting to Rabbit, saving to MongoSampleCurated etc which is not required for bulk-accessioning
+                  Call the accessionV2 from SampleService, it doesn't do a lot of housekeeping like reporting to Rabbit, saving to MongoSampleCurated etc which is not required for bulk-accessioning
                    */
-                  return sampleService.accessionV2(sample, false, authProvider);
+                  return sampleService.accessionV2(sample);
                 })
             .collect(Collectors.toList());
 
