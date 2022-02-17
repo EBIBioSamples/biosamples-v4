@@ -35,6 +35,7 @@ import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.service.AmrDataLoaderService;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
@@ -53,7 +54,7 @@ public class Ncbi implements ApplicationRunner {
 
   @Autowired private AmrDataLoaderService amrDataLoaderService;
 
-  private Map<String, Set<AbstractData>> sampleToAmrMap = new HashMap<>();
+  private Map<String, Set<StructuredDataTable>> sampleToAmrMap = new HashMap<>();
 
   public Ncbi(
       PipelinesProperties pipelinesProperties,

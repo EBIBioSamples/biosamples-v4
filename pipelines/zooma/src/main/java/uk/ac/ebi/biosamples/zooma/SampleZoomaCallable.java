@@ -10,13 +10,6 @@
 */
 package uk.ac.ebi.biosamples.zooma;
 
-import java.util.Collections;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.PipelineResult;
@@ -24,10 +17,12 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
-import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
-import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
+
+import java.util.Collections;
+import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class SampleZoomaCallable implements Callable<PipelineResult> {
   private Logger log = LoggerFactory.getLogger(getClass());
@@ -170,74 +165,6 @@ public class SampleZoomaCallable implements Callable<PipelineResult> {
       }
     }
 
-    /* if (sample.getData() != null && sample.getData().size() > 0) {
-        Set<AbstractData> annotatedAmrData = annotateAmr(sample);
-
-        if (annotatedAmrData != null && annotatedAmrData.size() > 0) {
-            Sample.Builder.fromSample(sample).withData(annotatedAmrData).build();
-            bioSamplesClient.persistSampleResource(sample);
-        }
-    }*/
-
     return sample;
-  }
-
-  private Set<AbstractData> annotateAmr(Sample sample) {
-    AtomicBoolean iriUpdate = new AtomicBoolean(false);
-
-    return sample.getData().stream()
-        .map(
-            data -> {
-              AMRTable table = null;
-
-              if (data instanceof AMRTable) {
-                table = (AMRTable) data;
-
-                Set<AMREntry> amrEntries =
-                    table.getStructuredData().stream()
-                        .map(
-                            amrEntry -> {
-                              final Optional<String> antibioticIri =
-                                  zoomaProcessor.queryZooma(
-                                      "", amrEntry.getAntibioticName().getValue());
-                              final Optional<String> organismIri =
-                                  zoomaProcessor.queryZooma("", amrEntry.getSpecies().getValue());
-
-                              if (antibioticIri.isPresent()) {
-                                log.trace(
-                                    "Mapped "
-                                        + amrEntry.getAntibioticName().getValue()
-                                        + " to "
-                                        + antibioticIri.get());
-
-                                amrEntry.getAntibioticName().setIri(antibioticIri.get());
-                                iriUpdate.set(true);
-                              }
-
-                              if (organismIri.isPresent()) {
-                                log.trace(
-                                    "Mapped "
-                                        + amrEntry.getSpecies().getValue()
-                                        + " to "
-                                        + organismIri.get());
-
-                                amrEntry.getSpecies().setIri(organismIri.get());
-                                iriUpdate.set(true);
-                              }
-
-                              if (iriUpdate.get()) {
-                                return amrEntry;
-                              }
-
-                              return amrEntry;
-                            })
-                        .collect(Collectors.toSet());
-
-                table.getStructuredData().addAll(amrEntries);
-              }
-
-              return table;
-            })
-        .collect(Collectors.toSet());
   }
 }

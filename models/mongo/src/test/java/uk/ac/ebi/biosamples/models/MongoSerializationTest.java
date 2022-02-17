@@ -1,21 +1,16 @@
 /*
-* Copyright 2021 EMBL - European Bioinformatics Institute
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
-* file except in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0
-* Unless required by applicable law or agreed to in writing, software distributed under the
-* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-* CONDITIONS OF ANY KIND, either express or implied. See the License for the
-* specific language governing permissions and limitations under the License.
-*/
+ * Copyright 2021 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package uk.ac.ebi.biosamples.models;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.net.URISyntaxException;
-import java.time.Instant;
-import java.util.*;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,22 +21,39 @@ import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Contact;
+import uk.ac.ebi.biosamples.model.Organization;
+import uk.ac.ebi.biosamples.model.Publication;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
-import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
-import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
-import uk.ac.ebi.biosamples.model.structured.amr.AmrPair;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.mongo.model.MongoExternalReference;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+import uk.ac.ebi.biosamples.mongo.model.MongoStructuredData;
+
+import java.net.URISyntaxException;
+import java.time.Instant;
+import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import static org.assertj.core.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
 @JsonTest
 public class MongoSerializationTest {
-
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private JacksonTester<MongoSample> json;
+  private JacksonTester<MongoStructuredData> structuredDataJacksonTester;
 
   @Before
   public void setup() {
@@ -49,7 +61,7 @@ public class MongoSerializationTest {
     JacksonTester.initFields(this, objectMapper);
   }
 
-  private MongoSample getMongoSample() throws URISyntaxException {
+  private static MongoSample getMongoSample() throws URISyntaxException {
     String name = "Test Sample";
     String accession = "TEST1";
     Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
@@ -71,19 +83,6 @@ public class MongoSerializationTest {
     attributes.add(Attribute.build("organism part", "heart"));
 
     Set<AbstractData> structuredData = new HashSet<>();
-    AMRTable amrTable =
-        new AMRTable.Builder("http://test", "self.test", null)
-            .addEntry(
-                new AMREntry.Builder()
-                    .withAntibioticName(new AmrPair("ampicillin", ""))
-                    .withResistancePhenotype("susceptible")
-                    .withMeasure("==", "2", "mg/L")
-                    .withVendor("in-house")
-                    .withLaboratoryTypingMethod("MIC")
-                    .withAstStandard("CLSI")
-                    .build())
-            .build();
-    structuredData.add(amrTable);
 
     SortedSet<MongoRelationship> relationships = new TreeSet<>();
     relationships.add(MongoRelationship.build("TEST1", "derived from", "TEST2"));
@@ -92,8 +91,6 @@ public class MongoSerializationTest {
     externalReferences.add(MongoExternalReference.build("http://www.google.com"));
 
     SortedSet<Organization> organizations = new TreeSet<>();
-    //		organizations.add(Organization.build("Jo Bloggs Inc", "user", "help@jobloggs.com",
-    // "http://www.jobloggs.com"));
     organizations.add(
         new Organization.Builder()
             .name("Jo Bloggs Inc")
@@ -103,8 +100,6 @@ public class MongoSerializationTest {
             .build());
 
     SortedSet<Contact> contacts = new TreeSet<>();
-    //		contacts.add(Contact.build("Joe Bloggs","Jo Bloggs Inc",
-    // "http://www.jobloggs.com/joe"));
     contacts.add(
         new Contact.Builder()
             .firstName("Joe")
@@ -112,8 +107,6 @@ public class MongoSerializationTest {
             .name("Joe Bloggs")
             .role("Submitter")
             .email("jobloggs@joblogs.com")
-            //				.affiliation("Jo Bloggs Inc")
-            //				.url("http://www.jobloggs.com/joe")
             .build());
 
     SortedSet<Publication> publications = new TreeSet<>();
@@ -142,56 +135,28 @@ public class MongoSerializationTest {
         submittedVia);
   }
 
-  private MongoSample getAMRMongoSample() {
-    String name = "Test AMRSample";
-    String accession = "TEST1";
-    String domain = "foozit";
+  private static MongoStructuredData getMongoStructuredData() {
+    String accession = "SAMEA000001";
+    String domain = "self.test";
     Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     Instant create = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant submitted = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-    SubmittedViaType submittedVia = SubmittedViaType.JSON_API;
-    SortedSet<Attribute> attributes = new TreeSet<>();
-    SortedSet<MongoRelationship> relationships = new TreeSet<>();
-    SortedSet<MongoExternalReference> externalReferences = new TreeSet<>();
-    SortedSet<Publication> publications = new TreeSet<>();
-    SortedSet<Organization> organizations = new TreeSet<>();
-    SortedSet<Contact> contacts = new TreeSet<>();
-    Set<AbstractData> data = new HashSet<>();
+    Set<Map<String, StructuredDataEntry>> content = new HashSet<>();
+    StructuredDataTable table = StructuredDataTable.build(domain, null, "AMR", null, content);
+    Set<StructuredDataTable> data = new HashSet<>();
+    data.add(table);
 
-    AMRTable amrTable =
-        new AMRTable.Builder("http://test", "self.test", null)
-            .addEntry(
-                new AMREntry.Builder()
-                    .withAntibioticName(new AmrPair("ampicillin", ""))
-                    .withResistancePhenotype("susceptible")
-                    .withMeasure("==", "2", "mg/L")
-                    .withVendor("in-house")
-                    .withLaboratoryTypingMethod("MIC")
-                    .withAstStandard("CLSI")
-                    .build())
-            .build();
-    data.add(amrTable);
+    Map<String, StructuredDataEntry> row = new HashMap<>();
+    row.put("antibioticName", StructuredDataEntry.build("ampicillin", "www.test.org"));
+    row.put("resistancePhenotype", StructuredDataEntry.build("susceptible", null));
+    row.put("vendor", StructuredDataEntry.build("in-house", null));
+    row.put("laboratoryTypingMethod", StructuredDataEntry.build("MIC", null));
+    row.put("astStandard", StructuredDataEntry.build("CLSI", null));
+    row.put("measurementSign", StructuredDataEntry.build("==", null));
+    row.put("measurement", StructuredDataEntry.build("2", null));
+    row.put("measurementUnits", StructuredDataEntry.build("mg/L", null));
+    content.add(row);
 
-    return MongoSample.build(
-        name,
-        accession,
-        domain,
-        "",
-        release,
-        update,
-        create,
-        submitted,
-        null,
-        attributes,
-        data,
-        relationships,
-        externalReferences,
-        organizations,
-        contacts,
-        publications,
-        null,
-        submittedVia);
+    return MongoStructuredData.build(accession, update, create, data);
   }
 
   @Test
@@ -209,16 +174,6 @@ public class MongoSerializationTest {
     // Assert against a `.json` file in the same package as the test
     log.info("testSerialize() " + this.json.write(details).getJson());
     assertThat(this.json.write(details)).isEqualToJson("/TEST1.json");
-
-    // Assert json contains data field
-    assertThat(this.json.write(details)).hasJsonPathArrayValue("@.data");
-    assertThat(this.json.write(details))
-        .extractingJsonPathMapValue("@.data[0].content[0].antibiotic_name")
-        .contains(new AbstractMap.SimpleEntry<>("value", "ampicillin"));
-
-    assertThat(this.json.write(details))
-        .extractingJsonPathMapValue("@.data[0].content[0].antibiotic_name")
-        .contains(new AbstractMap.SimpleEntry<>("iri", ""));
   }
 
   @Test
@@ -230,6 +185,24 @@ public class MongoSerializationTest {
     assertThat(this.json.readObject("/TEST1.json")).isEqualTo(getMongoSample());
   }
 
+
+  @Test
+  public void testSerialize_structured_data() throws Exception {
+    MongoStructuredData structuredData = getMongoStructuredData();
+
+    assertThat(structuredDataJacksonTester.write(structuredData)).hasJsonPathStringValue("@.accession");
+
+    assertThat(structuredDataJacksonTester.write(structuredData)).hasJsonPathArrayValue("@.data");
+    assertThat(structuredDataJacksonTester.write(structuredData))
+        .extractingJsonPathMapValue("@.data[0].content[0].antibioticName")
+        .contains(new AbstractMap.SimpleEntry<>("value", "ampicillin"));
+
+    assertThat(structuredDataJacksonTester.write(structuredData))
+        .extractingJsonPathMapValue("@.data[0].content[0].antibioticName")
+        .contains(new AbstractMap.SimpleEntry<>("iri", "www.test.org"));
+  }
+
   @Configuration
-  public static class TestConfig {}
+  public static class TestConfig {
+  }
 }

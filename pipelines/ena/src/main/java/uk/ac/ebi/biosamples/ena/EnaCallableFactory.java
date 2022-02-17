@@ -10,14 +10,16 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import java.util.Set;
-import java.util.concurrent.Callable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
+
+import java.util.Set;
+import java.util.concurrent.Callable;
 
 @Service
 public class EnaCallableFactory {
@@ -63,7 +65,7 @@ public class EnaCallableFactory {
       boolean suppressionHandler,
       boolean killedHandler,
       boolean bsdAuthority,
-      Set<AbstractData> amrData) {
+      Set<StructuredDataTable> amrData) {
     return new EnaCallable(
         accession,
         egaId,

@@ -1,0 +1,217 @@
+{
+  "accession": "TestAMR",
+  "create": "2015-05-04T10:30:00Z",
+  "update": "2015-05-04T10:30:00Z",
+  "data": [{
+    "type": "AMR",
+    "schema": "test",
+    "domain": "self.BiosampleIntegrationTest",
+    "content": [{
+      "antibiotic_name": {"value":"amoxicillin-clavulanic acid", "iri": "test.org"},
+      "resistance_phenotype": {"value":"susceptible", "iri": null},
+      "measurement_sign": {"value":"<=", "iri": null},
+      "measurement": {"value":"1/0.5", "iri": null},
+      "measurement_units": {"value":"mg/L", "iri": null},
+      "laboratory_typing_method": {"value":"MIC", "iri": null},
+      "platform": {"value":"", "iri": null},
+      "vendor": {"value":"Trek", "iri": null},
+      "laboratory_typing_method_version_or_reagent": {"value":"96-Well Plate", "iri": null},
+      "ast_standard": {"value":"CLSI", "iri": null},
+      "species": {"value": "Escherichia coli", "iri": ""}
+    }, {
+      "antibiotic_name": {"value":"ampicillin", "iri" : "test.org"},
+      "resistance_phenotype": {"value":"susceptible", "iri": null},
+      "measurement_sign": {"value":"<=", "iri": null},
+      "measurement": {"value":"1", "iri": null},
+      "measurement_units": {"value":"mg/L", "iri": null},
+      "laboratory_typing_method": {"value":"MIC", "iri": null},
+      "platform": {"value":"", "iri": null},
+      "vendor": {"value":"Trek", "iri": null},
+      "laboratory_typing_method_version_or_reagent": {"value":"96-Well Plate", "iri": null},
+      "ast_standard": {"value":"CLSI", "iri": null},
+      "species": {"value": "Escherichia coli", "iri": ""}
+    }, {
+      "antibiotic_name": {"value":"azithromycin", "iri": "test.org"},
+      "resistance_phenotype": {"value":"susceptible", "iri": null},
+      "measurement_sign": {"value":"==", "iri": null},
+      "measurement": {"value":"4", "iri": null},
+      "measurement_units": {"value":"mg/L", "iri": null},
+      "laboratory_typing_method": {"value":"MIC", "iri": null},
+      "platform": {"value":"", "iri": null},
+      "vendor": {"value":"Trek", "iri": null},
+      "laboratory_typing_method_version_or_reagent": {"value":"96-Well Plate", "iri": null},
+      "ast_standard": {"value":"missing", "iri": null},
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": {"value":"cefoxitin", "iri": "test.org"},
+      "resistance_phenotype": {"value":"susceptible", "iri": null},
+      "measurement_sign": {"value":"==", "iri": null},
+      "measurement": {"value":"2", "iri": null},
+      "measurement_units": {"value":"mg/L", "iri": null},
+      "laboratory_typing_method": {"value":"MIC", "iri": null},
+      "platform": {"value":"", "iri": null},
+      "vendor": {"value":"Trek", "iri": null},
+      "laboratory_typing_method_version_or_reagent": {"value":"96-Well Plate", "iri": null},
+      "ast_standard": {"value":"CLSI", "iri": null},
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": {"value":"ceftiofur", "iri": "test.org"},
+      "resistance_phenotype": {"value":"susceptible", "iri": null},
+      "measurement_sign": {"value":"==", "iri": null},
+      "measurement": {"value":"1", "iri": null},
+      "measurement_units": {"value":"mg/L", "iri": null},
+      "laboratory_typing_method": {"value":"MIC", "iri": null},
+      "platform": {"value":"", "iri": null},
+      "vendor": {"value":"Trek", "iri": null},
+      "laboratory_typing_method_version_or_reagent": {"value":"96-Well Plate", "iri": null},
+      "ast_standard": {"value":"CLSI", "iri": null},
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": {"value":"ceftriaxone", "iri": "test.org"},
+      "resistance_phenotype": {"value":"susceptible", "iri": null},
+      "measurement_sign": {"value":"<=", "iri": null},
+      "measurement": {"value":"0.25", "iri": null},
+      "measurement_units": {"value":"mg/L", "iri": null},
+      "laboratory_typing_method": {"value":"MIC", "iri": null},
+      "platform": {"value":"", "iri": null},
+      "vendor": {"value":"Trek", "iri": null},
+      "laboratory_typing_method_version_or_reagent": {"value":"96-Well Plate", "iri": null},
+      "ast_standard": {"value":"CLSI", "iri": null},
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": {"value":"chloramphenicol", "iri": "test.org"},
+      "resistance_phenotype": {"value":"susceptible", "iri": null},
+      "measurement_sign": {"value":"==", "iri": null},
+      "measurement": {"value":"8", "iri": null},
+      "measurement_units": {"value":"mg/L", "iri": null},
+      "laboratory_typing_method": {"value":"MIC", "iri": null},
+      "platform": {"value":"", "iri": null},
+      "vendor": {"value":"Trek", "iri": null},
+      "laboratory_typing_method_version_or_reagent": {"value":"96-Well Plate", "iri": null},
+      "ast_standard": {"value":"CLSI", "iri": null},
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": {"value":"ciprofloxacin", "iri": "test.org"},
+      "resistance_phenotype": {"value":"susceptible", "iri": null},
+      "measurement_sign": {"value":"<=", "iri": null},
+      "measurement": {"value":"0.015", "iri": null},
+      "measurement_units": {"value":"mg/L", "iri": null},
+      "laboratory_typing_method": {"value":"MIC", "iri": null},
+      "platform": {"value":"", "iri": null},
+      "vendor": {"value":"Trek", "iri": null},
+      "laboratory_typing_method_version_or_reagent": {"value":"96-Well Plate", "iri": null},
+      "ast_standard": {"value":"CLSI", "iri": null},
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": {"value":"gentamicin", "iri": "test.org"},
+      "resistance_phenotype": {"value":"susceptible", "iri": null},
+      "measurement_sign": {"value":"==", "iri": null},
+      "measurement": {"value":"1", "iri": null},
+      "measurement_units": {"value":"mg/L", "iri": null},
+      "laboratory_typing_method": {"value":"MIC", "iri": null},
+      "platform": {"value":"", "iri": null},
+      "vendor": {"value":"Trek", "iri": null},
+      "laboratory_typing_method_version_or_reagent": {"value":"96-Well Plate", "iri": null},
+      "ast_standard": {"value":"CLSI", "iri": null},
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": {"value":"kanamycin", "iri": "test.org"},
+      "resistance_phenotype": {"value":"susceptible", "iri": null},
+      "measurement_sign": {"value":"<=", "iri": null},
+      "measurement": {"value":"8", "iri": null},
+      "measurement_units": {"value":"mg/L", "iri": null},
+      "laboratory_typing_method": {"value":"MIC", "iri": null},
+      "platform": {"value":"", "iri": null},
+      "vendor": {"value":"Trek", "iri": null},
+      "laboratory_typing_method_version_or_reagent": {"value":"96-Well Plate", "iri": null},
+      "ast_standard": {"value":"CLSI", "iri": null},
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": {"value":"nalidixic acid", "iri": "test.org"},
+      "resistance_phenotype": {"value":"susceptible", "iri": null},
+      "measurement_sign": {"value":"==", "iri": null},
+      "measurement": {"value":"4", "iri": null},
+      "measurement_units": {"value":"mg/L", "iri": null},
+      "laboratory_typing_method": {"value":"MIC", "iri": null},
+      "platform": {"value":"", "iri": null},
+      "vendor": {"value":"Trek", "iri": null},
+      "laboratory_typing_method_version_or_reagent": {"value":"96-Well Plate", "iri": null},
+      "ast_standard": {"value":"CLSI", "iri": null},
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": {"value":"streptomycin", "iri": "test.org"},
+      "resistance_phenotype": {"value":"susceptible", "iri": null},
+      "measurement_sign": {"value":"<=", "iri": null},
+      "measurement": {"value":"32", "iri": null},
+      "measurement_units": {"value":"mg/L", "iri": null},
+      "laboratory_typing_method": {"value":"MIC", "iri": null},
+      "platform": {"value":"", "iri": null},
+      "vendor": {"value":"Trek", "iri": null},
+      "laboratory_typing_method_version_or_reagent": {"value":"96-Well Plate", "iri": null},
+      "ast_standard": {"value":"missing", "iri": null},
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": {"value":"sulfisoxazole", "iri": "test.org"},
+      "resistance_phenotype": {"value":"susceptible", "iri": null},
+      "measurement_sign": {"value":"<=", "iri": null},
+      "measurement": {"value":"16", "iri": null},
+      "measurement_units": {"value":"mg/L", "iri": null},
+      "laboratory_typing_method": {"value":"MIC", "iri": null},
+      "platform": {"value":"", "iri": null},
+      "vendor": {"value":"Trek", "iri": null},
+      "laboratory_typing_method_version_or_reagent": {"value":"96-Well Plate", "iri": null},
+      "ast_standard": {"value":"CLSI", "iri": null},
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": {"value":"tetracycline", "iri": "test.org"},
+      "resistance_phenotype": {"value":"susceptible", "iri": null},
+      "measurement_sign": {"value":"<=", "iri": null},
+      "measurement": {"value":"4", "iri": null},
+      "measurement_units": {"value":"mg/L", "iri": null},
+      "laboratory_typing_method": {"value":"MIC", "iri": null},
+      "platform": {"value":"", "iri": null},
+      "vendor": {"value":"Trek", "iri": null},
+      "laboratory_typing_method_version_or_reagent": {"value":"96-Well Plate", "iri": null},
+      "ast_standard": {"value":"CLSI", "iri": null},
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": {"value":"trimethoprim-sulfamethoxazole", "iri": "test.org"},
+      "resistance_phenotype": {"value":"susceptible", "iri": null},
+      "measurement_sign": {"value":"<=", "iri": null},
+      "measurement": {"value":"0.12/2.38", "iri": null},
+      "measurement_units": {"value":"mg/L", "iri": null},
+      "laboratory_typing_method": {"value":"MIC", "iri": null},
+      "platform": {"value":"", "iri": null},
+      "vendor": {"value":"Trek", "iri": null},
+      "laboratory_typing_method_version_or_reagent": {"value":"96-Well Plate", "iri": null},
+      "ast_standard": {"value":"CLSI", "iri": null},
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }]
+  }]
+}

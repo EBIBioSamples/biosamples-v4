@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 
 @Service
@@ -36,7 +37,7 @@ public class NcbiElementCallableFactory {
     this.domain = pipelinesProperties.getNcbiDomain();
   }
 
-  public NcbiElementCallable build(Element element, Map<String, Set<AbstractData>> sampleToAmrMap) {
+  public NcbiElementCallable build(Element element, Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
     return new NcbiElementCallable(
         conversionService, bioSamplesClient, element, domain, sampleToAmrMap);
   }

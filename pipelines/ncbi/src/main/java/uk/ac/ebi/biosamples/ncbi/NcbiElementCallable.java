@@ -10,34 +10,34 @@
 */
 package uk.ac.ebi.biosamples.ncbi;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+
 public class NcbiElementCallable implements Callable<Void> {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final Element sampleElem;
   private final String domain;
   private final BioSamplesClient bioSamplesClient;
   private final NcbiSampleConversionService ncbiSampleConversionService;
-  private final Map<String, Set<AbstractData>> sampleToAmrMap;
+  private final Map<String, Set<StructuredDataTable>> sampleToAmrMap;
 
   public NcbiElementCallable(
       NcbiSampleConversionService ncbiSampleConversionService,
       BioSamplesClient bioSamplesClient,
       Element sampleElem,
       String domain,
-      Map<String, Set<AbstractData>> sampleToAmrMap) {
+      Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
     this.ncbiSampleConversionService = ncbiSampleConversionService;
     this.bioSamplesClient = bioSamplesClient;
     this.sampleElem = sampleElem;
@@ -47,7 +47,7 @@ public class NcbiElementCallable implements Callable<Void> {
 
   @Override
   public Void call() throws Exception {
-    Set<AbstractData> amrData = new HashSet<>();
+    Set<StructuredDataTable> amrData = new HashSet<>();
     String accession = sampleElem.attributeValue("accession");
 
     log.trace("Element callable starting for " + accession);
@@ -57,7 +57,7 @@ public class NcbiElementCallable implements Callable<Void> {
     }
 
     // Generate the sample without the domain
-    Sample sampleWithoutDomain = ncbiSampleConversionService.convertNcbiXmlElementToSample(sampleElem, amrData);
+    Sample sampleWithoutDomain = ncbiSampleConversionService.convertNcbiXmlElementToSample(sampleElem);
     Sample sample = Sample.Builder.fromSample(sampleWithoutDomain).withDomain(domain).build();
     bioSamplesClient.persistSampleResource(sample);
 

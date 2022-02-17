@@ -20,7 +20,6 @@ import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.Sample.Builder;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.ncbi.NcbiEraProDao;
@@ -106,7 +105,7 @@ public class NcbiSampleConversionService {
     this.amrConversionService = new NcbiAmrConversionService();
   }
 
-  public Sample convertNcbiXmlElementToSample(Element sampleElem, Set<AbstractData> amrData) {
+  public Sample convertNcbiXmlElementToSample(Element sampleElem) {
     String accession = sampleElem.attributeValue(ACCESSION);
     SortedSet<Attribute> attrs = new TreeSet<>();
     SortedSet<Relationship> rels = new TreeSet<>();
@@ -360,9 +359,9 @@ public class NcbiSampleConversionService {
         .build();
   }
 
-  public Set<StructuredDataTable> convertNcbiXmlElementToStructuredData(Element sampleElem, Set<AbstractData> amrData) {
+  public Set<StructuredDataTable> convertNcbiXmlElementToStructuredData(Element sampleElem, Set<StructuredDataTable> amrData) {
     String accession = sampleElem.attributeValue(ACCESSION);
-    Set<AbstractData> structuredData = new HashSet<>();
+    Set<StructuredDataTable> structuredData = new HashSet<>();
     Set<StructuredDataTable> structuredDataTableSet = new HashSet<>();
     String organismValue = null;
 
