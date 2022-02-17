@@ -27,6 +27,10 @@ public interface MongoSampleRepository
   @Query("{ $and : [{ 'domain' : ?0 },{'name' : ?1 }]}")
   List<MongoSample> findByDomainAndName(String domain, String name);
 
+  @Query("{ $and : [{ 'webinSubmissionAccountId' : ?0 },{'name' : ?1 }]}")
+  List<MongoSample> findByWebinSubmissionAccountIdAndName(
+      String webinSubmissionAccountId, String name);
+
   @Query("{ $and : [{ accessionPrefix : ?0 },{accessionNumber : { $gte : ?1 }}]}")
   Stream<MongoSample> findByAccessionPrefixIsAndAccessionNumberGreaterThanEqual(
       String accessionPrefix, int accessionNumber, Sort sort);

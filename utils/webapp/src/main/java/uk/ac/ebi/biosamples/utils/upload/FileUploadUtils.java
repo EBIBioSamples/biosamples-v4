@@ -387,17 +387,18 @@ public class FileUploadUtils {
               sample.getAccession(), entry.getKey().trim(), relationshipTarget);
         } else {
           validationResult.addValidationMessage(
-              "Failed to add all relationships for " + sample.getAccession());
+              new ValidationResult.ValidationMessage(
+                  sample.getAccession(),
+                  "Failed to add all relationships for " + sample.getAccession()));
 
           return null;
         }
       } catch (Exception e) {
         log.info("Failed to add relationship");
         validationResult.addValidationMessage(
-            "Failed to add all relationships for "
-                + sample.getAccession()
-                + " error: "
-                + e.getMessage());
+            new ValidationResult.ValidationMessage(
+                sample.getAccession(),
+                "Failed to add all relationships for " + sample.getAccession()));
 
         return null;
       }
@@ -531,15 +532,19 @@ public class FileUploadUtils {
 
     if (sampleName == null || sampleName.isEmpty()) {
       validationResult.addValidationMessage(
-          "All samples in the file must have a sample name, some samples are missing sample name and hence are not created");
+          new ValidationResult.ValidationMessage(
+              "MESSAGE#1",
+              "All samples in the file must have a sample name, some samples are missing sample name and hence are not created"));
       isValidSample = false;
     }
 
     if (sampleReleaseDate == null || sampleReleaseDate.isEmpty()) {
       validationResult.addValidationMessage(
-          "All samples in the file must have a release date "
-              + sampleName
-              + " doesn't have a release date and is not created");
+          new ValidationResult.ValidationMessage(
+              "MESSAGE#2",
+              "All samples in the file must have a release date "
+                  + sampleName
+                  + " doesn't have a release date and is not created"));
       isValidSample = false;
     }
 
@@ -600,7 +605,14 @@ public class FileUploadUtils {
 
         out.println("\n\n");
         out.println("********RECEIPT START********");
-        out.println(String.join("\n", validationResult.getValidationMessagesList()));
+        out.println(
+            validationResult.getValidationMessagesList().stream()
+                .map(
+                    validationMessage ->
+                        validationMessage.getMessageKey()
+                            + " : "
+                            + validationMessage.getMessageValue())
+                .collect(Collectors.joining("\n")));
         out.println("********RECEIPT END********");
         out.println("\n\n");
       }
@@ -649,5 +661,34 @@ public class FileUploadUtils {
     }
 
     return temp.toFile();
+  }
+
+  public void validateHeaderPositions(
+      final List<String> headers, final ValidationResult validationResult) {
+    if (headers.size() > 0) {
+      if ((!headers.get(0).equalsIgnoreCase("Source Name")
+          && (!headers.get(1).equalsIgnoreCase("Sample Name"))
+          && (!headers.get(2).equalsIgnoreCase("Release Date")))) {
+        validationResult.addValidationMessage(
+            new ValidationResult.ValidationMessage(
+                "GENERAL_VALIDATION_MESSAGE",
+                "ISA tab file must have Source Name as first column, followed by Sample Name and Release Date."));
+
+        throw new UploadInvalidException(
+            validationResult.getValidationMessagesList().stream()
+                .map(
+                    validationMessage ->
+                        validationMessage.getMessageKey()
+                            + ":"
+                            + validationMessage.getMessageValue())
+                .collect(Collectors.joining("\n")));
+      }
+    }
+  }
+
+  public static class UploadInvalidException extends RuntimeException {
+    public UploadInvalidException(final String collect) {
+      super(collect);
+    }
   }
 }

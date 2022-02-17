@@ -290,10 +290,6 @@ public class SampleService {
         .build();
   }
 
-  public boolean searchSampleByDomainAndName(final String domain, final String name) {
-    return mongoSampleRepository.findByDomainAndName(domain, name).size() > 0;
-  }
-
   public void validateSample(Map sampleAsMap) {
     List<String> errors = sampleValidator.validate(sampleAsMap);
     StringBuilder sb = new StringBuilder();

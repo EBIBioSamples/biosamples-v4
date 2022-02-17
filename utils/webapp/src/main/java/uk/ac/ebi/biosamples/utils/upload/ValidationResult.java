@@ -10,21 +10,38 @@
 */
 package uk.ac.ebi.biosamples.utils.upload;
 
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 public class ValidationResult {
-  private Set<String> validationMessagesList = new TreeSet<>();
+  private List<ValidationMessage> validationMessagesList = new ArrayList<>();
 
-  public void addValidationMessage(String message) {
+  public void addValidationMessage(final ValidationMessage message) {
     validationMessagesList.add(message);
   }
 
-  public Set<String> getValidationMessagesList() {
+  public List<ValidationMessage> getValidationMessagesList() {
     return validationMessagesList;
   }
 
   public void clear() {
     validationMessagesList.clear();
+  }
+
+  public static class ValidationMessage {
+    private String messageKey;
+    private String messageValue;
+
+    public ValidationMessage(String messageKey, String messageValue) {
+      this.messageKey = messageKey;
+      this.messageValue = messageValue;
+    }
+
+    public String getMessageKey() {
+      return messageKey;
+    }
+
+    public String getMessageValue() {
+      return messageValue;
+    }
   }
 }
