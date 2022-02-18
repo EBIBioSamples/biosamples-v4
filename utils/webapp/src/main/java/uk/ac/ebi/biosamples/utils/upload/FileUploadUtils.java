@@ -51,7 +51,7 @@ public class FileUploadUtils {
               headers.forEach(
                   header -> {
                     String record = csvRecord.get(i.get());
-                    listMultiMap.put(header, record);
+                    listMultiMap.put(header != null ? header.toLowerCase() : null, record);
                     i.getAndIncrement();
                   });
 
@@ -102,7 +102,7 @@ public class FileUploadUtils {
               final String entryKey = entry.getKey();
               final String entryValue = entry.getValue();
 
-              if (entryKey.startsWith("Comment[submission_organization:")) {
+              if (entryKey.startsWith("comment[submission_organization:")) {
                 if (entryKey.contains("email")) {
                   organizationEmails.add(entryValue);
                 }
@@ -212,7 +212,7 @@ public class FileUploadUtils {
               final String entryKey = entry.getKey();
               final String entryValue = entry.getValue();
 
-              if (entryKey.startsWith("Comment[submission_contact:")) {
+              if (entryKey.startsWith("comment[submission_contact:")) {
                 if (entryKey.contains("email")) {
                   contactEmails.add(entryValue);
                 }
@@ -284,8 +284,11 @@ public class FileUploadUtils {
       final int doiSize) {
     final Publication.Builder publicationBuilder = new Publication.Builder();
 
-    publicationBuilder.pubmed_id(iter >= pubMedSize ? null : publicationPubMedIds.get(iter));
-    publicationBuilder.doi(iter >= doiSize ? null : publicationDois.get(iter));
+    final String pubMedId = iter >= pubMedSize ? null : publicationPubMedIds.get(iter);
+    final String doi = iter >= doiSize ? null : publicationDois.get(iter);
+
+    publicationBuilder.pubmed_id(pubMedId != null ? pubMedId : null);
+    publicationBuilder.doi(doi != null ? doi : null);
 
     return publicationBuilder.build();
   }
@@ -300,16 +303,14 @@ public class FileUploadUtils {
               final String entryKey = entry.getKey();
               final String entryValue = entry.getValue();
 
-              if (entryKey.startsWith("Comment[publication:")) {
+              if (entryKey.startsWith("comment[publication:")) {
                 if (entryKey.contains("pubmed_id")) {
                   pubMedIds.add((entryValue != null && !entryValue.isEmpty()) ? entryValue : "");
                 }
               }
             });
 
-    return pubMedIds.stream()
-        .filter(pubMedId -> pubMedId != null && pubMedId.length() > 0)
-        .collect(Collectors.toList());
+    return pubMedIds.stream().filter(pubMedId -> pubMedId != null).collect(Collectors.toList());
   }
 
   private List<String> handlePublicationDois(final Multimap<String, String> multiMap) {
@@ -322,20 +323,18 @@ public class FileUploadUtils {
               final String entryKey = entry.getKey();
               final String entryValue = entry.getValue();
 
-              if (entryKey.startsWith("Comment[publication:")) {
+              if (entryKey.startsWith("comment[publication:")) {
                 if (entryKey.contains("doi")) {
                   dois.add((entryValue != null && !entryValue.isEmpty()) ? entryValue : "");
                 }
               }
             });
 
-    return dois.stream()
-        .filter(doi -> doi != null && doi.length() > 0)
-        .collect(Collectors.toList());
+    return dois.stream().filter(doi -> doi != null).collect(Collectors.toList());
   }
 
   public String getSampleAccession(final Multimap<String, String> multiMap) {
-    final Optional<String> sampleAccession = multiMap.get("Sample Identifier").stream().findFirst();
+    final Optional<String> sampleAccession = multiMap.get("sample identifier").stream().findFirst();
 
     return sampleAccession.orElse(null);
   }
@@ -352,7 +351,7 @@ public class FileUploadUtils {
 
               log.trace(entryKey + " " + entryValue);
 
-              if (entryKey.startsWith("Comment") && entryKey.contains("external DB REF")) {
+              if (entryKey.startsWith("comment") && entryKey.contains("external db ref")) {
                 if (entryValue != null && !entryValue.isEmpty() && entryValue.length() > 1) {
                   externalReferenceList.add(ExternalReference.build(entryValue));
                 }
@@ -424,7 +423,7 @@ public class FileUploadUtils {
             e -> {
               final String entryKey = e.getKey();
 
-              return entryKey.startsWith("Comment") && entryKey.contains("bsd_relationship");
+              return entryKey.startsWith("comment") && entryKey.contains("bsd_relationship");
             })
         .collect(
             toMultimap(
@@ -448,7 +447,7 @@ public class FileUploadUtils {
         .forEach(
             entry -> {
               final Characteristics characteristics = new Characteristics();
-              if (entry.getKey().startsWith("Characteristics")) {
+              if (entry.getKey().startsWith("characteristics")) {
                 characteristics.setName(entry.getKey().trim());
                 final String value = entry.getValue();
 
@@ -462,7 +461,7 @@ public class FileUploadUtils {
         multiMap.entries().stream()
             .map(
                 entry -> {
-                  if (entry.getKey().startsWith("Term Accession Number")) {
+                  if (entry.getKey().startsWith("term accession number")) {
                     final String value = entry.getValue();
 
                     return value != null ? value.trim() : null;
@@ -475,7 +474,7 @@ public class FileUploadUtils {
         multiMap.entries().stream()
             .map(
                 entry -> {
-                  if (entry.getKey().startsWith("Unit")) {
+                  if (entry.getKey().startsWith("unit")) {
                     final String value = entry.getValue();
 
                     return value != null ? value.trim() : null;
@@ -503,13 +502,13 @@ public class FileUploadUtils {
   }
 
   public String getSampleName(final Multimap<String, String> multiMap) {
-    final Optional<String> sampleName = multiMap.get("Sample Name").stream().findFirst();
+    final Optional<String> sampleName = multiMap.get("sample name").stream().findFirst();
 
     return sampleName.orElse(null);
   }
 
   public String getReleaseDate(final Multimap<String, String> multiMap) {
-    final Optional<String> sampleReleaseDate = multiMap.get("Release Date").stream().findFirst();
+    final Optional<String> sampleReleaseDate = multiMap.get("release date").stream().findFirst();
 
     return sampleReleaseDate.orElse(null);
   }

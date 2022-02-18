@@ -270,6 +270,7 @@ public class FileUploadSubmissionService {
     final String sampleName = fileUploadUtils.getSampleName(multiMap);
     final String accession = fileUploadUtils.getSampleAccession(multiMap);
     final boolean sampleWithAccession = accession != null;
+    boolean persisted = true;
 
     Sample sample = fileUploadUtils.buildSample(multiMap, validationResult);
 
@@ -294,8 +295,20 @@ public class FileUploadSubmissionService {
             sample = bioSamplesWebinClient.persistSampleResource(sample).getContent();
           }
         } catch (final Exception e) {
+          String validationMessage = "";
+          persisted = false;
+
+          if (e.getMessage().contains("403")) {
+            validationMessage =
+                validationMessage
+                    + "Error in persisting sample, sample "
+                    + accession
+                    + " is not accessible by you";
+          }
+
           validationResult.addValidationMessage(
-              new ValidationResult.ValidationMessage(sampleName, "Error in persisting sample"));
+              new ValidationResult.ValidationMessage(
+                  sampleWithAccession ? accession : sampleName, validationMessage));
         }
       } else {
         try {
@@ -312,29 +325,42 @@ public class FileUploadSubmissionService {
             sample = bioSamplesAapClient.persistSampleResource(sample).getContent();
           }
         } catch (final Exception e) {
+          String validationMessage = "";
+          persisted = false;
+
+          if (e.getMessage().contains("403")) {
+            validationMessage =
+                validationMessage
+                    + "Error in persisting sample, sample "
+                    + accession
+                    + " is not accessible by you";
+          }
+
           validationResult.addValidationMessage(
-              new ValidationResult.ValidationMessage(sampleName, "Error in persisting sample"));
+              new ValidationResult.ValidationMessage(
+                  sampleWithAccession ? accession : sampleName, validationMessage));
         }
       }
 
-      if (sampleWithAccession) {
-        validationResult.addValidationMessage(
-            new ValidationResult.ValidationMessage(sample.getAccession(), "Updated sample"));
-
+      if (sampleWithAccession && persisted) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(sample.getAccession(), "Sample updated"));
 
         log.info("Updated sample " + sample.getAccession());
-      } else {
+
+        return sample;
+      } else if (!sampleWithAccession && persisted) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
                 sample.getAccession(),
                 "Sample " + sample.getName() + " created with accession " + sample.getAccession()));
 
         log.info("Sample " + sampleName + " created with accession " + sample.getAccession());
-      }
 
-      return sample;
+        return sample;
+      } else {
+        return null;
+      }
     }
 
     return null;
