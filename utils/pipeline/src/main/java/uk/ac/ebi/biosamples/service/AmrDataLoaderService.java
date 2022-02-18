@@ -13,21 +13,28 @@ package uk.ac.ebi.biosamples.service;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.model.AccessionFtpUrlPair;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.AccessionFtpUrlPair;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
-import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
-import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 
 @Service
 public class AmrDataLoaderService {
@@ -43,18 +50,17 @@ public class AmrDataLoaderService {
           + "&dataPortal=pathogen&dccDataOnly=false&fields=analysis_accession,country,region,scientific_name,location,sample_accession,tax_id,submitted_ftp,first_public,last_updated&sortFields=scientific_name,country&limit=0";
   public static final String TAB = "\t";
 
-  public Map<String, Set<AbstractData>> loadAmrData() {
+  public Map<String, Set<StructuredDataTable>> loadAmrData() {
     log.info("Loading ENA-AMR data");
 
-    Map<String, Set<AbstractData>> sampleToAmrMap = new HashMap<>();
+    Map<String, Set<StructuredDataTable>> sampleToAmrMap = new HashMap<>();
     List<AccessionFtpUrlPair> pairList;
 
     try {
       pairList = requestHttpAndGetAccessionFtpUrlPairs();
 
-      if (pairList.size() == 0) {
-        log.info(
-            "Unable to fetch ENA-AMR Antibiogram data from ENA API, Timed out waiting for connection");
+      if (pairList.isEmpty()) {
+        log.info("Unable to fetch ENA-AMR Antibiogram data from ENA API, Timed out waiting for connection");
       } else {
         downloadFtpContent(pairList, sampleToAmrMap);
       }
@@ -146,16 +152,16 @@ public class AmrDataLoaderService {
     }
   }
 
-  private Map<String, Set<AbstractData>> downloadFtpContent(
-      final List<AccessionFtpUrlPair> pairList, Map<String, Set<AbstractData>> sampleToAmrMap) {
+  private Map<String, Set<StructuredDataTable>> downloadFtpContent(
+      final List<AccessionFtpUrlPair> pairList, Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
     pairList.forEach(
         pair -> {
           try {
             String accession = pair.getAccession();
 
-            if (accession != null)
-              sampleToAmrMap.put(
-                  accession, fetchSampleAndProcessAmrData(new URL(pair.getFtpUrl()), accession));
+            if (accession != null) {
+              sampleToAmrMap.put(accession, fetchSampleAndProcessAmrData(new URL(pair.getFtpUrl()), accession));
+            }
           } catch (MalformedURLException e) {
             log.info("FTP URL not correctly formed " + pair.getFtpUrl());
           }
@@ -164,15 +170,17 @@ public class AmrDataLoaderService {
     return sampleToAmrMap;
   }
 
-  private Set<AbstractData> fetchSampleAndProcessAmrData(final URL url, final String accession) {
-    Set<AbstractData> amrData = new HashSet<>();
+  private Set<StructuredDataTable> fetchSampleAndProcessAmrData(final URL url, final String accession) {
+    Set<StructuredDataTable> amrData = new HashSet<>();
 
     try {
       amrData = processAmrData(processAmrLines(getReader(url)), accession);
     } catch (final IOException ioe) {
       log.info("A IO Exception occurrence detected");
 
-      if (amrData.size() == 0) log.info("Couldn't process AMR data for " + accession);
+      if (amrData.isEmpty()) {
+        log.info("Couldn't process AMR data for " + accession);
+      }
     }
 
     return amrData;
@@ -187,30 +195,29 @@ public class AmrDataLoaderService {
         .collect(Collectors.toList());
   }
 
-  private Set<AbstractData> processAmrData(List<String> lines, String accession) {
-    final Set<AbstractData> structuredData = new HashSet<>();
-    final AMRTable.Builder amrTableBuilder =
-        new AMRTable.Builder(
-            "http://localhost:8081/biosamples/schemas/amr.json", "self.BiosampleImportENA", null);
+  private Set<StructuredDataTable> processAmrData(List<String> lines, String accession) {
+    Set<Map<String, StructuredDataEntry>> tableContent = new HashSet<>();
+    StructuredDataTable table = StructuredDataTable.build("self.BiosampleImportENA", null, "AMR", null, tableContent);
 
     lines.forEach(
         line -> {
           final CsvMapper mapper = new CsvMapper();
-          final CsvSchema schema = mapper.schemaFor(AMREntry.class).withColumnSeparator('\t');
-          final ObjectReader r = mapper.readerFor(AMREntry.class).with(schema);
-
+          final CsvSchema schema = mapper.schemaFor(Map.class).withColumnSeparator('\t');
+          final ObjectReader r = mapper.readerFor(Map.class).with(schema);
           try {
-            final AMREntry amrEntry = r.readValue(line);
+            final Map<String, String> amrEntry = r.readValue(line);
+            Map<String, StructuredDataEntry> entry = new HashMap<>();
+            for (Map.Entry<String, String> e : amrEntry.entrySet()) {
+              entry.put(e.getKey(), StructuredDataEntry.build(e.getValue(), null));
+            }
 
-            amrTableBuilder.addEntry(amrEntry);
+            tableContent.add(entry);
           } catch (final Exception e) {
             log.error("Error in parsing AMR data for sample " + accession);
           }
         });
 
-    structuredData.add(amrTableBuilder.build());
-
-    return structuredData;
+    return Collections.singleton(table);
   }
 
   private String removeBioSampleId(String line) {

@@ -10,22 +10,36 @@
 */
 package uk.ac.ebi.biosamples;
 
-import static org.junit.Assert.assertEquals;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Contact;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Organization;
+import uk.ac.ebi.biosamples.model.Publication;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.structured.StructuredData;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
-import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
-import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
+import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 import uk.ac.ebi.biosamples.utils.TestUtilities;
+
+import java.io.IOException;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import static org.junit.Assert.*;
 
 @Component
 public class AmrDataIntegration extends AbstractIntegration {
@@ -41,76 +55,105 @@ public class AmrDataIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseOne() {
-    String json = TestUtilities.readFileAsString("amr_sample.json");
-    Sample amrSample;
-    try {
-      amrSample = mapper.readValue(json, Sample.class);
-    } catch (IOException e) {
-      throw new RuntimeException("An error occurred while converting json to Sample class", e);
+    Sample testSample = getTestSample();
+    Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
+
+    if (optionalSample.isPresent()) {
+      throw new IntegrationTestFailException(
+          "AMRDataIntegration test sample should not be available during phase 1", Phase.ONE);
     }
 
-    Resource<Sample> submittedSample = this.client.persistSampleResource(amrSample);
-    if (!amrSample.equals(submittedSample.getContent())) {
-      log.warn("expected: " + amrSample);
-      log.warn("found: " + submittedSample.getContent());
-      throw new RuntimeException("Expected response to equal submission");
+    Resource<Sample> resource = client.persistSampleResource(testSample);
+    Sample testSampleWithAccession =
+        Sample.Builder.fromSample(testSample)
+                      .withAccession(resource.getContent().getAccession())
+                      .build();
+
+    if (!testSampleWithAccession.equals(resource.getContent())) {
+      throw new IntegrationTestFailException(
+          "Expected response ("
+          + resource.getContent()
+          + ") to equal submission ("
+          + testSample
+          + ")");
     }
   }
 
   @Override
   protected void phaseTwo() {
-
-    Optional<Resource<Sample>> sampleResource = client.fetchSampleResource("TestAMR");
-    if (!sampleResource.isPresent()) {
-      throw new RuntimeException("Sample TestAMR should be available at this stage");
+    Sample testSample = getTestSample();
+    Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
+    if (!optionalSample.isPresent()) {
+      throw new IntegrationTestFailException("Cant find sample " + testSample.getName(), Phase.TWO);
     }
 
-    Sample amrSample = sampleResource.get().getContent();
-    log.info("Checking sample has amr data");
-    assertEquals(amrSample.getData().size(), 1);
-    assertEquals(amrSample.getData().first().getDataType(), StructuredDataType.AMR);
-
-    AMRTable amrTable = (AMRTable) amrSample.getData().first();
-
-    // Assert there are 15 entries
-    log.info("Check amr table has the right amount of entries");
-    assertEquals(amrTable.getStructuredData().size(), 15);
-
-    // Assert there are only 2 entries with missing testing standard
-    assertEquals(
-        amrTable
-            .getStructuredData()
-            .parallelStream()
-            .filter(entry -> entry.getAstStandard().equalsIgnoreCase("missing"))
-            .count(),
-        2);
-
-    log.info("Verifying AMREntry for ciprofloxacin is found and has certain values");
-    Optional<AMREntry> optionalAmrEntry =
-        amrTable
-            .getStructuredData()
-            .parallelStream()
-            .filter(entry -> entry.getAntibioticName().getValue().equalsIgnoreCase("ciprofloxacin"))
-            .findFirst();
-    if (!optionalAmrEntry.isPresent()) {
-      throw new RuntimeException(
-          "AMRentry for antibiotic ciprofloxacin should be present but is not");
+    String json = TestUtilities.readFileAsString("structured_data_amr.json");
+    StructuredData sd;
+    try {
+      sd = mapper.readValue(json, StructuredData.class);
+    } catch (IOException e) {
+      throw new RuntimeException("An error occurred while converting json to structured data class", e);
     }
 
-    AMREntry ciprofloxacin = optionalAmrEntry.get();
-    assertEquals(ciprofloxacin.getResistancePhenotype(), "susceptible");
-    assertEquals(ciprofloxacin.getMeasurementSign(), "<=");
-    assertEquals(ciprofloxacin.getMeasurement(), "0.015");
-    assertEquals(ciprofloxacin.getMeasurementUnits(), "mg/L");
-    assertEquals(ciprofloxacin.getLaboratoryTypingMethod(), "MIC");
-    assertEquals(ciprofloxacin.getPlatform(), "");
-    assertEquals(ciprofloxacin.getLaboratoryTypingMethodVersionOrReagent(), "96-Well Plate");
-    assertEquals(ciprofloxacin.getVendor(), "Trek");
-    assertEquals(ciprofloxacin.getAstStandard(), "CLSI");
+    sd = StructuredData.build(optionalSample.get().getAccession(), sd.getCreate(), sd.getData());
+    Resource<StructuredData> structuredDataResource = client.persistStructuredData(sd);
+
+    if (structuredDataResource.getContent() == null) {
+      throw new RuntimeException("Should return submitted structured data");
+    }
   }
 
   @Override
-  protected void phaseThree() {}
+  protected void phaseThree() {
+    Sample testSample = getTestSample();
+    Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
+    if (!optionalSample.isPresent()) {
+      throw new IntegrationTestFailException("Cant find sample " + testSample.getName(), Phase.THREE);
+    }
+
+    Sample amrSample = optionalSample.get();
+    log.info("Checking sample has amr data");
+    assertEquals(amrSample.getStructuredData().size(), 1);
+    assertEquals(amrSample.getStructuredData().iterator().next().getType(), StructuredDataType.AMR.name());
+
+    StructuredDataTable table = amrSample.getStructuredData().iterator().next();
+    assertEquals(table.getContent().size(), 15);
+
+    // Assert there are only 2 entries with missing testing standard
+    assertEquals(
+        table.getContent()
+             .parallelStream()
+             .filter(entry -> entry.get("ast_standard").getValue().equalsIgnoreCase("missing"))
+             .count(),
+        2);
+
+    //Verifying AMREntry for ciprofloxacin is found and has certain values
+    Optional<Map<String, StructuredDataEntry>> optionalAmrEntry =
+        table.getContent().parallelStream()
+             .filter(entry -> entry.get("antibiotic_name")
+                                   .getValue()
+                                   .equalsIgnoreCase("ciprofloxacin"))
+             .findFirst();
+    if (!optionalAmrEntry.isPresent()) {
+      throw new RuntimeException( "AMRentry for antibiotic ciprofloxacin should be present but is not");
+    }
+
+    assertEquals(optionalAmrEntry.get().get("resistance_phenotype").getValue(), "susceptible");
+    assertEquals(optionalAmrEntry.get().get("measurement_sign").getValue(), "<=");
+    assertEquals(optionalAmrEntry.get().get("vendor").getValue(), "Trek");
+    assertEquals(optionalAmrEntry.get().get("platform").getValue(), "");
+
+
+//    assertEquals(ciprofloxacin.getResistancePhenotype(), "susceptible");
+//    assertEquals(ciprofloxacin.getMeasurementSign(), "<=");
+//    assertEquals(ciprofloxacin.getMeasurement(), "0.015");
+//    assertEquals(ciprofloxacin.getMeasurementUnits(), "mg/L");
+//    assertEquals(ciprofloxacin.getLaboratoryTypingMethod(), "MIC");
+//    assertEquals(ciprofloxacin.getPlatform(), "");
+//    assertEquals(ciprofloxacin.getLaboratoryTypingMethodVersionOrReagent(), "96-Well Plate");
+//    assertEquals(ciprofloxacin.getVendor(), "Trek");
+//    assertEquals(ciprofloxacin.getAstStandard(), "CLSI");
+  }
 
   @Override
   protected void phaseFour() {}
@@ -118,29 +161,33 @@ public class AmrDataIntegration extends AbstractIntegration {
   @Override
   protected void phaseFive() {}
 
-  //    public String readFileAsString(String resource){
-  //
-  //        String json;
-  //
-  //        try {
-  //            json =StreamUtils.copyToString(new ClassPathResource(resource).getInputStream(),
-  // Charset.defaultCharset());
-  //        } catch (IOException e) {
-  //            throw new RuntimeException("An error occurred while reading resource " + resource,
-  // e);
-  //        }
-  //
-  //        return json;
-  //
-  //    }
-  //
-  //    public JsonNode readAsJsonObject(String serialisedJson) {
-  //        try {
-  //            return mapper.readTree(serialisedJson);
-  //        } catch (IOException e) {
-  //            throw new RuntimeException("An error occurred while converting the string " +
-  // serialisedJson + " to a JSON object", e);
-  //        }
-  //    }
+  private Sample getTestSample() {
+    String name = "AMR_Data_Integration_sample_1";
+    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+
+    SortedSet<Attribute> attributes = new TreeSet<>();
+    attributes.add(Attribute.build("organism", "Chicken", null, null));
+    attributes.add(Attribute.build("age", "3", null, Collections.emptyList(), "year"));
+    attributes.add(Attribute.build("organism part", "heart"));
+
+    SortedSet<Relationship> relationships = new TreeSet<>();
+    SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+    SortedSet<Organization> organizations = new TreeSet<>();
+    SortedSet<Contact> contacts = new TreeSet<>();
+    SortedSet<Publication> publications = new TreeSet<>();
+
+    return new Sample.Builder(name)
+        .withUpdate(update)
+        .withRelease(release)
+        .withDomain(defaultIntegrationSubmissionDomain)
+        .withAttributes(attributes)
+        .withRelationships(relationships)
+        .withExternalReferences(externalReferences)
+        .withOrganizations(organizations)
+        .withContacts(contacts)
+        .withPublications(publications)
+        .build();
+  }
 
 }

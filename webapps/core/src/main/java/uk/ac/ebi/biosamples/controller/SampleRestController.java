@@ -289,54 +289,6 @@ public class SampleRestController {
     return sampleResourceAssembler.toResource(sample);
   }
 
-  /*At this moment this patching is only for structured data*/
-  @PreAuthorize("isAuthenticated()")
-  @PatchMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public Resource<Sample> patchStructuredData(
-      HttpServletRequest request,
-      @PathVariable String accession,
-      @RequestBody Sample sample,
-      @RequestParam(name = "structuredData", required = false, defaultValue = "false")
-          boolean structuredData,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider) {
-
-    if (!structuredData) throw new SampleDataPatchMethodNotSupportedException();
-
-    if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
-      throw new SampleAccessionMismatchException();
-    }
-
-    if (authProvider.equalsIgnoreCase("WEBIN")) {
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
-
-      if (webinAccount == null) {
-        throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
-      }
-
-      sample =
-          bioSamplesWebinAuthenticationService.handleStructuredDataAccesibility(
-              sample, webinAccount.getId());
-      sample = sampleService.storeSampleStructuredData(sample, authProvider);
-
-      return sampleResourceAssembler.toResource(sample);
-    } else {
-      if (sampleService.isNotExistingAccession(accession)
-          && !(bioSamplesAapService.isWriteSuperUser()
-              || bioSamplesAapService.isIntegrationTestUser())) {
-        throw new SampleAccessionDoesNotExistException();
-      }
-
-      log.debug("Received PATCH for " + accession);
-
-      sample = bioSamplesAapService.handleStructuredDataDomain(sample);
-      sample = sampleService.storeSampleStructuredData(sample, authProvider);
-
-      return sampleResourceAssembler.toResource(sample);
-    }
-  }
-
   private Sample validateSampleAgainstExternalValidationServices(
       @RequestBody Sample sample,
       boolean webinAuth,

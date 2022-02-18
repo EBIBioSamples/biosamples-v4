@@ -36,6 +36,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.exception.SampleValidationException;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
@@ -160,7 +161,7 @@ public class SamplesRestController {
     // if the user has access to any domains, then mark the response as private as must be using
     // AAP
     // and responses will be different
-    if (domains != null && domains.size() > 0) {
+    if (domains != null && !domains.isEmpty()) {
       cacheControl.cachePrivate();
     }
 
@@ -170,7 +171,7 @@ public class SamplesRestController {
           samplePageService.getSamplesByText(
               decodedText,
               filters,
-              (domains != null && domains.size() > 0) ? domains : Collections.emptySet(),
+              domains != null && !domains.isEmpty() ? domains : Collections.emptySet(),
               webinSubmissionAccountId,
               decodedCursor,
               effectiveSize,
@@ -598,8 +599,13 @@ public class SamplesRestController {
           String authProvider) {
     log.debug("Received POST for " + sample);
 
-    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+    // can't submit structured data with the sample
     final Set<AbstractData> structuredData = sample.getData();
+    if (structuredData != null && !structuredData.isEmpty()) {
+      throw new SampleValidationException("Sample contains structured data. Please submit structured data seperately");
+    }
+
+    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
     boolean isWebinSuperUser = false;
 
     if (webinAuth) {
@@ -619,25 +625,12 @@ public class SamplesRestController {
       }
 
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
-
-      if (structuredData != null && structuredData.size() > 0) {
-        sample =
-            bioSamplesWebinAuthenticationService.handleStructuredDataAccesibility(
-                sample, webinAccountId);
-      }
     } else {
       if (sample.hasAccession() && !bioSamplesAapService.isWriteSuperUser()) {
         throw new SampleWithAccessionSumbissionException();
       }
 
       sample = bioSamplesAapService.handleSampleDomain(sample);
-
-      if (!(bioSamplesAapService.isWriteSuperUser()
-          || bioSamplesAapService.isIntegrationTestUser())) {
-        if (structuredData != null && structuredData.size() > 0) {
-          sample = bioSamplesAapService.handleStructuredDataDomain(sample);
-        }
-      }
     }
 
     // update, create date are system generated fields

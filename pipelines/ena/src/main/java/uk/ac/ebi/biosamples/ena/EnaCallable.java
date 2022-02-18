@@ -10,12 +10,6 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import java.io.StringReader;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -25,12 +19,30 @@ import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
-import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.CurationLink;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.structured.StructuredData;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
+import java.io.StringReader;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class EnaCallable implements Callable<Void> {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private static final String DDBJ_SAMPLE_PREFIX = "SAMD";
   private static final String NCBI_SAMPLE_PREFIX = "SAMN";
   private static final String SUPPRESSED = "suppressed";
@@ -47,7 +59,7 @@ public class EnaCallable implements Callable<Void> {
   private final EnaElementConverter enaElementConverter;
   private final EgaSampleExporter egaSampleExporter;
   private String webinId;
-  private Set<AbstractData> amrData;
+  private final Set<StructuredDataTable> amrData;
   private boolean suppressionHandler;
   private boolean killedHandler;
   private boolean bsdAuthority;
@@ -67,7 +79,7 @@ public class EnaCallable implements Callable<Void> {
       boolean suppressionHandler,
       boolean killedHandler,
       boolean bsdAuthority,
-      Set<AbstractData> amrData) {
+      Set<StructuredDataTable> amrData) {
     this.sampleAccession = sampleAccession;
     this.egaId = egaId;
     this.statusId = statusId;
@@ -291,13 +303,13 @@ public class EnaCallable implements Callable<Void> {
             sample.getRelationships(),
             externalReferences);
 
-    if (amrData != null && amrData.size() > 0) {
-      sample = Sample.Builder.fromSample(sample).withData(amrData).build();
-    } else {
-      sample = Sample.Builder.fromSample(sample).withNoData().build();
-    }
 
+    sample = Sample.Builder.fromSample(sample).withNoData().build();
     bioSamplesWebinClient.persistSampleResource(sample);
+
+    if (amrData != null && !amrData.isEmpty()) {
+      bioSamplesWebinClient.persistStructuredData(StructuredData.build(sampleAccession, update, amrData));
+    }
   }
 
   private String handleStatus(int statusId) {

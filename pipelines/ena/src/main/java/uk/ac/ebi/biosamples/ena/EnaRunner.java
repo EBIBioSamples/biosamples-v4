@@ -10,14 +10,6 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,11 +20,26 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.biosamples.PipelinesProperties;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.service.AmrDataLoaderService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @Component
 @ConditionalOnProperty(
@@ -49,7 +56,7 @@ public class EnaRunner implements ApplicationRunner {
   @Autowired private AmrDataLoaderService amrDataLoaderService;
 
   private Map<String, Future<Void>> futures = new LinkedHashMap<>();
-  private Map<String, Set<AbstractData>> sampleToAmrMap = new HashMap<>();
+  private Map<String, Set<StructuredDataTable>> sampleToAmrMap = new HashMap<>();
 
   @Override
   public void run(ApplicationArguments args) {
@@ -186,7 +193,7 @@ public class EnaRunner implements ApplicationRunner {
   private void importEraSamples(
       final LocalDate fromDate,
       final LocalDate toDate,
-      final Map<String, Set<AbstractData>> sampleToAmrMap)
+      final Map<String, Set<StructuredDataTable>> sampleToAmrMap)
       throws Exception {
     log.info("Handling ENA and NCBI Samples");
 
@@ -434,13 +441,13 @@ public class EnaRunner implements ApplicationRunner {
     private final AdaptiveThreadPoolExecutor executorService;
     private final EnaCallableFactory enaCallableFactory;
     private final Map<String, Future<Void>> futures;
-    private final Map<String, Set<AbstractData>> sampleToAmrMap;
+    private final Map<String, Set<StructuredDataTable>> sampleToAmrMap;
 
     public EraRowCallbackHandler(
         final AdaptiveThreadPoolExecutor executorService,
         final EnaCallableFactory enaCallableFactory,
         final Map<String, Future<Void>> futures,
-        final Map<String, Set<AbstractData>> sampleToAmrMap) {
+        final Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
       this.executorService = executorService;
       this.enaCallableFactory = enaCallableFactory;
       this.sampleToAmrMap = sampleToAmrMap;
@@ -479,7 +486,7 @@ public class EnaRunner implements ApplicationRunner {
       final int statusID = rs.getInt("STATUS_ID");
       final String egaId = rs.getString("EGA_ID");
       final ENAStatus enaStatus = ENAStatus.valueOf(statusID);
-      Set<AbstractData> amrData = new HashSet<>();
+      Set<StructuredDataTable> amrData = new HashSet<>();
 
       if (sampleToAmrMap.containsKey(sampleAccession)) {
         amrData = sampleToAmrMap.get(sampleAccession);
@@ -498,12 +505,10 @@ public class EnaRunner implements ApplicationRunner {
           Callable<Void> callable;
           // update if sample already exists else import
 
-          if (amrData.size() > 0) {
-            callable =
-                enaCallableFactory.build(sampleAccession, egaId, 0, false, false, false, amrData);
+          if (!amrData.isEmpty()) {
+            callable = enaCallableFactory.build(sampleAccession, egaId, 0, false, false, false, amrData);
           } else {
-            callable =
-                enaCallableFactory.build(sampleAccession, egaId, 0, false, false, false, null);
+            callable = enaCallableFactory.build(sampleAccession, egaId, 0, false, false, false, null);
           }
 
           if (executorService == null) {

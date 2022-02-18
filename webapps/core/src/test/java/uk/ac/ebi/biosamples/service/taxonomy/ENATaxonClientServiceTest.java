@@ -24,7 +24,7 @@ public class ENATaxonClientServiceTest {
         new File(
             getClass()
                 .getClassLoader()
-                .getResource("json/ncbi-SAMN03894263-curated.json")
+                .getResource("json/ncbi-SAMN03894263-curated-no-data.json")
                 .getFile());
     ObjectMapper objectMapper = new ObjectMapper();
     ENATaxonClientService enaTaxonClientService = new ENATaxonClientService();

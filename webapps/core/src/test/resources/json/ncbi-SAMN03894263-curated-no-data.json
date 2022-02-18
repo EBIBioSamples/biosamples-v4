@@ -1,0 +1,36 @@
+{
+  "characteristics": {
+    "strain": [{"text": "CVM N48676"}],
+    "INSDC first public": [{"text": "2015-08-10T06:44:40.400Z"}],
+    "INSDC secondary accession": [{"text": "SRS1102063"}],
+    "organism": [{
+      "ontologyTerms": ["http://purl.obolibrary.org/obo/NCBITaxon_1620419"],
+      "text": "Salmonella enterica subsp. enterica serovar Typhimurium var. 5-"
+    }],
+    "collection date": [{"text": "2013"}],
+    "isolation source": [{"text": "Chicken Breast"}],
+    "NCBI submission model": [
+      {"text": "Pathogen.env"},
+      {"text": "environmental/food/other"}
+    ],
+    "collected by": [{"text": "FDA"}],
+    "INSDC last update": [{"text": "2016-02-19T12:22:48.062Z"}],
+    "SequencingTechnology": [{"text": "Illumina MiSeq"}],
+    "description title": [{"text": "Pathogen: environmental/food/other sample from Salmonella enterica subsp. enterica serovar Typhimurium var. 5-"}],
+    "INSDC status": [{"text": "public"}],
+    "AssemblyVersion": [{"text": "CLC Genomics Workbench v. 6.0.2"}],
+    "NCBI submission package": [{"text": "Pathogen.env.1.0"}],
+    "latitude and longitude": [{"text": "missing"}],
+    "serovar": [{"text": "Typhimurium var. 5-"}],
+    "INSDC center name": [{"text": "FDA"}],
+    "geographic location": [{"text": "USA: CT"}]
+  },
+  "updateDate": "2016-02-19",
+  "releaseDate": "2015-08-10",
+  "release": "2015-08-10T06:44:40.400Z",
+  "taxId": 1620419,
+  "domain": "self.BiosampleImportNCBI",
+  "name": "CVM N48676",
+  "update": "2016-02-19T12:22:48.062Z",
+  "accession": "SAMN03894263"
+}

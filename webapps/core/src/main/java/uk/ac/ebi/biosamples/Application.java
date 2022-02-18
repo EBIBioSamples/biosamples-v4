@@ -33,7 +33,6 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
-import uk.ac.ebi.biosamples.service.AmrTableConverter;
 import uk.ac.ebi.biosamples.service.SampleAsXMLHttpMessageConverter;
 import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
 
@@ -99,11 +98,6 @@ public class Application extends SpringBootServletInitializer {
         mongoProperties.getAccessionPrefix(),
         mongoProperties.getAccessionMinimum(),
         mongoProperties.getAcessionQueueSize());
-  }
-
-  @Bean
-  AmrTableConverter amrTableToMapConverter() {
-    return new AmrTableConverter();
   }
 
   @Bean
