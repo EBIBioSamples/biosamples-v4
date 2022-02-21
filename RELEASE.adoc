@@ -2,12 +2,21 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+[[v5.1.21]]
+== v5.1.21 Release notes (v5.1.15 and v5.1.20 included)
+=== New Features
+1. Improved error handling for the file uploader submissions with more user friendly error messages
+2. Allowing case insensitive column names for the file uploader submission files
+3. Improvement of handling structured data in BioSamples
+4. Performance improvements in accessioning
+5. Improvements in the ENA import pipeline
+6. New pipeline added to handle sample release in BioSamples when ENA data (runs/analyses) referring such samples
+are released
 
 [[v5.1.14]]
 == v5.1.14 Release notes
 === Bug Fixes
 1. Fix bug with search indexing
-
 
 [[v5.1.13]]
 == v5.1.13 Release notes
