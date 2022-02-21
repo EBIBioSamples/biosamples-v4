@@ -178,6 +178,6 @@ public class MongoAccessionService {
     }
 
     long endTime = System.nanoTime();
-    log.info("Populated accession pool in " + ((endTime - startTime) / 1000000) + "ms");
+    log.trace("Populated accession pool in " + ((endTime - startTime) / 1000000) + "ms");
   }
 }

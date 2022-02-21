@@ -721,4 +721,11 @@ public class SamplesRestController {
       value = HttpStatus.BAD_REQUEST,
       reason = "New sample submission should not contain an accession")
   public static class SampleWithAccessionSumbissionException extends RuntimeException {}
+
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample already exists")
+  public static class SampleAlreadyExistsException extends RuntimeException {
+    public SampleAlreadyExistsException(final String message) {
+      super(message);
+    }
+  }
 }

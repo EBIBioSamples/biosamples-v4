@@ -29,7 +29,9 @@ import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
+import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
+import uk.ac.ebi.biosamples.mongo.util.SampleNameAccessionPair;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
@@ -54,6 +56,8 @@ public class FileUploadService {
 
   @Autowired private MongoFileUploadRepository mongoFileUploadRepository;
 
+  @Autowired private MongoSampleRepository mongoSampleRepository;
+
   @Autowired private FileQueueService fileQueueService;
 
   public synchronized File upload(
@@ -66,10 +70,9 @@ public class FileUploadService {
     this.fileUploadUtils = fileUploadUtils;
     final String authProvider = isWebin(isWebinIdUsedToAuthenticate(webinId));
     final boolean isWebin = authProvider.equals(FileUploadUtils.WEBIN_AUTH);
+    final String uniqueUploadId = UUID.randomUUID().toString();
 
     try {
-      final String uniqueUploadId = UUID.randomUUID().toString();
-
       final MongoFileUpload mongoFileUploadInitial =
           new MongoFileUpload(
               uniqueUploadId,
@@ -95,7 +98,7 @@ public class FileUploadService {
       final CSVParser csvParser = this.fileUploadUtils.buildParser(reader);
       final List<String> headers = csvParser.getHeaderNames();
 
-      validateHeaderPositions(headers);
+      fileUploadUtils.validateHeaderPositions(headers, validationResult);
 
       final List<Multimap<String, String>> csvDataMap =
           fileUploadUtils.getISATABDataInMap(csvParser);
@@ -114,12 +117,25 @@ public class FileUploadService {
 
       final List<Sample> samples =
           buildSamples(csvDataMap, aapDomain, webinId, checklist, validationResult, isWebin);
-
-      final String persistenceMessage = "Number of samples persisted: " + samples.size();
+      final List<SampleNameAccessionPair> accessionsList =
+          samples.stream()
+              .filter(sample -> sample.getAccession() != null)
+              .map(sample -> new SampleNameAccessionPair(sample.getName(), sample.getAccession()))
+              .collect(Collectors.toList());
+      final String persistenceMessage = "Number of samples persisted: " + accessionsList.size();
 
       log.info("Persistence message: " + persistenceMessage);
-      validationResult.addValidationMessage(persistenceMessage);
-      log.info("Final message: " + String.join("\n", validationResult.getValidationMessagesList()));
+      validationResult.addValidationMessage(
+          new ValidationResult.ValidationMessage(uniqueUploadId, persistenceMessage));
+      log.info(
+          "Final message: "
+              + validationResult.getValidationMessagesList().stream()
+                  .map(
+                      validationMessage ->
+                          validationMessage.getMessageKey()
+                              + ":"
+                              + validationMessage.getMessageValue())
+                  .collect(Collectors.joining("\n")));
 
       final MongoFileUpload mongoFileUploadCompleted =
           new MongoFileUpload(
@@ -139,25 +155,16 @@ public class FileUploadService {
           "********FEEDBACK TO BSD DEV TEAM START********"
               + e.getMessage()
               + "********FEEDBACK TO BSD DEV TEAM END********";
-      validationResult.addValidationMessage(messageForBsdDevTeam);
+      validationResult.addValidationMessage(
+          new ValidationResult.ValidationMessage(uniqueUploadId, messageForBsdDevTeam));
       throw new UploadInvalidException(
-          String.join("\n", validationResult.getValidationMessagesList()));
+          validationResult.getValidationMessagesList().stream()
+              .map(
+                  validationMessage ->
+                      validationMessage.getMessageKey() + ":" + validationMessage.getMessageValue())
+              .collect(Collectors.joining("\n")));
     } finally {
       validationResult.clear();
-    }
-  }
-
-  private void validateHeaderPositions(final List<String> headers) {
-    if (headers.size() > 0) {
-      if ((!headers.get(0).equalsIgnoreCase("Source Name")
-          && (!headers.get(1).equalsIgnoreCase("Sample Name"))
-          && (!headers.get(2).equalsIgnoreCase("Release Date")))) {
-        validationResult.addValidationMessage(
-            "ISA tab file must have Source Name as first column, followed by Sample Name and Release Date.");
-
-        throw new UploadInvalidException(
-            String.join("\n", validationResult.getValidationMessagesList()));
-      }
     }
   }
 
@@ -177,17 +184,20 @@ public class FileUploadService {
 
           try {
             sample =
-                buildSample(csvRecordMap, aapDomain, webinId, checklist, validationResult, isWebin);
+                buildAndPersistSample(
+                    csvRecordMap, aapDomain, webinId, checklist, validationResult, isWebin);
 
             if (sample == null) {
               validationResult.addValidationMessage(
-                  "Failed to create sample in the file with sample name "
-                      + fileUploadUtils.getSampleName(csvRecordMap));
+                  new ValidationResult.ValidationMessage(
+                      fileUploadUtils.getSampleName(csvRecordMap),
+                      "Failed to create sample in the file"));
             }
           } catch (Exception e) {
             validationResult.addValidationMessage(
-                "Failed to create sample in the file with sample name "
-                    + fileUploadUtils.getSampleName(csvRecordMap));
+                new ValidationResult.ValidationMessage(
+                    fileUploadUtils.getSampleName(csvRecordMap),
+                    "Failed to create sample in the file"));
           }
 
           if (sample != null) {
@@ -229,15 +239,17 @@ public class FileUploadService {
         fileUploadUtils.createRelationships(
             sample, sampleNameToAccessionMap, relationshipMap, validationResult);
 
-    relationships.forEach(relationship -> log.info(relationship.toString()));
+    if (relationships != null && relationships.size() > 0) {
+      relationships.forEach(relationship -> log.info(relationship.toString()));
 
-    sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
-    sample = storeSample(sample, false, isWebin(isWebin));
+      sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
+      sample = storeSample(sample, false, isWebin(isWebin));
+    }
 
     return sample;
   }
 
-  private Sample buildSample(
+  private Sample buildAndPersistSample(
       final Multimap<String, String> multiMap,
       final String aapDomain,
       final String webinId,
@@ -266,7 +278,8 @@ public class FileUploadService {
           return sample;
         } else {
           validationResult.addValidationMessage(
-              sampleName + " failed validation against " + checklist);
+              new ValidationResult.ValidationMessage(
+                  sampleName, sampleName + " failed validation against " + checklist));
 
           return null;
         }
@@ -296,19 +309,25 @@ public class FileUploadService {
     } catch (final Exception e) {
       if (e instanceof BioSamplesWebinAuthenticationService.SampleNotAccessibleException) {
         validationResult.addValidationMessage(
-            "Sample " + sample.getName() + " is not accessible for you");
+            new ValidationResult.ValidationMessage(
+                sample.getName(), "Sample " + sample.getName() + " is not accessible for you"));
       } else if (e
           instanceof BioSamplesWebinAuthenticationService.WebinUserLoginUnauthorizedException) {
         validationResult.addValidationMessage(
-            "Sample " + sample.getName() + " not persisted as WEBIN user is not authorized");
+            new ValidationResult.ValidationMessage(
+                sample.getName(),
+                "Sample " + sample.getName() + " not persisted as WEBIN user is not authorized"));
       } else if (e instanceof BioSamplesAapService.SampleDomainMismatchException) {
         validationResult.addValidationMessage(
-            "Sample " + sample.getName() + " is not accessible for you");
+            new ValidationResult.ValidationMessage(
+                sample.getName(), "Sample " + sample.getName() + " is not accessible for you"));
       } else if (e instanceof BioSamplesAapService.SampleNotAccessibleException) {
         validationResult.addValidationMessage(
-            "Sample " + sample.getName() + " is not accessible for you");
+            new ValidationResult.ValidationMessage(
+                sample.getName(), "Sample " + sample.getName() + " is not accessible for you"));
       } else {
-        validationResult.addValidationMessage("General auth error, please retry");
+        validationResult.addValidationMessage(
+            new ValidationResult.ValidationMessage(sample.getName(), "Please retry submission!"));
       }
 
       return null;
@@ -321,6 +340,36 @@ public class FileUploadService {
 
   private Sample storeSample(
       final Sample sample, final boolean isFirstTimeMetadataAdded, final String authProvider) {
+    final String sampleName = sample.getName();
+    final String accession = sample.getAccession();
+
+    if (authProvider.equals(FileUploadUtils.WEBIN_AUTH)) {
+      final String webinSubmissionAccountId = sample.getWebinSubmissionAccountId();
+
+      if (mongoSampleRepository
+                  .findByWebinSubmissionAccountIdAndName(webinSubmissionAccountId, sampleName)
+                  .size()
+              > 0
+          && accession == null) {
+        validationResult.addValidationMessage(
+            new ValidationResult.ValidationMessage(
+                sampleName, " Already exists with submission account " + webinSubmissionAccountId));
+
+        return null;
+      }
+    } else {
+      final String domain = sample.getDomain();
+
+      if (mongoSampleRepository.findByDomainAndName(domain, sampleName).size() > 0
+          && accession == null) {
+        validationResult.addValidationMessage(
+            new ValidationResult.ValidationMessage(
+                sampleName, " Already exists with submission account " + domain));
+
+        return null;
+      }
+    }
+
     return sampleService.store(sample, isFirstTimeMetadataAdded, authProvider);
   }
 
