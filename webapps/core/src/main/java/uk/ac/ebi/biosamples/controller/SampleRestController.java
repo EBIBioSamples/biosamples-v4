@@ -313,11 +313,6 @@ public class SampleRestController {
       reason = "Sample accession must match URL accession") // 400
   public static class SampleAccessionMismatchException extends RuntimeException {}
 
-  @ResponseStatus(
-      value = HttpStatus.METHOD_NOT_ALLOWED,
-      reason = "Pass argument structuredData=true if you want to PATCH data to sample") // 400
-  public static class SampleDataPatchMethodNotSupportedException extends RuntimeException {}
-
   @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample accession does not exist") // 400
   public static class SampleAccessionDoesNotExistException extends RuntimeException {}
 }
