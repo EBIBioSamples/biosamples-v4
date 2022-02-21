@@ -39,8 +39,7 @@ public class NcbiNotSuppressedBaseConverterTests {
     this.conversionService = new NcbiSampleConversionService(new TaxonomyService());
     Element testNcbiBioSamples =
         NcbiTestsService.readNcbiBiosampleElementFromFile("/examples/ncbi_sample_6685496.xml");
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
+    Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
     assertEquals(sampleToTest.getAccession(), "SAMN06685496");
     Optional<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()
@@ -56,8 +55,7 @@ public class NcbiNotSuppressedBaseConverterTests {
     this.conversionService = new NcbiSampleConversionService(new TaxonomyService());
     Element testNcbiBioSamples =
         NcbiTestsService.readNcbiBiosampleElementFromFile("/examples/ncbi_sample_1553882.xml");
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
+    Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
     assertEquals(sampleToTest.getAccession(), "SAMN01553882");
     Optional<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()

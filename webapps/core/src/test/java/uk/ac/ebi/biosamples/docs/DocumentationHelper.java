@@ -10,16 +10,6 @@
 */
 package uk.ac.ebi.biosamples.docs;
 
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.CurationLink;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.structured.StructuredData;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +21,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.CurationLink;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.structured.StructuredData;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 
 public class DocumentationHelper {
 
@@ -162,28 +161,34 @@ public class DocumentationHelper {
     Set<StructuredDataTable> structuredDataTableSet = new HashSet<>();
     Set<Map<String, StructuredDataEntry>> dataContent = new HashSet<>();
     Map<String, StructuredDataEntry> dataMap = new HashMap<>();
-    dataMap.put("Marker", StructuredDataEntry.build("value_1", "http://purl.obolibrary.org/obo/value_1"));
+    dataMap.put(
+        "Marker", StructuredDataEntry.build("value_1", "http://purl.obolibrary.org/obo/value_1"));
     dataMap.put("Measurement", StructuredDataEntry.build("value_1", null));
     dataMap.put("Measurement Units", StructuredDataEntry.build("value_1", null));
     dataMap.put("Partner", StructuredDataEntry.build("value_1", null));
     dataMap.put("Method", StructuredDataEntry.build("value_1", null));
     dataContent.add(dataMap);
-    structuredDataTableSet.add(StructuredDataTable.build("self.ExampleDomain", null, "CHICKEN_DATA", null, dataContent));
+    structuredDataTableSet.add(
+        StructuredDataTable.build("self.ExampleDomain", null, "CHICKEN_DATA", null, dataContent));
 
     dataContent = new HashSet<>();
     dataMap = new HashMap<>();
-    dataMap.put("antibioticName", StructuredDataEntry.build("nalidixic acid", "http://purl.obolibrary.org/obo/value_1"));
+    dataMap.put(
+        "antibioticName",
+        StructuredDataEntry.build("nalidixic acid", "http://purl.obolibrary.org/obo/value_1"));
     dataMap.put("resistancePhenotype", StructuredDataEntry.build("intermediate", null));
     dataMap.put("measurementSign ", StructuredDataEntry.build("==", null));
     dataMap.put("measurement", StructuredDataEntry.build("17", null));
     dataMap.put("measurementUnits", StructuredDataEntry.build("mm", null));
     dataMap.put("laboratoryTypingMethod", StructuredDataEntry.build("disk diffusion", null));
     dataMap.put("platform", StructuredDataEntry.build("missing", null));
-    dataMap.put("laboratoryTypingMethodVersionOrReagent", StructuredDataEntry.build("missing", null));
+    dataMap.put(
+        "laboratoryTypingMethodVersionOrReagent", StructuredDataEntry.build("missing", null));
     dataMap.put("vendor", StructuredDataEntry.build("Becton Dickinson", null));
     dataMap.put("astStandard", StructuredDataEntry.build("CLSI", null));
     dataContent.add(dataMap);
-    structuredDataTableSet.add(StructuredDataTable.build("self.ExampleDomain", null, "AMR", null, dataContent));
+    structuredDataTableSet.add(
+        StructuredDataTable.build("self.ExampleDomain", null, "AMR", null, dataContent));
 
     return StructuredData.build("SAMFAKE123456", Instant.now(), structuredDataTableSet);
   }

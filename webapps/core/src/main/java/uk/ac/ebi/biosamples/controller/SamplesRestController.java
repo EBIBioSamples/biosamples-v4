@@ -602,7 +602,8 @@ public class SamplesRestController {
     // can't submit structured data with the sample
     final Set<AbstractData> structuredData = sample.getData();
     if (structuredData != null && !structuredData.isEmpty()) {
-      throw new SampleValidationException("Sample contains structured data. Please submit structured data seperately");
+      throw new SampleValidationException(
+          "Sample contains structured data. Please submit structured data seperately");
     }
 
     final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");

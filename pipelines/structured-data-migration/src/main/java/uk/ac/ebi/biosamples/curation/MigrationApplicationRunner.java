@@ -25,8 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelineFutureCallback;
@@ -36,10 +34,8 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleAnalytics;
-import uk.ac.ebi.biosamples.model.filter.AttributeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
-import uk.ac.ebi.biosamples.mongo.repo.MongoCurationRuleRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoStructuredDataRepository;
 import uk.ac.ebi.biosamples.service.AnalyticsService;
@@ -83,12 +79,12 @@ public class MigrationApplicationRunner implements ApplicationRunner {
     SampleAnalytics sampleAnalytics = new SampleAnalytics();
 
     try (AdaptiveThreadPoolExecutor executorService =
-             AdaptiveThreadPoolExecutor.create(
-                 100,
-                 10000,
-                 true,
-                 pipelinesProperties.getThreadCount(),
-                 pipelinesProperties.getThreadCountMax())) {
+        AdaptiveThreadPoolExecutor.create(
+            100,
+            10000,
+            true,
+            pipelinesProperties.getThreadCount(),
+            pipelinesProperties.getThreadCountMax())) {
 
       Map<String, Future<PipelineResult>> futures = new HashMap<>();
       for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters)) {
@@ -127,7 +123,11 @@ public class MigrationApplicationRunner implements ApplicationRunner {
 
       PipelineAnalytics pipelineAnalytics =
           new PipelineAnalytics(
-              "StructuredDataMigration", startTime, endTime, sampleCount, pipelineFutureCallback.getTotalCount());
+              "StructuredDataMigration",
+              startTime,
+              endTime,
+              sampleCount,
+              pipelineFutureCallback.getTotalCount());
       pipelineAnalytics.setDateRange(filters);
       sampleAnalytics.setDateRange(filters);
       sampleAnalytics.setProcessedRecords(sampleCount);

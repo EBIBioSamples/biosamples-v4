@@ -13,13 +13,6 @@ package uk.ac.ebi.biosamples.service;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.AccessionFtpUrlPair;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -35,6 +28,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.model.AccessionFtpUrlPair;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 
 @Service
 public class AmrDataLoaderService {
@@ -60,7 +59,8 @@ public class AmrDataLoaderService {
       pairList = requestHttpAndGetAccessionFtpUrlPairs();
 
       if (pairList.isEmpty()) {
-        log.info("Unable to fetch ENA-AMR Antibiogram data from ENA API, Timed out waiting for connection");
+        log.info(
+            "Unable to fetch ENA-AMR Antibiogram data from ENA API, Timed out waiting for connection");
       } else {
         downloadFtpContent(pairList, sampleToAmrMap);
       }
@@ -153,14 +153,16 @@ public class AmrDataLoaderService {
   }
 
   private Map<String, Set<StructuredDataTable>> downloadFtpContent(
-      final List<AccessionFtpUrlPair> pairList, Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
+      final List<AccessionFtpUrlPair> pairList,
+      Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
     pairList.forEach(
         pair -> {
           try {
             String accession = pair.getAccession();
 
             if (accession != null) {
-              sampleToAmrMap.put(accession, fetchSampleAndProcessAmrData(new URL(pair.getFtpUrl()), accession));
+              sampleToAmrMap.put(
+                  accession, fetchSampleAndProcessAmrData(new URL(pair.getFtpUrl()), accession));
             }
           } catch (MalformedURLException e) {
             log.info("FTP URL not correctly formed " + pair.getFtpUrl());
@@ -170,7 +172,8 @@ public class AmrDataLoaderService {
     return sampleToAmrMap;
   }
 
-  private Set<StructuredDataTable> fetchSampleAndProcessAmrData(final URL url, final String accession) {
+  private Set<StructuredDataTable> fetchSampleAndProcessAmrData(
+      final URL url, final String accession) {
     Set<StructuredDataTable> amrData = new HashSet<>();
 
     try {
@@ -197,7 +200,8 @@ public class AmrDataLoaderService {
 
   private Set<StructuredDataTable> processAmrData(List<String> lines, String accession) {
     Set<Map<String, StructuredDataEntry>> tableContent = new HashSet<>();
-    StructuredDataTable table = StructuredDataTable.build("self.BiosampleImportENA", null, "AMR", null, tableContent);
+    StructuredDataTable table =
+        StructuredDataTable.build("self.BiosampleImportENA", null, "AMR", null, tableContent);
 
     lines.forEach(
         line -> {

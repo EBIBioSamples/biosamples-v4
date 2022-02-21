@@ -295,20 +295,8 @@ public class FileUploadSubmissionService {
             sample = bioSamplesWebinClient.persistSampleResource(sample).getContent();
           }
         } catch (final Exception e) {
-          String validationMessage = "";
           persisted = false;
-
-          if (e.getMessage().contains("403")) {
-            validationMessage =
-                validationMessage
-                    + "Error in persisting sample, sample "
-                    + accession
-                    + " is not accessible by you";
-          }
-
-          validationResult.addValidationMessage(
-              new ValidationResult.ValidationMessage(
-                  sampleWithAccession ? accession : sampleName, validationMessage));
+          handleUnauthorizedWhilePersistence(sampleName, accession, sampleWithAccession, e);
         }
       } else {
         try {
@@ -325,20 +313,8 @@ public class FileUploadSubmissionService {
             sample = bioSamplesAapClient.persistSampleResource(sample).getContent();
           }
         } catch (final Exception e) {
-          String validationMessage = "";
           persisted = false;
-
-          if (e.getMessage().contains("403")) {
-            validationMessage =
-                validationMessage
-                    + "Error in persisting sample, sample "
-                    + accession
-                    + " is not accessible by you";
-          }
-
-          validationResult.addValidationMessage(
-              new ValidationResult.ValidationMessage(
-                  sampleWithAccession ? accession : sampleName, validationMessage));
+          handleUnauthorizedWhilePersistence(sampleName, accession, sampleWithAccession, e);
         }
       }
 
@@ -364,5 +340,25 @@ public class FileUploadSubmissionService {
     }
 
     return null;
+  }
+
+  private void handleUnauthorizedWhilePersistence(
+      final String sampleName,
+      final String accession,
+      final boolean sampleWithAccession,
+      final Exception e) {
+    String validationMessage = "";
+
+    if (e.getMessage().contains("403")) {
+      validationMessage =
+          validationMessage
+              + "Error in persisting sample, sample "
+              + accession
+              + " is not accessible by you";
+    }
+
+    validationResult.addValidationMessage(
+        new ValidationResult.ValidationMessage(
+            sampleWithAccession ? accession : sampleName, validationMessage));
   }
 }

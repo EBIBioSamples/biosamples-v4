@@ -17,8 +17,10 @@ import java.util.List;
 public enum StructuredDataType {
   AMR(Collections.emptyList()),
   CHICKEN_DATA(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner", "Method")),
-  HISTOLOGY_MARKERS(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner", "Method")),
-  MOLECULAR_MARKERS(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner", "Method")),
+  HISTOLOGY_MARKERS(
+      Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner", "Method")),
+  MOLECULAR_MARKERS(
+      Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner", "Method")),
   FATTY_ACIDS(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner", "Method")),
   HEAVY_METALS(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner", "Method")),
   SALMON_DATA(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner", "Method"));

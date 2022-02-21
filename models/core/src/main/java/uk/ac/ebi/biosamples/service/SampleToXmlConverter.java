@@ -11,6 +11,13 @@
 package uk.ac.ebi.biosamples.service;
 
 import com.google.common.base.Strings;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -30,18 +37,11 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
 @Service
 public class SampleToXmlConverter implements Converter<Sample, Document> {
 
-  private final Namespace xmlns = Namespace.get("http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0");
+  private final Namespace xmlns =
+      Namespace.get("http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0");
   private final Namespace xsi = Namespace.get("xsi", "http://www.w3.org/2001/XMLSchema-instance");
   private final ExternalReferenceService externalReferenceService;
 
@@ -206,7 +206,8 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
     }
 
     for (StructuredDataTable data : source.getStructuredData()) {
-      Element dataParent = bioSample.addElement(QName.get("Table", xmlns)).addAttribute("name", data.getType());
+      Element dataParent =
+          bioSample.addElement(QName.get("Table", xmlns)).addAttribute("name", data.getType());
 
       Element dataHeader = dataParent.addElement(QName.get("Header", xmlns));
       for (String key : data.getHeaders()) {
@@ -217,8 +218,9 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
       for (Map<String, StructuredDataEntry> row : data.getContent()) {
         Element dataRow = dataBody.addElement(QName.get("Row", xmlns));
         for (String key : data.getHeaders()) {
-          dataRow.addElement(QName.get("Cell", xmlns))
-                    .setText(row.containsKey(key) ? row.get(key).getValue() : "");
+          dataRow
+              .addElement(QName.get("Cell", xmlns))
+              .setText(row.containsKey(key) ? row.get(key).getValue() : "");
         }
       }
     }
