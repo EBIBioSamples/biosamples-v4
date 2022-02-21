@@ -10,6 +10,16 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
+import java.io.StringReader;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -20,26 +30,11 @@ import org.springframework.hateoas.Resource;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
-
-import java.io.StringReader;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EnaCallable implements Callable<Void> {
   private final Logger log = LoggerFactory.getLogger(getClass());
@@ -49,20 +44,16 @@ public class EnaCallable implements Callable<Void> {
   private static final String TEMPORARY_SUPPRESSED = "temporary_suppressed";
   private static final String KILLED = "killed";
   private static final String TEMPORARY_KILLED = "temporary_killed";
-  public static final String ENA_SRA_ACCESSION = "SRA accession";
   private final String sampleAccession;
   private final String egaId;
   private final BioSamplesClient bioSamplesWebinClient;
-  private final BioSamplesClient bioSamplesAapClient;
   private final EnaXmlEnhancer enaXmlEnhancer;
   private final EraProDao eraProDao;
   private final EnaElementConverter enaElementConverter;
   private final EgaSampleExporter egaSampleExporter;
-  private String webinId;
   private final Set<StructuredDataTable> amrData;
   private boolean suppressionHandler;
   private boolean killedHandler;
-  private boolean bsdAuthority;
   private int statusId;
 
   public EnaCallable(
@@ -70,29 +61,23 @@ public class EnaCallable implements Callable<Void> {
       String egaId,
       int statusId,
       BioSamplesClient bioSamplesWebinClient,
-      BioSamplesClient bioSamplesAapClient,
       EnaXmlEnhancer enaXmlEnhancer,
       EnaElementConverter enaElementConverter,
       EgaSampleExporter egaSampleExporter,
       EraProDao eraProDao,
-      String webinId,
       boolean suppressionHandler,
       boolean killedHandler,
-      boolean bsdAuthority,
       Set<StructuredDataTable> amrData) {
     this.sampleAccession = sampleAccession;
     this.egaId = egaId;
     this.statusId = statusId;
     this.bioSamplesWebinClient = bioSamplesWebinClient;
-    this.bioSamplesAapClient = bioSamplesAapClient;
     this.enaXmlEnhancer = enaXmlEnhancer;
     this.enaElementConverter = enaElementConverter;
     this.egaSampleExporter = egaSampleExporter;
     this.eraProDao = eraProDao;
-    this.webinId = webinId;
     this.suppressionHandler = suppressionHandler;
     this.killedHandler = killedHandler;
-    this.bsdAuthority = bsdAuthority;
     this.amrData = amrData;
   }
 
@@ -105,7 +90,7 @@ public class EnaCallable implements Callable<Void> {
     } else if (killedHandler) {
       return checkAndUpdateKilledSamples();
     } else {
-      return enrichAndPersistEnaSample(bsdAuthority);
+      return enrichAndPersistEnaSample();
     }
   }
 
@@ -115,105 +100,16 @@ public class EnaCallable implements Callable<Void> {
    * @return nothing its {@link Void}
    * @throws DocumentException if it fails in XML transformation
    */
-  private Void enrichAndPersistEnaSample(boolean bsdAuthority) throws DocumentException {
+  private Void enrichAndPersistEnaSample() throws DocumentException {
     log.info("HANDLING " + sampleAccession);
 
-    if (bsdAuthority) {
-      handleBsdAuthoritySamples();
-    } else {
-      final SampleDBBean sampleDBBean = eraProDao.getAllSampleData(this.sampleAccession);
+    final SampleDBBean sampleDBBean = eraProDao.getAllSampleData(this.sampleAccession);
 
-      if (sampleDBBean != null) {
-        handleEnaSample(sampleDBBean);
-      }
+    if (sampleDBBean != null) {
+      handleEnaSample(sampleDBBean);
     }
 
     return null;
-  }
-
-  private void handleBsdAuthoritySamples() {
-    final String sraAccession = eraProDao.getSraAccession(this.sampleAccession);
-
-    if (sraAccession != null) {
-      try {
-        final List<String> curationDomainBlankList = new ArrayList<>();
-        curationDomainBlankList.add("");
-
-        Optional<Resource<Sample>> sampleResult =
-            bioSamplesAapClient.fetchSampleResource(
-                this.sampleAccession, Optional.of(curationDomainBlankList));
-
-        if (sampleResult.isPresent()) {
-          Sample sample = sampleResult.get().getContent();
-
-          if (sample != null) {
-            final Attribute sraAccessionAttribute =
-                Attribute.build(ENA_SRA_ACCESSION, sraAccession);
-            final SortedSet<Attribute> attributes = sample.getAttributes();
-
-            attributes.add(sraAccessionAttribute);
-
-            sample =
-                Sample.Builder.fromSample(sample)
-                    .withAttributes(attributes)
-                    .withNoExternalReferences()
-                    .build();
-
-            bioSamplesAapClient.persistSampleResource(sample);
-            log.info("Updated sample " + sampleAccession + " with SRA accession");
-
-            Iterable<Resource<CurationLink>> curationLinks =
-                bioSamplesAapClient.fetchCurationLinksOfSample(sampleAccession);
-            AtomicBoolean containsEnaLink = new AtomicBoolean(false);
-            final List<CurationLink> externalRefDuplicateLinks = new ArrayList<>();
-
-            curationLinks.forEach(
-                curation -> {
-                  final CurationLink curationLink = curation.getContent();
-
-                  if (curationLink != null) {
-                    curationLink
-                        .getCuration()
-                        .getExternalReferencesPost()
-                        .forEach(
-                            externalReference -> {
-                              final String externalReferenceUrl = externalReference.getUrl();
-
-                              if (externalReferenceUrl.contains("www.ebi.ac.uk/ena/data/view")
-                                  || externalReferenceUrl.contains(
-                                      "www.ebi.ac.uk/ena/browser/view")) {
-                                externalRefDuplicateLinks.add(curationLink);
-                              }
-                            });
-                  }
-                });
-
-            if (externalRefDuplicateLinks.size() == 1) {
-              containsEnaLink.set(true);
-            } else if (externalRefDuplicateLinks.size() > 1) {
-              externalRefDuplicateLinks.remove(0);
-              containsEnaLink.set(true);
-
-              externalRefDuplicateLinks.forEach(bioSamplesAapClient::deleteCurationLink);
-            }
-
-            if (!containsEnaLink.get()) {
-              ExternalReference exRef =
-                  ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + sraAccession);
-              Curation enaLinkCuration =
-                  Curation.build(null, null, null, Collections.singleton(exRef));
-
-              bioSamplesAapClient.persistCuration(sampleAccession, enaLinkCuration, webinId, true);
-              log.info("Updated sample " + sampleAccession + " with ENA link");
-            }
-          } else {
-            log.info("Sample not found " + sampleAccession);
-          }
-        }
-      } catch (final Exception e) {
-        log.error("Failed to update BSD authority sample with SRA accession " + sampleAccession);
-      }
-    }
   }
 
   /**
@@ -303,12 +199,12 @@ public class EnaCallable implements Callable<Void> {
             sample.getRelationships(),
             externalReferences);
 
-
     sample = Sample.Builder.fromSample(sample).withNoData().build();
     bioSamplesWebinClient.persistSampleResource(sample);
 
     if (amrData != null && !amrData.isEmpty()) {
-      bioSamplesWebinClient.persistStructuredData(StructuredData.build(sampleAccession, update, amrData));
+      bioSamplesWebinClient.persistStructuredData(
+          StructuredData.build(sampleAccession, update, amrData));
     }
   }
 
@@ -372,15 +268,15 @@ public class EnaCallable implements Callable<Void> {
           bioSamplesWebinClient.persistSampleResource(sample);
         }
       } else {
-        if (!ifNcbiDdbj()) {
+        if (ifNcbiDdbj()) {
           log.info("Accession doesn't exist " + this.sampleAccession + " creating the same");
-          return enrichAndPersistEnaSample(false);
+          return enrichAndPersistEnaSample();
         }
       }
     } catch (final RuntimeException e) {
       if (e.getMessage().contains("404")) {
         log.info("Accession doesn't exist " + this.sampleAccession + " creating the same");
-        enrichAndPersistEnaSample(false);
+        enrichAndPersistEnaSample();
       } else {
         log.error("Failed to update status of ENA sample " + sampleAccession + " to SUPPRESSED");
       }
@@ -426,15 +322,15 @@ public class EnaCallable implements Callable<Void> {
           bioSamplesWebinClient.persistSampleResource(sample);
         }
       } else {
-        if (!ifNcbiDdbj()) {
+        if (ifNcbiDdbj()) {
           log.info("Accession doesn't exist " + this.sampleAccession + " creating the same");
-          return enrichAndPersistEnaSample(false);
+          return enrichAndPersistEnaSample();
         }
       }
     } catch (final Exception e) {
       if (e.getMessage().contains("404")) {
         log.info("Accession doesn't exist " + this.sampleAccession + " creating the same");
-        enrichAndPersistEnaSample(false);
+        enrichAndPersistEnaSample();
       } else {
         log.error("Failed to update status of ENA sample " + sampleAccession + " to KILLED");
       }
@@ -449,7 +345,7 @@ public class EnaCallable implements Callable<Void> {
    * @return true if NCBI/DDBJ sample
    */
   private boolean ifNcbiDdbj() {
-    return this.sampleAccession.startsWith(NCBI_SAMPLE_PREFIX)
-        || this.sampleAccession.startsWith(DDBJ_SAMPLE_PREFIX);
+    return !this.sampleAccession.startsWith(NCBI_SAMPLE_PREFIX)
+        && !this.sampleAccession.startsWith(DDBJ_SAMPLE_PREFIX);
   }
 }
