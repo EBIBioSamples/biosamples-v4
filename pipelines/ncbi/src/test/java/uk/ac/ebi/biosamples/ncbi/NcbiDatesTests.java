@@ -15,7 +15,6 @@ import static org.junit.Assert.*;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.dom4j.Document;
@@ -48,7 +47,8 @@ public class NcbiDatesTests {
 
   @Test
   public void given_ncbi_biosamples_it_generates_and_insdc_first_public_attribute() {
-    Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
+    Sample sampleToTest =
+        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
     Optional<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()
             .filter(attr -> attr.getType().equals("INSDC first public"))
@@ -60,7 +60,8 @@ public class NcbiDatesTests {
 
   @Test
   public void it_extracts_create() {
-    Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
+    Sample sampleToTest =
+        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
 
     assertTrue(sampleToTest.getCreate() != null);
     assertEquals(sampleToTest.getCreate().toString(), "2019-05-30T14:12:04.443Z");
@@ -69,7 +70,8 @@ public class NcbiDatesTests {
 
   @Test
   public void it_extracts_insdc_dates() {
-    Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
+    Sample sampleToTest =
+        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
     Optional<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()
             .filter(attr -> attr.getType().equals("INSDC first public"))

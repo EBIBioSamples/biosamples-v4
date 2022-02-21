@@ -10,6 +10,10 @@
 */
 package uk.ac.ebi.biosamples.zooma;
 
+import java.util.Collections;
+import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.PipelineResult;
@@ -18,11 +22,6 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
-
-import java.util.Collections;
-import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class SampleZoomaCallable implements Callable<PipelineResult> {
   private Logger log = LoggerFactory.getLogger(getClass());

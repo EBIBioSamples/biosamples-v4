@@ -10,6 +10,19 @@
 */
 package uk.ac.ebi.biosamples.ncbi.service;
 
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,20 +39,6 @@ import uk.ac.ebi.biosamples.ncbi.NcbiEraProDao;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiAmrConversionService.AmrParsingException;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
-
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.regex.Pattern;
 
 @Service
 public class NcbiSampleConversionService {
@@ -359,7 +358,8 @@ public class NcbiSampleConversionService {
         .build();
   }
 
-  public Set<StructuredDataTable> convertNcbiXmlElementToStructuredData(Element sampleElem, Set<StructuredDataTable> amrData) {
+  public Set<StructuredDataTable> convertNcbiXmlElementToStructuredData(
+      Element sampleElem, Set<StructuredDataTable> amrData) {
     String accession = sampleElem.attributeValue(ACCESSION);
     Set<StructuredDataTable> structuredData = new HashSet<>();
     Set<StructuredDataTable> structuredDataTableSet = new HashSet<>();
@@ -367,13 +367,16 @@ public class NcbiSampleConversionService {
 
     // handle AMR data
     if (XmlPathBuilder.of(sampleElem).path(DESCRIPTION, COMMENT).exists()) {
-      for (Element element : XmlPathBuilder.of(sampleElem).path(DESCRIPTION, COMMENT).elements("Table")) {
+      for (Element element :
+          XmlPathBuilder.of(sampleElem).path(DESCRIPTION, COMMENT).elements("Table")) {
         String antibiogramClass = element.attributeValue("class");
         if (antibiogramClass != null && ANTIBIOGRAM_PATTERN.matcher(antibiogramClass).matches()) {
           try {
-            Set<Map<String, StructuredDataEntry>> structuredTable = amrConversionService.convertStructuredTable(element, organismValue);
+            Set<Map<String, StructuredDataEntry>> structuredTable =
+                amrConversionService.convertStructuredTable(element, organismValue);
             StructuredDataTable structuredDataTable =
-                StructuredDataTable.build("self.BiosampleImportNCBI",null,"AMR", null, structuredTable);
+                StructuredDataTable.build(
+                    "self.BiosampleImportNCBI", null, "AMR", null, structuredTable);
             structuredDataTableSet.add(structuredDataTable);
           } catch (AmrParsingException ex) {
             log.error("An error occurred while parsing AMR table", ex);
@@ -384,7 +387,7 @@ public class NcbiSampleConversionService {
 
     if (!structuredDataTableSet.isEmpty()) {
       log.info("Structured data already added from NCBI source " + accession);
-    } else if (amrData != null && amrData.size() > 0) { //todo is this path still useful?
+    } else if (amrData != null && amrData.size() > 0) { // todo is this path still useful?
       log.info("Structured data not added from NCBI source - adding from ENA source" + accession);
       structuredData.addAll(amrData);
     }

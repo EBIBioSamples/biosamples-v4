@@ -10,6 +10,10 @@
 */
 package uk.ac.ebi.biosamples.ncbi;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +22,6 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
-
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
 
 public class NcbiElementCallable implements Callable<Void> {
   private final Logger log = LoggerFactory.getLogger(getClass());
@@ -57,12 +56,15 @@ public class NcbiElementCallable implements Callable<Void> {
     }
 
     // Generate the sample without the domain
-    Sample sampleWithoutDomain = ncbiSampleConversionService.convertNcbiXmlElementToSample(sampleElem);
+    Sample sampleWithoutDomain =
+        ncbiSampleConversionService.convertNcbiXmlElementToSample(sampleElem);
     Sample sample = Sample.Builder.fromSample(sampleWithoutDomain).withDomain(domain).build();
     bioSamplesClient.persistSampleResource(sample);
 
-    Set<StructuredDataTable> structuredDataTableSet = ncbiSampleConversionService.convertNcbiXmlElementToStructuredData(sampleElem, amrData);
-    StructuredData structuredData = StructuredData.build(accession, sample.getCreate(), structuredDataTableSet);
+    Set<StructuredDataTable> structuredDataTableSet =
+        ncbiSampleConversionService.convertNcbiXmlElementToStructuredData(sampleElem, amrData);
+    StructuredData structuredData =
+        StructuredData.build(accession, sample.getCreate(), structuredDataTableSet);
     bioSamplesClient.persistStructuredData(structuredData);
 
     log.trace("Element callable finished");

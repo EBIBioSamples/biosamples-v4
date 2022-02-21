@@ -1,16 +1,28 @@
 /*
- * Copyright 2021 EMBL - European Bioinformatics Institute
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- */
+* Copyright 2021 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.models;
 
+import static org.assertj.core.api.Assertions.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URISyntaxException;
+import java.time.Instant;
+import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,19 +45,6 @@ import uk.ac.ebi.biosamples.mongo.model.MongoExternalReference;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoStructuredData;
-
-import java.net.URISyntaxException;
-import java.time.Instant;
-import java.util.AbstractMap;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import static org.assertj.core.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
 @JsonTest
@@ -185,12 +184,12 @@ public class MongoSerializationTest {
     assertThat(this.json.readObject("/TEST1.json")).isEqualTo(getMongoSample());
   }
 
-
   @Test
   public void testSerialize_structured_data() throws Exception {
     MongoStructuredData structuredData = getMongoStructuredData();
 
-    assertThat(structuredDataJacksonTester.write(structuredData)).hasJsonPathStringValue("@.accession");
+    assertThat(structuredDataJacksonTester.write(structuredData))
+        .hasJsonPathStringValue("@.accession");
 
     assertThat(structuredDataJacksonTester.write(structuredData)).hasJsonPathArrayValue("@.data");
     assertThat(structuredDataJacksonTester.write(structuredData))
@@ -203,6 +202,5 @@ public class MongoSerializationTest {
   }
 
   @Configuration
-  public static class TestConfig {
-  }
+  public static class TestConfig {}
 }
