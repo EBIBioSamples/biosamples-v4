@@ -10,6 +10,20 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,21 +39,6 @@ import uk.ac.ebi.biosamples.service.AmrDataLoaderService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 @Component
 @ConditionalOnProperty(
@@ -120,14 +119,6 @@ public class EnaRunner implements ApplicationRunner {
       // Import ENA samples
       importEraSamples(fromDate, toDate, sampleToAmrMap);
 
-      // Handler to append SRA Accession (ENA accession numbers to samples owned by BioSamples)
-      // TODO check: remove or keep as needed
-      /*try {
-        importEraBsdAuthoritySamples(fromDate, toDate);
-      } catch (final Exception e) {
-        failures.append("Some problems while adding SRA accession to BSD authority samples" + "\n");
-      }*/
-
       if (suppressionRunner) {
         try {
           // handler for suppressed ENA samples
@@ -157,36 +148,6 @@ public class EnaRunner implements ApplicationRunner {
       isPassed = false;
     } finally {
       MailSender.sendEmail("ENA", null, isPassed);
-    }
-  }
-
-  private void importEraBsdAuthoritySamples(final LocalDate fromDate, final LocalDate toDate)
-      throws Exception {
-    log.info("Handling BioSamples Authority Samples");
-
-    if (pipelinesProperties.getThreadCount() == 0) {
-      final EraRowBsdSamplesCallbackHandler eraRowBsdSamplesCallbackHandler =
-          new EraRowBsdSamplesCallbackHandler(null, enaCallableFactory, futures);
-
-      eraProDao.doSampleCallbackBsdAuthoritySamples(
-          fromDate, toDate, eraRowBsdSamplesCallbackHandler);
-    } else {
-      try (final AdaptiveThreadPoolExecutor executorService =
-          AdaptiveThreadPoolExecutor.create(
-              100,
-              10000,
-              false,
-              pipelinesProperties.getThreadCount(),
-              pipelinesProperties.getThreadCountMax())) {
-        final EraRowBsdSamplesCallbackHandler eraRowBsdSamplesCallbackHandler =
-            new EraRowBsdSamplesCallbackHandler(executorService, enaCallableFactory, futures);
-
-        eraProDao.doSampleCallbackBsdAuthoritySamples(
-            fromDate, toDate, eraRowBsdSamplesCallbackHandler);
-
-        log.info("waiting for futures"); // wait for anything to finish
-        ThreadUtils.checkFutures(futures, 0);
-      }
     }
   }
 
@@ -341,7 +302,7 @@ public class EnaRunner implements ApplicationRunner {
       final int statusId = rs.getInt("STATUS_ID");
 
       final Callable<Void> callable =
-          enaCallableFactory.build(sampleAccession, null, statusId, true, false, false, null);
+          enaCallableFactory.build(sampleAccession, null, statusId, true, false, null);
 
       if (executorService == null) {
         try {
@@ -381,7 +342,7 @@ public class EnaRunner implements ApplicationRunner {
       final int statusId = rs.getInt("STATUS_ID");
 
       final Callable<Void> callable =
-          enaCallableFactory.build(sampleAccession, null, statusId, false, true, false, null);
+          enaCallableFactory.build(sampleAccession, null, statusId, false, true, null);
 
       if (executorService == null) {
         try {
@@ -506,9 +467,9 @@ public class EnaRunner implements ApplicationRunner {
           // update if sample already exists else import
 
           if (!amrData.isEmpty()) {
-            callable = enaCallableFactory.build(sampleAccession, egaId, 0, false, false, false, amrData);
+            callable = enaCallableFactory.build(sampleAccession, egaId, 0, false, false, amrData);
           } else {
-            callable = enaCallableFactory.build(sampleAccession, egaId, 0, false, false, false, null);
+            callable = enaCallableFactory.build(sampleAccession, egaId, 0, false, false, null);
           }
 
           if (executorService == null) {
@@ -580,40 +541,6 @@ public class EnaRunner implements ApplicationRunner {
         } catch (InterruptedException e) {
           throw new RuntimeException(e);
         }
-      }
-    }
-  }
-
-  private static class EraRowBsdSamplesCallbackHandler implements RowCallbackHandler {
-    private final AdaptiveThreadPoolExecutor executorService;
-    private final EnaCallableFactory enaCallableFactory;
-    private final Map<String, Future<Void>> futures;
-
-    public EraRowBsdSamplesCallbackHandler(
-        final AdaptiveThreadPoolExecutor executorService,
-        final EnaCallableFactory enaCallableFactory,
-        final Map<String, Future<Void>> futures) {
-      this.executorService = executorService;
-      this.enaCallableFactory = enaCallableFactory;
-      this.futures = futures;
-    }
-
-    @Override
-    public void processRow(ResultSet rs) throws SQLException {
-      final String sampleAccession = rs.getString("BIOSAMPLE_ID");
-
-      Callable<Void> callable =
-          enaCallableFactory.build(sampleAccession, null, 0, false, false, true, null);
-      if (executorService == null) {
-        try {
-          callable.call();
-        } catch (RuntimeException e) {
-          throw e;
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      } else {
-        futures.put(sampleAccession, executorService.submit(callable));
       }
     }
   }
