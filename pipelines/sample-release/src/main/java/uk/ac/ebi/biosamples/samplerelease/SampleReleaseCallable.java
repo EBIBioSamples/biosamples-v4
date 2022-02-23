@@ -29,7 +29,8 @@ import uk.ac.ebi.biosamples.model.Sample;
 public class SampleReleaseCallable implements Callable<String> {
   private static final Logger log = LoggerFactory.getLogger(SampleReleaseCallable.class);
   private final PipelinesProperties pipelinesProperties;
-  private final BioSamplesClient bioSamplesClient;
+  private final BioSamplesClient bioSamplesWebinClient;
+  private final BioSamplesClient bioSamplesAapClient;
   private final RestTemplate restTemplate;
   private final String accession;
   private final List<String> curationDomainBlankList;
@@ -37,11 +38,13 @@ public class SampleReleaseCallable implements Callable<String> {
   static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
   public SampleReleaseCallable(
-      final BioSamplesClient bioSamplesClient,
-      final RestTemplate restTemplate,
+      final BioSamplesClient bioSamplesWebinClient,
+      final BioSamplesClient bioSamplesAapClient,
       PipelinesProperties pipelinesProperties,
+      RestTemplate restTemplate,
       final String accession) {
-    this.bioSamplesClient = bioSamplesClient;
+    this.bioSamplesWebinClient = bioSamplesWebinClient;
+    this.bioSamplesAapClient = bioSamplesAapClient;
     this.restTemplate = restTemplate;
     this.pipelinesProperties = pipelinesProperties;
     this.accession = accession;
@@ -51,51 +54,70 @@ public class SampleReleaseCallable implements Callable<String> {
 
   @Override
   public String call() {
-    final Map<String, String> params = new HashMap<>();
+    boolean isAap = false;
 
     try {
       log.info("Handling sample with accession " + accession);
-      final Optional<Resource<Sample>> optionalSampleResource =
-          bioSamplesClient.fetchSampleResource(accession, Optional.of(curationDomainBlankList));
+
+      Optional<Resource<Sample>> optionalSampleResource =
+          bioSamplesWebinClient.fetchSampleResource(accession);
+
+      if (!optionalSampleResource.isPresent()) {
+        optionalSampleResource =
+            bioSamplesAapClient.fetchSampleResource(
+                accession, Optional.of(curationDomainBlankList));
+        isAap = true;
+      }
 
       if (optionalSampleResource.isPresent()) {
         Sample sample = optionalSampleResource.get().getContent();
         log.info("Sample with accession " + sample.getAccession() + " exists in BioSamples");
 
         if (sample.getRelease().isAfter(Instant.now())) {
-          bioSamplesClient
-              .persistSampleResource(
-                  Sample.Builder.fromSample(sample).withRelease(Instant.now()).build())
-              .getContent();
+          if (isAap) {
+            bioSamplesAapClient
+                .persistSampleResource(
+                    Sample.Builder.fromSample(sample).withRelease(Instant.now()).build())
+                .getContent();
+          } else {
+            bioSamplesWebinClient
+                .persistSampleResource(
+                    Sample.Builder.fromSample(sample).withRelease(Instant.now()).build())
+                .getContent();
+          }
         }
-
-        params.put("biosampleAccession", accession);
-
-        final ResponseEntity response =
-            restTemplate.exchange(
-                pipelinesProperties.getWebinEraServiceSampleReleaseDelete(),
-                HttpMethod.DELETE,
-                new HttpEntity<>(SampleReleaseUtil.createHeaders("era", "password")),
-                ResponseEntity.class,
-                params);
-
-        final HttpStatus deleteApiStatusCode = response.getStatusCode();
-        log.info("Delete response is " + deleteApiStatusCode + " for " + accession);
-
-        if (!deleteApiStatusCode.is2xxSuccessful()) {
-          failedQueue.add("Failed to delete " + accession);
-        }
-
-        return accession;
       } else {
-        failedQueue.add("Failed to find " + accession);
+        log.info("Failed to find " + accession + " in BioSamples");
+        failedQueue.add("Failed to find " + accession + " in BioSamples");
       }
+
+      final ResponseEntity response = deleteSampleReleaseMessageInEna(accession);
+
+      final HttpStatus deleteApiStatusCode = response.getStatusCode();
+      log.info("Delete response is " + deleteApiStatusCode + " for " + accession);
+
+      if (!deleteApiStatusCode.is2xxSuccessful()) {
+        failedQueue.add("Failed to delete " + accession);
+      }
+
+      return accession;
     } catch (final Exception e) {
       failedQueue.add("Exception in processing " + accession);
 
       return null;
     }
+  }
 
-    return null;
+  private ResponseEntity deleteSampleReleaseMessageInEna(final String accession) {
+    final Map<String, String> params = new HashMap<>();
+
+    params.put("biosampleAccession", accession);
+
+    return restTemplate.exchange(
+        pipelinesProperties.getWebinEraServiceSampleReleaseDelete(),
+        HttpMethod.DELETE,
+        new HttpEntity<>(SampleReleaseUtil.createHeaders("era", "password")),
+        ResponseEntity.class,
+        params);
   }
 }

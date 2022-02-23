@@ -34,7 +34,7 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.service.AmrDataLoaderService;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
@@ -53,7 +53,7 @@ public class Ncbi implements ApplicationRunner {
 
   @Autowired private AmrDataLoaderService amrDataLoaderService;
 
-  private Map<String, Set<AbstractData>> sampleToAmrMap = new HashMap<>();
+  private Map<String, Set<StructuredDataTable>> sampleToAmrMap = new HashMap<>();
 
   public Ncbi(
       PipelinesProperties pipelinesProperties,
@@ -160,7 +160,7 @@ public class Ncbi implements ApplicationRunner {
       log.info("Number of accession from NCBI = " + sampleCallback.getAccessions().size());
       // remove old NCBI samples no longer present
       // get all existing NCBI samples
-      makingNcbiSamplesPrivate();
+      // makingNcbiSamplesPrivate();
       log.info("Processed NCBI pipeline");
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);

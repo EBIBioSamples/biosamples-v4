@@ -251,37 +251,6 @@ public class BioSamplesAapService {
     }
   }
 
-  /**
-   * @param sample
-   * @return
-   * @throws StructuredDataNotAccessibleException
-   * @throws StructuredDataDomainMissingException
-   */
-  public Sample handleStructuredDataDomain(Sample sample)
-      throws StructuredDataNotAccessibleException, StructuredDataDomainMissingException {
-    // get the domains the current user has access to
-    final Set<String> usersDomains = getDomains();
-    final AtomicBoolean isDomainValid = new AtomicBoolean(false);
-
-    sample
-        .getData()
-        .forEach(
-            data -> {
-              if (data.getDataType() != null) {
-                final String structuredDataDomain = data.getDomain();
-                if (structuredDataDomain == null) {
-                  throw new StructuredDataDomainMissingException();
-                } else if (usersDomains.contains(data.getDomain())) {
-                  isDomainValid.set(true);
-                }
-              }
-            });
-
-    if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) return sample;
-    else if (isDomainValid.get()) return sample;
-    else throw new StructuredDataNotAccessibleException();
-  }
-
   public void handleStructuredDataDomain(StructuredData structuredData) {
     final Set<String> usersDomains = getDomains();
     if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {

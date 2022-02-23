@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
@@ -24,17 +25,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelineFutureCallback;
 import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.PipelinesProperties;
-import uk.ac.ebi.biosamples.model.filter.AttributeFilter;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.PipelineAnalytics;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SampleAnalytics;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoStructuredDataRepository;
+import uk.ac.ebi.biosamples.service.AnalyticsService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
 import uk.ac.ebi.biosamples.utils.MailSender;
@@ -44,17 +48,23 @@ import uk.ac.ebi.biosamples.utils.ThreadUtils;
 public class MigrationApplicationRunner implements ApplicationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(MigrationApplicationRunner.class);
 
+  private final BioSamplesClient bioSamplesClient;
   private final PipelinesProperties pipelinesProperties;
   private final PipelineFutureCallback pipelineFutureCallback;
+  private final AnalyticsService analyticsService;
   private final MongoSampleRepository mongoSampleRepository;
   private final MongoStructuredDataRepository mongoStructuredDataRepository;
 
   public MigrationApplicationRunner(
+      BioSamplesClient bioSamplesClient,
       PipelinesProperties pipelinesProperties,
+      AnalyticsService analyticsService,
       MongoSampleRepository mongoSampleRepository,
       MongoStructuredDataRepository mongoStructuredDataRepository) {
+    this.bioSamplesClient = bioSamplesClient;
     this.pipelinesProperties = pipelinesProperties;
     this.pipelineFutureCallback = new PipelineFutureCallback();
+    this.analyticsService = analyticsService;
     this.mongoSampleRepository = mongoSampleRepository;
     this.mongoStructuredDataRepository = mongoStructuredDataRepository;
   }
@@ -66,6 +76,7 @@ public class MigrationApplicationRunner implements ApplicationRunner {
     LOG.info("Pipeline started at {}", startTime);
     long sampleCount = 0;
     boolean isPassed = true;
+    SampleAnalytics sampleAnalytics = new SampleAnalytics();
 
     try (AdaptiveThreadPoolExecutor executorService =
         AdaptiveThreadPoolExecutor.create(
@@ -76,27 +87,22 @@ public class MigrationApplicationRunner implements ApplicationRunner {
             pipelinesProperties.getThreadCountMax())) {
 
       Map<String, Future<PipelineResult>> futures = new HashMap<>();
-      filters.add(new AttributeFilter.Builder("project name").withValue("DTOL").build());
+      for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters)) {
+        LOG.trace("Handling {}", sampleResource);
+        Sample sample = sampleResource.getContent();
+        Objects.requireNonNull(sample);
 
-      Page<MongoSample> samplePage = mongoSampleRepository.findAll(new PageRequest(0, 100));
-      while (samplePage != null) {
-        for (MongoSample mongoSample : samplePage) {
-          if (mongoSample.getData() != null && !mongoSample.getData().isEmpty()) {
-            Callable<PipelineResult> task =
-                new MigrationCallable(
-                    mongoSample, mongoSampleRepository, mongoStructuredDataRepository);
-            futures.put(mongoSample.getAccession(), executorService.submit(task));
-          }
-
-          if (++sampleCount % 5000 == 0) {
-            LOG.info("Scheduled sample count {}", sampleCount);
-          }
+        if (sample.getData() != null && !sample.getData().isEmpty()) {
+          LOG.info("Migrating structured data of sample: {}", sample.getAccession());
+          MongoSample mongoSample = mongoSampleRepository.findOne(sample.getAccession());
+          Callable<PipelineResult> task =
+              new MigrationCallable(
+                  mongoSample, mongoSampleRepository, mongoStructuredDataRepository);
+          futures.put(mongoSample.getAccession(), executorService.submit(task));
         }
 
-        if (samplePage.isLast()) {
-          samplePage = null;
-        } else {
-          samplePage = mongoSampleRepository.findAll(samplePage.nextPageable());
+        if (++sampleCount % 5000 == 0) {
+          LOG.info("Scheduled sample count {}", sampleCount);
         }
       }
 
@@ -109,13 +115,25 @@ public class MigrationApplicationRunner implements ApplicationRunner {
     } finally {
       Instant endTime = Instant.now();
       LOG.info("Total samples processed {}", sampleCount);
-      LOG.info("Total samples modified {}", pipelineFutureCallback.getTotalCount());
+      LOG.info("Total data objects migrated {}", pipelineFutureCallback.getTotalCount());
       LOG.info("Pipeline finished at {}", endTime);
       LOG.info(
           "Pipeline total running time {} seconds",
           Duration.between(startTime, endTime).getSeconds());
 
-      MailSender.sendEmail("Structured data migration", handleFailedSamples(), isPassed);
+      PipelineAnalytics pipelineAnalytics =
+          new PipelineAnalytics(
+              "StructuredDataMigration",
+              startTime,
+              endTime,
+              sampleCount,
+              pipelineFutureCallback.getTotalCount());
+      pipelineAnalytics.setDateRange(filters);
+      sampleAnalytics.setDateRange(filters);
+      sampleAnalytics.setProcessedRecords(sampleCount);
+      analyticsService.persistSampleAnalytics(startTime, sampleAnalytics);
+      analyticsService.persistPipelineAnalytics(pipelineAnalytics);
+      MailSender.sendEmail("StructuredDataMigration", handleFailedSamples(), isPassed);
     }
   }
 

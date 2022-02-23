@@ -14,8 +14,12 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import java.io.BufferedReader;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
@@ -27,9 +31,9 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ena.amr.AmrRunner;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
-import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
-import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
+import uk.ac.ebi.biosamples.model.structured.StructuredData;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 
 @Service
 public class EnaAmrDataProcessService {
@@ -40,8 +44,7 @@ public class EnaAmrDataProcessService {
   @Autowired
   BioSamplesProperties bioSamplesProperties;
 
-  public void processAmrData(
-      final List<String> lines, final Sample sample, final BioSamplesClient client) {
+  public void processAmrData(final List<String> lines, final Sample sample, final BioSamplesClient client) {
     /*String[] dilutionMethods = new String[]{"Broth dilution", "Microbroth dilution", "Agar dilution"};
     String[] diffusionMethods = new String[]{"Disc-diffusion", "Neo-sensitabs", "Etest"};*/
 
@@ -61,35 +64,33 @@ public class EnaAmrDataProcessService {
         .collect(Collectors.toList());
   }
 
-  private void processAmrData(
-      List<String> lines, Sample sample, BioSamplesClient client, String accession) {
-    final Set<AbstractData> structuredData = new HashSet<>();
-    final AMRTable.Builder amrTableBuilder =
-        new AMRTable.Builder(
-            "http://localhost:8081/biosamples/schemas/amr.json", null, bioSamplesProperties.getBiosamplesClientWebinUsername());
+  private void processAmrData(List<String> lines, Sample sample, BioSamplesClient client, String accession) {
+    Set<Map<String, StructuredDataEntry>> tableContent = new HashSet<>();
+    StructuredDataTable table = StructuredDataTable.build("self.BiosampleImportENA", null, "AMR", null, tableContent);
 
     lines.forEach(
         line -> {
           final CsvMapper mapper = new CsvMapper();
-          final CsvSchema schema = mapper.schemaFor(AMREntry.class).withColumnSeparator('\t');
-          final ObjectReader r = mapper.readerFor(AMREntry.class).with(schema);
-
+          final CsvSchema schema = mapper.schemaFor(Map.class).withColumnSeparator('\t');
+          final ObjectReader r = mapper.readerFor(Map.class).with(schema);
           try {
-            AMREntry amrEntry = r.readValue(line);
-            amrTableBuilder.addEntry(amrEntry);
+            final Map<String, String> amrEntry = r.readValue(line);
+            Map<String, StructuredDataEntry> entry = new HashMap<>();
+            for (Map.Entry<String, String> e : amrEntry.entrySet()) {
+              entry.put(e.getKey(), StructuredDataEntry.build(e.getValue(), null));
+            }
+
+            tableContent.add(entry);
           } catch (final Exception e) {
             log.error("Error in parsing AMR data for sample " + accession);
-            failedQueue.add(accession);
           }
         });
 
-    structuredData.add(amrTableBuilder.build());
+    Set<StructuredDataTable> tableSet =  Collections.singleton(table);
 
-    if (structuredData.size() > 0) {
-      final Sample sampleNew = Sample.Builder.fromSample(sample).withData(structuredData).build();
-      client.persistSampleResource(sampleNew);
-
-      log.info("Submitted sample " + accession + " with structured data");
+    if (!lines.isEmpty()) {
+      client.persistStructuredData(StructuredData.build(accession, Instant.now(), tableSet));
+      log.info("Structured data submitted for sample: " + accession);
     }
   }
 

@@ -26,7 +26,7 @@ Sample content reference:
 | characteristics | The key-value pairs representing the attributes of the sample. | `Object` | Optional
 | externalReferences | A list of links towards external references, such as datasets in other archives. | `Array` | Optional
 | relationships | A list of relationships this sample has to other, existing, samples. | `Array` | Optional
-| data | A more structured data format to allow submission of tables (eg. antibiogram) in addition to key-value pairs.| `Array` | Optional, required only for structured data submission using our POST, PUT or PATCH endpoints.
+| data | A more structured data format to allow submission of tables (eg. antibiogram) in addition to key-value pairs.| `Array` | Optional, required only for structured data submission using our POST or PUT endpoints.
 
 Note - You must provide an AAP domain for your data. It can be same as the sample domain if you are the submitter of both the
 sample metadata and structured data.

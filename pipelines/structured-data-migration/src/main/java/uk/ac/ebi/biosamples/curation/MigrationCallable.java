@@ -10,26 +10,12 @@
 */
 package uk.ac.ebi.biosamples.curation;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.PipelineResult;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
-import uk.ac.ebi.biosamples.model.structured.StructuredCell;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
-import uk.ac.ebi.biosamples.model.structured.StructuredEntry;
-import uk.ac.ebi.biosamples.model.structured.StructuredTable;
-import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
-import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
-import uk.ac.ebi.biosamples.mongo.model.MongoStructuredData;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoStructuredDataRepository;
 
@@ -55,77 +41,30 @@ public class MigrationCallable implements Callable<PipelineResult> {
     int modifiedRecords = 0;
     boolean success = true;
 
-    Set<AbstractData> abstractDataSet = mongoSample.getData();
-    Set<StructuredDataTable> structuredDataTableSet = new HashSet<>(abstractDataSet.size());
-    for (AbstractData d : abstractDataSet) {
-      Set<Map<String, StructuredDataEntry>> dataEntrySet = new HashSet<>();
-      if (d instanceof AMRTable) {
-        for (AMREntry e : ((AMRTable) d).getStructuredData()) {
-          Map<String, StructuredDataEntry> dataEntryMap = new HashMap<>();
-          dataEntrySet.add(dataEntryMap);
-          dataEntryMap.put(
-              "antibioticName",
-              StructuredDataEntry.build(
-                  e.getAntibioticName().getValue(), e.getAntibioticName().getIri()));
-          dataEntryMap.put(
-              "species",
-              StructuredDataEntry.build(e.getSpecies().getValue(), e.getSpecies().getIri()));
-          dataEntryMap.put(
-              "resistancePhenotype", StructuredDataEntry.build(e.getResistancePhenotype(), null));
-          dataEntryMap.put(
-              "measurementSign", StructuredDataEntry.build(e.getMeasurementSign(), null));
-          dataEntryMap.put("measurement", StructuredDataEntry.build(e.getMeasurement(), null));
-          dataEntryMap.put(
-              "measurementUnits", StructuredDataEntry.build(e.getMeasurementUnits(), null));
-          dataEntryMap.put("vendor", StructuredDataEntry.build(e.getVendor(), null));
-          dataEntryMap.put(
-              "laboratoryTypingMethod",
-              StructuredDataEntry.build(e.getLaboratoryTypingMethod(), null));
-          dataEntryMap.put("platform", StructuredDataEntry.build(e.getPlatform(), null));
-          dataEntryMap.put(
-              "laboratoryTypingMethodVersionOrReagent",
-              StructuredDataEntry.build(e.getLaboratoryTypingMethodVersionOrReagent(), null));
-          dataEntryMap.put("astStandard", StructuredDataEntry.build(e.getAstStandard(), null));
-          dataEntryMap.put("dstMedia", StructuredDataEntry.build(e.getDstMedia(), null));
-          dataEntryMap.put("dstMethod", StructuredDataEntry.build(e.getDstMethod(), null));
-          dataEntryMap.put(
-              "criticalConcentration",
-              StructuredDataEntry.build(e.getCriticalConcentration(), null));
-          dataEntryMap.put(
-              "breakpointVersion", StructuredDataEntry.build(e.getBreakpointVersion(), null));
-        }
-      } else {
-        for (StructuredEntry e : ((StructuredTable<StructuredEntry>) d).getStructuredData()) {
-          Map<String, StructuredDataEntry> dataEntryMap = new HashMap<>();
-          dataEntrySet.add(dataEntryMap);
-          for (Entry<String, StructuredCell> mapEntry : e.getDataAsMap().entrySet()) {
-            dataEntryMap.put(
-                mapEntry.getKey(),
-                StructuredDataEntry.build(
-                    mapEntry.getValue().getValue(), mapEntry.getValue().getIri()));
-          }
-        }
-      }
-      StructuredDataTable structuredDataTable =
-          StructuredDataTable.build(
-              d.getDomain(),
-              d.getWebinSubmissionAccountId(),
-              d.getDataType().toString(),
-              d.getSchema().toString(),
-              dataEntrySet);
-      structuredDataTableSet.add(structuredDataTable);
-    }
-
-    MongoStructuredData mongoStructuredData =
-        MongoStructuredData.build(
+    MongoSample mongoSampleWithoutStructuredData =
+        MongoSample.build(
+            mongoSample.getName(),
             mongoSample.getAccession(),
-            mongoSample.getCreate(),
+            mongoSample.getDomain(),
+            mongoSample.getWebinSubmissionAccountId(),
+            mongoSample.getRelease(),
             mongoSample.getUpdate(),
-            structuredDataTableSet);
+            mongoSample.getCreate(),
+            mongoSample.getSubmitted(),
+            mongoSample.getReviewed(),
+            mongoSample.getAttributes(),
+            null,
+            mongoSample.getRelationships(),
+            mongoSample.getExternalReferences(),
+            mongoSample.getOrganizations(),
+            mongoSample.getContacts(),
+            mongoSample.getPublications(),
+            mongoSample.getCertificates(),
+            mongoSample.getSubmittedVia());
 
-    mongoSample.getData().removeAll(mongoSample.getData());
-    //    mongoSampleRepository.save(mongoSample);
-    mongoStructuredDataRepository.save(mongoStructuredData);
+    mongoSampleRepository.save(mongoSampleWithoutStructuredData);
+    // mongoSample.getData().removeAll(mongoSample.getData());
+    // mongoSampleRepository.save(mongoSample);
     modifiedRecords++;
 
     return new PipelineResult(mongoSample.getAccession(), modifiedRecords, success);

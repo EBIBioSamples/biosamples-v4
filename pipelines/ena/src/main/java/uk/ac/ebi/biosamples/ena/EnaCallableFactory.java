@@ -18,6 +18,7 @@ import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 
 @Service
 public class EnaCallableFactory {
@@ -52,7 +53,6 @@ public class EnaCallableFactory {
    * @param accession The accession passed
    * @param statusId sample status
    * @param suppressionHandler Is running to set samples to SUPPRESSED
-   * @param bsdAuthority Indicates its running for samples submitted through BioSamples
    * @param amrData The AMR {@link AbstractData} of the sample
    * @return the callable, {@link EnaCallable}
    */
@@ -62,22 +62,18 @@ public class EnaCallableFactory {
       int statusId,
       boolean suppressionHandler,
       boolean killedHandler,
-      boolean bsdAuthority,
-      Set<AbstractData> amrData) {
+      Set<StructuredDataTable> amrData) {
     return new EnaCallable(
         accession,
         egaId,
         statusId,
         bioSamplesWebinClient,
-        bioSamplesAapClient,
         enaXmlEnhancer,
         enaElementConverter,
         egaSampleExporter,
         eraProDao,
-        webinId,
         suppressionHandler,
         killedHandler,
-        bsdAuthority,
         amrData);
   }
 }

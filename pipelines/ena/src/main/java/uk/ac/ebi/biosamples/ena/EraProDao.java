@@ -74,19 +74,6 @@ public class EraProDao {
     jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
   }
 
-  public void doSampleCallbackBsdAuthoritySamples(
-      LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
-    String query =
-        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'Y' "
-            + "AND "
-            + STATUS_CLAUSE
-            + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
-
-    Date minDateOld = java.sql.Date.valueOf(minDate);
-    Date maxDateOld = java.sql.Date.valueOf(maxDate);
-    jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
-  }
-
   /**
    * Returns SUPPRESSED ENA samples
    *

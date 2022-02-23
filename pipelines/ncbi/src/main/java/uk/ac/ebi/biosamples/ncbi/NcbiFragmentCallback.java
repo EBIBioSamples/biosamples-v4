@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.xml.sax.Attributes;
 import uk.ac.ebi.biosamples.PipelinesProperties;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.XmlFragmenter.ElementCallback;
 
@@ -37,7 +37,7 @@ public class NcbiFragmentCallback implements ElementCallback {
   private LocalDate toDate;
   private ExecutorService executorService;
   private Map<Element, Future<Void>> futures;
-  private Map<String, Set<AbstractData>> sampleToAmrMap = new HashMap<>();
+  private Map<String, Set<StructuredDataTable>> sampleToAmrMap = new HashMap<>();
 
   private NcbiFragmentCallback(
       NcbiElementCallableFactory ncbiElementCallableFactory,
@@ -78,7 +78,7 @@ public class NcbiFragmentCallback implements ElementCallback {
     this.futures = futures;
   }
 
-  public void setSampleToAmrMap(Map<String, Set<AbstractData>> sampleToAmrMap) {
+  public void setSampleToAmrMap(Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
     this.sampleToAmrMap = sampleToAmrMap;
   }
 

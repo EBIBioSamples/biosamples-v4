@@ -10,14 +10,13 @@
 */
 package uk.ac.ebi.biosamples;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -58,31 +57,15 @@ public class StructuredDataTest {
     mapper = new ObjectMapper();
   }
 
+  @Rule public final ExpectedException exception = ExpectedException.none();
+
   @Test
   public void able_to_submit_sample_with_structuredData() throws Exception {
+    exception.expect(JsonMappingException.class);
     String json =
         StreamUtils.copyToString(
             new ClassPathResource("structured_data_sample.json").getInputStream(),
             Charset.defaultCharset());
     final Sample sample = mapper.readValue(json, Sample.class);
-    final Set<AbstractData> structuredDataSet = sample.getData();
-
-    Assert.assertEquals(5, structuredDataSet.size());
-
-    List<StructuredTable> structuredTables =
-        structuredDataSet.stream()
-            .map(
-                structuredData -> {
-                  final Object structuredDataObj = structuredData.getStructuredData();
-
-                  if (structuredDataObj instanceof StructuredTable) {
-                    return (StructuredTable) structuredDataObj;
-                  }
-
-                  return null;
-                })
-            .collect(Collectors.toList());
-
-    Assert.assertEquals(5, structuredTables.size());
   }
 }
