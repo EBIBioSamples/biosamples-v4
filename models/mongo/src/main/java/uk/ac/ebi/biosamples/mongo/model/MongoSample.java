@@ -22,6 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import uk.ac.ebi.biosamples.model.*;
@@ -81,6 +82,7 @@ public class MongoSample {
   protected SortedSet<Publication> publications;
   protected SortedSet<MongoCertificate> certificates;
 
+  @Transient
   protected Set<AbstractData> data;
   protected SubmittedViaType submittedVia;
 
