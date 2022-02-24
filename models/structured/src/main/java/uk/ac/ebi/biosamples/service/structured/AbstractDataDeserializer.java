@@ -16,9 +16,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 
 public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   protected AbstractDataDeserializer() {
@@ -35,16 +39,9 @@ public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
     JsonNode content = rootNode.get("content");
 
     if (content.elements().hasNext()) {
-      throw new SampleWithStructuredDataException(
-          "Structured data should be submitted spererately.");
+      log.warn("Trying to deserialize deprecated structured data. Ignoring the input.");
     }
 
     return null;
-  }
-
-  class SampleWithStructuredDataException extends RuntimeException {
-    SampleWithStructuredDataException(String message) {
-      super(message);
-    }
   }
 }
