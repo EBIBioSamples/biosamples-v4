@@ -37,12 +37,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exception.SampleValidationException;
+import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.auth.LoginWays;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
@@ -72,8 +75,9 @@ public class SamplesRestController {
   private final SampleResourceAssembler sampleResourceAssembler;
   private final SchemaValidationService schemaValidationService;
   private final ENATaxonClientService enaTaxonClientService;
+  private final AccessControlService accessControlService;
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   public SamplesRestController(
       SamplePageService samplePageService,
@@ -85,7 +89,8 @@ public class SamplesRestController {
       SampleService sampleService,
       BioSamplesProperties bioSamplesProperties,
       SchemaValidationService schemaValidationService,
-      ENATaxonClientService enaTaxonClientService) {
+      ENATaxonClientService enaTaxonClientService,
+      AccessControlService accessControlService) {
     this.samplePageService = samplePageService;
     this.filterService = filterService;
     this.bioSamplesAapService = bioSamplesAapService;
@@ -96,6 +101,7 @@ public class SamplesRestController {
     this.schemaValidationService = schemaValidationService;
     this.bioSamplesProperties = bioSamplesProperties;
     this.enaTaxonClientService = enaTaxonClientService;
+    this.accessControlService = accessControlService;
   }
 
   // must return a ResponseEntity so that cache headers can be set
@@ -111,9 +117,12 @@ public class SamplesRestController {
       @RequestParam(name = "sort", required = false) final String[] sort,
       @RequestParam(name = "curationrepo", required = false) final String curationRepo,
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider) {
-    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+      @RequestHeader(name = "Authorization", required = false) final String token) {
+
+    final boolean webinAuth = accessControlService.extractToken(token)
+                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
+                                                  .orElse(Boolean.FALSE);
+
     // Need to decode the %20 and similar from the parameters
     // this is *not* needed for the html controller
     String decodedText = LinkUtils.decodeText(text);
@@ -245,7 +254,7 @@ public class SamplesRestController {
               pageSample,
               effectiveSize,
               effectivePage,
-              authProvider,
+              webinAuth ? LoginWays.WEBIN.name() : LoginWays.AAP.name(),
               decodedText,
               decodedFilter,
               sort,
@@ -486,15 +495,18 @@ public class SamplesRestController {
   public ResponseEntity<Resource<Sample>> accessionSample(
       HttpServletRequest request,
       @RequestBody Sample sample,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider) {
-    log.debug("Received POST for accessioning " + sample);
-    if (sample.hasAccession()) throw new SampleWithAccessionSumbissionException();
+      @RequestHeader(name = "Authorization", required = true) final String token) {
 
-    if (authProvider.equalsIgnoreCase("WEBIN")) {
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+    if (sample.hasAccession()) {
+      throw new SampleWithAccessionSumbissionException();
+    }
 
+    final boolean webinAuth = accessControlService.extractToken(token)
+                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
+                                                  .orElse(Boolean.FALSE);
+
+    if (webinAuth) {
+      final SubmissionAccount webinAccount = bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
       if (webinAccount == null) {
         throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
       }
@@ -504,9 +516,9 @@ public class SamplesRestController {
       sample = bioSamplesAapService.handleSampleDomain(sample);
     }
 
+    LoginWays authProvider = webinAuth ? LoginWays.WEBIN : LoginWays.AAP;
     sample = buildPrivateSample(sample);
-
-    sample = sampleService.store(sample, false, authProvider);
+    sample = sampleService.store(sample, false, authProvider.name());
     final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
@@ -593,10 +605,8 @@ public class SamplesRestController {
   public ResponseEntity<Resource<Sample>> post(
       HttpServletRequest request,
       @RequestBody Sample sample,
-      @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
-          boolean setFullDetails,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider) {
+      @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails,
+      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP") String authProvider) {
     log.debug("Received POST for " + sample);
 
     // can't submit structured data with the sample

@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -33,7 +35,11 @@ public class AccessControlService {
     this.objectMapper = objectMapper;
   }
 
-  public AuthToken extractToken(String token) {
+  public Optional<AuthToken> extractToken(String token) {
+    if (token == null || token.isEmpty()) {
+      return Optional.empty();
+    }
+
     token = token.startsWith("Bearer ") ? token.split("Bearer ")[1] : token;
 
     String[] chunks = token.split("\\.");
@@ -53,11 +59,10 @@ public class AccessControlService {
       List<String> roles;
 
       JsonNode node = objectMapper.readTree(payload);
-      if (node.get("iss") != null && isIss(node)) {
+      if (isAap(node)) {
         authority = LoginWays.AAP;
         user = node.get("sub").asText();
-        roles =
-            objectMapper.convertValue(node.get("domains"), new TypeReference<List<String>>() {});
+        roles = objectMapper.convertValue(node.get("domains"), new TypeReference<List<String>>() {});
       } else {
         authority = LoginWays.WEBIN;
         user = node.get("principle").asText();
@@ -66,17 +71,14 @@ public class AccessControlService {
 
       authToken = new AuthToken(algorithm, authority, user, roles);
     } catch (IOException e) {
-      throw new AccessControlException("Could not decode token. ", e);
+      throw new AccessControlException("Could not decode token", e);
     }
 
-    return authToken;
+    return Optional.of(authToken);
   }
 
-  private boolean isIss(JsonNode node) {
-    final String iss = node.get("iss").asText();
-    log.info("ISS is " + iss);
-
-    return "https://explore.aai.ebi.ac.uk/sp".equals(iss) || "https://aai.ebi.ac.uk/sp".equals(iss);
+  private static boolean isAap(JsonNode node) {
+    return node.get("iss") != null && node.get("iss").asText().contains("aai.ebi.ac.uk");
   }
 
   public boolean verifySignature(String token) {
