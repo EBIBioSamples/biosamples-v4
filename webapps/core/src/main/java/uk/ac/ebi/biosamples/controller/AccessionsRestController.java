@@ -22,8 +22,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Accession;
+import uk.ac.ebi.biosamples.model.auth.LoginWays;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.AccessionsService;
+import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 
@@ -34,14 +36,17 @@ public class AccessionsRestController {
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final AccessionsService accessionsService;
+  private final AccessControlService accessControlService;
 
   public AccessionsRestController(
       BioSamplesAapService bioSamplesAapService,
       BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-      AccessionsService accessionsService) {
+      AccessionsService accessionsService,
+      AccessControlService accessControlService) {
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.accessionsService = accessionsService;
+    this.accessControlService = accessControlService;
   }
 
   @CrossOrigin(methods = RequestMethod.GET)
@@ -52,9 +57,13 @@ public class AccessionsRestController {
       @RequestParam(name = "filter", required = false) String[] filter,
       @RequestParam(name = "page", required = false) final Integer page,
       @RequestParam(name = "size", required = false) final Integer size,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider) {
-    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+      @RequestHeader(name = "Authorization", required = false) final String token) {
+
+    final boolean webinAuth = accessControlService.extractToken(token)
+                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
+                                                  .orElse(Boolean.FALSE);
+    LoginWays authProvider = webinAuth ? LoginWays.WEBIN : LoginWays.AAP;
+
     String webinSubmissionAccountId = null;
     Collection<String> domains = null;
 
@@ -87,8 +96,8 @@ public class AccessionsRestController {
         new PagedResources<>(
             pageAccessions.getContent().stream().map(Accession::build).collect(Collectors.toList()),
             pageMetadata);
-    addRelLinks(
-        pageAccessions, resources, text, filter, effectivePage, effectiveSize, authProvider);
+
+    addRelLinks(pageAccessions, resources, text, filter, effectivePage, effectiveSize, authProvider.name());
 
     return ResponseEntity.ok().body(resources);
   }

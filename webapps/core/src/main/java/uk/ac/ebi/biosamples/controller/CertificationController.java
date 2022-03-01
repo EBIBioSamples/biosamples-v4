@@ -26,11 +26,13 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.auth.LoginWays;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.certification.BioSamplesCertificationComplainceResult;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
+import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 
@@ -46,22 +48,28 @@ public class CertificationController {
   @Autowired private BioSamplesAapService bioSamplesAapService;
   @Autowired private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   @Autowired private SampleResourceAssembler sampleResourceAssembler;
+  @Autowired private AccessControlService accessControlService;
 
   @PutMapping("{accession}/certify")
   public Resource<Sample> certify(
       HttpServletRequest request,
       @RequestBody Sample sample,
       @PathVariable String accession,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider)
+      @RequestHeader(name = "Authorization", required = false) final String token)
       throws JsonProcessingException {
+
+    final boolean webinAuth = accessControlService.extractToken(token)
+                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
+                                                  .orElse(Boolean.FALSE);
+    LoginWays authProvider = webinAuth ? LoginWays.WEBIN : LoginWays.AAP;
+
     final ObjectMapper jsonMapper = new ObjectMapper();
 
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
       throw new SampleRestController.SampleAccessionMismatchException();
     }
 
-    if (!authProvider.equalsIgnoreCase("WEBIN")) {
+    if (!webinAuth) {
       if (sampleService.isNotExistingAccession(accession)
           && !(bioSamplesAapService.isWriteSuperUser()
               || bioSamplesAapService.isIntegrationTestUser())) {
@@ -71,7 +79,7 @@ public class CertificationController {
 
     log.info("Received PUT for validation of " + accession);
 
-    if (authProvider.equalsIgnoreCase("WEBIN")) {
+    if (webinAuth) {
       final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
       final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
@@ -108,7 +116,7 @@ public class CertificationController {
 
     log.trace("Sample with certificates " + sample);
 
-    sample = sampleService.store(sample, false, authProvider);
+    sample = sampleService.store(sample, false, authProvider.name());
 
     // assemble a resource to return
     // create the response object with the appropriate status

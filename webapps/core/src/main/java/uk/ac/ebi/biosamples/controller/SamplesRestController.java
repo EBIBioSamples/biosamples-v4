@@ -495,7 +495,7 @@ public class SamplesRestController {
   public ResponseEntity<Resource<Sample>> accessionSample(
       HttpServletRequest request,
       @RequestBody Sample sample,
-      @RequestHeader(name = "Authorization", required = true) final String token) {
+      @RequestHeader(name = "Authorization") final String token) {
 
     if (sample.hasAccession()) {
       throw new SampleWithAccessionSumbissionException();
@@ -533,8 +533,7 @@ public class SamplesRestController {
   public ResponseEntity<Map<String, String>> bulkAccessionSample(
       HttpServletRequest request,
       @RequestBody List<Sample> samples,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          final String authProvider) {
+      @RequestHeader(name = "Authorization") final String token) {
     log.debug("Received POST for bulk accessioning of " + samples.size() + " samples");
 
     samples.forEach(
@@ -544,7 +543,11 @@ public class SamplesRestController {
           }
         });
 
-    if (authProvider.equalsIgnoreCase("WEBIN")) {
+    final boolean webinAuth = accessControlService.extractToken(token)
+                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
+                                                  .orElse(Boolean.FALSE);
+
+    if (webinAuth) {
       /*final SubmissionAccount webinAccount =
           bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
 
@@ -560,7 +563,7 @@ public class SamplesRestController {
                           sample, bioSamplesProperties.getBiosamplesClientWebinUsername()))
               .collect(Collectors.toList());
     } else {
-      if (samples.size() > 0) {
+      if (!samples.isEmpty()) {
         Sample firstSample = samples.get(0);
         firstSample = bioSamplesAapService.handleSampleDomain(firstSample);
 
@@ -586,7 +589,8 @@ public class SamplesRestController {
 
                   sample = buildPrivateSample(sample);
                   /*
-                  Call the accessionV2 from SampleService, it doesn't do a lot of housekeeping like reporting to Rabbit, saving to MongoSampleCurated etc which is not required for bulk-accessioning
+                  Call the accessionV2 from SampleService, it doesn't do a lot of housekeeping like reporting to Rabbit,
+                  saving to MongoSampleCurated etc which is not required for bulk-accessioning
                    */
                   return sampleService.accessionV2(sample);
                 })
@@ -606,7 +610,7 @@ public class SamplesRestController {
       HttpServletRequest request,
       @RequestBody Sample sample,
       @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP") String authProvider) {
+      @RequestHeader(name = "Authorization") final String token) {
     log.debug("Received POST for " + sample);
 
     // can't submit structured data with the sample
@@ -616,7 +620,9 @@ public class SamplesRestController {
           "Sample contains structured data. Please submit structured data seperately");
     }
 
-    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+    final boolean webinAuth = accessControlService.extractToken(token)
+                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
+                                                  .orElse(Boolean.FALSE);
     boolean isWebinSuperUser = false;
 
     if (webinAuth) {
@@ -665,7 +671,8 @@ public class SamplesRestController {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
-    sample = sampleService.store(sample, true, authProvider);
+    LoginWays authProvider = webinAuth ? LoginWays.WEBIN : LoginWays.AAP;
+    sample = sampleService.store(sample, true, authProvider.name());
 
     // assemble a resource to return
     Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());
