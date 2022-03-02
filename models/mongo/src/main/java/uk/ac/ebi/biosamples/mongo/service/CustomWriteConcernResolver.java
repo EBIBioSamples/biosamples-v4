@@ -18,7 +18,7 @@ import org.springframework.data.mongodb.core.MongoAction;
 import org.springframework.data.mongodb.core.WriteConcernResolver;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.mongo.MongoProperties;
-import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
+import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 
 // TODO wire this into config
 @Component
@@ -31,11 +31,14 @@ public class CustomWriteConcernResolver implements WriteConcernResolver {
   @Override
   public WriteConcern resolve(MongoAction action) {
     log.trace("Resolving mongoAction " + action);
-    if (MongoSubmission.class.isAssignableFrom(action.getEntityType())) {
-      if (mongoProperties.getSubmissionWriteConcern().matches("[0-9]+")) {
-        return new WriteConcern(Integer.parseInt(mongoProperties.getSubmissionWriteConcern()));
+
+    if (MongoSample.class.isAssignableFrom(action.getEntityType())) {
+      final String sampleWriteConcern = mongoProperties.getSampleWriteConcern();
+
+      if (sampleWriteConcern.matches("[0-9]+")) {
+        return new WriteConcern(Integer.parseInt(sampleWriteConcern));
       } else {
-        return new WriteConcern(mongoProperties.getSubmissionWriteConcern());
+        return new WriteConcern(sampleWriteConcern);
       }
     }
 

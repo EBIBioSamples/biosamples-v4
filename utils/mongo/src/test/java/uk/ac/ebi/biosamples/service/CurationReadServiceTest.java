@@ -257,6 +257,7 @@ public class CurationReadServiceTest {
         "SAMN0001",
         "self.TestDomain",
         "",
+        Long.valueOf(9606),
         Instant.now(),
         Instant.now(),
         Instant.now(),

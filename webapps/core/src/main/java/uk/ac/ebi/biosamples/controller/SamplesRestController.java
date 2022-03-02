@@ -45,7 +45,7 @@ import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
+import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
@@ -71,7 +71,7 @@ public class SamplesRestController {
   private final BioSamplesProperties bioSamplesProperties;
   private final SampleResourceAssembler sampleResourceAssembler;
   private final SchemaValidationService schemaValidationService;
-  private final ENATaxonClientService enaTaxonClientService;
+  private final TaxonomyClientService taxonomyClientService;
 
   private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -85,7 +85,7 @@ public class SamplesRestController {
       SampleService sampleService,
       BioSamplesProperties bioSamplesProperties,
       SchemaValidationService schemaValidationService,
-      ENATaxonClientService enaTaxonClientService) {
+      TaxonomyClientService taxonomyClientService) {
     this.samplePageService = samplePageService;
     this.filterService = filterService;
     this.bioSamplesAapService = bioSamplesAapService;
@@ -95,7 +95,7 @@ public class SamplesRestController {
     this.sampleService = sampleService;
     this.schemaValidationService = schemaValidationService;
     this.bioSamplesProperties = bioSamplesProperties;
-    this.enaTaxonClientService = enaTaxonClientService;
+    this.taxonomyClientService = taxonomyClientService;
   }
 
   // must return a ResponseEntity so that cache headers can be set
@@ -646,10 +646,7 @@ public class SamplesRestController {
             .withSubmittedVia(submittedVia)
             .build();
 
-    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    sample =
-        validateSampleAgainstExternalValidationServices(
-            sample, webinAuth, isWebinSuperUser, submittedVia);
+    sample = validateSampleAgainstExternalValidationServices(sample, webinAuth, isWebinSuperUser);
 
     if (!setFullDetails) {
       sample = sampleManipulationService.removeLegacyFields(sample);
@@ -665,18 +662,18 @@ public class SamplesRestController {
   }
 
   private Sample validateSampleAgainstExternalValidationServices(
-      @RequestBody Sample sample,
-      boolean webinAuth,
-      boolean isWebinSuperUser,
-      SubmittedViaType submittedVia) {
+      Sample sample, boolean webinAuth, boolean isWebinSuperUser) {
+    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
+
     if (webinAuth && !isWebinSuperUser) {
       schemaValidationService.validate(sample);
-      sample = enaTaxonClientService.performTaxonomyValidation(sample);
+      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
     } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
       schemaValidationService.validate(sample);
+      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, false);
     }
 
-    if (submittedVia == SubmittedViaType.FILE_UPLOADER) {
+    if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
       schemaValidationService.validate(sample);
     }
 

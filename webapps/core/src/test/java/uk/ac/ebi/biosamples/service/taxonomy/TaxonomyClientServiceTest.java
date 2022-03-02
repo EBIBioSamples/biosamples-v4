@@ -17,7 +17,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import uk.ac.ebi.biosamples.model.Sample;
 
-public class ENATaxonClientServiceTest {
+public class TaxonomyClientServiceTest {
   @Test
   public void validateSample() throws IOException {
     File file =
@@ -27,10 +27,10 @@ public class ENATaxonClientServiceTest {
                 .getResource("json/ncbi-SAMN03894263-curated-no-data.json")
                 .getFile());
     ObjectMapper objectMapper = new ObjectMapper();
-    ENATaxonClientService enaTaxonClientService = new ENATaxonClientService();
+    TaxonomyClientService taxonomyClientService = new TaxonomyClientService();
     Sample sample = objectMapper.readValue(file, Sample.class);
 
-    sample = enaTaxonClientService.performTaxonomyValidation(sample);
+    sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
 
     final String organismInSample =
         sample.getAttributes().stream()

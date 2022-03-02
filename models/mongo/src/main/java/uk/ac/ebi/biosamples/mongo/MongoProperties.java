@@ -19,9 +19,6 @@ public class MongoProperties {
   @Value("${biosamples.mongo.sample.writeConcern:0}")
   private String sampleWriteConcern;
 
-  @Value("${biosamples.mongo.submission.writeConcern:0}")
-  private String submissionWriteConcern;
-
   @Value("${biosamples.accession.prefix:SAMEA}")
   private String accessionPrefix;
 
@@ -52,9 +49,5 @@ public class MongoProperties {
 
   public String getSampleWriteConcern() {
     return sampleWriteConcern;
-  }
-
-  public String getSubmissionWriteConcern() {
-    return submissionWriteConcern;
   }
 }

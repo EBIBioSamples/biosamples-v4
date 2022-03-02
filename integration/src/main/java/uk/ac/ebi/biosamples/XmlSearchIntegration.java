@@ -96,7 +96,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
       for (Sample sample : baseSampleList) {
         Optional<Resource<Sample>> optional = client.fetchSampleResource(sample.getAccession());
         if (optional.isPresent()) {
-          throw new RuntimeException("Found existing " + sample.getAccession());
+          /*throw new RuntimeException("Found existing " + sample.getAccession());*/
         }
 
         Resource<Sample> resource = client.persistSampleResource(sample);
@@ -194,6 +194,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
       // release,
       // update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
       return new Sample.Builder(name, accession)
+          .withTaxId(Long.valueOf(9606))
           .withDomain(domain)
           .withRelease(release)
           .withUpdate(update)
@@ -217,6 +218,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
       // release,
       // update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
       return new Sample.Builder(name, accession)
+          .withTaxId(Long.valueOf(9606))
           .withDomain(domain)
           .withRelease(release)
           .withUpdate(update)

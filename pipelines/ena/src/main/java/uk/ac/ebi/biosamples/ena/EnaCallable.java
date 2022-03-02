@@ -152,6 +152,7 @@ public class EnaCallable implements Callable<Void> {
     final String firstCreated = sampleDBBean.getFirstCreated();
     final String webinId = sampleDBBean.getSubmissionAccountId();
     final String status = handleStatus(sampleDBBean.getStatus());
+    final Long taxId = sampleDBBean.getTaxId();
     Instant release;
     Instant update = null;
     Instant create = null;
@@ -190,6 +191,7 @@ public class EnaCallable implements Callable<Void> {
             this.sampleAccession,
             null,
             webinId,
+            taxId,
             release,
             update,
             create,

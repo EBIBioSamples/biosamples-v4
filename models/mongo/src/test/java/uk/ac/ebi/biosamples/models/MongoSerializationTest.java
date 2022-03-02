@@ -118,6 +118,7 @@ public class MongoSerializationTest {
         accession,
         "foozit",
         "",
+        Long.valueOf(9606),
         release,
         update,
         create,
@@ -160,19 +161,19 @@ public class MongoSerializationTest {
 
   @Test
   public void testSerialize() throws Exception {
-    MongoSample details = getMongoSample();
-
-    System.out.println(this.json.write(details).getJson());
+    MongoSample mongoSample = getMongoSample();
 
     // Use JSON path based assertions
-    assertThat(this.json.write(details)).hasJsonPathStringValue("@.accession");
-    assertThat(this.json.write(details))
+    assertThat(this.json.write(mongoSample)).hasJsonPathStringValue("@.accession");
+    assertThat(this.json.write(mongoSample))
         .extractingJsonPathStringValue("@.accession")
         .isEqualTo("TEST1");
 
     // Assert against a `.json` file in the same package as the test
-    log.info("testSerialize() " + this.json.write(details).getJson());
-    assertThat(this.json.write(details)).isEqualToJson("/TEST1.json");
+    log.info("testSerialize() " + this.json.write(mongoSample).getJson());
+    MongoSample mongoSampleFromFile = this.json.readObject("/TEST1.json");
+    log.info("testSerialize()-from file " + this.json.write(mongoSampleFromFile));
+    assertThat(mongoSample.equals(mongoSampleFromFile));
   }
 
   @Test

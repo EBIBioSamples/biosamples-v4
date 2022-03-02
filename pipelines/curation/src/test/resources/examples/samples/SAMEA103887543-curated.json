@@ -4,6 +4,7 @@
   "domain" : "self.BioSamplesMigration",
   "release" : "2016-10-27T23:00:00Z",
   "update" : "2018-06-06T15:05:49.236Z",
+  "taxId" : "9940",
   "characteristics" : {
     "Material" : [ {
       "text" : "organism",

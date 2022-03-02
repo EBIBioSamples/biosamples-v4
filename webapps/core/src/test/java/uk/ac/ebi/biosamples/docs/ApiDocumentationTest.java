@@ -62,7 +62,7 @@ import uk.ac.ebi.biosamples.service.certification.CertifyService;
 import uk.ac.ebi.biosamples.service.certification.Identifier;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
+import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @RunWith(SpringRunner.class)
@@ -93,7 +93,7 @@ public class ApiDocumentationTest {
 
   @MockBean private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
 
-  @MockBean private ENATaxonClientService enaTaxonClientService;
+  @MockBean private TaxonomyClientService taxonomyClientService;
 
   @MockBean private Identifier identifier;
 
@@ -190,6 +190,7 @@ public class ApiDocumentationTest {
             null,
             null,
             null,
+            Long.valueOf(9606),
             null,
             null,
             null,
@@ -267,6 +268,9 @@ public class ApiDocumentationTest {
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
     when(sampleService.store(any(Sample.class), eq(true), eq("AAP"))).thenReturn(sampleWithDomain);
     when(schemaValidationService.validate(any(Sample.class))).thenReturn("BSDC00001");
+    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
+            any(Sample.class), eq(false)))
+        .thenReturn(sampleWithDomain);
 
     this.mockMvc
         .perform(
@@ -313,7 +317,8 @@ public class ApiDocumentationTest {
         .thenReturn((submissionAccount));
     when(sampleService.store(any(Sample.class), eq(true), eq("WEBIN")))
         .thenReturn(sampleWithWebinId);
-    when(enaTaxonClientService.performTaxonomyValidation(any(Sample.class)))
+    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
+            any(Sample.class), eq(true)))
         .thenReturn(sampleWithWebinId);
     when(schemaValidationService.validate(any(Sample.class))).thenReturn("BSDC00001");
 
@@ -358,6 +363,9 @@ public class ApiDocumentationTest {
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
     when(sampleService.store(any(Sample.class), eq(true), eq("AAP"))).thenReturn(sampleWithDomain);
     when(schemaValidationService.validate(any(Sample.class))).thenReturn("BSDC00001");
+    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
+            any(Sample.class), eq(false)))
+        .thenReturn(sampleWithDomain);
 
     this.mockMvc
         .perform(
@@ -836,7 +844,8 @@ public class ApiDocumentationTest {
     when(sampleService.store(eq(sampleWithWebinId), eq(false), eq("WEBIN")))
         .thenReturn(sampleWithWebinId);
 
-    when(enaTaxonClientService.performTaxonomyValidation(any(Sample.class)))
+    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
+            any(Sample.class), eq(true)))
         .thenReturn(sampleWithWebinId);
 
     this.mockMvc

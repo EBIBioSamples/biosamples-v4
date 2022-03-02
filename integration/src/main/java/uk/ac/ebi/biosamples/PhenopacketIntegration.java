@@ -121,6 +121,7 @@ public class PhenopacketIntegration extends AbstractIntegration {
         .withDomain(this.defaultIntegrationSubmissionDomain)
         .withRelease("2017-01-01T12:00:00")
         .withUpdate("2017-01-01T12:00:00")
+        .withTaxId(Long.valueOf(9606))
         .withAttributes(
             Arrays.asList(
                 Attribute.build(

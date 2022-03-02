@@ -86,6 +86,7 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
       convertedSample =
           new Sample.Builder(sample.getName(), sample.getAccession())
               .withDomain(sample.getDomain())
+              .withTaxId(sample.getTaxId())
               .withWebinSubmissionAccountId(sample.getWebinSubmissionAccountId())
               .withRelease(sample.getRelease())
               .withUpdate(sample.getUpdate())
@@ -105,6 +106,7 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
       convertedSample =
           new Sample.Builder(sample.getName(), sample.getAccession())
               .withDomain(sample.getDomain())
+              .withTaxId(sample.getTaxId())
               .withWebinSubmissionAccountId(sample.getWebinSubmissionAccountId())
               .withRelease(sample.getRelease())
               .withUpdate(sample.getUpdate())

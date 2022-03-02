@@ -25,7 +25,7 @@ import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
+import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 public class SampleRestControllerV2 {
@@ -35,19 +35,19 @@ public class SampleRestControllerV2 {
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final SchemaValidationService schemaValidationService;
-  private final ENATaxonClientService enaTaxonClientService;
+  private final TaxonomyClientService taxonomyClientService;
 
   public SampleRestControllerV2(
       final SampleService sampleService,
       final BioSamplesAapService bioSamplesAapService,
       final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       final SchemaValidationService schemaValidationService,
-      final ENATaxonClientService enaTaxonClientService) {
+      final TaxonomyClientService taxonomyClientService) {
     this.sampleService = sampleService;
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.schemaValidationService = schemaValidationService;
-    this.enaTaxonClientService = enaTaxonClientService;
+    this.taxonomyClientService = taxonomyClientService;
   }
 
   @PreAuthorize("isAuthenticated()")
@@ -104,16 +104,14 @@ public class SampleRestControllerV2 {
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
     if (webinAuth && !isWebinSuperUser) {
       schemaValidationService.validate(sample);
+      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
     } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
       schemaValidationService.validate(sample);
+      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, false);
     }
 
     if (submittedVia == SubmittedViaType.FILE_UPLOADER) {
       schemaValidationService.validate(sample);
-    }
-
-    if (webinAuth && !isWebinSuperUser) {
-      sample = enaTaxonClientService.performTaxonomyValidation(sample);
     }
 
     final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, isWebinSuperUser);
