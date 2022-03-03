@@ -26,7 +26,7 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
-import uk.ac.ebi.biosamples.ols.OlsProcessor;
+import uk.ac.ebi.biosamples.utils.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 

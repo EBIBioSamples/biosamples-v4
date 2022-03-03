@@ -21,7 +21,7 @@ import uk.ac.ebi.biosamples.curation.service.IriUrlValidatorService;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.ols.OlsProcessor;
+import uk.ac.ebi.biosamples.utils.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 
 public class SampleCurationCallable implements Callable<PipelineResult> {

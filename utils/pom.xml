@@ -16,7 +16,6 @@
 		<module>webapp</module>
 		<module>pipeline</module>
 		<module>thread</module>
-		<module>ols</module>
 		<module>xml</module>
 		<module>client</module>
 		<module>utils-core</module>
