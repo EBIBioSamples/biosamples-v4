@@ -14,11 +14,9 @@
 
 	<modules>
 		<module>webapp</module>
-		<module>mongo</module>
 		<module>pipeline</module>
 		<module>thread</module>
 		<module>ols</module>
-		<module>json</module>
 		<module>xml</module>
 		<module>client</module>
 		<module>utils-core</module>

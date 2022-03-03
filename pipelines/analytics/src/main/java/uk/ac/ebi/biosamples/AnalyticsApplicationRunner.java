@@ -33,7 +33,7 @@ import uk.ac.ebi.biosamples.model.facet.content.LabelCountEntry;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountListContent;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.repo.MongoCurationRuleRepository;
-import uk.ac.ebi.biosamples.service.AnalyticsService;
+import uk.ac.ebi.biosamples.utils.mongo.AnalyticsService;
 import uk.ac.ebi.biosamples.service.FacetService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.utils.ArgUtils;

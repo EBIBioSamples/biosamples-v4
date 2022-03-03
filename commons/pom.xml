@@ -2,14 +2,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>utils-mongo</artifactId>
-	<packaging>jar</packaging>
+	<artifactId>commons</artifactId>
 
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
 		<version>5.2.2-SNAPSHOT</version>
-		<relativePath>../../</relativePath>
 	</parent>
 
 	<dependencies>
