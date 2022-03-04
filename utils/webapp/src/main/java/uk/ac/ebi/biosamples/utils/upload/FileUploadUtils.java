@@ -287,8 +287,8 @@ public class FileUploadUtils {
     final String pubMedId = iter >= pubMedSize ? null : publicationPubMedIds.get(iter);
     final String doi = iter >= doiSize ? null : publicationDois.get(iter);
 
-    publicationBuilder.pubmed_id(pubMedId != null ? pubMedId : null);
-    publicationBuilder.doi(doi != null ? doi : null);
+    publicationBuilder.pubmed_id(pubMedId);
+    publicationBuilder.doi(doi);
 
     return publicationBuilder.build();
   }
@@ -310,7 +310,7 @@ public class FileUploadUtils {
               }
             });
 
-    return pubMedIds.stream().filter(pubMedId -> pubMedId != null).collect(Collectors.toList());
+    return pubMedIds.stream().filter(Objects::nonNull).collect(Collectors.toList());
   }
 
   private List<String> handlePublicationDois(final Multimap<String, String> multiMap) {
@@ -330,7 +330,7 @@ public class FileUploadUtils {
               }
             });
 
-    return dois.stream().filter(doi -> doi != null).collect(Collectors.toList());
+    return dois.stream().filter(Objects::nonNull).collect(Collectors.toList());
   }
 
   public String getSampleAccession(final Multimap<String, String> multiMap) {
