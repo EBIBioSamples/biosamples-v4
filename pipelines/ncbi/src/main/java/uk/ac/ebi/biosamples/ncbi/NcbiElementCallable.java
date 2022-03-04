@@ -63,9 +63,11 @@ public class NcbiElementCallable implements Callable<Void> {
 
     Set<StructuredDataTable> structuredDataTableSet =
         ncbiSampleConversionService.convertNcbiXmlElementToStructuredData(sampleElem, amrData);
-    StructuredData structuredData =
-        StructuredData.build(accession, sample.getCreate(), structuredDataTableSet);
-    bioSamplesClient.persistStructuredData(structuredData);
+    if (!structuredDataTableSet.isEmpty()) {
+      StructuredData structuredData =
+          StructuredData.build(accession, sample.getCreate(), structuredDataTableSet);
+      bioSamplesClient.persistStructuredData(structuredData);
+    }
 
     log.trace("Element callable finished");
 
