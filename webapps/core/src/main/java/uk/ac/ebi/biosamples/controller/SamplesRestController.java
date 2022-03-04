@@ -36,18 +36,20 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.exception.SampleValidationException;
+import uk.ac.ebi.biosamples.utils.webapp.exception.SampleValidationException;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.*;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
+import uk.ac.ebi.biosamples.utils.webapp.service.FilterService;
+import uk.ac.ebi.biosamples.utils.webapp.service.SampleService;
+import uk.ac.ebi.biosamples.utils.webapp.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.utils.webapp.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.utils.webapp.service.taxonomy.ENATaxonClientService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
-import uk.ac.ebi.biosamples.utils.LinkUtils;
+import uk.ac.ebi.biosamples.utils.webapp.utils.LinkUtils;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 /**

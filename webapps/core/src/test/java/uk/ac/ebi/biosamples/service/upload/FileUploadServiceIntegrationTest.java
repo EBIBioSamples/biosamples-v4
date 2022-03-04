@@ -32,7 +32,7 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.utils.upload.Characteristics;
+import uk.ac.ebi.biosamples.utils.webapp.utils.upload.Characteristics;
 
 public class FileUploadServiceIntegrationTest {
   public static void main(String[] args) throws IOException {

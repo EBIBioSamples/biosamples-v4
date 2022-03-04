@@ -22,10 +22,10 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
-import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
+import uk.ac.ebi.biosamples.utils.webapp.service.SampleService;
+import uk.ac.ebi.biosamples.utils.webapp.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.utils.webapp.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.utils.webapp.service.taxonomy.ENATaxonClientService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 public class SampleRestControllerV2 {

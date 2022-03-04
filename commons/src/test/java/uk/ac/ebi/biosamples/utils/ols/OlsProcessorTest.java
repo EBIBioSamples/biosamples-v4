@@ -79,7 +79,7 @@ public class OlsProcessorTest {
   }
 
   private Optional<String> performQuery(String shortcode) throws IOException {
-    String expectedResponse = readFile("/examples/ols-responses/" + shortcode + ".json");
+    String expectedResponse = readFile("/ols-responses/" + shortcode + ".json");
     mockServer.reset();
     mockServer
         .expect(requestTo("https://www.ebi.ac.uk/ols/api/terms?id=" + shortcode + "&size=500"))

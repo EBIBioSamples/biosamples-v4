@@ -27,6 +27,7 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoCurationRepository;
 import uk.ac.ebi.biosamples.mongo.service.CurationLinkToMongoCurationLinkConverter;
 import uk.ac.ebi.biosamples.mongo.service.CurationToMongoCurationConverter;
 import uk.ac.ebi.biosamples.mongo.service.MongoCurationLinkToCurationLinkConverter;
+import uk.ac.ebi.biosamples.utils.webapp.service.MessagingService;
 
 @Service
 public class CurationPersistService {

@@ -32,12 +32,12 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
 import uk.ac.ebi.biosamples.mongo.util.SampleNameAccessionPair;
-import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.utils.webapp.service.SampleService;
+import uk.ac.ebi.biosamples.utils.webapp.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.utils.webapp.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
-import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
-import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
+import uk.ac.ebi.biosamples.utils.webapp.utils.upload.FileUploadUtils;
+import uk.ac.ebi.biosamples.utils.webapp.utils.upload.ValidationResult;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @Service

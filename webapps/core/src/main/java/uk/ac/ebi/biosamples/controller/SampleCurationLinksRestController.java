@@ -32,8 +32,8 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.*;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.utils.webapp.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.utils.webapp.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.utils.mongo.CurationReadService;
 
 @RestController

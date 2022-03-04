@@ -60,9 +60,11 @@ import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
 import uk.ac.ebi.biosamples.service.certification.Identifier;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
+import uk.ac.ebi.biosamples.utils.webapp.service.SampleService;
+import uk.ac.ebi.biosamples.utils.webapp.service.StructuredDataService;
+import uk.ac.ebi.biosamples.utils.webapp.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.utils.webapp.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.utils.webapp.service.taxonomy.ENATaxonClientService;
 import uk.ac.ebi.biosamples.utils.mongo.CurationReadService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 

@@ -36,8 +36,8 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
 import uk.ac.ebi.biosamples.mongo.util.SampleNameAccessionPair;
-import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
-import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
+import uk.ac.ebi.biosamples.utils.webapp.utils.upload.FileUploadUtils;
+import uk.ac.ebi.biosamples.utils.webapp.utils.upload.ValidationResult;
 
 @Service
 public class FileUploadSubmissionService {

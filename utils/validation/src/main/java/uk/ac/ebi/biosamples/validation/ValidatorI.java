@@ -11,7 +11,7 @@
 package uk.ac.ebi.biosamples.validation;
 
 import java.io.IOException;
-import uk.ac.ebi.biosamples.exception.SchemaValidationException;
+import uk.ac.ebi.biosamples.utils.webapp.exception.SchemaValidationException;
 
 public interface ValidatorI {
   void validate(String schemaId, String sample) throws IOException;

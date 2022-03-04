@@ -23,6 +23,7 @@ import uk.ac.ebi.biosamples.mongo.model.MongoAnalytics;
 import uk.ac.ebi.biosamples.solr.service.SolrFacetService;
 import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
 import uk.ac.ebi.biosamples.utils.mongo.AnalyticsService;
+import uk.ac.ebi.biosamples.utils.webapp.service.FilterService;
 
 @Service
 public class StatService {

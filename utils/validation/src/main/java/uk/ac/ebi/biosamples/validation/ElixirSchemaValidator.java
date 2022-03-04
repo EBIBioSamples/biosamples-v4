@@ -25,8 +25,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.exception.SampleValidationException;
-import uk.ac.ebi.biosamples.exception.SchemaValidationException;
+import uk.ac.ebi.biosamples.utils.webapp.exception.SampleValidationException;
+import uk.ac.ebi.biosamples.utils.webapp.exception.SchemaValidationException;
 
 @Service
 @Qualifier("elixirValidator")

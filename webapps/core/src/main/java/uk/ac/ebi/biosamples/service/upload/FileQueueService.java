@@ -25,7 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
 import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
-import uk.ac.ebi.biosamples.service.MessagingService;
+import uk.ac.ebi.biosamples.utils.webapp.service.MessagingService;
 
 @Service
 public class FileQueueService {

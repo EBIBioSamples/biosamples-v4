@@ -39,7 +39,7 @@ import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.upload.FileQueueService;
 import uk.ac.ebi.biosamples.service.upload.FileUploadService;
 import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
-import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
+import uk.ac.ebi.biosamples.utils.webapp.utils.upload.FileUploadUtils;
 
 @Controller
 @RequestMapping("/upload")

@@ -16,6 +16,7 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.utils.webapp.service.taxonomy.ENATaxonClientService;
 
 public class ENATaxonClientServiceTest {
   @Test

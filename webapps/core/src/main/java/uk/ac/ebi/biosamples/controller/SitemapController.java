@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.SamplePageService;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.utils.webapp.service.SampleService;
 
 @Controller
 @RequestMapping("/sitemap")

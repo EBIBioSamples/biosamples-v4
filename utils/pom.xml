@@ -13,7 +13,6 @@
 	</parent>
 
 	<modules>
-		<module>webapp</module>
 		<module>pipeline</module>
 		<module>thread</module>
 		<module>xml</module>

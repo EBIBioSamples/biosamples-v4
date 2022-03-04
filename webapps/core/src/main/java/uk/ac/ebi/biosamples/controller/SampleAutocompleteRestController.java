@@ -30,8 +30,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.FilterService;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.utils.webapp.service.FilterService;
+import uk.ac.ebi.biosamples.utils.webapp.service.SampleService;
 
 @RestController
 @ExposesResourceFor(Autocomplete.class)
