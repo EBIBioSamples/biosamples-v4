@@ -36,14 +36,14 @@ public class AccessControlServiceTest extends TestCase {
   AccessControlService accessControlService = new AccessControlService(new ObjectMapper());
 
   public void testExtractToken() {
-    AuthToken aapToken = accessControlService.extractToken(AAP_TOKEN);
-    AuthToken webinToken = accessControlService.extractToken(WEBIN_TOKEN);
+    AuthToken aapToken = accessControlService.extractToken(AAP_TOKEN).orElse(null);
+    AuthToken webinToken = accessControlService.extractToken(WEBIN_TOKEN).orElse(null);
     Assert.assertEquals(aapToken.getAuthority(), LoginWays.AAP);
     Assert.assertEquals(webinToken.getAuthority(), LoginWays.WEBIN);
   }
 
   public void testGetUserRoles() {
-    AuthToken aapToken = accessControlService.extractToken(AAP_TOKEN);
+    AuthToken aapToken = accessControlService.extractToken(AAP_TOKEN).orElse(null);
     List<String> userRoles = accessControlService.getUserRoles(aapToken);
     System.out.println(userRoles);
     Assert.assertTrue(userRoles.contains("subs.test-team-23"));

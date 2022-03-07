@@ -21,33 +21,38 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.auth.LoginWays;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 public class SampleRestControllerV2 {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final SchemaValidationService schemaValidationService;
   private final ENATaxonClientService enaTaxonClientService;
+  private final AccessControlService accessControlService;
 
   public SampleRestControllerV2(
       final SampleService sampleService,
       final BioSamplesAapService bioSamplesAapService,
       final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       final SchemaValidationService schemaValidationService,
-      final ENATaxonClientService enaTaxonClientService) {
+      final ENATaxonClientService enaTaxonClientService,
+      final AccessControlService accessControlService) {
     this.sampleService = sampleService;
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.schemaValidationService = schemaValidationService;
     this.enaTaxonClientService = enaTaxonClientService;
+    this.accessControlService = accessControlService;
   }
 
   @PreAuthorize("isAuthenticated()")
@@ -56,9 +61,13 @@ public class SampleRestControllerV2 {
       HttpServletRequest request,
       @PathVariable final String accession,
       @RequestBody Sample sample,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          final String authProvider) {
-    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+      @RequestHeader(name = "Authorization") final String token) {
+
+    final boolean webinAuth = accessControlService.extractToken(token)
+                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
+                                                  .orElse(Boolean.FALSE);
+    LoginWays authProvider = webinAuth ? LoginWays.WEBIN : LoginWays.AAP;
+
     boolean isWebinSuperUser = false;
 
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
@@ -67,7 +76,7 @@ public class SampleRestControllerV2 {
 
     log.debug("Received PUT for " + accession);
 
-    if (authProvider.equalsIgnoreCase("WEBIN")) {
+    if (webinAuth) {
       final SubmissionAccount webinAccount =
           bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
 
@@ -122,7 +131,7 @@ public class SampleRestControllerV2 {
       sample = Sample.Builder.fromSample(sample).withSubmitted(now).build();
     }
 
-    sample = sampleService.storeV2(sample, isFirstTimeMetadataAdded, authProvider);
+    sample = sampleService.storeV2(sample, isFirstTimeMetadataAdded, authProvider.name());
 
     return ResponseEntity.status(HttpStatus.OK).body(sample);
   }
