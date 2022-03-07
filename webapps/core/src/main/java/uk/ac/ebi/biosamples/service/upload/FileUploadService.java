@@ -44,7 +44,6 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 public class FileUploadService {
   private Logger log = LoggerFactory.getLogger(getClass());
   private FileUploadUtils fileUploadUtils;
-  private ValidationResult validationResult;
 
   @Autowired private SampleService sampleService;
 
@@ -66,7 +65,8 @@ public class FileUploadService {
       final String checklist,
       final String webinId,
       final FileUploadUtils fileUploadUtils) {
-    this.validationResult = new ValidationResult();
+    final ValidationResult validationResult = new ValidationResult();
+
     this.fileUploadUtils = fileUploadUtils;
     final String authProvider = isWebin(isWebinIdUsedToAuthenticate(webinId));
     final boolean isWebin = authProvider.equals(FileUploadUtils.WEBIN_AUTH);
@@ -243,7 +243,14 @@ public class FileUploadService {
       relationships.forEach(relationship -> log.info(relationship.toString()));
 
       sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
-      sample = storeSample(sample, false, isWebin(isWebin));
+      try {
+        sample = storeSample(sample, false, isWebin(isWebin));
+      } catch (final Exception e) {
+        final String sampleName = sample.getName();
+
+        new ValidationResult.ValidationMessage(
+            sampleName, sampleName + "failed to persist relationships");
+      }
     }
 
     return sample;
@@ -258,32 +265,50 @@ public class FileUploadService {
       final boolean isWebin) {
     final String sampleName = fileUploadUtils.getSampleName(multiMap);
     boolean isValidatedAgainstChecklist;
+    boolean sampleWithAccession = false;
 
     Sample sample = fileUploadUtils.buildSample(multiMap, validationResult);
 
+    if (sample.getAccession() != null) {
+      sampleWithAccession = true;
+    }
+
+    sample = handleAuthentication(aapDomain, webinId, isWebin, sample, validationResult);
+
     if (sample != null) {
-      sample = handleAuthentication(aapDomain, webinId, isWebin, sample, validationResult);
+      sample = fileUploadUtils.addChecklistAttributeAndBuildSample(checklist, sample);
 
-      if (sample != null) {
-        sample = fileUploadUtils.addChecklistAttributeAndBuildSample(checklist, sample);
+      isValidatedAgainstChecklist = performChecklistValidation(sample);
 
-        isValidatedAgainstChecklist = performChecklistValidation(sample);
+      if (isValidatedAgainstChecklist) {
+        final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, false);
 
-        if (isValidatedAgainstChecklist) {
-          final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, false);
+        try {
           sample = storeSample(sample, isFirstTimeMetadataAdded, isWebin(isWebin));
-          log.info(
-              "Sample " + sample.getName() + " created with accession " + sample.getAccession());
+
+          if (sample != null) {
+            if (sampleWithAccession) {
+              log.info("Sample " + sample.getAccession() + " is updated");
+            } else {
+              log.info(
+                  "Sample "
+                      + sample.getName()
+                      + " created with accession "
+                      + sample.getAccession());
+            }
+          }
 
           return sample;
-        } else {
-          validationResult.addValidationMessage(
-              new ValidationResult.ValidationMessage(
-                  sampleName, sampleName + " failed validation against " + checklist));
+        } catch (final Exception e) {
+          new ValidationResult.ValidationMessage(sampleName, sampleName + "failed to persist");
 
           return null;
         }
       } else {
+        validationResult.addValidationMessage(
+            new ValidationResult.ValidationMessage(
+                sampleName, sampleName + " failed validation against " + checklist));
+
         return null;
       }
     } else {
@@ -340,7 +365,7 @@ public class FileUploadService {
 
   private Sample storeSample(
       final Sample sample, final boolean isFirstTimeMetadataAdded, final String authProvider) {
-    final String sampleName = sample.getName();
+    /*final String sampleName = sample.getName();
     final String accession = sample.getAccession();
 
     if (authProvider.equals(FileUploadUtils.WEBIN_AUTH)) {
@@ -368,9 +393,13 @@ public class FileUploadService {
 
         return null;
       }
-    }
+    }*/
 
-    return sampleService.store(sample, isFirstTimeMetadataAdded, authProvider);
+    try {
+      return sampleService.store(sample, isFirstTimeMetadataAdded, authProvider);
+    } catch (final Exception e) {
+      throw new RuntimeException("Failed to persist sample with name " + sample.getName());
+    }
   }
 
   private boolean performChecklistValidation(final Sample sample) {
