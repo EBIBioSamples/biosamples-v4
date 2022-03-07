@@ -24,15 +24,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.ebi.biosamples.exception.AccessControlException;
 import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
+import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.auth.LoginWays;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.ga4gh.phenopacket.PhenopacketConverter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.SampleManipulationService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
@@ -51,16 +55,17 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 @RequestMapping("/samples/{accession}")
 @CrossOrigin
 public class SampleRestController {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final SampleManipulationService sampleManipulationService;
   private final SampleResourceAssembler sampleResourceAssembler;
-  private PhenopacketConverter phenopacketConverter;
+  private final PhenopacketConverter phenopacketConverter;
   private final SchemaValidationService schemaValidationService;
   private final TaxonomyClientService taxonomyClientService;
+  private final AccessControlService accessControlService;
 
   public SampleRestController(
       SampleService sampleService,
@@ -70,7 +75,8 @@ public class SampleRestController {
       SampleResourceAssembler sampleResourceAssembler,
       PhenopacketConverter phenopacketConverter,
       SchemaValidationService schemaValidationService,
-      TaxonomyClientService taxonomyClientService) {
+      TaxonomyClientService taxonomyClientService,
+      AccessControlService accessControlService) {
     this.sampleService = sampleService;
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
@@ -79,6 +85,7 @@ public class SampleRestController {
     this.phenopacketConverter = phenopacketConverter;
     this.schemaValidationService = schemaValidationService;
     this.taxonomyClientService = taxonomyClientService;
+    this.accessControlService = accessControlService;
   }
 
   @PreAuthorize("isAuthenticated()")
@@ -90,12 +97,14 @@ public class SampleRestController {
       @RequestParam(name = "legacydetails", required = false) String legacydetails,
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
       @RequestParam(name = "curationrepo", required = false) String curationRepo,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider) {
-    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+      @RequestHeader(name = "Authorization", required = false) final String token) {
+
+    final boolean webinAuth = accessControlService.extractToken(token)
+                                                   .map(t -> t.getAuthority() == LoginWays.WEBIN)
+                                                   .orElse(Boolean.FALSE);
+
     // decode percent-encoding from curation domains
-    final Optional<List<String>> decodedCurationDomains =
-        LinkUtils.decodeTextsToArray(curationdomain);
+    final Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
     final Optional<Boolean> decodedLegacyDetails;
 
     if ("true".equals(legacydetails)) {
@@ -122,8 +131,7 @@ public class SampleRestController {
       }
 
       // TODO cache control
-      return sampleResourceAssembler.toResource(
-          sample.get(), decodedLegacyDetails, decodedCurationDomains);
+      return sampleResourceAssembler.toResource(sample.get(), decodedLegacyDetails, decodedCurationDomains);
     } else {
       throw new SampleNotFoundException();
     }
@@ -138,7 +146,6 @@ public class SampleRestController {
       @RequestParam(name = "legacydetails", required = false) String legacydetails,
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
       @RequestParam(name = "curationrepo", required = false) final String curationRepo) {
-    log.trace("starting call");
 
     // decode percent-encoding from curation domains
     Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
@@ -169,19 +176,17 @@ public class SampleRestController {
 
   @PreAuthorize("isAuthenticated()")
   @CrossOrigin(methods = RequestMethod.GET)
-  @GetMapping(produces = {MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
-  public Sample getSampleXml(
-      @PathVariable String accession,
-      @RequestParam(name = "curationrepo", required = false) final String curationRepo) {
-    Sample sample =
-        this.getSampleHal(null, accession, "true", null, curationRepo, "AAP").getContent();
+  @GetMapping(produces = { MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE })
+  public Sample getSampleXml(@PathVariable String accession,
+                             @RequestParam(name = "curationrepo", required = false) final String curationRepo,
+                             @RequestHeader(name = "Authorization", required = false) final String token) {
+    Sample sample = getSampleHal(null, accession, "true", null, curationRepo, token).getContent();
     if (!sample.getAccession().matches("SAMEG\\d+")) {
-      sample =
-          Sample.Builder.fromSample(sample)
-              .withNoOrganisations()
-              .withNoPublications()
-              .withNoContacts()
-              .build();
+      sample = Sample.Builder.fromSample(sample)
+                             .withNoOrganisations()
+                             .withNoPublications()
+                             .withNoContacts()
+                             .build();
     }
 
     return sample;
@@ -193,15 +198,16 @@ public class SampleRestController {
       HttpServletRequest request,
       @PathVariable String accession,
       @RequestBody Sample sample,
-      @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
-          boolean setFullDetails,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider) {
+      @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails,
+      @RequestHeader("Authorization") final String token) {
+
     if (sample == null) {
       throw new RuntimeException("No sample provided");
     }
+    AuthToken authToken = accessControlService.extractToken(token).orElseThrow(
+        () -> new AccessControlException("Invalid token. Please provide valid token."));
+    final boolean webinAuth = authToken.getAuthority() == LoginWays.WEBIN;
 
-    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
     final SortedSet<AbstractData> abstractData = sample.getData();
     boolean isWebinSuperUser = false;
 
@@ -279,7 +285,7 @@ public class SampleRestController {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
-    sample = sampleService.store(sample, isFirstTimeMetadataAdded, authProvider);
+    sample = sampleService.store(sample, isFirstTimeMetadataAdded, authToken.getAuthority().name());
 
     // assemble a resource to return
     // create the response object with the appropriate status

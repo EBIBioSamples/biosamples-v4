@@ -281,7 +281,7 @@ public class FileUploadSubmissionService {
         try {
           sample = Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(webinId).build();
 
-          if (mongoSampleRepository
+          /*if (mongoSampleRepository
                       .findByWebinSubmissionAccountIdAndName(webinId, sampleName)
                       .size()
                   > 0
@@ -291,9 +291,9 @@ public class FileUploadSubmissionService {
                     sampleName, " Already exists with submission account " + webinId));
 
             return null;
-          } else {
-            sample = bioSamplesWebinClient.persistSampleResource(sample).getContent();
-          }
+          } else {*/
+          sample = bioSamplesWebinClient.persistSampleResource(sample).getContent();
+          /*}*/
         } catch (final Exception e) {
           persisted = false;
           handleUnauthorizedWhilePersistence(sampleName, accession, sampleWithAccession, e);
@@ -302,16 +302,16 @@ public class FileUploadSubmissionService {
         try {
           sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
 
-          if (mongoSampleRepository.findByDomainAndName(aapDomain, sampleName).size() > 0
+          /*if (mongoSampleRepository.findByDomainAndName(aapDomain, sampleName).size() > 0
               && !sampleWithAccession) {
             validationResult.addValidationMessage(
                 new ValidationResult.ValidationMessage(
                     sampleName, " Already exists with submission account " + aapDomain));
 
             return null;
-          } else {
-            sample = bioSamplesAapClient.persistSampleResource(sample).getContent();
-          }
+          } else {*/
+          sample = bioSamplesAapClient.persistSampleResource(sample).getContent();
+          /*}*/
         } catch (final Exception e) {
           persisted = false;
           handleUnauthorizedWhilePersistence(sampleName, accession, sampleWithAccession, e);

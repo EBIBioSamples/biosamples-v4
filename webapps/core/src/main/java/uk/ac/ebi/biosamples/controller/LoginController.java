@@ -25,6 +25,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import uk.ac.ebi.biosamples.exception.AccessControlException;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.auth.AuthRealm;
 import uk.ac.ebi.biosamples.model.auth.AuthRequest;
@@ -160,7 +161,8 @@ public class LoginController {
 
   private List<MongoFileUpload> getSubmissions(final String token) {
     try {
-      final AuthToken authToken = accessControlService.extractToken(token);
+      final AuthToken authToken = accessControlService.extractToken(token).orElseThrow(
+          () -> new AccessControlException("Invalid token. Please provide valid token."));
       final List<String> userRoles = accessControlService.getUserRoles(authToken);
 
       return fileUploadService.getUserSubmissions(userRoles);

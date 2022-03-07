@@ -24,14 +24,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.ac.ebi.biosamples.exception.AccessControlException;
 import uk.ac.ebi.biosamples.exception.SampleAccessionMismatchException;
 import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
+import uk.ac.ebi.biosamples.model.AuthToken;
+import uk.ac.ebi.biosamples.model.auth.LoginWays;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.StructuredDataService;
+import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 
@@ -46,14 +51,17 @@ public class StructuredDataRestController {
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final StructuredDataService structuredDataService;
+  private final AccessControlService accessControlService;
 
   public StructuredDataRestController(
       BioSamplesAapService bioSamplesAapService,
       BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-      StructuredDataService structuredDataService) {
+      StructuredDataService structuredDataService,
+      AccessControlService accessControlService) {
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.structuredDataService = structuredDataService;
+    this.accessControlService = accessControlService;
   }
 
   @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -75,23 +83,22 @@ public class StructuredDataRestController {
       HttpServletRequest request,
       @PathVariable String accession,
       @RequestBody StructuredData structuredData,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider) {
+      @RequestHeader("Authorization") final String token) {
+
+    AuthToken authToken = accessControlService.extractToken(token).orElseThrow(
+        () -> new AccessControlException("Invalid token. Please provide valid token."));
+    final boolean webinAuth = authToken.getAuthority() == LoginWays.WEBIN;
 
     log.info("PUT request for structured data: {}", accession);
     if (structuredData.getAccession() == null || !structuredData.getAccession().equals(accession)) {
       throw new SampleAccessionMismatchException();
     }
 
-    if ("WEBIN".equalsIgnoreCase(authProvider)) {
-      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
-      final Authentication authentication = bearerTokenExtractor.extract(request);
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService
-              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-              .getBody();
-      bioSamplesWebinAuthenticationService.handleStructuredDataAccesibility(
-          structuredData, webinAccount.getId());
+    if (webinAuth) {
+      final SubmissionAccount webinAccount = bioSamplesWebinAuthenticationService
+          .getWebinSubmissionAccount(token)
+          .getBody();
+      bioSamplesWebinAuthenticationService.handleStructuredDataAccesibility(structuredData, webinAccount.getId());
     } else {
       bioSamplesAapService.handleStructuredDataDomain(structuredData);
     }

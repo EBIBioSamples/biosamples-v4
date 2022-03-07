@@ -10,14 +10,6 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import java.net.URI;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -39,16 +31,27 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exception.SampleValidationException;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.auth.LoginWays;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
+
+import javax.servlet.http.HttpServletRequest;
+import java.net.URI;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and write.
@@ -72,8 +75,9 @@ public class SamplesRestController {
   private final SampleResourceAssembler sampleResourceAssembler;
   private final SchemaValidationService schemaValidationService;
   private final TaxonomyClientService taxonomyClientService;
+  private final AccessControlService accessControlService;
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   public SamplesRestController(
       SamplePageService samplePageService,
@@ -85,7 +89,8 @@ public class SamplesRestController {
       SampleService sampleService,
       BioSamplesProperties bioSamplesProperties,
       SchemaValidationService schemaValidationService,
-      TaxonomyClientService taxonomyClientService) {
+      TaxonomyClientService taxonomyClientService,
+      AccessControlService accessControlService) {
     this.samplePageService = samplePageService;
     this.filterService = filterService;
     this.bioSamplesAapService = bioSamplesAapService;
@@ -96,6 +101,7 @@ public class SamplesRestController {
     this.schemaValidationService = schemaValidationService;
     this.bioSamplesProperties = bioSamplesProperties;
     this.taxonomyClientService = taxonomyClientService;
+    this.accessControlService = accessControlService;
   }
 
   // must return a ResponseEntity so that cache headers can be set
@@ -111,9 +117,12 @@ public class SamplesRestController {
       @RequestParam(name = "sort", required = false) final String[] sort,
       @RequestParam(name = "curationrepo", required = false) final String curationRepo,
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider) {
-    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+      @RequestHeader(name = "Authorization", required = false) final String token) {
+
+    final boolean webinAuth = accessControlService.extractToken(token)
+                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
+                                                  .orElse(Boolean.FALSE);
+
     // Need to decode the %20 and similar from the parameters
     // this is *not* needed for the html controller
     String decodedText = LinkUtils.decodeText(text);
@@ -245,7 +254,7 @@ public class SamplesRestController {
               pageSample,
               effectiveSize,
               effectivePage,
-              authProvider,
+              webinAuth ? LoginWays.WEBIN.name() : LoginWays.AAP.name(),
               decodedText,
               decodedFilter,
               sort,
@@ -486,15 +495,18 @@ public class SamplesRestController {
   public ResponseEntity<Resource<Sample>> accessionSample(
       HttpServletRequest request,
       @RequestBody Sample sample,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider) {
-    log.debug("Received POST for accessioning " + sample);
-    if (sample.hasAccession()) throw new SampleWithAccessionSumbissionException();
+      @RequestHeader(name = "Authorization") final String token) {
 
-    if (authProvider.equalsIgnoreCase("WEBIN")) {
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+    if (sample.hasAccession()) {
+      throw new SampleWithAccessionSumbissionException();
+    }
 
+    final boolean webinAuth = accessControlService.extractToken(token)
+                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
+                                                  .orElse(Boolean.FALSE);
+
+    if (webinAuth) {
+      final SubmissionAccount webinAccount = bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
       if (webinAccount == null) {
         throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
       }
@@ -504,9 +516,9 @@ public class SamplesRestController {
       sample = bioSamplesAapService.handleSampleDomain(sample);
     }
 
+    LoginWays authProvider = webinAuth ? LoginWays.WEBIN : LoginWays.AAP;
     sample = buildPrivateSample(sample);
-
-    sample = sampleService.store(sample, false, authProvider);
+    sample = sampleService.store(sample, false, authProvider.name());
     final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
@@ -521,8 +533,7 @@ public class SamplesRestController {
   public ResponseEntity<Map<String, String>> bulkAccessionSample(
       HttpServletRequest request,
       @RequestBody List<Sample> samples,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          final String authProvider) {
+      @RequestHeader(name = "Authorization") final String token) {
     log.debug("Received POST for bulk accessioning of " + samples.size() + " samples");
 
     samples.forEach(
@@ -532,7 +543,11 @@ public class SamplesRestController {
           }
         });
 
-    if (authProvider.equalsIgnoreCase("WEBIN")) {
+    final boolean webinAuth = accessControlService.extractToken(token)
+                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
+                                                  .orElse(Boolean.FALSE);
+
+    if (webinAuth) {
       /*final SubmissionAccount webinAccount =
           bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
 
@@ -548,7 +563,7 @@ public class SamplesRestController {
                           sample, bioSamplesProperties.getBiosamplesClientWebinUsername()))
               .collect(Collectors.toList());
     } else {
-      if (samples.size() > 0) {
+      if (!samples.isEmpty()) {
         Sample firstSample = samples.get(0);
         firstSample = bioSamplesAapService.handleSampleDomain(firstSample);
 
@@ -574,7 +589,8 @@ public class SamplesRestController {
 
                   sample = buildPrivateSample(sample);
                   /*
-                  Call the accessionV2 from SampleService, it doesn't do a lot of housekeeping like reporting to Rabbit, saving to MongoSampleCurated etc which is not required for bulk-accessioning
+                  Call the accessionV2 from SampleService, it doesn't do a lot of housekeeping like reporting to Rabbit,
+                  saving to MongoSampleCurated etc which is not required for bulk-accessioning
                    */
                   return sampleService.accessionV2(sample);
                 })
@@ -593,10 +609,8 @@ public class SamplesRestController {
   public ResponseEntity<Resource<Sample>> post(
       HttpServletRequest request,
       @RequestBody Sample sample,
-      @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
-          boolean setFullDetails,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider) {
+      @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails,
+      @RequestHeader(name = "Authorization") final String token) {
     log.debug("Received POST for " + sample);
 
     // can't submit structured data with the sample
@@ -606,7 +620,9 @@ public class SamplesRestController {
           "Sample contains structured data. Please submit structured data seperately");
     }
 
-    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+    final boolean webinAuth = accessControlService.extractToken(token)
+                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
+                                                  .orElse(Boolean.FALSE);
     boolean isWebinSuperUser = false;
 
     if (webinAuth) {
@@ -652,7 +668,8 @@ public class SamplesRestController {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
-    sample = sampleService.store(sample, true, authProvider);
+    LoginWays authProvider = webinAuth ? LoginWays.WEBIN : LoginWays.AAP;
+    sample = sampleService.store(sample, true, authProvider.name());
 
     // assemble a resource to return
     Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());

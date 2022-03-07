@@ -54,6 +54,9 @@ public class StructuredDataSubmissionService {
       addWebinRequestParam = "?authProvider=WEBIN";
     }
 
+    // todo throw new expetion if data is null or empty,
+    //  might be easier to reuse existing excpetions after refactoing
+
     URI target =
         URI.create(
             traverson
