@@ -21,7 +21,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.model.auth.LoginWays;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
@@ -63,10 +63,13 @@ public class SampleRestControllerV2 {
       @RequestBody Sample sample,
       @RequestHeader(name = "Authorization") final String token) {
 
-    final boolean webinAuth = accessControlService.extractToken(token)
-                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
-                                                  .orElse(Boolean.FALSE);
-    LoginWays authProvider = webinAuth ? LoginWays.WEBIN : LoginWays.AAP;
+    final boolean webinAuth =
+        accessControlService
+            .extractToken(token)
+            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+            .orElse(Boolean.FALSE);
+    AuthorizationProvider authProvider =
+        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
 
     boolean isWebinSuperUser = false;
 

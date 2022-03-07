@@ -17,8 +17,6 @@ import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,13 +24,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.exception.AccessControlException;
 import uk.ac.ebi.biosamples.exception.SampleAccessionMismatchException;
 import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
 import uk.ac.ebi.biosamples.model.AuthToken;
-import uk.ac.ebi.biosamples.model.auth.LoginWays;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.StructuredDataService;
@@ -85,9 +82,12 @@ public class StructuredDataRestController {
       @RequestBody StructuredData structuredData,
       @RequestHeader("Authorization") final String token) {
 
-    AuthToken authToken = accessControlService.extractToken(token).orElseThrow(
-        () -> new AccessControlException("Invalid token. Please provide valid token."));
-    final boolean webinAuth = authToken.getAuthority() == LoginWays.WEBIN;
+    AuthToken authToken =
+        accessControlService
+            .extractToken(token)
+            .orElseThrow(
+                () -> new AccessControlException("Invalid token. Please provide valid token."));
+    final boolean webinAuth = authToken.getAuthority() == AuthorizationProvider.WEBIN;
 
     log.info("PUT request for structured data: {}", accession);
     if (structuredData.getAccession() == null || !structuredData.getAccession().equals(accession)) {
@@ -95,10 +95,10 @@ public class StructuredDataRestController {
     }
 
     if (webinAuth) {
-      final SubmissionAccount webinAccount = bioSamplesWebinAuthenticationService
-          .getWebinSubmissionAccount(token)
-          .getBody();
-      bioSamplesWebinAuthenticationService.handleStructuredDataAccesibility(structuredData, webinAccount.getId());
+      final SubmissionAccount webinAccount =
+          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(token).getBody();
+      bioSamplesWebinAuthenticationService.handleStructuredDataAccesibility(
+          structuredData, webinAccount.getId());
     } else {
       bioSamplesAapService.handleStructuredDataDomain(structuredData);
     }

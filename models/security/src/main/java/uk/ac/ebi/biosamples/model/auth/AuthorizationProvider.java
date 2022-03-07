@@ -10,7 +10,7 @@
 */
 package uk.ac.ebi.biosamples.model.auth;
 
-public enum LoginWays {
+public enum AuthorizationProvider {
   AAP,
   WEBIN;
 }

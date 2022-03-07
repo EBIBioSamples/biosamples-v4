@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.Optional;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,7 +31,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.auth.LoginWays;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
@@ -43,14 +42,10 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 @ActiveProfiles("test")
 public class EtagTests {
 
-  @Autowired
-  private MockMvc mockMvc;
-  @MockBean
-  private BioSamplesAapService bioSamplesAapService;
-  @MockBean
-  private SampleService sampleService;
-  @MockBean
-  private AccessControlService accessControlService;
+  @Autowired private MockMvc mockMvc;
+  @MockBean private BioSamplesAapService bioSamplesAapService;
+  @MockBean private SampleService sampleService;
+  @MockBean private AccessControlService accessControlService;
 
   @Test
   public void get_validation_endpoint_return_not_allowed_response() throws Exception {
@@ -65,17 +60,24 @@ public class EtagTests {
         .thenReturn(Optional.of(testSample));
     when(bioSamplesAapService.handleSampleDomain(testSample)).thenReturn(testSample);
     when(accessControlService.extractToken(anyString()))
-        .thenReturn(Optional.of(new AuthToken("RS256", LoginWays.AAP, "user", Collections.emptyList())));
+        .thenReturn(
+            Optional.of(
+                new AuthToken(
+                    "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
 
-    MvcResult sampleRequestResult = mockMvc
-        .perform(get("/samples/{accession}", sampleAccession).accept(MediaType.APPLICATION_JSON))
-        .andReturn();
+    MvcResult sampleRequestResult =
+        mockMvc
+            .perform(
+                get("/samples/{accession}", sampleAccession).accept(MediaType.APPLICATION_JSON))
+            .andReturn();
 
     String etag = sampleRequestResult.getResponse().getHeader("Etag");
 
-    mockMvc.perform(get("/samples/{accession}", sampleAccession)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header("If-None-Match", etag))
-           .andExpect(status().isNotModified());
+    mockMvc
+        .perform(
+            get("/samples/{accession}", sampleAccession)
+                .accept(MediaType.APPLICATION_JSON)
+                .header("If-None-Match", etag))
+        .andExpect(status().isNotModified());
   }
 }

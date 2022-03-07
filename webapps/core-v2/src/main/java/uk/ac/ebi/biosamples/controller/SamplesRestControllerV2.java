@@ -29,7 +29,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.model.auth.LoginWays;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
@@ -77,10 +77,13 @@ public class SamplesRestControllerV2 {
       @RequestHeader(name = "Authorization") final String token) {
     log.info("Received POST for " + samples.size() + " samples");
 
-    final boolean webinAuth = accessControlService.extractToken(token)
-                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
-                                                  .orElse(Boolean.FALSE);
-    LoginWays authProvider = webinAuth ? LoginWays.WEBIN : LoginWays.AAP;
+    final boolean webinAuth =
+        accessControlService
+            .extractToken(token)
+            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+            .orElse(Boolean.FALSE);
+    AuthorizationProvider authProvider =
+        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
     boolean isWebinSuperUser;
 
     if (webinAuth) {
@@ -150,10 +153,13 @@ public class SamplesRestControllerV2 {
       throw new SampleWithAccessionSubmissionExceptionV2();
     }
 
-    final boolean webinAuth = accessControlService.extractToken(token)
-                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
-                                                  .orElse(Boolean.FALSE);
-    final LoginWays authProvider = webinAuth ? LoginWays.WEBIN : LoginWays.AAP;
+    final boolean webinAuth =
+        accessControlService
+            .extractToken(token)
+            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+            .orElse(Boolean.FALSE);
+    final AuthorizationProvider authProvider =
+        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
 
     if (webinAuth) {
       final SubmissionAccount webinAccount =
@@ -201,10 +207,13 @@ public class SamplesRestControllerV2 {
       @RequestHeader(name = "Authorization") final String token) {
 
     log.info("Received POST for bulk accessioning of " + samples.size() + " samples");
-    final boolean webinAuth = accessControlService.extractToken(token)
-                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
-                                                  .orElse(Boolean.FALSE);
-    LoginWays authProvider = webinAuth ? LoginWays.WEBIN : LoginWays.AAP;
+    final boolean webinAuth =
+        accessControlService
+            .extractToken(token)
+            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+            .orElse(Boolean.FALSE);
+    AuthorizationProvider authProvider =
+        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
 
     try {
       samples.forEach(

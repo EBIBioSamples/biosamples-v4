@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.model.auth.LoginWays;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.certification.BioSamplesCertificationComplainceResult;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
@@ -58,10 +58,13 @@ public class CertificationController {
       @RequestHeader(name = "Authorization", required = false) final String token)
       throws JsonProcessingException {
 
-    final boolean webinAuth = accessControlService.extractToken(token)
-                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
-                                                  .orElse(Boolean.FALSE);
-    LoginWays authProvider = webinAuth ? LoginWays.WEBIN : LoginWays.AAP;
+    final boolean webinAuth =
+        accessControlService
+            .extractToken(token)
+            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+            .orElse(Boolean.FALSE);
+    AuthorizationProvider authProvider =
+        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
 
     final ObjectMapper jsonMapper = new ObjectMapper();
 

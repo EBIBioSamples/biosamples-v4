@@ -191,8 +191,11 @@ public class FileUploadController {
       produces = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<List<MongoFileUpload>> getSubmissions(
       @RequestHeader("Authorization") final String token) {
-    final AuthToken authToken = accessControlService.extractToken(token).orElseThrow(
-        () -> new AccessControlException("Invalid token. Please provide valid token."));
+    final AuthToken authToken =
+        accessControlService
+            .extractToken(token)
+            .orElseThrow(
+                () -> new AccessControlException("Invalid token. Please provide valid token."));
     final List<String> userRoles = accessControlService.getUserRoles(authToken);
     final List<MongoFileUpload> uploads = fileUploadService.getUserSubmissions(userRoles);
 
