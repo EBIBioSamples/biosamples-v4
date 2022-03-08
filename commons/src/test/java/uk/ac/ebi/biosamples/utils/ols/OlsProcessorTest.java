@@ -8,7 +8,7 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.ols;
+package uk.ac.ebi.biosamples.utils.ols;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -79,7 +79,7 @@ public class OlsProcessorTest {
   }
 
   private Optional<String> performQuery(String shortcode) throws IOException {
-    String expectedResponse = readFile("/examples/ols-responses/" + shortcode + ".json");
+    String expectedResponse = readFile("/ols-responses/" + shortcode + ".json");
     mockServer.reset();
     mockServer
         .expect(requestTo("https://www.ebi.ac.uk/ols/api/terms?id=" + shortcode + "&size=500"))

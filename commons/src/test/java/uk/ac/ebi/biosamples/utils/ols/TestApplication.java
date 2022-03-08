@@ -8,22 +8,25 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.ols;
+package uk.ac.ebi.biosamples.utils.ols;
 
-public class OlsResult {
-  private String label;
-  private String iri;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 
-  public OlsResult(String label, String iri) {
-    this.label = label;
-    this.iri = iri;
+@Configuration
+@ComponentScan
+public class TestApplication {
+
+  @Bean
+  public RestTemplate restTemplate() {
+    return new RestTemplate();
   }
 
-  public String getLabel() {
-    return label;
-  }
-
-  public String getIri() {
-    return iri;
+  @Bean
+  public BioSamplesProperties bioSamplesProperties() {
+    return new BioSamplesProperties();
   }
 }

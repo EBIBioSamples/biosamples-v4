@@ -29,8 +29,8 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.ols.OlsProcessor;
-import uk.ac.ebi.biosamples.ols.OlsResult;
+import uk.ac.ebi.biosamples.utils.ols.OlsProcessor;
+import uk.ac.ebi.biosamples.utils.ols.OlsResult;
 
 @Component
 public class EGAImportRunner implements ApplicationRunner {
