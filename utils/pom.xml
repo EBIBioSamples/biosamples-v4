@@ -14,7 +14,6 @@
 
 	<modules>
 		<module>webapp</module>
-		<module>mongo</module>
 		<module>pipeline</module>
 		<module>thread</module>
 		<module>ols</module>

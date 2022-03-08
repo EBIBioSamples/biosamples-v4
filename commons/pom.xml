@@ -9,14 +9,23 @@
     <artifactId>biosamples</artifactId>
     <version>5.2.3-SNAPSHOT</version>
   </parent>
-  <properties>
-<!--    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>-->
-<!--    <maven.compiler.source>1.8</maven.compiler.source>-->
-<!--    <maven.compiler.target>1.8</maven.compiler.target>-->
-  </properties>
 
   <dependencies>
-
+    <dependency>
+      <groupId>uk.ac.ebi.biosamples</groupId>
+      <artifactId>properties</artifactId>
+      <version>5.2.3-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>uk.ac.ebi.biosamples</groupId>
+      <artifactId>models-mongo</artifactId>
+      <version>5.2.3-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>uk.ac.ebi.biosamples</groupId>
+      <artifactId>utils-thread</artifactId>
+      <version>5.2.3-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 
 </project>

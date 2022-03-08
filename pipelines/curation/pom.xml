@@ -44,9 +44,8 @@
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>utils-mongo</artifactId>
+			<artifactId>commons</artifactId>
 			<version>5.2.3-SNAPSHOT</version>
-			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 
