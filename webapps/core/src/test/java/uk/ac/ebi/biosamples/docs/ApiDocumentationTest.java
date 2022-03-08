@@ -65,6 +65,7 @@ import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
+import uk.ac.ebi.biosamples.utils.mongo.CurationReadService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @RunWith(SpringRunner.class)
