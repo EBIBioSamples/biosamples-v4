@@ -193,6 +193,10 @@ public class CurationReadService {
       }
     }
 
+    if (sample.getReviewed() == null) {
+      sample = Sample.Builder.fromSample(sample).withReviewed(sample.getUpdate()).build();
+    }
+
     return sample;
   }
 }

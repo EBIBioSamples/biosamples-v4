@@ -22,7 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Accession;
-import uk.ac.ebi.biosamples.model.auth.LoginWays;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.AccessionsService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
@@ -59,10 +59,13 @@ public class AccessionsRestController {
       @RequestParam(name = "size", required = false) final Integer size,
       @RequestHeader(name = "Authorization", required = false) final String token) {
 
-    final boolean webinAuth = accessControlService.extractToken(token)
-                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
-                                                  .orElse(Boolean.FALSE);
-    LoginWays authProvider = webinAuth ? LoginWays.WEBIN : LoginWays.AAP;
+    final boolean webinAuth =
+        accessControlService
+            .extractToken(token)
+            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+            .orElse(Boolean.FALSE);
+    AuthorizationProvider authProvider =
+        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
 
     String webinSubmissionAccountId = null;
     Collection<String> domains = null;
@@ -97,7 +100,8 @@ public class AccessionsRestController {
             pageAccessions.getContent().stream().map(Accession::build).collect(Collectors.toList()),
             pageMetadata);
 
-    addRelLinks(pageAccessions, resources, text, filter, effectivePage, effectiveSize, authProvider.name());
+    addRelLinks(
+        pageAccessions, resources, text, filter, effectivePage, effectiveSize, authProvider.name());
 
     return ResponseEntity.ok().body(resources);
   }

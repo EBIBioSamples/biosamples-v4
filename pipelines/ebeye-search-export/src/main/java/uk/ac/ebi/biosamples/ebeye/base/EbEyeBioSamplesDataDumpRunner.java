@@ -272,7 +272,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     return crossReferencesType;
   }
 
-  private RefType getTaxonomyCrossReferenceCovid(int taxId) {
+  private RefType getTaxonomyCrossReferenceCovid(long taxId) {
     RefType refType = new RefType();
 
     refType.setDbname("TAXONOMY");

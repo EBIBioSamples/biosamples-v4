@@ -18,13 +18,12 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.exception.AccessControlException;
 import uk.ac.ebi.biosamples.model.AuthToken;
-import uk.ac.ebi.biosamples.model.auth.LoginWays;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 
 @Service
 public class AccessControlService {
@@ -54,17 +53,18 @@ public class AccessControlService {
     AuthToken authToken;
     try {
       String algorithm = objectMapper.readTree(header).get("alg").asText();
-      LoginWays authority;
+      AuthorizationProvider authority;
       String user;
       List<String> roles;
 
       JsonNode node = objectMapper.readTree(payload);
       if (isAap(node)) {
-        authority = LoginWays.AAP;
+        authority = AuthorizationProvider.AAP;
         user = node.get("sub").asText();
-        roles = objectMapper.convertValue(node.get("domains"), new TypeReference<List<String>>() {});
+        roles =
+            objectMapper.convertValue(node.get("domains"), new TypeReference<List<String>>() {});
       } else {
-        authority = LoginWays.WEBIN;
+        authority = AuthorizationProvider.WEBIN;
         user = node.get("principle").asText();
         roles = objectMapper.convertValue(node.get("role"), new TypeReference<List<String>>() {});
       }
@@ -88,7 +88,7 @@ public class AccessControlService {
   }
 
   public List<String> getUserRoles(AuthToken token) {
-    return token.getAuthority() == LoginWays.AAP
+    return token.getAuthority() == AuthorizationProvider.AAP
         ? token.getRoles()
         : Collections.singletonList(token.getUser());
   }

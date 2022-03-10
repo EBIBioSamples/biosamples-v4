@@ -10,6 +10,9 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
+import java.net.URI;
+import java.time.Instant;
+import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -34,7 +37,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.model.CurationLink;
-import uk.ac.ebi.biosamples.model.auth.LoginWays;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.CurationLinkResourceAssembler;
 import uk.ac.ebi.biosamples.service.CurationPersistService;
@@ -42,10 +45,6 @@ import uk.ac.ebi.biosamples.utils.mongo.CurationReadService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-
-import javax.servlet.http.HttpServletRequest;
-import java.net.URI;
-import java.time.Instant;
 
 @RestController
 @RequestMapping("/samples/{accession}/curationlinks")
@@ -121,9 +120,11 @@ public class SampleCurationLinksRestController {
       @RequestHeader(name = "Authorization") final String token) {
 
     log.info("Recieved POST for " + curationLink);
-    final boolean webinAuth = accessControlService.extractToken(token)
-                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
-                                                  .orElse(Boolean.FALSE);
+    final boolean webinAuth =
+        accessControlService
+            .extractToken(token)
+            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+            .orElse(Boolean.FALSE);
 
     if (curationLink.getSample() == null) {
       // curationLink has no sample, use the one specified in the URL

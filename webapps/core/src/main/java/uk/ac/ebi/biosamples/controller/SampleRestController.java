@@ -29,7 +29,7 @@ import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.model.auth.LoginWays;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.ga4gh.phenopacket.PhenopacketConverter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
@@ -39,7 +39,7 @@ import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
+import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
@@ -64,7 +64,7 @@ public class SampleRestController {
   private final SampleResourceAssembler sampleResourceAssembler;
   private final PhenopacketConverter phenopacketConverter;
   private final SchemaValidationService schemaValidationService;
-  private final ENATaxonClientService enaTaxonClientService;
+  private final TaxonomyClientService taxonomyClientService;
   private final AccessControlService accessControlService;
 
   public SampleRestController(
@@ -75,7 +75,7 @@ public class SampleRestController {
       SampleResourceAssembler sampleResourceAssembler,
       PhenopacketConverter phenopacketConverter,
       SchemaValidationService schemaValidationService,
-      ENATaxonClientService enaTaxonClientService,
+      TaxonomyClientService taxonomyClientService,
       AccessControlService accessControlService) {
     this.sampleService = sampleService;
     this.bioSamplesAapService = bioSamplesAapService;
@@ -84,7 +84,7 @@ public class SampleRestController {
     this.sampleResourceAssembler = sampleResourceAssembler;
     this.phenopacketConverter = phenopacketConverter;
     this.schemaValidationService = schemaValidationService;
-    this.enaTaxonClientService = enaTaxonClientService;
+    this.taxonomyClientService = taxonomyClientService;
     this.accessControlService = accessControlService;
   }
 
@@ -99,12 +99,15 @@ public class SampleRestController {
       @RequestParam(name = "curationrepo", required = false) String curationRepo,
       @RequestHeader(name = "Authorization", required = false) final String token) {
 
-    final boolean webinAuth = accessControlService.extractToken(token)
-                                                   .map(t -> t.getAuthority() == LoginWays.WEBIN)
-                                                   .orElse(Boolean.FALSE);
+    final boolean webinAuth =
+        accessControlService
+            .extractToken(token)
+            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+            .orElse(Boolean.FALSE);
 
     // decode percent-encoding from curation domains
-    final Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
+    final Optional<List<String>> decodedCurationDomains =
+        LinkUtils.decodeTextsToArray(curationdomain);
     final Optional<Boolean> decodedLegacyDetails;
 
     if ("true".equals(legacydetails)) {
@@ -131,7 +134,8 @@ public class SampleRestController {
       }
 
       // TODO cache control
-      return sampleResourceAssembler.toResource(sample.get(), decodedLegacyDetails, decodedCurationDomains);
+      return sampleResourceAssembler.toResource(
+          sample.get(), decodedLegacyDetails, decodedCurationDomains);
     } else {
       throw new SampleNotFoundException();
     }
@@ -176,17 +180,19 @@ public class SampleRestController {
 
   @PreAuthorize("isAuthenticated()")
   @CrossOrigin(methods = RequestMethod.GET)
-  @GetMapping(produces = { MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE })
-  public Sample getSampleXml(@PathVariable String accession,
-                             @RequestParam(name = "curationrepo", required = false) final String curationRepo,
-                             @RequestHeader(name = "Authorization", required = false) final String token) {
+  @GetMapping(produces = {MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
+  public Sample getSampleXml(
+      @PathVariable String accession,
+      @RequestParam(name = "curationrepo", required = false) final String curationRepo,
+      @RequestHeader(name = "Authorization", required = false) final String token) {
     Sample sample = getSampleHal(null, accession, "true", null, curationRepo, token).getContent();
     if (!sample.getAccession().matches("SAMEG\\d+")) {
-      sample = Sample.Builder.fromSample(sample)
-                             .withNoOrganisations()
-                             .withNoPublications()
-                             .withNoContacts()
-                             .build();
+      sample =
+          Sample.Builder.fromSample(sample)
+              .withNoOrganisations()
+              .withNoPublications()
+              .withNoContacts()
+              .build();
     }
 
     return sample;
@@ -198,15 +204,19 @@ public class SampleRestController {
       HttpServletRequest request,
       @PathVariable String accession,
       @RequestBody Sample sample,
-      @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails,
+      @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
+          boolean setFullDetails,
       @RequestHeader("Authorization") final String token) {
 
     if (sample == null) {
       throw new RuntimeException("No sample provided");
     }
-    AuthToken authToken = accessControlService.extractToken(token).orElseThrow(
-        () -> new AccessControlException("Invalid token. Please provide valid token."));
-    final boolean webinAuth = authToken.getAuthority() == LoginWays.WEBIN;
+    AuthToken authToken =
+        accessControlService
+            .extractToken(token)
+            .orElseThrow(
+                () -> new AccessControlException("Invalid token. Please provide valid token."));
+    final boolean webinAuth = authToken.getAuthority() == AuthorizationProvider.WEBIN;
 
     final SortedSet<AbstractData> abstractData = sample.getData();
     boolean isWebinSuperUser = false;
@@ -272,10 +282,7 @@ public class SampleRestController {
     sample =
         Sample.Builder.fromSample(sample).withUpdate(now).withSubmittedVia(submittedVia).build();
 
-    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    sample =
-        validateSampleAgainstExternalValidationServices(
-            sample, webinAuth, isWebinSuperUser, submittedVia);
+    sample = validateSampleAgainstExternalValidationServices(sample, webinAuth, isWebinSuperUser);
 
     final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, isWebinSuperUser);
 
@@ -296,18 +303,18 @@ public class SampleRestController {
   }
 
   private Sample validateSampleAgainstExternalValidationServices(
-      @RequestBody Sample sample,
-      boolean webinAuth,
-      boolean isWebinSuperUser,
-      SubmittedViaType submittedVia) {
+      Sample sample, boolean webinAuth, boolean isWebinSuperUser) {
+    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
+
     if (webinAuth && !isWebinSuperUser) {
       schemaValidationService.validate(sample);
-      sample = enaTaxonClientService.performTaxonomyValidation(sample);
+      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
     } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
       schemaValidationService.validate(sample);
+      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, false);
     }
 
-    if (submittedVia == SubmittedViaType.FILE_UPLOADER) {
+    if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
       schemaValidationService.validate(sample);
     }
 

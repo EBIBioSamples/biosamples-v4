@@ -29,13 +29,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.model.auth.LoginWays;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
+import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @RestController
@@ -49,7 +49,7 @@ public class SamplesRestControllerV2 {
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final SchemaValidationService schemaValidationService;
-  private final ENATaxonClientService enaTaxonClientService;
+  private final TaxonomyClientService taxonomyClientService;
   private final AccessControlService accessControlService;
 
   public SamplesRestControllerV2(
@@ -57,13 +57,13 @@ public class SamplesRestControllerV2 {
       final BioSamplesAapService bioSamplesAapService,
       final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       final SchemaValidationService schemaValidationService,
-      final ENATaxonClientService enaTaxonClientService,
+      final TaxonomyClientService taxonomyClientService,
       final AccessControlService accessControlService) {
     this.sampleService = sampleService;
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.schemaValidationService = schemaValidationService;
-    this.enaTaxonClientService = enaTaxonClientService;
+    this.taxonomyClientService = taxonomyClientService;
     this.accessControlService = accessControlService;
   }
 
@@ -77,10 +77,13 @@ public class SamplesRestControllerV2 {
       @RequestHeader(name = "Authorization") final String token) {
     log.info("Received POST for " + samples.size() + " samples");
 
-    final boolean webinAuth = accessControlService.extractToken(token)
-                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
-                                                  .orElse(Boolean.FALSE);
-    LoginWays authProvider = webinAuth ? LoginWays.WEBIN : LoginWays.AAP;
+    final boolean webinAuth =
+        accessControlService
+            .extractToken(token)
+            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+            .orElse(Boolean.FALSE);
+    AuthorizationProvider authProvider =
+        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
     boolean isWebinSuperUser;
 
     if (webinAuth) {
@@ -106,7 +109,9 @@ public class SamplesRestControllerV2 {
 
                         if (!finalIsWebinSuperUser) {
                           schemaValidationService.validate(sample);
-                          sample = enaTaxonClientService.performTaxonomyValidation(sample);
+                          sample =
+                              taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
+                                  sample, true);
                         }
 
                         return sampleService.storeV2(sample, true, authProvider.name());
@@ -122,6 +127,9 @@ public class SamplesRestControllerV2 {
 
                         if (!bioSamplesAapService.isWriteSuperUser()) {
                           schemaValidationService.validate(sample);
+                          sample =
+                              taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
+                                  sample, false);
                         }
 
                         return sampleService.storeV2(sample, true, authProvider.name());
@@ -145,10 +153,13 @@ public class SamplesRestControllerV2 {
       throw new SampleWithAccessionSubmissionExceptionV2();
     }
 
-    final boolean webinAuth = accessControlService.extractToken(token)
-                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
-                                                  .orElse(Boolean.FALSE);
-    final LoginWays authProvider = webinAuth ? LoginWays.WEBIN : LoginWays.AAP;
+    final boolean webinAuth =
+        accessControlService
+            .extractToken(token)
+            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+            .orElse(Boolean.FALSE);
+    final AuthorizationProvider authProvider =
+        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
 
     if (webinAuth) {
       final SubmissionAccount webinAccount =
@@ -196,10 +207,13 @@ public class SamplesRestControllerV2 {
       @RequestHeader(name = "Authorization") final String token) {
 
     log.info("Received POST for bulk accessioning of " + samples.size() + " samples");
-    final boolean webinAuth = accessControlService.extractToken(token)
-                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
-                                                  .orElse(Boolean.FALSE);
-    LoginWays authProvider = webinAuth ? LoginWays.WEBIN : LoginWays.AAP;
+    final boolean webinAuth =
+        accessControlService
+            .extractToken(token)
+            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+            .orElse(Boolean.FALSE);
+    AuthorizationProvider authProvider =
+        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
 
     try {
       samples.forEach(

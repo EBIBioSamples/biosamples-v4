@@ -8,9 +8,9 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.model.auth;
+package uk.ac.ebi.biosamples.mongo.repo;
 
-public enum LoginWays {
-  AAP,
-  WEBIN;
-}
+import org.springframework.data.mongodb.repository.MongoRepository;
+import uk.ac.ebi.biosamples.mongo.model.MongoSampleMessage;
+
+public interface MongoSampleMessageRepository extends MongoRepository<MongoSampleMessage, String> {}

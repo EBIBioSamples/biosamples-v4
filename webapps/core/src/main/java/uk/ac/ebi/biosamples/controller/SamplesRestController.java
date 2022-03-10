@@ -37,10 +37,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exception.SampleValidationException;
-import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.model.auth.LoginWays;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
@@ -48,7 +47,7 @@ import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
+import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
@@ -74,7 +73,7 @@ public class SamplesRestController {
   private final BioSamplesProperties bioSamplesProperties;
   private final SampleResourceAssembler sampleResourceAssembler;
   private final SchemaValidationService schemaValidationService;
-  private final ENATaxonClientService enaTaxonClientService;
+  private final TaxonomyClientService taxonomyClientService;
   private final AccessControlService accessControlService;
 
   private final Logger log = LoggerFactory.getLogger(getClass());
@@ -89,7 +88,7 @@ public class SamplesRestController {
       SampleService sampleService,
       BioSamplesProperties bioSamplesProperties,
       SchemaValidationService schemaValidationService,
-      ENATaxonClientService enaTaxonClientService,
+      TaxonomyClientService taxonomyClientService,
       AccessControlService accessControlService) {
     this.samplePageService = samplePageService;
     this.filterService = filterService;
@@ -100,7 +99,7 @@ public class SamplesRestController {
     this.sampleService = sampleService;
     this.schemaValidationService = schemaValidationService;
     this.bioSamplesProperties = bioSamplesProperties;
-    this.enaTaxonClientService = enaTaxonClientService;
+    this.taxonomyClientService = taxonomyClientService;
     this.accessControlService = accessControlService;
   }
 
@@ -119,9 +118,11 @@ public class SamplesRestController {
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
       @RequestHeader(name = "Authorization", required = false) final String token) {
 
-    final boolean webinAuth = accessControlService.extractToken(token)
-                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
-                                                  .orElse(Boolean.FALSE);
+    final boolean webinAuth =
+        accessControlService
+            .extractToken(token)
+            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+            .orElse(Boolean.FALSE);
 
     // Need to decode the %20 and similar from the parameters
     // this is *not* needed for the html controller
@@ -254,7 +255,7 @@ public class SamplesRestController {
               pageSample,
               effectiveSize,
               effectivePage,
-              webinAuth ? LoginWays.WEBIN.name() : LoginWays.AAP.name(),
+              webinAuth ? AuthorizationProvider.WEBIN.name() : AuthorizationProvider.AAP.name(),
               decodedText,
               decodedFilter,
               sort,
@@ -501,12 +502,15 @@ public class SamplesRestController {
       throw new SampleWithAccessionSumbissionException();
     }
 
-    final boolean webinAuth = accessControlService.extractToken(token)
-                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
-                                                  .orElse(Boolean.FALSE);
+    final boolean webinAuth =
+        accessControlService
+            .extractToken(token)
+            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+            .orElse(Boolean.FALSE);
 
     if (webinAuth) {
-      final SubmissionAccount webinAccount = bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+      final SubmissionAccount webinAccount =
+          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
       if (webinAccount == null) {
         throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
       }
@@ -516,7 +520,8 @@ public class SamplesRestController {
       sample = bioSamplesAapService.handleSampleDomain(sample);
     }
 
-    LoginWays authProvider = webinAuth ? LoginWays.WEBIN : LoginWays.AAP;
+    AuthorizationProvider authProvider =
+        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
     sample = buildPrivateSample(sample);
     sample = sampleService.store(sample, false, authProvider.name());
     final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
@@ -543,9 +548,11 @@ public class SamplesRestController {
           }
         });
 
-    final boolean webinAuth = accessControlService.extractToken(token)
-                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
-                                                  .orElse(Boolean.FALSE);
+    final boolean webinAuth =
+        accessControlService
+            .extractToken(token)
+            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+            .orElse(Boolean.FALSE);
 
     if (webinAuth) {
       /*final SubmissionAccount webinAccount =
@@ -609,7 +616,8 @@ public class SamplesRestController {
   public ResponseEntity<Resource<Sample>> post(
       HttpServletRequest request,
       @RequestBody Sample sample,
-      @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails,
+      @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
+          boolean setFullDetails,
       @RequestHeader(name = "Authorization") final String token) {
     log.debug("Received POST for " + sample);
 
@@ -620,9 +628,11 @@ public class SamplesRestController {
           "Sample contains structured data. Please submit structured data seperately");
     }
 
-    final boolean webinAuth = accessControlService.extractToken(token)
-                                                  .map(t -> t.getAuthority() == LoginWays.WEBIN)
-                                                  .orElse(Boolean.FALSE);
+    final boolean webinAuth =
+        accessControlService
+            .extractToken(token)
+            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+            .orElse(Boolean.FALSE);
     boolean isWebinSuperUser = false;
 
     if (webinAuth) {
@@ -662,16 +672,14 @@ public class SamplesRestController {
             .withSubmittedVia(submittedVia)
             .build();
 
-    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    sample =
-        validateSampleAgainstExternalValidationServices(
-            sample, webinAuth, isWebinSuperUser, submittedVia);
+    sample = validateSampleAgainstExternalValidationServices(sample, webinAuth, isWebinSuperUser);
 
     if (!setFullDetails) {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
-    LoginWays authProvider = webinAuth ? LoginWays.WEBIN : LoginWays.AAP;
+    AuthorizationProvider authProvider =
+        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
     sample = sampleService.store(sample, true, authProvider.name());
 
     // assemble a resource to return
@@ -682,18 +690,18 @@ public class SamplesRestController {
   }
 
   private Sample validateSampleAgainstExternalValidationServices(
-      @RequestBody Sample sample,
-      boolean webinAuth,
-      boolean isWebinSuperUser,
-      SubmittedViaType submittedVia) {
+      Sample sample, boolean webinAuth, boolean isWebinSuperUser) {
+    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
+
     if (webinAuth && !isWebinSuperUser) {
       schemaValidationService.validate(sample);
-      sample = enaTaxonClientService.performTaxonomyValidation(sample);
+      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
     } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
       schemaValidationService.validate(sample);
+      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, false);
     }
 
-    if (submittedVia == SubmittedViaType.FILE_UPLOADER) {
+    if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
       schemaValidationService.validate(sample);
     }
 

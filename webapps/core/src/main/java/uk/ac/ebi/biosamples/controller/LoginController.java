@@ -161,8 +161,11 @@ public class LoginController {
 
   private List<MongoFileUpload> getSubmissions(final String token) {
     try {
-      final AuthToken authToken = accessControlService.extractToken(token).orElseThrow(
-          () -> new AccessControlException("Invalid token. Please provide valid token."));
+      final AuthToken authToken =
+          accessControlService
+              .extractToken(token)
+              .orElseThrow(
+                  () -> new AccessControlException("Invalid token. Please provide valid token."));
       final List<String> userRoles = accessControlService.getUserRoles(authToken);
 
       return fileUploadService.getUserSubmissions(userRoles);

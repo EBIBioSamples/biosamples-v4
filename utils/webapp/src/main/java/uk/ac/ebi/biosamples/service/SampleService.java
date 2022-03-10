@@ -19,19 +19,17 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import uk.ac.ebi.biosamples.model.Autocomplete;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.StaticViewWrapper;
-import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+import uk.ac.ebi.biosamples.mongo.model.MongoSampleMessage;
+import uk.ac.ebi.biosamples.mongo.repo.MongoSampleMessageRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
-import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleStructuredDataCentricConverter;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
 
@@ -53,9 +51,9 @@ public class SampleService {
   private MongoAccessionService mongoAccessionService;
 
   @Autowired private MongoSampleRepository mongoSampleRepository;
+  @Autowired private MongoSampleMessageRepository mongoSampleMessageRepository;
   @Autowired private MongoSampleToSampleConverter mongoSampleToSampleConverter;
   @Autowired private SampleToMongoSampleConverter sampleToMongoSampleConverter;
-  @Autowired private SampleToMongoSampleStructuredDataCentricConverter structuredDataConverter;
   @Autowired private SampleValidator sampleValidator;
   @Autowired private SolrSampleService solrSampleService;
   @Autowired private SampleReadService sampleReadService;
@@ -177,6 +175,8 @@ public class SampleService {
   // @CacheEvict(cacheNames=WebappProperties.fetchUsing, key="#result.accession")
   public Sample store(Sample sample, boolean isFirstTimeMetadataAdded, String authProvider) {
     Collection<String> errors = sampleValidator.validate(sample);
+    boolean isTaxIdUpdated = false;
+
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
       throw new SampleValidationException(String.join("|", errors));
@@ -186,6 +186,8 @@ public class SampleService {
       final MongoSample mongoOldSample = mongoSampleRepository.findOne(sample.getAccession());
       List<String> existingRelationshipTargets = new ArrayList<>();
 
+      final Long taxId = sample.getTaxId();
+
       if (mongoOldSample != null) {
         final Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
         existingRelationshipTargets =
@@ -194,6 +196,10 @@ public class SampleService {
         sample =
             compareWithExistingAndUpdateSample(
                 sample, oldSample, isFirstTimeMetadataAdded, authProvider);
+
+        if (oldSample.getTaxId() != taxId) {
+          isTaxIdUpdated = true;
+        }
       } else {
         log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
       }
@@ -201,6 +207,12 @@ public class SampleService {
       MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
 
       mongoSample = mongoSampleRepository.save(mongoSample);
+
+      if (isTaxIdUpdated) {
+        mongoSampleMessageRepository.save(
+            new MongoSampleMessage(sample.getAccession(), Instant.now(), taxId));
+      }
+
       sample = mongoSampleToSampleConverter.convert(mongoSample);
 
       // send a message for storage and further processing, send relationship targets to
@@ -382,9 +394,9 @@ public class SampleService {
             ? sampleToUpdate.getCreate()
             : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
       } else if (isPipelineEnaDomain(domain)) {
-        return (oldSample.getCreate() != null) ? oldSample.getCreate() : sampleToUpdate.getCreate();
+        return oldSample.getCreate() != null ? oldSample.getCreate() : sampleToUpdate.getCreate();
       } else {
-        return (oldSample.getCreate() != null ? oldSample.getCreate() : sampleToUpdate.getCreate());
+        return oldSample.getCreate() != null ? oldSample.getCreate() : sampleToUpdate.getCreate();
       }
     }
   }

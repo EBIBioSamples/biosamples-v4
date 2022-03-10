@@ -219,9 +219,6 @@ public class SampleSubmissionService {
         uriComponentsBuilder.queryParam("setfulldetails", setFullDetails);
       }
 
-      if (isWebinSubmission) {
-        uriComponentsBuilder.queryParam("authProvider", "WEBIN");
-      }
       return uriComponentsBuilder.build(true).toUri();
     }
   }
