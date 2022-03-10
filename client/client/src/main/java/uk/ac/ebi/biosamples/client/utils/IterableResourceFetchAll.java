@@ -179,21 +179,14 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
             .build()
             .toUri();
 
-    if (isWebinSubmission) {
-      UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUri(uri);
-
-      if (isWebinSubmission) {
-        uriComponentsBuilder.queryParam("authProvider", "WEBIN");
-      }
-
-      uri = uriComponentsBuilder.build(true).toUri();
-    }
-
     MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+
     headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
+
     if (jwt != null) {
       headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
     }
+
     RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
 
     ResponseEntity<PagedResources<Resource<T>>> responseEntity =

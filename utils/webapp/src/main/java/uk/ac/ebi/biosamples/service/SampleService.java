@@ -30,7 +30,6 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
-import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleStructuredDataCentricConverter;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
 /**
@@ -54,7 +53,6 @@ public class SampleService {
   @Autowired private MongoSampleMessageRepository mongoSampleMessageRepository;
   @Autowired private MongoSampleToSampleConverter mongoSampleToSampleConverter;
   @Autowired private SampleToMongoSampleConverter sampleToMongoSampleConverter;
-  @Autowired private SampleToMongoSampleStructuredDataCentricConverter structuredDataConverter;
   @Autowired private SampleValidator sampleValidator;
   @Autowired private SolrSampleService solrSampleService;
   @Autowired private SampleReadService sampleReadService;

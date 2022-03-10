@@ -51,10 +51,6 @@ public class CurationSubmissionService {
       CurationLink curationLink, String jwt, boolean isWebin) throws RestClientException {
     String addWebinRequestParam = "";
 
-    if (isWebin) {
-      addWebinRequestParam = "?authProvider=WEBIN";
-    }
-
     URI target =
         URI.create(
             traverson

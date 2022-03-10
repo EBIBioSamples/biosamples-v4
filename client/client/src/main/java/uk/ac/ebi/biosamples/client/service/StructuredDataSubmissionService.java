@@ -50,12 +50,7 @@ public class StructuredDataSubmissionService {
       StructuredData structuredData, String jwt, boolean isWebin) throws RestClientException {
     String addWebinRequestParam = "";
 
-    if (isWebin) {
-      addWebinRequestParam = "?authProvider=WEBIN";
-    }
-
-    // todo throw new expetion if data is null or empty,
-    //  might be easier to reuse existing excpetions after refactoing
+    // TODO throw new expetion if data is null or empty, might be easier to reuse existing exceptions after refactoring
 
     URI target =
         URI.create(

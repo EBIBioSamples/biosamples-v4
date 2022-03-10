@@ -134,15 +134,6 @@ public class SampleRetrievalService {
       this.isWebinSubmission = isWebinSubmission;
     }
 
-    private URI getSampleRetrievalURIWithWebinAsAuthProvider(URI uri) {
-      UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUri(uri);
-
-      if (isWebinSubmission) {
-        uriComponentsBuilder.queryParam("authProvider", "WEBIN");
-      }
-      return uriComponentsBuilder.build(true).toUri();
-    }
-
     @Override
     public Optional<Resource<Sample>> call() throws Exception {
 
@@ -169,10 +160,6 @@ public class SampleRetrievalService {
               Hop.rel("curationDomain").withParameter("curationdomain", curationDomain));
         }
         uri = URI.create(traversalBuilder.asLink().getHref());
-      }
-
-      if (isWebinSubmission) {
-        uri = getSampleRetrievalURIWithWebinAsAuthProvider(uri);
       }
 
       log.info("GETing " + uri);
