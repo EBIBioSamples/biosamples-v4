@@ -31,6 +31,7 @@ import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
+import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
 
 /**
  * Service layer business logic for centralising repository access and conversions between different

@@ -64,6 +64,7 @@ import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
+import uk.ac.ebi.biosamples.utils.mongo.CurationReadService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @RunWith(SpringRunner.class)
@@ -89,7 +90,8 @@ public class ApiDocumentationTest {
 
   @MockBean CurationPersistService curationPersistService;
 
-  @MockBean CurationReadService curationReadService;
+  @MockBean
+  CurationReadService curationReadService;
 
   @MockBean private BioSamplesAapService aapService;
 
