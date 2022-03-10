@@ -90,8 +90,7 @@ public class ApiDocumentationTest {
 
   @MockBean CurationPersistService curationPersistService;
 
-  @MockBean
-  CurationReadService curationReadService;
+  @MockBean CurationReadService curationReadService;
 
   @MockBean private BioSamplesAapService aapService;
 

@@ -39,7 +39,7 @@
 	<module>properties</module>
 	<module>utils</module>
 	<module>scripts</module>
-  <module>commons</module>
+<module>commons</module>
 </modules>
 
 <dependencies>
