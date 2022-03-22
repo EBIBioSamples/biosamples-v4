@@ -59,6 +59,18 @@ public class NcbiBaseConverterTests {
   }
 
   @Test
+  public void given_ncbi_biosample_extract_pubmeds() {
+    Sample sampleToTest =
+        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
+    assertEquals(1, sampleToTest.getPublications().size());
+    assertTrue(
+        sampleToTest.getPublications().stream()
+            .filter(publication -> publication.getPubMedId().equals("20497546"))
+            .findFirst()
+            .isPresent());
+  }
+
+  @Test
   public void it_extracts_external_Ids() {
     Sample sampleToTest =
         this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);

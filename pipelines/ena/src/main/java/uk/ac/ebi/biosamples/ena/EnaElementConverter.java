@@ -20,10 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
@@ -67,6 +64,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
   private static final String DESCRIPTION = "DESCRIPTION";
   private static final String TITLE = "TITLE";
   private static final String COMMON_NAME_JSON = "common name";
+  private static final String PUBMED_ID = "pubmed_id";
   private Logger log = LoggerFactory.getLogger(getClass());
 
   @Autowired private TaxonomyService taxonomyService;
@@ -74,6 +72,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
   @Override
   public Sample convert(final Element root) {
     final SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Publication> publications = new TreeSet<>();
     final SortedSet<Relationship> relationships = new TreeSet<>();
     final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
     final Attribute organismAttribute;
@@ -247,6 +246,11 @@ public class EnaElementConverter implements Converter<Element, Sample> {
           continue;
         }
 
+        if (tag != null && tag.equalsIgnoreCase(PUBMED_ID)) {
+          publications.add(new Publication.Builder().pubmed_id(value).build());
+          continue;
+        }
+
         if (tag != null) {
           attributes.add(
               Attribute.build(tag, value, TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), unit));
@@ -254,11 +258,26 @@ public class EnaElementConverter implements Converter<Element, Sample> {
       }
     }
 
-    if (XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINKS", "URI_LINK").exists()) {
-      for (Element e : XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINKS").elements("URI_LINK")) {
-        String key = XmlPathBuilder.of(e).attribute("LABEL");
-        String value = XmlPathBuilder.of(e).attribute("URL");
-        attributes.add(Attribute.build(key, value));
+    if (XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINKS").exists()) {
+      if (XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINKS", "URI_LINK").exists()) {
+        for (Element e :
+            XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINKS").elements("URI_LINK")) {
+          String key = XmlPathBuilder.of(e).attribute("LABEL");
+          String value = XmlPathBuilder.of(e).attribute("URL");
+          attributes.add(Attribute.build(key, value));
+        }
+      }
+
+      if (XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINKS", "XREF_LINK").exists()) {
+        for (Element e :
+            XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINKS").elements("XREF_LINK")) {
+          String key = XmlPathBuilder.of(e).attribute("DB");
+          String value = XmlPathBuilder.of(e).attribute("ID");
+
+          if (key != null && key.equalsIgnoreCase(PUBMED_ID)) {
+            publications.add(new Publication.Builder().pubmed_id(value).build());
+          }
+        }
       }
     }
 
@@ -267,6 +286,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
         .withUpdate(Instant.now())
         .withAttributes(attributes)
         .withRelationships(relationships)
+        .withPublications(publications)
         .withExternalReferences(externalReferences)
         .build();
   }
