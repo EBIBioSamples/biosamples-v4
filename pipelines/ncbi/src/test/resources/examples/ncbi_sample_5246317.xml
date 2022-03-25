@@ -58,6 +58,7 @@
 		</Attributes>
 		<Links>
 			<Link label="PRJNA325589" target="bioproject" type="entrez">325589</Link>
+			<Link type="entrez" target="pubmed">20497546</Link>
 		</Links>
 		<Status status="live" when="2018-07-01T00:50:05.513" />
 	</BioSample>

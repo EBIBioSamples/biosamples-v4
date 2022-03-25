@@ -31,6 +31,7 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Publication;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
@@ -145,6 +146,7 @@ public class EnaCallable implements Callable<Void> {
   private void enrichEnaSample(final SampleDBBean sampleDBBean, final Element root) {
     Sample sample = enaElementConverter.convert(root);
     final SortedSet<Attribute> attributes = new TreeSet<>(sample.getCharacteristics());
+    final SortedSet<Publication> publications = new TreeSet<>(sample.getPublications());
     final SortedSet<ExternalReference> externalReferences =
         new TreeSet<>(sample.getExternalReferences());
     final String lastUpdated = sampleDBBean.getLastUpdate();
@@ -201,7 +203,13 @@ public class EnaCallable implements Callable<Void> {
             sample.getRelationships(),
             externalReferences);
 
-    sample = Sample.Builder.fromSample(sample).withNoData().build();
+    if (publications == null) {
+      sample = Sample.Builder.fromSample(sample).withNoData().build();
+    } else {
+      sample =
+          Sample.Builder.fromSample(sample).withNoData().withPublications(publications).build();
+    }
+
     bioSamplesWebinClient.persistSampleResource(sample);
 
     if (amrData != null && !amrData.isEmpty()) {
