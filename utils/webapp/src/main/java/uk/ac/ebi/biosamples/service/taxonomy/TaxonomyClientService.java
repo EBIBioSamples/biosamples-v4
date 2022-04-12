@@ -10,9 +10,8 @@
 */
 package uk.ac.ebi.biosamples.service.taxonomy;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.ena.taxonomy.client.TaxonomyClientImpl;
 import uk.ac.ebi.ena.taxonomy.taxon.SubmittableTaxon;
@@ -63,15 +62,9 @@ public class TaxonomyClientService extends TaxonomyClientImpl {
   private Sample returnSampleOrThrowBasedOnAuthProvider(
       final Sample sample, final boolean isWebinAuth) {
     if (isWebinAuth) {
-      throw new ENATaxonUnresolvedException();
+      throw new GlobalExceptions.ENATaxonUnresolvedException();
     } else {
       return sample;
     }
   }
-
-  @ResponseStatus(
-      value = HttpStatus.BAD_REQUEST,
-      reason =
-          "Validation of taxonomy failed against the ENA taxonomy service. The Organism attribute is either invalid or not submittable")
-  public static class ENATaxonUnresolvedException extends RuntimeException {}
 }

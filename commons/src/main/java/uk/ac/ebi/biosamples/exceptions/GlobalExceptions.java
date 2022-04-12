@@ -17,7 +17,7 @@ public class GlobalExceptions {
   @ResponseStatus(
       value = HttpStatus.BAD_REQUEST,
       reason = "New sample submission should not contain an accession")
-  public static class SampleWithAccessionSumbissionException extends RuntimeException {}
+  public static class SampleWithAccessionSubmissionException extends RuntimeException {}
 
   @ResponseStatus(
       value = HttpStatus.BAD_REQUEST,
@@ -106,4 +106,29 @@ public class GlobalExceptions {
       value = HttpStatus.BAD_REQUEST,
       reason = "You must provide a bearer token to be able to submit") // 400
   public static class WebinTokenInvalidException extends RuntimeException {}
+
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  public static class UploadInvalidException extends RuntimeException {
+    public UploadInvalidException(final String collect) {
+      super(collect);
+    }
+  }
+
+  @ResponseStatus(
+      value = HttpStatus.BAD_REQUEST,
+      reason =
+          "Validation of taxonomy failed against the ENA taxonomy service. The Organism attribute is either invalid or not submittable")
+  public static class ENATaxonUnresolvedException extends RuntimeException {}
+
+  @ResponseStatus(
+      value = HttpStatus.BAD_REQUEST,
+      reason = "Sample must match URL or be omitted") // 400
+  public static class SampleNotMatchException extends RuntimeException {}
+
+  @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR, reason = "Bulk accessioning failure")
+  public static class BulkAccessionFailureExceptionV2 extends RuntimeException {
+    public BulkAccessionFailureExceptionV2(String message) {
+      super(message);
+    }
+  }
 }

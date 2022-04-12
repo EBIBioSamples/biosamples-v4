@@ -39,7 +39,6 @@ import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.upload.FileQueueService;
 import uk.ac.ebi.biosamples.service.upload.FileUploadService;
-import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
 import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
 
 @Controller
@@ -84,7 +83,7 @@ public class FileUploadController {
         final HttpHeaders headers = setResponseHeadersSuccess(downloadableFile);
 
         return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
-      } catch (final UploadInvalidException e) {
+      } catch (final GlobalExceptions.UploadInvalidException e) {
         log.info("File upload failure " + e.getMessage());
 
         final Path temp = Files.createTempFile("failure_result_bad_req", ".txt");

@@ -75,7 +75,7 @@ public class SampleRestControllerV2 {
     boolean isWebinSuperUser = false;
 
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
-      throw new SampleAccessionMismatchExceptionV2();
+      throw new GlobalExceptions.SampleAccessionMismatchException();
     }
 
     log.debug("Received PUT for " + accession);
@@ -93,7 +93,7 @@ public class SampleRestControllerV2 {
       isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
 
       if (sampleService.isNotExistingAccession(accession) && !isWebinSuperUser) {
-        throw new SampleAccessionMismatchExceptionV2();
+        throw new GlobalExceptions.SampleAccessionMismatchException();
       }
 
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
@@ -101,7 +101,7 @@ public class SampleRestControllerV2 {
       if (sampleService.isNotExistingAccession(accession)
           && !(bioSamplesAapService.isWriteSuperUser()
               || bioSamplesAapService.isIntegrationTestUser())) {
-        throw new SampleAccessionMismatchExceptionV2();
+        throw new GlobalExceptions.SampleAccessionMismatchException();
       }
 
       sample = bioSamplesAapService.handleSampleDomain(sample);
@@ -137,9 +137,4 @@ public class SampleRestControllerV2 {
 
     return ResponseEntity.status(HttpStatus.OK).body(sample);
   }
-
-  @ResponseStatus(
-      value = HttpStatus.BAD_REQUEST,
-      reason = "Sample accession must match URL accession") // 400
-  public static class SampleAccessionMismatchExceptionV2 extends RuntimeException {}
 }

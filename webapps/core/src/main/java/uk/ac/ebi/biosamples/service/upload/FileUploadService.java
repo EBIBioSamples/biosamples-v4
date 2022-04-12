@@ -37,7 +37,6 @@ import uk.ac.ebi.biosamples.mongo.util.SampleNameAccessionPair;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
 import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
 import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
@@ -159,7 +158,7 @@ public class FileUploadService {
               + "********FEEDBACK TO BSD DEV TEAM END********";
       validationResult.addValidationMessage(
           new ValidationResult.ValidationMessage(uniqueUploadId, messageForBsdDevTeam));
-      throw new UploadInvalidException(
+      throw new GlobalExceptions.UploadInvalidException(
           validationResult.getValidationMessagesList().stream()
               .map(
                   validationMessage ->

@@ -10,14 +10,25 @@
 */
 package uk.ac.ebi.biosamples.ebeye.base;
 
-/*import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.operation.OrderBy;*/
-
+import com.mongodb.*;
+import com.mongodb.operation.OrderBy;
+import java.io.File;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.Resource;
@@ -30,32 +41,19 @@ import uk.ac.ebi.biosamples.model.filter.AttributeFilter;
 import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
 @Component
 public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   private static Logger log = LoggerFactory.getLogger(EbEyeBioSamplesDataDumpRunner.class);
-  /*private static final String BIOSAMPLES = "biosamples";
-  private static final String MONGO_SAMPLE = "mongoSample";*/
+  private static final String BIOSAMPLES = "biosamples";
+  private static final String MONGO_SAMPLE = "mongoSample";
   private static final String ENA_LC = "ena";
   private static final String ENA_UC = "ENA";
   private final RefType taxonomyRefType = new RefType();
   @Autowired BioSamplesClient bioSamplesClient;
   @Autowired AttributeLoader attributeLoader;
 
-  /*@Value("${spring.data.mongodb.uri}")
-  private String mongoUri;*/
+  @Value("${spring.data.mongodb.uri}")
+  private String mongoUri;
 
   private Set<String> attributeSet;
 
@@ -94,7 +92,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
 
       convertSampleToXml(samplesList, f, covidRun);
     } else {
-      /*final DateTimeFormatter dtFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+      final DateTimeFormatter dtFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
       final MongoClientURI uri = new MongoClientURI(mongoUri);
       final MongoClient mongoClient = new MongoClient(uri);
       final DB db = mongoClient.getDB(BIOSAMPLES);
@@ -140,14 +138,14 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
 
         // if (fileCounter == 1) break;
       }
-    */}
+    }
   }
 
   public LocalDate convertToLocalDateViaInstant(Date dateToConvert) {
     return dateToConvert.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
   }
 
-  /*private void fetchQueryAndDump(
+  private void fetchQueryAndDump(
       final DBCollection coll, final String from, final String until, final File file)
       throws ParseException, JAXBException {
     final List<String> listOfAccessions = getAllDocuments(coll, from, until);
@@ -158,9 +156,9 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
         listOfAccessions.stream().map(this::fetchSample).collect(Collectors.toList());
 
     convertSampleToXml(samplesList, file, false);
-  }*/
+  }
 
-  /*private static List<String> getAllDocuments(
+  private static List<String> getAllDocuments(
       final DBCollection col, final String from, final String until) throws ParseException {
     final List<String> listOfAccessions = new ArrayList<>();
     final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -181,7 +179,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
         });
 
     return listOfAccessions;
-  }*/
+  }
 
   public Sample fetchSample(final String accession) {
     Optional<Resource<Sample>> sampleResource = bioSamplesClient.fetchSampleResource(accession);

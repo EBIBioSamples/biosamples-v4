@@ -150,7 +150,7 @@ public class SamplesRestControllerV2 {
 
     log.debug("Received POST for accessioning " + sample);
     if (sample.hasAccession()) {
-      throw new SampleWithAccessionSubmissionExceptionV2();
+      throw new GlobalExceptions.SampleWithAccessionSubmissionException();
     }
 
     final boolean webinAuth =
@@ -217,7 +217,7 @@ public class SamplesRestControllerV2 {
       samples.forEach(
           sample -> {
             if (sample.hasAccession()) {
-              throw new SampleWithAccessionSubmissionExceptionV2();
+              throw new GlobalExceptions.SampleWithAccessionSubmissionException();
             }
           });
 
@@ -274,19 +274,7 @@ public class SamplesRestControllerV2 {
     } catch (final Exception e) {
       log.info("Failed to assign accessions to " + samples.size() + " samples");
 
-      throw new BulkAccessionFailureExceptionV2(e.getMessage());
-    }
-  }
-
-  @ResponseStatus(
-      value = HttpStatus.BAD_REQUEST,
-      reason = "New sample submission should not contain an accession")
-  public static class SampleWithAccessionSubmissionExceptionV2 extends RuntimeException {}
-
-  @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR, reason = "Bulk accessioning failure")
-  public static class BulkAccessionFailureExceptionV2 extends RuntimeException {
-    public BulkAccessionFailureExceptionV2(String message) {
-      super(message);
+      throw new GlobalExceptions.BulkAccessionFailureExceptionV2(e.getMessage());
     }
   }
 }

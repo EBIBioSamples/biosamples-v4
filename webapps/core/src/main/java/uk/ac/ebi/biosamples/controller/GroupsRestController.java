@@ -48,7 +48,7 @@ public class GroupsRestController {
   @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Resource<Sample>> post(@RequestBody Sample sample) {
     if (sample.hasAccession()) {
-      throw new GlobalExceptions.SampleWithAccessionSumbissionException();
+      throw new GlobalExceptions.SampleWithAccessionSubmissionException();
     }
     sample = bioSamplesAapService.handleSampleDomain(sample);
 

@@ -487,7 +487,7 @@ public class SamplesRestController {
       @RequestBody Sample sample, @RequestHeader(name = "Authorization") final String token) {
 
     if (sample.hasAccession()) {
-      throw new GlobalExceptions.SampleWithAccessionSumbissionException();
+      throw new GlobalExceptions.SampleWithAccessionSubmissionException();
     }
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
@@ -530,7 +530,7 @@ public class SamplesRestController {
     samples.forEach(
         sample -> {
           if (sample.hasAccession()) {
-            throw new GlobalExceptions.SampleWithAccessionSumbissionException();
+            throw new GlobalExceptions.SampleWithAccessionSubmissionException();
           }
         });
 
@@ -630,14 +630,14 @@ public class SamplesRestController {
           bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
 
       if (sample.hasAccession()) {
-        throw new GlobalExceptions.SampleWithAccessionSumbissionException();
+        throw new GlobalExceptions.SampleWithAccessionSubmissionException();
       }
 
       sample =
           bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinSubmissionAccountId);
     } else {
       if (sample.hasAccession() && !bioSamplesAapService.isWriteSuperUser()) {
-        throw new GlobalExceptions.SampleWithAccessionSumbissionException();
+        throw new GlobalExceptions.SampleWithAccessionSubmissionException();
       }
 
       sample = bioSamplesAapService.handleSampleDomain(sample);
