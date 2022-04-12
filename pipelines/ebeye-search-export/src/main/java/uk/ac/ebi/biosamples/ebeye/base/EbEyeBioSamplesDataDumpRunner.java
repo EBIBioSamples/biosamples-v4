@@ -10,10 +10,30 @@
 */
 package uk.ac.ebi.biosamples.ebeye.base;
 
-import com.mongodb.*;
-import com.mongodb.operation.OrderBy;
+/*import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.operation.OrderBy;*/
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.hateoas.Resource;
+import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.ebeye.gen.*;
+import uk.ac.ebi.biosamples.ebeye.util.AttributeLoader;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.filter.AttributeFilter;
+import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
+import uk.ac.ebi.biosamples.model.filter.Filter;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import java.io.File;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -22,37 +42,20 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
-import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.ebeye.gen.*;
-import uk.ac.ebi.biosamples.ebeye.util.LoadAttributeSet;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
-import uk.ac.ebi.biosamples.model.filter.Filter;
 
 @Component
 public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   private static Logger log = LoggerFactory.getLogger(EbEyeBioSamplesDataDumpRunner.class);
-  private static final String BIOSAMPLES = "biosamples";
-  private static final String MONGO_SAMPLE = "mongoSample";
+  /*private static final String BIOSAMPLES = "biosamples";
+  private static final String MONGO_SAMPLE = "mongoSample";*/
   private static final String ENA_LC = "ena";
   private static final String ENA_UC = "ENA";
   private final RefType taxonomyRefType = new RefType();
   @Autowired BioSamplesClient bioSamplesClient;
-  @Autowired LoadAttributeSet loadAttributeSet;
+  @Autowired AttributeLoader attributeLoader;
 
-  @Value("${spring.data.mongodb.uri}")
-  private String mongoUri;
+  /*@Value("${spring.data.mongodb.uri}")
+  private String mongoUri;*/
 
   private Set<String> attributeSet;
 
@@ -91,7 +94,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
 
       convertSampleToXml(samplesList, f, covidRun);
     } else {
-      final DateTimeFormatter dtFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+      /*final DateTimeFormatter dtFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
       final MongoClientURI uri = new MongoClientURI(mongoUri);
       final MongoClient mongoClient = new MongoClient(uri);
       final DB db = mongoClient.getDB(BIOSAMPLES);
@@ -99,7 +102,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
       final AtomicReference<String> startDate = new AtomicReference<>("");
       final String filePath = "";
 
-      attributeSet = loadAttributeSet.getAllAttributes();
+      attributeSet = attributeLoader.getAllAttributes();
 
       final List<String> programArguments =
           args.getOptionNames().stream()
@@ -137,14 +140,14 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
 
         // if (fileCounter == 1) break;
       }
-    }
+    */}
   }
 
   public LocalDate convertToLocalDateViaInstant(Date dateToConvert) {
     return dateToConvert.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
   }
 
-  private void fetchQueryAndDump(
+  /*private void fetchQueryAndDump(
       final DBCollection coll, final String from, final String until, final File file)
       throws ParseException, JAXBException {
     final List<String> listOfAccessions = getAllDocuments(coll, from, until);
@@ -155,9 +158,9 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
         listOfAccessions.stream().map(this::fetchSample).collect(Collectors.toList());
 
     convertSampleToXml(samplesList, file, false);
-  }
+  }*/
 
-  private static List<String> getAllDocuments(
+  /*private static List<String> getAllDocuments(
       final DBCollection col, final String from, final String until) throws ParseException {
     final List<String> listOfAccessions = new ArrayList<>();
     final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -178,7 +181,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
         });
 
     return listOfAccessions;
-  }
+  }*/
 
   public Sample fetchSample(final String accession) {
     Optional<Resource<Sample>> sampleResource = bioSamplesClient.fetchSampleResource(accession);
@@ -263,8 +266,24 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
               crossReferencesType.getRef().add(refType);
             });
 
+    sample
+        .getRelationships()
+        .forEach(
+            relationship -> {
+              final RefType refType = new RefType();
+
+              refType.setDbname("BSD_relationship_" + relationship.getType());
+              refType.setDbkey(relationship.getSource());
+
+              crossReferencesType.getRef().add(refType);
+            });
+
     if (covidRun) {
-      crossReferencesType.getRef().add(getTaxonomyCrossReferenceCovid(sample.getTaxId()));
+      final Long taxId = sample.getTaxId();
+
+      if (taxId != null) {
+        crossReferencesType.getRef().add(getTaxonomyCrossReferenceCovid(taxId));
+      }
     } else {
       crossReferencesType.getRef().add(taxonomyRefType);
     }
@@ -385,12 +404,27 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
 
   public List<Sample> getSamplesListCovid(
       AtomicReference<String> startDate, AtomicReference<String> endDate) {
-    final Iterable<Resource<Sample>> sampleResources =
-        bioSamplesClient.fetchSampleResourceAll(
-            "NCBITaxon_2697049", getDateFiltersCovid(startDate.get(), endDate.get()));
     final List<Sample> sampleList = new ArrayList<>();
+    final Collection<Filter> covidDateFilter = getDateFiltersCovid(startDate.get(), endDate.get());
+    final Iterable<Resource<Sample>> sampleResources =
+        bioSamplesClient.fetchSampleResourceAll("NCBITaxon_2697049", covidDateFilter);
 
     sampleResources.forEach(
+        sampleResource -> {
+          final Sample sample = sampleResource.getContent();
+
+          sampleList.add(sample);
+          log.info("Sample added " + sample.getAccession());
+        });
+
+    final Collection<Filter> covidDiseaseTagFilter = new ArrayList<>();
+    covidDiseaseTagFilter.add(new AttributeFilter.Builder("disease").withValue("COVID-19").build());
+    covidDiseaseTagFilter.addAll(covidDateFilter);
+
+    final Iterable<Resource<Sample>> sampleResources2 =
+        bioSamplesClient.fetchSampleResourceAll(covidDiseaseTagFilter);
+
+    sampleResources2.forEach(
         sampleResource -> {
           final Sample sample = sampleResource.getContent();
 

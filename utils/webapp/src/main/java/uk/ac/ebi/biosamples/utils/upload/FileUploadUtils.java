@@ -170,7 +170,6 @@ public class FileUploadUtils {
 
                         return new Attribute.Builder(
                                 trimmedCharacteristicsName, characteristicsValue)
-                            .withTag("attribute")
                             .withUnit(characteristics.getUnit())
                             .withIri(characteristics.getIri())
                             .build();

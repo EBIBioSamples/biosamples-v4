@@ -26,7 +26,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
@@ -332,21 +334,20 @@ public class FileUploadService {
 
       return sample;
     } catch (final Exception e) {
-      if (e instanceof BioSamplesWebinAuthenticationService.SampleNotAccessibleException) {
+      if (e instanceof GlobalExceptions.SampleNotAccessibleException) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
                 sample.getName(), "Sample " + sample.getName() + " is not accessible for you"));
-      } else if (e
-          instanceof BioSamplesWebinAuthenticationService.WebinUserLoginUnauthorizedException) {
+      } else if (e instanceof GlobalExceptions.WebinUserLoginUnauthorizedException) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
                 sample.getName(),
                 "Sample " + sample.getName() + " not persisted as WEBIN user is not authorized"));
-      } else if (e instanceof BioSamplesAapService.SampleDomainMismatchException) {
+      } else if (e instanceof GlobalExceptions.SampleDomainMismatchException) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
                 sample.getName(), "Sample " + sample.getName() + " is not accessible for you"));
-      } else if (e instanceof BioSamplesAapService.SampleNotAccessibleException) {
+      } else if (e instanceof GlobalExceptions.SampleNotAccessibleException) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
                 sample.getName(), "Sample " + sample.getName() + " is not accessible for you"));
@@ -396,7 +397,8 @@ public class FileUploadService {
     }*/
 
     try {
-      return sampleService.store(sample, isFirstTimeMetadataAdded, authProvider);
+      return sampleService.store(
+          sample, isFirstTimeMetadataAdded, AuthorizationProvider.valueOf(authProvider));
     } catch (final Exception e) {
       throw new RuntimeException("Failed to persist sample with name " + sample.getName());
     }

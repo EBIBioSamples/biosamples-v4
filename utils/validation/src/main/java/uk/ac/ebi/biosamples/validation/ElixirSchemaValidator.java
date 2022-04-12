@@ -25,8 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.exception.SampleValidationException;
-import uk.ac.ebi.biosamples.exception.SchemaValidationException;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 
 @Service
 @Qualifier("elixirValidator")
@@ -60,13 +59,13 @@ public class ElixirSchemaValidator implements ValidatorI {
     JsonNode validationResponse = restTemplate.exchange(requestEntity, JsonNode.class).getBody();
 
     if (validationResponse.get("validationState").asText().equalsIgnoreCase("INVALID")) {
-      throw new SampleValidationException(
+      throw new GlobalExceptions.SampleValidationException(
           "Sample validation failed: " + validationResponse.get("validationErrors").toString());
     }
   }
 
   public String validateById(String schemaAccession, String sample)
-      throws IOException, SchemaValidationException {
+      throws IOException, GlobalExceptions.SchemaValidationException {
     JsonNode sampleJson = objectMapper.readTree(sample);
     JsonNode schema = getSchemaByAccession(schemaAccession);
 
@@ -80,7 +79,8 @@ public class ElixirSchemaValidator implements ValidatorI {
     JsonNode validationResponse = restTemplate.exchange(requestEntity, JsonNode.class).getBody();
 
     if (validationResponse.size() > 0) {
-      throw new SampleValidationException("Sample validation failed: " + validationResponse);
+      throw new GlobalExceptions.SampleValidationException(
+          "Sample validation failed: " + validationResponse);
     }
 
     return schemaAccession;
@@ -102,7 +102,8 @@ public class ElixirSchemaValidator implements ValidatorI {
     if (schemaResponse.getStatusCode() != HttpStatus.OK) {
       log.error(
           "Failed to retrieve schema from JSON Schema Store: {} {}", schemaId, schemaResponse);
-      throw new SampleValidationException("Failed to retrieve schema from JSON Schema Store");
+      throw new GlobalExceptions.SampleValidationException(
+          "Failed to retrieve schema from JSON Schema Store");
     }
 
     return schemaResponse.getBody();
@@ -125,7 +126,7 @@ public class ElixirSchemaValidator implements ValidatorI {
           "Failed to retrieve schema from JSON Schema Store: {} {}",
           schemaAccession,
           schemaResponse);
-      throw new SampleValidationException(
+      throw new GlobalExceptions.SampleValidationException(
           "Failed to retrieve schema from JSON Schema Store: " + schemaAccession);
     }
 

@@ -33,7 +33,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.exception.AccessControlException;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
@@ -195,7 +195,9 @@ public class FileUploadController {
         accessControlService
             .extractToken(token)
             .orElseThrow(
-                () -> new AccessControlException("Invalid token. Please provide valid token."));
+                () ->
+                    new GlobalExceptions.AccessControlException(
+                        "Invalid token. Please provide valid token."));
     final List<String> userRoles = accessControlService.getUserRoles(authToken);
     final List<MongoFileUpload> uploads = fileUploadService.getUserSubmissions(userRoles);
 

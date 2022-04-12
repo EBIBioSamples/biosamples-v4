@@ -16,7 +16,6 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -27,6 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
@@ -91,7 +91,7 @@ public class SamplesRestControllerV2 {
           bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
 
       if (webinAccount == null) {
-        throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
+        throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
       final String webinAccountId = webinAccount.getId();
@@ -114,7 +114,7 @@ public class SamplesRestControllerV2 {
                                   sample, true);
                         }
 
-                        return sampleService.storeV2(sample, true, authProvider.name());
+                        return sampleService.storeV2(sample, true, authProvider);
                       })
                   .collect(Collectors.toList()));
     } else {
@@ -132,7 +132,7 @@ public class SamplesRestControllerV2 {
                                   sample, false);
                         }
 
-                        return sampleService.storeV2(sample, true, authProvider.name());
+                        return sampleService.storeV2(sample, true, authProvider);
                       })
                   .collect(Collectors.toList()));
     }
@@ -166,7 +166,7 @@ public class SamplesRestControllerV2 {
           bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
 
       if (webinAccount == null) {
-        throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
+        throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
@@ -176,7 +176,7 @@ public class SamplesRestControllerV2 {
 
     sample = buildPrivateSampleV2(sample);
 
-    sample = sampleService.storeV2(sample, false, authProvider.name());
+    sample = sampleService.storeV2(sample, false, authProvider);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(sample);
   }
@@ -205,15 +205,13 @@ public class SamplesRestControllerV2 {
       HttpServletRequest request,
       @RequestBody List<Sample> samples,
       @RequestHeader(name = "Authorization") final String token) {
-
     log.info("Received POST for bulk accessioning of " + samples.size() + " samples");
+
     final boolean webinAuth =
         accessControlService
             .extractToken(token)
             .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
             .orElse(Boolean.FALSE);
-    AuthorizationProvider authProvider =
-        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
 
     try {
       samples.forEach(
@@ -228,7 +226,7 @@ public class SamplesRestControllerV2 {
             bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
 
         if (webinAccount == null) {
-          throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
+          throw new GlobalExceptions.WebinTokenInvalidException();
         }
 
         samples =
@@ -257,44 +255,20 @@ public class SamplesRestControllerV2 {
         }
       }
 
-      final int maxThreads = 10;
-      final ExecutorService executor = Executors.newFixedThreadPool(maxThreads);
-      final List<Future<Sample>> sampleFutures =
-          samples.stream()
-              .map(sample -> executor.submit(new SamplePersistence(sample, authProvider.name())))
-              .collect(Collectors.toList());
-
-      log.info("Number of samples created " + sampleFutures.size());
-
-      final Map<String, String> outputMap =
-          sampleFutures.stream()
-              .map(
-                  sampleFuture -> {
-                    try {
-                      return sampleFuture.get();
-                    } catch (InterruptedException | ExecutionException e) {
-                      log.info("Exception here " + e.getMessage());
-                    }
-
-                    return null;
-                  })
-              .filter(Objects::nonNull)
-              .collect(Collectors.toMap(Sample::getName, Sample::getAccession));
-
-      /*final List<Sample> createdSamplesList =
+      final List<Sample> createdSamplesList =
           samples.stream()
               .map(
                   sample -> {
                     log.trace("Initiating store() for " + sample.getName());
                     sample = buildPrivateSampleV2(sample);
-                    return sampleService.store(sample, false, authProvider);
+                    return sampleService.accessionSample(sample);
                   })
               .collect(Collectors.toList());
 
       final Map<String, String> outputMap =
           createdSamplesList.stream()
               .filter(Objects::nonNull)
-              .collect(Collectors.toMap(Sample::getName, Sample::getAccession));*/
+              .collect(Collectors.toMap(Sample::getName, Sample::getAccession));
 
       return ResponseEntity.ok(outputMap);
     } catch (final Exception e) {
@@ -304,45 +278,12 @@ public class SamplesRestControllerV2 {
     }
   }
 
-  class SamplePersistence implements Callable<Sample> {
-    Sample sample;
-    String authProvider;
-
-    SamplePersistence(Sample sample, String authProvider) {
-      this.sample = sample;
-      this.authProvider = authProvider;
-    }
-
-    @Override
-    public Sample call() {
-      Logger log = LoggerFactory.getLogger(getClass());
-
-      final Instant release =
-          Instant.ofEpochSecond(
-              LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
-      final Instant update = Instant.now();
-      final SubmittedViaType submittedVia =
-          sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
-
-      sample =
-          Sample.Builder.fromSample(sample)
-              .withRelease(release)
-              .withUpdate(update)
-              .withSubmittedVia(submittedVia)
-              .build();
-
-      log.info("Initiating store() for " + sample.getName());
-
-      return sampleService.storeV2(sample, false, authProvider);
-    }
-  }
-
   @ResponseStatus(
       value = HttpStatus.BAD_REQUEST,
       reason = "New sample submission should not contain an accession")
   public static class SampleWithAccessionSubmissionExceptionV2 extends RuntimeException {}
 
-  @ResponseStatus(value = HttpStatus.SERVICE_UNAVAILABLE, reason = "Bulk accessioning failure")
+  @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR, reason = "Bulk accessioning failure")
   public static class BulkAccessionFailureExceptionV2 extends RuntimeException {
     public BulkAccessionFailureExceptionV2(String message) {
       super(message);

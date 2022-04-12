@@ -25,9 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.ac.ebi.biosamples.exception.AccessControlException;
-import uk.ac.ebi.biosamples.exception.SampleAccessionMismatchException;
-import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
@@ -65,13 +63,13 @@ public class StructuredDataRestController {
   @GetMapping()
   public Resource<StructuredData> get(@PathVariable String accession) {
     if (accession == null || accession.isEmpty()) {
-      throw new SampleAccessionMismatchException();
+      throw new GlobalExceptions.SampleAccessionMismatchException();
     }
 
     return new Resource<>(
         structuredDataService
             .getStructuredData(accession)
-            .orElseThrow(() -> new SampleNotFoundException()));
+            .orElseThrow(() -> new GlobalExceptions.SampleNotFoundException()));
   }
 
   @PreAuthorize("isAuthenticated()")
@@ -86,12 +84,14 @@ public class StructuredDataRestController {
         accessControlService
             .extractToken(token)
             .orElseThrow(
-                () -> new AccessControlException("Invalid token. Please provide valid token."));
+                () ->
+                    new GlobalExceptions.AccessControlException(
+                        "Invalid token. Please provide valid token."));
     final boolean webinAuth = authToken.getAuthority() == AuthorizationProvider.WEBIN;
 
     log.info("PUT request for structured data: {}", accession);
     if (structuredData.getAccession() == null || !structuredData.getAccession().equals(accession)) {
-      throw new SampleAccessionMismatchException();
+      throw new GlobalExceptions.SampleAccessionMismatchException();
     }
 
     if (webinAuth) {

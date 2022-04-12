@@ -21,7 +21,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.exception.AccessControlException;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 
@@ -47,7 +47,8 @@ public class AccessControlService {
     String payload = new String(decoder.decode(chunks[1]));
 
     if (!verifySignature(token)) {
-      throw new AccessControlException("Failed to verify the integrity of the token");
+      throw new GlobalExceptions.AccessControlException(
+          "Failed to verify the integrity of the token");
     }
 
     AuthToken authToken;
@@ -71,7 +72,7 @@ public class AccessControlService {
 
       authToken = new AuthToken(algorithm, authority, user, roles);
     } catch (IOException e) {
-      throw new AccessControlException("Could not decode token", e);
+      throw new GlobalExceptions.AccessControlException("Could not decode token", e);
     }
 
     return Optional.of(authToken);

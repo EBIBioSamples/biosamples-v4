@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
@@ -84,7 +85,7 @@ public class SampleRestControllerV2 {
           bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
 
       if (webinAccount == null) {
-        throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
+        throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
       final String webinAccountId = webinAccount.getId();
@@ -132,7 +133,7 @@ public class SampleRestControllerV2 {
       sample = Sample.Builder.fromSample(sample).withSubmitted(now).build();
     }
 
-    sample = sampleService.storeV2(sample, isFirstTimeMetadataAdded, authProvider.name());
+    sample = sampleService.storeV2(sample, isFirstTimeMetadataAdded, authProvider);
 
     return ResponseEntity.status(HttpStatus.OK).body(sample);
   }

@@ -8,7 +8,7 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.exception;
+package uk.ac.ebi.biosamples.advice;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -17,12 +17,14 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 
 @ControllerAdvice
-public class SampleNotAccessibleControllerAdvice extends ResponseEntityExceptionHandler {
+public class SchemaValidationControllerAdvice extends ResponseEntityExceptionHandler {
 
-  @ExceptionHandler(value = {SampleNotAccessibleException.class})
-  protected ResponseEntity<Object> handleConflict(RuntimeException ex, WebRequest request) {
-    return handleExceptionInternal(ex, null, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+  @ExceptionHandler(value = {GlobalExceptions.SchemaValidationException.class})
+  protected ResponseEntity<Object> handleConflict(RuntimeException e, WebRequest request) {
+    return handleExceptionInternal(
+        e, e.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
   }
 }

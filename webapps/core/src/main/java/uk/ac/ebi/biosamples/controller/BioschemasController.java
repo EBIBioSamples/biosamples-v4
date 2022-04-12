@@ -14,8 +14,7 @@ import java.time.Instant;
 import java.util.Optional;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import uk.ac.ebi.biosamples.exception.SampleNotAccessibleException;
-import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.JsonLDDataCatalog;
 import uk.ac.ebi.biosamples.model.JsonLDDataRecord;
 import uk.ac.ebi.biosamples.model.JsonLDDataset;
@@ -61,14 +60,14 @@ public class BioschemasController {
       @RequestParam(name = "curationrepo", required = false) final String curationRepo) {
     Optional<Sample> sample = sampleService.fetch(accession, Optional.empty(), curationRepo);
     if (!sample.isPresent()) {
-      throw new SampleNotFoundException();
+      throw new GlobalExceptions.SampleNotFoundException();
     }
     bioSamplesAapService.checkAccessible(sample.get());
 
     // check if the release date is in the future and if so return it as
     // private
     if (sample.get().getRelease().isAfter(Instant.now())) {
-      throw new SampleNotAccessibleException();
+      throw new GlobalExceptions.SampleNotAccessibleException();
     }
 
     return jsonLDService.sampleToJsonLD(sample.get());

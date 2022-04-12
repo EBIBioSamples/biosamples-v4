@@ -19,14 +19,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.client.Traverson;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
@@ -81,34 +80,6 @@ public class BioSamplesAapService {
 
     return domains;
   }
-
-  @ResponseStatus(
-      value = HttpStatus.BAD_REQUEST,
-      reason = "Curation Link must specify a domain") // 400
-  public static class CurationLinkDomainMissingException extends RuntimeException {}
-
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample must specify a domain") // 400
-  public static class DomainMissingException extends RuntimeException {}
-
-  @ResponseStatus(
-      value = HttpStatus.BAD_REQUEST,
-      reason = "Structured data must have a domain") // 400
-  public static class StructuredDataDomainMissingException extends RuntimeException {}
-
-  @ResponseStatus(
-      value = HttpStatus.FORBIDDEN,
-      reason =
-          "This sample is private and not available for browsing. If you think this is an error and/or you should have access please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk") // 403
-  public static class SampleNotAccessibleException extends RuntimeException {}
-
-  @ResponseStatus(
-      value = HttpStatus.FORBIDDEN,
-      reason =
-          "You don't have access to the sample structured data. If you think this is an error and/or you should have access please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk") // 403
-  public static class StructuredDataNotAccessibleException extends RuntimeException {}
-
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample domain mismatch") // 400
-  public static class SampleDomainMismatchException extends RuntimeException {}
 
   /**
    * Returns a set of domains that the current user has access to (uses thread-bound spring
@@ -180,11 +151,12 @@ public class BioSamplesAapService {
    *
    * @param sample
    * @return
-   * @throws SampleNotAccessibleException
-   * @throws DomainMissingException
+   * @throws GlobalExceptions.SampleNotAccessibleException
+   * @throws GlobalExceptions.DomainMissingException
    */
   public Sample handleSampleDomain(Sample sample)
-      throws SampleNotAccessibleException, DomainMissingException {
+      throws GlobalExceptions.SampleNotAccessibleException,
+          GlobalExceptions.DomainMissingException {
     // Get the domains the current user has access to
     final Set<String> usersDomains = getDomains();
     final String domain = sample.getDomain();
@@ -199,7 +171,7 @@ public class BioSamplesAapService {
     // check if FILE UPLOADER submission, domain changes are not allowed, handled differently
     if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
       if (oldSample.isPresent() && !domain.equals(oldSample.get().getDomain())) {
-        throw new SampleDomainMismatchException();
+        throw new GlobalExceptions.SampleDomainMismatchException();
       } else {
         return sample;
       }
@@ -214,7 +186,7 @@ public class BioSamplesAapService {
                   .withNoWebinSubmissionAccountId()
                   .build();
         } else {
-          throw new DomainMissingException();
+          throw new GlobalExceptions.DomainMissingException();
         }
       }
 
@@ -230,7 +202,7 @@ public class BioSamplesAapService {
                       oldSample.get().getWebinSubmissionAccountId()));
 
           if (!webinProxyUser) {
-            throw new SampleDomainMismatchException();
+            throw new GlobalExceptions.SampleDomainMismatchException();
           }
         }
       }
@@ -246,7 +218,7 @@ public class BioSamplesAapService {
                 + domain
                 + " but has access to "
                 + usersDomains);
-        throw new SampleNotAccessibleException();
+        throw new GlobalExceptions.SampleNotAccessibleException();
       }
     }
   }
@@ -262,9 +234,9 @@ public class BioSamplesAapService {
         .forEach(
             data -> {
               if (data.getDomain() == null) {
-                throw new StructuredDataDomainMissingException();
+                throw new GlobalExceptions.StructuredDataDomainMissingException();
               } else if (!usersDomains.contains(data.getDomain())) {
-                throw new SampleDomainMismatchException();
+                throw new GlobalExceptions.SampleDomainMismatchException();
               }
             });
   }
@@ -272,11 +244,12 @@ public class BioSamplesAapService {
   /**
    * @param sample
    * @return
-   * @throws StructuredDataNotAccessibleException
-   * @throws StructuredDataDomainMissingException
+   * @throws GlobalExceptions.StructuredDataNotAccessibleException
+   * @throws GlobalExceptions.StructuredDataDomainMissingException
    */
   public boolean isSampleOwner(Sample sample)
-      throws StructuredDataNotAccessibleException, StructuredDataDomainMissingException {
+      throws GlobalExceptions.StructuredDataNotAccessibleException,
+          GlobalExceptions.StructuredDataDomainMissingException {
     // get the domains the current user has access to
     final Set<String> usersDomains = getDomains();
     final String sampleDomain = sample.getDomain();
@@ -291,7 +264,7 @@ public class BioSamplesAapService {
                 final String structuredDataDomain = data.getDomain();
 
                 if (structuredDataDomain == null) {
-                  throw new StructuredDataDomainMissingException();
+                  throw new GlobalExceptions.StructuredDataDomainMissingException();
                 } else if (usersDomains.contains(data.getDomain())
                     && usersDomains.contains(
                         sampleDomain)) { // if the structured data domain and the sample domain both
@@ -304,7 +277,7 @@ public class BioSamplesAapService {
 
     if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) return true;
     else if (isDomainValid.get()) return true;
-    else throw new StructuredDataNotAccessibleException();
+    else throw new GlobalExceptions.StructuredDataNotAccessibleException();
   }
 
   /**
@@ -315,11 +288,11 @@ public class BioSamplesAapService {
    * for that CurationLink.
    *
    * @return
-   * @throws SampleNotAccessibleException
-   * @throws DomainMissingException
+   * @throws GlobalExceptions.SampleNotAccessibleException
+   * @throws GlobalExceptions.DomainMissingException
    */
   public CurationLink handleCurationLinkDomain(CurationLink curationLink)
-      throws CurationLinkDomainMissingException {
+      throws GlobalExceptions.CurationLinkDomainMissingException {
 
     // get the domains the current user has access to
     Set<String> usersDomains = getDomains();
@@ -337,7 +310,7 @@ public class BioSamplesAapService {
                 curationLink.getCreated());
       } else {
         // if the sample doesn't have a domain, and we can't guess one, then end
-        throw new CurationLinkDomainMissingException();
+        throw new GlobalExceptions.CurationLinkDomainMissingException();
       }
     }
 
@@ -352,7 +325,7 @@ public class BioSamplesAapService {
               + curationLink.getDomain()
               + " but has access to "
               + usersDomains);
-      throw new SampleNotAccessibleException();
+      throw new GlobalExceptions.SampleNotAccessibleException();
     }
   }
 
@@ -368,7 +341,7 @@ public class BioSamplesAapService {
     return getDomains().contains("self.BiosampleIntegrationTest");
   }
 
-  public void checkAccessible(Sample sample) throws SampleNotAccessibleException {
+  public void checkAccessible(Sample sample) throws GlobalExceptions.SampleNotAccessibleException {
     // TODO throw different exceptions in different situations
     if (sample.getRelease().isBefore(Instant.now())) {
       // release date in past, accessible
@@ -377,7 +350,7 @@ public class BioSamplesAapService {
     } else if (getDomains().contains(sample.getDomain())) {
       // if the current user belongs to a domain that owns the sample, accessible
     } else {
-      throw new SampleNotAccessibleException();
+      throw new GlobalExceptions.SampleNotAccessibleException();
     }
   }
 }

@@ -23,6 +23,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
@@ -69,14 +70,14 @@ public class CertificationController {
     final ObjectMapper jsonMapper = new ObjectMapper();
 
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
-      throw new SampleRestController.SampleAccessionMismatchException();
+      throw new GlobalExceptions.SampleAccessionMismatchException();
     }
 
     if (!webinAuth) {
       if (sampleService.isNotExistingAccession(accession)
           && !(bioSamplesAapService.isWriteSuperUser()
               || bioSamplesAapService.isIntegrationTestUser())) {
-        throw new SampleRestController.SampleAccessionDoesNotExistException();
+        throw new GlobalExceptions.SampleAccessionDoesNotExistException();
       }
     }
 
@@ -94,7 +95,7 @@ public class CertificationController {
 
       if (sampleService.isNotExistingAccession(accession)
           && !bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId)) {
-        throw new SampleRestController.SampleAccessionDoesNotExistException();
+        throw new GlobalExceptions.SampleAccessionDoesNotExistException();
       }
 
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
@@ -119,7 +120,7 @@ public class CertificationController {
 
     log.trace("Sample with certificates " + sample);
 
-    sample = sampleService.store(sample, false, authProvider.name());
+    sample = sampleService.store(sample, false, authProvider);
 
     // assemble a resource to return
     // create the response object with the appropriate status

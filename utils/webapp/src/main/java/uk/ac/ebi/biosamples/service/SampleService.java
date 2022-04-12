@@ -16,10 +16,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
@@ -45,7 +45,6 @@ public class SampleService {
   private static final String ENA_IMPORT_DOMAIN = "self.BiosampleImportENA";
   private static Logger log = LoggerFactory.getLogger(SampleService.class);
 
-  // TODO use constructor injection
   @Qualifier("SampleAccessionService")
   @Autowired
   private MongoAccessionService mongoAccessionService;
@@ -100,10 +99,6 @@ public class SampleService {
       firstTimeMetadataAdded = isFirstTimeMetadataAddedForNonImportedSamples(sample);
     }
 
-    if (firstTimeMetadataAdded) {
-      log.trace("First time metadata added");
-    }
-
     return firstTimeMetadataAdded;
   }
 
@@ -113,7 +108,7 @@ public class SampleService {
     if (sample.hasAccession()) {
       MongoSample mongoOldSample = mongoSampleRepository.findOne(sample.getAccession());
       if (mongoOldSample != null) {
-        firstTimeMetadataAdded = isFirstTimeMetadataAdded(mongoOldSample);
+        firstTimeMetadataAdded = isFirstTimeMetadataAddedToSample(mongoOldSample);
       }
     }
 
@@ -124,7 +119,7 @@ public class SampleService {
     return isPipelineEnaDomain(domain) || isPipelineNcbiDomain(domain);
   }
 
-  private boolean isFirstTimeMetadataAdded(MongoSample mongoOldSample) {
+  private boolean isFirstTimeMetadataAddedToSample(MongoSample mongoOldSample) {
     boolean firstTimeMetadataAdded = true;
     Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
 
@@ -173,13 +168,17 @@ public class SampleService {
   // is removed.
   // Note, pages of samples will not be cache busted, only single-accession sample retrieval
   // @CacheEvict(cacheNames=WebappProperties.fetchUsing, key="#result.accession")
-  public Sample store(Sample sample, boolean isFirstTimeMetadataAdded, String authProvider) {
+  /*
+  Called by V1 endpoints to persist samples
+   */
+  public Sample store(
+      Sample sample, boolean isFirstTimeMetadataAdded, AuthorizationProvider authProvider) {
     Collection<String> errors = sampleValidator.validate(sample);
     boolean isTaxIdUpdated = false;
 
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
-      throw new SampleValidationException(String.join("|", errors));
+      throw new GlobalExceptions.SampleValidationControllerException(String.join("|", errors));
     }
 
     if (sample.hasAccession()) {
@@ -197,7 +196,7 @@ public class SampleService {
             compareWithExistingAndUpdateSample(
                 sample, oldSample, isFirstTimeMetadataAdded, authProvider);
 
-        if (oldSample.getTaxId() != taxId) {
+        if (oldSample.getTaxId() != null && !oldSample.getTaxId().equals(taxId)) {
           isTaxIdUpdated = true;
         }
       } else {
@@ -228,12 +227,16 @@ public class SampleService {
     return fetch(sample.getAccession(), Optional.empty(), null).get();
   }
 
-  public Sample storeV2(Sample sample, boolean isFirstTimeMetadataAdded, String authProvider) {
+  /*
+  Called by V2 endpoints to persist samples
+   */
+  public Sample storeV2(
+      Sample sample, boolean isFirstTimeMetadataAdded, AuthorizationProvider authProvider) {
     Collection<String> errors = sampleValidator.validate(sample);
 
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
-      throw new SampleValidationException(String.join("|", errors));
+      throw new GlobalExceptions.SampleValidationControllerException(String.join("|", errors));
     }
 
     if (sample.hasAccession()) {
@@ -260,47 +263,22 @@ public class SampleService {
     return sample;
   }
 
-  public Sample accessionV2(Sample sample) {
+  /*
+  Called by both V1 and V2 endpoints to build a sample with a newly generated sample accession
+   */
+  public Sample accessionSample(Sample sample) {
     Collection<String> errors = sampleValidator.validate(sample);
 
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
-      throw new SampleValidationException(String.join("|", errors));
+      throw new GlobalExceptions.SampleValidationControllerException(String.join("|", errors));
     }
 
     return mongoAccessionService.generateAccession(sample);
   }
 
-  private Sample buildSample(Sample newSample, Sample oldSample) {
-    return Sample.Builder.fromSample(oldSample)
-        .withData(newSample.getData())
-        .withUpdate(Instant.now())
-        .build();
-  }
-
-  public void validateSample(Map sampleAsMap) {
-    List<String> errors = sampleValidator.validate(sampleAsMap);
-    StringBuilder sb = new StringBuilder();
-    if (errors.size() > 0) {
-      for (String error : errors) {
-        sb.append(error).append("; ");
-      }
-
-      throw new SampleValidationException(sb.toString());
-    }
-  }
-
   public boolean isNotExistingAccession(String accession) {
     return mongoSampleRepository.findOne(accession) == null;
-  }
-
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public static class SampleValidationException extends RuntimeException {
-    private static final long serialVersionUID = -7937033504537036300L;
-
-    public SampleValidationException(String message) {
-      super(message);
-    }
   }
 
   private List<String> getExistingRelationshipTargets(
@@ -319,14 +297,8 @@ public class SampleService {
       Sample sampleToUpdate,
       Sample oldSample,
       boolean isFirstTimeMetadataAdded,
-      String authProvider) {
-    // compare with existing version and check what fields have changed
-    if (sampleToUpdate.equals(oldSample)) {
-      log.info("New sample is similar to the old sample, accession: {}", oldSample.getAccession());
-    }
-
+      AuthorizationProvider authProvider) {
     // Check if old sample has structured data, if yes, retain
-
     Set<AbstractData> structuredData = new HashSet<>();
     boolean applyOldSampleStructuredData = false;
 
@@ -342,48 +314,34 @@ public class SampleService {
     } else {
       log.info("New sample has structured data");
     }
-    // Keep the create date as existing sample -- earlier
-    // 13/01/2020 - if the sample has a date, acknowledge it. It can be the actual create date
-    // from
-    // NCBI, ENA.
 
     if (applyOldSampleStructuredData) {
-      log.info("Applying old sample structured data");
-      log.info("Old sample structured data size is " + structuredData.size());
+      log.info("Build sample and applying old sample structured data");
+      log.trace("Old sample structured data size is " + structuredData.size());
 
       return Sample.Builder.fromSample(sampleToUpdate)
           .withCreate(defineCreateDate(sampleToUpdate, oldSample, authProvider))
           .withSubmitted(
               defineSubmittedDate(
                   sampleToUpdate, oldSample, isFirstTimeMetadataAdded, authProvider))
-          // .withUpdate(defineUpdatedDate(sampleToUpdate, oldSample))
           .withData(structuredData)
           .build();
     } else {
-      log.info("Building new sample");
+      log.info("Building sample");
 
       return Sample.Builder.fromSample(sampleToUpdate)
           .withCreate(defineCreateDate(sampleToUpdate, oldSample, authProvider))
           .withSubmitted(
               defineSubmittedDate(
                   sampleToUpdate, oldSample, isFirstTimeMetadataAdded, authProvider))
-          // .withUpdate(defineUpdatedDate(sampleToUpdate, oldSample))
           .build();
-    }
-  }
-
-  private Instant defineUpdatedDate(Sample sampleToUpdate, Sample oldSample) {
-    if (isPipelineEnaOrNcbiDomain(sampleToUpdate.getDomain())) {
-      return sampleToUpdate.getUpdate() != null
-          ? sampleToUpdate.getUpdate()
-          : oldSample.getUpdate() != null ? oldSample.getUpdate() : Instant.now();
-    } else {
-      return Instant.now();
     }
   }
 
   private Instant defineCreateDate(
-      final Sample sampleToUpdate, final Sample oldSample, String authProvider) {
+      final Sample sampleToUpdate,
+      final Sample oldSample,
+      final AuthorizationProvider authProvider) {
     final String domain = sampleToUpdate.getDomain();
 
     if (isWebinAuthentication(authProvider)) {
@@ -401,7 +359,9 @@ public class SampleService {
     }
   }
 
-  public boolean isWebinAuthentication(String authProviderIdentifier) {
+  public boolean isWebinAuthentication(AuthorizationProvider authProvider) {
+    final String authProviderIdentifier = authProvider.name();
+
     return authProviderIdentifier != null && authProviderIdentifier.equalsIgnoreCase("WEBIN");
   }
 
@@ -419,7 +379,7 @@ public class SampleService {
       final Sample sampleToUpdate,
       final Sample oldSample,
       boolean isFirstTimeMetadataAdded,
-      String authProvider) {
+      AuthorizationProvider authProvider) {
     if (isWebinAuthentication(authProvider)) {
       if (isFirstTimeMetadataAdded) {
         return sampleToUpdate.getSubmitted();
@@ -450,33 +410,4 @@ public class SampleService {
       }
     }
   }
-
-  /*
-  //this code recursively follows relationships
-  //TODO finish
-  public SortedSet<Sample> getRelated(Sample sample, String relationshipType) {
-  	Queue<String> toCheck = new LinkedList<>();
-  	Set<String> checked = new HashSet<>();
-  	Collection<Sample> related = new TreeSet<>();
-  	toCheck.add(sample.getAccession());
-  	while (!toCheck.isEmpty()) {
-  		String accessionToCheck = toCheck.poll();
-  		checked.add(accessionToCheck);
-  		Sample sampleToCheck = sampleReadService.fetchUsing(accessionToCheck);
-  		related.add(sampleToCheck);
-  		for (Relationship rel : sampleToCheck.getRelationships()) {
-  			if (relationshipType == null || relationshipType.equals(rel.getType())) {
-  				if (!checked.contains(rel.getSource()) && toCheck.contains(rel.getSource())) {
-  					toCheck.add(rel.getSource());
-  				}
-  				if (!checked.contains(rel.getTarget()) && toCheck.contains(rel.getTarget())) {
-  					toCheck.add(rel.getTarget());
-  				}
-  			}
-  		}
-  	}
-  	related.remove(sample);
-  	return related;
-  }
-  */
 }
