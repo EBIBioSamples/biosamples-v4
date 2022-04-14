@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.ac.ebi.biosamples.neo4j.model.CypherQuery;
-import uk.ac.ebi.biosamples.neo4j.model.GraphSearchQuery;
+import uk.ac.ebi.biosamples.models.neo4j.CypherQuery;
+import uk.ac.ebi.biosamples.models.neo4j.GraphSearchQuery;
 import uk.ac.ebi.biosamples.service.GraphSearchService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 

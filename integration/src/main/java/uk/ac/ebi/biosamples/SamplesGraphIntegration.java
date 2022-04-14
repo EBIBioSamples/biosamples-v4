@@ -17,10 +17,10 @@ import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.neo4j.model.GraphNode;
-import uk.ac.ebi.biosamples.neo4j.model.GraphSearchQuery;
-import uk.ac.ebi.biosamples.neo4j.model.NeoSample;
-import uk.ac.ebi.biosamples.neo4j.repo.NeoSampleRepository;
+import uk.ac.ebi.biosamples.models.neo4j.GraphNode;
+import uk.ac.ebi.biosamples.models.neo4j.GraphSearchQuery;
+import uk.ac.ebi.biosamples.models.neo4j.NeoSample;
+import uk.ac.ebi.biosamples.utils.neo4j.NeoSampleRepository;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component

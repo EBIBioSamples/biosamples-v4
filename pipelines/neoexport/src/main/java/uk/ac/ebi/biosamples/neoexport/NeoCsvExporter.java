@@ -18,9 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.neo4j.model.NeoExternalEntity;
-import uk.ac.ebi.biosamples.neo4j.model.NeoRelationship;
-import uk.ac.ebi.biosamples.neo4j.model.NeoSample;
+import uk.ac.ebi.biosamples.models.neo4j.NeoExternalEntity;
+import uk.ac.ebi.biosamples.models.neo4j.NeoRelationship;
+import uk.ac.ebi.biosamples.models.neo4j.NeoSample;
 
 @Component
 public class NeoCsvExporter {

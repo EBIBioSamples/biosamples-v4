@@ -30,7 +30,7 @@ import uk.ac.ebi.biosamples.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleAnalytics;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.neo4j.repo.NeoSampleRepository;
+import uk.ac.ebi.biosamples.utils.neo4j.NeoSampleRepository;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
 import uk.ac.ebi.biosamples.utils.MailSender;

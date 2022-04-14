@@ -25,9 +25,7 @@
 		<module>solr</module>
 		<module>sitemap</module>
 		<module>jsonld</module>
-		<module>ga4gh</module>
 		<module>structured</module>
-		<module>neo4j</module>
 		<module>curami</module>
 		<module>security</module>
 		<module>common</module>

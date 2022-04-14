@@ -16,8 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.neo4j.model.NeoSample;
-import uk.ac.ebi.biosamples.neo4j.repo.NeoSampleRepository;
+import uk.ac.ebi.biosamples.models.neo4j.NeoSample;
+import uk.ac.ebi.biosamples.utils.neo4j.NeoSampleRepository;
 
 public class NeoExportCallable implements Callable<PipelineResult> {
   private static final Logger LOG = LoggerFactory.getLogger(NeoExportCallable.class);
