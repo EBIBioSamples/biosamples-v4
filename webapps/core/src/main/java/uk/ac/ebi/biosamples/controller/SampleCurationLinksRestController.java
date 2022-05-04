@@ -22,7 +22,6 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,8 +33,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
@@ -132,7 +131,7 @@ public class SampleCurationLinksRestController {
       // points to a different sample, this is an error
       log.warn(
           "Attempted to POST a curation link on " + curationLink.getSample() + " to " + accession);
-      throw new SampleNotMatchException();
+      throw new GlobalExceptions.SampleNotMatchException();
     }
 
     if (webinAuth) {
@@ -140,7 +139,8 @@ public class SampleCurationLinksRestController {
           bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(token).getBody();
 
       curationLink =
-          bioSamplesWebinAuthenticationService.handleWebinUser(curationLink, webinAccount.getId());
+          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+              curationLink, webinAccount.getId());
 
       curationLink =
           CurationLink.build(
@@ -163,11 +163,6 @@ public class SampleCurationLinksRestController {
     // create the response object with the appropriate status
     return ResponseEntity.created(URI.create(resource.getLink("self").getHref())).body(resource);
   }
-
-  @ResponseStatus(
-      value = HttpStatus.BAD_REQUEST,
-      reason = "Sample must match URL or be omitted") // 400
-  public static class SampleNotMatchException extends RuntimeException {}
 
   @CrossOrigin
   @DeleteMapping(value = "/{hash}")

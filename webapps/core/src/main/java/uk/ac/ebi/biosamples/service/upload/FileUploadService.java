@@ -26,7 +26,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
@@ -35,7 +37,6 @@ import uk.ac.ebi.biosamples.mongo.util.SampleNameAccessionPair;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
 import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
 import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
@@ -157,7 +158,7 @@ public class FileUploadService {
               + "********FEEDBACK TO BSD DEV TEAM END********";
       validationResult.addValidationMessage(
           new ValidationResult.ValidationMessage(uniqueUploadId, messageForBsdDevTeam));
-      throw new UploadInvalidException(
+      throw new GlobalExceptions.UploadInvalidException(
           validationResult.getValidationMessagesList().stream()
               .map(
                   validationMessage ->
@@ -281,7 +282,8 @@ public class FileUploadService {
       isValidatedAgainstChecklist = performChecklistValidation(sample);
 
       if (isValidatedAgainstChecklist) {
-        final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, false);
+        final boolean isFirstTimeMetadataAdded =
+            sampleService.checkIfSampleHasMetadata(sample, false);
 
         try {
           sample = storeSample(sample, isFirstTimeMetadataAdded, isWebin(isWebin));
@@ -324,7 +326,7 @@ public class FileUploadService {
       final ValidationResult validationResult) {
     try {
       if (isWebin) {
-        sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinId);
+        sample = bioSamplesWebinAuthenticationService.handleWebinUserSubmission(sample, webinId);
       } else {
         sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
         sample = bioSamplesAapService.handleSampleDomain(sample);
@@ -332,21 +334,20 @@ public class FileUploadService {
 
       return sample;
     } catch (final Exception e) {
-      if (e instanceof BioSamplesWebinAuthenticationService.SampleNotAccessibleException) {
+      if (e instanceof GlobalExceptions.SampleNotAccessibleException) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
                 sample.getName(), "Sample " + sample.getName() + " is not accessible for you"));
-      } else if (e
-          instanceof BioSamplesWebinAuthenticationService.WebinUserLoginUnauthorizedException) {
+      } else if (e instanceof GlobalExceptions.WebinUserLoginUnauthorizedException) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
                 sample.getName(),
                 "Sample " + sample.getName() + " not persisted as WEBIN user is not authorized"));
-      } else if (e instanceof BioSamplesAapService.SampleDomainMismatchException) {
+      } else if (e instanceof GlobalExceptions.SampleDomainMismatchException) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
                 sample.getName(), "Sample " + sample.getName() + " is not accessible for you"));
-      } else if (e instanceof BioSamplesAapService.SampleNotAccessibleException) {
+      } else if (e instanceof GlobalExceptions.SampleNotAccessibleException) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
                 sample.getName(), "Sample " + sample.getName() + " is not accessible for you"));
@@ -396,7 +397,8 @@ public class FileUploadService {
     }*/
 
     try {
-      return sampleService.store(sample, isFirstTimeMetadataAdded, authProvider);
+      return sampleService.persistSample(
+          sample, isFirstTimeMetadataAdded, AuthorizationProvider.valueOf(authProvider));
     } catch (final Exception e) {
       throw new RuntimeException("Failed to persist sample with name " + sample.getName());
     }

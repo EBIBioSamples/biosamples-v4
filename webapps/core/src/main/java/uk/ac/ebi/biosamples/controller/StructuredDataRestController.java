@@ -10,7 +10,6 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.ExposesResourceFor;
@@ -25,12 +24,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.ac.ebi.biosamples.exception.AccessControlException;
-import uk.ac.ebi.biosamples.exception.SampleAccessionMismatchException;
-import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
-import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.StructuredDataService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
@@ -65,45 +61,45 @@ public class StructuredDataRestController {
   @GetMapping()
   public Resource<StructuredData> get(@PathVariable String accession) {
     if (accession == null || accession.isEmpty()) {
-      throw new SampleAccessionMismatchException();
+      throw new GlobalExceptions.SampleAccessionMismatchException();
     }
 
     return new Resource<>(
         structuredDataService
             .getStructuredData(accession)
-            .orElseThrow(() -> new SampleNotFoundException()));
+            .orElseThrow(() -> new GlobalExceptions.SampleNotFoundException()));
   }
 
   @PreAuthorize("isAuthenticated()")
   @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public Resource<StructuredData> put(
-      HttpServletRequest request,
       @PathVariable String accession,
       @RequestBody StructuredData structuredData,
       @RequestHeader("Authorization") final String token) {
-
-    AuthToken authToken =
+    final AuthToken authToken =
         accessControlService
             .extractToken(token)
             .orElseThrow(
-                () -> new AccessControlException("Invalid token. Please provide valid token."));
+                () ->
+                    new GlobalExceptions.AccessControlException(
+                        "Invalid token. Please provide valid token."));
     final boolean webinAuth = authToken.getAuthority() == AuthorizationProvider.WEBIN;
 
     log.info("PUT request for structured data: {}", accession);
+
     if (structuredData.getAccession() == null || !structuredData.getAccession().equals(accession)) {
-      throw new SampleAccessionMismatchException();
+      throw new GlobalExceptions.SampleAccessionMismatchException();
     }
 
     if (webinAuth) {
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(token).getBody();
-      bioSamplesWebinAuthenticationService.handleStructuredDataAccesibility(
-          structuredData, webinAccount.getId());
+      bioSamplesWebinAuthenticationService.isStructuredDataAccessible(
+          structuredData, authToken.getUser());
     } else {
       bioSamplesAapService.handleStructuredDataDomain(structuredData);
     }
 
     StructuredData storedData = structuredDataService.saveStructuredData(structuredData);
+
     return new Resource<>(storedData);
   }
 }

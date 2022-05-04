@@ -14,23 +14,19 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
-import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import uk.ac.ebi.biosamples.exception.AccessControlException;
-import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
-import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.ga4gh.phenopacket.PhenopacketConverter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.SampleManipulationService;
@@ -92,19 +88,12 @@ public class SampleRestController {
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public Resource<Sample> getSampleHal(
-      HttpServletRequest request,
       @PathVariable String accession,
       @RequestParam(name = "legacydetails", required = false) String legacydetails,
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
       @RequestParam(name = "curationrepo", required = false) String curationRepo,
       @RequestHeader(name = "Authorization", required = false) final String token) {
-
-    final boolean webinAuth =
-        accessControlService
-            .extractToken(token)
-            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
-            .orElse(Boolean.FALSE);
-
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     // decode percent-encoding from curation domains
     final Optional<List<String>> decodedCurationDomains =
         LinkUtils.decodeTextsToArray(curationdomain);
@@ -120,24 +109,26 @@ public class SampleRestController {
     Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains, curationRepo);
 
     if (sample.isPresent()) {
-      if (webinAuth) {
-        final SubmissionAccount webinAccount =
-            bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+      final boolean webinAuth =
+          authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
 
-        bioSamplesWebinAuthenticationService.checkSampleAccessibility(sample.get(), webinAccount);
+      if (webinAuth) {
+        final String webinSubmissionAccountId = authToken.get().getUser();
+
+        bioSamplesWebinAuthenticationService.checkSampleAccessibility(
+            sample.get(), webinSubmissionAccountId);
       } else {
-        bioSamplesAapService.checkAccessible(sample.get());
+        bioSamplesAapService.checkSampleAccessibility(sample.get());
       }
-      // TODO If user is not Read super user, reduce the fields to show
+
       if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
         sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
       }
 
-      // TODO cache control
       return sampleResourceAssembler.toResource(
           sample.get(), decodedLegacyDetails, decodedCurationDomains);
     } else {
-      throw new SampleNotFoundException();
+      throw new GlobalExceptions.SampleNotFoundException();
     }
   }
 
@@ -165,7 +156,7 @@ public class SampleRestController {
     Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains, curationRepo);
 
     if (sample.isPresent()) {
-      bioSamplesAapService.checkAccessible(sample.get());
+      bioSamplesAapService.checkSampleAccessibility(sample.get());
 
       // TODO If user is not Read super user, reduce the fields to show
       if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
@@ -174,7 +165,7 @@ public class SampleRestController {
 
       return phenopacketConverter.convertToJsonPhenopacket(sample.get());
     } else {
-      throw new SampleNotFoundException();
+      throw new GlobalExceptions.SampleNotFoundException();
     }
   }
 
@@ -185,7 +176,7 @@ public class SampleRestController {
       @PathVariable String accession,
       @RequestParam(name = "curationrepo", required = false) final String curationRepo,
       @RequestHeader(name = "Authorization", required = false) final String token) {
-    Sample sample = getSampleHal(null, accession, "true", null, curationRepo, token).getContent();
+    Sample sample = getSampleHal(accession, "true", null, curationRepo, token).getContent();
     if (!sample.getAccession().matches("SAMEG\\d+")) {
       sample =
           Sample.Builder.fromSample(sample)
@@ -201,7 +192,6 @@ public class SampleRestController {
   @PreAuthorize("isAuthenticated()")
   @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public Resource<Sample> put(
-      HttpServletRequest request,
       @PathVariable String accession,
       @RequestBody Sample sample,
       @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
@@ -211,42 +201,42 @@ public class SampleRestController {
     if (sample == null) {
       throw new RuntimeException("No sample provided");
     }
-    AuthToken authToken =
-        accessControlService
-            .extractToken(token)
-            .orElseThrow(
-                () -> new AccessControlException("Invalid token. Please provide valid token."));
-    final boolean webinAuth = authToken.getAuthority() == AuthorizationProvider.WEBIN;
-
     final SortedSet<AbstractData> abstractData = sample.getData();
     boolean isWebinSuperUser = false;
 
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
-      throw new SampleAccessionMismatchException();
+      throw new GlobalExceptions.SampleAccessionMismatchException();
     }
 
     log.debug("Received PUT for " + accession);
 
-    if (webinAuth) {
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
+    final boolean webinAuth =
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
+    final AuthorizationProvider authProvider =
+        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
 
-      if (webinAccount == null) {
-        throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
+    if (webinAuth) {
+      final String webinSubmissionAccountId = authToken.get().getUser();
+
+      if (webinSubmissionAccountId == null) {
+        throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
-      final String webinAccountId = webinAccount.getId();
-
-      isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
+      isWebinSuperUser =
+          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
 
       if (sampleService.isNotExistingAccession(accession) && !isWebinSuperUser) {
-        throw new SampleAccessionDoesNotExistException();
+        throw new GlobalExceptions.SampleAccessionDoesNotExistException();
       }
 
-      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
+      sample =
+          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+              sample, webinSubmissionAccountId);
 
       if (abstractData != null && abstractData.size() > 0) {
-        if (bioSamplesWebinAuthenticationService.isSampleOwner(sample, webinAccountId)) {
+        if (bioSamplesWebinAuthenticationService.isStructuredDataSubmittedBySampleSubmitter(
+            sample, webinSubmissionAccountId)) {
           sample = Sample.Builder.fromSample(sample).build();
         } else {
           sample = Sample.Builder.fromSample(sample).withNoData().build();
@@ -256,13 +246,13 @@ public class SampleRestController {
       if (sampleService.isNotExistingAccession(accession)
           && !(bioSamplesAapService.isWriteSuperUser()
               || bioSamplesAapService.isIntegrationTestUser())) {
-        throw new SampleAccessionDoesNotExistException();
+        throw new GlobalExceptions.SampleAccessionDoesNotExistException();
       }
 
       sample = bioSamplesAapService.handleSampleDomain(sample);
 
       if (abstractData != null && abstractData.size() > 0) {
-        if (bioSamplesAapService.isSampleOwner(sample)) {
+        if (bioSamplesAapService.isStructuredDataSubmittedBySampleSubmitter(sample)) {
           sample = Sample.Builder.fromSample(sample).build();
         } else if (bioSamplesAapService.isWriteSuperUser()
             || bioSamplesAapService.isIntegrationTestUser()) {
@@ -284,7 +274,8 @@ public class SampleRestController {
 
     sample = validateSampleAgainstExternalValidationServices(sample, webinAuth, isWebinSuperUser);
 
-    final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, isWebinSuperUser);
+    final boolean isFirstTimeMetadataAdded =
+        sampleService.checkIfSampleHasMetadata(sample, isWebinSuperUser);
 
     if (isFirstTimeMetadataAdded) {
       sample = Sample.Builder.fromSample(sample).withSubmitted(now).build();
@@ -295,7 +286,7 @@ public class SampleRestController {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
-    sample = sampleService.store(sample, isFirstTimeMetadataAdded, authToken.getAuthority().name());
+    sample = sampleService.persistSample(sample, isFirstTimeMetadataAdded, authProvider);
 
     // assemble a resource to return
     // create the response object with the appropriate status
@@ -305,7 +296,6 @@ public class SampleRestController {
   private Sample validateSampleAgainstExternalValidationServices(
       Sample sample, boolean webinAuth, boolean isWebinSuperUser) {
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-
     if (webinAuth && !isWebinSuperUser) {
       schemaValidationService.validate(sample);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
@@ -320,12 +310,4 @@ public class SampleRestController {
 
     return sample;
   }
-
-  @ResponseStatus(
-      value = HttpStatus.BAD_REQUEST,
-      reason = "Sample accession must match URL accession") // 400
-  public static class SampleAccessionMismatchException extends RuntimeException {}
-
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample accession does not exist") // 400
-  public static class SampleAccessionDoesNotExistException extends RuntimeException {}
 }

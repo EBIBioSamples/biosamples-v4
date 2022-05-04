@@ -21,7 +21,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.exception.AccessControlException;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 
@@ -35,46 +35,51 @@ public class AccessControlService {
   }
 
   public Optional<AuthToken> extractToken(String token) {
-    if (token == null || token.isEmpty()) {
-      return Optional.empty();
-    }
-
-    token = token.startsWith("Bearer ") ? token.split("Bearer ")[1] : token;
-
-    String[] chunks = token.split("\\.");
-    Base64.Decoder decoder = Base64.getDecoder();
-    String header = new String(decoder.decode(chunks[0]));
-    String payload = new String(decoder.decode(chunks[1]));
-
-    if (!verifySignature(token)) {
-      throw new AccessControlException("Failed to verify the integrity of the token");
-    }
-
-    AuthToken authToken;
     try {
-      String algorithm = objectMapper.readTree(header).get("alg").asText();
-      AuthorizationProvider authority;
-      String user;
-      List<String> roles;
-
-      JsonNode node = objectMapper.readTree(payload);
-      if (isAap(node)) {
-        authority = AuthorizationProvider.AAP;
-        user = node.get("sub").asText();
-        roles =
-            objectMapper.convertValue(node.get("domains"), new TypeReference<List<String>>() {});
-      } else {
-        authority = AuthorizationProvider.WEBIN;
-        user = node.get("principle").asText();
-        roles = objectMapper.convertValue(node.get("role"), new TypeReference<List<String>>() {});
+      if (token == null || token.isEmpty()) {
+        return Optional.empty();
       }
 
-      authToken = new AuthToken(algorithm, authority, user, roles);
-    } catch (IOException e) {
-      throw new AccessControlException("Could not decode token", e);
-    }
+      token = token.startsWith("Bearer ") ? token.split("Bearer ")[1] : token;
 
-    return Optional.of(authToken);
+      String[] chunks = token.split("\\.");
+      Base64.Decoder decoder = Base64.getDecoder();
+      String header = new String(decoder.decode(chunks[0]));
+      String payload = new String(decoder.decode(chunks[1]));
+
+      if (!verifySignature(token)) {
+        throw new GlobalExceptions.AccessControlException(
+            "Failed to verify the integrity of the token");
+      }
+
+      AuthToken authToken;
+      try {
+        String algorithm = objectMapper.readTree(header).get("alg").asText();
+        AuthorizationProvider authority;
+        String user;
+        List<String> roles;
+
+        JsonNode node = objectMapper.readTree(payload);
+        if (isAap(node)) {
+          authority = AuthorizationProvider.AAP;
+          user = node.get("sub").asText();
+          roles =
+              objectMapper.convertValue(node.get("domains"), new TypeReference<List<String>>() {});
+        } else {
+          authority = AuthorizationProvider.WEBIN;
+          user = node.get("principle").asText();
+          roles = objectMapper.convertValue(node.get("role"), new TypeReference<List<String>>() {});
+        }
+
+        authToken = new AuthToken(algorithm, authority, user, roles);
+      } catch (IOException e) {
+        throw new GlobalExceptions.AccessControlException("Could not decode token", e);
+      }
+
+      return Optional.of(authToken);
+    } catch (final Exception e) {
+      throw new GlobalExceptions.AccessControlException("Could not decode token", e);
+    }
   }
 
   private static boolean isAap(JsonNode node) {

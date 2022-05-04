@@ -17,7 +17,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 @Service
-public class LoadAttributeSet {
+public class AttributeLoader {
   private Set<String> attributeSet = new HashSet<>();
 
   public Set<String> getAllAttributes() throws IOException {

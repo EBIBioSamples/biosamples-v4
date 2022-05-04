@@ -25,7 +25,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import uk.ac.ebi.biosamples.exception.AccessControlException;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.auth.AuthRealm;
 import uk.ac.ebi.biosamples.model.auth.AuthRequest;
@@ -88,7 +88,7 @@ public class LoginController {
                 Collections.singletonList(AuthRealm.ENA));
         final String token =
             bioSamplesWebinAuthenticationService
-                .getWebinToken(objectMapper.writeValueAsString(authRequestWebin))
+                .getWebinAuthenticationToken(objectMapper.writeValueAsString(authRequestWebin))
                 .getBody();
         final SubmissionAccount submissionAccount =
             bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(token).getBody();
@@ -165,7 +165,9 @@ public class LoginController {
           accessControlService
               .extractToken(token)
               .orElseThrow(
-                  () -> new AccessControlException("Invalid token. Please provide valid token."));
+                  () ->
+                      new GlobalExceptions.AccessControlException(
+                          "Invalid token. Please provide valid token."));
       final List<String> userRoles = accessControlService.getUserRoles(authToken);
 
       return fileUploadService.getUserSubmissions(userRoles);

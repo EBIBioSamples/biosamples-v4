@@ -33,13 +33,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.exception.AccessControlException;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.upload.FileQueueService;
 import uk.ac.ebi.biosamples.service.upload.FileUploadService;
-import uk.ac.ebi.biosamples.service.upload.exception.UploadInvalidException;
 import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
 
 @Controller
@@ -84,7 +83,7 @@ public class FileUploadController {
         final HttpHeaders headers = setResponseHeadersSuccess(downloadableFile);
 
         return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
-      } catch (final UploadInvalidException e) {
+      } catch (final GlobalExceptions.UploadInvalidException e) {
         log.info("File upload failure " + e.getMessage());
 
         final Path temp = Files.createTempFile("failure_result_bad_req", ".txt");
@@ -195,7 +194,9 @@ public class FileUploadController {
         accessControlService
             .extractToken(token)
             .orElseThrow(
-                () -> new AccessControlException("Invalid token. Please provide valid token."));
+                () ->
+                    new GlobalExceptions.AccessControlException(
+                        "Invalid token. Please provide valid token."));
     final List<String> userRoles = accessControlService.getUserRoles(authToken);
     final List<MongoFileUpload> uploads = fileUploadService.getUserSubmissions(userRoles);
 
