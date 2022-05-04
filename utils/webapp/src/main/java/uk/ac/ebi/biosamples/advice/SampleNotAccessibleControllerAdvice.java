@@ -21,8 +21,7 @@ import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 
 @ControllerAdvice
 public class SampleNotAccessibleControllerAdvice extends ResponseEntityExceptionHandler {
-
-  @ExceptionHandler(value = {GlobalExceptions.SampleNotAccessibleException.class})
+  @ExceptionHandler(value = {GlobalExceptions.SampleNotAccessibleAdviceException.class})
   protected ResponseEntity<Object> handleConflict(RuntimeException ex, WebRequest request) {
     return handleExceptionInternal(ex, null, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
   }

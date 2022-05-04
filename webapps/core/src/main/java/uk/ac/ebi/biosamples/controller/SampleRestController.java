@@ -120,6 +120,7 @@ public class SampleRestController {
       } else {
         bioSamplesAapService.checkSampleAccessibility(sample.get());
       }
+
       if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
         sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
       }

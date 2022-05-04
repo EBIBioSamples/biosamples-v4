@@ -92,9 +92,8 @@ public class StructuredDataRestController {
     }
 
     if (webinAuth) {
-      bioSamplesWebinAuthenticationService
-          .handleStructuredDataAccessibilityForOnlyStructuredDataSubmission(
-              structuredData, authToken.getUser());
+      bioSamplesWebinAuthenticationService.isStructuredDataAccessible(
+          structuredData, authToken.getUser());
     } else {
       bioSamplesAapService.handleStructuredDataDomain(structuredData);
     }

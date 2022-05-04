@@ -53,6 +53,10 @@ public class GlobalExceptions {
           "This sample is private and not available for browsing. If you think this is an error and/or you should have access please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk")
   public static class SampleNotAccessibleException extends RuntimeException {}
 
+  public class SampleNotAccessibleAdviceException extends RuntimeException {
+    private static final long serialVersionUID = -6250819256457895445L;
+  }
+
   public static class AccessControlException extends RuntimeException {
     public AccessControlException(String message) {
       super(message);

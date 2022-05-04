@@ -222,8 +222,9 @@ public class SamplesRestControllerV2 {
             samples.stream()
                 .map(
                     sample ->
-                        bioSamplesWebinAuthenticationService.buildSampleWithWebinSubmissionAccountId(
-                            sample, webinSubmissionAccountId))
+                        bioSamplesWebinAuthenticationService
+                            .buildSampleWithWebinSubmissionAccountId(
+                                sample, webinSubmissionAccountId))
                 .collect(Collectors.toList());
       } else {
         if (!samples.isEmpty()) {

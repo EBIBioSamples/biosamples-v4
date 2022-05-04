@@ -13,10 +13,7 @@ package uk.ac.ebi.biosamples.service.security;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
-import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
@@ -32,19 +29,15 @@ import uk.ac.ebi.biosamples.service.SampleService;
 
 @Service
 public class BioSamplesWebinAuthenticationService {
-  private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final RestTemplate restTemplate;
   private final SampleService sampleService;
   private final BioSamplesProperties bioSamplesProperties;
-  private final BearerTokenExtractor bearerTokenExtractor;
 
   public BioSamplesWebinAuthenticationService(
       final SampleService sampleService, final BioSamplesProperties bioSamplesProperties) {
     this.restTemplate = new RestTemplate();
     this.sampleService = sampleService;
     this.bioSamplesProperties = bioSamplesProperties;
-    this.bearerTokenExtractor = new BearerTokenExtractor();
   }
 
   public ResponseEntity<SubmissionAccount> getWebinSubmissionAccount(final String webinAuthToken) {
@@ -215,16 +208,12 @@ public class BioSamplesWebinAuthenticationService {
     }
   }
 
-  public void handleStructuredDataAccessibilityForOnlyStructuredDataSubmission(
-      final StructuredData structuredData, final String id) {
-    log.info("Webin id here is ** -> " + id);
-
+  public void isStructuredDataAccessible(final StructuredData structuredData, final String id) {
     structuredData
         .getData()
         .forEach(
             data -> {
               final String webinSubmissionAccountId = data.getWebinSubmissionAccountId();
-              log.info("Webin id here is -> " + webinSubmissionAccountId);
 
               if (webinSubmissionAccountId == null || webinSubmissionAccountId.isEmpty()) {
                 throw new GlobalExceptions.StructuredDataWebinIdMissingException();
