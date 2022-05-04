@@ -98,7 +98,8 @@ public class CertificationController {
         throw new GlobalExceptions.SampleAccessionDoesNotExistException();
       }
 
-      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
+      sample =
+          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(sample, webinAccountId);
     } else {
       sample = bioSamplesAapService.handleSampleDomain(sample);
     }
@@ -120,7 +121,7 @@ public class CertificationController {
 
     log.trace("Sample with certificates " + sample);
 
-    sample = sampleService.store(sample, false, authProvider);
+    sample = sampleService.persistSample(sample, false, authProvider);
 
     // assemble a resource to return
     // create the response object with the appropriate status

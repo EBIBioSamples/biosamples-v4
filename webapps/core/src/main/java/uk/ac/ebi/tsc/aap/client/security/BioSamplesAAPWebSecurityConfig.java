@@ -58,7 +58,7 @@ public class BioSamplesAAPWebSecurityConfig extends AAPWebSecurityConfig {
     httpSecurity.addFilterBefore(
         statelessAuthenticationFilterBean(), UsernamePasswordAuthenticationFilter.class);
 
-    // disable the no-cache header injectection, we'll manage this ourselves
+    // disable the no-cache header injection, we'll manage this ourselves
     httpSecurity.headers().cacheControl().disable();
   }
 

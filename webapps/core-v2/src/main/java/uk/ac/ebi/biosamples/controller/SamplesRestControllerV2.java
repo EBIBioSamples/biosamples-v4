@@ -16,8 +16,8 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.ExposesResourceFor;
@@ -27,10 +27,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
+import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
-import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
@@ -72,30 +72,26 @@ public class SamplesRestControllerV2 {
       value = "/submit",
       consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<List<Sample>> postSamplesV2(
-      final HttpServletRequest request,
       @RequestBody final List<Sample> samples,
       @RequestHeader(name = "Authorization") final String token) {
     log.info("Received POST for " + samples.size() + " samples");
 
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final boolean webinAuth =
-        accessControlService
-            .extractToken(token)
-            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
-            .orElse(Boolean.FALSE);
-    AuthorizationProvider authProvider =
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
+    final AuthorizationProvider authProvider =
         webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
     boolean isWebinSuperUser;
 
     if (webinAuth) {
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+      final String webinSubmissionAccountId = authToken.get().getUser();
 
-      if (webinAccount == null) {
+      if (webinSubmissionAccountId == null) {
         throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
-      final String webinAccountId = webinAccount.getId();
-      isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
+      isWebinSuperUser =
+          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
       final boolean finalIsWebinSuperUser = isWebinSuperUser;
 
       return ResponseEntity.status(HttpStatus.CREATED)
@@ -104,8 +100,8 @@ public class SamplesRestControllerV2 {
                   .map(
                       sample -> {
                         sample =
-                            bioSamplesWebinAuthenticationService.handleWebinUser(
-                                sample, webinAccountId);
+                            bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+                                sample, webinSubmissionAccountId);
 
                         if (!finalIsWebinSuperUser) {
                           schemaValidationService.validate(sample);
@@ -144,32 +140,29 @@ public class SamplesRestControllerV2 {
       produces = {MediaType.APPLICATION_JSON_VALUE})
   @RequestMapping("/accession")
   public ResponseEntity<Sample> accessionSampleV2(
-      final HttpServletRequest request,
-      @RequestBody Sample sample,
-      @RequestHeader(name = "Authorization") final String token) {
+      @RequestBody Sample sample, @RequestHeader(name = "Authorization") final String token) {
 
     log.debug("Received POST for accessioning " + sample);
     if (sample.hasAccession()) {
       throw new GlobalExceptions.SampleWithAccessionSubmissionException();
     }
 
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final boolean webinAuth =
-        accessControlService
-            .extractToken(token)
-            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
-            .orElse(Boolean.FALSE);
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
     final AuthorizationProvider authProvider =
         webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
 
     if (webinAuth) {
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+      final String webinSubmissionAccountId = authToken.get().getUser();
 
-      if (webinAccount == null) {
+      if (webinSubmissionAccountId == null) {
         throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
-      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
+      sample =
+          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+              sample, webinSubmissionAccountId);
     } else {
       sample = bioSamplesAapService.handleSampleDomain(sample);
     }
@@ -202,16 +195,13 @@ public class SamplesRestControllerV2 {
       produces = {MediaType.APPLICATION_JSON_VALUE})
   @RequestMapping("/bulk-accession")
   public ResponseEntity<Map<String, String>> bulkAccessionSampleV2(
-      HttpServletRequest request,
       @RequestBody List<Sample> samples,
       @RequestHeader(name = "Authorization") final String token) {
     log.info("Received POST for bulk accessioning of " + samples.size() + " samples");
 
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final boolean webinAuth =
-        accessControlService
-            .extractToken(token)
-            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
-            .orElse(Boolean.FALSE);
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
 
     try {
       samples.forEach(
@@ -222,10 +212,9 @@ public class SamplesRestControllerV2 {
           });
 
       if (webinAuth) {
-        final SubmissionAccount webinAccount =
-            bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+        final String webinSubmissionAccountId = authToken.get().getUser();
 
-        if (webinAccount == null) {
+        if (webinSubmissionAccountId == null) {
           throw new GlobalExceptions.WebinTokenInvalidException();
         }
 
@@ -233,8 +222,8 @@ public class SamplesRestControllerV2 {
             samples.stream()
                 .map(
                     sample ->
-                        bioSamplesWebinAuthenticationService.getSampleWithWebinSubmissionAccountId(
-                            sample, webinAccount.getId()))
+                        bioSamplesWebinAuthenticationService.buildSampleWithWebinSubmissionAccountId(
+                            sample, webinSubmissionAccountId))
                 .collect(Collectors.toList());
       } else {
         if (!samples.isEmpty()) {
@@ -259,7 +248,7 @@ public class SamplesRestControllerV2 {
           samples.stream()
               .map(
                   sample -> {
-                    log.trace("Initiating store() for " + sample.getName());
+                    log.trace("Initiating persistSample() for " + sample.getName());
                     sample = buildPrivateSampleV2(sample);
                     return sampleService.accessionSample(sample);
                   })

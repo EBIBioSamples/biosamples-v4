@@ -216,9 +216,7 @@ public class SamplesRestController {
       // cache up
       // to twice this age
       return ResponseEntity.ok().cacheControl(cacheControl).body(resources);
-
     } else {
-
       String[] effectiveSort = sort;
 
       if (sort == null) {
@@ -362,14 +360,6 @@ public class SamplesRestController {
               "cursor",
               this.getClass()));
     }
-    // if there is no search term, and on first page, add a link to use search
-    // TODO
-    //			if (text.trim().length() == 0 && page == 0) {
-    //				resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
-    //					.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
-    //						.searchHal(null, filter, null, page, effectiveSize, sort, null))
-    //					.withRel("search")));
-    //			}
 
     resources.add(
         SampleAutocompleteRestController.getLink(decodedText, decodedFilter, null, "autocomplete"));
@@ -475,6 +465,7 @@ public class SamplesRestController {
   @RequestMapping("/validate")
   public ResponseEntity<Sample> validateSample(@RequestBody Sample sample) {
     schemaValidationService.validate(sample);
+
     return ResponseEntity.ok(sample);
   }
 
@@ -493,6 +484,8 @@ public class SamplesRestController {
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final boolean webinAuth =
         authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
+    final AuthorizationProvider authProvider =
+        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
 
     if (webinAuth) {
       final String webinSubmissionAccountId = authToken.get().getUser();
@@ -502,15 +495,14 @@ public class SamplesRestController {
       }
 
       sample =
-          bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinSubmissionAccountId);
+          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+              sample, webinSubmissionAccountId);
     } else {
       sample = bioSamplesAapService.handleSampleDomain(sample);
     }
 
-    AuthorizationProvider authProvider =
-        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
     sample = buildPrivateSample(sample);
-    sample = sampleService.store(sample, false, authProvider);
+    sample = sampleService.persistSample(sample, false, authProvider);
     final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
@@ -549,7 +541,7 @@ public class SamplesRestController {
           samples.stream()
               .map(
                   sample ->
-                      bioSamplesWebinAuthenticationService.getSampleWithWebinSubmissionAccountId(
+                      bioSamplesWebinAuthenticationService.buildSampleWithWebinSubmissionAccountId(
                           sample, bioSamplesProperties.getBiosamplesClientWebinUsername()))
               .collect(Collectors.toList());
     } else {
@@ -576,7 +568,7 @@ public class SamplesRestController {
         samples.stream()
             .map(
                 sample -> {
-                  log.trace("Initiating store() for " + sample.getName());
+                  log.trace("Initiating persistSample() for " + sample.getName());
 
                   sample = buildPrivateSample(sample);
                   /*
@@ -634,7 +626,8 @@ public class SamplesRestController {
       }
 
       sample =
-          bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinSubmissionAccountId);
+          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+              sample, webinSubmissionAccountId);
     } else {
       if (sample.hasAccession() && !bioSamplesAapService.isWriteSuperUser()) {
         throw new GlobalExceptions.SampleWithAccessionSubmissionException();
@@ -655,13 +648,13 @@ public class SamplesRestController {
             .withSubmittedVia(submittedVia)
             .build();
 
-    sample = validateSampleAgainstExternalValidationServices(sample, webinAuth, isWebinSuperUser);
+    sample = validateSample(sample, webinAuth, isWebinSuperUser);
 
     if (!setFullDetails) {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
-    sample = sampleService.store(sample, true, authProvider);
+    sample = sampleService.persistSample(sample, true, authProvider);
 
     // assemble a resource to return
     Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());
@@ -670,8 +663,7 @@ public class SamplesRestController {
         .body(sampleResource);
   }
 
-  private Sample validateSampleAgainstExternalValidationServices(
-      Sample sample, boolean webinAuth, boolean isWebinSuperUser) {
+  private Sample validateSample(Sample sample, boolean webinAuth, boolean isWebinSuperUser) {
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
     if (webinAuth && !isWebinSuperUser) {
       schemaValidationService.validate(sample);
@@ -693,7 +685,7 @@ public class SamplesRestController {
     final String domain = sample.getDomain();
     final Instant create = sample.getCreate();
 
-    return (domain != null && sampleService.isPipelineEnaOrNcbiDomain(domain))
+    return (domain != null && sampleService.isAnImportAapDomain(domain))
         ? (create != null ? create : now)
         : now;
   }
@@ -703,7 +695,7 @@ public class SamplesRestController {
     final String domain = sample.getDomain();
     final Instant submitted = sample.getSubmitted();
 
-    return (domain != null && sampleService.isPipelineEnaOrNcbiDomain(domain))
+    return (domain != null && sampleService.isAnImportAapDomain(domain))
         ? (submitted != null ? submitted : now)
         : now;
   }

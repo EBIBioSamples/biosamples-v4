@@ -88,7 +88,7 @@ public class LoginController {
                 Collections.singletonList(AuthRealm.ENA));
         final String token =
             bioSamplesWebinAuthenticationService
-                .getWebinToken(objectMapper.writeValueAsString(authRequestWebin))
+                .getWebinAuthenticationToken(objectMapper.writeValueAsString(authRequestWebin))
                 .getBody();
         final SubmissionAccount submissionAccount =
             bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(token).getBody();

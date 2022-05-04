@@ -62,7 +62,7 @@ public class BioschemasController {
     if (!sample.isPresent()) {
       throw new GlobalExceptions.SampleNotFoundException();
     }
-    bioSamplesAapService.checkAccessible(sample.get());
+    bioSamplesAapService.checkSampleAccessibility(sample.get());
 
     // check if the release date is in the future and if so return it as
     // private

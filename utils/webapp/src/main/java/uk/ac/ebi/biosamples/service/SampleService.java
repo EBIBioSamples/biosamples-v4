@@ -77,49 +77,47 @@ public class SampleService {
     return solrSampleService.getAutocomplete(autocompletePrefix, filters, noSuggestions);
   }
 
-  public boolean beforeStore(Sample sample, boolean isWebinSuperUser) {
-    return beforeStoreCheck(sample, isWebinSuperUser);
-  }
-
-  private boolean beforeStoreCheck(Sample sample, boolean isWebinSuperUser) {
-    boolean firstTimeMetadataAdded;
+  public boolean checkIfSampleHasMetadata(Sample sample, boolean isWebinSuperUser) {
+    boolean isMetadataSubmitted;
     final String domain = sample.getDomain();
-    boolean isFirstTimeMetadataAddedIfWebinSuperUserSubmission = true;
+    boolean isMetadataSubmittedIfSubmitterIsWebinSuperUser = true;
 
     if (isWebinSuperUser) {
       if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-        isFirstTimeMetadataAddedIfWebinSuperUserSubmission =
-            isFirstTimeMetadataAddedForNonImportedSamples(sample);
+        // file uploader submissions are done via super user but they are non imported samples,
+        // needs to be handled safely
+        isMetadataSubmittedIfSubmitterIsWebinSuperUser =
+            checkIfNonImportedSampleHasMetadata(sample);
       }
     }
 
-    if (isPipelineEnaOrNcbiDomain(domain) || isFirstTimeMetadataAddedIfWebinSuperUserSubmission)
-      firstTimeMetadataAdded = false; // imported sample - never submitted first time to BSD
+    if (isAnImportAapDomain(domain) || isMetadataSubmittedIfSubmitterIsWebinSuperUser)
+      isMetadataSubmitted = false; // imported sample - never submitted first time to BSD
     else {
-      firstTimeMetadataAdded = isFirstTimeMetadataAddedForNonImportedSamples(sample);
+      isMetadataSubmitted = checkIfNonImportedSampleHasMetadata(sample);
     }
 
-    return firstTimeMetadataAdded;
+    return isMetadataSubmitted;
   }
 
-  private boolean isFirstTimeMetadataAddedForNonImportedSamples(Sample sample) {
+  private boolean checkIfNonImportedSampleHasMetadata(Sample sample) {
     boolean firstTimeMetadataAdded = true;
 
     if (sample.hasAccession()) {
       MongoSample mongoOldSample = mongoSampleRepository.findOne(sample.getAccession());
       if (mongoOldSample != null) {
-        firstTimeMetadataAdded = isFirstTimeMetadataAddedToSample(mongoOldSample);
+        firstTimeMetadataAdded = isEmptySample(mongoOldSample);
       }
     }
 
     return firstTimeMetadataAdded;
   }
 
-  public boolean isPipelineEnaOrNcbiDomain(String domain) {
+  public boolean isAnImportAapDomain(String domain) {
     return isPipelineEnaDomain(domain) || isPipelineNcbiDomain(domain);
   }
 
-  private boolean isFirstTimeMetadataAddedToSample(MongoSample mongoOldSample) {
+  private boolean isEmptySample(MongoSample mongoOldSample) {
     boolean firstTimeMetadataAdded = true;
     Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
 
@@ -171,10 +169,10 @@ public class SampleService {
   /*
   Called by V1 endpoints to persist samples
    */
-  public Sample store(
-      Sample sample, boolean isFirstTimeMetadataAdded, AuthorizationProvider authProvider) {
+  public Sample persistSample(
+      Sample sample, boolean isNewOrPreRegisteredSample, AuthorizationProvider authProvider) {
+    boolean isSampleTaxIdUpdated = false;
     Collection<String> errors = sampleValidator.validate(sample);
-    boolean isTaxIdUpdated = false;
 
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
@@ -189,15 +187,16 @@ public class SampleService {
 
       if (mongoOldSample != null) {
         final Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
+
         existingRelationshipTargets =
             getExistingRelationshipTargets(sample.getAccession(), mongoOldSample);
 
         sample =
             compareWithExistingAndUpdateSample(
-                sample, oldSample, isFirstTimeMetadataAdded, authProvider);
+                sample, oldSample, isNewOrPreRegisteredSample, authProvider);
 
         if (oldSample.getTaxId() != null && !oldSample.getTaxId().equals(taxId)) {
-          isTaxIdUpdated = true;
+          isSampleTaxIdUpdated = true;
         }
       } else {
         log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
@@ -207,7 +206,7 @@ public class SampleService {
 
       mongoSample = mongoSampleRepository.save(mongoSample);
 
-      if (isTaxIdUpdated) {
+      if (isSampleTaxIdUpdated) {
         mongoSampleMessageRepository.save(
             new MongoSampleMessage(sample.getAccession(), Instant.now(), taxId));
       }
@@ -298,15 +297,15 @@ public class SampleService {
       Sample oldSample,
       boolean isFirstTimeMetadataAdded,
       AuthorizationProvider authProvider) {
-    // Check if old sample has structured data, if yes, retain
     Set<AbstractData> structuredData = new HashSet<>();
     boolean applyOldSampleStructuredData = false;
 
-    if (
-    /*sampleToUpdate.getData() != null &&*/ sampleToUpdate.getData().size() < 1) {
+    if (sampleToUpdate.getData().size() < 1) {
       log.info("No structured data in new sample");
+
       if (oldSample.getData() != null && oldSample.getData().size() > 0) {
         structuredData = oldSample.getData();
+        // Check if old sample has structured data, if yes, retain
         applyOldSampleStructuredData = true;
 
         log.info("Old sample has structured data");

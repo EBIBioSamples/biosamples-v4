@@ -11,19 +11,22 @@
 package uk.ac.ebi.biosamples.controller;
 
 import java.time.Instant;
-import javax.servlet.http.HttpServletRequest;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
+import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
-import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
@@ -59,44 +62,40 @@ public class SampleRestControllerV2 {
   @PreAuthorize("isAuthenticated()")
   @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Sample> putSampleV2(
-      HttpServletRequest request,
       @PathVariable final String accession,
       @RequestBody Sample sample,
       @RequestHeader(name = "Authorization") final String token) {
-
-    final boolean webinAuth =
-        accessControlService
-            .extractToken(token)
-            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
-            .orElse(Boolean.FALSE);
-    AuthorizationProvider authProvider =
-        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
-
     boolean isWebinSuperUser = false;
 
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
       throw new GlobalExceptions.SampleAccessionMismatchException();
     }
 
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
+    final boolean webinAuth =
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
+    final AuthorizationProvider authProvider =
+        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
+
     log.debug("Received PUT for " + accession);
 
     if (webinAuth) {
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+      final String webinSubmissionAccountId = authToken.get().getUser();
 
-      if (webinAccount == null) {
+      if (webinSubmissionAccountId == null) {
         throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
-      final String webinAccountId = webinAccount.getId();
-
-      isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
+      isWebinSuperUser =
+          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
 
       if (sampleService.isNotExistingAccession(accession) && !isWebinSuperUser) {
         throw new GlobalExceptions.SampleAccessionMismatchException();
       }
 
-      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
+      sample =
+          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+              sample, webinSubmissionAccountId);
     } else {
       if (sampleService.isNotExistingAccession(accession)
           && !(bioSamplesAapService.isWriteSuperUser()
@@ -127,7 +126,8 @@ public class SampleRestControllerV2 {
       schemaValidationService.validate(sample);
     }
 
-    final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, isWebinSuperUser);
+    final boolean isFirstTimeMetadataAdded =
+        sampleService.checkIfSampleHasMetadata(sample, isWebinSuperUser);
 
     if (isFirstTimeMetadataAdded) {
       sample = Sample.Builder.fromSample(sample).withSubmitted(now).build();

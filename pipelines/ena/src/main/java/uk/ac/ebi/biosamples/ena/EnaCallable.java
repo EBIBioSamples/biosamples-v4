@@ -12,6 +12,8 @@ package uk.ac.ebi.biosamples.ena;
 
 import java.io.StringReader;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -171,7 +173,13 @@ public class EnaCallable implements Callable<Void> {
       attributes.add(
           Attribute.build("INSDC first public", DateTimeFormatter.ISO_INSTANT.format(release)));
     } else {
-      release = Instant.now();
+      if (status.equals("private")) {
+        release =
+            Instant.ofEpochSecond(
+                LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+      } else {
+        release = Instant.now();
+      }
     }
 
     if (firstCreated != null) {

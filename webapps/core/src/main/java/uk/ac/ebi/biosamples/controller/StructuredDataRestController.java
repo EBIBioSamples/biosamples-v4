@@ -10,7 +10,6 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.ExposesResourceFor;
@@ -28,7 +27,6 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
-import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.StructuredDataService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
@@ -75,12 +73,10 @@ public class StructuredDataRestController {
   @PreAuthorize("isAuthenticated()")
   @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public Resource<StructuredData> put(
-      HttpServletRequest request,
       @PathVariable String accession,
       @RequestBody StructuredData structuredData,
       @RequestHeader("Authorization") final String token) {
-
-    AuthToken authToken =
+    final AuthToken authToken =
         accessControlService
             .extractToken(token)
             .orElseThrow(
@@ -90,20 +86,21 @@ public class StructuredDataRestController {
     final boolean webinAuth = authToken.getAuthority() == AuthorizationProvider.WEBIN;
 
     log.info("PUT request for structured data: {}", accession);
+
     if (structuredData.getAccession() == null || !structuredData.getAccession().equals(accession)) {
       throw new GlobalExceptions.SampleAccessionMismatchException();
     }
 
     if (webinAuth) {
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(token).getBody();
-      bioSamplesWebinAuthenticationService.handleStructuredDataAccesibility(
-          structuredData, webinAccount.getId());
+      bioSamplesWebinAuthenticationService
+          .handleStructuredDataAccessibilityForOnlyStructuredDataSubmission(
+              structuredData, authToken.getUser());
     } else {
       bioSamplesAapService.handleStructuredDataDomain(structuredData);
     }
 
     StructuredData storedData = structuredDataService.saveStructuredData(structuredData);
+
     return new Resource<>(storedData);
   }
 }

@@ -282,7 +282,8 @@ public class FileUploadService {
       isValidatedAgainstChecklist = performChecklistValidation(sample);
 
       if (isValidatedAgainstChecklist) {
-        final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, false);
+        final boolean isFirstTimeMetadataAdded =
+            sampleService.checkIfSampleHasMetadata(sample, false);
 
         try {
           sample = storeSample(sample, isFirstTimeMetadataAdded, isWebin(isWebin));
@@ -325,7 +326,7 @@ public class FileUploadService {
       final ValidationResult validationResult) {
     try {
       if (isWebin) {
-        sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinId);
+        sample = bioSamplesWebinAuthenticationService.handleWebinUserSubmission(sample, webinId);
       } else {
         sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
         sample = bioSamplesAapService.handleSampleDomain(sample);
@@ -396,7 +397,7 @@ public class FileUploadService {
     }*/
 
     try {
-      return sampleService.store(
+      return sampleService.persistSample(
           sample, isFirstTimeMetadataAdded, AuthorizationProvider.valueOf(authProvider));
     } catch (final Exception e) {
       throw new RuntimeException("Failed to persist sample with name " + sample.getName());

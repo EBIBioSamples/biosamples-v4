@@ -426,7 +426,7 @@ public class SampleHtmlController {
       throw new RuntimeException("Unable to retrieve " + accession);
     }
 
-    bioSamplesAapService.checkAccessible(sample.get());
+    bioSamplesAapService.checkSampleAccessibility(sample.get());
 
     // response.setHeader(HttpHeaders.LAST_MODIFIED,
     // String.valueOf(sample.getUpdate().toEpochSecond(ZoneOffset.UTC)));

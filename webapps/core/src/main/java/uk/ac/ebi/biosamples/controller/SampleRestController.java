@@ -118,7 +118,7 @@ public class SampleRestController {
         bioSamplesWebinAuthenticationService.checkSampleAccessibility(
             sample.get(), webinSubmissionAccountId);
       } else {
-        bioSamplesAapService.checkAccessible(sample.get());
+        bioSamplesAapService.checkSampleAccessibility(sample.get());
       }
       if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
         sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
@@ -155,7 +155,7 @@ public class SampleRestController {
     Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains, curationRepo);
 
     if (sample.isPresent()) {
-      bioSamplesAapService.checkAccessible(sample.get());
+      bioSamplesAapService.checkSampleAccessibility(sample.get());
 
       // TODO If user is not Read super user, reduce the fields to show
       if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
@@ -230,10 +230,12 @@ public class SampleRestController {
       }
 
       sample =
-          bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinSubmissionAccountId);
+          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+              sample, webinSubmissionAccountId);
 
       if (abstractData != null && abstractData.size() > 0) {
-        if (bioSamplesWebinAuthenticationService.isSampleOwner(sample, webinSubmissionAccountId)) {
+        if (bioSamplesWebinAuthenticationService.isStructuredDataSubmittedBySampleSubmitter(
+            sample, webinSubmissionAccountId)) {
           sample = Sample.Builder.fromSample(sample).build();
         } else {
           sample = Sample.Builder.fromSample(sample).withNoData().build();
@@ -249,7 +251,7 @@ public class SampleRestController {
       sample = bioSamplesAapService.handleSampleDomain(sample);
 
       if (abstractData != null && abstractData.size() > 0) {
-        if (bioSamplesAapService.isSampleOwner(sample)) {
+        if (bioSamplesAapService.isStructuredDataSubmittedBySampleSubmitter(sample)) {
           sample = Sample.Builder.fromSample(sample).build();
         } else if (bioSamplesAapService.isWriteSuperUser()
             || bioSamplesAapService.isIntegrationTestUser()) {
@@ -271,7 +273,8 @@ public class SampleRestController {
 
     sample = validateSampleAgainstExternalValidationServices(sample, webinAuth, isWebinSuperUser);
 
-    final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, isWebinSuperUser);
+    final boolean isFirstTimeMetadataAdded =
+        sampleService.checkIfSampleHasMetadata(sample, isWebinSuperUser);
 
     if (isFirstTimeMetadataAdded) {
       sample = Sample.Builder.fromSample(sample).withSubmitted(now).build();
@@ -282,7 +285,7 @@ public class SampleRestController {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
-    sample = sampleService.store(sample, isFirstTimeMetadataAdded, authProvider);
+    sample = sampleService.persistSample(sample, isFirstTimeMetadataAdded, authProvider);
 
     // assemble a resource to return
     // create the response object with the appropriate status

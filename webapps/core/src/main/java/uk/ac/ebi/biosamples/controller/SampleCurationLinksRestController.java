@@ -139,7 +139,8 @@ public class SampleCurationLinksRestController {
           bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(token).getBody();
 
       curationLink =
-          bioSamplesWebinAuthenticationService.handleWebinUser(curationLink, webinAccount.getId());
+          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+              curationLink, webinAccount.getId());
 
       curationLink =
           CurationLink.build(

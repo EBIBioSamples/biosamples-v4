@@ -247,7 +247,7 @@ public class BioSamplesAapService {
    * @throws GlobalExceptions.StructuredDataNotAccessibleException
    * @throws GlobalExceptions.StructuredDataDomainMissingException
    */
-  public boolean isSampleOwner(Sample sample)
+  public boolean isStructuredDataSubmittedBySampleSubmitter(Sample sample)
       throws GlobalExceptions.StructuredDataNotAccessibleException,
           GlobalExceptions.StructuredDataDomainMissingException {
     // get the domains the current user has access to
@@ -341,7 +341,8 @@ public class BioSamplesAapService {
     return getDomains().contains("self.BiosampleIntegrationTest");
   }
 
-  public void checkAccessible(Sample sample) throws GlobalExceptions.SampleNotAccessibleException {
+  public void checkSampleAccessibility(Sample sample)
+      throws GlobalExceptions.SampleNotAccessibleException {
     // TODO throw different exceptions in different situations
     if (sample.getRelease().isBefore(Instant.now())) {
       // release date in past, accessible
