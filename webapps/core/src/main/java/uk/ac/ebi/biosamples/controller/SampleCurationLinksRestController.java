@@ -22,42 +22,54 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.CurationLink;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
-import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.service.CurationLinkResourceAssembler;
+import uk.ac.ebi.biosamples.service.CurationPersistService;
+import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.utils.mongo.CurationReadService;
 
 @RestController
 @RequestMapping("/samples/{accession}/curationlinks")
 public class SampleCurationLinksRestController {
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final CurationReadService curationReadService;
   private final CurationPersistService curationPersistService;
   private final CurationLinkResourceAssembler curationLinkResourceAssembler;
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
-
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final AccessControlService accessControlService;
 
   public SampleCurationLinksRestController(
       CurationReadService curationReadService,
       CurationPersistService curationPersistService,
       CurationLinkResourceAssembler curationLinkResourceAssembler,
       BioSamplesAapService bioSamplesAapService,
-      BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService) {
+      BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+      AccessControlService accessControlService) {
     this.curationReadService = curationReadService;
     this.curationPersistService = curationPersistService;
     this.curationLinkResourceAssembler = curationLinkResourceAssembler;
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
+    this.accessControlService = accessControlService;
   }
 
   @CrossOrigin
@@ -104,10 +116,14 @@ public class SampleCurationLinksRestController {
       HttpServletRequest request,
       @PathVariable String accession,
       @RequestBody CurationLink curationLink,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider) {
+      @RequestHeader(name = "Authorization") final String token) {
 
     log.info("Recieved POST for " + curationLink);
+    final boolean webinAuth =
+        accessControlService
+            .extractToken(token)
+            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+            .orElse(Boolean.FALSE);
 
     if (curationLink.getSample() == null) {
       // curationLink has no sample, use the one specified in the URL
@@ -115,19 +131,16 @@ public class SampleCurationLinksRestController {
       // points to a different sample, this is an error
       log.warn(
           "Attempted to POST a curation link on " + curationLink.getSample() + " to " + accession);
-      throw new SampleNotMatchException();
+      throw new GlobalExceptions.SampleNotMatchException();
     }
 
-    if (authProvider.equalsIgnoreCase("WEBIN")) {
-      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
-      final Authentication authentication = bearerTokenExtractor.extract(request);
+    if (webinAuth) {
       final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService
-              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-              .getBody();
+          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(token).getBody();
 
       curationLink =
-          bioSamplesWebinAuthenticationService.handleWebinUser(curationLink, webinAccount.getId());
+          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+              curationLink, webinAccount.getId());
 
       curationLink =
           CurationLink.build(
@@ -150,11 +163,6 @@ public class SampleCurationLinksRestController {
     // create the response object with the appropriate status
     return ResponseEntity.created(URI.create(resource.getLink("self").getHref())).body(resource);
   }
-
-  @ResponseStatus(
-      value = HttpStatus.BAD_REQUEST,
-      reason = "Sample must match URL or be omitted") // 400
-  public static class SampleNotMatchException extends RuntimeException {}
 
   @CrossOrigin
   @DeleteMapping(value = "/{hash}")

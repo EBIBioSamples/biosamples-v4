@@ -9,16 +9,14 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.2.2-RC1</version>
+		<version>5.2.3-SNAPSHOT</version>
 	</parent>
 
 	<modules>
 		<module>webapp</module>
-		<module>mongo</module>
 		<module>pipeline</module>
 		<module>thread</module>
 		<module>ols</module>
-		<module>json</module>
 		<module>xml</module>
 		<module>client</module>
 		<module>utils-core</module>

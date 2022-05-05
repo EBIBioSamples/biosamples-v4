@@ -67,7 +67,13 @@ public class EraProDao {
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' "
             + "AND "
             + STATUS_CLAUSE
-            + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
+            + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) "
+            + " UNION ALL "
+            + "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID FROM SAMPLE "
+            + "WHERE CHECKLIST_ID = 'ERC000052' "
+            + "AND ((LAST_UPDATED BETWEEN ? AND ?) "
+            + "OR (FIRST_PUBLIC BETWEEN ? AND ?))"
+            + "ORDER BY BIOSAMPLE_ID ASC";
 
     Date minDateOld = java.sql.Date.valueOf(minDate);
     Date maxDateOld = java.sql.Date.valueOf(maxDate);
@@ -122,20 +128,20 @@ public class EraProDao {
     jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
   }
 
-  public SampleDBBean getAllSampleData(String biosampleAccession) {
+  public SampleDBBean getAllSampleData(final String biosampleAccession) {
     try {
       String sql =
-          "SELECT SAMPLE_XML, "
+          "SELECT SAMPLE_XML, TAX_ID, "
               + "to_char(LAST_UPDATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS LAST_UPDATED, "
               + "to_char(FIRST_PUBLIC, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_PUBLIC,  "
-              + " to_char(FIRST_CREATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_CREATED, "
+              + "to_char(FIRST_CREATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_CREATED, "
               + "STATUS_ID, "
               + "SUBMISSION_ACCOUNT_ID "
               + "FROM SAMPLE "
               + "WHERE BIOSAMPLE_ID = ? "
               + "AND SAMPLE_ID LIKE 'ERS%'";
       final SampleDBBean sampleData =
-          jdbcTemplate.queryForObject(sql, insdcRowMapper, biosampleAccession);
+          jdbcTemplate.queryForObject(sql, enaSampleRowMapper, biosampleAccession);
 
       return sampleData;
     } catch (final IncorrectResultSizeDataAccessException e) {
@@ -179,7 +185,7 @@ public class EraProDao {
     else return null;
   }
 
-  RowMapper<SampleDBBean> insdcRowMapper =
+  RowMapper<SampleDBBean> enaSampleRowMapper =
       (rs, rowNum) -> {
         final SampleDBBean sampleBean = new SampleDBBean();
 
@@ -189,6 +195,7 @@ public class EraProDao {
         sampleBean.setFirstCreated(rs.getString("FIRST_CREATED"));
         sampleBean.setStatus(rs.getInt("STATUS_ID"));
         sampleBean.setSubmissionAccountId(rs.getString("SUBMISSION_ACCOUNT_ID"));
+        sampleBean.setTaxId(rs.getLong("TAX_ID"));
 
         return sampleBean;
       };

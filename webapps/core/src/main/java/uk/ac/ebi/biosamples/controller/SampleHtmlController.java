@@ -35,7 +35,7 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.JsonLDDataCatalog;
 import uk.ac.ebi.biosamples.model.JsonLDDataset;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.auth.LoginWays;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
@@ -218,10 +218,10 @@ public class SampleHtmlController {
 
   @GetMapping(value = "/uploadLogin")
   public String login(Model model, HttpServletRequest request, HttpServletResponse response) {
-    LoginWays[] loginWays = LoginWays.values();
+    AuthorizationProvider[] loginWays = AuthorizationProvider.values();
     List<String> logins = new ArrayList<>();
 
-    for (LoginWays loginWay : loginWays) {
+    for (AuthorizationProvider loginWay : loginWays) {
       logins.add(loginWay.toString());
     }
 
@@ -426,7 +426,7 @@ public class SampleHtmlController {
       throw new RuntimeException("Unable to retrieve " + accession);
     }
 
-    bioSamplesAapService.checkAccessible(sample.get());
+    bioSamplesAapService.checkSampleAccessibility(sample.get());
 
     // response.setHeader(HttpHeaders.LAST_MODIFIED,
     // String.valueOf(sample.getUpdate().toEpochSecond(ZoneOffset.UTC)));

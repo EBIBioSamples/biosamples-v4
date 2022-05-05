@@ -35,8 +35,9 @@ import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ebeye.gen.*;
-import uk.ac.ebi.biosamples.ebeye.util.LoadAttributeSet;
+import uk.ac.ebi.biosamples.ebeye.util.AttributeLoader;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.filter.AttributeFilter;
 import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
@@ -49,7 +50,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   private static final String ENA_UC = "ENA";
   private final RefType taxonomyRefType = new RefType();
   @Autowired BioSamplesClient bioSamplesClient;
-  @Autowired LoadAttributeSet loadAttributeSet;
+  @Autowired AttributeLoader attributeLoader;
 
   @Value("${spring.data.mongodb.uri}")
   private String mongoUri;
@@ -99,7 +100,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
       final AtomicReference<String> startDate = new AtomicReference<>("");
       final String filePath = "";
 
-      attributeSet = loadAttributeSet.getAllAttributes();
+      attributeSet = attributeLoader.getAllAttributes();
 
       final List<String> programArguments =
           args.getOptionNames().stream()
@@ -263,8 +264,24 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
               crossReferencesType.getRef().add(refType);
             });
 
+    sample
+        .getRelationships()
+        .forEach(
+            relationship -> {
+              final RefType refType = new RefType();
+
+              refType.setDbname("BSD_relationship_" + relationship.getType());
+              refType.setDbkey(relationship.getSource());
+
+              crossReferencesType.getRef().add(refType);
+            });
+
     if (covidRun) {
-      crossReferencesType.getRef().add(getTaxonomyCrossReferenceCovid(sample.getTaxId()));
+      final Long taxId = sample.getTaxId();
+
+      if (taxId != null) {
+        crossReferencesType.getRef().add(getTaxonomyCrossReferenceCovid(taxId));
+      }
     } else {
       crossReferencesType.getRef().add(taxonomyRefType);
     }
@@ -272,7 +289,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     return crossReferencesType;
   }
 
-  private RefType getTaxonomyCrossReferenceCovid(int taxId) {
+  private RefType getTaxonomyCrossReferenceCovid(long taxId) {
     RefType refType = new RefType();
 
     refType.setDbname("TAXONOMY");
@@ -385,12 +402,27 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
 
   public List<Sample> getSamplesListCovid(
       AtomicReference<String> startDate, AtomicReference<String> endDate) {
-    final Iterable<Resource<Sample>> sampleResources =
-        bioSamplesClient.fetchSampleResourceAll(
-            "NCBITaxon_2697049", getDateFiltersCovid(startDate.get(), endDate.get()));
     final List<Sample> sampleList = new ArrayList<>();
+    final Collection<Filter> covidDateFilter = getDateFiltersCovid(startDate.get(), endDate.get());
+    final Iterable<Resource<Sample>> sampleResources =
+        bioSamplesClient.fetchSampleResourceAll("NCBITaxon_2697049", covidDateFilter);
 
     sampleResources.forEach(
+        sampleResource -> {
+          final Sample sample = sampleResource.getContent();
+
+          sampleList.add(sample);
+          log.info("Sample added " + sample.getAccession());
+        });
+
+    final Collection<Filter> covidDiseaseTagFilter = new ArrayList<>();
+    covidDiseaseTagFilter.add(new AttributeFilter.Builder("disease").withValue("COVID-19").build());
+    covidDiseaseTagFilter.addAll(covidDateFilter);
+
+    final Iterable<Resource<Sample>> sampleResources2 =
+        bioSamplesClient.fetchSampleResourceAll(covidDiseaseTagFilter);
+
+    sampleResources2.forEach(
         sampleResource -> {
           final Sample sample = sampleResource.getContent();
 

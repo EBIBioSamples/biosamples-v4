@@ -13,7 +13,6 @@ package uk.ac.ebi.biosamples.controller;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
@@ -22,49 +21,49 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Accession;
-import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
+import uk.ac.ebi.biosamples.model.AuthToken;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.service.AccessionsService;
+import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 
 @RestController
 @RequestMapping("/accessions")
 @CrossOrigin
 public class AccessionsRestController {
   private final BioSamplesAapService bioSamplesAapService;
-  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final AccessionsService accessionsService;
+  private final AccessControlService accessControlService;
 
   public AccessionsRestController(
       BioSamplesAapService bioSamplesAapService,
-      BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-      AccessionsService accessionsService) {
+      AccessionsService accessionsService,
+      AccessControlService accessControlService) {
     this.bioSamplesAapService = bioSamplesAapService;
-    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.accessionsService = accessionsService;
+    this.accessControlService = accessControlService;
   }
 
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Resources<Accession>> getAccessions(
-      HttpServletRequest request,
       @RequestParam(name = "text", required = false) String text,
       @RequestParam(name = "filter", required = false) String[] filter,
       @RequestParam(name = "page", required = false) final Integer page,
       @RequestParam(name = "size", required = false) final Integer size,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider) {
-    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+      @RequestHeader(name = "Authorization", required = false) final String token) {
+
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
+    final boolean webinAuth =
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
+    AuthorizationProvider authProvider =
+        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
+
     String webinSubmissionAccountId = null;
     Collection<String> domains = null;
 
     if (webinAuth) {
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
-
-      if (webinAccount != null) {
-        webinSubmissionAccountId = webinAccount.getId();
-      }
+      webinSubmissionAccountId = authToken.get().getUser();
     } else {
       domains = bioSamplesAapService.getDomains();
     }
@@ -87,8 +86,9 @@ public class AccessionsRestController {
         new PagedResources<>(
             pageAccessions.getContent().stream().map(Accession::build).collect(Collectors.toList()),
             pageMetadata);
+
     addRelLinks(
-        pageAccessions, resources, text, filter, effectivePage, effectiveSize, authProvider);
+        pageAccessions, resources, text, filter, effectivePage, effectiveSize, authProvider.name());
 
     return ResponseEntity.ok().body(resources);
   }

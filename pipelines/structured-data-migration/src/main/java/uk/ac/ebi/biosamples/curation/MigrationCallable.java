@@ -47,6 +47,7 @@ public class MigrationCallable implements Callable<PipelineResult> {
             mongoSample.getAccession(),
             mongoSample.getDomain(),
             mongoSample.getWebinSubmissionAccountId(),
+            mongoSample.getTaxId(),
             mongoSample.getRelease(),
             mongoSample.getUpdate(),
             mongoSample.getCreate(),

@@ -23,8 +23,16 @@ public class SampleDBBean {
   private String lastUpdate;
   private String firstCreated;
   private String submissionAccountId;
-
+  private Long taxId;
   private int status;
+
+  public Long getTaxId() {
+    return taxId;
+  }
+
+  public void setTaxId(Long taxId) {
+    this.taxId = taxId;
+  }
 
   public String getSampleXml() {
     return sampleXml;

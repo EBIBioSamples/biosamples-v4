@@ -130,6 +130,7 @@ public class JsonLdIntegration extends AbstractIntegration {
             new TreeSet<>(Arrays.asList("DUO:0000005", "DUO:0000001", "DUO:0000007"))));
 
     return new Sample.Builder(name)
+        .withTaxId(Long.valueOf(9606))
         .withDomain(defaultIntegrationSubmissionDomain)
         .withRelease(release)
         .withUpdate(update)

@@ -153,7 +153,7 @@ public class SolrFilterService {
 
     // filter out non-public
     FilterQuery filterQuery = new SimpleFilterQuery();
-    Criteria publicSampleCriteria = new Criteria("release_dt").lessThan("NOW/DAY");
+    Criteria publicSampleCriteria = new Criteria("release_dt").lessThan("NOW");
     // can use .and("release_dt").isNotNull(); to filter out non-null
     // but nothing should be null and this slows search
 

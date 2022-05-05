@@ -43,10 +43,10 @@ import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
   "accession",
   "domain",
   "webinSubmissionAccountId",
+  "taxId",
   "release",
   "update",
   "submitted",
-  "taxId",
   "characteristics",
   "relationships",
   "externalReferences",
@@ -63,6 +63,8 @@ public class Sample implements Comparable<Sample> {
   protected String domain;
 
   protected String webinSubmissionAccountId;
+
+  protected Long taxId;
 
   protected Instant release;
   protected Instant update;
@@ -171,9 +173,13 @@ public class Sample implements Comparable<Sample> {
         : null;
   }
 
-  @JsonProperty(value = "taxId", access = JsonProperty.Access.READ_ONLY)
-  public Integer getTaxId() {
-    Optional<Integer> taxon = Optional.empty();
+  @JsonProperty(value = "taxId")
+  public Long getTaxId() {
+    if (taxId != null) {
+      return taxId;
+    }
+
+    Optional<Long> taxon = Optional.empty();
     for (Attribute attribute : attributes) {
       if ("organism".equalsIgnoreCase(attribute.getType()) && !attribute.getIri().isEmpty()) {
         taxon =
@@ -188,7 +194,7 @@ public class Sample implements Comparable<Sample> {
     return taxon.orElse(null);
   }
 
-  private int extractTaxIdFromIri(String iri) {
+  private long extractTaxIdFromIri(String iri) {
     if (iri.isEmpty()) return 0;
     String[] segments = iri.split("NCBITaxon_");
     try {
@@ -270,6 +276,7 @@ public class Sample implements Comparable<Sample> {
         && Objects.equals(this.accession, other.accession)
         && Objects.equals(this.domain, other.domain)
         && Objects.equals(this.webinSubmissionAccountId, other.webinSubmissionAccountId)
+        && Objects.equals(this.taxId, other.taxId)
         && Objects.equals(this.release, other.release)
         && Objects.equals(this.attributes, other.attributes)
         && Objects.equals(this.data, other.data)
@@ -292,6 +299,10 @@ public class Sample implements Comparable<Sample> {
 
     if (!this.name.equals(other.name)) {
       return this.name.compareTo(other.name);
+    }
+
+    if (!this.taxId.equals(other.taxId)) {
+      return this.taxId.compareTo(other.taxId);
     }
 
     if (!this.release.equals(other.release)) {
@@ -391,6 +402,7 @@ public class Sample implements Comparable<Sample> {
     return Objects.hash(
         name,
         accession,
+        taxId,
         release,
         attributes,
         data,
@@ -411,6 +423,8 @@ public class Sample implements Comparable<Sample> {
     sb.append(domain);
     sb.append(",");
     sb.append(webinSubmissionAccountId);
+    sb.append(",");
+    sb.append(taxId);
     sb.append(",");
     sb.append(release);
     sb.append(",");
@@ -444,6 +458,7 @@ public class Sample implements Comparable<Sample> {
       String accession,
       String domain,
       String webinSubmissionAccountId,
+      Long taxId,
       Instant release,
       Instant update,
       Instant create,
@@ -457,6 +472,7 @@ public class Sample implements Comparable<Sample> {
         accession,
         domain,
         webinSubmissionAccountId,
+        taxId,
         release,
         update,
         create,
@@ -479,6 +495,7 @@ public class Sample implements Comparable<Sample> {
       String accession,
       String domain,
       String webinSubmissionAccountId,
+      Long taxId,
       Instant release,
       Instant update,
       Instant create,
@@ -493,6 +510,7 @@ public class Sample implements Comparable<Sample> {
         accession,
         domain,
         webinSubmissionAccountId,
+        taxId,
         release,
         update,
         create,
@@ -517,6 +535,7 @@ public class Sample implements Comparable<Sample> {
       @JsonProperty("accession") String accession,
       @JsonProperty("domain") String domain,
       @JsonProperty("webinSubmissionAccountId") String webinSubmissionAccountId,
+      @JsonProperty("taxId") Long taxId,
       @JsonProperty("release") @JsonDeserialize(using = CustomInstantDeserializer.class)
           Instant release,
       @JsonProperty("update") @JsonDeserialize(using = CustomInstantDeserializer.class)
@@ -554,6 +573,10 @@ public class Sample implements Comparable<Sample> {
 
     if (webinSubmissionAccountId != null) {
       sample.webinSubmissionAccountId = webinSubmissionAccountId.trim();
+    }
+
+    if (taxId != null) {
+      sample.taxId = taxId;
     }
 
     // Instead of validation failure, if null, set it to now
@@ -629,6 +652,8 @@ public class Sample implements Comparable<Sample> {
     protected String domain = null;
     protected String webinSubmissionAccountId = null;
 
+    protected Long taxId = null;
+
     protected Instant release = Instant.now();
     protected Instant update = Instant.now();
     protected Instant create = Instant.now();
@@ -668,6 +693,11 @@ public class Sample implements Comparable<Sample> {
 
     public Builder withWebinSubmissionAccountId(String webinSubmissionAccountId) {
       this.webinSubmissionAccountId = webinSubmissionAccountId;
+      return this;
+    }
+
+    public Builder withTaxId(Long taxId) {
+      this.taxId = taxId;
       return this;
     }
 
@@ -987,6 +1017,7 @@ public class Sample implements Comparable<Sample> {
           accession,
           domain,
           webinSubmissionAccountId,
+          taxId,
           release,
           update,
           create,
@@ -1028,6 +1059,7 @@ public class Sample implements Comparable<Sample> {
       return new Builder(sample.getName(), sample.getAccession())
           .withDomain(sample.getDomain())
           .withWebinSubmissionAccountId(sample.getWebinSubmissionAccountId())
+          .withTaxId(sample.getTaxId())
           .withRelease(sample.getRelease())
           .withUpdate(sample.getUpdate())
           .withCreate(sample.getCreate())

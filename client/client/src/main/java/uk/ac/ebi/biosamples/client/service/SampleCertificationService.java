@@ -125,10 +125,6 @@ public class SampleCertificationService {
     UriComponentsBuilder uriComponentsBuilder =
         UriComponentsBuilder.fromUriString(sampleLink.getHref() + "/certify");
 
-    if (isWebinSubmission) {
-      uriComponentsBuilder.queryParam("authProvider", "WEBIN");
-    }
-
     return uriComponentsBuilder.build(true).toUri();
   }
 }

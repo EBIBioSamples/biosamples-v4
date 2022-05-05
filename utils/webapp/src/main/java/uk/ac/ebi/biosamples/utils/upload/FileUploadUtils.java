@@ -28,6 +28,7 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.*;
 
 public class FileUploadUtils {
@@ -170,7 +171,6 @@ public class FileUploadUtils {
 
                         return new Attribute.Builder(
                                 trimmedCharacteristicsName, characteristicsValue)
-                            .withTag("attribute")
                             .withUnit(characteristics.getUnit())
                             .withIri(characteristics.getIri())
                             .build();
@@ -673,7 +673,7 @@ public class FileUploadUtils {
                 "GENERAL_VALIDATION_MESSAGE",
                 "ISA tab file must have Source Name as first column, followed by Sample Name and Release Date."));
 
-        throw new UploadInvalidException(
+        throw new GlobalExceptions.UploadInvalidException(
             validationResult.getValidationMessagesList().stream()
                 .map(
                     validationMessage ->
@@ -682,12 +682,6 @@ public class FileUploadUtils {
                             + validationMessage.getMessageValue())
                 .collect(Collectors.joining("\n")));
       }
-    }
-  }
-
-  public static class UploadInvalidException extends RuntimeException {
-    public UploadInvalidException(final String collect) {
-      super(collect);
     }
   }
 }

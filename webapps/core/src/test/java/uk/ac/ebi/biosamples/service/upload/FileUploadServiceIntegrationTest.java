@@ -129,7 +129,6 @@ public class FileUploadServiceIntegrationTest {
                           Attribute attribute =
                               new Attribute.Builder(
                                       characteristics.getName(), characteristics.getValue())
-                                  .withTag("attribute")
                                   .withUnit(characteristics.getUnit())
                                   .withIri(characteristics.getIri())
                                   .build();

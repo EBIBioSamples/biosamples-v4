@@ -11,84 +11,96 @@
 package uk.ac.ebi.biosamples.controller;
 
 import java.time.Instant;
-import javax.servlet.http.HttpServletRequest;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
+import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
+import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 public class SampleRestControllerV2 {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final SchemaValidationService schemaValidationService;
-  private final ENATaxonClientService enaTaxonClientService;
+  private final TaxonomyClientService taxonomyClientService;
+  private final AccessControlService accessControlService;
 
   public SampleRestControllerV2(
       final SampleService sampleService,
       final BioSamplesAapService bioSamplesAapService,
       final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       final SchemaValidationService schemaValidationService,
-      final ENATaxonClientService enaTaxonClientService) {
+      final TaxonomyClientService taxonomyClientService,
+      final AccessControlService accessControlService) {
     this.sampleService = sampleService;
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.schemaValidationService = schemaValidationService;
-    this.enaTaxonClientService = enaTaxonClientService;
+    this.taxonomyClientService = taxonomyClientService;
+    this.accessControlService = accessControlService;
   }
 
   @PreAuthorize("isAuthenticated()")
   @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Sample> putSampleV2(
-      HttpServletRequest request,
       @PathVariable final String accession,
       @RequestBody Sample sample,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          final String authProvider) {
-    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+      @RequestHeader(name = "Authorization") final String token) {
     boolean isWebinSuperUser = false;
 
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
-      throw new SampleAccessionMismatchExceptionV2();
+      throw new GlobalExceptions.SampleAccessionMismatchException();
     }
+
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
+    final boolean webinAuth =
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
+    final AuthorizationProvider authProvider =
+        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
 
     log.debug("Received PUT for " + accession);
 
-    if (authProvider.equalsIgnoreCase("WEBIN")) {
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+    if (webinAuth) {
+      final String webinSubmissionAccountId = authToken.get().getUser();
 
-      if (webinAccount == null) {
-        throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
+      if (webinSubmissionAccountId == null) {
+        throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
-      final String webinAccountId = webinAccount.getId();
-
-      isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
+      isWebinSuperUser =
+          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
 
       if (sampleService.isNotExistingAccession(accession) && !isWebinSuperUser) {
-        throw new SampleAccessionMismatchExceptionV2();
+        throw new GlobalExceptions.SampleAccessionMismatchException();
       }
 
-      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
+      sample =
+          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+              sample, webinSubmissionAccountId);
     } else {
       if (sampleService.isNotExistingAccession(accession)
           && !(bioSamplesAapService.isWriteSuperUser()
               || bioSamplesAapService.isIntegrationTestUser())) {
-        throw new SampleAccessionMismatchExceptionV2();
+        throw new GlobalExceptions.SampleAccessionMismatchException();
       }
 
       sample = bioSamplesAapService.handleSampleDomain(sample);
@@ -104,19 +116,18 @@ public class SampleRestControllerV2 {
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
     if (webinAuth && !isWebinSuperUser) {
       schemaValidationService.validate(sample);
+      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
     } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
       schemaValidationService.validate(sample);
+      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, false);
     }
 
     if (submittedVia == SubmittedViaType.FILE_UPLOADER) {
       schemaValidationService.validate(sample);
     }
 
-    if (webinAuth && !isWebinSuperUser) {
-      sample = enaTaxonClientService.performTaxonomyValidation(sample);
-    }
-
-    final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample, isWebinSuperUser);
+    final boolean isFirstTimeMetadataAdded =
+        sampleService.checkIfSampleHasMetadata(sample, isWebinSuperUser);
 
     if (isFirstTimeMetadataAdded) {
       sample = Sample.Builder.fromSample(sample).withSubmitted(now).build();
@@ -126,9 +137,4 @@ public class SampleRestControllerV2 {
 
     return ResponseEntity.status(HttpStatus.OK).body(sample);
   }
-
-  @ResponseStatus(
-      value = HttpStatus.BAD_REQUEST,
-      reason = "Sample accession must match URL accession") // 400
-  public static class SampleAccessionMismatchExceptionV2 extends RuntimeException {}
 }

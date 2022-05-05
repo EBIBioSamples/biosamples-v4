@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.exception.SchemaValidationException;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.certification.Checklist;
 import uk.ac.ebi.biosamples.validation.ValidatorI;
 
@@ -65,7 +65,7 @@ public class Validator implements ValidatorI {
   }
 
   public String validateById(String schemaId, String document)
-      throws IOException, SchemaValidationException {
+      throws IOException, GlobalExceptions.SchemaValidationException {
     Checklist checklist = getChecklist(schemaId);
     try (InputStream inputStream =
         getClass().getClassLoader().getResourceAsStream(checklist.getFileName())) {
@@ -73,7 +73,7 @@ public class Validator implements ValidatorI {
       Schema schema = SchemaLoader.load(rawSchema);
       schema.validate(new JSONObject(document));
     } catch (ValidationException e) {
-      throw new SchemaValidationException(e.getMessage());
+      throw new GlobalExceptions.SchemaValidationException(e.getMessage());
     }
 
     return checklist.getID();

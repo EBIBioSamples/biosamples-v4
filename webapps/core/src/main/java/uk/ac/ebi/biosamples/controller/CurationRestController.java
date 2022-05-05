@@ -32,6 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.utils.mongo.CurationReadService;
+import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
 
 @RestController
 @ExposesResourceFor(Curation.class)

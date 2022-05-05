@@ -13,14 +13,11 @@ package uk.ac.ebi.biosamples.service.security;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.*;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
@@ -35,24 +32,12 @@ public class BioSamplesWebinAuthenticationService {
   private final RestTemplate restTemplate;
   private final SampleService sampleService;
   private final BioSamplesProperties bioSamplesProperties;
-  private final BearerTokenExtractor bearerTokenExtractor;
 
   public BioSamplesWebinAuthenticationService(
       final SampleService sampleService, final BioSamplesProperties bioSamplesProperties) {
     this.restTemplate = new RestTemplate();
     this.sampleService = sampleService;
     this.bioSamplesProperties = bioSamplesProperties;
-    this.bearerTokenExtractor = new BearerTokenExtractor();
-  }
-
-  public SubmissionAccount getWebinSubmissionAccount(final HttpServletRequest request) {
-    final Authentication authentication = bearerTokenExtractor.extract(request);
-
-    if (authentication != null) {
-      return getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal())).getBody();
-    }
-
-    return null;
   }
 
   public ResponseEntity<SubmissionAccount> getWebinSubmissionAccount(final String webinAuthToken) {
@@ -74,11 +59,11 @@ public class BioSamplesWebinAuthenticationService {
         return null;
       }
     } catch (final Exception e) {
-      throw new WebinUserLoginUnauthorizedException();
+      throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
     }
   }
 
-  public ResponseEntity<String> getWebinToken(final String authRequest) {
+  public ResponseEntity<String> getWebinAuthenticationToken(final String authRequest) {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
     HttpEntity<String> entity = new HttpEntity<>(authRequest, headers);
@@ -96,11 +81,11 @@ public class BioSamplesWebinAuthenticationService {
         return null;
       }
     } catch (final Exception e) {
-      throw new WebinUserLoginUnauthorizedException();
+      throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
     }
   }
 
-  public Sample handleWebinUser(Sample sample, String webinId) {
+  public Sample handleWebinUserSubmission(Sample sample, String webinId) {
     final String biosamplesClientWebinUsername =
         bioSamplesProperties.getBiosamplesClientWebinUsername();
     final String webinSubmissionAccountIdInMetadata = sample.getWebinSubmissionAccountId();
@@ -113,7 +98,7 @@ public class BioSamplesWebinAuthenticationService {
               : biosamplesClientWebinUsername;
 
       if (sample.getAccession() != null) { // sample updates, where sample has an accession
-        final Optional<Sample> oldSample = getOldSample(sample);
+        final Optional<Sample> oldSample = fetchOldSample(sample);
 
         if (webinId.equalsIgnoreCase(
             biosamplesClientWebinUsername)) { // ENA pipeline submissions or super user submission
@@ -123,7 +108,7 @@ public class BioSamplesWebinAuthenticationService {
                 && !sample
                     .getWebinSubmissionAccountId()
                     .equals(oldSample.get().getWebinSubmissionAccountId())) {
-              throw new SampleNotAccessibleException();
+              throw new GlobalExceptions.SampleNotAccessibleException();
             }
           }
 
@@ -136,26 +121,26 @@ public class BioSamplesWebinAuthenticationService {
                 && !oldSavedSampleWebinSubmissionAccountId
                     .isEmpty()) { // if old sample has user info, use it
               if (oldSavedSampleWebinSubmissionAccountId.equals(biosamplesClientWebinUsername)) {
-                return getSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
+                return buildSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
               } else {
-                return getSampleWithWebinSubmissionAccountId(
+                return buildSampleWithWebinSubmissionAccountId(
                     sample, oldSavedSampleWebinSubmissionAccountId);
               }
             } else {
               final String oldSampleDomain = oldSavedSample.getDomain();
 
-              if (sampleService.isPipelineEnaOrNcbiDomain(oldSampleDomain)
-                  || checkOtherENARegistrationDomains(
+              if (sampleService.isAnImportAapDomain(oldSampleDomain)
+                  || checkIfAnyENACurrentOrOldRegistrationDomain(
                       oldSampleDomain)) { // if old sample was a pipeline submission using AAP, or
                 // pre registration, allow
                 // webin replacement
-                return getSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
+                return buildSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
               } else {
-                throw new SampleNotAccessibleException();
+                throw new GlobalExceptions.SampleNotAccessibleException();
               }
             }
           } else {
-            return getSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
+            return buildSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
           }
         } else { // normal sample update - not pipeline, check for old user, if mismatch throw
           // exception, else build the Sample
@@ -164,29 +149,29 @@ public class BioSamplesWebinAuthenticationService {
 
             if (!webinId.equalsIgnoreCase(
                 oldSavedSample.getWebinSubmissionAccountId())) { // original submitter mismatch
-              throw new SampleNotAccessibleException();
+              throw new GlobalExceptions.SampleNotAccessibleException();
             } else {
-              return getSampleWithWebinSubmissionAccountId(sample, webinId);
+              return buildSampleWithWebinSubmissionAccountId(sample, webinId);
             }
           } else {
-            return getSampleWithWebinSubmissionAccountId(sample, webinId);
+            return buildSampleWithWebinSubmissionAccountId(sample, webinId);
           }
         }
       } else { // new submission
         if (webinId.equalsIgnoreCase(
             biosamplesClientWebinUsername)) { // new submission by client program
-          return getSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
+          return buildSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
         } else {
-          return getSampleWithWebinSubmissionAccountId(sample, webinId);
+          return buildSampleWithWebinSubmissionAccountId(sample, webinId);
         }
       }
     } else {
-      throw new WebinUserLoginUnauthorizedException();
+      throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
     }
   }
 
   /*Only used for sample migration purposes*/
-  private boolean checkOtherENARegistrationDomains(final String sampleDomain) {
+  private boolean checkIfAnyENACurrentOrOldRegistrationDomain(final String sampleDomain) {
     if (sampleDomain != null) {
       return sampleDomain.equals("self.Webin")
           || sampleDomain.equals("3fa5e19ccafc88187d437f92cf29c3b6694c6c6f98efa236c8aa0aeaf5b23f15")
@@ -198,18 +183,19 @@ public class BioSamplesWebinAuthenticationService {
     }
   }
 
-  private Optional<Sample> getOldSample(final Sample sample) {
+  private Optional<Sample> fetchOldSample(final Sample sample) {
     return sampleService.fetch(sample.getAccession(), Optional.empty(), null);
   }
 
-  public Sample getSampleWithWebinSubmissionAccountId(final Sample sample, final String webinId) {
+  public Sample buildSampleWithWebinSubmissionAccountId(final Sample sample, final String webinId) {
     return Sample.Builder.fromSample(sample)
         .withWebinSubmissionAccountId(webinId)
         .withNoDomain()
         .build();
   }
 
-  public CurationLink handleWebinUser(final CurationLink curationLink, final String webinId) {
+  public CurationLink handleWebinUserSubmission(
+      final CurationLink curationLink, final String webinId) {
     if (webinId != null && !webinId.isEmpty()) {
       return CurationLink.build(
           curationLink.getSample(),
@@ -218,26 +204,26 @@ public class BioSamplesWebinAuthenticationService {
           webinId,
           curationLink.getCreated());
     } else {
-      throw new SampleNotAccessibleException();
+      throw new GlobalExceptions.SampleNotAccessibleException();
     }
   }
 
-  public void handleStructuredDataAccesibility(
-      final StructuredData structuredData, final String id) {
+  public void isStructuredDataAccessible(final StructuredData structuredData, final String id) {
     structuredData
         .getData()
         .forEach(
             data -> {
-              if (data.getWebinSubmissionAccountId() == null
-                  || data.getWebinSubmissionAccountId().isEmpty()) {
-                throw new StructuredDataWebinIdMissingException();
-              } else if (!id.equalsIgnoreCase(data.getWebinSubmissionAccountId())) {
-                throw new WebinUserLoginUnauthorizedException();
+              final String webinSubmissionAccountId = data.getWebinSubmissionAccountId();
+
+              if (webinSubmissionAccountId == null || webinSubmissionAccountId.isEmpty()) {
+                throw new GlobalExceptions.StructuredDataWebinIdMissingException();
+              } else if (!id.equalsIgnoreCase(webinSubmissionAccountId)) {
+                throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
               }
             });
   }
 
-  public boolean isSampleOwner(final Sample sample, final String id) {
+  public boolean isStructuredDataSubmittedBySampleSubmitter(final Sample sample, final String id) {
     final AtomicBoolean isWebinIdValid = new AtomicBoolean(false);
 
     sample
@@ -248,21 +234,21 @@ public class BioSamplesWebinAuthenticationService {
                 final String structuredDataWebinId = data.getWebinSubmissionAccountId();
 
                 if (structuredDataWebinId == null)
-                  throw new StructuredDataWebinIdMissingException();
+                  throw new GlobalExceptions.StructuredDataWebinIdMissingException();
               }
             });
 
     if (sample.hasAccession()) {
-      isWebinIdValid.set(checkStructureDataAccessibility(sample, id));
+      isWebinIdValid.set(isStructuredDataAccessibleBySubmitter(sample, id));
     }
 
     if (isWebinIdValid.get()) return true;
-    else throw new StructuredDataNotAccessibleException();
+    else throw new GlobalExceptions.StructuredDataNotAccessibleException();
   }
 
-  private boolean checkStructureDataAccessibility(final Sample sample, final String webinId) {
+  private boolean isStructuredDataAccessibleBySubmitter(final Sample sample, final String webinId) {
     final AtomicBoolean isWebinIdValid = new AtomicBoolean(false);
-    final Optional<Sample> oldSample = getOldSample(sample);
+    final Optional<Sample> oldSample = fetchOldSample(sample);
 
     if (oldSample.isPresent()) {
       Sample oldSampleRetrieved = oldSample.get();
@@ -286,7 +272,7 @@ public class BioSamplesWebinAuthenticationService {
 
                     if (!webinSubmissionAccountId.equalsIgnoreCase(
                         fData.getWebinSubmissionAccountId())) {
-                      throw new StructuredDataNotAccessibleException();
+                      throw new GlobalExceptions.StructuredDataNotAccessibleException();
                     } else {
                       isWebinIdValid.set(true);
                     }
@@ -318,53 +304,17 @@ public class BioSamplesWebinAuthenticationService {
         && webinId.equalsIgnoreCase(bioSamplesProperties.getBiosamplesClientWebinUsername());
   }
 
-  public void checkSampleAccessibility(
-      final Sample sample, final SubmissionAccount webinSubmissionAccount) {
-    if (webinSubmissionAccount == null) {
-      if (sample.getRelease().isBefore(Instant.now())) {
-        // release date in past, accessible
-      } else {
-        throw new SampleNotAccessibleException();
+  public void checkSampleAccessibility(final Sample sample, final String webinSubmissionAccountId) {
+    if (webinSubmissionAccountId == null) {
+      if (!sample.getRelease().isBefore(Instant.now())) {
+        throw new GlobalExceptions.SampleNotAccessibleException();
       }
     } else {
-      if (sample.getRelease().isBefore(Instant.now())) {
-        // release date in past, accessible
-      } else {
-        final String webinSubmissionAccountId = sample.getWebinSubmissionAccountId();
-
-        if (webinSubmissionAccountId == null) {
-          throw new SampleNotAccessibleException();
-        } else if (webinSubmissionAccountId.equals(webinSubmissionAccount.getId())) {
-          // if the current user is the submitter of the original sample, accessible
-        } else {
-          throw new SampleNotAccessibleException();
+      if (!sample.getRelease().isBefore(Instant.now())) {
+        if (!webinSubmissionAccountId.equals(sample.getWebinSubmissionAccountId())) {
+          throw new GlobalExceptions.SampleNotAccessibleException();
         }
       }
     }
   }
-
-  @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Unauthorized WEBIN user")
-  public static class WebinUserLoginUnauthorizedException extends RuntimeException {}
-
-  @ResponseStatus(
-      value = HttpStatus.FORBIDDEN,
-      reason =
-          "This sample is private and not available for browsing. If you think this is an error and/or you should have access please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk")
-  public static class SampleNotAccessibleException extends RuntimeException {}
-
-  @ResponseStatus(
-      value = HttpStatus.FORBIDDEN,
-      reason =
-          "You don't have access to the sample structured data. If you think this is an error and/or you should have access please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk") // 403
-  public static class StructuredDataNotAccessibleException extends RuntimeException {}
-
-  @ResponseStatus(
-      value = HttpStatus.BAD_REQUEST,
-      reason = "Structured data must have a webin submission account id") // 400
-  public static class StructuredDataWebinIdMissingException extends RuntimeException {}
-
-  @ResponseStatus(
-      value = HttpStatus.BAD_REQUEST,
-      reason = "You must provide a bearer token to be able to submit") // 400
-  public static class WebinTokenMissingException extends RuntimeException {}
 }

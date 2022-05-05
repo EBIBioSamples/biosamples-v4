@@ -30,7 +30,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.servlet.http.HttpServletRequest;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -53,16 +52,18 @@ import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.certification.*;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
-import uk.ac.ebi.biosamples.service.certification.Identifier;
+import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
+import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
+import uk.ac.ebi.biosamples.utils.mongo.CurationReadService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @RunWith(SpringRunner.class)
@@ -76,10 +77,11 @@ public class ApiDocumentationTest {
       new JUnitRestDocumentation("target/generated-snippets");
 
   @Autowired private WebApplicationContext context;
-
   private ObjectMapper mapper;
 
   @MockBean private SamplePageService samplePageService;
+
+  @MockBean private AccessControlService accessControlService;
 
   @MockBean private SampleService sampleService;
 
@@ -93,18 +95,14 @@ public class ApiDocumentationTest {
 
   @MockBean private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
 
-  @MockBean private ENATaxonClientService enaTaxonClientService;
-
-  @MockBean private Identifier identifier;
+  @MockBean private TaxonomyClientService taxonomyClientService;
 
   @MockBean private SchemaValidationService schemaValidationService;
 
   @MockBean private StructuredDataService structuredDataService;
 
   private DocumentationHelper faker;
-
   private MockMvc mockMvc;
-
   private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
   @Before
@@ -157,6 +155,12 @@ public class ApiDocumentationTest {
             any(String.class),
             any()))
         .thenReturn(samplePage);
+    when(accessControlService.extractToken(anyString()))
+        .thenReturn(
+            Optional.of(
+                new AuthToken(
+                    "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
+    when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
     this.mockMvc
         .perform(get("/biosamples/samples").accept(MediaTypes.HAL_JSON))
         .andExpect(status().isOk())
@@ -190,6 +194,7 @@ public class ApiDocumentationTest {
             null,
             null,
             null,
+            Long.valueOf(9606),
             null,
             null,
             null,
@@ -200,8 +205,8 @@ public class ApiDocumentationTest {
             null);
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(wrongSample);
-    when(sampleService.store(wrongSample, false, "")).thenCallRealMethod();
-    when(sampleService.store(wrongSample, false, "")).thenCallRealMethod();
+    when(sampleService.persistSample(wrongSample, false, null)).thenCallRealMethod();
+    when(sampleService.persistSample(wrongSample, false, null)).thenCallRealMethod();
     when(certifyService.certify(jsonMapper.writeValueAsString(wrongSample), true))
         .thenReturn(Collections.emptyList());
 
@@ -265,8 +270,18 @@ public class ApiDocumentationTest {
             + "}";
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
-    when(sampleService.store(any(Sample.class), eq(true), eq("AAP"))).thenReturn(sampleWithDomain);
+    when(sampleService.persistSample(any(Sample.class), eq(true), eq(AuthorizationProvider.AAP)))
+        .thenReturn(sampleWithDomain);
     when(schemaValidationService.validate(any(Sample.class))).thenReturn("BSDC00001");
+    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
+            any(Sample.class), eq(false)))
+        .thenReturn(sampleWithDomain);
+    when(accessControlService.extractToken(anyString()))
+        .thenReturn(
+            Optional.of(
+                new AuthToken(
+                    "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
+    when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
     this.mockMvc
         .perform(
@@ -304,22 +319,27 @@ public class ApiDocumentationTest {
             + "\""
             + "}";
 
-    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class)))
+    when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+            any(Sample.class), any(String.class)))
         .thenReturn(sampleWithWebinId);
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
         .thenReturn(ResponseEntity.ok(submissionAccount));
-    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(
-            any(HttpServletRequest.class)))
-        .thenReturn((submissionAccount));
-    when(sampleService.store(any(Sample.class), eq(true), eq("WEBIN")))
+    when(sampleService.persistSample(any(Sample.class), eq(true), eq(AuthorizationProvider.WEBIN)))
         .thenReturn(sampleWithWebinId);
-    when(enaTaxonClientService.performTaxonomyValidation(any(Sample.class)))
+    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
+            any(Sample.class), eq(true)))
         .thenReturn(sampleWithWebinId);
     when(schemaValidationService.validate(any(Sample.class))).thenReturn("BSDC00001");
+    when(accessControlService.extractToken(anyString()))
+        .thenReturn(
+            Optional.of(
+                new AuthToken(
+                    "RS256", AuthorizationProvider.WEBIN, "WEBIN-12345", Collections.emptyList())));
+    when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
     this.mockMvc
         .perform(
-            post("/biosamples/samples?authProvider=WEBIN")
+            post("/biosamples/samples")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(sampleToSubmit)
                 .header("Authorization", "Bearer $TOKEN"))
@@ -356,8 +376,18 @@ public class ApiDocumentationTest {
             + "}";
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
-    when(sampleService.store(any(Sample.class), eq(true), eq("AAP"))).thenReturn(sampleWithDomain);
+    when(sampleService.persistSample(any(Sample.class), eq(true), eq(AuthorizationProvider.AAP)))
+        .thenReturn(sampleWithDomain);
     when(schemaValidationService.validate(any(Sample.class))).thenReturn("BSDC00001");
+    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
+            any(Sample.class), eq(false)))
+        .thenReturn(sampleWithDomain);
+    when(accessControlService.extractToken(anyString()))
+        .thenReturn(
+            Optional.of(
+                new AuthToken(
+                    "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
+    when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
     this.mockMvc
         .perform(
@@ -387,7 +417,12 @@ public class ApiDocumentationTest {
     doNothing().when(aapService).handleStructuredDataDomain(eq(structuredData));
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
-    doNothing().when(aapService).checkAccessible(isA(Sample.class));
+    doNothing().when(aapService).checkSampleAccessibility(isA(Sample.class));
+    when(accessControlService.extractToken(anyString()))
+        .thenReturn(
+            Optional.of(
+                new AuthToken(
+                    "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
 
     mockMvc
         .perform(
@@ -430,8 +465,14 @@ public class ApiDocumentationTest {
             + "}";
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
-    when(sampleService.store(any(Sample.class), eq(false), eq("AAP")))
+    when(sampleService.persistSample(any(Sample.class), eq(false), eq(AuthorizationProvider.AAP)))
         .thenReturn(sampleWithUpdatedDate);
+    when(accessControlService.extractToken(anyString()))
+        .thenReturn(
+            Optional.of(
+                new AuthToken(
+                    "RS256", AuthorizationProvider.AAP, "user-12345", Collections.emptyList())));
+    when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
     this.mockMvc
         .perform(
@@ -473,19 +514,23 @@ public class ApiDocumentationTest {
     SubmissionAccount submissionAccount = new SubmissionAccount();
     submissionAccount.setId("WEBIN-12345");
 
-    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class)))
+    when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+            any(Sample.class), any(String.class)))
         .thenReturn(sampleWithWebinId);
-    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(
-            any(HttpServletRequest.class)))
-        .thenReturn((submissionAccount));
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
         .thenReturn(ResponseEntity.ok(submissionAccount));
-    when(sampleService.store(any(Sample.class), eq(false), eq("WEBIN")))
+    when(sampleService.persistSample(any(Sample.class), eq(false), eq(AuthorizationProvider.WEBIN)))
         .thenReturn(sampleWithUpdatedDate);
+    when(accessControlService.extractToken(anyString()))
+        .thenReturn(
+            Optional.of(
+                new AuthToken(
+                    "RS256", AuthorizationProvider.WEBIN, "WEBIN-12345", Collections.emptyList())));
+    when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
     this.mockMvc
         .perform(
-            post("/biosamples/samples/accession?authProvider=WEBIN")
+            post("/biosamples/samples/accession")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(sampleToSubmit)
                 .header("Authorization", "Bearer $TOKEN"))
@@ -521,7 +566,8 @@ public class ApiDocumentationTest {
             + "}";
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
-    when(sampleService.store(any(Sample.class), eq(false), eq("AAP"))).thenReturn(sampleWithDomain);
+    when(sampleService.persistSample(any(Sample.class), eq(false), eq(AuthorizationProvider.AAP)))
+        .thenReturn(sampleWithDomain);
 
     this.mockMvc
         .perform(
@@ -638,6 +684,12 @@ public class ApiDocumentationTest {
     when(aapService.handleSampleDomain(sample)).thenReturn(sample);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
+    when(accessControlService.extractToken(anyString()))
+        .thenReturn(
+            Optional.of(
+                new AuthToken(
+                    "RS256", AuthorizationProvider.AAP, "user-12345", Collections.emptyList())));
+    when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
     List<Certificate> certificates = new java.util.ArrayList<>();
 
@@ -651,9 +703,9 @@ public class ApiDocumentationTest {
         Certificate.build(
             "biosamples-minimal", "0.0.1", "schemas/certification/biosamples-minimal.json"));
 
-    when(sampleService.store(eq(sample), eq(false), eq("AAP")))
+    when(sampleService.persistSample(eq(sample), eq(false), eq(AuthorizationProvider.AAP)))
         .thenReturn(Sample.Builder.fromSample(sample).withCertificates(certificates).build());
-    doNothing().when(aapService).checkAccessible(isA(Sample.class));
+    doNothing().when(aapService).checkSampleAccessibility(isA(Sample.class));
 
     this.mockMvc
         .perform(
@@ -682,7 +734,8 @@ public class ApiDocumentationTest {
     SubmissionAccount submissionAccount = new SubmissionAccount();
     submissionAccount.setId("WEBIN-12345");
 
-    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class)))
+    when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+            any(Sample.class), any(String.class)))
         .thenReturn(sampleWithWebinId);
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
         .thenReturn(ResponseEntity.ok(submissionAccount));
@@ -700,16 +753,21 @@ public class ApiDocumentationTest {
 
     when(certifyService.certify(new ObjectMapper().writeValueAsString(sampleWithWebinId), true))
         .thenReturn(certificates);
-    when(sampleService.store(eq(sampleWithWebinId), eq(false), eq("WEBIN")))
+    when(sampleService.persistSample(
+            eq(sampleWithWebinId), eq(false), eq(AuthorizationProvider.WEBIN)))
         .thenReturn(
             Sample.Builder.fromSample(sampleWithWebinId).withCertificates(certificates).build());
-    doNothing().when(aapService).checkAccessible(isA(Sample.class));
+    doNothing().when(aapService).checkSampleAccessibility(isA(Sample.class));
+    when(accessControlService.extractToken(anyString()))
+        .thenReturn(
+            Optional.of(
+                new AuthToken(
+                    "RS256", AuthorizationProvider.WEBIN, "WEBIN-12345", Collections.emptyList())));
+    when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
     this.mockMvc
         .perform(
-            put("/biosamples/samples/"
-                    + sampleWithWebinId.getAccession()
-                    + "/certify?authProvider=WEBIN")
+            put("/biosamples/samples/" + sampleWithWebinId.getAccession() + "/certify")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(serialize(sampleWithWebinId))
                 .header("Authorization", "Bearer $TOKEN"))
@@ -795,12 +853,18 @@ public class ApiDocumentationTest {
     when(sampleService.fetch(
             eq(sampleWithDomain.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sampleWithDomain));
-    when(sampleService.store(eq(sampleWithDomain), eq(false), eq("AAP")))
+    when(sampleService.persistSample(
+            eq(sampleWithDomain), eq(false), eq(AuthorizationProvider.AAP)))
         .thenReturn(sampleWithDomain);
     when(aapService.handleSampleDomain(sampleWithDomain)).thenReturn(sampleWithDomain);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
-    doNothing().when(aapService).checkAccessible(isA(Sample.class));
+    doNothing().when(aapService).checkSampleAccessibility(isA(Sample.class));
+    when(accessControlService.extractToken(anyString()))
+        .thenReturn(
+            Optional.of(
+                new AuthToken(
+                    "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
 
     this.mockMvc
         .perform(
@@ -822,26 +886,30 @@ public class ApiDocumentationTest {
 
     submissionAccount.setId("WEBIN-12345");
 
-    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class)))
+    when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+            any(Sample.class), any(String.class)))
         .thenReturn(sampleWithWebinId);
-    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(
-            any(HttpServletRequest.class)))
-        .thenReturn(submissionAccount);
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
         .thenReturn(ResponseEntity.ok(submissionAccount));
-
     when(sampleService.fetch(
             eq(sampleWithWebinId.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sampleWithWebinId));
-    when(sampleService.store(eq(sampleWithWebinId), eq(false), eq("WEBIN")))
+    when(sampleService.persistSample(
+            eq(sampleWithWebinId), eq(false), eq(AuthorizationProvider.WEBIN)))
         .thenReturn(sampleWithWebinId);
 
-    when(enaTaxonClientService.performTaxonomyValidation(any(Sample.class)))
+    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
+            any(Sample.class), eq(true)))
         .thenReturn(sampleWithWebinId);
+    when(accessControlService.extractToken(anyString()))
+        .thenReturn(
+            Optional.of(
+                new AuthToken(
+                    "RS256", AuthorizationProvider.WEBIN, "user", Collections.emptyList())));
 
     this.mockMvc
         .perform(
-            put("/biosamples/samples/" + sampleWithWebinId.getAccession() + "?authProvider=WEBIN")
+            put("/biosamples/samples/" + sampleWithWebinId.getAccession())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(serialize(sampleWithWebinId))
                 .header("Authorization", "Bearer $TOKEN"))
@@ -865,12 +933,18 @@ public class ApiDocumentationTest {
     when(sampleService.fetch(
             eq(sampleWithDomain.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sampleWithDomain));
-    when(sampleService.store(eq(sampleWithDomain), eq(false), eq("AAP")))
+    when(sampleService.persistSample(
+            eq(sampleWithDomain), eq(false), eq(AuthorizationProvider.AAP)))
         .thenReturn(sampleWithDomain);
     when(aapService.handleSampleDomain(sampleWithDomain)).thenReturn(sampleWithDomain);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
-    doNothing().when(aapService).checkAccessible(isA(Sample.class));
+    doNothing().when(aapService).checkSampleAccessibility(isA(Sample.class));
+    when(accessControlService.extractToken(anyString()))
+        .thenReturn(
+            Optional.of(
+                new AuthToken(
+                    "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
 
     this.mockMvc
         .perform(
@@ -891,6 +965,12 @@ public class ApiDocumentationTest {
     CurationLink curationLink = this.faker.getExampleCurationLink();
     when(aapService.handleCurationLinkDomain(eq(curationLink))).thenReturn(curationLink);
     when(curationPersistService.store(curationLink)).thenReturn(curationLink);
+    when(accessControlService.extractToken(anyString()))
+        .thenReturn(
+            Optional.of(
+                new AuthToken(
+                    "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
+    when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
     this.mockMvc
         .perform(
@@ -912,17 +992,22 @@ public class ApiDocumentationTest {
     SubmissionAccount submissionAccount = new SubmissionAccount();
     submissionAccount.setId("WEBIN-12345");
 
-    when(bioSamplesWebinAuthenticationService.handleWebinUser(eq(curationLink), eq("WEBIN-12345")))
+    when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+            eq(curationLink), eq("WEBIN-12345")))
         .thenReturn(curationLink);
     when(curationPersistService.store(curationLink)).thenReturn(curationLink);
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
         .thenReturn(ResponseEntity.ok(submissionAccount));
+    when(accessControlService.extractToken(anyString()))
+        .thenReturn(
+            Optional.of(
+                new AuthToken(
+                    "RS256", AuthorizationProvider.WEBIN, "WEBIN-12345", Collections.emptyList())));
+    when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
     this.mockMvc
         .perform(
-            post(
-                    "/biosamples/samples/{accession}/curationlinks?authProvider=WEBIN",
-                    curationLink.getSample())
+            post("/biosamples/samples/{accession}/curationlinks", curationLink.getSample())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(serialize(curationLink))
                 .header("Authorization", "Bearer $TOKEN"))
@@ -936,13 +1021,13 @@ public class ApiDocumentationTest {
 
   @Test
   public void getSample() throws Exception {
-    Sample sample =
-        this.faker.getExampleSampleBuilder().withDomain(this.faker.getExampleDomain()).build();
+    Sample sample = faker.getExampleSampleBuilder().withDomain(faker.getExampleDomain()).build();
     when(sampleService.fetch(sample.getAccession(), Optional.empty(), null))
         .thenReturn(Optional.of(sample));
-    doNothing().when(aapService).checkAccessible(isA(Sample.class));
+    doNothing().when(aapService).checkSampleAccessibility(isA(Sample.class));
+    when(accessControlService.extractToken(anyString())).thenReturn(Optional.empty());
 
-    this.mockMvc
+    mockMvc
         .perform(
             get("/biosamples/samples/{accession}", sample.getAccession())
                 .accept(MediaTypes.HAL_JSON))

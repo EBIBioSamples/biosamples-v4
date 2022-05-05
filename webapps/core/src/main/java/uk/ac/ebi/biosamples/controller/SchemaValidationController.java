@@ -15,7 +15,7 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import uk.ac.ebi.biosamples.exception.SchemaValidationException;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
@@ -43,7 +43,7 @@ public class SchemaValidationController {
               .findFirst();
       if (optionalChecklist.isPresent()) {
         if (!optionalChecklist.get().getValue().equals(checklistAttribute.getValue())) {
-          throw new SchemaValidationException(
+          throw new GlobalExceptions.SchemaValidationException(
               "Different checklist IDs in body and request parameter");
         }
       } else {

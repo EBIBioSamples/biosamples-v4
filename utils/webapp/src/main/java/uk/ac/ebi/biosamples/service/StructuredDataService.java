@@ -15,7 +15,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.exception.SampleValidationException;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.mongo.model.MongoStructuredData;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
@@ -83,13 +83,14 @@ public class StructuredDataService {
         || !isExistingAccession(structuredData.getAccession())) {
       log.info(
           "Structured data validation failed: Misisng accession {}", structuredData.getAccession());
-      throw new SampleValidationException(
+      throw new GlobalExceptions.SampleValidationException(
           "Missing accession. Structured data should have an accession");
     }
 
     if (structuredData.getData() == null || structuredData.getData().isEmpty()) {
       log.info("Structured data validation failed: Misisng data {}", structuredData.getData());
-      throw new SampleValidationException("Missing data. Empty data is not accepted");
+      throw new GlobalExceptions.SampleValidationException(
+          "Missing data. Empty data is not accepted");
     }
 
     structuredData
@@ -98,7 +99,7 @@ public class StructuredDataService {
             d -> {
               if (d.getType() == null || d.getType().isEmpty()) {
                 log.info("Structured data validation failed: Misisng data type {}", d.getType());
-                throw new SampleValidationException(
+                throw new GlobalExceptions.SampleValidationException(
                     "Empty structured data type. Type must be specified.");
               }
             });

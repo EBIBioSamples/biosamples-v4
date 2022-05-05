@@ -11,16 +11,17 @@
 package uk.ac.ebi.biosamples.model;
 
 import java.util.List;
-import uk.ac.ebi.biosamples.model.auth.LoginWays;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 
 public class AuthToken {
   private String algorithm;
-  private LoginWays authority;
+  private AuthorizationProvider authority;
   private String user;
   private String email;
   private List<String> roles;
 
-  public AuthToken(String algorithm, LoginWays authority, String user, List<String> roles) {
+  public AuthToken(
+      String algorithm, AuthorizationProvider authority, String user, List<String> roles) {
     this.algorithm = algorithm;
     this.authority = authority;
     this.user = user;
@@ -31,7 +32,7 @@ public class AuthToken {
     return algorithm;
   }
 
-  public LoginWays getAuthority() {
+  public AuthorizationProvider getAuthority() {
     return authority;
   }
 

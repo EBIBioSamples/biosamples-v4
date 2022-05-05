@@ -12,6 +12,8 @@ package uk.ac.ebi.biosamples.ena;
 
 import java.io.StringReader;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,7 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Publication;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
@@ -145,6 +148,7 @@ public class EnaCallable implements Callable<Void> {
   private void enrichEnaSample(final SampleDBBean sampleDBBean, final Element root) {
     Sample sample = enaElementConverter.convert(root);
     final SortedSet<Attribute> attributes = new TreeSet<>(sample.getCharacteristics());
+    final SortedSet<Publication> publications = new TreeSet<>(sample.getPublications());
     final SortedSet<ExternalReference> externalReferences =
         new TreeSet<>(sample.getExternalReferences());
     final String lastUpdated = sampleDBBean.getLastUpdate();
@@ -152,6 +156,7 @@ public class EnaCallable implements Callable<Void> {
     final String firstCreated = sampleDBBean.getFirstCreated();
     final String webinId = sampleDBBean.getSubmissionAccountId();
     final String status = handleStatus(sampleDBBean.getStatus());
+    final Long taxId = sampleDBBean.getTaxId();
     Instant release;
     Instant update = null;
     Instant create = null;
@@ -168,7 +173,13 @@ public class EnaCallable implements Callable<Void> {
       attributes.add(
           Attribute.build("INSDC first public", DateTimeFormatter.ISO_INSTANT.format(release)));
     } else {
-      release = Instant.now();
+      if (status.equals("private")) {
+        release =
+            Instant.ofEpochSecond(
+                LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+      } else {
+        release = Instant.now();
+      }
     }
 
     if (firstCreated != null) {
@@ -190,6 +201,7 @@ public class EnaCallable implements Callable<Void> {
             this.sampleAccession,
             null,
             webinId,
+            taxId,
             release,
             update,
             create,
@@ -199,7 +211,13 @@ public class EnaCallable implements Callable<Void> {
             sample.getRelationships(),
             externalReferences);
 
-    sample = Sample.Builder.fromSample(sample).withNoData().build();
+    if (publications == null) {
+      sample = Sample.Builder.fromSample(sample).withNoData().build();
+    } else {
+      sample =
+          Sample.Builder.fromSample(sample).withNoData().withPublications(publications).build();
+    }
+
     bioSamplesWebinClient.persistSampleResource(sample);
 
     if (amrData != null && !amrData.isEmpty()) {

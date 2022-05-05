@@ -15,7 +15,7 @@ import java.util.List;
 import junit.framework.TestCase;
 import org.junit.Assert;
 import uk.ac.ebi.biosamples.model.AuthToken;
-import uk.ac.ebi.biosamples.model.auth.LoginWays;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 
 public class AccessControlServiceTest extends TestCase {
   private static final String AAP_TOKEN =
@@ -36,14 +36,14 @@ public class AccessControlServiceTest extends TestCase {
   AccessControlService accessControlService = new AccessControlService(new ObjectMapper());
 
   public void testExtractToken() {
-    AuthToken aapToken = accessControlService.extractToken(AAP_TOKEN);
-    AuthToken webinToken = accessControlService.extractToken(WEBIN_TOKEN);
-    Assert.assertEquals(aapToken.getAuthority(), LoginWays.AAP);
-    Assert.assertEquals(webinToken.getAuthority(), LoginWays.WEBIN);
+    AuthToken aapToken = accessControlService.extractToken(AAP_TOKEN).orElse(null);
+    AuthToken webinToken = accessControlService.extractToken(WEBIN_TOKEN).orElse(null);
+    Assert.assertEquals(aapToken.getAuthority(), AuthorizationProvider.AAP);
+    Assert.assertEquals(webinToken.getAuthority(), AuthorizationProvider.WEBIN);
   }
 
   public void testGetUserRoles() {
-    AuthToken aapToken = accessControlService.extractToken(AAP_TOKEN);
+    AuthToken aapToken = accessControlService.extractToken(AAP_TOKEN).orElse(null);
     List<String> userRoles = accessControlService.getUserRoles(aapToken);
     System.out.println(userRoles);
     Assert.assertTrue(userRoles.contains("subs.test-team-23"));

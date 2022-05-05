@@ -92,6 +92,7 @@ public class SampleTaxIdTest {
         "",
         "",
         "",
+        null,
         Instant.now(),
         Instant.now(),
         Instant.now(),

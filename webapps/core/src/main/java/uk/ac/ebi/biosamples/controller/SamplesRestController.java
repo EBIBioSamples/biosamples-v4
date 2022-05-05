@@ -17,7 +17,6 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -29,23 +28,24 @@ import org.springframework.hateoas.*;
 import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.CacheControl;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.exception.SampleValidationException;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
+import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
+import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.taxonomy.ENATaxonClientService;
+import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
@@ -71,9 +71,10 @@ public class SamplesRestController {
   private final BioSamplesProperties bioSamplesProperties;
   private final SampleResourceAssembler sampleResourceAssembler;
   private final SchemaValidationService schemaValidationService;
-  private final ENATaxonClientService enaTaxonClientService;
+  private final TaxonomyClientService taxonomyClientService;
+  private final AccessControlService accessControlService;
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   public SamplesRestController(
       SamplePageService samplePageService,
@@ -85,7 +86,8 @@ public class SamplesRestController {
       SampleService sampleService,
       BioSamplesProperties bioSamplesProperties,
       SchemaValidationService schemaValidationService,
-      ENATaxonClientService enaTaxonClientService) {
+      TaxonomyClientService taxonomyClientService,
+      AccessControlService accessControlService) {
     this.samplePageService = samplePageService;
     this.filterService = filterService;
     this.bioSamplesAapService = bioSamplesAapService;
@@ -95,14 +97,14 @@ public class SamplesRestController {
     this.sampleService = sampleService;
     this.schemaValidationService = schemaValidationService;
     this.bioSamplesProperties = bioSamplesProperties;
-    this.enaTaxonClientService = enaTaxonClientService;
+    this.taxonomyClientService = taxonomyClientService;
+    this.accessControlService = accessControlService;
   }
 
   // must return a ResponseEntity so that cache headers can be set
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Resources<Resource<Sample>>> searchHal(
-      HttpServletRequest request,
       @RequestParam(name = "text", required = false) String text,
       @RequestParam(name = "filter", required = false) String[] filter,
       @RequestParam(name = "cursor", required = false) String cursor,
@@ -111,9 +113,7 @@ public class SamplesRestController {
       @RequestParam(name = "sort", required = false) final String[] sort,
       @RequestParam(name = "curationrepo", required = false) final String curationRepo,
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider) {
-    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+      @RequestHeader(name = "Authorization", required = false) final String token) {
     // Need to decode the %20 and similar from the parameters
     // this is *not* needed for the html controller
     String decodedText = LinkUtils.decodeText(text);
@@ -125,13 +125,13 @@ public class SamplesRestController {
 
     int effectivePage;
 
-    if (webinAuth) {
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+    Optional<AuthToken> authToken = accessControlService.extractToken(token);
 
-      if (webinAccount != null) {
-        webinSubmissionAccountId = webinAccount.getId();
-      }
+    final boolean webinAuth =
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
+
+    if (webinAuth) {
+      webinSubmissionAccountId = authToken.map(AuthToken::getUser).orElse(null);
     } else {
       domains = bioSamplesAapService.getDomains();
     }
@@ -216,9 +216,7 @@ public class SamplesRestController {
       // cache up
       // to twice this age
       return ResponseEntity.ok().cacheControl(cacheControl).body(resources);
-
     } else {
-
       String[] effectiveSort = sort;
 
       if (sort == null) {
@@ -245,7 +243,7 @@ public class SamplesRestController {
               pageSample,
               effectiveSize,
               effectivePage,
-              authProvider,
+              webinAuth ? AuthorizationProvider.WEBIN.name() : AuthorizationProvider.AAP.name(),
               decodedText,
               decodedFilter,
               sort,
@@ -362,14 +360,6 @@ public class SamplesRestController {
               "cursor",
               this.getClass()));
     }
-    // if there is no search term, and on first page, add a link to use search
-    // TODO
-    //			if (text.trim().length() == 0 && page == 0) {
-    //				resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
-    //					.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
-    //						.searchHal(null, filter, null, page, effectiveSize, sort, null))
-    //					.withRel("search")));
-    //			}
 
     resources.add(
         SampleAutocompleteRestController.getLink(decodedText, decodedFilter, null, "autocomplete"));
@@ -475,6 +465,7 @@ public class SamplesRestController {
   @RequestMapping("/validate")
   public ResponseEntity<Sample> validateSample(@RequestBody Sample sample) {
     schemaValidationService.validate(sample);
+
     return ResponseEntity.ok(sample);
   }
 
@@ -484,29 +475,34 @@ public class SamplesRestController {
       produces = {MediaType.APPLICATION_JSON_VALUE})
   @RequestMapping("/accession")
   public ResponseEntity<Resource<Sample>> accessionSample(
-      HttpServletRequest request,
-      @RequestBody Sample sample,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider) {
-    log.debug("Received POST for accessioning " + sample);
-    if (sample.hasAccession()) throw new SampleWithAccessionSumbissionException();
+      @RequestBody Sample sample, @RequestHeader(name = "Authorization") final String token) {
 
-    if (authProvider.equalsIgnoreCase("WEBIN")) {
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+    if (sample.hasAccession()) {
+      throw new GlobalExceptions.SampleWithAccessionSubmissionException();
+    }
 
-      if (webinAccount == null) {
-        throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
+    final boolean webinAuth =
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
+    final AuthorizationProvider authProvider =
+        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
+
+    if (webinAuth) {
+      final String webinSubmissionAccountId = authToken.get().getUser();
+
+      if (webinSubmissionAccountId == null) {
+        throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
-      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
+      sample =
+          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+              sample, webinSubmissionAccountId);
     } else {
       sample = bioSamplesAapService.handleSampleDomain(sample);
     }
 
     sample = buildPrivateSample(sample);
-
-    sample = sampleService.store(sample, false, authProvider);
+    sample = sampleService.persistSample(sample, false, authProvider);
     final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
@@ -519,36 +515,38 @@ public class SamplesRestController {
       produces = {MediaType.APPLICATION_JSON_VALUE})
   @RequestMapping("/bulk-accession")
   public ResponseEntity<Map<String, String>> bulkAccessionSample(
-      HttpServletRequest request,
       @RequestBody List<Sample> samples,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          final String authProvider) {
+      @RequestHeader(name = "Authorization") final String token) {
     log.debug("Received POST for bulk accessioning of " + samples.size() + " samples");
 
     samples.forEach(
         sample -> {
           if (sample.hasAccession()) {
-            throw new SampleWithAccessionSumbissionException();
+            throw new GlobalExceptions.SampleWithAccessionSubmissionException();
           }
         });
 
-    if (authProvider.equalsIgnoreCase("WEBIN")) {
-      /*final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
+    final boolean webinAuth =
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
 
-      if (webinAccount == null) {
-        throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
-      }*/
+    if (webinAuth) {
+      final String webinSubmissionAccountId = authToken.get().getUser();
+
+      if (webinSubmissionAccountId == null) {
+        throw new GlobalExceptions.WebinTokenInvalidException();
+      }
 
       samples =
           samples.stream()
               .map(
                   sample ->
-                      bioSamplesWebinAuthenticationService.getSampleWithWebinSubmissionAccountId(
+                      bioSamplesWebinAuthenticationService.buildSampleWithWebinSubmissionAccountId(
                           sample, bioSamplesProperties.getBiosamplesClientWebinUsername()))
               .collect(Collectors.toList());
     } else {
-      if (samples.size() > 0) {
+      if (!samples.isEmpty()) {
+        // check the first sample domain only
         Sample firstSample = samples.get(0);
         firstSample = bioSamplesAapService.handleSampleDomain(firstSample);
 
@@ -570,13 +568,14 @@ public class SamplesRestController {
         samples.stream()
             .map(
                 sample -> {
-                  log.trace("Initiating store() for " + sample.getName());
+                  log.trace("Initiating persistSample() for " + sample.getName());
 
                   sample = buildPrivateSample(sample);
                   /*
-                  Call the accessionV2 from SampleService, it doesn't do a lot of housekeeping like reporting to Rabbit, saving to MongoSampleCurated etc which is not required for bulk-accessioning
+                  Call the accessionSample from SampleService, it doesn't do a lot of housekeeping like reporting to Rabbit,
+                  saving to MongoSampleCurated etc which is not required for bulk-accessioning
                    */
-                  return sampleService.accessionV2(sample);
+                  return sampleService.accessionSample(sample);
                 })
             .collect(Collectors.toList());
 
@@ -591,44 +590,47 @@ public class SamplesRestController {
   @PreAuthorize("isAuthenticated()")
   @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Resource<Sample>> post(
-      HttpServletRequest request,
       @RequestBody Sample sample,
       @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
           boolean setFullDetails,
-      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider) {
+      @RequestHeader(name = "Authorization") final String token) {
     log.debug("Received POST for " + sample);
 
     // can't submit structured data with the sample
     final Set<AbstractData> structuredData = sample.getData();
+
     if (structuredData != null && !structuredData.isEmpty()) {
-      throw new SampleValidationException(
-          "Sample contains structured data. Please submit structured data seperately");
+      throw new GlobalExceptions.SampleValidationException(
+          "Sample contains structured data. Please submit structured data separately using the sample update PUT endpoint");
     }
 
-    final boolean webinAuth = authProvider.equalsIgnoreCase("WEBIN");
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
+    final boolean webinAuth =
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
+    final AuthorizationProvider authProvider =
+        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
     boolean isWebinSuperUser = false;
 
     if (webinAuth) {
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(request);
+      final String webinSubmissionAccountId = authToken.get().getUser();
 
-      if (webinAccount == null) {
-        throw new BioSamplesWebinAuthenticationService.WebinTokenMissingException();
+      if (webinSubmissionAccountId == null) {
+        throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
-      final String webinAccountId = webinAccount.getId();
-
-      isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId);
+      isWebinSuperUser =
+          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
 
       if (sample.hasAccession()) {
-        throw new SampleWithAccessionSumbissionException();
+        throw new GlobalExceptions.SampleWithAccessionSubmissionException();
       }
 
-      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
+      sample =
+          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+              sample, webinSubmissionAccountId);
     } else {
       if (sample.hasAccession() && !bioSamplesAapService.isWriteSuperUser()) {
-        throw new SampleWithAccessionSumbissionException();
+        throw new GlobalExceptions.SampleWithAccessionSubmissionException();
       }
 
       sample = bioSamplesAapService.handleSampleDomain(sample);
@@ -646,16 +648,13 @@ public class SamplesRestController {
             .withSubmittedVia(submittedVia)
             .build();
 
-    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    sample =
-        validateSampleAgainstExternalValidationServices(
-            sample, webinAuth, isWebinSuperUser, submittedVia);
+    sample = validateSample(sample, webinAuth, isWebinSuperUser);
 
     if (!setFullDetails) {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
-    sample = sampleService.store(sample, true, authProvider);
+    sample = sampleService.persistSample(sample, true, authProvider);
 
     // assemble a resource to return
     Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());
@@ -664,19 +663,17 @@ public class SamplesRestController {
         .body(sampleResource);
   }
 
-  private Sample validateSampleAgainstExternalValidationServices(
-      @RequestBody Sample sample,
-      boolean webinAuth,
-      boolean isWebinSuperUser,
-      SubmittedViaType submittedVia) {
+  private Sample validateSample(Sample sample, boolean webinAuth, boolean isWebinSuperUser) {
+    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
     if (webinAuth && !isWebinSuperUser) {
       schemaValidationService.validate(sample);
-      sample = enaTaxonClientService.performTaxonomyValidation(sample);
+      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
     } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
       schemaValidationService.validate(sample);
+      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, false);
     }
 
-    if (submittedVia == SubmittedViaType.FILE_UPLOADER) {
+    if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
       schemaValidationService.validate(sample);
     }
 
@@ -688,7 +685,7 @@ public class SamplesRestController {
     final String domain = sample.getDomain();
     final Instant create = sample.getCreate();
 
-    return (domain != null && sampleService.isPipelineEnaOrNcbiDomain(domain))
+    return (domain != null && sampleService.isAnImportAapDomain(domain))
         ? (create != null ? create : now)
         : now;
   }
@@ -698,7 +695,7 @@ public class SamplesRestController {
     final String domain = sample.getDomain();
     final Instant submitted = sample.getSubmitted();
 
-    return (domain != null && sampleService.isPipelineEnaOrNcbiDomain(domain))
+    return (domain != null && sampleService.isAnImportAapDomain(domain))
         ? (submitted != null ? submitted : now)
         : now;
   }
@@ -716,17 +713,5 @@ public class SamplesRestController {
         .withUpdate(update)
         .withSubmittedVia(submittedVia)
         .build();
-  }
-
-  @ResponseStatus(
-      value = HttpStatus.BAD_REQUEST,
-      reason = "New sample submission should not contain an accession")
-  public static class SampleWithAccessionSumbissionException extends RuntimeException {}
-
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample already exists")
-  public static class SampleAlreadyExistsException extends RuntimeException {
-    public SampleAlreadyExistsException(final String message) {
-      super(message);
-    }
   }
 }

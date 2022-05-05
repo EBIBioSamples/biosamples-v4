@@ -152,7 +152,6 @@ public class BioSamplesAutoConfiguration {
     }
 
     public void customize(RestTemplate restTemplate) {
-
       // use a keep alive strategy to try to make it easier to maintain connections for reuse
       ConnectionKeepAliveStrategy keepAliveStrategy =
           new ConnectionKeepAliveStrategy() {

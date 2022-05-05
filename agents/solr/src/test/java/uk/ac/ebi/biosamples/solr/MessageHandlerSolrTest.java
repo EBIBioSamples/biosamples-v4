@@ -80,7 +80,7 @@ public class MessageHandlerSolrTest {
   }
 
   @Test
-  public void should_not_index_suppressed_sample() throws Exception {
+  public void should_not_index_suppressed_sample() {
     Attribute attribute = Attribute.build("INSDC status", "suppressed");
     assertTrue(
         MessageHandlerSolr.isIndexingCandidate(
@@ -88,7 +88,7 @@ public class MessageHandlerSolrTest {
   }
 
   @Test
-  public void should_not_index_sample_with_unexpected_INSDC_status() throws Exception {
+  public void should_not_index_sample_with_unexpected_INSDC_status() {
     Attribute attribute = Attribute.build("INSDC status", "gertgerge");
     assertFalse(
         MessageHandlerSolr.isIndexingCandidate(
@@ -105,6 +105,7 @@ public class MessageHandlerSolrTest {
         accession,
         "",
         "",
+        Long.valueOf(9606),
         Instant.now(),
         Instant.now(),
         Instant.now(),

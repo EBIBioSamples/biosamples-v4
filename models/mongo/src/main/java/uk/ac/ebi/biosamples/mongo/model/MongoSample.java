@@ -50,6 +50,9 @@ public class MongoSample {
   @Indexed(background = true)
   protected String webinSubmissionAccountId;
 
+  @Indexed(background = true)
+  protected Long taxId;
+
   @JsonSerialize(using = CustomInstantSerializer.class)
   @JsonDeserialize(using = CustomInstantDeserializer.class)
   @Indexed(background = true)
@@ -82,8 +85,7 @@ public class MongoSample {
   protected SortedSet<Publication> publications;
   protected SortedSet<MongoCertificate> certificates;
 
-  @Transient
-  protected Set<AbstractData> data;
+  @Transient protected Set<AbstractData> data;
   protected SubmittedViaType submittedVia;
 
   @JsonIgnore
@@ -117,6 +119,10 @@ public class MongoSample {
 
   public String getWebinSubmissionAccountId() {
     return webinSubmissionAccountId;
+  }
+
+  public Long getTaxId() {
+    return taxId;
   }
 
   public Instant getRelease() {
@@ -187,6 +193,7 @@ public class MongoSample {
         && Objects.equals(this.accession, other.accession)
         && Objects.equals(this.domain, other.domain)
         && Objects.equals(this.webinSubmissionAccountId, other.webinSubmissionAccountId)
+        && Objects.equals(this.taxId, other.taxId)
         && Objects.equals(this.release, other.release)
         && Objects.equals(this.update, other.update)
         && Objects.equals(this.create, other.create)
@@ -207,6 +214,7 @@ public class MongoSample {
         accession,
         domain,
         webinSubmissionAccountId,
+        taxId,
         release,
         update,
         create,
@@ -230,6 +238,8 @@ public class MongoSample {
     sb.append(domain);
     sb.append(",");
     sb.append(webinSubmissionAccountId);
+    sb.append(",");
+    sb.append(taxId);
     sb.append(",");
     sb.append(release);
     sb.append(",");
@@ -266,6 +276,7 @@ public class MongoSample {
       @JsonProperty("accession") String accession,
       @JsonProperty("domain") String domain,
       @JsonProperty("webinSubmissionAccountId") String webinSubmissionAccountId,
+      @JsonProperty("taxId") Long taxId,
       @JsonProperty("release") Instant release,
       @JsonProperty("update") Instant update,
       @JsonProperty("create") Instant create,
@@ -287,6 +298,7 @@ public class MongoSample {
     sample.name = name;
     sample.domain = domain;
     sample.webinSubmissionAccountId = webinSubmissionAccountId;
+    sample.taxId = taxId;
     sample.release = release;
     sample.update = update;
     sample.create = create;

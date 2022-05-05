@@ -28,8 +28,8 @@ import org.springframework.data.util.CloseableIterator;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
-import uk.ac.ebi.biosamples.service.SampleReadService;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
+import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
 
 /**
  * This runner will get a list of accessions from mongo directly, query the API to get the latest

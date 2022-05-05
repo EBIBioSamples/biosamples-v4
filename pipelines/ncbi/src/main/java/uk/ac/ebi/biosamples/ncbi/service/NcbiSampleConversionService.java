@@ -28,10 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.Sample.Builder;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
@@ -64,6 +61,8 @@ public class NcbiSampleConversionService {
   private static final String DISPLAY_NAME = "display_name";
   private static final String ATTRIBUTE = "Attribute";
   private static final String ATTRIBUTES = "Attributes";
+  private static final String LINKS = "Links";
+  private static final String LINK = "Link";
   private static final String TAXONOMY_NAME = "taxonomy_name";
   private static final String TAXONOMY_ID = "taxonomy_id";
   private static final String ORGANISM = "Organism";
@@ -91,6 +90,8 @@ public class NcbiSampleConversionService {
   private static final String NAMESPACE_TAG = "Namespace:";
   private static final String SAMPLE_ATTRIBUTE = "attribute";
   private static final Pattern ANTIBIOGRAM_PATTERN = Pattern.compile("^Antibiogram.*");
+  private static final String TARGET = "target";
+  private static final String PUBMED = "pubmed";
 
   private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -108,6 +109,7 @@ public class NcbiSampleConversionService {
     String accession = sampleElem.attributeValue(ACCESSION);
     SortedSet<Attribute> attrs = new TreeSet<>();
     SortedSet<Relationship> rels = new TreeSet<>();
+    SortedSet<Publication> publications = new TreeSet<>();
     Set<ExternalReference> externalReferences = new TreeSet<>();
     Attribute organismAttribute;
 
@@ -291,6 +293,20 @@ public class NcbiSampleConversionService {
       }
     }
 
+    // handle links
+    final XmlPathBuilder links = XmlPathBuilder.of(sampleElem).path(LINKS);
+
+    if (links != null && links.exists()) {
+      for (Element attrElem : XmlPathBuilder.of(sampleElem).path(LINKS).elements(LINK)) {
+        String key = attrElem.attributeValue(TARGET);
+        String value = attrElem.getTextTrim();
+
+        if (key != null && key.equalsIgnoreCase(PUBMED)) {
+          publications.add(new Publication.Builder().pubmed_id(value).build());
+        }
+      }
+    }
+
     // handle model and packages
     // disabled for the moment, do they really add anything? faulcon@2017/01/25
     // yes, ENA want them. But we can name them better. faulcon@2018/02/14
@@ -354,6 +370,7 @@ public class NcbiSampleConversionService {
         .withSubmitted(submissionDate)
         .withAttributes(attrs)
         .withRelationships(rels)
+        .withPublications(publications)
         .withExternalReferences(externalReferences)
         .build();
   }

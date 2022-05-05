@@ -69,15 +69,6 @@ public class SamplePageRetrievalService {
     return search(text, filters, page, size, null);
   }
 
-  private URI getSampleRetrievalURIWithWebinAsAuthProvider(URI uri) {
-    UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUri(uri);
-
-    if (isWebinSubmission) {
-      uriComponentsBuilder.queryParam("authProvider", "WEBIN");
-    }
-    return uriComponentsBuilder.build(true).toUri();
-  }
-
   public PagedResources<Resource<Sample>> search(
       String text, Collection<Filter> filters, int page, int size, String jwt) {
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
@@ -97,10 +88,6 @@ public class SamplePageRetrievalService {
             .queryParams(params)
             .build()
             .toUri();
-
-    if (isWebinSubmission) {
-      uri = getSampleRetrievalURIWithWebinAsAuthProvider(uri);
-    }
 
     log.trace("GETing " + uri);
 

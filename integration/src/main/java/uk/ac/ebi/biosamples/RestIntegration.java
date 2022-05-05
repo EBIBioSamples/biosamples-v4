@@ -149,6 +149,7 @@ public class RestIntegration extends AbstractIntegration {
         Relationship.build(sampleTest1.getAccession(), "derived from", sample2Accession));
     sampleTest1 =
         new Sample.Builder(sampleTest1.getName(), sampleTest1.getAccession())
+            .withTaxId(sampleTest1.getTaxId())
             .withDomain(sampleTest1.getDomain())
             .withRelease("2116-04-01T11:36:57.00Z")
             .withUpdate(sampleTest1.getUpdate())
@@ -406,6 +407,7 @@ public class RestIntegration extends AbstractIntegration {
         new Publication.Builder().doi("10.1093/nar/gkt1081").pubmed_id("24265224").build());
 
     return new Sample.Builder(name)
+        .withTaxId(Long.valueOf(9606))
         .withUpdate(update)
         .withRelease(release)
         .withDomain(defaultIntegrationSubmissionDomain)
@@ -497,6 +499,7 @@ public class RestIntegration extends AbstractIntegration {
     attributes.add(Attribute.build("UTF-8 test", "αβ"));
 
     return new Sample.Builder(name)
+        .withTaxId(Long.valueOf(9606))
         .withDomain(defaultIntegrationSubmissionDomain)
         .withRelease(release)
         .withUpdate(update)
