@@ -101,11 +101,9 @@ Please replace all URL references as below to create and authenticate against de
 | https://aai.ebi.ac.uk     | https://explore.aai.ebi.ac.uk
 | https://api.aai.ebi.ac.uk | https://explore.api.aai.ebi.ac.uk
 |===
-+
+
 Alternatively an ENA WEBIN account can also be used for authentication and data upload.
-A production WEBIN account can be created here -> https://www.ebi.ac.uk/ena/submit/webin/auth/swagger-ui/index.html?configUrl=/ena/submit/webin/auth/v3/api-docs/swagger-config#/AdministrationAPI/createSubmissionAccount
-+
-** replace www with wwwdev for a test WEBIN account
+A production WEBIN account can be created here -> https://www.ebi.ac.uk/ena/submit/webin/auth/swagger-ui/index.html?configUrl=/ena/submit/webin/auth/v3/api-docs/swagger-config#/AdministrationAPI/createSubmissionAccount (Note: replace www with wwwdev for a test WEBIN account)
 
 . Upload first test data (using AAP account)
 +
