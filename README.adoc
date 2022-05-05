@@ -19,7 +19,7 @@ This document provides information about the local installation, development env
 
 <<Developing>>
 
-<<Client useage>>
+<<Client usage>>
 
 <<Issues and troubleshooting>>
 
@@ -85,7 +85,7 @@ Please run `+sudo docker-compose up+` instead.
 . Now you can access the public interface at
 http://localhost:8081/biosamples/. So far, there is no data in the local
 sample.
-. Creat AAP account for API authentication and data upload
+. Create an AAP or a ENA WEBIN account for API authentication and data upload
 + 
 An AAP account is required to upload data through API.
 The API account can be registered at
@@ -101,8 +101,13 @@ Please replace all URL references as below to create and authenticate against de
 | https://aai.ebi.ac.uk     | https://explore.aai.ebi.ac.uk
 | https://api.aai.ebi.ac.uk | https://explore.api.aai.ebi.ac.uk
 |===
++
+Alternatively an ENA WEBIN account can also be used for authentication and data upload.
+A production WEBIN account can be created here -> https://www.ebi.ac.uk/ena/submit/webin/auth/swagger-ui/index.html?configUrl=/ena/submit/webin/auth/v3/api-docs/swagger-config#/AdministrationAPI/createSubmissionAccount
++
+** replace www with wwwdev for a test WEBIN account
 
-. Upload first test data 
+. Upload first test data (using AAP account)
 +
 [source,sh]
 ----
@@ -231,14 +236,13 @@ appropriate sections:
         <version>4.0.4</version>
     </dependency>
 </dependencies>
+
+** 4.0.4 is an example, latest version is available in the release notes here -> https://www.ebi.ac.uk/biosamples/docs/releasenotes
 ....
 ....
-<repositories>
-    <repository>
-      <id>spotnexus</id>
-      <url>https://www.ebi.ac.uk/spot/nexus/repository/maven-releases/</url>
-    </repository>
-</repositories>
+maven {
+  url 'https://gitlab.ebi.ac.uk/api/v4/projects/2669/packages/maven'
+}
 ....
 
 This can then be configured by several spring application.properties
