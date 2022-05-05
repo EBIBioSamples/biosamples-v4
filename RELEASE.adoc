@@ -2,13 +2,66 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+[[v5.2.3]]
+== v5.2.3 Release notes
+=== Improvements
+1. File Upload Submissions
++
+Case insensitive column names are now accepted for file uploader submissions
++
+Improvement in error reporting for failed submissions. Errors related to authentication, access and file format problems are clearly reported back to the submitter
++
+2. Performance improvement in accessioning
+There were several request timeouts observed over the past few months when ENA
+attempted to create around ~1000 sample accessions from BioSamples in a single API call. There were several bottlenecks identified in the BioSamples accession generation process and they are eliminated now and replaced with a much simpler process resulting in improved accessioning and submission performance. An example from May 4, 2022 taken from ENA logs shows BioSamples is now able to
+generate ~10000 accessions in one single API call:
++
+“Requested 9985 accessions from BioSamples and registering 9985 new BioSample accessions took 81229 milliseconds”
+
+=== New Features
+1. Reference to private BioSamples while doing an ENA (WEBIN) submission
++
+It is now possible to create private samples in BioSamples and refer to the BioSamples accessions while doing an ENA submission. It has also been ensured that such private samples in BioSamples will be made automatically public when runs/analyses that refers to these samples are made public in ENA
+
+2. Generic structured data model
++
+BioSamples structured data submission was restricted to only a few structured data types, like AMR, histological data, etc. Now with this release it is possible to submit any type of structured data to BioSamples.
+
+** structured data are specific additional information to a sample for example, antibiogram data which is an overall profile of antimicrobial susceptibility testing results
+
+3. Improved NCBI and ENA sample imports
++
+BioSamples import pipelines import newly created or updated samples from ENA and NCBI daily to remain consistent with other INSDC databases. Publication information of samples were not imported by BioSamples until now and we are starting to do that from this release.
+ENA Browser is in their final phase of testing before they start indexing samples from BioSamples and this feature has been requested by them as they would rightly like to query a single database to get all related information for a sample
+
+4. Submissions with WEBIN authentication
++
+Submitters are no longer required to pass the parameter authProvider=WEBIN for submissions done with WEBIN authentication.
+
+=== Bug fixes
+1. Filtered search for both samples and accessions containing a mix private and public samples were
+returning inconsistent results; this has now been fixed
++
+2. Solr out of memory issues has been resolved which ensures consistency in searching and filtering
+
+=== New endpoints
+1. Structured data PUT and GET endpoints
++
+1.1 PUT to add structured data to already submitted sample:
+PUT    structureddata/<accession>
++
+1.2 GET to fetch structured data of a sample
+GET structureddata/<accession>
++
+Documentation and example available https://www.ebi.ac.uk/biosamples/docs/references/api/submit#_submit_structured_data[here]
+
 [[v5.2.2]]
-== v5.1.22 Release notes
+== v5.2.2 Release notes
 === Internal improvements
 1. File upload submissions: We had a restriction of unique sample names per submitter for file uploader submissions. This has now been removed as we have received requests that for re-sequencing project multiple samples having the same sample name can be submitted by same submitter or community. The sample metadata should be different.
 
 [[v5.2.1]]
-== v5.1.21 Release notes (v5.1.15 and v5.2.0 included)
+== v5.2.1 Release notes (v5.1.15 and v5.2.0 included)
 === Internal improvements
 1. Improved error handling for the file uploader submissions with more user friendly error messages
 2. Allowing case insensitive column names for the file uploader submission files
