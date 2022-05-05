@@ -2,13 +2,13 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
-[[v5.1.22]]
+[[v5.2.2]]
 == v5.1.22 Release notes
 === Internal improvements
 1. File upload submissions: We had a restriction of unique sample names per submitter for file uploader submissions. This has now been removed as we have received requests that for re-sequencing project multiple samples having the same sample name can be submitted by same submitter or community. The sample metadata should be different.
 
-[[v5.1.21]]
-== v5.1.21 Release notes (v5.1.15 and v5.1.20 included)
+[[v5.2.1]]
+== v5.1.21 Release notes (v5.1.15 and v5.2.0 included)
 === Internal improvements
 1. Improved error handling for the file uploader submissions with more user friendly error messages
 2. Allowing case insensitive column names for the file uploader submission files
