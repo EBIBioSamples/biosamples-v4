@@ -12,7 +12,6 @@ package uk.ac.ebi.biosamples.ols;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.*;
 import org.slf4j.Logger;
@@ -83,13 +82,8 @@ public class OlsProcessor {
 
     // have to *double* encode the things we are going to put in the URI
     // uriComponents will encode it once, so we only need to encode it one more time manually
-    try {
-      ontology = UriUtils.encodePathSegment(ontology, "UTF-8");
-      iri = UriUtils.encodePathSegment(iri, "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      // should never happen
-      throw new RuntimeException(e);
-    }
+    ontology = UriUtils.encodePathSegment(ontology, "UTF-8");
+    iri = UriUtils.encodePathSegment(iri, "UTF-8");
     // expand the template using the variables
     URI uri = uriComponents.expand(ontology, iri).toUri();
 

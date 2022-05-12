@@ -418,7 +418,10 @@ public class FileUploadService {
   }
 
   public MongoFileUpload getSamples(final String submissionId) {
-    final MongoFileUpload mongoFileUpload = mongoFileUploadRepository.findOne(submissionId);
+    final MongoFileUpload mongoFileUpload =
+        mongoFileUploadRepository.findById(submissionId).isPresent()
+            ? mongoFileUploadRepository.findById(submissionId).get()
+            : null;
 
     if (mongoFileUpload != null) {
       return mongoFileUpload;
@@ -436,7 +439,7 @@ public class FileUploadService {
 
   public List<MongoFileUpload> getUserSubmissions(final List<String> userRoles) {
     try {
-      final Pageable page = new PageRequest(0, 10);
+      final Pageable page = PageRequest.of(0, 10);
       return mongoFileUploadRepository.findBySubmitterDetailsIn(userRoles, page);
     } catch (final Exception e) {
       log.info("Failed in fetch submissions in getUserSubmissions() " + e.getMessage());

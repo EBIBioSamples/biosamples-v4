@@ -17,9 +17,9 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.HttpStatus;
@@ -55,7 +55,7 @@ public class ETagIntegration extends AbstractIntegration {
 
     log.info("Submitting sample for ETAG check");
 
-    Resource<Sample> resource = client.persistSampleResource(testSample);
+    EntityModel<Sample> resource = client.persistSampleResource(testSample);
     if (!testSample.equals(resource.getContent())) {
       throw new RuntimeException(
           "Expected response ("

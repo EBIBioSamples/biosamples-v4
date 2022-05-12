@@ -18,10 +18,10 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.junit.Before;
@@ -33,20 +33,20 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @JsonTest
-// @TestPropertySource(properties =
-// {"spring.jackson.serialization.WRITE_DATES_AS_TIMESTAMPS=false","spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false"})
 @TestPropertySource(properties = {"spring.jackson.serialization.INDENT_OUTPUT=true"})
 public class ResourceSerializationTest {
 
   private Logger log = LoggerFactory.getLogger(this.getClass());
 
-  private JacksonTester<Resource<Sample>> json;
+  private JacksonTester<EntityModel<Sample>> json;
+
+  public ResourceSerializationTest() {}
 
   @Before
   public void setup() {
@@ -54,7 +54,7 @@ public class ResourceSerializationTest {
     JacksonTester.initFields(this, objectMapper);
   }
 
-  private Sample getSimpleSample() throws URISyntaxException {
+  private Sample getSimpleSample() {
     String name = "Test Sample";
     String accession = "SAMEA1234";
     String domain = "abcde12345";
@@ -93,7 +93,7 @@ public class ResourceSerializationTest {
 
   @Test
   public void testSerialize() throws Exception {
-    Resource<Sample> details = new Resource<>(getSimpleSample());
+    EntityModel<Sample> details = new EntityModel<>(getSimpleSample());
 
     log.info(this.json.write(details).getJson());
 
@@ -109,12 +109,12 @@ public class ResourceSerializationTest {
 
   @Test
   public void testDeserialize() throws Exception {
-    Resource<Sample> fileSample = this.json.readObject("/TEST1.json");
-    Resource<Sample> simpleSample = new Resource<>(getSimpleSample());
+    EntityModel<Sample> fileSample = this.json.readObject("/TEST1.json");
+    EntityModel<Sample> simpleSample = new EntityModel<>(getSimpleSample());
     log.info("fileSample = " + fileSample);
     log.info("simpleSample = " + simpleSample);
     // Use JSON path based assertions
-    assertThat(fileSample.getContent().getName()).isEqualTo("Test Sample");
+    assertThat(Objects.requireNonNull(fileSample.getContent()).getName()).isEqualTo("Test Sample");
     assertThat(fileSample.getContent().getAccession()).isEqualTo("SAMEA1234");
     // Assert against a `.json` file
     assertThat(fileSample).isEqualTo(simpleSample);
@@ -129,14 +129,14 @@ public class ResourceSerializationTest {
 
   @Test
   public void testRoundTrip() throws Exception {
-    Resource<Sample> sample = new Resource<>(getSimpleSample());
+    EntityModel<Sample> sample = new EntityModel<>(getSimpleSample());
     log.info("roundTrip sample = " + sample);
 
     String json = this.json.write(sample).getJson();
     log.info("roundTrip json = " + json);
 
     InputStream inputStream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
-    Resource<Sample> sampleRedux = this.json.readObject(inputStream);
+    EntityModel<Sample> sampleRedux = this.json.readObject(inputStream);
     log.info("roundTrip sampleRedux = " + sampleRedux);
 
     String jsonRedux = this.json.write(sampleRedux).getJson();

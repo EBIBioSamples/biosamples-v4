@@ -19,9 +19,9 @@ import java.time.Instant;
 import java.util.*;
 import org.junit.Test;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.hal.Jackson2HalModule;
-import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
+import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
@@ -31,7 +31,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 public class MessageHandlerSolrTest {
 
   @Test
-  public void should_index_public_sample() throws Exception {
+  public void should_index_public_sample() {
     Attribute attribute = Attribute.build("INSDC status", "public");
     assertTrue(
         MessageHandlerSolr.isIndexingCandidate(
@@ -39,7 +39,7 @@ public class MessageHandlerSolrTest {
   }
 
   @Test
-  public void should_index_live_sample() throws Exception {
+  public void should_index_live_sample() {
     Attribute attribute = Attribute.build("INSDC status", "live");
     assertTrue(
         MessageHandlerSolr.isIndexingCandidate(
@@ -47,7 +47,7 @@ public class MessageHandlerSolrTest {
   }
 
   @Test
-  public void should_index_sample_with_no_INSDC_status() throws Exception {
+  public void should_index_sample_with_no_INSDC_status() {
     assertTrue(
         MessageHandlerSolr.isIndexingCandidate(
             (generateTestSample("no-example", Collections.EMPTY_LIST))));
@@ -70,7 +70,7 @@ public class MessageHandlerSolrTest {
     mapper.registerModule(new Jackson2HalModule());
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     MappingJackson2HttpMessageConverter halConverter =
-        new TypeConstrainedMappingJackson2HttpMessageConverter(ResourceSupport.class);
+        new TypeConstrainedMappingJackson2HttpMessageConverter(RepresentationModel.class);
     halConverter.setObjectMapper(mapper);
     halConverter.setSupportedMediaTypes(Arrays.asList(MediaTypes.HAL_JSON));
     // make sure this is inserted first

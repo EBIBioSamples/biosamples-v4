@@ -23,7 +23,6 @@ import uk.ac.ebi.biosamples.service.SampleValidator;
 
 @Configuration
 public class TestApplication extends Application {
-
   @Autowired
   @Bean
   public BioSamplesClient bioSamplesClient(

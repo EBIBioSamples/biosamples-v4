@@ -10,17 +10,18 @@
 */
 package uk.ac.ebi.biosamples.service;
 
-import org.springframework.hateoas.EntityLinks;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceAssembler;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.EntityLinks;
+import org.springframework.hateoas.server.RepresentationModelAssembler;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.controller.CurationRestController;
 import uk.ac.ebi.biosamples.model.Curation;
 
 @Service
-public class CurationResourceAssembler implements ResourceAssembler<Curation, Resource<Curation>> {
-
+public class CurationResourceAssembler
+    implements RepresentationModelAssembler<Curation, EntityModel<Curation>> {
   private final EntityLinks entityLinks;
 
   public CurationResourceAssembler(EntityLinks entityLinks) {
@@ -28,18 +29,23 @@ public class CurationResourceAssembler implements ResourceAssembler<Curation, Re
   }
 
   @Override
-  public Resource<Curation> toResource(Curation curation) {
-    Resource<Curation> resource = new Resource<>(curation);
+  public EntityModel<Curation> toModel(Curation curation) {
+    EntityModel<Curation> resource = new EntityModel<>(curation);
+
+    resource.add(entityLinks.linkToItemResource(Curation.class, curation.getHash()).withSelfRel());
 
     resource.add(
-        entityLinks.linkToSingleResource(Curation.class, curation.getHash()).withSelfRel());
-
-    resource.add(
-        ControllerLinkBuilder.linkTo(
-                ControllerLinkBuilder.methodOn(CurationRestController.class)
+        WebMvcLinkBuilder.linkTo(
+                WebMvcLinkBuilder.methodOn(CurationRestController.class)
                     .getCurationSamplesHal(curation.getHash(), null, null))
             .withRel("samples"));
 
     return resource;
+  }
+
+  @Override
+  public CollectionModel<EntityModel<Curation>> toCollectionModel(
+      Iterable<? extends Curation> entities) {
+    return null;
   }
 }

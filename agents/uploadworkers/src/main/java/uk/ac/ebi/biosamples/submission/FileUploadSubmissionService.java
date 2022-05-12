@@ -65,7 +65,10 @@ public class FileUploadSubmissionService {
   }
 
   private void handleMessage(final String submissionId) {
-    final MongoFileUpload mongoFileUpload = mongoFileUploadRepository.findOne(submissionId);
+    final MongoFileUpload mongoFileUpload =
+        mongoFileUploadRepository.findById(submissionId).isPresent()
+            ? mongoFileUploadRepository.findById(submissionId).get()
+            : null;
 
     try {
       validationResult = new ValidationResult();

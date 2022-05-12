@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelineFutureCallback;
 import uk.ac.ebi.biosamples.PipelineResult;
@@ -69,7 +69,8 @@ public class TransformationApplicationRunner implements ApplicationRunner {
 
       Map<String, Future<PipelineResult>> futures = new HashMap<>();
       filters.add(new AttributeFilter.Builder("project name").withValue("DTOL").build());
-      for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters)) {
+      for (EntityModel<Sample> sampleResource :
+          bioSamplesClient.fetchSampleResourceAll("", filters)) {
         LOG.trace("Handling {}", sampleResource);
         Sample sample = sampleResource.getContent();
         Objects.requireNonNull(sample);

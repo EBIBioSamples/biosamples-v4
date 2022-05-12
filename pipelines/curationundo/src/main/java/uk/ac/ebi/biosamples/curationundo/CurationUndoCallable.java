@@ -19,14 +19,13 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 
 public class CurationUndoCallable implements Callable<Void> {
-
   private Logger log = LoggerFactory.getLogger(getClass());
 
   private final String accession;
@@ -75,7 +74,7 @@ public class CurationUndoCallable implements Callable<Void> {
 
   @Override
   public Void call() {
-    for (Resource<CurationLink> cl : bioSamplesClient.fetchCurationLinksOfSample(accession)) {
+    for (EntityModel<CurationLink> cl : bioSamplesClient.fetchCurationLinksOfSample(accession)) {
       if (cl.getContent().getDomain().equals("self.BiosampleCuration")
           && (cl.getContent().getCreated().isAfter(instant))) {
         Curation curation = cl.getContent().getCuration();

@@ -18,7 +18,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.*;
@@ -76,7 +76,7 @@ public class SampleCopydownCallable implements Callable<PipelineResult> {
       }
     } else if (hasOrganism && hasDerivedFrom) {
       // this sample has an organism, but that might have been applied by a previous curation
-      for (final Resource<CurationLink> curationLink :
+      for (final EntityModel<CurationLink> curationLink :
           bioSamplesClient.fetchCurationLinksOfSample(accession)) {
         if (domain.equals(curationLink.getContent().getDomain())) {
           SortedSet<Attribute> attributesPre =

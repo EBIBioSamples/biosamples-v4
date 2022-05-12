@@ -104,7 +104,9 @@ public class SampleService {
     boolean firstTimeMetadataAdded = true;
 
     if (sample.hasAccession()) {
-      MongoSample mongoOldSample = mongoSampleRepository.findOne(sample.getAccession());
+      final Optional<MongoSample> byId = mongoSampleRepository.findById(sample.getAccession());
+      final MongoSample mongoOldSample = byId.orElse(null);
+
       if (mongoOldSample != null) {
         firstTimeMetadataAdded = isEmptySample(mongoOldSample);
       }
@@ -119,7 +121,7 @@ public class SampleService {
 
   private boolean isEmptySample(MongoSample mongoOldSample) {
     boolean firstTimeMetadataAdded = true;
-    Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
+    Sample oldSample = mongoSampleToSampleConverter.apply(mongoOldSample);
 
     if (oldSample.getTaxId() != null && oldSample.getTaxId() > 0) {
       firstTimeMetadataAdded = false;
@@ -180,13 +182,15 @@ public class SampleService {
     }
 
     if (sample.hasAccession()) {
-      final MongoSample mongoOldSample = mongoSampleRepository.findOne(sample.getAccession());
+      final Optional<MongoSample> byId = mongoSampleRepository.findById(sample.getAccession());
+      final MongoSample mongoOldSample = byId.orElse(null);
+
       List<String> existingRelationshipTargets = new ArrayList<>();
 
       final Long taxId = sample.getTaxId();
 
       if (mongoOldSample != null) {
-        final Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
+        final Sample oldSample = mongoSampleToSampleConverter.apply(mongoOldSample);
 
         existingRelationshipTargets =
             getExistingRelationshipTargets(sample.getAccession(), mongoOldSample);
@@ -211,7 +215,7 @@ public class SampleService {
             new MongoSampleMessage(sample.getAccession(), Instant.now(), taxId));
       }
 
-      sample = mongoSampleToSampleConverter.convert(mongoSample);
+      sample = mongoSampleToSampleConverter.apply(mongoSample);
 
       // send a message for storage and further processing, send relationship targets to
       // identify
@@ -229,7 +233,7 @@ public class SampleService {
   /*
   Called by V2 endpoints to persist samples
    */
-  public Sample storeV2(
+  public Sample persistSampleV2(
       Sample sample, boolean isFirstTimeMetadataAdded, AuthorizationProvider authProvider) {
     Collection<String> errors = sampleValidator.validate(sample);
 
@@ -239,10 +243,11 @@ public class SampleService {
     }
 
     if (sample.hasAccession()) {
-      final MongoSample mongoOldSample = mongoSampleRepository.findOne(sample.getAccession());
+      final Optional<MongoSample> byId = mongoSampleRepository.findById(sample.getAccession());
+      final MongoSample mongoOldSample = byId.orElse(null);
 
       if (mongoOldSample != null) {
-        final Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
+        final Sample oldSample = mongoSampleToSampleConverter.apply(mongoOldSample);
 
         sample =
             compareWithExistingAndUpdateSample(
@@ -254,7 +259,7 @@ public class SampleService {
       MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
 
       mongoSample = mongoSampleRepository.save(mongoSample);
-      sample = mongoSampleToSampleConverter.convert(mongoSample);
+      sample = mongoSampleToSampleConverter.apply(mongoSample);
     } else {
       sample = mongoAccessionService.generateAccession(sample);
     }
@@ -277,7 +282,7 @@ public class SampleService {
   }
 
   public boolean isNotExistingAccession(String accession) {
-    return mongoSampleRepository.findOne(accession) == null;
+    return !mongoSampleRepository.findById(accession).isPresent();
   }
 
   private List<String> getExistingRelationshipTargets(
@@ -361,7 +366,7 @@ public class SampleService {
   public boolean isWebinAuthentication(AuthorizationProvider authProvider) {
     final String authProviderIdentifier = authProvider.name();
 
-    return authProviderIdentifier != null && authProviderIdentifier.equalsIgnoreCase("WEBIN");
+    return authProviderIdentifier.equalsIgnoreCase("WEBIN");
   }
 
   private boolean isPipelineEnaDomain(String domain) {

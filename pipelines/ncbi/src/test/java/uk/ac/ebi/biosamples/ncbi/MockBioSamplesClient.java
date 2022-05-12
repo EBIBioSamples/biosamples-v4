@@ -21,7 +21,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
@@ -73,9 +73,9 @@ public class MockBioSamplesClient extends BioSamplesClient {
   }
 
   @Override
-  public Resource<Sample> persistSampleResource(Sample sample) {
+  public EntityModel<Sample> persistSampleResource(Sample sample) {
     logSample(sample);
-    return Mockito.mock(Resource.class);
+    return Mockito.mock(EntityModel.class);
   }
 
   public void finalize() {

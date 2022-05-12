@@ -31,7 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ebeye.gen.*;
@@ -182,9 +182,9 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   }
 
   public Sample fetchSample(final String accession) {
-    Optional<Resource<Sample>> sampleResource = bioSamplesClient.fetchSampleResource(accession);
+    Optional<EntityModel<Sample>> sampleResource = bioSamplesClient.fetchSampleResource(accession);
 
-    return sampleResource.map(Resource::getContent).orElse(null);
+    return sampleResource.map(EntityModel::getContent).orElse(null);
   }
 
   public void convertSampleToXml(final List<Sample> samples, final File file, boolean covidRun)
@@ -404,7 +404,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
       AtomicReference<String> startDate, AtomicReference<String> endDate) {
     final List<Sample> sampleList = new ArrayList<>();
     final Collection<Filter> covidDateFilter = getDateFiltersCovid(startDate.get(), endDate.get());
-    final Iterable<Resource<Sample>> sampleResources =
+    final Iterable<EntityModel<Sample>> sampleResources =
         bioSamplesClient.fetchSampleResourceAll("NCBITaxon_2697049", covidDateFilter);
 
     sampleResources.forEach(
@@ -419,7 +419,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     covidDiseaseTagFilter.add(new AttributeFilter.Builder("disease").withValue("COVID-19").build());
     covidDiseaseTagFilter.addAll(covidDateFilter);
 
-    final Iterable<Resource<Sample>> sampleResources2 =
+    final Iterable<EntityModel<Sample>> sampleResources2 =
         bioSamplesClient.fetchSampleResourceAll(covidDiseaseTagFilter);
 
     sampleResources2.forEach(

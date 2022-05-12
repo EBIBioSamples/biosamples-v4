@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
@@ -40,9 +40,8 @@ public class TransformationCallable implements Callable<PipelineResult> {
   @Override
   public PipelineResult call() {
     int modifiedRecords = 0;
-    boolean success = true;
 
-    Optional<Resource<Sample>> optionalSampleResource =
+    Optional<EntityModel<Sample>> optionalSampleResource =
         bioSamplesClient.fetchSampleResource(sample.getAccession(), Optional.of(new ArrayList<>()));
     if (optionalSampleResource.isPresent()) {
       Sample uncuratedSample = optionalSampleResource.get().getContent();
@@ -78,7 +77,7 @@ public class TransformationCallable implements Callable<PipelineResult> {
       }
     }
 
-    return new PipelineResult(sample.getAccession(), modifiedRecords, success);
+    return new PipelineResult(sample.getAccession(), modifiedRecords, true);
   }
 
   private Relationship createDerivedRelationship(String source, String target) {

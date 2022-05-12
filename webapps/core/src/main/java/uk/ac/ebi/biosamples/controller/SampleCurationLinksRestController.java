@@ -18,22 +18,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
@@ -74,7 +66,7 @@ public class SampleCurationLinksRestController {
 
   @CrossOrigin
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<PagedResources<Resource<CurationLink>>> getCurationLinkPageJson(
+  public ResponseEntity<PagedModel<EntityModel<CurationLink>>> getCurationLinkPageJson(
       @PathVariable String accession,
       Pageable pageable,
       PagedResourcesAssembler<CurationLink> pageAssembler) {
@@ -83,12 +75,12 @@ public class SampleCurationLinksRestController {
 
     // add the links to each individual sample on the page
     // also adds links to first/last/next/prev at the same time
-    PagedResources<Resource<CurationLink>> pagedResources =
-        pageAssembler.toResource(
+    PagedModel<EntityModel<CurationLink>> pagedResources =
+        pageAssembler.toModel(
             page,
             curationLinkResourceAssembler,
-            ControllerLinkBuilder.linkTo(
-                    ControllerLinkBuilder.methodOn(SampleCurationLinksRestController.class)
+            WebMvcLinkBuilder.linkTo(
+                    WebMvcLinkBuilder.methodOn(SampleCurationLinksRestController.class)
                         .getCurationLinkPageJson(accession, pageable, pageAssembler))
                 .withSelfRel());
 
@@ -99,11 +91,11 @@ public class SampleCurationLinksRestController {
   @GetMapping(
       value = "/{hash}",
       produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<Resource<CurationLink>> getCurationLinkJson(
+  public ResponseEntity<EntityModel<CurationLink>> getCurationLinkJson(
       @PathVariable String accession, @PathVariable String hash) {
 
     CurationLink curationLink = curationReadService.getCurationLink(hash);
-    Resource<CurationLink> resource = curationLinkResourceAssembler.toResource(curationLink);
+    EntityModel<CurationLink> resource = curationLinkResourceAssembler.toModel(curationLink);
 
     return ResponseEntity.ok(resource);
   }
@@ -112,7 +104,7 @@ public class SampleCurationLinksRestController {
   @PostMapping(
       consumes = {MediaType.APPLICATION_JSON_VALUE},
       produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<Resource<CurationLink>> createCurationLinkJson(
+  public ResponseEntity<EntityModel<CurationLink>> createCurationLinkJson(
       HttpServletRequest request,
       @PathVariable String accession,
       @RequestBody CurationLink curationLink,
@@ -158,10 +150,11 @@ public class SampleCurationLinksRestController {
 
     // now actually persist it
     curationLink = curationPersistService.store(curationLink);
-    Resource<CurationLink> resource = curationLinkResourceAssembler.toResource(curationLink);
+    EntityModel<CurationLink> resource = curationLinkResourceAssembler.toModel(curationLink);
 
     // create the response object with the appropriate status
-    return ResponseEntity.created(URI.create(resource.getLink("self").getHref())).body(resource);
+    return ResponseEntity.created(URI.create(resource.getLink("self").get().getHref()))
+        .body(resource);
   }
 
   @CrossOrigin

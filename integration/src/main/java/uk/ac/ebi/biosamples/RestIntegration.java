@@ -19,11 +19,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
-import org.springframework.hateoas.Link;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -73,10 +71,10 @@ public class RestIntegration extends AbstractIntegration {
       throw new IntegrationTestFailException(
           "RestIntegration test sample should not be available during phase 1", Phase.ONE);
     } else {
-      Resource<Sample> resource = client.persistSampleResource(testSample);
+      EntityModel<Sample> resource = client.persistSampleResource(testSample);
       Sample testSampleWithAccession =
           Sample.Builder.fromSample(testSample)
-              .withAccession(resource.getContent().getAccession())
+              .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
               .build();
 
       if (!testSampleWithAccession.equals(resource.getContent())) {
@@ -140,8 +138,8 @@ public class RestIntegration extends AbstractIntegration {
     }
 
     // put the second sample in
-    Resource<Sample> resource = client.persistSampleResource(sampleTest2, false, true);
-    String sample2Accession = resource.getContent().getAccession();
+    EntityModel<Sample> resource = client.persistSampleResource(sampleTest2, false, true);
+    String sample2Accession = Objects.requireNonNull(resource.getContent()).getAccession();
 
     // put a version that is private and also update relationships
     SortedSet<Relationship> relationships = new TreeSet<>();
@@ -170,7 +168,7 @@ public class RestIntegration extends AbstractIntegration {
     }
 
     // check that it is private
-    Optional<Resource<Sample>> optional =
+    Optional<EntityModel<Sample>> optional =
         annonymousClient.fetchSampleResource(sampleTest1.getAccession());
     if (optional.isPresent()) {
       throw new IntegrationTestFailException(
@@ -208,11 +206,12 @@ public class RestIntegration extends AbstractIntegration {
 
     // test private sample create and fetch using webin auth
     Sample webinSampleTest1 = getWebinSampleTest1();
-    Resource<Sample> webinSampleResource =
+    EntityModel<Sample> webinSampleResource =
         this.webinClient.persistSampleResource(webinSampleTest1, false, true);
-    String webinSampleAccession = webinSampleResource.getContent().getAccession();
+    String webinSampleAccession =
+        Objects.requireNonNull(webinSampleResource.getContent()).getAccession();
 
-    Optional<Resource<Sample>> webinSamplePostPersistance =
+    Optional<EntityModel<Sample>> webinSamplePostPersistance =
         this.webinClient.fetchSampleResource(webinSampleAccession);
 
     if (!webinSamplePostPersistance.isPresent()) {
@@ -261,7 +260,7 @@ public class RestIntegration extends AbstractIntegration {
 
     // check that it has the additional relationship added
     // get to check it worked
-    Optional<Resource<Sample>> optional = client.fetchSampleResource(sampleTest2.getAccession());
+    Optional<EntityModel<Sample>> optional = client.fetchSampleResource(sampleTest2.getAccession());
     if (!optional.isPresent()) {
       throw new IntegrationTestFailException("No existing " + sampleTest2.getName(), Phase.FOUR);
     }
@@ -291,7 +290,7 @@ public class RestIntegration extends AbstractIntegration {
             .withNoPublications()
             .withNoOrganisations()
             .build();
-    Resource<Sample> resource = client.persistSampleResource(sampleTest1);
+    EntityModel<Sample> resource = client.persistSampleResource(sampleTest1);
     if (!sampleTest1.equals(resource.getContent())) {
       throw new IntegrationTestFailException(
           "Expected response ("
@@ -326,36 +325,6 @@ public class RestIntegration extends AbstractIntegration {
               + sampleTest2
               + ")",
           Phase.FIVE);
-    }
-  }
-
-  private void checkIfModifiedSince(Resource<Sample> sample) {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setIfModifiedSince(0);
-    ResponseEntity<Resource<Sample>> response =
-        restTemplate.exchange(
-            sample.getLink(Link.REL_SELF).getHref(),
-            HttpMethod.GET,
-            new HttpEntity<Void>(headers),
-            new ParameterizedTypeReference<Resource<Sample>>() {});
-
-    if (!response.getStatusCode().equals(HttpStatus.NOT_MODIFIED)) {
-      throw new RuntimeException("Got something other than a 304 response");
-    }
-  }
-
-  private void checkIfMatch(Resource<Sample> sample) {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setIfNoneMatch("W/\"" + sample.getContent().hashCode() + "\"");
-    ResponseEntity<Resource<Sample>> response =
-        restTemplate.exchange(
-            sample.getLink(Link.REL_SELF).getHref(),
-            HttpMethod.GET,
-            new HttpEntity<Void>(headers),
-            new ParameterizedTypeReference<Resource<Sample>>() {});
-
-    if (!response.getStatusCode().equals(HttpStatus.NOT_MODIFIED)) {
-      throw new RuntimeException("Got something other than a 304 response");
     }
   }
 
@@ -407,7 +376,7 @@ public class RestIntegration extends AbstractIntegration {
         new Publication.Builder().doi("10.1093/nar/gkt1081").pubmed_id("24265224").build());
 
     return new Sample.Builder(name)
-        .withTaxId(Long.valueOf(9606))
+        .withTaxId(9606L)
         .withUpdate(update)
         .withRelease(release)
         .withDomain(defaultIntegrationSubmissionDomain)
@@ -499,7 +468,7 @@ public class RestIntegration extends AbstractIntegration {
     attributes.add(Attribute.build("UTF-8 test", "αβ"));
 
     return new Sample.Builder(name)
-        .withTaxId(Long.valueOf(9606))
+        .withTaxId(9606L)
         .withDomain(defaultIntegrationSubmissionDomain)
         .withRelease(release)
         .withUpdate(update)
@@ -514,7 +483,7 @@ public class RestIntegration extends AbstractIntegration {
     Traverson.TraversalBuilder builder = traverson.follow("samples");
     log.info("POSTing sample with accession from " + builder.asLink().getHref());
 
-    MultiValueMap<String, String> sample = new LinkedMultiValueMap<String, String>();
+    MultiValueMap<String, String> sample = new LinkedMultiValueMap<>();
     sample.add("name", "RestIntegration_sample_3");
     sample.add("accession", "SAMEA09123842");
     sample.add("domain", "self.BiosampleIntegrationTest");

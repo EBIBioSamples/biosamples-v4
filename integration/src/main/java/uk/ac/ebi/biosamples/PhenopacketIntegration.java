@@ -10,18 +10,22 @@
 */
 package uk.ac.ebi.biosamples;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import java.net.URI;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
 import org.hamcrest.CoreMatchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -56,12 +60,12 @@ public class PhenopacketIntegration extends AbstractIntegration {
   @Override
   protected void phaseOne() {
     Sample testSample = getTestSample();
-    Optional<Resource<Sample>> optionalSample =
+    Optional<EntityModel<Sample>> optionalSample =
         client.fetchSampleResource(testSample.getAccession());
     if (optionalSample.isPresent()) {
       throw new RuntimeException("Phenopacket test sample should not be available during phase 1");
     }
-    Resource<Sample> resource = client.persistSampleResource(testSample);
+    EntityModel<Sample> resource = client.persistSampleResource(testSample);
     if (!testSample.equals(resource.getContent())) {
       throw new RuntimeException(
           "Expected response ("
@@ -80,11 +84,11 @@ public class PhenopacketIntegration extends AbstractIntegration {
   private void checkSampleWithOrphanetLinkWorks() {
     Sample testSample = getTestSample();
 
-    Optional<Resource<Sample>> sampleResource =
+    Optional<EntityModel<Sample>> sampleResource =
         client.fetchSampleResource(testSample.getAccession());
 
     assertThat(sampleResource.isPresent(), CoreMatchers.is(true));
-    URI sampleURI = URI.create(sampleResource.get().getLink("self").getHref());
+    URI sampleURI = URI.create(sampleResource.get().getLink("self").get().getHref());
 
     MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
     headers.add("Accept", "application/phenopacket+json");

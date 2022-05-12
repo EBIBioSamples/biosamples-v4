@@ -12,7 +12,6 @@ package uk.ac.ebi.biosamples;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -31,11 +30,9 @@ import uk.ac.ebi.biosamples.model.SampleAnalytics;
 import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountEntry;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountListContent;
-import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.repo.MongoCurationRuleRepository;
 import uk.ac.ebi.biosamples.service.FacetService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
-import uk.ac.ebi.biosamples.utils.ArgUtils;
 import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.mongo.AnalyticsService;
 
@@ -70,8 +67,7 @@ public class AnalyticsApplicationRunner implements ApplicationRunner {
   }
 
   @Override
-  public void run(ApplicationArguments args) throws Exception {
-    Collection<Filter> filters = ArgUtils.getDateFilters(args);
+  public void run(ApplicationArguments args) {
     Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
     long sampleCount = 0;
@@ -84,7 +80,7 @@ public class AnalyticsApplicationRunner implements ApplicationRunner {
             Collections.emptyList(),
             Collections.emptyList(),
             null,
-            new PageRequest(0, 1),
+            PageRequest.of(0, 1),
             null,
             Optional.empty());
     sampleAnalytics.setTotalRecords(samplePage.getTotalElements());

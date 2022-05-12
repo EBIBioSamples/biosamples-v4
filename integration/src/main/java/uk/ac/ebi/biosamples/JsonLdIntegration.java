@@ -21,7 +21,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
@@ -60,7 +60,7 @@ public class JsonLdIntegration extends AbstractIntegration {
       throw new IntegrationTestFailException(
           "JsonLD test sample should not be available during phase 1", Phase.ONE);
     } else {
-      Resource<Sample> resource = client.persistSampleResource(testSample);
+      EntityModel<Sample> resource = client.persistSampleResource(testSample);
       Sample testSampleWithAccession =
           Sample.Builder.fromSample(testSample)
               .withAccession(resource.getContent().getAccession())

@@ -17,10 +17,10 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -33,7 +33,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.model.Sample;
 
 public class SampleSubmissionService {
-
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final Traverson traverson;
@@ -61,10 +60,10 @@ public class SampleSubmissionService {
    * @param sample sample to be submitted
    * @return sample wrapped in resource
    */
-  public Resource<Sample> submit(Sample sample, Boolean setUpdateDate, Boolean setFullDetails)
+  public EntityModel<Sample> submit(Sample sample, Boolean setFullDetails)
       throws RestClientException {
     try {
-      return new SubmitCallable(sample, setUpdateDate, setFullDetails, isWebinSubmission).call();
+      return new SubmitCallable(sample, setFullDetails, isWebinSubmission).call();
     } catch (RestClientException e) {
       throw e;
     } catch (Exception e) {
@@ -73,7 +72,7 @@ public class SampleSubmissionService {
   }
 
   /** @param jwt json web token authorizing access to the domain the sample is assigned to */
-  public Resource<Sample> submit(Sample sample, String jwt, Boolean setFullDetails)
+  public EntityModel<Sample> submit(Sample sample, String jwt, Boolean setFullDetails)
       throws RestClientException {
     try {
       return new SubmitCallable(sample, jwt, setFullDetails, isWebinSubmission).call();
@@ -93,26 +92,24 @@ public class SampleSubmissionService {
    * @param sample sample to be submitted
    * @return sample wrapped in resource
    */
-  public Future<Resource<Sample>> submitAsync(
-      Sample sample, Boolean setUpdateDate, Boolean setFullDetails) throws RestClientException {
-    return executor.submit(
-        new SubmitCallable(sample, setUpdateDate, setFullDetails, isWebinSubmission));
+  public Future<EntityModel<Sample>> submitAsync(Sample sample, Boolean setFullDetails)
+      throws RestClientException {
+    return executor.submit(new SubmitCallable(sample, setFullDetails, isWebinSubmission));
   }
 
   /** @param jwt json web token authorizing access to the domain the sample is assigned to */
-  public Future<Resource<Sample>> submitAsync(Sample sample, String jwt, Boolean setFullDetails)
+  public Future<EntityModel<Sample>> submitAsync(Sample sample, String jwt, Boolean setFullDetails)
       throws RestClientException {
     return executor.submit(new SubmitCallable(sample, jwt, setFullDetails, isWebinSubmission));
   }
 
-  private class SubmitCallable implements Callable<Resource<Sample>> {
+  private class SubmitCallable implements Callable<EntityModel<Sample>> {
     private final Sample sample;
     private final Boolean setFullDetails;
     private final String jwt;
     private final Boolean isWebinSubmission;
 
-    public SubmitCallable(
-        Sample sample, Boolean setUpdateDate, Boolean setFullDetails, Boolean isWebinSubmission) {
+    public SubmitCallable(Sample sample, Boolean setFullDetails, Boolean isWebinSubmission) {
       this.sample = sample;
       this.setFullDetails = setFullDetails;
       this.jwt = null;
@@ -128,7 +125,7 @@ public class SampleSubmissionService {
     }
 
     @Override
-    public Resource<Sample> call() throws Exception {
+    public EntityModel<Sample> call() {
       // if the sample has an accession, put to that
       if (sample.getAccession() != null) {
         // samples with an existing accession should be PUT
@@ -138,15 +135,12 @@ public class SampleSubmissionService {
         // because we might PUT to something that doesn't exist (e.g. migration of data)
         // this will cause an error. So instead manually de-template the link without
         // getting it.
-        PagedResources<Resource<Sample>> pagedSamples =
+        PagedModel<EntityModel<Sample>> pagedSamples =
             traverson
                 .follow("samples")
-                .toObject(new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {});
-        Link sampleLink = pagedSamples.getLink("sample");
-        if (sampleLink == null) {
-          log.warn("Problem handling page " + pagedSamples);
-          throw new NullPointerException("Unable to find sample link");
-        }
+                .toObject(new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {});
+        Link sampleLink = pagedSamples.getLink("sample").get();
+
         sampleLink = sampleLink.expand(sample.getAccession());
         URI uri = getSamplePersistURI(sampleLink);
         log.trace("PUTing to " + uri + " " + sample);
@@ -160,11 +154,11 @@ public class SampleSubmissionService {
         }
         RequestEntity<Sample> requestEntity = bodyBuilder.body(sample);
 
-        ResponseEntity<Resource<Sample>> responseEntity;
+        ResponseEntity<EntityModel<Sample>> responseEntity;
         try {
           responseEntity =
               restOperations.exchange(
-                  requestEntity, new ParameterizedTypeReference<Resource<Sample>>() {});
+                  requestEntity, new ParameterizedTypeReference<EntityModel<Sample>>() {});
         } catch (RestClientResponseException e) {
           log.error(
               "Unable to PUT to "
@@ -192,11 +186,11 @@ public class SampleSubmissionService {
         }
         RequestEntity<Sample> requestEntity = bodyBuilder.body(sample);
 
-        ResponseEntity<Resource<Sample>> responseEntity;
+        ResponseEntity<EntityModel<Sample>> responseEntity;
         try {
           responseEntity =
               restOperations.exchange(
-                  requestEntity, new ParameterizedTypeReference<Resource<Sample>>() {});
+                  requestEntity, new ParameterizedTypeReference<EntityModel<Sample>>() {});
         } catch (RestClientResponseException e) {
           log.error(
               "Unable to POST to "

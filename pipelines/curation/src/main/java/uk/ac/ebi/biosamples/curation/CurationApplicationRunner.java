@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelineFutureCallback;
 import uk.ac.ebi.biosamples.PipelineResult;
@@ -82,7 +82,8 @@ public class CurationApplicationRunner implements ApplicationRunner {
             pipelinesProperties.getThreadCountMax())) {
 
       Map<String, Future<PipelineResult>> futures = new HashMap<>();
-      for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters)) {
+      for (EntityModel<Sample> sampleResource :
+          bioSamplesClient.fetchSampleResourceAll("", filters)) {
         LOG.trace("Handling {}", sampleResource);
         Sample sample = sampleResource.getContent();
         if (sample == null) {

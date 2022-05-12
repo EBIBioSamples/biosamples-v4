@@ -59,7 +59,7 @@ public class MongoAccessionService {
   public Sample generateAccession(Sample sample) {
     MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
     mongoSample = accessionAndInsert(mongoSample);
-    return mongoSampleToSampleConverter.convert(mongoSample);
+    return mongoSampleToSampleConverter.apply(mongoSample);
   }
 
   private MongoSample accessionAndInsert(MongoSample sample) {
@@ -135,13 +135,13 @@ public class MongoAccessionService {
     Iterator<String> itCandidate = accessionCandidateQueue.iterator();
     while (itCandidate.hasNext()) {
       String accessionCandidate = itCandidate.next();
-      if (mongoSampleRepository.exists(accessionCandidate)) {
+      if (mongoSampleRepository.existsById(accessionCandidate)) {
         log.debug("Removing accession " + accessionCandidate + " from queue because now assigned");
         itCandidate.remove();
       }
     }
 
-    Sort sort = new Sort(Sort.Direction.ASC, "accessionNumber");
+    Sort sort = Sort.by(Sort.Direction.ASC, "accessionNumber");
     try (Stream<MongoSample> stream =
         mongoSampleRepository.findByAccessionPrefixIsAndAccessionNumberGreaterThanEqual(
             prefix, accessionCandidateCounter, sort)) {

@@ -55,6 +55,8 @@ public class MessageHandlerSolr {
   }
 
   private void handleSample(Sample sample, String modifiedTime) {
+    final String accession = sample.getAccession();
+
     if (isIndexingCandidate(sample)) {
       SolrSample solrSample = sampleToSolrSampleConverter.convert(sample);
       // add the modified time to the solrSample
@@ -87,11 +89,11 @@ public class MessageHandlerSolr {
       }
 
       repository.saveWithoutCommit(solrSample);
-      LOGGER.info(String.format("added %s to index", sample.getAccession()));
+      LOGGER.info(String.format("added %s to index", accession));
     } else {
-      if (repository.exists(sample.getAccession())) {
-        repository.delete(sample.getAccession());
-        LOGGER.info(String.format("removed %s from index", sample.getAccession()));
+      if (repository.existsById(accession)) {
+        repository.deleteById(accession);
+        LOGGER.info(String.format("removed %s from index", accession));
       }
     }
   }

@@ -17,6 +17,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -38,13 +39,16 @@ public class AnalyticsService {
   }
 
   public MongoAnalytics getAnalytics(LocalDate date) {
-    String dateString = dateTimeFormatter.format(date);
-    return analyticsRepository.findOne(dateString);
+    final String dateString = dateTimeFormatter.format(date);
+    final Optional<MongoAnalytics> byId = analyticsRepository.findById(dateString);
+
+    return byId.isPresent() ? byId.get() : null;
   }
 
   public List<MongoAnalytics> getAnalytics(LocalDate start, LocalDate end) {
     String startString = dateTimeFormatter.format(start);
     String endString = dateTimeFormatter.format(end);
+
     return analyticsRepository.findMongoAnalyticsByIdBetween(startString, endString);
   }
 
@@ -53,12 +57,14 @@ public class AnalyticsService {
   }
 
   public void mergeSampleAnalytics(Instant runTime, SampleAnalytics sampleAnalytics) {
-    String pipelineRunDate = getApproximateRunDateAsString(runTime);
+    final String pipelineRunDate = getApproximateRunDateAsString(runTime);
     LOG.info("Saving sample types for date: {}", pipelineRunDate);
-    LocalDate localDate = runTime.atZone(ZoneId.systemDefault()).toLocalDate();
-    //    LocalDate localDate = LocalDate.ofInstant(runTime, ZoneId.systemDefault());
 
-    MongoAnalytics analyticsRecord = analyticsRepository.findOne(pipelineRunDate);
+    final LocalDate localDate = runTime.atZone(ZoneId.systemDefault()).toLocalDate();
+    //    LocalDate localDate = LocalDate.ofInstant(runTime, ZoneId.systemDefault());
+    final Optional<MongoAnalytics> byId = analyticsRepository.findById(pipelineRunDate);
+    MongoAnalytics analyticsRecord = byId.isPresent() ? byId.get() : null;
+
     if (analyticsRecord == null) {
       analyticsRecord =
           new MongoAnalytics(
@@ -81,11 +87,13 @@ public class AnalyticsService {
   }
 
   public void persistSampleAnalytics(Instant runTime, SampleAnalytics sampleAnalytics) {
-    String pipelineRunDate = getApproximateRunDateAsString(runTime);
+    final String pipelineRunDate = getApproximateRunDateAsString(runTime);
     LOG.info("Saving sample types for date: {}", pipelineRunDate);
-    LocalDate localDate = runTime.atZone(ZoneId.systemDefault()).toLocalDate();
 
-    MongoAnalytics analyticsRecord = analyticsRepository.findOne(pipelineRunDate);
+    final LocalDate localDate = runTime.atZone(ZoneId.systemDefault()).toLocalDate();
+    final Optional<MongoAnalytics> byId = analyticsRepository.findById(pipelineRunDate);
+    MongoAnalytics analyticsRecord = byId.isPresent() ? byId.get() : null;
+
     if (analyticsRecord == null) {
       analyticsRecord =
           new MongoAnalytics(
@@ -99,12 +107,14 @@ public class AnalyticsService {
   }
 
   public void persistPipelineAnalytics(PipelineAnalytics pipelineAnalytics) {
-    String pipelineRunDate = getApproximateRunDateAsString(pipelineAnalytics.getStartTime());
+    final String pipelineRunDate = getApproximateRunDateAsString(pipelineAnalytics.getStartTime());
     LOG.info("Saving {} analytics for date: {}", pipelineAnalytics.getName(), pipelineRunDate);
-    LocalDate localDate =
-        pipelineAnalytics.getStartTime().atZone(ZoneId.systemDefault()).toLocalDate();
 
-    MongoAnalytics analyticsRecord = analyticsRepository.findOne(pipelineRunDate);
+    final LocalDate localDate =
+        pipelineAnalytics.getStartTime().atZone(ZoneId.systemDefault()).toLocalDate();
+    final Optional<MongoAnalytics> byId = analyticsRepository.findById(pipelineRunDate);
+    MongoAnalytics analyticsRecord = byId.isPresent() ? byId.get() : null;
+
     if (analyticsRecord == null) {
       analyticsRecord =
           new MongoAnalytics(
@@ -119,6 +129,7 @@ public class AnalyticsService {
 
   public String getApproximateRunDateAsString(Instant date) {
     LocalDateTime adjustedDate = LocalDateTime.ofInstant(date, ZoneOffset.UTC).plusHours(3);
+
     return adjustedDate.format(dateTimeFormatter);
   }
 }

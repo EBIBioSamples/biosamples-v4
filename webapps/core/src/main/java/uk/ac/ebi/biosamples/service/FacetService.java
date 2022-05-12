@@ -49,8 +49,8 @@ public class FacetService {
       int noOfFacets,
       int noOfFacetValues,
       String facetField) {
-    Pageable facetPageable = new PageRequest(0, noOfFacets);
-    Pageable facetValuePageable = new PageRequest(0, noOfFacetValues);
+    Pageable facetPageable = PageRequest.of(0, noOfFacets);
+    Pageable facetValuePageable = PageRequest.of(0, noOfFacetValues);
     // TODO if a facet is enabled as a filter, then that value will be the only filter displayed
     // TODO allow update date range
 

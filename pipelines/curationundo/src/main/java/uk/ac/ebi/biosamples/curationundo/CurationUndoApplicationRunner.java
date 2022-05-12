@@ -13,13 +13,14 @@ package uk.ac.ebi.biosamples.curationundo;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -28,7 +29,6 @@ import uk.ac.ebi.biosamples.utils.MailSender;
 
 @Component
 public class CurationUndoApplicationRunner implements ApplicationRunner {
-
   private Logger log = LoggerFactory.getLogger(getClass());
 
   private final BioSamplesClient bioSamplesClient;
@@ -52,9 +52,9 @@ public class CurationUndoApplicationRunner implements ApplicationRunner {
       long samplesQueued = 0;
       long startTime = System.currentTimeMillis();
       try {
-        for (Resource<Sample> sampleResource :
+        for (EntityModel<Sample> sampleResource :
             bioSamplesClient.fetchSampleResourceAll("", Collections.emptyList())) {
-          String accession = sampleResource.getContent().getAccession();
+          String accession = Objects.requireNonNull(sampleResource.getContent()).getAccession();
           samplesQueued++;
           boolean canary = (samplesQueued % 1000 == 0);
           Callable<Void> task = new CurationUndoCallable(bioSamplesClient, accession, canary);

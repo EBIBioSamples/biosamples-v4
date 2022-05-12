@@ -43,16 +43,17 @@ public class CurationReadService {
 
   public Page<Curation> getPage(Pageable pageable) {
     Page<MongoCuration> pageNeoCuration = mongoCurationRepository.findAll(pageable);
-    Page<Curation> pageCuration = pageNeoCuration.map(mongoCurationToCurationConverter);
-    return pageCuration;
+    return pageNeoCuration.map(mongoCurationToCurationConverter);
   }
 
   public Curation getCuration(String hash) {
-    MongoCuration neoCuration = mongoCurationRepository.findOne(hash);
+    final Optional<MongoCuration> byId = mongoCurationRepository.findById(hash);
+    final MongoCuration neoCuration = byId.orElse(null);
+
     if (neoCuration == null) {
       return null;
     } else {
-      return mongoCurationToCurationConverter.convert(neoCuration);
+      return mongoCurationToCurationConverter.apply(neoCuration);
     }
   }
 
@@ -60,20 +61,15 @@ public class CurationReadService {
     Page<MongoCurationLink> pageNeoCurationLink =
         mongoCurationLinkRepository.findBySample(accession, pageable);
     // convert them into a state to return
-    Page<CurationLink> pageCuration =
-        pageNeoCurationLink.map(mongoCurationLinkToCurationLinkConverter);
-    return pageCuration;
-  }
-
-  public Page<Curation> getCurationsForSample(String accession, Pageable pageable) {
-    return getCurationLinksForSample(accession, pageable)
-        .map(curationLink -> curationLink.getCuration());
+    return pageNeoCurationLink.map(mongoCurationLinkToCurationLinkConverter);
   }
 
   public CurationLink getCurationLink(String hash) {
-    MongoCurationLink mongoCurationLink = mongoCurationLinkRepository.findOne(hash);
-    CurationLink link = mongoCurationLinkToCurationLinkConverter.convert(mongoCurationLink);
-    return link;
+    final Optional<MongoCurationLink> byId = mongoCurationLinkRepository.findById(hash);
+    final MongoCurationLink mongoCurationLink = byId.orElse(null);
+
+    assert mongoCurationLink != null;
+    return mongoCurationLinkToCurationLinkConverter.apply(mongoCurationLink);
   }
 
   /**
@@ -169,7 +165,7 @@ public class CurationReadService {
     int pageNo = 0;
     Page<CurationLink> page;
     do {
-      Pageable pageable = new PageRequest(pageNo, 1000, Sort.Direction.ASC, "created");
+      Pageable pageable = PageRequest.of(pageNo, 1000, Sort.Direction.ASC, "created");
       page = getCurationLinksForSample(sample.getAccession(), pageable);
       for (CurationLink curationLink : page) {
         if (curationDomains.isPresent()) {

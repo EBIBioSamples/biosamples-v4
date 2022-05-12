@@ -21,7 +21,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
@@ -35,7 +35,7 @@ public class MockBioSamplesClient extends BioSamplesClient {
 
   private Map<String, List<Curation>> curations = new HashMap<>();
 
-  private boolean logCurations = false;
+  private boolean logCurations;
 
   private PrintWriter printWriter;
 
@@ -74,7 +74,7 @@ public class MockBioSamplesClient extends BioSamplesClient {
   }
 
   @Override
-  public Resource<CurationLink> persistCuration(
+  public EntityModel<CurationLink> persistCuration(
       String accession, Curation curation, String webinIdOrDomain, boolean isWebin) {
     log.trace(
         "Mocking persisting curation " + curation + " on " + accession + " in " + webinIdOrDomain);
@@ -87,7 +87,7 @@ public class MockBioSamplesClient extends BioSamplesClient {
     }
     sampleCurations.add(curation);
     curations.put(accession, sampleCurations);
-    return mock(Resource.class);
+    return mock(EntityModel.class);
   }
 
   private String explainCuration(Curation curation) {
@@ -104,9 +104,5 @@ public class MockBioSamplesClient extends BioSamplesClient {
 
   public Collection<Curation> getCurations(String accession) {
     return curations.get(accession);
-  }
-
-  public void clearCurations(String accession) {
-    curations.put(accession, new ArrayList<>());
   }
 }

@@ -43,7 +43,7 @@ import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = TestApplication.class)
+@SpringBootTest
 @AutoConfigureWebClient
 public class SampleCurationCallableTest {
 

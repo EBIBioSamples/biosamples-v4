@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
@@ -96,7 +96,7 @@ public class NcbiCurationCallable implements Callable<Void> {
     curationDomainBlankList.add("");
 
     try {
-      final Optional<Resource<Sample>> optionalSampleResource =
+      final Optional<EntityModel<Sample>> optionalSampleResource =
           bioSamplesClient.fetchSampleResource(
               this.accession, Optional.of(curationDomainBlankList));
 

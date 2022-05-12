@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -68,7 +68,8 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
             pipelinesProperties.getThreadCountMax())) {
 
       Map<String, Future<PipelineResult>> futures = new HashMap<>();
-      for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters)) {
+      for (EntityModel<Sample> sampleResource :
+          bioSamplesClient.fetchSampleResourceAll("", filters)) {
         Sample sample = Objects.requireNonNull(sampleResource.getContent());
         LOG.trace("Handling {}", sample);
 

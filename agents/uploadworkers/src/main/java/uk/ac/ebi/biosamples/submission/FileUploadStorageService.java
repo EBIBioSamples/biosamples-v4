@@ -10,11 +10,13 @@
 */
 package uk.ac.ebi.biosamples.submission;
 
-import com.mongodb.gridfs.GridFSDBFile;
+import com.mongodb.client.gridfs.model.GridFSFile;
+import java.io.IOException;
 import java.io.InputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.gridfs.GridFsOperations;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.SubmissionFile;
@@ -22,14 +24,16 @@ import uk.ac.ebi.biosamples.model.SubmissionFile;
 @Service
 public class FileUploadStorageService {
   @Autowired private GridFsTemplate gridFsTemplate;
+  @Autowired private GridFsOperations operations;
 
-  public SubmissionFile getFile(final String submissionId) throws IllegalStateException {
-    final GridFSDBFile file =
+  public SubmissionFile getFile(final String submissionId)
+      throws IllegalStateException, IOException {
+    final GridFSFile file =
         gridFsTemplate.findOne(
             new Query().addCriteria(Criteria.where("_id").is(submissionId)).limit(1));
 
     if (file != null) {
-      final InputStream fileStream = file.getInputStream();
+      final InputStream fileStream = operations.getResource(file).getInputStream();
       final SubmissionFile submissionFile = new SubmissionFile(file.getFilename(), fileStream);
 
       return submissionFile;

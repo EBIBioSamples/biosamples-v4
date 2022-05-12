@@ -11,14 +11,11 @@
 package uk.ac.ebi.biosamples;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.annotation.Order;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
@@ -55,11 +52,11 @@ public class SitemapIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseTwo() {
-    List<Resource<Sample>> samples = new ArrayList<>();
+    List<EntityModel<Sample>> samples = new ArrayList<>();
     Map<String, Boolean> lookupTable = new HashMap<>();
-    for (Resource<Sample> sample : publicClient.fetchSampleResourceAll()) {
+    for (EntityModel<Sample> sample : publicClient.fetchSampleResourceAll()) {
       samples.add(sample);
-      lookupTable.put(sample.getContent().getAccession(), Boolean.FALSE);
+      lookupTable.put(Objects.requireNonNull(sample.getContent()).getAccession(), Boolean.FALSE);
     }
 
     if (samples.size() <= 0) {

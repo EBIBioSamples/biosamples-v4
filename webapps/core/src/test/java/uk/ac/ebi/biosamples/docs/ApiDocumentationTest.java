@@ -1078,11 +1078,11 @@ public class ApiDocumentationTest {
 
   // TODO Move all the subsequent to DocumentationHelper class
   private Pageable getDefaultPageable() {
-    return new PageRequest(0, 1, getDefaultSort());
+    return PageRequest.of(0, 1, getDefaultSort());
   }
 
   private Sort getDefaultSort() {
-    return new Sort(
+    return Sort.by(
         Stream.of("score,desc", "id,asc").map(this::parseSort).collect(Collectors.toList()));
   }
 

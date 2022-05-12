@@ -17,8 +17,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
@@ -49,7 +49,7 @@ public class RestFilterIntegration extends AbstractIntegration {
           "RestFilterIntegration test sample should not be available during phase 1", Phase.ONE);
     }
 
-    Resource<Sample> resource = client.persistSampleResource(testSample1);
+    EntityModel<Sample> resource = client.persistSampleResource(testSample1);
     testSample1 =
         Sample.Builder.fromSample(testSample1)
             .withAccession(resource.getContent().getAccession())
@@ -147,7 +147,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     log.info("Getting sample 1 using filter on attribute");
     Filter attributeFilter =
         FilterBuilder.create().onAttribute("TestAttribute").withValue("FilterMe").build();
-    PagedResources<Resource<Sample>> samplePage =
+    PagedModel<EntityModel<Sample>> samplePage =
         client.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
     if (samplePage.getMetadata().getTotalElements() != 1) {
       throw new IntegrationTestFailException(
@@ -155,7 +155,7 @@ public class RestFilterIntegration extends AbstractIntegration {
               + samplePage.getMetadata().getTotalElements(),
           Phase.THREE);
     }
-    Resource<Sample> restSample = samplePage.getContent().iterator().next();
+    EntityModel<Sample> restSample = samplePage.getContent().iterator().next();
     if (!restSample.getContent().equals(testSample1)) {
       throw new IntegrationTestFailException(
           "Unexpected number of results for attribute filter query: "
@@ -327,7 +327,7 @@ public class RestFilterIntegration extends AbstractIntegration {
             .from(testSample1.getRelease().minusSeconds(2))
             .until(testSample1.getRelease().plusSeconds(2))
             .build();
-    PagedResources<Resource<Sample>> samplePage =
+    PagedModel<EntityModel<Sample>> samplePage =
         client.fetchPagedSampleResource("", Collections.singletonList(dateFilter), 0, 10);
     if (samplePage.getMetadata().getTotalElements() < 1) {
       throw new IntegrationTestFailException(
@@ -395,7 +395,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     log.info("Getting results filtered by domains");
     Filter domainFilter =
         FilterBuilder.create().onDomain(defaultIntegrationSubmissionDomain).build();
-    PagedResources<Resource<Sample>> samplePage =
+    PagedModel<EntityModel<Sample>> samplePage =
         client.fetchPagedSampleResource("", Collections.singletonList(domainFilter), 0, 10);
     if (samplePage.getMetadata().getTotalElements() < 1) {
       throw new IntegrationTestFailException(

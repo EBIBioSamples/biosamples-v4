@@ -16,7 +16,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -59,7 +59,7 @@ public class SampleReleaseCallable implements Callable<String> {
     try {
       log.info("Handling sample with accession " + accession);
 
-      Optional<Resource<Sample>> optionalSampleResource =
+      Optional<EntityModel<Sample>> optionalSampleResource =
           bioSamplesWebinClient.fetchSampleResource(accession);
 
       if (!optionalSampleResource.isPresent()) {

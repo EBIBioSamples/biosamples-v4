@@ -33,9 +33,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.hal.Jackson2HalModule;
-import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
+import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -47,11 +47,10 @@ import org.springframework.web.client.RestTemplate;
 @EnableAsync
 @EnableScheduling
 public class Application {
-
   @Bean
-  public RestTemplate restTemplate(RestTemplateCustomizer restTemplateCustomizer) {
+  public RestTemplate restTemplate() {
     RestTemplate restTemplate = new RestTemplate();
-    restTemplateCustomizer.customize(restTemplate);
+    getRestTemplateCustomizer().customize(restTemplate);
     return restTemplate;
   }
 
@@ -160,7 +159,7 @@ public class Application {
         mapper.registerModule(new Jackson2HalModule());
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         MappingJackson2HttpMessageConverter halConverter =
-            new TypeConstrainedMappingJackson2HttpMessageConverter(ResourceSupport.class);
+            new TypeConstrainedMappingJackson2HttpMessageConverter(RepresentationModel.class);
         halConverter.setObjectMapper(mapper);
         halConverter.setSupportedMediaTypes(Arrays.asList(MediaTypes.HAL_JSON));
         // make sure this is inserted first

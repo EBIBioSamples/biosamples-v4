@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelineFutureCallback;
 import uk.ac.ebi.biosamples.PipelineResult;
@@ -92,7 +92,8 @@ public class NeoExportRunner implements ApplicationRunner {
             pipelinesProperties.getThreadCountMax())) {
 
       Map<String, Future<PipelineResult>> futures = new HashMap<>();
-      for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters)) {
+      for (EntityModel<Sample> sampleResource :
+          bioSamplesClient.fetchSampleResourceAll("", filters)) {
         LOG.trace("Handling {}", sampleResource);
         Sample sample = sampleResource.getContent();
         Objects.requireNonNull(sample);

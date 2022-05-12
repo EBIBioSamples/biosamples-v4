@@ -10,29 +10,19 @@
 */
 package uk.ac.ebi.biosamples;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Organization;
-import uk.ac.ebi.biosamples.model.Publication;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
@@ -62,10 +52,10 @@ public class AmrDataIntegration extends AbstractIntegration {
           "AMRDataIntegration test sample should not be available during phase 1", Phase.ONE);
     }
 
-    Resource<Sample> resource = client.persistSampleResource(testSample);
+    EntityModel<Sample> resource = client.persistSampleResource(testSample);
     Sample testSampleWithAccession =
         Sample.Builder.fromSample(testSample)
-            .withAccession(resource.getContent().getAccession())
+            .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
             .build();
 
     if (!testSampleWithAccession.equals(resource.getContent())) {
@@ -96,7 +86,7 @@ public class AmrDataIntegration extends AbstractIntegration {
     }
 
     sd = StructuredData.build(optionalSample.get().getAccession(), sd.getCreate(), sd.getData());
-    Resource<StructuredData> structuredDataResource = client.persistStructuredData(sd);
+    EntityModel<StructuredData> structuredDataResource = client.persistStructuredData(sd);
 
     if (structuredDataResource.getContent() == null) {
       throw new RuntimeException("Should return submitted structured data");

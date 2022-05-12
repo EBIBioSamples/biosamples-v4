@@ -48,7 +48,9 @@ public class StructuredDataService {
   }
 
   public Optional<StructuredData> getStructuredData(String accession) {
-    MongoStructuredData mongoData = mongoStructuredDataRepository.findOne(accession);
+    final Optional<MongoStructuredData> byId = mongoStructuredDataRepository.findById(accession);
+    final MongoStructuredData mongoData = byId.orElse(null);
+
     if (mongoData == null) {
       return Optional.empty();
     }
@@ -59,8 +61,10 @@ public class StructuredDataService {
   public StructuredData saveStructuredData(StructuredData structuredData) {
     validate(structuredData);
     Instant create = Instant.now();
-    MongoStructuredData oldMongoData =
-        mongoStructuredDataRepository.findOne(structuredData.getAccession());
+    final Optional<MongoStructuredData> byId =
+        mongoStructuredDataRepository.findById(structuredData.getAccession());
+    final MongoStructuredData oldMongoData = byId.orElse(null);
+
     if (oldMongoData != null) {
       StructuredData oldData = mongoStructuredDataToStructuredDataConverter.convert(oldMongoData);
       // we consider if domain and types are equal StructuredDataTable
@@ -106,6 +110,6 @@ public class StructuredDataService {
   }
 
   private boolean isExistingAccession(String accession) {
-    return mongoSampleRepository.findOne(accession) != null;
+    return mongoSampleRepository.findById(accession).isPresent();
   }
 }

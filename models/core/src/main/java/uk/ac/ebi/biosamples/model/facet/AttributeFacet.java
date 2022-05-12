@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.Optional;
-import org.springframework.hateoas.core.Relation;
+import org.springframework.hateoas.server.core.Relation;
 import uk.ac.ebi.biosamples.model.facet.content.FacetContent;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountListContent;
 import uk.ac.ebi.biosamples.model.filter.FilterType;
@@ -22,7 +22,6 @@ import uk.ac.ebi.biosamples.model.filter.FilterType;
 @Relation(collectionRelation = "facets")
 @JsonDeserialize(builder = AttributeFacet.Builder.class)
 public class AttributeFacet implements Facet {
-
   private String facetLabel;
   private Long facetCount;
   private LabelCountListContent content;

@@ -12,15 +12,15 @@ package uk.ac.ebi.biosamples.curation;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Arrays;
+import java.util.Collections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.hal.Jackson2HalModule;
-import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
+import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
@@ -52,9 +52,9 @@ public class TestApplication {
     mapper.registerModule(new Jackson2HalModule());
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     MappingJackson2HttpMessageConverter halConverter =
-        new TypeConstrainedMappingJackson2HttpMessageConverter(ResourceSupport.class);
+        new TypeConstrainedMappingJackson2HttpMessageConverter(RepresentationModel.class);
     halConverter.setObjectMapper(mapper);
-    halConverter.setSupportedMediaTypes(Arrays.asList(MediaTypes.HAL_JSON));
+    halConverter.setSupportedMediaTypes(Collections.singletonList(MediaTypes.HAL_JSON));
     return mapper;
   }
 

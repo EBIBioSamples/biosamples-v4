@@ -16,9 +16,9 @@ import java.util.Optional;
 import java.util.SortedSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.ExposesResourceFor;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.server.ExposesResourceFor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -87,7 +87,7 @@ public class SampleRestController {
   @PreAuthorize("isAuthenticated()")
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-  public Resource<Sample> getSampleHal(
+  public EntityModel<Sample> getSampleHal(
       @PathVariable String accession,
       @RequestParam(name = "legacydetails", required = false) String legacydetails,
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
@@ -125,7 +125,7 @@ public class SampleRestController {
         sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
       }
 
-      return sampleResourceAssembler.toResource(
+      return sampleResourceAssembler.toModel(
           sample.get(), decodedLegacyDetails, decodedCurationDomains);
     } else {
       throw new GlobalExceptions.SampleNotFoundException();
@@ -191,7 +191,7 @@ public class SampleRestController {
 
   @PreAuthorize("isAuthenticated()")
   @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public Resource<Sample> put(
+  public EntityModel<Sample> put(
       @PathVariable String accession,
       @RequestBody Sample sample,
       @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
@@ -290,7 +290,7 @@ public class SampleRestController {
 
     // assemble a resource to return
     // create the response object with the appropriate status
-    return sampleResourceAssembler.toResource(sample);
+    return sampleResourceAssembler.toModel(sample);
   }
 
   private Sample validateSampleAgainstExternalValidationServices(

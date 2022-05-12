@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
@@ -81,7 +81,7 @@ public class ClearinghouseRunner implements ApplicationRunner {
             pipelinesProperties.getThreadCountMax())) {
       LOGGER.info("Starting clearinghouse pipeline");
 
-      for (final Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
+      for (final EntityModel<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
         final Sample sample = sampleResource.getContent();
 
         try {

@@ -12,12 +12,7 @@ package uk.ac.ebi.biosamples.curation;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
@@ -25,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelineFutureCallback;
 import uk.ac.ebi.biosamples.PipelineResult;
@@ -87,14 +82,17 @@ public class MigrationApplicationRunner implements ApplicationRunner {
             pipelinesProperties.getThreadCountMax())) {
 
       Map<String, Future<PipelineResult>> futures = new HashMap<>();
-      for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters)) {
+      for (EntityModel<Sample> sampleResource :
+          bioSamplesClient.fetchSampleResourceAll("", filters)) {
         LOG.trace("Handling {}", sampleResource);
         Sample sample = sampleResource.getContent();
         Objects.requireNonNull(sample);
 
         if (sample.getData() != null && !sample.getData().isEmpty()) {
           LOG.info("Migrating structured data of sample: {}", sample.getAccession());
-          MongoSample mongoSample = mongoSampleRepository.findOne(sample.getAccession());
+          final Optional<MongoSample> byId = mongoSampleRepository.findById(sample.getAccession());
+          final MongoSample mongoSample = byId.isPresent() ? byId.get() : null;
+
           Callable<PipelineResult> task =
               new MigrationCallable(
                   mongoSample, mongoSampleRepository, mongoStructuredDataRepository);

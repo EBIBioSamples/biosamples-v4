@@ -50,7 +50,6 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 @Controller
 @RequestMapping(value = "/", produces = MediaType.TEXT_HTML_VALUE)
 public class SampleHtmlController {
-
   private Logger log = LoggerFactory.getLogger(getClass());
 
   private final SampleService sampleService;
@@ -150,7 +149,7 @@ public class SampleHtmlController {
     Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);
     Collection<String> domains = bioSamplesAapService.getDomains();
 
-    Pageable pageable = new PageRequest(page - 1, size);
+    Pageable pageable = PageRequest.of(page - 1, size);
     Page<Sample> pageSample =
         samplePageService.getSamplesByText(
             text, filterCollection, domains, null, pageable, curationRepo, Optional.empty());

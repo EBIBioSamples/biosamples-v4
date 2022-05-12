@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -195,7 +195,7 @@ public class Ncbi implements ApplicationRunner {
       long startTime = System.nanoTime();
       // make sure to only get the public samples
       Set<String> existingAccessions = new TreeSet<>();
-      for (Resource<Sample> sample :
+      for (EntityModel<Sample> sample :
           bioSamplesClient
               .getPublicClient()
               .get()
@@ -225,7 +225,7 @@ public class Ncbi implements ApplicationRunner {
     try {
       for (String accession : toRemoveAccessions) {
         // this must get the ORIGINAL sample without curation
-        Optional<Resource<Sample>> sampleOptional =
+        Optional<EntityModel<Sample>> sampleOptional =
             bioSamplesClient.fetchSampleResource(accession, Optional.of(curationDomainBlankList));
         if (sampleOptional.isPresent()) {
           Sample sample = sampleOptional.get().getContent();

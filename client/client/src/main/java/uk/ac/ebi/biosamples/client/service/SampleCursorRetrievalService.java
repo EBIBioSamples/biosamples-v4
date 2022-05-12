@@ -18,8 +18,8 @@ import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -36,9 +36,9 @@ public class SampleCursorRetrievalService {
   public static final DateTimeFormatter solrFormatter =
       DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 
-  private static final ParameterizedTypeReference<PagedResources<Resource<Sample>>>
+  private static final ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>
       parameterizedTypeReferencePagedResourcesSample =
-          new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {};
+          new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {};
 
   private final Traverson traverson;
   private final ExecutorService executor;
@@ -59,16 +59,16 @@ public class SampleCursorRetrievalService {
     this.isWebinSubmission = isWebinSubmission;
   }
 
-  public Iterable<Resource<Sample>> fetchAll(String text, Collection<Filter> filterCollection) {
+  public Iterable<EntityModel<Sample>> fetchAll(String text, Collection<Filter> filterCollection) {
     return fetchAll(text, filterCollection, null);
   }
 
-  public Iterable<Resource<Sample>> fetchAll(
+  public Iterable<EntityModel<Sample>> fetchAll(
       String text, Collection<Filter> filterCollection, String jwt) {
     return fetchAll(text, filterCollection, jwt, null);
   }
 
-  public Iterable<Resource<Sample>> fetchAll(
+  public Iterable<EntityModel<Sample>> fetchAll(
       String text,
       Collection<Filter> filterCollection,
       String jwt,
@@ -77,7 +77,7 @@ public class SampleCursorRetrievalService {
     return fetchAll(text, filterCollection, jwt, staticView, true);
   }
 
-  public Iterable<Resource<Sample>> fetchAll(
+  public Iterable<EntityModel<Sample>> fetchAll(
       String text,
       Collection<Filter> filterCollection,
       String jwt,
@@ -105,7 +105,6 @@ public class SampleCursorRetrievalService {
         restOperations,
         parameterizedTypeReferencePagedResourcesSample,
         jwt,
-        isWebinSubmission,
         params,
         "samples",
         "cursor");

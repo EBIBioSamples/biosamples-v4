@@ -22,7 +22,6 @@ import org.springframework.data.solr.core.query.*;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
@@ -31,13 +30,7 @@ import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 @Service
 public class SolrSampleService {
-
   private final SolrSampleRepository solrSampleRepository;
-
-  private final BioSamplesProperties bioSamplesProperties;
-
-  private final SolrFacetService solrFacetService;
-  private final SolrFieldService solrFieldService;
   private final SolrFilterService solrFilterService;
 
   // maximum time allowed for a solr search in s
@@ -47,15 +40,8 @@ public class SolrSampleService {
   private Logger log = LoggerFactory.getLogger(getClass());
 
   public SolrSampleService(
-      SolrSampleRepository solrSampleRepository,
-      BioSamplesProperties bioSamplesProperties,
-      SolrFacetService solrFacetService,
-      SolrFieldService solrFieldService,
-      SolrFilterService solrFilterService) {
+      SolrSampleRepository solrSampleRepository, SolrFilterService solrFilterService) {
     this.solrSampleRepository = solrSampleRepository;
-    this.bioSamplesProperties = bioSamplesProperties;
-    this.solrFacetService = solrFacetService;
-    this.solrFieldService = solrFieldService;
     this.solrFilterService = solrFilterService;
   }
 
@@ -111,7 +97,7 @@ public class SolrSampleService {
       String cursorMark,
       int size) {
     Query query = buildQuery(searchTerm, filters, domains, webinSubmissionAccountId);
-    query.addSort(new Sort("id")); // this must match the field in solr
+    query.addSort(Sort.by("id")); // this must match the field in solr
 
     return solrSampleRepository.findByQueryCursorMark(query, cursorMark, size);
   }
@@ -162,11 +148,11 @@ public class SolrSampleService {
         solrFilterService.getPublicFilterQuery(Collections.EMPTY_LIST, null);
     publicSampleFilterQuery.ifPresent(query::addFilterQuery);
 
-    query.setPageRequest(new PageRequest(0, 1));
+    query.setPageRequest(PageRequest.of(0, 1));
 
     FacetOptions facetOptions = new FacetOptions();
     facetOptions.addFacetOnField("autocomplete_ss");
-    facetOptions.setPageable(new PageRequest(0, maxSuggestions));
+    facetOptions.setPageable(PageRequest.of(0, maxSuggestions));
     facetOptions.setFacetPrefix(autocompletePrefix);
     query.setFacetOptions(facetOptions);
     query.setTimeAllowed(TIMEALLOWED * 1000);

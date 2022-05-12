@@ -32,28 +32,25 @@ import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
-import uk.ac.ebi.tsc.aap.client.repo.DomainService;
-import uk.ac.ebi.tsc.aap.client.repo.TokenService;
 import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
 
 @Service
 public class BioSamplesAapService {
-
   private Logger log = LoggerFactory.getLogger(getClass());
 
   private final Traverson traverson;
   private final BioSamplesProperties bioSamplesProperties;
   private final SampleService sampleService;
-  private final TokenService tokenService;
-  private final DomainService domainService;
+  private final AapTokenService tokenService;
+  private final AapDomainService domainService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
 
   public BioSamplesAapService(
       RestTemplateBuilder restTemplateBuilder,
       BioSamplesProperties bioSamplesProperties,
       SampleService sampleService,
-      TokenService tokenService,
-      DomainService domainService,
+      AapTokenService tokenService,
+      AapDomainService domainService,
       BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService) {
     traverson =
         new Traverson(bioSamplesProperties.getBiosamplesClientAapUri(), MediaTypes.HAL_JSON);

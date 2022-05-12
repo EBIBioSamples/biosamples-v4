@@ -20,12 +20,11 @@ import org.springframework.data.solr.core.query.result.FacetPage;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 
 public interface SolrSampleRepositoryCustom {
-
   /**
    * Get the attribute types (or other facet fields) for a particular query and using the pageable
    * to determine the number of offset of *the facets* returned as a page of facet fields
    *
-   * @param test
+   * @param query
    * @param facetPageable
    * @return
    */

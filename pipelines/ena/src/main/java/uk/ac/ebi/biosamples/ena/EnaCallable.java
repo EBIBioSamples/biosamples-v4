@@ -15,12 +15,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.Callable;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -28,7 +23,7 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.Attribute;
@@ -259,7 +254,7 @@ public class EnaCallable implements Callable<Void> {
     curationDomainBlankList.add("");
 
     try {
-      Optional<Resource<Sample>> optionalSampleResource =
+      Optional<EntityModel<Sample>> optionalSampleResource =
           bioSamplesWebinClient.fetchSampleResource(
               this.sampleAccession, Optional.of(curationDomainBlankList));
 
@@ -314,7 +309,7 @@ public class EnaCallable implements Callable<Void> {
     curationDomainBlankList.add("");
 
     try {
-      Optional<Resource<Sample>> optionalSampleResource =
+      Optional<EntityModel<Sample>> optionalSampleResource =
           bioSamplesWebinClient.fetchSampleResource(
               this.sampleAccession, Optional.of(curationDomainBlankList));
 

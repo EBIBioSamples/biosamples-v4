@@ -19,10 +19,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -38,21 +38,17 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 @Order(6)
 // @Profile({ "default", "rest" })
 public class RestCurationIntegration extends AbstractIntegration {
-
   private Logger log = LoggerFactory.getLogger(this.getClass());
 
-  private final IntegrationProperties integrationProperties;
   private final BioSamplesProperties bioSamplesProperties;
   private final RestOperations restTemplate;
 
   public RestCurationIntegration(
       RestTemplateBuilder restTemplateBuilder,
-      IntegrationProperties integrationProperties,
       BioSamplesProperties bioSamplesProperties,
       BioSamplesClient client) {
     super(client);
     this.restTemplate = restTemplateBuilder.build();
-    this.integrationProperties = integrationProperties;
     this.bioSamplesProperties = bioSamplesProperties;
   }
 
@@ -260,41 +256,35 @@ public class RestCurationIntegration extends AbstractIntegration {
     	throw new RuntimeException("No curations in list");
     }
     */
-    for (Resource<Curation> curationResource : client.fetchCurationResourceAll()) {
-      Link selfLink = curationResource.getLink("self");
-      Link samplesLink = curationResource.getLink("samples");
+    for (EntityModel<Curation> curationResource : client.fetchCurationResourceAll()) {
+      Link selfLink = curationResource.getLink("self").get();
+      Link samplesLink = curationResource.getLink("samples").get();
 
-      if (selfLink == null) {
-        throw new RuntimeException("Must have self link on " + curationResource);
-      } else {
+      {
         URI uriLink = URI.create(selfLink.getHref());
         log.info("GETting from " + uriLink);
         RequestEntity<Void> requestLink =
             RequestEntity.get(uriLink).accept(MediaTypes.HAL_JSON).build();
-        ResponseEntity<Resource<Curation>> responseLink =
+        ResponseEntity<EntityModel<Curation>> responseLink =
             restTemplate.exchange(
-                requestLink, new ParameterizedTypeReference<Resource<Curation>>() {});
+                requestLink, new ParameterizedTypeReference<EntityModel<Curation>>() {});
         if (!responseLink.getStatusCode().is2xxSuccessful()) {
           throw new RuntimeException("Unable to follow self link on " + curationResource);
         }
         log.info("GETted from " + uriLink);
       }
 
-      if (samplesLink == null) {
-        throw new RuntimeException("Must have samples link on " + curationResource);
-      } else {
-        URI uriLink = URI.create(samplesLink.getHref());
-        log.info("GETting from " + uriLink);
-        RequestEntity<Void> requestLink =
-            RequestEntity.get(uriLink).accept(MediaTypes.HAL_JSON).build();
-        ResponseEntity<PagedResources<Resource<Sample>>> responseLink =
-            restTemplate.exchange(
-                requestLink, new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {});
-        if (!responseLink.getStatusCode().is2xxSuccessful()) {
-          throw new RuntimeException("Unable to follow samples link on " + curationResource);
-        }
-        log.info("GETted from " + uriLink);
+      URI uriLink = URI.create(samplesLink.getHref());
+      log.info("GETting from " + uriLink);
+      RequestEntity<Void> requestLink =
+          RequestEntity.get(uriLink).accept(MediaTypes.HAL_JSON).build();
+      ResponseEntity<PagedModel<EntityModel<Sample>>> responseLink =
+          restTemplate.exchange(
+              requestLink, new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {});
+      if (!responseLink.getStatusCode().is2xxSuccessful()) {
+        throw new RuntimeException("Unable to follow samples link on " + curationResource);
       }
+      log.info("GETted from " + uriLink);
     }
   }
 
@@ -310,11 +300,11 @@ public class RestCurationIntegration extends AbstractIntegration {
 
     log.info("GETting from " + uri);
     RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-    ResponseEntity<PagedResources<Resource<Curation>>> response =
+    ResponseEntity<PagedModel<EntityModel<Curation>>> response =
         restTemplate.exchange(
-            request, new ParameterizedTypeReference<PagedResources<Resource<Curation>>>() {});
+            request, new ParameterizedTypeReference<PagedModel<EntityModel<Curation>>>() {});
 
-    PagedResources<Resource<Curation>> paged = response.getBody();
+    PagedModel<EntityModel<Curation>> paged = response.getBody();
 
     if (paged.getMetadata().getTotalElements() != 6) {
       throw new RuntimeException(
@@ -335,24 +325,12 @@ public class RestCurationIntegration extends AbstractIntegration {
 
     log.info("GETting from " + uri);
     RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-    ResponseEntity<Resource<Sample>> response =
-        restTemplate.exchange(request, new ParameterizedTypeReference<Resource<Sample>>() {});
+    ResponseEntity<EntityModel<Sample>> response =
+        restTemplate.exchange(request, new ParameterizedTypeReference<EntityModel<Sample>>() {});
 
-    Resource<Sample> paged = response.getBody();
+    EntityModel<Sample> paged = response.getBody();
 
     for (Attribute attribute : paged.getContent().getAttributes()) {
-      if ("CurationDomain".equals(attribute.getType())) {
-        if (!expected.equals(attribute.getValue())) {
-          throw new RuntimeException("Expecting " + expected + ", found " + attribute.getValue());
-        }
-      }
-    }
-  }
-
-  private void testSampleCurationDomains(
-      String accession, String expected, Optional<List<String>> curationDomains) {
-    Optional<Resource<Sample>> sample = client.fetchSampleResource(accession, curationDomains);
-    for (Attribute attribute : sample.get().getContent().getAttributes()) {
       if ("CurationDomain".equals(attribute.getType())) {
         if (!expected.equals(attribute.getValue())) {
           throw new RuntimeException("Expecting " + expected + ", found " + attribute.getValue());
