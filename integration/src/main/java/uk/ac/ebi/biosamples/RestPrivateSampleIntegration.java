@@ -10,24 +10,15 @@
 */
 package uk.ac.ebi.biosamples;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.FilterBuilder;
-import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
-
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component
 public class RestPrivateSampleIntegration extends AbstractIntegration {
@@ -44,14 +35,16 @@ public class RestPrivateSampleIntegration extends AbstractIntegration {
     Optional<Sample> optionalSample = fetchUniqueSampleByName(publicSampleToday.getName());
     if (optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
-          "RestPrivateSampleIntegration test sample should not be available during phase 1", Phase.ONE);
+          "RestPrivateSampleIntegration test sample should not be available during phase 1",
+          Phase.ONE);
     }
     client.persistSampleResource(publicSampleToday);
 
     optionalSample = fetchUniqueSampleByName(privateSample.getName());
     if (optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
-          "RestPrivateSampleIntegration test sample should not be available during phase 1", Phase.ONE);
+          "RestPrivateSampleIntegration test sample should not be available during phase 1",
+          Phase.ONE);
     }
     client.persistSampleResource(privateSample);
   }
