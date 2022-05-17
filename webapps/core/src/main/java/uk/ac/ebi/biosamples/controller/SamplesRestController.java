@@ -459,6 +459,56 @@ public class SamplesRestController {
     return new Link(builder.toUriString(), rel);
   }
 
+  @PreAuthorize("isAuthenticated()")
+  @CrossOrigin(methods = RequestMethod.GET)
+  @GetMapping(
+      produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE},
+      params = "accessions",
+      value = "/bulk-fetch")
+  public ResponseEntity<Map<String, Resource<Sample>>> getMultipleSampleHal(
+      @RequestParam List<String> accessions,
+      @RequestHeader(name = "Authorization", required = false) final String token) {
+    log.info("Received request to bulk-fetch " + accessions.size() + " accessions");
+
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
+    final List<Resource<Sample>> samples =
+        accessions.stream()
+            .map(
+                accession -> {
+                  final String spaceTrimmedAccession = accession.trim();
+                  final Optional<Sample> sample =
+                      sampleService.fetch(spaceTrimmedAccession, Optional.empty(), "");
+
+                  if (sample.isPresent()) {
+                    final boolean webinAuth =
+                        authToken
+                            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+                            .orElse(Boolean.FALSE);
+
+                    if (webinAuth) {
+                      final String webinSubmissionAccountId = authToken.get().getUser();
+
+                      bioSamplesWebinAuthenticationService.checkSampleAccessibility(
+                          sample.get(), webinSubmissionAccountId);
+                    } else {
+                      bioSamplesAapService.checkSampleAccessibility(sample.get());
+                    }
+
+                    return sampleResourceAssembler.toResource(
+                        sample.get(), Optional.of(false), Optional.empty());
+                  } else {
+                    return null;
+                  }
+                })
+            .collect(Collectors.toList());
+
+    return ResponseEntity.ok(
+        samples.stream()
+            .filter(Objects::nonNull)
+            .collect(
+                Collectors.toMap(sample -> sample.getContent().getAccession(), sample -> sample)));
+  }
+
   @PostMapping(
       consumes = {MediaType.APPLICATION_JSON_VALUE},
       produces = {MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE})
