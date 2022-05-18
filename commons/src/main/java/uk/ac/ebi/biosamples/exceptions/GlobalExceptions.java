@@ -21,6 +21,14 @@ public class GlobalExceptions {
 
   @ResponseStatus(
       value = HttpStatus.BAD_REQUEST,
+      reason = "Bulk fetch request parameter accessions is null or empty")
+  public static class BulkFetchInvalidRequestException extends RuntimeException {}
+
+  @ResponseStatus(value = HttpStatus.FORBIDDEN)
+  public static class BulkFetchForbiddenException extends RuntimeException {}
+
+  @ResponseStatus(
+      value = HttpStatus.BAD_REQUEST,
       reason = "Sample accession must match URL accession") // 400
   public static class SampleAccessionMismatchException extends RuntimeException {}
 
