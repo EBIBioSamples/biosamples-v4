@@ -465,9 +465,13 @@ public class SamplesRestController {
       produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE},
       params = "accessions",
       value = "/bulk-fetch")
-  public ResponseEntity<Map<String, Resource<Sample>>> getMultipleSampleHal(
-      @RequestParam List<String> accessions,
+  public ResponseEntity<Map<String, Resource<Sample>>> getMultipleSampleHals(
+      @RequestParam final List<String> accessions,
       @RequestHeader(name = "Authorization", required = false) final String token) {
+    if (accessions == null && !(accessions.size() > 0)) {
+      throw new GlobalExceptions.BulkFetchInvalidRequestException();
+    }
+
     log.info("Received request to bulk-fetch " + accessions.size() + " accessions");
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
@@ -485,13 +489,17 @@ public class SamplesRestController {
                             .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
                             .orElse(Boolean.FALSE);
 
-                    if (webinAuth) {
-                      final String webinSubmissionAccountId = authToken.get().getUser();
+                    try {
+                      if (webinAuth) {
+                        final String webinSubmissionAccountId = authToken.get().getUser();
 
-                      bioSamplesWebinAuthenticationService.checkSampleAccessibility(
-                          sample.get(), webinSubmissionAccountId);
-                    } else {
-                      bioSamplesAapService.checkSampleAccessibility(sample.get());
+                        bioSamplesWebinAuthenticationService.checkSampleAccessibility(
+                            sample.get(), webinSubmissionAccountId);
+                      } else {
+                        bioSamplesAapService.checkSampleAccessibility(sample.get());
+                      }
+                    } catch (final Exception e) {
+                      throw new GlobalExceptions.BulkFetchForbiddenException();
                     }
 
                     return sampleResourceAssembler.toResource(
@@ -500,11 +508,11 @@ public class SamplesRestController {
                     return null;
                   }
                 })
+            .filter(Objects::nonNull)
             .collect(Collectors.toList());
 
     return ResponseEntity.ok(
         samples.stream()
-            .filter(Objects::nonNull)
             .collect(
                 Collectors.toMap(sample -> sample.getContent().getAccession(), sample -> sample)));
   }

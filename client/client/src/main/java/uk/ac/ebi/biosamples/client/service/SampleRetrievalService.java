@@ -11,13 +11,7 @@
 package uk.ac.ebi.biosamples.client.service;
 
 import java.net.URI;
-import java.time.format.DateTimeFormatter;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -26,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
@@ -36,34 +29,34 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
+import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 
 public class SampleRetrievalService {
-
   private final Logger log = LoggerFactory.getLogger(getClass());
-
-  public static final DateTimeFormatter solrFormatter =
-      DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
-
-  private static final ParameterizedTypeReference<PagedResources<Resource<Sample>>>
-      parameterizedTypeReferencePagedResourcesSample =
-          new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {};
 
   private final Traverson traverson;
   private final ExecutorService executor;
   private final RestOperations restOperations;
-  private final boolean isWebinSubmission;
+  private final URI uri;
 
   public SampleRetrievalService(
-      RestOperations restOperations,
-      Traverson traverson,
-      ExecutorService executor,
-      boolean isWebinSubmission) {
+      RestOperations restOperations, Traverson traverson, URI uri, ExecutorService executor) {
     this.restOperations = restOperations;
     this.traverson = traverson;
     this.executor = executor;
-    this.isWebinSubmission = isWebinSubmission;
+    this.uri = uri;
+  }
+
+  /**
+   * Accepts a list of accessions and returns a Map having accession as key and sample as value
+   *
+   * @param accessions
+   * @return
+   */
+  public Future<Map<String, Resource<Sample>>> fetchSamplesByAccessions(List<String> accessions) {
+    return executor.submit(new FetchAccessionsCallable(accessions, uri));
   }
 
   /**
@@ -74,12 +67,12 @@ public class SampleRetrievalService {
    */
   public Future<Optional<Resource<Sample>>> fetch(
       String accession, Optional<List<String>> curationDomains) {
-    return executor.submit(new FetchCallable(accession, curationDomains, isWebinSubmission));
+    return executor.submit(new FetchCallable(accession, curationDomains));
   }
 
   public Future<Optional<Resource<Sample>>> fetch(
       String accession, Optional<List<String>> curationDomains, String jwt) {
-    return executor.submit(new FetchCallable(accession, curationDomains, jwt, isWebinSubmission));
+    return executor.submit(new FetchCallable(accession, curationDomains, jwt));
   }
 
   public Future<Optional<Resource<Sample>>> fetch(
@@ -87,8 +80,59 @@ public class SampleRetrievalService {
       Optional<List<String>> curationDomains,
       String jwt,
       StaticViewWrapper.StaticView staticView) {
-    return executor.submit(
-        new FetchCallable(accession, curationDomains, jwt, staticView, isWebinSubmission));
+    return executor.submit(new FetchCallable(accession, curationDomains, jwt, staticView));
+  }
+
+  private class FetchAccessionsCallable implements Callable<Map<String, Resource<Sample>>> {
+    private final List<String> accessions;
+    private final String jwt;
+    private final URI uri;
+
+    public FetchAccessionsCallable(final List<String> accessions, final URI uri) {
+      this.accessions = accessions;
+      this.jwt = null;
+      this.uri = uri;
+    }
+
+    @Override
+    public Map<String, Resource<Sample>> call() {
+      URI bulkFetchSamplesUri =
+          UriComponentsBuilder.fromUri(URI.create(uri + "/samples" + "/bulk-fetch"))
+              .queryParam("accessions", String.join(",", accessions))
+              .build(true)
+              .toUri();
+
+      log.info("GETing " + bulkFetchSamplesUri);
+
+      final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+
+      headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
+
+      if (jwt != null) {
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+      }
+
+      final RequestEntity<Void> requestEntity =
+          new RequestEntity<>(headers, HttpMethod.GET, bulkFetchSamplesUri);
+      final ResponseEntity<Map<String, Resource<Sample>>> responseEntity;
+
+      try {
+        responseEntity =
+            restOperations.exchange(
+                requestEntity, new ParameterizedTypeReference<Map<String, Resource<Sample>>>() {});
+      } catch (HttpStatusCodeException e) {
+        if (e.getStatusCode().equals(HttpStatus.FORBIDDEN)
+            || e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+          return null;
+        } else {
+          throw e;
+        }
+      }
+
+      log.trace("GETted " + uri);
+
+      return responseEntity.getBody();
+    }
   }
 
   private class FetchCallable implements Callable<Optional<Resource<Sample>>> {
@@ -97,26 +141,18 @@ public class SampleRetrievalService {
     private final Optional<List<String>> curationDomains;
     private final String jwt;
     private final StaticViewWrapper.StaticView staticView;
-    private final boolean isWebinSubmission;
 
-    public FetchCallable(
-        String accession, Optional<List<String>> curationDomains, boolean isWebinSubmission) {
+    public FetchCallable(String accession, Optional<List<String>> curationDomains) {
       this.accession = accession;
       this.curationDomains = curationDomains;
-      this.isWebinSubmission = isWebinSubmission;
       this.jwt = null;
       this.staticView = StaticViewWrapper.StaticView.SAMPLES_CURATED;
     }
 
-    public FetchCallable(
-        String accession,
-        Optional<List<String>> curationDomains,
-        String jwt,
-        boolean isWebinSubmission) {
+    public FetchCallable(String accession, Optional<List<String>> curationDomains, String jwt) {
       this.accession = accession;
       this.curationDomains = curationDomains;
       this.jwt = jwt;
-      this.isWebinSubmission = isWebinSubmission;
       this.staticView = StaticViewWrapper.StaticView.SAMPLES_CURATED;
     }
 
@@ -124,17 +160,15 @@ public class SampleRetrievalService {
         String accession,
         Optional<List<String>> curationDomains,
         String jwt,
-        StaticViewWrapper.StaticView staticView,
-        boolean isWebinSubmission) {
+        StaticViewWrapper.StaticView staticView) {
       this.accession = accession;
       this.curationDomains = curationDomains;
       this.jwt = jwt;
       this.staticView = staticView;
-      this.isWebinSubmission = isWebinSubmission;
     }
 
     @Override
-    public Optional<Resource<Sample>> call() throws Exception {
+    public Optional<Resource<Sample>> call() {
 
       URI uri;
 
@@ -171,7 +205,7 @@ public class SampleRetrievalService {
       }
       RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
 
-      ResponseEntity<Resource<Sample>> responseEntity = null;
+      ResponseEntity<Resource<Sample>> responseEntity;
       try {
         responseEntity =
             restOperations.exchange(
