@@ -58,7 +58,6 @@ public class JsonLDService {
       Method method =
           SampleRestController.class.getMethod(
               "getSampleHal",
-              HttpServletRequest.class,
               String.class,
               String.class,
               String[].class,
