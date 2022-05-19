@@ -228,6 +228,17 @@ public class BioSamplesClient implements AutoCloseable {
     }
   }
 
+  public Map<String, Resource<Sample>> fetchSampleResourcesByAccessions(
+      List<String> accessions, String jwt) throws RestClientException {
+    try {
+      return sampleRetrievalService.fetchSamplesByAccessions(accessions, jwt).get();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e.getCause());
+    }
+  }
+
   public Iterable<Resource<Sample>> fetchSampleResourceAll() throws RestClientException {
     return sampleCursorRetrievalService.fetchAll("", Collections.emptyList());
   }
