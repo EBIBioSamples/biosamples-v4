@@ -11,7 +11,6 @@
 package uk.ac.ebi.biosamples;
 
 import java.net.URI;
-import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -227,8 +226,7 @@ public class ETagIntegration extends AbstractIntegration {
         new Traverson(bioSamplesProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON)
             .follow("samples")
             .follow(Hop.rel("sample").withParameter("accession", sample.getAccession()))
-            .follow(
-                Hop.rel("curationDomain").withParameter("curationdomain", Collections.EMPTY_LIST))
+            .follow(Hop.rel("curationDomain").withParameter("curationdomain", ""))
             .asLink();
 
     return RequestEntity.get(URI.create(sampleLink.getHref())).accept(MediaTypes.HAL_JSON).build();

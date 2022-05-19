@@ -24,21 +24,24 @@ import uk.ac.ebi.biosamples.service.SampleValidator;
 @Configuration
 @EnableAutoConfiguration
 public class TestApplication extends Application {
-
   @Autowired
   @Bean
   public BioSamplesClient bioSamplesClient(
       BioSamplesProperties bioSamplesProperties,
       RestTemplateBuilder restTemplateBuilder,
       SampleValidator sampleValidator,
-      AapClientService aapClientService,
       ObjectMapper objectMapper) {
     return new MockBioSamplesClient(
         bioSamplesProperties.getBiosamplesClientUri(),
         restTemplateBuilder,
         sampleValidator,
-        aapClientService,
+        aapClientService(),
         bioSamplesProperties,
         objectMapper);
+  }
+
+  @Bean
+  AapClientService aapClientService() {
+    return null;
   }
 }

@@ -29,7 +29,6 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientAutoConfiguration;
@@ -113,11 +112,12 @@ public class BioSamplesAutoConfiguration {
   public BioSamplesClient bioSamplesWebinClient(
       BioSamplesProperties bioSamplesProperties,
       RestTemplateBuilder restTemplateBuilder,
-      SampleValidator sampleValidator,
-      @Qualifier("WEBIN") ClientService clientService) {
+      SampleValidator sampleValidator) {
     restTemplateBuilder =
         restTemplateBuilder.additionalCustomizers(
             new BioSampleClientRestTemplateCustomizer(bioSamplesProperties));
+    ClientService clientService = webinAuthClientService(restTemplateBuilder, bioSamplesProperties);
+
     return new BioSamplesClient(
         bioSamplesProperties.getBiosamplesClientUri(),
         restTemplateBuilder,
@@ -131,11 +131,12 @@ public class BioSamplesAutoConfiguration {
   public BioSamplesClient bioSamplesAapClient(
       BioSamplesProperties bioSamplesProperties,
       RestTemplateBuilder restTemplateBuilder,
-      SampleValidator sampleValidator,
-      @Qualifier("AAP") ClientService clientService) {
+      SampleValidator sampleValidator) {
     restTemplateBuilder =
         restTemplateBuilder.additionalCustomizers(
             new BioSampleClientRestTemplateCustomizer(bioSamplesProperties));
+    ClientService clientService = aapClientService(restTemplateBuilder, bioSamplesProperties);
+
     return new BioSamplesClient(
         bioSamplesProperties.getBiosamplesClientUri(),
         restTemplateBuilder,

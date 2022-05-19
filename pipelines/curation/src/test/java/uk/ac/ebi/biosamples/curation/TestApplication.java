@@ -32,14 +32,7 @@ import uk.ac.ebi.biosamples.service.SampleValidator;
 
 @Configuration
 public class TestApplication {
-
-  @Autowired private BioSamplesProperties bioSamplesProperties;
-
   @Autowired private RestTemplateBuilder restTemplateBuilder;
-
-  @Autowired private SampleValidator sampleValidator;
-
-  @Autowired private AapClientService aapClientService;
 
   @Bean
   public RestTemplate restTemplate() {
@@ -86,11 +79,11 @@ public class TestApplication {
   @Bean
   public BioSamplesClient bioSamplesClient() {
     return new MockBioSamplesClient(
-        bioSamplesProperties.getBiosamplesClientUri(),
+        bioSamplesProperties().getBiosamplesClientUri(),
         restTemplateBuilder,
-        sampleValidator,
-        aapClientService,
-        bioSamplesProperties,
+        sampleValidator(),
+        aapClientService(),
+        bioSamplesProperties(),
         true);
   }
 }

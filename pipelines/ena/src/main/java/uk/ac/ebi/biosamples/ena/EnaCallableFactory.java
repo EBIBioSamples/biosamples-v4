@@ -23,28 +23,23 @@ import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 @Service
 public class EnaCallableFactory {
   private final BioSamplesClient bioSamplesWebinClient;
-  private final BioSamplesClient bioSamplesAapClient;
   private final EnaXmlEnhancer enaXmlEnhancer;
   private final EnaElementConverter enaElementConverter;
   private final EgaSampleExporter egaSampleExporter;
   private final EraProDao eraProDao;
-  private final String webinId;
 
   public EnaCallableFactory(
       @Qualifier("WEBINCLIENT") BioSamplesClient bioSamplesWebinClient,
-      BioSamplesClient bioSamplesAapClient,
       EnaXmlEnhancer enaXmlEnhancer,
       EnaElementConverter enaElementConverter,
       EgaSampleExporter egaSampleExporter,
       EraProDao eraProDao,
       PipelinesProperties pipelinesProperties) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
-    this.bioSamplesAapClient = bioSamplesAapClient;
     this.enaXmlEnhancer = enaXmlEnhancer;
     this.enaElementConverter = enaElementConverter;
     this.egaSampleExporter = egaSampleExporter;
     this.eraProDao = eraProDao;
-    this.webinId = pipelinesProperties.getProxyWebinId();
   }
 
   /**

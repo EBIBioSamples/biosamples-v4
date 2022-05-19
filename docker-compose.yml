@@ -60,6 +60,8 @@ services:
     - spring.http.encoding.enabled=true
     # Force the encoding to the configured charset on HTTP requests and responses.
     - spring.http.encoding.force=true
+    - spring.mvc.pathmatch.use-suffix-pattern=true
+    - spring.mvc.pathmatch.matching-strategy=ant-path-matcher
     ports:
     - 8081:8080
     - 9090:9090

@@ -27,14 +27,16 @@ import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
-    classes = TestApplication.class,
+    classes = {TestApplication.class},
     properties = {"job.autorun.enabled=false"})
 public class TestConversion {
   @Qualifier("WEBINCLIENT")
   @Autowired
   public BioSamplesClient bioSamplesWebinClient;
 
-  @Autowired public BioSamplesClient bioSamplesAapClient;
+  @Qualifier("AAPCLIENT")
+  @Autowired
+  public BioSamplesClient bioSamplesAapClient;
 
   @Autowired private EraProDao eraProDao;
 

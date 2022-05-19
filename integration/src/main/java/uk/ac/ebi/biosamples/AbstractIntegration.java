@@ -37,9 +37,9 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
 
   protected abstract void phaseOne();
 
-  protected abstract void phaseTwo();
+  protected abstract void phaseTwo() throws InterruptedException;
 
-  protected abstract void phaseThree();
+  protected abstract void phaseThree() throws InterruptedException;
 
   protected abstract void phaseFour();
 

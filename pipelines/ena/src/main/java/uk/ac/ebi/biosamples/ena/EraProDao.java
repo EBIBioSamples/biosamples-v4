@@ -68,11 +68,6 @@ public class EraProDao {
             + "AND "
             + STATUS_CLAUSE
             + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) "
-            + " UNION ALL "
-            + "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID FROM SAMPLE "
-            + "WHERE CHECKLIST_ID = 'ERC000052' "
-            + "AND ((LAST_UPDATED BETWEEN ? AND ?) "
-            + "OR (FIRST_PUBLIC BETWEEN ? AND ?))"
             + "ORDER BY BIOSAMPLE_ID ASC";
 
     Date minDateOld = java.sql.Date.valueOf(minDate);

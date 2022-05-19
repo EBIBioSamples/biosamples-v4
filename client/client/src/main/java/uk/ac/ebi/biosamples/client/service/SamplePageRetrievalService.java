@@ -71,7 +71,9 @@ public class SamplePageRetrievalService {
     log.trace("GETing " + uri);
 
     MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+
     headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
+
     if (jwt != null) {
       headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
     }
@@ -84,6 +86,7 @@ public class SamplePageRetrievalService {
     if (!responseEntity.getStatusCode().is2xxSuccessful()) {
       throw new RuntimeException("Problem GETing samples");
     }
+
     log.trace("GETted " + uri);
 
     return responseEntity.getBody();

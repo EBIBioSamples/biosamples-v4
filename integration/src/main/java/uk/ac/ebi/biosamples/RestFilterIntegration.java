@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
@@ -96,11 +97,13 @@ public class RestFilterIntegration extends AbstractIntegration {
   }
 
   @Override
-  protected void phaseTwo() {
+  protected void phaseTwo() throws InterruptedException {
     Sample testSample2 = getTestSample2();
     Sample testSample3 = getTestSample3();
 
+    TimeUnit.SECONDS.sleep(2);
     Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample2.getName());
+
     if (optionalSample.isPresent()) {
       testSample2 = optionalSample.get();
     } else {
@@ -108,7 +111,9 @@ public class RestFilterIntegration extends AbstractIntegration {
           "Sample does not exist, sample name: " + testSample2.getName(), Phase.TWO);
     }
 
+    TimeUnit.SECONDS.sleep(2);
     optionalSample = fetchUniqueSampleByName(testSample3.getName());
+
     if (optionalSample.isPresent()) {
       testSample3 = optionalSample.get();
     } else {
@@ -129,6 +134,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     Sample testSample2 = getTestSample2();
 
     Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample1.getName());
+
     if (optionalSample.isPresent()) {
       testSample1 = optionalSample.get();
     } else {
@@ -137,6 +143,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
 
     optionalSample = fetchUniqueSampleByName(testSample2.getName());
+
     if (optionalSample.isPresent()) {
       testSample2 = optionalSample.get();
     } else {
@@ -145,17 +152,21 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
 
     log.info("Getting sample 1 using filter on attribute");
+
     Filter attributeFilter =
         FilterBuilder.create().onAttribute("TestAttribute").withValue("FilterMe").build();
     PagedModel<EntityModel<Sample>> samplePage =
         client.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
+
     if (samplePage.getMetadata().getTotalElements() != 1) {
       throw new IntegrationTestFailException(
           "Unexpected number of results for attribute filter query: "
               + samplePage.getMetadata().getTotalElements(),
           Phase.THREE);
     }
+
     EntityModel<Sample> restSample = samplePage.getContent().iterator().next();
+
     if (!restSample.getContent().equals(testSample1)) {
       throw new IntegrationTestFailException(
           "Unexpected number of results for attribute filter query: "
@@ -164,10 +175,12 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
 
     log.info("Getting sample 2 using filter on attribute with comma in the value");
+
     Optional<Attribute> targetAttribute =
         testSample1.getAttributes().stream()
             .filter(attribute -> attribute.getType().equalsIgnoreCase("description"))
             .findFirst();
+
     if (!targetAttribute.isPresent()) {
       throw new IntegrationTestFailException(
           "Sample 2 should contain an attribute description", Phase.THREE);
@@ -178,15 +191,19 @@ public class RestFilterIntegration extends AbstractIntegration {
             .onAttribute(targetAttribute.get().getType())
             .withValue(targetAttribute.get().getValue())
             .build();
+
     samplePage =
         client.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
+
     if (samplePage.getMetadata().getTotalElements() != 1) {
       throw new IntegrationTestFailException(
           "Unexpected number of results for attribute filter query: "
               + samplePage.getMetadata().getTotalElements(),
           Phase.THREE);
     }
+
     restSample = samplePage.getContent().iterator().next();
+
     if (!restSample.getContent().getAccession().equals(testSample1.getAccession())) {
       throw new IntegrationTestFailException(
           "Unexpected number of results for attribute filter query: "
@@ -195,29 +212,31 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
 
     log.info("Getting sample 2 using filter on attribute with regex which should not be picked up");
+
     targetAttribute =
         testSample1.getAttributes().stream()
             .filter(attribute -> attribute.getType().equalsIgnoreCase("Submission title"))
             .findFirst();
+
     if (!targetAttribute.isPresent()) {
       throw new IntegrationTestFailException(
           "Sample 2 should contain an attribute description", Phase.THREE);
     }
 
     attributeFilter =
-        FilterBuilder.create()
-            .onAttribute(targetAttribute.get().getType())
-            .withValue(targetAttribute.get().getValue())
-            .build();
+        FilterBuilder.create().onAttribute(targetAttribute.get().getType()).withValue(null).build();
     samplePage =
         client.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
+
     if (samplePage.getMetadata().getTotalElements() != 1) {
       throw new IntegrationTestFailException(
           "Unexpected number of results for attribute filter query: "
               + samplePage.getMetadata().getTotalElements(),
           Phase.THREE);
     }
+
     restSample = samplePage.getContent().iterator().next();
+
     if (!restSample.getContent().getAccession().equals(testSample1.getAccession())) {
       throw new IntegrationTestFailException(
           "Unexpected number of results for attribute filter query: "
@@ -226,17 +245,21 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
 
     log.info("Getting sample 2 using filter on attribute");
+
     attributeFilter =
         FilterBuilder.create().onAttribute("testAttribute").withValue("filterMe_1").build();
     samplePage =
         client.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
+
     if (samplePage.getMetadata().getTotalElements() != 1) {
       throw new IntegrationTestFailException(
           "Unexpected number of results for attribute filter query: "
               + samplePage.getMetadata().getTotalElements(),
           Phase.THREE);
     }
+
     restSample = samplePage.getContent().iterator().next();
+
     if (!restSample.getContent().getAccession().equals(testSample2.getAccession())) {
       throw new IntegrationTestFailException(
           "Unexpected number of results for attribute filter query: "
@@ -245,15 +268,20 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
 
     log.info("Getting sample 2 using filter on name");
+
     Filter nameFilter = FilterBuilder.create().onName(testSample2.getName()).build();
+
     samplePage = client.fetchPagedSampleResource("", Collections.singletonList(nameFilter), 0, 10);
+
     if (samplePage.getMetadata().getTotalElements() != 1) {
       throw new IntegrationTestFailException(
           "Unexpected number of results for attribute filter query: "
               + samplePage.getMetadata().getTotalElements(),
           Phase.THREE);
     }
+
     restSample = samplePage.getContent().iterator().next();
+
     if (!restSample.getContent().getAccession().equals(testSample2.getAccession())) {
       throw new IntegrationTestFailException(
           "Unexpected number of results for attribute filter query: "
@@ -262,9 +290,12 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
 
     log.info("Getting sample 1 and 2 using filter on accession");
+
     Filter accessionFilter = FilterBuilder.create().onAccession(testSample2.getAccession()).build();
+
     samplePage =
         client.fetchPagedSampleResource("", Collections.singletonList(accessionFilter), 0, 10);
+
     if (samplePage.getMetadata().getTotalElements() != 1) {
       throw new IntegrationTestFailException(
           "Unexpected number of results for attribute filter query: "
@@ -274,6 +305,7 @@ public class RestFilterIntegration extends AbstractIntegration {
 
     String accession1 = testSample1.getAccession();
     String accession2 = testSample2.getAccession();
+
     if (!samplePage.getContent().stream()
         .allMatch(
             r ->

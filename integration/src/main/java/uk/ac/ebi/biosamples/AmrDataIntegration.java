@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -94,8 +95,10 @@ public class AmrDataIntegration extends AbstractIntegration {
   }
 
   @Override
-  protected void phaseThree() {
+  protected void phaseThree() throws InterruptedException {
     Sample testSample = getTestSample();
+
+    TimeUnit.SECONDS.sleep(2);
     Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
     if (!optionalSample.isPresent()) {
       throw new IntegrationTestFailException(

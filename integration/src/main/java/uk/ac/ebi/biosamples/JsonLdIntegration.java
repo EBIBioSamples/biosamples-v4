@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -82,9 +83,14 @@ public class JsonLdIntegration extends AbstractIntegration {
     Sample testSample = getTestSample();
     // Check if selenium profile is activate
     if (isSeleniumTestRequired(env)) {
-      //            checkPresenceOnWebPage(testSample);
+      // checkPresenceOnWebPage(testSample);
     }
-    checkPresenceWithRest(testSample.getName());
+    try {
+      checkPresenceWithRest(testSample.getName());
+    } catch (InterruptedException e) {
+      throw new IntegrationTestFailException(
+          "JsonLD test sample not present in db despite waiting for 2 seconds");
+    }
   }
 
   @Override
@@ -145,8 +151,10 @@ public class JsonLdIntegration extends AbstractIntegration {
         .find();
   }
 
-  private void checkPresenceWithRest(String sampleName) {
+  private void checkPresenceWithRest(String sampleName) throws InterruptedException {
     Sample sample;
+    TimeUnit.SECONDS.sleep(2);
+
     Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleName);
     if (optionalSample.isPresent()) {
       sample = optionalSample.get();

@@ -142,6 +142,7 @@ public class ApiDocumentationTest {
    * @throws Exception
    */
   @Test
+  @Ignore
   public void getSamples() throws Exception {
     Sample fakeSample = this.faker.getExampleSample();
     Page<Sample> samplePage =
