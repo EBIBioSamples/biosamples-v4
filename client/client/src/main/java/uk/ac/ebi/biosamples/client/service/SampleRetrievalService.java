@@ -55,8 +55,20 @@ public class SampleRetrievalService {
    * @param accessions
    * @return
    */
-  public Future<Map<String, Resource<Sample>>> fetchSamplesByAccessions(List<String> accessions) {
+  public Future<Map<String, Resource<Sample>>> fetchSamplesByAccessions(
+      final List<String> accessions) {
     return executor.submit(new FetchAccessionsCallable(accessions, uri));
+  }
+
+  /**
+   * Accepts a list of accessions and returns a Map having accession as key and sample as value
+   *
+   * @param accessions
+   * @return
+   */
+  public Future<Map<String, Resource<Sample>>> fetchSamplesByAccessions(
+      final List<String> accessions, final String jwt) {
+    return executor.submit(new FetchAccessionsCallable(accessions, uri, jwt));
   }
 
   /**
@@ -91,6 +103,12 @@ public class SampleRetrievalService {
     public FetchAccessionsCallable(final List<String> accessions, final URI uri) {
       this.accessions = accessions;
       this.jwt = null;
+      this.uri = uri;
+    }
+
+    public FetchAccessionsCallable(final List<String> accessions, final URI uri, final String jwt) {
+      this.accessions = accessions;
+      this.jwt = jwt;
       this.uri = uri;
     }
 
