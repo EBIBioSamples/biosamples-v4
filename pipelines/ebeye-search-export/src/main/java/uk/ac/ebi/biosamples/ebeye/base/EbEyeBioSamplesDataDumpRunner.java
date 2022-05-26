@@ -270,7 +270,9 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
             relationship -> {
               final RefType refType = new RefType();
 
-              refType.setDbname("BSD_relationship_" + relationship.getType());
+              refType.setDbname(
+                  "BSD_RELATIONSHIP_"
+                      + relationship.getType().trim().replaceAll(" ", "_").toUpperCase());
               refType.setDbkey(relationship.getSource());
 
               crossReferencesType.getRef().add(refType);
