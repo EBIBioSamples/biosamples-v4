@@ -104,8 +104,7 @@ public class BioSamplesClient implements AutoCloseable {
     traverson.setRestOperations(restOperations);
 
     sampleRetrievalService =
-        new SampleRetrievalService(
-            restOperations, traverson, threadPoolExecutor, isWebinSubmission);
+        new SampleRetrievalService(restOperations, traverson, uri, threadPoolExecutor);
     samplePageRetrievalService =
         new SamplePageRetrievalService(
             restOperations,
@@ -211,6 +210,28 @@ public class BioSamplesClient implements AutoCloseable {
       String accession, Optional<List<String>> curationDomains) throws RestClientException {
     try {
       return sampleRetrievalService.fetch(accession, curationDomains).get();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e.getCause());
+    }
+  }
+
+  public Map<String, Resource<Sample>> fetchSampleResourcesByAccessions(List<String> accessions)
+      throws RestClientException {
+    try {
+      return sampleRetrievalService.fetchSamplesByAccessions(accessions).get();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e.getCause());
+    }
+  }
+
+  public Map<String, Resource<Sample>> fetchSampleResourcesByAccessions(
+      List<String> accessions, String jwt) throws RestClientException {
+    try {
+      return sampleRetrievalService.fetchSamplesByAccessions(accessions, jwt).get();
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     } catch (ExecutionException e) {

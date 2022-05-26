@@ -13,13 +13,13 @@ AAP is the default mode of authentication and authorization.
 
 == Authentication API documentation
 ** AAP - Please refer to https://api.aai.ebi.ac.uk/docs[API documentation]
-** ENA WEBIN AUTHENTICATION - Please refer to https://www.ebi.ac.uk/ena/submit/webin/auth[API documentation]
+** WEBIN AUTHENTICATION - Please refer to https://www.ebi.ac.uk/ena/submit/webin/auth[API documentation]
 
 We use token based authentication. This means that once you have an account, you can login with your username and password
 to receive a https://jwt.io/[token]. This is a piece of text that contains all the information we need to know who you
 are and what data you are allowed to access. You present this information to the API every time you make a request.
 
-The AAP and ENA WEBIN AUTHENTICATION tokens last for 1 hour and 3 hours respectively,
+The AAP and WEBIN AUTHENTICATION tokens last for 1 hour and 3 hours respectively unless a long validity token is requested using the time to live (ttl) parameter,
 so if you have a long running process you may find the token expiring before the process
 completion.
 
@@ -52,7 +52,7 @@ in with a google, ORCID or LinkedIn account, or your research institute). We can
 there is not currently any way to get an AAP token through their API while using an Elixir SSO account. Therefore we
 recommend that programmatic users create AAP accounts.
 
-=== ENA WEBIN AUTHENTICATION
+=== WEBIN AUTHENTICATION
 
 You can create a account through the https://www.ebi.ac.uk/ena/submit/webin/auth/[ENA WEBIN AUTHENTICATION SWAGGER UI]
 
@@ -77,9 +77,9 @@ eyJhbGciOiWerFg78ghY.eyJpc3MiOiJodHRwhdsL3RzaS5lYmkuYWMudWsiLCJleHAiOjE1MDc4MjIx
 
 NOTE: The token is valid for 1 hour.
 
-=== ENA WEBIN AUTHENTICATION
+=== WEBIN AUTHENTICATION
 
-You can obtain a ENA WEBIN AUTHENTICATION token by executing the following curl command.
+You can obtain a WEBIN AUTHENTICATION token by executing the following curl command.
 
 ==== Example request
 [source,bash,options="nowrap"]
@@ -89,7 +89,7 @@ TOKEN=$(curl -X POST "https://www.ebi.ac.uk/ena/submit/webin/auth/token" -H
 "accept: */*" -H  "Content-Type: application/json" -d "{\"authRealms\":[\"ENA\"],
 \"password\":\"your_webin_password\",\"username\":\"your_webin_username\"}")
 ----
-The response will contains your ENA WEBIN AUTHENTICATION token.
+The response will contains WEBIN AUTHENTICATION token.
 
 ==== Example response
 
@@ -131,7 +131,7 @@ You can then use the environment variable like this:
 $ curl -i -X POST -H "Accept: application/hal+json" -H "Content-Type: application/hal+json" -H "Authorization: Bearer $TOKEN" https://www.ebi.ac.uk/biosamples/samples -d "{ /* sample content */ }"
 ----
 
-** Submission using a ENA WEBIN AUTHENTICATION token:
+** Submission using a WEBIN AUTHENTICATION token:
 [source,bash,options="nowrap"]
 
 ----
@@ -332,7 +332,6 @@ to access the submissions API.
 
 We use a different copy of the AAP service to secure our test and development servers. If you are working with them,
 rather than the main server, please use this version of AAP: https://explore.api.aai.ebi.ac.uk
-
 
 == Wrapping up
 

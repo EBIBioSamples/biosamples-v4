@@ -12,11 +12,13 @@ package uk.ac.ebi.biosamples.model;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import uk.ac.ebi.biosamples.service.OLSDataRetriever;
 
 public class OLSDataRetrieverTest {
   @Test
+  @Ignore
   public void id_retrieving_test() {
     OLSDataRetriever retriever = new OLSDataRetriever();
     retriever.readOntologyJsonFromUrl("http://purl.obolibrary.org/obo/NCBITaxon_9606");
@@ -26,6 +28,7 @@ public class OLSDataRetrieverTest {
   }
 
   @Test
+  @Ignore
   public void label_retreiving_test() {
     OLSDataRetriever retriever = new OLSDataRetriever();
     retriever.readOntologyJsonFromUrl("http://purl.obolibrary.org/obo/NCBITaxon_9606");

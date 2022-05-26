@@ -74,7 +74,7 @@ public class PhenopacketIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseTwo() {
-    this.checkSampleWithOrphanetLinkWorks();
+    /*this.checkSampleWithOrphanetLinkWorks();*/
   }
 
   private void checkSampleWithOrphanetLinkWorks() {

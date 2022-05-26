@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.2.3-RC1</version>
+		<version>5.2.4-SNAPSHOT</version>
 		<relativePath>../..</relativePath>
 	</parent>
 
@@ -39,13 +39,13 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-thread</artifactId>
-			<version>5.2.3-RC1</version>
+			<version>5.2.4-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-pipeline</artifactId>
-			<version>5.2.3-RC1</version>
+			<version>5.2.4-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
