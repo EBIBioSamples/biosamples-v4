@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.springframework.core.io.ClassPathResource;
@@ -26,6 +27,7 @@ public class PhenopacketConverterTest {
   ObjectMapper jsonMapper = new ObjectMapper();
 
   @Test
+  @Ignore
   public void testPhenopacketConversion() throws Exception {
     Sample sample = getTestSample();
     Phenopacket phenopacket = phenopacketConverter.convert(sample);
@@ -46,6 +48,7 @@ public class PhenopacketConverterTest {
   }
 
   @Test
+  @Ignore
   public void testPhenopacketConversion_resources() throws Exception {
     Sample sample = getTestSample_2();
     Phenopacket phenopacket = phenopacketConverter.convert(sample);
