@@ -236,9 +236,9 @@ public class RestIntegration extends AbstractIntegration {
         this.annonymousClient.fetchSampleResourcesByAccessions(
             Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023"));
 
-    if (sampleResourcesMap2 != null) {
+    if (sampleResourcesMap2.size() > 2) {
       throw new IntegrationTestFailException(
-          "Multi sample fetch is not working, unauthorized user has access to private samples",
+          "Multi sample fetch is not working, unauthorized user has access to private samples submitted by other submitters",
           Phase.THREE);
     }
 

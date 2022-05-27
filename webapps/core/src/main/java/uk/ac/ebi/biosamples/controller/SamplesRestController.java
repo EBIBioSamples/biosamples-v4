@@ -480,30 +480,33 @@ public class SamplesRestController {
             .map(
                 accession -> {
                   final String spaceTrimmedAccession = accession.trim();
-                  final Optional<Sample> sample =
+                  final Optional<Sample> sampleOptional =
                       sampleService.fetch(spaceTrimmedAccession, Optional.empty(), "");
 
-                  if (sample.isPresent()) {
+                  if (sampleOptional.isPresent()) {
                     final boolean webinAuth =
                         authToken
                             .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
                             .orElse(Boolean.FALSE);
+                    final Sample sample = sampleOptional.get();
 
                     try {
                       if (webinAuth) {
                         final String webinSubmissionAccountId = authToken.get().getUser();
 
                         bioSamplesWebinAuthenticationService.checkSampleAccessibility(
-                            sample.get(), webinSubmissionAccountId);
+                            sample, webinSubmissionAccountId);
                       } else {
-                        bioSamplesAapService.checkSampleAccessibility(sample.get());
+                        bioSamplesAapService.checkSampleAccessibility(sample);
                       }
                     } catch (final Exception e) {
-                      throw new GlobalExceptions.BulkFetchForbiddenException();
+                      log.info("Bulk-fetch forbidden sampleOptional " + sample.getAccession());
+
+                      return null;
                     }
 
                     return sampleResourceAssembler.toResource(
-                        sample.get(), Optional.of(false), Optional.empty());
+                        sample, Optional.of(false), Optional.empty());
                   } else {
                     return null;
                   }
