@@ -13,7 +13,6 @@ package uk.ac.ebi.biosamples;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -74,23 +73,18 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
     switch (phase) {
       case ONE:
         phaseOne();
-        TimeUnit.SECONDS.sleep(5);
         break;
       case TWO:
         phaseTwo();
-        TimeUnit.SECONDS.sleep(5);
         break;
       case THREE:
         phaseThree();
-        TimeUnit.SECONDS.sleep(5);
         break;
       case FOUR:
         phaseFour();
-        TimeUnit.SECONDS.sleep(5);
         break;
       case FIVE:
         phaseFive();
-        TimeUnit.SECONDS.sleep(5);
         break;
       default:
         log.warn("Invalid integration test phase {}", phase);

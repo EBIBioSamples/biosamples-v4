@@ -229,7 +229,7 @@ public class SampleService {
   /*
   Called by V2 endpoints to persist samples
    */
-  public Sample storeV2(
+  public Sample persistSampleV2(
       Sample sample, boolean isFirstTimeMetadataAdded, AuthorizationProvider authProvider) {
     Collection<String> errors = sampleValidator.validate(sample);
 

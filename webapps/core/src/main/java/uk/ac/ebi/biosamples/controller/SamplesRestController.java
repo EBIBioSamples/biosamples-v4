@@ -500,7 +500,7 @@ public class SamplesRestController {
                         bioSamplesAapService.checkSampleAccessibility(sample);
                       }
                     } catch (final Exception e) {
-                      log.info("Bulk-fetch forbidden sampleOptional " + sample.getAccession());
+                      log.info("Bulk-fetch forbidden sample: " + sample.getAccession());
 
                       return null;
                     }

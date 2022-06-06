@@ -110,7 +110,7 @@ public class SamplesRestControllerV2 {
                                   sample, true);
                         }
 
-                        return sampleService.storeV2(sample, true, authProvider);
+                        return sampleService.persistSampleV2(sample, true, authProvider);
                       })
                   .collect(Collectors.toList()));
     } else {
@@ -128,7 +128,7 @@ public class SamplesRestControllerV2 {
                                   sample, false);
                         }
 
-                        return sampleService.storeV2(sample, true, authProvider);
+                        return sampleService.persistSampleV2(sample, true, authProvider);
                       })
                   .collect(Collectors.toList()));
     }
@@ -169,7 +169,7 @@ public class SamplesRestControllerV2 {
 
     sample = buildPrivateSampleV2(sample);
 
-    sample = sampleService.storeV2(sample, false, authProvider);
+    sample = sampleService.persistSampleV2(sample, false, authProvider);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(sample);
   }
