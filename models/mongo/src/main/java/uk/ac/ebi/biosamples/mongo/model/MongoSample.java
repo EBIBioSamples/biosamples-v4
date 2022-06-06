@@ -33,6 +33,8 @@ import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Document
 public class MongoSample {
+  @Transient public static final String SEQUENCE_NAME = "accession_sequence";
+
   @Id protected String accession;
 
   @Indexed(background = true)
