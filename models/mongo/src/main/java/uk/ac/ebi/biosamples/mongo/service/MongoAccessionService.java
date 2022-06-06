@@ -10,89 +10,81 @@
 */
 package uk.ac.ebi.biosamples.mongo.service;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.stream.Stream;
-import javax.annotation.PostConstruct;
+import static org.springframework.data.mongodb.core.FindAndModifyOptions.options;
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
+
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.data.domain.Sort;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.Update;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+import uk.ac.ebi.biosamples.mongo.model.MongoSequence;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 
 // this needs to be the spring exception, not the mongo one
-
 public class MongoAccessionService {
-
   private Logger log = LoggerFactory.getLogger(getClass());
 
   private final MongoSampleRepository mongoSampleRepository;
   private final SampleToMongoSampleConverter sampleToMongoSampleConverter;
   private final MongoSampleToSampleConverter mongoSampleToSampleConverter;
   private final String prefix;
-  private final BlockingQueue<String> accessionCandidateQueue;
-  private int accessionCandidateCounter;
+  private final MongoOperations mongoOperations;
 
   public MongoAccessionService(
-      MongoSampleRepository mongoSampleRepository,
-      SampleToMongoSampleConverter sampleToMongoSampleConverter,
-      MongoSampleToSampleConverter mongoSampleToSampleConverter,
-      String prefix,
-      int minimumAccession,
-      int queueSize) {
+      final MongoSampleRepository mongoSampleRepository,
+      final SampleToMongoSampleConverter sampleToMongoSampleConverter,
+      final MongoSampleToSampleConverter mongoSampleToSampleConverter,
+      final String prefix,
+      final MongoOperations mongoOperations) {
     this.mongoSampleRepository = mongoSampleRepository;
     this.sampleToMongoSampleConverter = sampleToMongoSampleConverter;
     this.mongoSampleToSampleConverter = mongoSampleToSampleConverter;
     this.prefix = prefix;
-    this.accessionCandidateCounter = minimumAccession;
-    this.accessionCandidateQueue = new LinkedBlockingQueue<>(queueSize);
+    this.mongoOperations = mongoOperations;
   }
 
-  public Sample generateAccession(Sample sample) {
+  public Sample generateAccession(final Sample sample) {
     MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
+
     mongoSample = accessionAndInsert(mongoSample);
+
     return mongoSampleToSampleConverter.convert(mongoSample);
   }
 
   private MongoSample accessionAndInsert(MongoSample sample) {
     log.trace("generating an accession");
-    MongoSample originalSample = sample;
-    // inspired by Optimistic Loops of
+    // inspired by Counters collection of
     // https://docs.mongodb.com/v3.0/tutorial/create-an-auto-incrementing-field/
-    boolean success = false;
-    // TODO limit number of tries
-    while (!success) {
-      // TODO add a timeout here
-      try {
-        sample = prepare(sample, accessionCandidateQueue.take());
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
 
-      try {
-        sample = mongoSampleRepository.insertNew(sample);
-        success = true;
-      } catch (DuplicateKeyException e) {
-        success = false;
-        sample = originalSample;
-      }
+    try {
+      sample = prepare(sample, getAccession());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
-    log.debug("generated accession " + sample);
-    return sample;
+
+    try {
+      sample = mongoSampleRepository.insertNew(sample);
+      log.debug("generated accession " + sample);
+
+      return sample;
+    } catch (final Exception e) {
+      throw e;
+    }
+  }
+
+  private String getAccession() {
+    return prefix + generateUniqueBioSamplesAccession(MongoSample.SEQUENCE_NAME);
   }
 
   private MongoSample prepare(MongoSample sample, String accession) {
     SortedSet<MongoRelationship> relationships = sample.getRelationships();
     SortedSet<MongoRelationship> newRelationships = new TreeSet<>();
-    for (MongoRelationship relationship : relationships) {
+    for (final MongoRelationship relationship : relationships) {
       // this relationship could not specify a source because the sample is unaccessioned
       // now we are assigning an accession, set the source to the accession
       if (relationship.getSource() == null || relationship.getSource().trim().length() == 0) {
@@ -123,10 +115,11 @@ public class MongoAccessionService {
             sample.getPublications(),
             sample.getCertificates(),
             sample.getSubmittedVia());
+
     return sample;
   }
 
-  @PostConstruct
+  /*@PostConstruct
   @Scheduled(fixedDelay = 500)
   public synchronized void prepareAccessions() {
     long startTime = System.nanoTime();
@@ -180,5 +173,21 @@ public class MongoAccessionService {
 
     long endTime = System.nanoTime();
     log.trace("Populated accession pool in " + ((endTime - startTime) / 1000000) + "ms");
+  }*/
+
+  public long generateUniqueBioSamplesAccession(final String seqName) {
+    final MongoSequence counter =
+        mongoOperations.findAndModify(
+            query(where("_id").is(seqName)),
+            new Update().inc("seq", 1),
+            options().returnNew(true).upsert(true),
+            MongoSequence.class);
+
+    if (!Objects.isNull(counter)) {
+      return counter.getSeq();
+    } else {
+      throw new RuntimeException(
+          "Cannot generate a new BioSample accession. please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
+    }
   }
 }

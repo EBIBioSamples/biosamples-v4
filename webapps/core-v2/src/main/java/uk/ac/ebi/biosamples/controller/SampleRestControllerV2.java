@@ -133,7 +133,7 @@ public class SampleRestControllerV2 {
       sample = Sample.Builder.fromSample(sample).withSubmitted(now).build();
     }
 
-    sample = sampleService.storeV2(sample, isFirstTimeMetadataAdded, authProvider);
+    sample = sampleService.persistSampleV2(sample, isFirstTimeMetadataAdded, authProvider);
 
     return ResponseEntity.status(HttpStatus.OK).body(sample);
   }
