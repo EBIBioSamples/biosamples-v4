@@ -67,18 +67,14 @@ public class MongoAccessionService {
       throw new RuntimeException(e);
     }
 
-    try {
-      sample = mongoSampleRepository.insertNew(sample);
-      log.debug("generated accession " + sample);
+    sample = mongoSampleRepository.insertNew(sample);
+    log.debug("generated accession " + sample);
 
-      return sample;
-    } catch (final Exception e) {
-      throw e;
-    }
+    return sample;
   }
 
   private String getAccession() {
-    return prefix + generateUniqueBioSamplesAccession(MongoSample.SEQUENCE_NAME);
+    return prefix + generateUniqueAccession(MongoSample.SEQUENCE_NAME);
   }
 
   private MongoSample prepare(MongoSample sample, String accession) {
@@ -175,7 +171,7 @@ public class MongoAccessionService {
     log.trace("Populated accession pool in " + ((endTime - startTime) / 1000000) + "ms");
   }*/
 
-  public long generateUniqueBioSamplesAccession(final String seqName) {
+  public long generateUniqueAccession(final String seqName) {
     final MongoSequence counter =
         mongoOperations.findAndModify(
             query(where("_id").is(seqName)),
