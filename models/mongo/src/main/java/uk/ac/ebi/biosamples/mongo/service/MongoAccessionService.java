@@ -27,6 +27,7 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 
 // this needs to be the spring exception, not the mongo one
 public class MongoAccessionService {
+  private static final int MAX_RETRIES = 5;
   private Logger log = LoggerFactory.getLogger(getClass());
 
   private final MongoSampleRepository mongoSampleRepository;
@@ -58,17 +59,37 @@ public class MongoAccessionService {
 
   private MongoSample accessionAndInsert(MongoSample sample) {
     log.trace("generating an accession");
-    // inspired by Counters collection of
+
+    final MongoSample originalSample = sample;
+    // inspired by Counter collection + Optimistic Loops of
     // https://docs.mongodb.com/v3.0/tutorial/create-an-auto-incrementing-field/
 
-    try {
-      sample = prepare(sample, getAccession());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+    boolean success = false;
+    int numRetry = 0;
+
+    while (!success) {
+      // TODO add a timeout here
+      try {
+        sample = prepare(sample, getAccession());
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+
+      try {
+        sample = mongoSampleRepository.insertNew(sample);
+        success = true;
+      } catch (Exception e) {
+        if (++numRetry == MAX_RETRIES) {
+          throw new RuntimeException(
+              "Cannot generate a new BioSample accession. please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
+        }
+
+        success = false;
+        sample = originalSample;
+      }
     }
 
-    sample = mongoSampleRepository.insertNew(sample);
-    log.debug("generated accession " + sample);
+    log.info("generated accession " + sample);
 
     return sample;
   }
