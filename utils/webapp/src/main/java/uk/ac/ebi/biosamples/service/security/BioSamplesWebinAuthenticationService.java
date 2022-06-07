@@ -311,8 +311,10 @@ public class BioSamplesWebinAuthenticationService {
       }
     } else {
       if (!sample.getRelease().isBefore(Instant.now())) {
-        if (!webinSubmissionAccountId.equals(sample.getWebinSubmissionAccountId())) {
-          throw new GlobalExceptions.SampleNotAccessibleException();
+        if (!isWebinSuperUser(webinSubmissionAccountId)) {
+          if (!webinSubmissionAccountId.equals(sample.getWebinSubmissionAccountId())) {
+            throw new GlobalExceptions.SampleNotAccessibleException();
+          }
         }
       }
     }

@@ -170,7 +170,7 @@ public class SampleService {
   Called by V1 endpoints to persist samples
    */
   public Sample persistSample(
-      Sample sample, boolean isNewOrPreRegisteredSample, AuthorizationProvider authProvider) {
+      Sample sample, boolean isFirstTimeMetadataAdded, AuthorizationProvider authProvider) {
     boolean isSampleTaxIdUpdated = false;
     Collection<String> errors = sampleValidator.validate(sample);
 
@@ -193,7 +193,7 @@ public class SampleService {
 
         sample =
             compareWithExistingAndUpdateSample(
-                sample, oldSample, isNewOrPreRegisteredSample, authProvider);
+                sample, oldSample, isFirstTimeMetadataAdded, authProvider);
 
         if (oldSample.getTaxId() != null && !oldSample.getTaxId().equals(taxId)) {
           isSampleTaxIdUpdated = true;
@@ -223,7 +223,20 @@ public class SampleService {
     }
 
     // do a fetch to return it with accession, curation objects, inverse relationships
-    return fetch(sample.getAccession(), Optional.empty(), null).get();
+    final Optional<Sample> sampleOptional = fetch(sample.getAccession(), Optional.empty(), null);
+
+    if (sampleOptional.isPresent()) {
+      return sampleOptional.get();
+    } else {
+      log.info("Fetch of sample didn't work " + sample.getAccession());
+
+      if (sample.getAccession() != null) {
+        return sample;
+      } else {
+        throw new RuntimeException(
+            "Failed to create sample. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
+      }
+    }
   }
 
   /*
