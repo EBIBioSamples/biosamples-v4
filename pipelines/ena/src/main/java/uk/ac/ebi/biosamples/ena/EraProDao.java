@@ -67,13 +67,7 @@ public class EraProDao {
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' "
             + "AND "
             + STATUS_CLAUSE
-            + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) "
-            + " UNION ALL "
-            + "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID FROM SAMPLE "
-            + "WHERE CHECKLIST_ID = 'ERC000052' "
-            + "AND ((LAST_UPDATED BETWEEN ? AND ?) "
-            + "OR (FIRST_PUBLIC BETWEEN ? AND ?))"
-            + "ORDER BY BIOSAMPLE_ID ASC";
+            + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
 
     Date minDateOld = java.sql.Date.valueOf(minDate);
     Date maxDateOld = java.sql.Date.valueOf(maxDate);

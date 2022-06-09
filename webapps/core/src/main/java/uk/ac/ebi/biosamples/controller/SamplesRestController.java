@@ -603,7 +603,7 @@ public class SamplesRestController {
               .map(
                   sample ->
                       bioSamplesWebinAuthenticationService.buildSampleWithWebinSubmissionAccountId(
-                          sample, bioSamplesProperties.getBiosamplesClientWebinUsername()))
+                          sample, webinSubmissionAccountId))
               .collect(Collectors.toList());
     } else {
       if (!samples.isEmpty()) {
