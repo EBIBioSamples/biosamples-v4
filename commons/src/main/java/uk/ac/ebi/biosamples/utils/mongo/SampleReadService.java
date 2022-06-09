@@ -144,8 +144,6 @@ public class SampleReadService {
       sample = mongoSampleToSampleConverter.convert(mongoSample);
       sample = curationReadService.applyAllCurationToSample(sample, curationDomains);
     } else {
-      //            mongoSample =
-      // mongoInverseRelationshipService.addInverseRelationships(mongoSample);
       sample = mongoSampleToSampleConverter.convert(mongoSample);
     }
 
