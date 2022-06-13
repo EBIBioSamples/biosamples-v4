@@ -8,7 +8,7 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.model;
+package uk.ac.ebi.biosamples.utils.phenopacket;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,8 +18,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.springframework.core.io.ClassPathResource;
-import uk.ac.ebi.biosamples.model.ga4gh.phenopacket.PhenopacketConversionHelper;
-import uk.ac.ebi.biosamples.model.ga4gh.phenopacket.PhenopacketConverter;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Sample;
 
 public class PhenopacketConverterTest {
   PhenopacketConverter phenopacketConverter =
@@ -34,7 +34,7 @@ public class PhenopacketConverterTest {
 
     JsonNode phenopacketExpected =
         jsonMapper.readValue(
-            new ClassPathResource("phenopacket_1.json").getInputStream(), JsonNode.class);
+            new ClassPathResource("phenopacket/phenopacket_1.json").getInputStream(), JsonNode.class);
     Assert.assertEquals(
         phenopacketExpected.get("biosamples").get(0).get("id").textValue(),
         phenopacket.getBiosamples(0).getId());

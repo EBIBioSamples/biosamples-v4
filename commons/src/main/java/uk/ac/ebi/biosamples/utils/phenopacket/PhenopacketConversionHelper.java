@@ -8,7 +8,7 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.model.ga4gh.phenopacket;
+package uk.ac.ebi.biosamples.utils.phenopacket;
 
 import java.util.Optional;
 import org.phenopackets.schema.v1.core.OntologyClass;
@@ -18,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.service.OLSDataRetriever;
 
 @Component
 public class PhenopacketConversionHelper {

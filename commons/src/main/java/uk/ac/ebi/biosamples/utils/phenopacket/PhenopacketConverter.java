@@ -8,7 +8,7 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.model.ga4gh.phenopacket;
+package uk.ac.ebi.biosamples.utils.phenopacket;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
@@ -19,6 +19,7 @@ import org.phenopackets.schema.v1.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.exceptions.SampleConversionException;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -32,6 +33,10 @@ public class PhenopacketConverter {
   }
 
   public String convertToJsonPhenopacket(Sample sample) {
+    if(sample.getTaxId() != 9606) {
+      throw new SampleConversionException("Can not generated phenopacket from non human sample.");
+    }
+
     Phenopacket phenopacket = convert(sample);
     String jsonPhenopacket = "";
     try {
