@@ -29,6 +29,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.mongo.MongoProperties;
@@ -137,13 +138,13 @@ public class Application {
       MongoSampleRepository mongoSampleRepository,
       SampleToMongoSampleConverter sampleToMongoSampleConverter,
       MongoSampleToSampleConverter mongoSampleToSampleConverter,
-      MongoProperties mongoProperties) {
+      MongoProperties mongoProperties,
+      MongoOperations mongoOperations) {
     return new MongoAccessionService(
         mongoSampleRepository,
         sampleToMongoSampleConverter,
         mongoSampleToSampleConverter,
         mongoProperties.getAccessionPrefix(),
-        mongoProperties.getAccessionMinimum(),
-        mongoProperties.getAccessionQueueSizeForLowerPriorityServices());
+        mongoOperations);
   }
 }

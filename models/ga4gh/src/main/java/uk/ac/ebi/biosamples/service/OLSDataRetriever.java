@@ -114,8 +114,9 @@ public class OLSDataRetriever {
 
   public String getResourceName() {
     JsonNode config = node.get("config");
-    return config.get("title").isNull() ?
-        config.get("localizedTitles").get("en").asText() : config.get("title").asText();
+    return config.get("title").isNull()
+        ? config.get("localizedTitles").get("en").asText()
+        : config.get("title").asText();
   }
 
   public String getResourcePrefix() {

@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
@@ -90,14 +91,14 @@ public class Application extends SpringBootServletInitializer {
       final MongoSampleRepository mongoSampleRepository,
       final SampleToMongoSampleConverter sampleToMongoSampleConverter,
       final MongoSampleToSampleConverter mongoSampleToSampleConverter,
-      final MongoProperties mongoProperties) {
+      final MongoProperties mongoProperties,
+      final MongoOperations mongoOperations) {
     return new MongoAccessionService(
         mongoSampleRepository,
         sampleToMongoSampleConverter,
         mongoSampleToSampleConverter,
         mongoProperties.getAccessionPrefix(),
-        mongoProperties.getAccessionMinimum(),
-        mongoProperties.getAccessionQueueSizeForLowerPriorityServices());
+        mongoOperations);
   }
 
   @Bean

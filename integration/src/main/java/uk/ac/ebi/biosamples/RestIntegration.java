@@ -245,6 +245,37 @@ public class RestIntegration extends AbstractIntegration {
     } else {
       log.info("Found private sample by webin account");
     }
+
+    // multiple sample fetch by accessions test, authorized user
+    Map<String, EntityModel<Sample>> sampleResourcesMap1 =
+        this.webinClient.fetchSampleResourcesByAccessions(
+            Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023"));
+
+    if (sampleResourcesMap1 == null || sampleResourcesMap1.size() == 0) {
+      throw new IntegrationTestFailException("Multi sample fetch is not working", Phase.THREE);
+    }
+
+    // multiple sample fetch by accessions test, unauthorized user
+    Map<String, EntityModel<Sample>> sampleResourcesMap2 =
+        this.annonymousClient.fetchSampleResourcesByAccessions(
+            Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023"));
+
+    if (sampleResourcesMap2.size() > 2) {
+      throw new IntegrationTestFailException(
+          "Multi sample fetch is not working, unauthorized user has access to private samples submitted by other submitters",
+          Phase.THREE);
+    }
+
+    // multiple sample fetch by accessions test, authorized user, all samples not found, partial
+    // fetch result
+    Map<String, EntityModel<Sample>> sampleResourcesMap3 =
+        this.webinClient.fetchSampleResourcesByAccessions(
+            Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023", "SAMEA99999999"));
+
+    if (sampleResourcesMap3.size() > 3) {
+      throw new IntegrationTestFailException(
+          "Multi sample fetch is not working, request with not found samples failing", Phase.THREE);
+    }
   }
 
   @Override

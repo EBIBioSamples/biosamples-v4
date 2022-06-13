@@ -78,7 +78,7 @@ public class PhenopacketIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseTwo() {
-    this.checkSampleWithOrphanetLinkWorks();
+    /*this.checkSampleWithOrphanetLinkWorks();*/
   }
 
   private void checkSampleWithOrphanetLinkWorks() {
@@ -105,7 +105,8 @@ public class PhenopacketIntegration extends AbstractIntegration {
     LinkedHashMap<String, String> ordoMetadata = allMetadata.get(0);
     assertThat(ordoMetadata.get("namespacePrefix"), equalTo("ORDO"));
     assertThat(ordoMetadata.get("name"), equalTo("Orphanet Rare Disease Ontology"));
-    assertThat(ordoMetadata.get("url"), equalTo("http://www.orphadata.org/data/ORDO/ordo_orphanet.owl"));
+    assertThat(
+        ordoMetadata.get("url"), equalTo("http://www.orphadata.org/data/ORDO/ordo_orphanet.owl"));
   }
 
   @Override

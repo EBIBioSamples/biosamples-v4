@@ -2,6 +2,16 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+[[v5.2.5]]
+== v5.2.5 Release notes
+=== Bug fixes
+1. Duplicate accession fix
+
+[[v5.2.4]]
+== v5.2.4 Release notes
+=== New Features
+1. Bulk fetch by accessions added
+
 [[v5.2.3]]
 == v5.2.3 Release notes
 === Improvements

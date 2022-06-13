@@ -31,6 +31,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
+import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 
@@ -47,17 +48,36 @@ public class SampleRetrievalService {
   private final Traverson traverson;
   private final ExecutorService executor;
   private final RestOperations restOperations;
-  private final boolean isWebinSubmission;
+  private final URI uri;
 
   public SampleRetrievalService(
-      RestOperations restOperations,
-      Traverson traverson,
-      ExecutorService executor,
-      boolean isWebinSubmission) {
+      RestOperations restOperations, Traverson traverson, URI uri, ExecutorService executor) {
     this.restOperations = restOperations;
     this.traverson = traverson;
     this.executor = executor;
-    this.isWebinSubmission = isWebinSubmission;
+    this.uri = uri;
+  }
+
+  /**
+   * Accepts a list of accessions and returns a Map having accession as key and sample as value
+   *
+   * @param accessions
+   * @return
+   */
+  public Future<Map<String, EntityModel<Sample>>> fetchSamplesByAccessions(
+      final List<String> accessions) {
+    return executor.submit(new FetchAccessionsCallable(accessions, uri));
+  }
+
+  /**
+   * Accepts a list of accessions and returns a Map having accession as key and sample as value
+   *
+   * @param accessions
+   * @return
+   */
+  public Future<Map<String, EntityModel<Sample>>> fetchSamplesByAccessions(
+      final List<String> accessions, final String jwt) {
+    return executor.submit(new FetchAccessionsCallable(accessions, uri, jwt));
   }
 
   /**
@@ -68,12 +88,12 @@ public class SampleRetrievalService {
    */
   public Future<Optional<EntityModel<Sample>>> fetch(
       String accession, Optional<List<String>> curationDomains) {
-    return executor.submit(new FetchCallable(accession, curationDomains, isWebinSubmission));
+    return executor.submit(new FetchCallable(accession, curationDomains));
   }
 
   public Future<Optional<EntityModel<Sample>>> fetch(
       String accession, Optional<List<String>> curationDomains, String jwt) {
-    return executor.submit(new FetchCallable(accession, curationDomains, jwt, isWebinSubmission));
+    return executor.submit(new FetchCallable(accession, curationDomains, jwt));
   }
 
   public Future<Optional<EntityModel<Sample>>> fetch(
@@ -81,8 +101,66 @@ public class SampleRetrievalService {
       Optional<List<String>> curationDomains,
       String jwt,
       StaticViewWrapper.StaticView staticView) {
-    return executor.submit(
-        new FetchCallable(accession, curationDomains, jwt, staticView, isWebinSubmission));
+    return executor.submit(new FetchCallable(accession, curationDomains, jwt, staticView));
+  }
+
+  private class FetchAccessionsCallable implements Callable<Map<String, EntityModel<Sample>>> {
+    private final List<String> accessions;
+    private final String jwt;
+    private final URI uri;
+
+    public FetchAccessionsCallable(final List<String> accessions, final URI uri) {
+      this.accessions = accessions;
+      this.jwt = null;
+      this.uri = uri;
+    }
+
+    public FetchAccessionsCallable(final List<String> accessions, final URI uri, final String jwt) {
+      this.accessions = accessions;
+      this.jwt = jwt;
+      this.uri = uri;
+    }
+
+    @Override
+    public Map<String, EntityModel<Sample>> call() {
+      URI bulkFetchSamplesUri =
+          UriComponentsBuilder.fromUri(URI.create(uri + "/samples" + "/bulk-fetch"))
+              .queryParam("accessions", String.join(",", accessions))
+              .build(true)
+              .toUri();
+
+      log.info("GETing " + bulkFetchSamplesUri);
+
+      final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+
+      headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
+
+      if (jwt != null) {
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+      }
+
+      final RequestEntity<Void> requestEntity =
+          new RequestEntity<>(headers, HttpMethod.GET, bulkFetchSamplesUri);
+      final ResponseEntity<Map<String, EntityModel<Sample>>> responseEntity;
+
+      try {
+        responseEntity =
+            restOperations.exchange(
+                requestEntity,
+                new ParameterizedTypeReference<Map<String, EntityModel<Sample>>>() {});
+      } catch (HttpStatusCodeException e) {
+        if (e.getStatusCode().equals(HttpStatus.FORBIDDEN)
+            || e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+          return null;
+        } else {
+          throw e;
+        }
+      }
+
+      log.trace("GETted " + uri);
+
+      return responseEntity.getBody();
+    }
   }
 
   private class FetchCallable implements Callable<Optional<EntityModel<Sample>>> {
@@ -91,26 +169,18 @@ public class SampleRetrievalService {
     private final Optional<List<String>> curationDomains;
     private final String jwt;
     private final StaticViewWrapper.StaticView staticView;
-    private final boolean isWebinSubmission;
 
-    public FetchCallable(
-        String accession, Optional<List<String>> curationDomains, boolean isWebinSubmission) {
+    public FetchCallable(String accession, Optional<List<String>> curationDomains) {
       this.accession = accession;
       this.curationDomains = curationDomains;
-      this.isWebinSubmission = isWebinSubmission;
       this.jwt = null;
       this.staticView = StaticViewWrapper.StaticView.SAMPLES_CURATED;
     }
 
-    public FetchCallable(
-        String accession,
-        Optional<List<String>> curationDomains,
-        String jwt,
-        boolean isWebinSubmission) {
+    public FetchCallable(String accession, Optional<List<String>> curationDomains, String jwt) {
       this.accession = accession;
       this.curationDomains = curationDomains;
       this.jwt = jwt;
-      this.isWebinSubmission = isWebinSubmission;
       this.staticView = StaticViewWrapper.StaticView.SAMPLES_CURATED;
     }
 
@@ -118,18 +188,15 @@ public class SampleRetrievalService {
         String accession,
         Optional<List<String>> curationDomains,
         String jwt,
-        StaticViewWrapper.StaticView staticView,
-        boolean isWebinSubmission) {
+        StaticViewWrapper.StaticView staticView) {
       this.accession = accession;
       this.curationDomains = curationDomains;
       this.jwt = jwt;
       this.staticView = staticView;
-      this.isWebinSubmission = isWebinSubmission;
     }
 
     @Override
     public Optional<EntityModel<Sample>> call() {
-
       URI uri;
 
       if (!curationDomains.isPresent()) {
@@ -165,7 +232,8 @@ public class SampleRetrievalService {
       }
       RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
 
-      ResponseEntity<EntityModel<Sample>> responseEntity = null;
+      ResponseEntity<EntityModel<Sample>> responseEntity;
+
       try {
         responseEntity =
             restOperations.exchange(

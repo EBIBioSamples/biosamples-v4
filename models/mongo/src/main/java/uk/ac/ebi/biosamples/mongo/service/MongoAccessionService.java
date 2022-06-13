@@ -10,89 +10,97 @@
 */
 package uk.ac.ebi.biosamples.mongo.service;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.stream.Stream;
-import javax.annotation.PostConstruct;
+import static org.springframework.data.mongodb.core.FindAndModifyOptions.options;
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
+
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.data.domain.Sort;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.Update;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+import uk.ac.ebi.biosamples.mongo.model.MongoSequence;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 
 // this needs to be the spring exception, not the mongo one
-
 public class MongoAccessionService {
-
+  private static final int MAX_RETRIES = 5;
   private Logger log = LoggerFactory.getLogger(getClass());
 
   private final MongoSampleRepository mongoSampleRepository;
   private final SampleToMongoSampleConverter sampleToMongoSampleConverter;
   private final MongoSampleToSampleConverter mongoSampleToSampleConverter;
   private final String prefix;
-  private final BlockingQueue<String> accessionCandidateQueue;
-  private int accessionCandidateCounter;
+  private final MongoOperations mongoOperations;
 
   public MongoAccessionService(
-      MongoSampleRepository mongoSampleRepository,
-      SampleToMongoSampleConverter sampleToMongoSampleConverter,
-      MongoSampleToSampleConverter mongoSampleToSampleConverter,
-      String prefix,
-      int minimumAccession,
-      int queueSize) {
+      final MongoSampleRepository mongoSampleRepository,
+      final SampleToMongoSampleConverter sampleToMongoSampleConverter,
+      final MongoSampleToSampleConverter mongoSampleToSampleConverter,
+      final String prefix,
+      final MongoOperations mongoOperations) {
     this.mongoSampleRepository = mongoSampleRepository;
     this.sampleToMongoSampleConverter = sampleToMongoSampleConverter;
     this.mongoSampleToSampleConverter = mongoSampleToSampleConverter;
     this.prefix = prefix;
-    this.accessionCandidateCounter = minimumAccession;
-    this.accessionCandidateQueue = new LinkedBlockingQueue<>(queueSize);
+    this.mongoOperations = mongoOperations;
   }
 
-  public Sample generateAccession(Sample sample) {
+  public Sample generateAccession(final Sample sample) {
     MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
+
     mongoSample = accessionAndInsert(mongoSample);
     return mongoSampleToSampleConverter.apply(mongoSample);
   }
 
   private MongoSample accessionAndInsert(MongoSample sample) {
     log.trace("generating an accession");
-    MongoSample originalSample = sample;
-    // inspired by Optimistic Loops of
+
+    final MongoSample originalSample = sample;
+    // inspired by Counter collection + Optimistic Loops of
     // https://docs.mongodb.com/v3.0/tutorial/create-an-auto-incrementing-field/
+
     boolean success = false;
-    // TODO limit number of tries
+    int numRetry = 0;
+
     while (!success) {
       // TODO add a timeout here
       try {
-        sample = prepare(sample, accessionCandidateQueue.take());
-      } catch (InterruptedException e) {
+        sample = prepare(sample, getAccession());
+      } catch (Exception e) {
         throw new RuntimeException(e);
       }
 
       try {
         sample = mongoSampleRepository.insertNew(sample);
         success = true;
-      } catch (DuplicateKeyException e) {
+      } catch (Exception e) {
+        if (++numRetry == MAX_RETRIES) {
+          throw new RuntimeException(
+              "Cannot generate a new BioSample accession. please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
+        }
+
         success = false;
         sample = originalSample;
       }
     }
-    log.debug("generated accession " + sample);
+
+    log.info("generated accession " + sample);
+
     return sample;
+  }
+
+  private String getAccession() {
+    return prefix + generateUniqueAccession(MongoSample.SEQUENCE_NAME);
   }
 
   private MongoSample prepare(MongoSample sample, String accession) {
     SortedSet<MongoRelationship> relationships = sample.getRelationships();
     SortedSet<MongoRelationship> newRelationships = new TreeSet<>();
-    for (MongoRelationship relationship : relationships) {
+    for (final MongoRelationship relationship : relationships) {
       // this relationship could not specify a source because the sample is unaccessioned
       // now we are assigning an accession, set the source to the accession
       if (relationship.getSource() == null || relationship.getSource().trim().length() == 0) {
@@ -123,62 +131,23 @@ public class MongoAccessionService {
             sample.getPublications(),
             sample.getCertificates(),
             sample.getSubmittedVia());
+
     return sample;
   }
 
-  @PostConstruct
-  @Scheduled(fixedDelay = 500)
-  public synchronized void prepareAccessions() {
-    long startTime = System.nanoTime();
+  public long generateUniqueAccession(final String seqName) {
+    final MongoSequence counter =
+        mongoOperations.findAndModify(
+            query(where("_id").is(seqName)),
+            new Update().inc("seq", 1),
+            options().returnNew(true).upsert(true),
+            MongoSequence.class);
 
-    // check that all accessions are still available
-    Iterator<String> itCandidate = accessionCandidateQueue.iterator();
-    while (itCandidate.hasNext()) {
-      String accessionCandidate = itCandidate.next();
-      if (mongoSampleRepository.existsById(accessionCandidate)) {
-        log.debug("Removing accession " + accessionCandidate + " from queue because now assigned");
-        itCandidate.remove();
-      }
+    if (!Objects.isNull(counter)) {
+      return counter.getSeq();
+    } else {
+      throw new RuntimeException(
+          "Cannot generate a new BioSample accession. please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
     }
-
-    Sort sort = Sort.by(Sort.Direction.ASC, "accessionNumber");
-    try (Stream<MongoSample> stream =
-        mongoSampleRepository.findByAccessionPrefixIsAndAccessionNumberGreaterThanEqual(
-            prefix, accessionCandidateCounter, sort)) {
-      Iterator<MongoSample> streamIt = stream.iterator();
-      Integer streamAccessionNumber = null;
-      if (streamIt.hasNext()) {
-        streamAccessionNumber = streamIt.next().getAccessionNumber();
-      }
-      while (accessionCandidateQueue.remainingCapacity() > 0) {
-
-        if (streamAccessionNumber == null || streamAccessionNumber > accessionCandidateCounter) {
-          String accessionCandidate = prefix + accessionCandidateCounter;
-          if (accessionCandidateQueue.offer(accessionCandidate)) {
-            // successfully added, move to next
-            log.trace("Added to accession pool " + accessionCandidate);
-            accessionCandidateCounter += 1;
-          } else {
-            // failed, queue full
-            break;
-          }
-        } else {
-          // update stream to next accession
-          try {
-            streamAccessionNumber = streamIt.next().getAccessionNumber();
-            accessionCandidateCounter += 1;
-            log.trace("Updating stream to " + prefix + streamAccessionNumber);
-          } catch (NoSuchElementException e) {
-            // end of stream
-            streamAccessionNumber = null;
-            log.trace("Reached end of stream");
-          }
-          // move back and try again
-        }
-      }
-    }
-
-    long endTime = System.nanoTime();
-    log.trace("Populated accession pool in " + ((endTime - startTime) / 1000000) + "ms");
   }
 }
