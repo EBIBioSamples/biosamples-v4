@@ -33,8 +33,10 @@ public class PhenopacketConverter {
   }
 
   public String convertToJsonPhenopacket(Sample sample) {
-    if(sample.getTaxId() != 9606) {
-      throw new SampleConversionException("Can not generated phenopacket from non human sample.");
+    if (sample.getTaxId() == null || sample.getTaxId() != 9606) {
+      LOG.warn("Trying to export invalid sample in phenopacket format: accession = {}, tax_id = {}",
+               sample.getAccession(), sample.getTaxId());
+      throw new SampleConversionException("Non human sample can not be exported to phenopacket.");
     }
 
     Phenopacket phenopacket = convert(sample);
