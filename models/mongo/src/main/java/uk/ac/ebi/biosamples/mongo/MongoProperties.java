@@ -16,35 +16,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class MongoProperties {
 
-  @Value("${biosamples.mongo.sample.writeConcern:0}")
+  @Value("${biosamples.mongo.sample.writeConcern:1}")
   private String sampleWriteConcern;
 
   @Value("${biosamples.accession.prefix:SAMEA}")
   private String accessionPrefix;
 
-  @Value("${biosamples.accession.min:100000}")
-  private int accessionMinimum;
-
-  @Value("${biosamples.accession.queuesize:2000}")
-  private int accessionQueueSize;
-
-  @Value("${biosamples.accession.lowprioaccessionqueuesize:100}")
-  private int accessionQueueSizeForLowerPriorityServices;
-
   public String getAccessionPrefix() {
     return accessionPrefix;
-  }
-
-  public int getAccessionMinimum() {
-    return accessionMinimum;
-  }
-
-  public int getAcessionQueueSize() {
-    return accessionQueueSize;
-  }
-
-  public int getAccessionQueueSizeForLowerPriorityServices() {
-    return accessionQueueSizeForLowerPriorityServices;
   }
 
   public String getSampleWriteConcern() {
