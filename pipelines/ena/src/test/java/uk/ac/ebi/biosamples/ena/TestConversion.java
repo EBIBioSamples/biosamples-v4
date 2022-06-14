@@ -77,6 +77,7 @@ public class TestConversion {
   }
 
   @Test
+  @Ignore
   public void test_with_single() {
     RowCallbackHandler rowCallbackHandler =
         resultSet -> {
@@ -105,6 +106,7 @@ public class TestConversion {
   }
 
   @Test
+  @Ignore
   public void test_with_suppressed() {
     RowCallbackHandler rowCallbackHandler =
         resultSet -> {
@@ -133,6 +135,7 @@ public class TestConversion {
   }
 
   @Test
+  @Ignore
   public void test_with_killed() {
     RowCallbackHandler rowCallbackHandler =
         resultSet -> {
@@ -161,6 +164,7 @@ public class TestConversion {
   }
 
   @Test
+  @Ignore
   public void test_with_failing() {
     RowCallbackHandler rowCallbackHandler =
         resultSet -> {

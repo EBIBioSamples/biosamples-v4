@@ -55,7 +55,6 @@ import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.certification.*;
-import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
@@ -149,8 +148,8 @@ public class ApiDocumentationTest {
         new PageImpl<>(Collections.singletonList(fakeSample), getDefaultPageable(), 100);
     when(samplePageService.getSamplesByText(
             any(String.class),
-            anyCollectionOf(Filter.class),
-            anyCollectionOf(String.class),
+            anyList(),
+            anyList(),
             any(String.class),
             isA(Pageable.class),
             any(String.class),
@@ -161,7 +160,6 @@ public class ApiDocumentationTest {
             Optional.of(
                 new AuthToken(
                     "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
-    when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
     this.mockMvc
         .perform(get("/biosamples/samples").accept(MediaTypes.HAL_JSON))
         .andExpect(status().isOk())

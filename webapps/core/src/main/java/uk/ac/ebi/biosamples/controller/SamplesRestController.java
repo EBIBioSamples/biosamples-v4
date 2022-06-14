@@ -279,7 +279,7 @@ public class SamplesRestController {
                 .collect(Collectors.toList()),
             pageMetadata);
 
-    // if theres more than one page, link to first and last
+    // if there is more than one page, link to first and last
     if (pageSample.getTotalPages() > 1) {
       resources.add(
           getPageLink(
