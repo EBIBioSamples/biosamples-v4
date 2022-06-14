@@ -136,62 +136,6 @@ public class MongoAccessionService {
     return sample;
   }
 
-  /*@PostConstruct
-  @Scheduled(fixedDelay = 500)
-  public synchronized void prepareAccessions() {
-    long startTime = System.nanoTime();
-
-    // check that all accessions are still available
-    Iterator<String> itCandidate = accessionCandidateQueue.iterator();
-    while (itCandidate.hasNext()) {
-      String accessionCandidate = itCandidate.next();
-      if (mongoSampleRepository.exists(accessionCandidate)) {
-        log.debug("Removing accession " + accessionCandidate + " from queue because now assigned");
-        itCandidate.remove();
-      }
-    }
-
-    Sort sort = new Sort(Sort.Direction.ASC, "accessionNumber");
-    try (Stream<MongoSample> stream =
-        mongoSampleRepository.findByAccessionPrefixIsAndAccessionNumberGreaterThanEqual(
-            prefix, accessionCandidateCounter, sort)) {
-      Iterator<MongoSample> streamIt = stream.iterator();
-      Integer streamAccessionNumber = null;
-      if (streamIt.hasNext()) {
-        streamAccessionNumber = streamIt.next().getAccessionNumber();
-      }
-      while (accessionCandidateQueue.remainingCapacity() > 0) {
-
-        if (streamAccessionNumber == null || streamAccessionNumber > accessionCandidateCounter) {
-          String accessionCandidate = prefix + accessionCandidateCounter;
-          if (accessionCandidateQueue.offer(accessionCandidate)) {
-            // successfully added, move to next
-            log.trace("Added to accession pool " + accessionCandidate);
-            accessionCandidateCounter += 1;
-          } else {
-            // failed, queue full
-            break;
-          }
-        } else {
-          // update stream to next accession
-          try {
-            streamAccessionNumber = streamIt.next().getAccessionNumber();
-            accessionCandidateCounter += 1;
-            log.trace("Updating stream to " + prefix + streamAccessionNumber);
-          } catch (NoSuchElementException e) {
-            // end of stream
-            streamAccessionNumber = null;
-            log.trace("Reached end of stream");
-          }
-          // move back and try again
-        }
-      }
-    }
-
-    long endTime = System.nanoTime();
-    log.trace("Populated accession pool in " + ((endTime - startTime) / 1000000) + "ms");
-  }*/
-
   public long generateUniqueAccession(final String seqName) {
     final MongoSequence counter =
         mongoOperations.findAndModify(
