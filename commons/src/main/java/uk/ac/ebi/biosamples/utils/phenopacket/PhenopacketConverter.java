@@ -8,7 +8,7 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.model.ga4gh.phenopacket;
+package uk.ac.ebi.biosamples.utils.phenopacket;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
@@ -19,27 +19,33 @@ import org.phenopackets.schema.v1.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.exceptions.SampleConversionException;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
 public class PhenopacketConverter {
   private static final Logger LOG = LoggerFactory.getLogger(PhenopacketConverter.class);
-  private PhenopacketConversionHelper phenopacketConversionHelper;
+  private final PhenopacketConversionHelper phenopacketConversionHelper;
 
   public PhenopacketConverter(PhenopacketConversionHelper phenopacketConversionHelper) {
     this.phenopacketConversionHelper = phenopacketConversionHelper;
   }
 
   public String convertToJsonPhenopacket(Sample sample) {
-    Phenopacket phenopacket = convert(sample);
-    String jsonPhenopacket = "";
-    try {
-      jsonPhenopacket = JsonFormat.printer().print(phenopacket);
-    } catch (InvalidProtocolBufferException e) {
-      LOG.error("Failed to convert to proto buff", e);
+    if (sample.getTaxId() == null || sample.getTaxId() != 9606) {
+      LOG.warn("Trying to export invalid sample in phenopacket format: accession = {}, tax_id = {}",
+               sample.getAccession(), sample.getTaxId());
+      throw new SampleConversionException("Non human sample can not be exported into phenopacket.");
     }
-    return jsonPhenopacket;
+
+    Phenopacket phenopacket = convert(sample);
+    try {
+      return JsonFormat.printer().print(phenopacket);
+    } catch (InvalidProtocolBufferException e) {
+      LOG.error("Failed to serialise phenopacket into JSON", e);
+      throw new SampleConversionException("Failed to serialise phenopacket into JSON.");
+    }
   }
 
   public Phenopacket convert(Sample sample) {
