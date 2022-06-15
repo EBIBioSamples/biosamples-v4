@@ -34,7 +34,8 @@ public class PhenopacketConverterTest {
 
     JsonNode phenopacketExpected =
         jsonMapper.readValue(
-            new ClassPathResource("phenopacket/phenopacket_1.json").getInputStream(), JsonNode.class);
+            new ClassPathResource("phenopacket/phenopacket_1.json").getInputStream(),
+            JsonNode.class);
     Assert.assertEquals(
         phenopacketExpected.get("biosamples").get(0).get("id").textValue(),
         phenopacket.getBiosamples(0).getId());

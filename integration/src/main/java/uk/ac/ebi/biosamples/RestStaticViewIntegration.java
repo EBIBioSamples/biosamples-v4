@@ -12,6 +12,7 @@ package uk.ac.ebi.biosamples;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -80,11 +81,12 @@ public class RestStaticViewIntegration extends AbstractIntegration {
   }
 
   @Override
-  protected void phaseTwo() {
+  protected void phaseTwo() throws InterruptedException {
     Sample test2 = getSampleTest2();
     Sample test4 = getSampleTest4();
     Sample test5 = getSampleTest5();
 
+    TimeUnit.SECONDS.sleep(2);
     Optional<Sample> optionalSample = fetchUniqueSampleByName(test2.getName());
     if (optionalSample.isPresent()) {
       test2 = optionalSample.get();
