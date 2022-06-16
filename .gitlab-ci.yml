@@ -20,7 +20,6 @@ maven-package:
     - mkdir deployment
     - mkdir pipelines-deployment
     - cp webapps/core/target/webapps-core-*.war deployment/webapps-core.war
-    - cp webapps/core-v2/target/webapps-core-v2*.jar deployment/webapps-core-v2.jar
     - cp agents/solr/target/agents-solr-*.jar deployment/agents-solr.jar
     - cp agents/uploadworkers/target/agents-uploadworkers-*.jar deployment/agents-uploadworkers.jar
     - cp pipelines/copydown/target/pipelines-copydown-*.jar pipelines-deployment/pipelines-copydown.jar
@@ -30,10 +29,8 @@ maven-package:
     - cp pipelines/sample-release/target/pipelines-sample-release-*.jar pipelines-deployment/pipelines-sample-release.jar
     - cp pipelines/export/target/pipelines-export-*.jar pipelines-deployment/pipelines-export.jar
     - cp pipelines/ncbi/target/pipelines-ncbi-*.jar pipelines-deployment/pipelines-ncbi.jar
-    - cp pipelines/neoexport/target/pipelines-neoexport-*.jar pipelines-deployment/pipelines-neoexport.jar
     - cp pipelines/reindex/target/pipelines-reindex-*.jar pipelines-deployment/pipelines-reindex.jar
     - cp pipelines/zooma/target/pipelines-zooma-*.jar pipelines-deployment/pipelines-zooma.jar
-    - cp pipelines/sample-transformation-dtol/target/pipelines-sample-transformation-dtol-*.jar pipelines-deployment/pipelines-sample-transformation-dtol.jar
   artifacts:
     paths:
       - deployment
