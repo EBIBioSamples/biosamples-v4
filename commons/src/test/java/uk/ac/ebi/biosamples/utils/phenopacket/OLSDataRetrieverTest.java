@@ -8,13 +8,11 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.model;
+package uk.ac.ebi.biosamples.utils.phenopacket;
 
-import static org.junit.Assert.assertEquals;
-
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import uk.ac.ebi.biosamples.service.OLSDataRetriever;
 
 public class OLSDataRetrieverTest {
   @Test
@@ -24,7 +22,7 @@ public class OLSDataRetrieverTest {
     retriever.readOntologyJsonFromUrl("http://purl.obolibrary.org/obo/NCBITaxon_9606");
     String expected_id = "NCBITaxon:9606";
     String actual_id = retriever.getOntologyTermId();
-    assertEquals(actual_id, expected_id);
+    Assert.assertEquals(actual_id, expected_id);
   }
 
   @Test
@@ -34,6 +32,6 @@ public class OLSDataRetrieverTest {
     retriever.readOntologyJsonFromUrl("http://purl.obolibrary.org/obo/NCBITaxon_9606");
     String expected_label = "Homo sapiens";
     String actual_label = retriever.getOntologyTermLabel();
-    assertEquals(actual_label, expected_label);
+    Assert.assertEquals(actual_label, expected_label);
   }
 }

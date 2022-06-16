@@ -36,9 +36,9 @@ public class CustomWriteConcernResolver implements WriteConcernResolver {
       final String sampleWriteConcern = mongoProperties.getSampleWriteConcern();
 
       if (sampleWriteConcern.matches("[0-9]+")) {
-        return new WriteConcern(Integer.parseInt(sampleWriteConcern));
+        return  new WriteConcern(Integer.parseInt(sampleWriteConcern));
       } else {
-        return new WriteConcern(sampleWriteConcern);
+        return  new WriteConcern(sampleWriteConcern);
       }
     }
 
