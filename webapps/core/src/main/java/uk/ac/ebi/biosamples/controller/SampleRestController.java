@@ -27,7 +27,6 @@ import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
-import uk.ac.ebi.biosamples.utils.phenopacket.PhenopacketConverter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.SampleManipulationService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
@@ -37,6 +36,7 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
+import uk.ac.ebi.biosamples.utils.phenopacket.PhenopacketConverter;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 /**
