@@ -18,26 +18,26 @@ maven-package:
   script:
     - 'mvn -q deploy -P embl-ebi -s ci_settings.xml -Dmaven.source.skip=true'
     - mkdir deployment
-    - mkdir pipelines
+    - mkdir pipelines-deployment
     - cp webapps/core/target/webapps-core-*.war deployment/webapps-core.war
     - cp webapps/core-v2/target/webapps-core-v2*.jar deployment/webapps-core-v2.jar
     - cp agents/solr/target/agents-solr-*.jar deployment/agents-solr.jar
     - cp agents/uploadworkers/target/agents-uploadworkers-*.jar deployment/agents-uploadworkers.jar
-    - cp pipelines/copydown/target/pipelines-copydown-*.jar pipelines/pipelines-copydown.jar
-    - cp pipelines/curami/target/pipelines-curami-*.jar pipelines/pipelines-curami.jar
-    - cp pipelines/curation/target/pipelines-curation-*.jar pipelines/pipelines-curation.jar
-    - cp pipelines/ena/target/pipelines-ena-*.jar pipelines/pipelines-ena.jar
-    - cp pipelines/sample-release/target/pipelines-sample-release-*.jar pipelines/pipelines-sample-release.jar
-    - cp pipelines/export/target/pipelines-export-*.jar pipelines/pipelines-export.jar
-    - cp pipelines/ncbi/target/pipelines-ncbi-*.jar pipelines/pipelines-ncbi.jar
-    - cp pipelines/neoexport/target/pipelines-neoexport-*.jar pipelines/pipelines-neoexport.jar
-    - cp pipelines/reindex/target/pipelines-reindex-*.jar pipelines/pipelines-reindex.jar
-    - cp pipelines/zooma/target/pipelines-zooma-*.jar pipelines/pipelines-zooma.jar
-    - cp pipelines/sample-transformation-dtol/target/pipelines-sample-transformation-dtol-*.jar pipelines/pipelines-sample-transformation-dtol.jar
+    - cp pipelines/copydown/target/pipelines-copydown-*.jar pipelines-deployment/pipelines-copydown.jar
+    - cp pipelines/curami/target/pipelines-curami-*.jar pipelines-deployment/pipelines-curami.jar
+    - cp pipelines/curation/target/pipelines-curation-*.jar pipelines-deployment/pipelines-curation.jar
+    - cp pipelines/ena/target/pipelines-ena-*.jar pipelines-deployment/pipelines-ena.jar
+    - cp pipelines/sample-release/target/pipelines-sample-release-*.jar pipelines-deployment/pipelines-sample-release.jar
+    - cp pipelines/export/target/pipelines-export-*.jar pipelines-deployment/pipelines-export.jar
+    - cp pipelines/ncbi/target/pipelines-ncbi-*.jar pipelines-deployment/pipelines-ncbi.jar
+    - cp pipelines/neoexport/target/pipelines-neoexport-*.jar pipelines-deployment/pipelines-neoexport.jar
+    - cp pipelines/reindex/target/pipelines-reindex-*.jar pipelines-deployment/pipelines-reindex.jar
+    - cp pipelines/zooma/target/pipelines-zooma-*.jar pipelines-deployment/pipelines-zooma.jar
+    - cp pipelines/sample-transformation-dtol/target/pipelines-sample-transformation-dtol-*.jar pipelines-deployment/pipelines-sample-transformation-dtol.jar
   artifacts:
     paths:
       - deployment
-      - pipelines
+      - pipelines-deployment
 #  when: manual
 
 clone-config-preproduction:
