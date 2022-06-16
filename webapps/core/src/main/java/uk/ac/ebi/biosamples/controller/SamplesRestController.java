@@ -508,11 +508,20 @@ public class SamplesRestController {
                     return sampleResourceAssembler.toModel(
                         sample, Optional.of(false), Optional.empty());
                   } else {
+                    log.info("Bulk-fetch not found sample: " + accession);
+
                     return null;
                   }
                 })
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
+
+    log.info(
+        "Received bulk-fetch request for : "
+            + accessions.size()
+            + " samples and fetched "
+            + samples.size()
+            + " samples.");
 
     return ResponseEntity.ok(
         samples.stream()
@@ -578,7 +587,7 @@ public class SamplesRestController {
   public ResponseEntity<Map<String, String>> bulkAccessionSample(
       @RequestBody List<Sample> samples,
       @RequestHeader(name = "Authorization") final String token) {
-    log.debug("Received POST for bulk accessioning of " + samples.size() + " samples");
+    log.info("Received POST for bulk accessioning of " + samples.size() + " samples");
 
     samples.forEach(
         sample -> {
@@ -644,6 +653,13 @@ public class SamplesRestController {
         createdSamplesList.stream()
             .filter(Objects::nonNull)
             .collect(Collectors.toMap(Sample::getName, Sample::getAccession));
+
+    log.info(
+        "Received bulk-accessioning request for : "
+            + samples.size()
+            + " samples and accessioned "
+            + outputMap.size()
+            + " samples.");
 
     return ResponseEntity.ok(outputMap);
   }
