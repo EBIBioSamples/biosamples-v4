@@ -1,13 +1,13 @@
 /*
-* Copyright 2021 EMBL - European Bioinformatics Institute
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
-* file except in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0
-* Unless required by applicable law or agreed to in writing, software distributed under the
-* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-* CONDITIONS OF ANY KIND, either express or implied. See the License for the
-* specific language governing permissions and limitations under the License.
-*/
+ * Copyright 2021 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package uk.ac.ebi.biosamples.controller;
 
 import java.net.URI;
@@ -77,17 +77,17 @@ public class SamplesRestController {
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   public SamplesRestController(
-      SamplePageService samplePageService,
-      FilterService filterService,
-      BioSamplesAapService bioSamplesAapService,
-      BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-      SampleResourceAssembler sampleResourceAssembler,
-      SampleManipulationService sampleManipulationService,
-      SampleService sampleService,
-      BioSamplesProperties bioSamplesProperties,
-      SchemaValidationService schemaValidationService,
-      TaxonomyClientService taxonomyClientService,
-      AccessControlService accessControlService) {
+          SamplePageService samplePageService,
+          FilterService filterService,
+          BioSamplesAapService bioSamplesAapService,
+          BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+          SampleResourceAssembler sampleResourceAssembler,
+          SampleManipulationService sampleManipulationService,
+          SampleService sampleService,
+          BioSamplesProperties bioSamplesProperties,
+          SchemaValidationService schemaValidationService,
+          TaxonomyClientService taxonomyClientService,
+          AccessControlService accessControlService) {
     this.samplePageService = samplePageService;
     this.filterService = filterService;
     this.bioSamplesAapService = bioSamplesAapService;
@@ -105,15 +105,15 @@ public class SamplesRestController {
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<CollectionModel<EntityModel<Sample>>> searchHal(
-      @RequestParam(name = "text", required = false) String text,
-      @RequestParam(name = "filter", required = false) String[] filter,
-      @RequestParam(name = "cursor", required = false) String cursor,
-      @RequestParam(name = "page", required = false) final Integer page,
-      @RequestParam(name = "size", required = false) final Integer size,
-      @RequestParam(name = "sort", required = false) final String[] sort,
-      @RequestParam(name = "curationrepo", required = false) final String curationRepo,
-      @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
-      @RequestHeader(name = "Authorization", required = false) final String token) {
+          @RequestParam(name = "text", required = false) String text,
+          @RequestParam(name = "filter", required = false) String[] filter,
+          @RequestParam(name = "cursor", required = false) String cursor,
+          @RequestParam(name = "page", required = false) final Integer page,
+          @RequestParam(name = "size", required = false) final Integer size,
+          @RequestParam(name = "sort", required = false) final String[] sort,
+          @RequestParam(name = "curationrepo", required = false) final String curationRepo,
+          @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
+          @RequestHeader(name = "Authorization", required = false) final String token) {
     // Need to decode the %20 and similar from the parameters
     // this is *not* needed for the html controller
     String decodedText = LinkUtils.decodeText(text);
@@ -128,7 +128,7 @@ public class SamplesRestController {
     Optional<AuthToken> authToken = accessControlService.extractToken(token);
 
     final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
+            authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
 
     if (webinAuth) {
       webinSubmissionAccountId = authToken.map(AuthToken::getUser).orElse(null);
@@ -156,8 +156,8 @@ public class SamplesRestController {
     // to
     // twice this age
     CacheControl cacheControl =
-        CacheControl.maxAge(
-            bioSamplesProperties.getBiosamplesCorePageCacheMaxAge(), TimeUnit.SECONDS);
+            CacheControl.maxAge(
+                    bioSamplesProperties.getBiosamplesCorePageCacheMaxAge(), TimeUnit.SECONDS);
     // if the user has access to any domains, then mark the response as private as must be using
     // AAP
     // and responses will be different
@@ -168,48 +168,48 @@ public class SamplesRestController {
     if (cursor != null) {
       log.trace("This cursor = " + decodedCursor);
       CursorArrayList<Sample> samples =
-          samplePageService.getSamplesByText(
-              decodedText,
-              filters,
-              domains != null && !domains.isEmpty() ? domains : Collections.emptySet(),
-              webinSubmissionAccountId,
-              decodedCursor,
-              effectiveSize,
-              curationRepo,
-              decodedCurationDomains);
+              samplePageService.getSamplesByText(
+                      decodedText,
+                      filters,
+                      domains != null && !domains.isEmpty() ? domains : Collections.emptySet(),
+                      webinSubmissionAccountId,
+                      decodedCursor,
+                      effectiveSize,
+                      curationRepo,
+                      decodedCurationDomains);
       log.trace("Next cursor = " + samples.getNextCursorMark());
 
       CollectionModel<EntityModel<Sample>> resources =
-          new CollectionModel<>(
-              samples.stream()
-                  .map(
-                      s ->
-                          s != null
-                              ? sampleResourceAssembler.toModel(s, SampleRestController.class)
-                              : null)
-                  .collect(Collectors.toList()));
+              new CollectionModel<>(
+                      samples.stream()
+                              .map(
+                                      s ->
+                                              s != null
+                                                      ? sampleResourceAssembler.toModel(s, SampleRestController.class)
+                                                      : null)
+                              .collect(Collectors.toList()));
 
       resources.add(
-          getCursorLink(
-              decodedText,
-              decodedFilter,
-              decodedCurationDomains,
-              decodedCursor,
-              effectiveSize,
-              Link.REL_SELF.value(),
-              this.getClass()));
+              getCursorLink(
+                      decodedText,
+                      decodedFilter,
+                      decodedCurationDomains,
+                      decodedCursor,
+                      effectiveSize,
+                      Link.REL_SELF.value(),
+                      this.getClass()));
       // only display the next link if there is a next cursor to go to
       if (!LinkUtils.decodeText(samples.getNextCursorMark()).equals(decodedCursor)
-          && !samples.getNextCursorMark().equals("*")) {
+              && !samples.getNextCursorMark().equals("*")) {
         resources.add(
-            getCursorLink(
-                decodedText,
-                decodedFilter,
-                decodedCurationDomains,
-                samples.getNextCursorMark(),
-                effectiveSize,
-                Link.REL_NEXT.value(),
-                this.getClass()));
+                getCursorLink(
+                        decodedText,
+                        decodedFilter,
+                        decodedCurationDomains,
+                        samples.getNextCursorMark(),
+                        effectiveSize,
+                        Link.REL_NEXT.value(),
+                        this.getClass()));
       }
 
       // Note - EBI load balancer does cache but doesn't add age header, so clients could
@@ -227,148 +227,148 @@ public class SamplesRestController {
       }
 
       Sort pageSort =
-          Sort.by(Arrays.stream(effectiveSort).map(this::parseSort).collect(Collectors.toList()));
+              Sort.by(Arrays.stream(effectiveSort).map(this::parseSort).collect(Collectors.toList()));
       Pageable pageable = PageRequest.of(effectivePage, effectiveSize, pageSort);
       Page<Sample> pageSample =
-          samplePageService.getSamplesByText(
-              text,
-              filters,
-              domains,
-              webinSubmissionAccountId,
-              pageable,
-              curationRepo,
-              decodedCurationDomains);
+              samplePageService.getSamplesByText(
+                      text,
+                      filters,
+                      domains,
+                      webinSubmissionAccountId,
+                      pageable,
+                      curationRepo,
+                      decodedCurationDomains);
       CollectionModel<EntityModel<Sample>> resources =
-          populateResources(
-              pageSample,
-              effectiveSize,
-              effectivePage,
-              webinAuth ? AuthorizationProvider.WEBIN.name() : AuthorizationProvider.AAP.name(),
-              decodedText,
-              decodedFilter,
-              sort,
-              decodedCurationDomains);
+              populateResources(
+                      pageSample,
+                      effectiveSize,
+                      effectivePage,
+                      webinAuth ? AuthorizationProvider.WEBIN.name() : AuthorizationProvider.AAP.name(),
+                      decodedText,
+                      decodedFilter,
+                      sort,
+                      decodedCurationDomains);
 
       return ResponseEntity.ok().cacheControl(cacheControl).body(resources);
     }
   }
 
   private CollectionModel<EntityModel<Sample>> populateResources(
-      Page<Sample> pageSample,
-      int effectiveSize,
-      int effectivePage,
-      String authProvider,
-      String decodedText,
-      String[] decodedFilter,
-      String[] sort,
-      Optional<List<String>> decodedCurationDomains) {
+          Page<Sample> pageSample,
+          int effectiveSize,
+          int effectivePage,
+          String authProvider,
+          String decodedText,
+          String[] decodedFilter,
+          String[] sort,
+          Optional<List<String>> decodedCurationDomains) {
     PagedModel.PageMetadata pageMetadata =
-        new PagedModel.PageMetadata(
-            effectiveSize,
-            pageSample.getNumber(),
-            pageSample.getTotalElements(),
-            pageSample.getTotalPages());
+            new PagedModel.PageMetadata(
+                    effectiveSize,
+                    pageSample.getNumber(),
+                    pageSample.getTotalElements(),
+                    pageSample.getTotalPages());
     CollectionModel<EntityModel<Sample>> resources =
-        new PagedModel<>(
-            pageSample.getContent().stream()
-                .map(
-                    s ->
-                        s != null
-                            ? sampleResourceAssembler.toModel(s, SampleRestController.class)
-                            : null)
-                .collect(Collectors.toList()),
-            pageMetadata);
+            new PagedModel<>(
+                    pageSample.getContent().stream()
+                            .map(
+                                    s ->
+                                            s != null
+                                                    ? sampleResourceAssembler.toModel(s, SampleRestController.class)
+                                                    : null)
+                            .collect(Collectors.toList()),
+                    pageMetadata);
 
     // if there is more than one page, link to first and last
     if (pageSample.getTotalPages() > 1) {
       resources.add(
-          getPageLink(
-              decodedText,
-              decodedFilter,
-              authProvider,
-              decodedCurationDomains,
-              0,
-              effectiveSize,
-              sort,
-              Link.REL_FIRST.value(),
-              this.getClass()));
+              getPageLink(
+                      decodedText,
+                      decodedFilter,
+                      authProvider,
+                      decodedCurationDomains,
+                      0,
+                      effectiveSize,
+                      sort,
+                      Link.REL_FIRST.value(),
+                      this.getClass()));
     }
     // if there was a previous page, link to it
     if (effectivePage > 0) {
       resources.add(
-          getPageLink(
-              decodedText,
-              decodedFilter,
-              authProvider,
-              decodedCurationDomains,
-              effectivePage - 1,
-              effectiveSize,
-              sort,
-              Link.REL_PREVIOUS.value(),
-              this.getClass()));
+              getPageLink(
+                      decodedText,
+                      decodedFilter,
+                      authProvider,
+                      decodedCurationDomains,
+                      effectivePage - 1,
+                      effectiveSize,
+                      sort,
+                      Link.REL_PREVIOUS.value(),
+                      this.getClass()));
     }
 
     resources.add(
-        getPageLink(
-            decodedText,
-            decodedFilter,
-            authProvider,
-            decodedCurationDomains,
-            effectivePage,
-            effectiveSize,
-            sort,
-            Link.REL_SELF.value(),
-            this.getClass()));
+            getPageLink(
+                    decodedText,
+                    decodedFilter,
+                    authProvider,
+                    decodedCurationDomains,
+                    effectivePage,
+                    effectiveSize,
+                    sort,
+                    Link.REL_SELF.value(),
+                    this.getClass()));
 
     // if there is a next page, link to it
     if (effectivePage < pageSample.getTotalPages() - 1) {
       resources.add(
-          getPageLink(
-              decodedText,
-              decodedFilter,
-              authProvider,
-              decodedCurationDomains,
-              effectivePage + 1,
-              effectiveSize,
-              sort,
-              Link.REL_NEXT.value(),
-              this.getClass()));
+              getPageLink(
+                      decodedText,
+                      decodedFilter,
+                      authProvider,
+                      decodedCurationDomains,
+                      effectivePage + 1,
+                      effectiveSize,
+                      sort,
+                      Link.REL_NEXT.value(),
+                      this.getClass()));
     }
     // if theres more than one page, link to first and last
     if (pageSample.getTotalPages() > 1) {
       resources.add(
-          getPageLink(
-              decodedText,
-              decodedFilter,
-              authProvider,
-              decodedCurationDomains,
-              pageSample.getTotalPages(),
-              effectiveSize,
-              sort,
-              Link.REL_LAST.value(),
-              this.getClass()));
+              getPageLink(
+                      decodedText,
+                      decodedFilter,
+                      authProvider,
+                      decodedCurationDomains,
+                      pageSample.getTotalPages(),
+                      effectiveSize,
+                      sort,
+                      Link.REL_LAST.value(),
+                      this.getClass()));
     }
     // if we are on the first page and not sorting
     if (effectivePage == 0 && (sort == null || sort.length == 0)) {
       resources.add(
-          getCursorLink(
-              decodedText,
-              decodedFilter,
-              decodedCurationDomains,
-              "*",
-              effectiveSize,
-              "cursor",
-              this.getClass()));
+              getCursorLink(
+                      decodedText,
+                      decodedFilter,
+                      decodedCurationDomains,
+                      "*",
+                      effectiveSize,
+                      "cursor",
+                      this.getClass()));
     }
 
     resources.add(
-        SampleAutocompleteRestController.getLink(decodedText, decodedFilter, null, "autocomplete"));
+            SampleAutocompleteRestController.getLink(decodedText, decodedFilter, null, "autocomplete"));
 
     UriComponentsBuilder uriComponentsBuilder =
-        WebMvcLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
+            WebMvcLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
     // This is a bit of a hack, but best we can do for now...
     resources.add(
-        new Link(uriComponentsBuilder.build(true).toUriString() + "/{accession}", "sample"));
+            new Link(uriComponentsBuilder.build(true).toUriString() + "/{accession}", "sample"));
 
     return resources;
   }
@@ -388,15 +388,15 @@ public class SamplesRestController {
    * manual manipulation for greater control
    */
   public static Link getCursorLink(
-      String text,
-      String[] filter,
-      Optional<List<String>> decodedCurationDomains,
-      String cursor,
-      int size,
-      String rel,
-      Class controllerClass) {
+          String text,
+          String[] filter,
+          Optional<List<String>> decodedCurationDomains,
+          String cursor,
+          int size,
+          String rel,
+          Class controllerClass) {
     UriComponentsBuilder builder =
-        getUriComponentsBuilder(text, filter, decodedCurationDomains, controllerClass);
+            getUriComponentsBuilder(text, filter, decodedCurationDomains, controllerClass);
 
     builder.queryParam("cursor", cursor);
     builder.queryParam("size", size);
@@ -404,12 +404,12 @@ public class SamplesRestController {
   }
 
   private static UriComponentsBuilder getUriComponentsBuilder(
-      String text,
-      String[] filter,
-      Optional<List<String>> decodedCurationDomains,
-      Class controllerClass) {
+          String text,
+          String[] filter,
+          Optional<List<String>> decodedCurationDomains,
+          Class controllerClass) {
     UriComponentsBuilder builder =
-        WebMvcLinkBuilder.linkTo(controllerClass).toUriComponentsBuilder();
+            WebMvcLinkBuilder.linkTo(controllerClass).toUriComponentsBuilder();
 
     if (text != null && text.trim().length() > 0) {
       builder.queryParam("text", text);
@@ -435,17 +435,17 @@ public class SamplesRestController {
   }
 
   public static Link getPageLink(
-      String text,
-      String[] filter,
-      String authProvider,
-      Optional<List<String>> decodedCurationDomains,
-      int page,
-      int size,
-      String[] sort,
-      String rel,
-      Class controllerClass) {
+          String text,
+          String[] filter,
+          String authProvider,
+          Optional<List<String>> decodedCurationDomains,
+          int page,
+          int size,
+          String[] sort,
+          String rel,
+          Class controllerClass) {
     UriComponentsBuilder builder =
-        getUriComponentsBuilder(text, filter, decodedCurationDomains, controllerClass);
+            getUriComponentsBuilder(text, filter, decodedCurationDomains, controllerClass);
 
     builder.queryParam("page", page);
     builder.queryParam("size", size);
@@ -462,12 +462,12 @@ public class SamplesRestController {
   @PreAuthorize("isAuthenticated()")
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(
-      produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE},
-      params = "accessions",
-      value = "/bulk-fetch")
+          produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE},
+          params = "accessions",
+          value = "/bulk-fetch")
   public ResponseEntity<Map<String, EntityModel<Sample>>> getMultipleSampleHals(
-      @RequestParam final List<String> accessions,
-      @RequestHeader(name = "Authorization", required = false) final String token) {
+          @RequestParam final List<String> accessions,
+          @RequestHeader(name = "Authorization", required = false) final String token) {
     if (accessions == null && !(accessions.size() > 0)) {
       throw new GlobalExceptions.BulkFetchInvalidRequestException();
     }
@@ -476,62 +476,62 @@ public class SamplesRestController {
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final List<EntityModel<Sample>> samples =
-        accessions.stream()
-            .map(
-                accession -> {
-                  final String spaceTrimmedAccession = accession.trim();
-                  final Optional<Sample> sampleOptional =
-                      sampleService.fetch(spaceTrimmedAccession, Optional.empty(), "");
+            accessions.stream()
+                    .map(
+                            accession -> {
+                              final String spaceTrimmedAccession = accession.trim();
+                              final Optional<Sample> sampleOptional =
+                                      sampleService.fetch(spaceTrimmedAccession, Optional.empty(), "");
 
-                  if (sampleOptional.isPresent()) {
-                    final boolean webinAuth =
-                        authToken
-                            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
-                            .orElse(Boolean.FALSE);
-                    final Sample sample = sampleOptional.get();
+                              if (sampleOptional.isPresent()) {
+                                final boolean webinAuth =
+                                        authToken
+                                                .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+                                                .orElse(Boolean.FALSE);
+                                final Sample sample = sampleOptional.get();
 
-                    try {
-                      if (webinAuth) {
-                        final String webinSubmissionAccountId = authToken.get().getUser();
+                                try {
+                                  if (webinAuth) {
+                                    final String webinSubmissionAccountId = authToken.get().getUser();
 
-                        bioSamplesWebinAuthenticationService.checkSampleAccessibility(
-                            sample, webinSubmissionAccountId);
-                      } else {
-                        bioSamplesAapService.checkSampleAccessibility(sample);
-                      }
-                    } catch (final Exception e) {
-                      log.info("Bulk-fetch forbidden sample: " + sample.getAccession());
+                                    bioSamplesWebinAuthenticationService.checkSampleAccessibility(
+                                            sample, webinSubmissionAccountId);
+                                  } else {
+                                    bioSamplesAapService.checkSampleAccessibility(sample);
+                                  }
+                                } catch (final Exception e) {
+                                  log.info("Bulk-fetch forbidden sample: " + sample.getAccession());
 
-                      return null;
-                    }
+                                  return null;
+                                }
 
-                    return sampleResourceAssembler.toModel(
-                        sample, Optional.of(false), Optional.empty());
-                  } else {
-                    log.info("Bulk-fetch not found sample: " + accession);
+                                return sampleResourceAssembler.toModel(
+                                        sample, Optional.of(false), Optional.empty());
+                              } else {
+                                log.info("Bulk-fetch not found sample: " + accession);
 
-                    return null;
-                  }
-                })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+                                return null;
+                              }
+                            })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
 
     log.info(
-        "Received bulk-fetch request for : "
-            + accessions.size()
-            + " samples and fetched "
-            + samples.size()
-            + " samples.");
+            "Received bulk-fetch request for : "
+                    + accessions.size()
+                    + " samples and fetched "
+                    + samples.size()
+                    + " samples.");
 
     return ResponseEntity.ok(
-        samples.stream()
-            .collect(
-                Collectors.toMap(sample -> sample.getContent().getAccession(), sample -> sample)));
+            samples.stream()
+                    .collect(
+                            Collectors.toMap(sample -> sample.getContent().getAccession(), sample -> sample)));
   }
 
   @PostMapping(
-      consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE})
+          consumes = {MediaType.APPLICATION_JSON_VALUE},
+          produces = {MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE})
   @RequestMapping("/validate")
   public ResponseEntity<Sample> validateSample(@RequestBody Sample sample) {
     schemaValidationService.validate(sample);
@@ -541,11 +541,11 @@ public class SamplesRestController {
 
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
-      consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE})
+          consumes = {MediaType.APPLICATION_JSON_VALUE},
+          produces = {MediaType.APPLICATION_JSON_VALUE})
   @RequestMapping("/accession")
   public ResponseEntity<EntityModel<Sample>> accessionSample(
-      @RequestBody Sample sample, @RequestHeader(name = "Authorization") final String token) {
+          @RequestBody Sample sample, @RequestHeader(name = "Authorization") final String token) {
 
     if (sample.hasAccession()) {
       throw new GlobalExceptions.SampleWithAccessionSubmissionException();
@@ -553,9 +553,9 @@ public class SamplesRestController {
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
+            authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
     final AuthorizationProvider authProvider =
-        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
+            webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
 
     if (webinAuth) {
       final String webinSubmissionAccountId = authToken.get().getUser();
@@ -565,8 +565,8 @@ public class SamplesRestController {
       }
 
       sample =
-          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              sample, webinSubmissionAccountId);
+              bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+                      sample, webinSubmissionAccountId);
     } else {
       sample = bioSamplesAapService.handleSampleDomain(sample);
     }
@@ -576,29 +576,29 @@ public class SamplesRestController {
     final EntityModel<Sample> sampleResource = sampleResourceAssembler.toModel(sample);
 
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").get().getHref()))
-        .body(sampleResource);
+            .body(sampleResource);
   }
 
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
-      consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE})
+          consumes = {MediaType.APPLICATION_JSON_VALUE},
+          produces = {MediaType.APPLICATION_JSON_VALUE})
   @RequestMapping("/bulk-accession")
   public ResponseEntity<Map<String, String>> bulkAccessionSample(
-      @RequestBody List<Sample> samples,
-      @RequestHeader(name = "Authorization") final String token) {
+          @RequestBody List<Sample> samples,
+          @RequestHeader(name = "Authorization") final String token) {
     log.info("Received POST for bulk accessioning of " + samples.size() + " samples");
 
     samples.forEach(
-        sample -> {
-          if (sample.hasAccession()) {
-            throw new GlobalExceptions.SampleWithAccessionSubmissionException();
-          }
-        });
+            sample -> {
+              if (sample.hasAccession()) {
+                throw new GlobalExceptions.SampleWithAccessionSubmissionException();
+              }
+            });
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
+            authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
 
     if (webinAuth) {
       final String webinSubmissionAccountId = authToken.get().getUser();
@@ -608,12 +608,12 @@ public class SamplesRestController {
       }
 
       samples =
-          samples.stream()
-              .map(
-                  sample ->
-                      bioSamplesWebinAuthenticationService.buildSampleWithWebinSubmissionAccountId(
-                          sample, bioSamplesProperties.getBiosamplesClientWebinUsername()))
-              .collect(Collectors.toList());
+              samples.stream()
+                      .map(
+                              sample ->
+                                      bioSamplesWebinAuthenticationService.buildSampleWithWebinSubmissionAccountId(
+                                              sample, bioSamplesProperties.getBiosamplesClientWebinUsername()))
+                      .collect(Collectors.toList());
     } else {
       if (!samples.isEmpty()) {
         // check the first sample domain only
@@ -623,43 +623,43 @@ public class SamplesRestController {
         final Sample finalFirstSample = firstSample;
 
         samples =
-            samples.stream()
-                .map(
-                    sample ->
-                        Sample.Builder.fromSample(sample)
-                            .withDomain(finalFirstSample.getDomain())
-                            .withNoWebinSubmissionAccountId()
-                            .build())
-                .collect(Collectors.toList());
+                samples.stream()
+                        .map(
+                                sample ->
+                                        Sample.Builder.fromSample(sample)
+                                                .withDomain(finalFirstSample.getDomain())
+                                                .withNoWebinSubmissionAccountId()
+                                                .build())
+                        .collect(Collectors.toList());
       }
     }
 
     final List<Sample> createdSamplesList =
-        samples.stream()
-            .map(
-                sample -> {
-                  log.trace("Initiating persistSample() for " + sample.getName());
+            samples.stream()
+                    .map(
+                            sample -> {
+                              log.trace("Initiating persistSample() for " + sample.getName());
 
-                  sample = buildPrivateSample(sample);
+                              sample = buildPrivateSample(sample);
                   /*
                   Call the accessionSample from SampleService, it doesn't do a lot of housekeeping like reporting to Rabbit,
                   saving to MongoSampleCurated etc which is not required for bulk-accessioning
                    */
-                  return sampleService.accessionSample(sample);
-                })
-            .collect(Collectors.toList());
+                              return sampleService.accessionSample(sample);
+                            })
+                    .collect(Collectors.toList());
 
     final Map<String, String> outputMap =
-        createdSamplesList.stream()
-            .filter(Objects::nonNull)
-            .collect(Collectors.toMap(Sample::getName, Sample::getAccession));
+            createdSamplesList.stream()
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toMap(Sample::getName, Sample::getAccession));
 
     log.info(
-        "Received bulk-accessioning request for : "
-            + samples.size()
-            + " samples and accessioned "
-            + outputMap.size()
-            + " samples.");
+            "Received bulk-accessioning request for : "
+                    + samples.size()
+                    + " samples and accessioned "
+                    + outputMap.size()
+                    + " samples.");
 
     return ResponseEntity.ok(outputMap);
   }
@@ -667,10 +667,10 @@ public class SamplesRestController {
   @PreAuthorize("isAuthenticated()")
   @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<EntityModel<Sample>> post(
-      @RequestBody Sample sample,
-      @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
-          boolean setFullDetails,
-      @RequestHeader(name = "Authorization") final String token) {
+          @RequestBody Sample sample,
+          @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
+                  boolean setFullDetails,
+          @RequestHeader(name = "Authorization") final String token) {
     log.debug("Received POST for " + sample);
 
     // can't submit structured data with the sample
@@ -678,14 +678,14 @@ public class SamplesRestController {
 
     if (structuredData != null && !structuredData.isEmpty()) {
       throw new GlobalExceptions.SampleValidationException(
-          "Sample contains structured data. Please submit structured data separately using the sample update PUT endpoint");
+              "Sample contains structured data. Please submit structured data separately using the sample update PUT endpoint");
     }
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
+            authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
     final AuthorizationProvider authProvider =
-        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
+            webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
     boolean isWebinSuperUser = false;
 
     if (webinAuth) {
@@ -696,15 +696,15 @@ public class SamplesRestController {
       }
 
       isWebinSuperUser =
-          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
+              bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
 
       if (sample.hasAccession()) {
         throw new GlobalExceptions.SampleWithAccessionSubmissionException();
       }
 
       sample =
-          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              sample, webinSubmissionAccountId);
+              bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+                      sample, webinSubmissionAccountId);
     } else {
       if (sample.hasAccession() && !bioSamplesAapService.isWriteSuperUser()) {
         throw new GlobalExceptions.SampleWithAccessionSubmissionException();
@@ -715,15 +715,15 @@ public class SamplesRestController {
 
     // update, create date are system generated fields
     SubmittedViaType submittedVia =
-        sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+            sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
 
     sample =
-        Sample.Builder.fromSample(sample)
-            .withCreate(defineCreateDate(sample))
-            .withSubmitted(defineSubmittedDate(sample))
-            .withUpdate(Instant.now())
-            .withSubmittedVia(submittedVia)
-            .build();
+            Sample.Builder.fromSample(sample)
+                    .withCreate(defineCreateDate(sample))
+                    .withSubmitted(defineSubmittedDate(sample))
+                    .withUpdate(Instant.now())
+                    .withSubmittedVia(submittedVia)
+                    .build();
 
     sample = validateSample(sample, webinAuth, isWebinSuperUser);
 
@@ -737,7 +737,7 @@ public class SamplesRestController {
     EntityModel<Sample> sampleResource = sampleResourceAssembler.toModel(sample, this.getClass());
     // create the response object with the appropriate status
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").get().getHref()))
-        .body(sampleResource);
+            .body(sampleResource);
   }
 
   private Sample validateSample(Sample sample, boolean webinAuth, boolean isWebinSuperUser) {
@@ -763,8 +763,8 @@ public class SamplesRestController {
     final Instant create = sample.getCreate();
 
     return (domain != null && sampleService.isAnImportAapDomain(domain))
-        ? (create != null ? create : now)
-        : now;
+            ? (create != null ? create : now)
+            : now;
   }
 
   private Instant defineSubmittedDate(final Sample sample) {
@@ -773,22 +773,22 @@ public class SamplesRestController {
     final Instant submitted = sample.getSubmitted();
 
     return (domain != null && sampleService.isAnImportAapDomain(domain))
-        ? (submitted != null ? submitted : now)
-        : now;
+            ? (submitted != null ? submitted : now)
+            : now;
   }
 
   private Sample buildPrivateSample(final Sample sample) {
     final Instant release =
-        Instant.ofEpochSecond(
-            LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+            Instant.ofEpochSecond(
+                    LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
     final Instant update = Instant.now();
     final SubmittedViaType submittedVia =
-        sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+            sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
 
     return Sample.Builder.fromSample(sample)
-        .withRelease(release)
-        .withUpdate(update)
-        .withSubmittedVia(submittedVia)
-        .build();
+            .withRelease(release)
+            .withUpdate(update)
+            .withSubmittedVia(submittedVia)
+            .build();
   }
 }
