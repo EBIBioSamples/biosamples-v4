@@ -79,6 +79,7 @@ deploy-preproduction:
     - ./deploy.sh bsd_dev wp-np2-40
   when: manual
   only:
+    - upgrade-to-spring-boot-2
     - gitlab_ci_improvements
     - dev
     - master
