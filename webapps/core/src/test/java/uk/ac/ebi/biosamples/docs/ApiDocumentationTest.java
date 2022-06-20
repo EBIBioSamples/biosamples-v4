@@ -10,7 +10,7 @@
 */
 package uk.ac.ebi.biosamples.docs;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -141,25 +141,19 @@ public class ApiDocumentationTest {
    * @throws Exception
    */
   @Test
-  @Ignore
   public void getSamples() throws Exception {
     Sample fakeSample = this.faker.getExampleSample();
     Page<Sample> samplePage =
         new PageImpl<>(Collections.singletonList(fakeSample), getDefaultPageable(), 100);
     when(samplePageService.getSamplesByText(
-            any(String.class),
+            nullable(String.class),
             anyList(),
-            anyList(),
-            any(String.class),
-            isA(Pageable.class),
-            any(String.class),
+            anySet(),
+            nullable(String.class),
+            any(Pageable.class),
+            nullable(String.class),
             any()))
         .thenReturn(samplePage);
-    when(accessControlService.extractToken(anyString()))
-        .thenReturn(
-            Optional.of(
-                new AuthToken(
-                    "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
     this.mockMvc
         .perform(get("/biosamples/samples").accept(MediaTypes.HAL_JSON))
         .andExpect(status().isOk())

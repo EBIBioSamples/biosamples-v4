@@ -12,6 +12,10 @@
 
 <dependencies>
 	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-webmvc</artifactId>
+	</dependency>
+	<dependency>
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>properties</artifactId>
 	<version>5.2.7-SNAPSHOT</version>
