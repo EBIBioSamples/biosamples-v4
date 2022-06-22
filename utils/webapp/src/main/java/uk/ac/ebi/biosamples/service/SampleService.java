@@ -91,7 +91,7 @@ public class SampleService {
       }
     }
 
-    if (isAnImportAapDomain(domain) || isMetadataSubmittedIfSubmitterIsWebinSuperUser)
+    if (isAPipelineAapDomain(domain) || isMetadataSubmittedIfSubmitterIsWebinSuperUser)
       isMetadataSubmitted = false; // imported sample - never submitted first time to BSD
     else {
       isMetadataSubmitted = checkIfNonImportedSampleHasMetadata(sample);
@@ -115,7 +115,7 @@ public class SampleService {
     return firstTimeMetadataAdded;
   }
 
-  public boolean isAnImportAapDomain(String domain) {
+  public boolean isAPipelineAapDomain(String domain) {
     return isPipelineEnaDomain(domain) || isPipelineNcbiDomain(domain);
   }
 

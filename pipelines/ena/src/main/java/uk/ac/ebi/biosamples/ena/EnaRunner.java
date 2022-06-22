@@ -445,9 +445,9 @@ public class EnaRunner implements ApplicationRunner {
     @Override
     public void processRow(ResultSet rs) throws SQLException {
       final String sampleAccession = rs.getString("BIOSAMPLE_ID");
-      final int statusID = rs.getInt("STATUS_ID");
+      final int statusId = rs.getInt("STATUS_ID");
       final String egaId = rs.getString("EGA_ID");
-      final ENAStatus enaStatus = ENAStatus.valueOf(statusID);
+      final ENAStatus enaStatus = ENAStatus.valueOf(statusId);
       Set<StructuredDataTable> amrData = new HashSet<>();
 
       if (sampleToAmrMap.containsKey(sampleAccession)) {

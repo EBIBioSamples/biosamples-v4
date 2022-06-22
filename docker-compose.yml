@@ -27,6 +27,7 @@ services:
     #configure other services
     - spring.data.solr.host=http://solr:8983/solr
     - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
+    - spring.data.mongodb.auto-index-creation=true
     - biosamples.mongo.sample.writeConcern=1
     - BIOSAMPLES_NEO_URL=bolt://neo4j:7687
     - biosamples.schemaValidator=http://json-schema-validator:3020/validate
@@ -91,6 +92,7 @@ services:
       #configure other services
       - spring.data.solr.host=http://solr:8983/solr
       - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
+      - spring.data.mongodb.auto-index-creation=true
       - BIOSAMPLES_NEO_URL=bolt://neo4j:7687
       - biosamples.schemaValidator=http://json-schema-validator:3020/validate
       - biosamples.schemaStore=http://schema-store:8085

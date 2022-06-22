@@ -14,7 +14,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
@@ -33,8 +32,7 @@ public class EnaCallableFactory {
       EnaXmlEnhancer enaXmlEnhancer,
       EnaElementConverter enaElementConverter,
       EgaSampleExporter egaSampleExporter,
-      EraProDao eraProDao,
-      PipelinesProperties pipelinesProperties) {
+      EraProDao eraProDao) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
     this.enaXmlEnhancer = enaXmlEnhancer;
     this.enaElementConverter = enaElementConverter;

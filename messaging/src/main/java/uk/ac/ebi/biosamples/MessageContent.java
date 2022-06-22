@@ -38,14 +38,6 @@ public class MessageContent {
     this.creationTime = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
   }
 
-  public boolean hasSample() {
-    return this.sample != null;
-  }
-
-  public boolean hasCurationLink() {
-    return this.curationLink != null;
-  }
-
   public Sample getSample() {
     return sample;
   }
@@ -64,17 +56,9 @@ public class MessageContent {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("MessageContent(");
-    sb.append(sample);
-    sb.append(",");
-    sb.append(curationLink);
-    sb.append(",");
-    sb.append(related);
-    sb.append(",");
-    sb.append(delete);
-    sb.append(")");
-    return sb.toString();
+    String sb =
+        "MessageContent(" + sample + "," + curationLink + "," + related + "," + delete + ")";
+    return sb;
   }
 
   @JsonCreator

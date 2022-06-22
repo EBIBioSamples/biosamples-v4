@@ -62,6 +62,8 @@ public class MessageHandlerSolr {
       // add the modified time to the solrSample
       String indexedTime = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
 
+      assert solrSample != null;
+
       solrSample =
           SolrSample.build(
               solrSample.getName(),

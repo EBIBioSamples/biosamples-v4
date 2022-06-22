@@ -235,7 +235,7 @@ public class SampleRestController {
               sample, webinSubmissionAccountId);
 
       if (abstractData != null && abstractData.size() > 0) {
-        if (bioSamplesWebinAuthenticationService.isStructuredDataSubmittedBySampleSubmitter(
+        if (bioSamplesWebinAuthenticationService.isSampleSubmitter(
             sample, webinSubmissionAccountId)) {
           sample = Sample.Builder.fromSample(sample).build();
         } else {
@@ -296,6 +296,22 @@ public class SampleRestController {
   private Sample validateSampleAgainstExternalValidationServices(
       Sample sample, boolean webinAuth, boolean isWebinSuperUser) {
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
+    return validateAndGetSample(
+        sample,
+        webinAuth,
+        isWebinSuperUser,
+        schemaValidationService,
+        taxonomyClientService,
+        bioSamplesAapService);
+  }
+
+  private Sample validateAndGetSample(
+      Sample sample,
+      final boolean webinAuth,
+      final boolean isWebinSuperUser,
+      final SchemaValidationService schemaValidationService,
+      final TaxonomyClientService taxonomyClientService,
+      final BioSamplesAapService bioSamplesAapService) {
     if (webinAuth && !isWebinSuperUser) {
       schemaValidationService.validate(sample);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);

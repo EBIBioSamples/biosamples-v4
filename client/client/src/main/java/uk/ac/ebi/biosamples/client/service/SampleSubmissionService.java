@@ -63,7 +63,7 @@ public class SampleSubmissionService {
   public EntityModel<Sample> submit(Sample sample, Boolean setFullDetails)
       throws RestClientException {
     try {
-      return new SubmitCallable(sample, setFullDetails, isWebinSubmission).call();
+      return new SubmitCallable(sample, setFullDetails).call();
     } catch (RestClientException e) {
       throw e;
     } catch (Exception e) {
@@ -75,7 +75,7 @@ public class SampleSubmissionService {
   public EntityModel<Sample> submit(Sample sample, String jwt, Boolean setFullDetails)
       throws RestClientException {
     try {
-      return new SubmitCallable(sample, jwt, setFullDetails, isWebinSubmission).call();
+      return new SubmitCallable(sample, jwt, setFullDetails).call();
     } catch (RestClientException e) {
       throw e;
     } catch (Exception e) {
@@ -94,34 +94,30 @@ public class SampleSubmissionService {
    */
   public Future<EntityModel<Sample>> submitAsync(Sample sample, Boolean setFullDetails)
       throws RestClientException {
-    return executor.submit(new SubmitCallable(sample, setFullDetails, isWebinSubmission));
+    return executor.submit(new SubmitCallable(sample, setFullDetails));
   }
 
   /** @param jwt json web token authorizing access to the domain the sample is assigned to */
   public Future<EntityModel<Sample>> submitAsync(Sample sample, String jwt, Boolean setFullDetails)
       throws RestClientException {
-    return executor.submit(new SubmitCallable(sample, jwt, setFullDetails, isWebinSubmission));
+    return executor.submit(new SubmitCallable(sample, jwt, setFullDetails));
   }
 
   private class SubmitCallable implements Callable<EntityModel<Sample>> {
     private final Sample sample;
     private final Boolean setFullDetails;
     private final String jwt;
-    private final Boolean isWebinSubmission;
 
-    public SubmitCallable(Sample sample, Boolean setFullDetails, Boolean isWebinSubmission) {
+    public SubmitCallable(Sample sample, Boolean setFullDetails) {
       this.sample = sample;
       this.setFullDetails = setFullDetails;
       this.jwt = null;
-      this.isWebinSubmission = isWebinSubmission;
     }
 
-    public SubmitCallable(
-        Sample sample, String jwt, boolean setFullDetails, Boolean isWebinSubmission) {
+    public SubmitCallable(Sample sample, String jwt, boolean setFullDetails) {
       this.sample = sample;
       this.setFullDetails = setFullDetails;
       this.jwt = jwt;
-      this.isWebinSubmission = isWebinSubmission;
     }
 
     @Override

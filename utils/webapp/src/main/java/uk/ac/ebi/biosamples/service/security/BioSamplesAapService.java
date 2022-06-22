@@ -38,7 +38,6 @@ import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
 public class BioSamplesAapService {
   private Logger log = LoggerFactory.getLogger(getClass());
 
-  private final Traverson traverson;
   private final BioSamplesProperties bioSamplesProperties;
   private final SampleService sampleService;
   private final AapTokenService tokenService;
@@ -52,7 +51,7 @@ public class BioSamplesAapService {
       AapTokenService tokenService,
       AapDomainService domainService,
       BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService) {
-    traverson =
+    Traverson traverson =
         new Traverson(bioSamplesProperties.getBiosamplesClientAapUri(), MediaTypes.HAL_JSON);
     this.tokenService = tokenService;
     this.domainService = domainService;
@@ -67,15 +66,12 @@ public class BioSamplesAapService {
   }
 
   public List<String> getDomains(String token) {
-    List<String> domains = new ArrayList<>();
 
     domainService.getMyDomains(token).forEach(domain -> log.info(domain.getDomainName()));
-    domains.addAll(
-        domainService.getMyDomains(token).stream()
-            .map(domain -> domain.getDomainName())
-            .collect(Collectors.toList()));
 
-    return domains;
+    return domainService.getMyDomains(token).stream()
+        .map(Domain::getDomainName)
+        .collect(Collectors.toList());
   }
 
   /**
@@ -324,10 +320,6 @@ public class BioSamplesAapService {
               + usersDomains);
       throw new GlobalExceptions.SampleNotAccessibleException();
     }
-  }
-
-  public boolean isReadSuperUser() {
-    return getDomains().contains(bioSamplesProperties.getBiosamplesAapSuperRead());
   }
 
   public boolean isWriteSuperUser() {

@@ -91,7 +91,7 @@ public class BioSamplesWebinAuthenticationService {
     final String webinSubmissionAccountIdInMetadata = sample.getWebinSubmissionAccountId();
 
     if (webinId != null && !webinId.isEmpty()) { // webin id retrieval failure - throw Exception
-      final String webinIdToUse =
+      final String webinIdToUseWhileBioSamplesClientSubmissions =
           (webinSubmissionAccountIdInMetadata != null
                   && !webinSubmissionAccountIdInMetadata.isEmpty())
               ? webinSubmissionAccountIdInMetadata
@@ -121,7 +121,8 @@ public class BioSamplesWebinAuthenticationService {
                 && !oldSavedSampleWebinSubmissionAccountId
                     .isEmpty()) { // if old sample has user info, use it
               if (oldSavedSampleWebinSubmissionAccountId.equals(biosamplesClientWebinUsername)) {
-                return buildSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
+                return buildSampleWithWebinSubmissionAccountId(
+                    sample, webinIdToUseWhileBioSamplesClientSubmissions);
               } else {
                 return buildSampleWithWebinSubmissionAccountId(
                     sample, oldSavedSampleWebinSubmissionAccountId);
@@ -129,18 +130,20 @@ public class BioSamplesWebinAuthenticationService {
             } else {
               final String oldSampleDomain = oldSavedSample.getDomain();
 
-              if (sampleService.isAnImportAapDomain(oldSampleDomain)
-                  || checkIfAnyENACurrentOrOldRegistrationDomain(
+              if (sampleService.isAPipelineAapDomain(oldSampleDomain)
+                  || isOldRegistrationDomain(
                       oldSampleDomain)) { // if old sample was a pipeline submission using AAP, or
                 // pre registration, allow
                 // webin replacement
-                return buildSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
+                return buildSampleWithWebinSubmissionAccountId(
+                    sample, webinIdToUseWhileBioSamplesClientSubmissions);
               } else {
                 throw new GlobalExceptions.SampleNotAccessibleException();
               }
             }
           } else {
-            return buildSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
+            return buildSampleWithWebinSubmissionAccountId(
+                sample, webinIdToUseWhileBioSamplesClientSubmissions);
           }
         } else { // normal sample update - not pipeline, check for old user, if mismatch throw
           // exception, else build the Sample
@@ -160,7 +163,8 @@ public class BioSamplesWebinAuthenticationService {
       } else { // new submission
         if (webinId.equalsIgnoreCase(
             biosamplesClientWebinUsername)) { // new submission by client program
-          return buildSampleWithWebinSubmissionAccountId(sample, webinIdToUse);
+          return buildSampleWithWebinSubmissionAccountId(
+              sample, webinIdToUseWhileBioSamplesClientSubmissions);
         } else {
           return buildSampleWithWebinSubmissionAccountId(sample, webinId);
         }
@@ -171,7 +175,7 @@ public class BioSamplesWebinAuthenticationService {
   }
 
   /*Only used for sample migration purposes*/
-  private boolean checkIfAnyENACurrentOrOldRegistrationDomain(final String sampleDomain) {
+  private boolean isOldRegistrationDomain(final String sampleDomain) {
     if (sampleDomain != null) {
       return sampleDomain.equals("self.Webin")
           || sampleDomain.equals("3fa5e19ccafc88187d437f92cf29c3b6694c6c6f98efa236c8aa0aeaf5b23f15")
@@ -223,7 +227,7 @@ public class BioSamplesWebinAuthenticationService {
             });
   }
 
-  public boolean isStructuredDataSubmittedBySampleSubmitter(final Sample sample, final String id) {
+  public boolean isSampleSubmitter(final Sample sample, final String id) {
     final AtomicBoolean isWebinIdValid = new AtomicBoolean(false);
 
     sample
@@ -239,14 +243,14 @@ public class BioSamplesWebinAuthenticationService {
             });
 
     if (sample.hasAccession()) {
-      isWebinIdValid.set(isStructuredDataAccessibleBySubmitter(sample, id));
+      isWebinIdValid.set(isStructuredDataAccessible(sample, id));
     }
 
     if (isWebinIdValid.get()) return true;
     else throw new GlobalExceptions.StructuredDataNotAccessibleException();
   }
 
-  private boolean isStructuredDataAccessibleBySubmitter(final Sample sample, final String webinId) {
+  private boolean isStructuredDataAccessible(final Sample sample, final String webinId) {
     final AtomicBoolean isWebinIdValid = new AtomicBoolean(false);
     final Optional<Sample> oldSample = fetchOldSample(sample);
 

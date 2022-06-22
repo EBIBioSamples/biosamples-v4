@@ -60,7 +60,7 @@ public class StructuredDataRestController {
     return new EntityModel<>(
         structuredDataService
             .getStructuredData(accession)
-            .orElseThrow(() -> new GlobalExceptions.SampleNotFoundException()));
+            .orElseThrow(GlobalExceptions.SampleNotFoundException::new));
   }
 
   @PreAuthorize("isAuthenticated()")

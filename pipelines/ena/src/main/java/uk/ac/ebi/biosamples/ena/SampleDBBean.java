@@ -13,7 +13,7 @@ package uk.ac.ebi.biosamples.ena;
 import uk.ac.ebi.biosamples.model.Sample;
 
 /**
- * Bean to store everything fetched from ERAPRO for a {@link Sample}
+ * Bean to store all ENA sample related details fetched from ERAPRO for a {@link Sample}
  *
  * @author dgupta
  */

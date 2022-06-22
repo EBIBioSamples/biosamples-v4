@@ -104,6 +104,7 @@ public class NcbiCurationCallable implements Callable<Void> {
         final Sample sample = optionalSampleResource.get().getContent();
         boolean persistRequired = true;
 
+        assert sample != null;
         for (Attribute attribute : sample.getAttributes()) {
           if (attribute.getType().equals("INSDC status")
               && (attribute.getValue().equals(SUPPRESSED)

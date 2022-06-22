@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
@@ -38,9 +38,9 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
 
   protected abstract void phaseOne();
 
-  protected abstract void phaseTwo();
+  protected abstract void phaseTwo() throws InterruptedException;
 
-  protected abstract void phaseThree();
+  protected abstract void phaseThree() throws InterruptedException;
 
   protected abstract void phaseFour();
 
@@ -110,7 +110,7 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
   Optional<Sample> fetchUniqueSampleByName(String name) {
     Optional<Sample> optionalSample;
     Filter nameFilter = FilterBuilder.create().onName(name).build();
-    Iterator<Resource<Sample>> resourceIterator =
+    Iterator<EntityModel<Sample>> resourceIterator =
         publicClient.fetchSampleResourceAll(Collections.singletonList(nameFilter)).iterator();
 
     if (resourceIterator.hasNext()) {

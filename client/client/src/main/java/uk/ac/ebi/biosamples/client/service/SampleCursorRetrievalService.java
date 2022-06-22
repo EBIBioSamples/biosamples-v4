@@ -10,13 +10,10 @@
 */
 package uk.ac.ebi.biosamples.client.service;
 
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -31,11 +28,6 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 
 public class SampleCursorRetrievalService {
 
-  private Logger log = LoggerFactory.getLogger(getClass());
-
-  public static final DateTimeFormatter solrFormatter =
-      DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
-
   private static final ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>
       parameterizedTypeReferencePagedResourcesSample =
           new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {};
@@ -44,19 +36,13 @@ public class SampleCursorRetrievalService {
   private final ExecutorService executor;
   private final RestOperations restOperations;
   private final int pageSize;
-  private final boolean isWebinSubmission;
 
   public SampleCursorRetrievalService(
-      RestOperations restOperations,
-      Traverson traverson,
-      ExecutorService executor,
-      int pageSize,
-      boolean isWebinSubmission) {
+      RestOperations restOperations, Traverson traverson, ExecutorService executor, int pageSize) {
     this.restOperations = restOperations;
     this.traverson = traverson;
     this.executor = executor;
     this.pageSize = pageSize;
-    this.isWebinSubmission = isWebinSubmission;
   }
 
   public Iterable<EntityModel<Sample>> fetchAll(String text, Collection<Filter> filterCollection) {

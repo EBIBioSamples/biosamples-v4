@@ -479,9 +479,9 @@ public class SamplesRestController {
         accessions.stream()
             .map(
                 accession -> {
-                  final String spaceTrimmedAccession = accession.trim();
+                  final String cleanAccession = accession.trim();
                   final Optional<Sample> sampleOptional =
-                      sampleService.fetch(spaceTrimmedAccession, Optional.empty(), "");
+                      sampleService.fetch(cleanAccession, Optional.empty(), "");
 
                   if (sampleOptional.isPresent()) {
                     final boolean webinAuth =
@@ -519,14 +519,16 @@ public class SamplesRestController {
     log.info(
         "Received bulk-fetch request for : "
             + accessions.size()
-            + " samples and fetched "
+            + " samples and fetched : "
             + samples.size()
             + " samples.");
 
     return ResponseEntity.ok(
         samples.stream()
             .collect(
-                Collectors.toMap(sample -> sample.getContent().getAccession(), sample -> sample)));
+                Collectors.toMap(
+                    sample -> Objects.requireNonNull(sample.getContent()).getAccession(),
+                    sample -> sample)));
   }
 
   @PostMapping(
@@ -657,7 +659,7 @@ public class SamplesRestController {
     log.info(
         "Received bulk-accessioning request for : "
             + samples.size()
-            + " samples and accessioned "
+            + " samples and accessioned : "
             + outputMap.size()
             + " samples.");
 
@@ -698,7 +700,7 @@ public class SamplesRestController {
       isWebinSuperUser =
           bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
 
-      if (sample.hasAccession()) {
+      if (sample.hasAccession() && !isWebinSuperUser) {
         throw new GlobalExceptions.SampleWithAccessionSubmissionException();
       }
 
@@ -742,6 +744,22 @@ public class SamplesRestController {
 
   private Sample validateSample(Sample sample, boolean webinAuth, boolean isWebinSuperUser) {
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
+    return validateAndGetSample(
+        sample,
+        webinAuth,
+        isWebinSuperUser,
+        schemaValidationService,
+        taxonomyClientService,
+        bioSamplesAapService);
+  }
+
+  private Sample validateAndGetSample(
+      Sample sample,
+      final boolean webinAuth,
+      final boolean isWebinSuperUser,
+      final SchemaValidationService schemaValidationService,
+      final TaxonomyClientService taxonomyClientService,
+      final BioSamplesAapService bioSamplesAapService) {
     if (webinAuth && !isWebinSuperUser) {
       schemaValidationService.validate(sample);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
@@ -762,7 +780,7 @@ public class SamplesRestController {
     final String domain = sample.getDomain();
     final Instant create = sample.getCreate();
 
-    return (domain != null && sampleService.isAnImportAapDomain(domain))
+    return (domain != null && sampleService.isAPipelineAapDomain(domain))
         ? (create != null ? create : now)
         : now;
   }
@@ -772,7 +790,7 @@ public class SamplesRestController {
     final String domain = sample.getDomain();
     final Instant submitted = sample.getSubmitted();
 
-    return (domain != null && sampleService.isAnImportAapDomain(domain))
+    return (domain != null && sampleService.isAPipelineAapDomain(domain))
         ? (submitted != null ? submitted : now)
         : now;
   }

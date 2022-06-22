@@ -11,7 +11,6 @@
 package uk.ac.ebi.biosamples.client.service;
 
 import java.net.URI;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -22,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.hateoas.client.Traverson.TraversalBuilder;
@@ -37,13 +35,6 @@ import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 
 public class SampleRetrievalService {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
-  public static final DateTimeFormatter solrFormatter =
-      DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
-
-  private static final ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>
-      parameterizedTypeReferencePagedResourcesSample =
-          new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {};
 
   private final Traverson traverson;
   private final ExecutorService executor;
@@ -248,7 +239,7 @@ public class SampleRetrievalService {
       }
       log.trace("GETted " + uri);
 
-      return Optional.of(responseEntity.getBody());
+      return Optional.ofNullable(responseEntity.getBody());
     }
   }
 

@@ -111,8 +111,7 @@ public class BioSamplesClient implements AutoCloseable {
             restOperations,
             traverson,
             threadPoolExecutor,
-            bioSamplesProperties.getBiosamplesClientPagesize(),
-            isWebinSubmission);
+            bioSamplesProperties.getBiosamplesClientPagesize());
 
     sampleSubmissionService =
         new SampleSubmissionService(
