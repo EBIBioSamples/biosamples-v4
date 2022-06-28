@@ -12,8 +12,6 @@ package uk.ac.ebi.biosamples.controller;
 
 import java.net.URI;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -573,7 +571,7 @@ public class SamplesRestController {
       sample = bioSamplesAapService.handleSampleDomain(sample);
     }
 
-    sample = buildPrivateSample(sample);
+    sample = sampleService.buildPrivateSample(sample);
     sample = sampleService.persistSample(sample, false, authProvider);
     final EntityModel<Sample> sampleResource = sampleResourceAssembler.toModel(sample);
 
@@ -642,7 +640,7 @@ public class SamplesRestController {
                 sample -> {
                   log.trace("Initiating persistSample() for " + sample.getName());
 
-                  sample = buildPrivateSample(sample);
+                  sample = sampleService.buildPrivateSample(sample);
                   /*
                   Call the accessionSample from SampleService, it doesn't do a lot of housekeeping like reporting to Rabbit,
                   saving to MongoSampleCurated etc which is not required for bulk-accessioning
@@ -721,8 +719,8 @@ public class SamplesRestController {
 
     sample =
         Sample.Builder.fromSample(sample)
-            .withCreate(defineCreateDate(sample))
-            .withSubmitted(defineSubmittedDate(sample))
+            .withCreate(sampleService.defineCreateDate(sample))
+            .withSubmitted(sampleService.defineSubmittedDate(sample))
             .withUpdate(Instant.now())
             .withSubmittedVia(submittedVia)
             .build();
@@ -744,22 +742,6 @@ public class SamplesRestController {
 
   private Sample validateSample(Sample sample, boolean webinAuth, boolean isWebinSuperUser) {
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    return validateAndGetSample(
-        sample,
-        webinAuth,
-        isWebinSuperUser,
-        schemaValidationService,
-        taxonomyClientService,
-        bioSamplesAapService);
-  }
-
-  private Sample validateAndGetSample(
-      Sample sample,
-      final boolean webinAuth,
-      final boolean isWebinSuperUser,
-      final SchemaValidationService schemaValidationService,
-      final TaxonomyClientService taxonomyClientService,
-      final BioSamplesAapService bioSamplesAapService) {
     if (webinAuth && !isWebinSuperUser) {
       schemaValidationService.validate(sample);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
@@ -773,40 +755,5 @@ public class SamplesRestController {
     }
 
     return sample;
-  }
-
-  private Instant defineCreateDate(final Sample sample) {
-    final Instant now = Instant.now();
-    final String domain = sample.getDomain();
-    final Instant create = sample.getCreate();
-
-    return (domain != null && sampleService.isAPipelineAapDomain(domain))
-        ? (create != null ? create : now)
-        : now;
-  }
-
-  private Instant defineSubmittedDate(final Sample sample) {
-    final Instant now = Instant.now();
-    final String domain = sample.getDomain();
-    final Instant submitted = sample.getSubmitted();
-
-    return (domain != null && sampleService.isAPipelineAapDomain(domain))
-        ? (submitted != null ? submitted : now)
-        : now;
-  }
-
-  private Sample buildPrivateSample(final Sample sample) {
-    final Instant release =
-        Instant.ofEpochSecond(
-            LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
-    final Instant update = Instant.now();
-    final SubmittedViaType submittedVia =
-        sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
-
-    return Sample.Builder.fromSample(sample)
-        .withRelease(release)
-        .withUpdate(update)
-        .withSubmittedVia(submittedVia)
-        .build();
   }
 }

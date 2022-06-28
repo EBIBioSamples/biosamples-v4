@@ -40,7 +40,8 @@ public class NcbiDatesTests {
 
   @Before
   public void setup() {
-    this.conversionService = new NcbiSampleConversionService(new TaxonomyService());
+    this.conversionService =
+        new NcbiSampleConversionService(new TaxonomyService(), new NcbiEraProDao());
     this.testNcbiBioSamples =
         NcbiTestsService.readNcbiBiosampleElementFromFile("/examples/biosample_result_test.xml");
   }

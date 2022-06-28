@@ -11,6 +11,8 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -426,5 +428,38 @@ public class SampleService {
         }
       }
     }
+  }
+
+  public Instant defineCreateDate(final Sample sample) {
+    final Instant now = Instant.now();
+    final String domain = sample.getDomain();
+    final Instant create = sample.getCreate();
+
+    return (domain != null && isAPipelineAapDomain(domain)) ? (create != null ? create : now) : now;
+  }
+
+  public Instant defineSubmittedDate(final Sample sample) {
+    final Instant now = Instant.now();
+    final String domain = sample.getDomain();
+    final Instant submitted = sample.getSubmitted();
+
+    return (domain != null && isAPipelineAapDomain(domain))
+        ? (submitted != null ? submitted : now)
+        : now;
+  }
+
+  public Sample buildPrivateSample(final Sample sample) {
+    final Instant release =
+        Instant.ofEpochSecond(
+            LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+    final Instant update = Instant.now();
+    final SubmittedViaType submittedVia =
+        sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+
+    return Sample.Builder.fromSample(sample)
+        .withRelease(release)
+        .withUpdate(update)
+        .withSubmittedVia(submittedVia)
+        .build();
   }
 }

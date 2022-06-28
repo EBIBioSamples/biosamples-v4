@@ -96,7 +96,7 @@ public class Ncbi implements ApplicationRunner {
       } else {
         fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
       }
-      LocalDate toDate = null;
+      LocalDate toDate;
       if (args.getOptionNames().contains("until")) {
         toDate =
             LocalDate.parse(
@@ -147,6 +147,7 @@ public class Ncbi implements ApplicationRunner {
             ThreadUtils.checkFutures(futures, 0);
           } finally {
             log.info("shutting down");
+            assert executorService != null;
             executorService.shutdown();
             executorService.awaitTermination(1, TimeUnit.MINUTES);
           }
@@ -160,7 +161,7 @@ public class Ncbi implements ApplicationRunner {
       log.info("Number of accession from NCBI = " + sampleCallback.getAccessions().size());
       // remove old NCBI samples no longer present
       // get all existing NCBI samples
-      // makingNcbiSamplesPrivate();
+      makingNcbiSamplesPrivate();
       log.info("Processed NCBI pipeline");
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);

@@ -60,12 +60,12 @@ public class NcbiElementCallableTest {
   }
 
   @Test
-  public void should_extract_double_organism_if_organism_is_in_description() throws Exception {
+  public void should_extract_double_organism_if_organism_is_in_description() {
     ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
     when(bioSamplesClient.persistSampleResource(generatedSample.capture())).thenReturn(null);
 
     NcbiSampleConversionService ncbiSampleConversionService =
-        new NcbiSampleConversionService(taxonService);
+        new NcbiSampleConversionService(taxonService, new NcbiEraProDao());
     NcbiElementCallable callable =
         new NcbiElementCallable(
             ncbiSampleConversionService, bioSamplesClient, sample, "test", new HashMap<>());
@@ -91,7 +91,7 @@ public class NcbiElementCallableTest {
     when(bioSamplesClient.persistSampleResource(generatedSample.capture())).thenReturn(null);
 
     NcbiSampleConversionService ncbiSampleConversionService =
-        new NcbiSampleConversionService(taxonService);
+        new NcbiSampleConversionService(taxonService, new NcbiEraProDao());
     NcbiElementCallable callable =
         new NcbiElementCallable(
             ncbiSampleConversionService, bioSamplesClient, sample, "test", null);
