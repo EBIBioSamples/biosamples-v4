@@ -25,7 +25,6 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
 public class NcbiAmrConversionService {
-
   public Set<Map<String, StructuredDataEntry>> convertStructuredTable(
       Element amrTableElement, String organism) throws AmrParsingException {
     List<String> fields =

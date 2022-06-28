@@ -45,31 +45,36 @@ public class NcbiElementCallable implements Callable<Void> {
   }
 
   @Override
-  public Void call() throws Exception {
-    Set<StructuredDataTable> amrData = new HashSet<>();
-    String accession = sampleElem.attributeValue("accession");
+  public Void call() {
+    final String accession = sampleElem.attributeValue("accession");
 
-    log.trace("Element callable starting for " + accession);
+    try {
+      Set<StructuredDataTable> amrData = new HashSet<>();
 
-    if (sampleToAmrMap != null && sampleToAmrMap.containsKey(accession)) {
-      amrData = sampleToAmrMap.get(accession);
+      log.trace("Element callable starting for " + accession);
+
+      if (sampleToAmrMap != null && sampleToAmrMap.containsKey(accession)) {
+        amrData = sampleToAmrMap.get(accession);
+      }
+
+      // Generate the sample without the domain
+      Sample sampleWithoutDomain =
+          ncbiSampleConversionService.convertNcbiXmlElementToSample(sampleElem);
+      Sample sample = Sample.Builder.fromSample(sampleWithoutDomain).withDomain(domain).build();
+      bioSamplesClient.persistSampleResource(sample);
+
+      Set<StructuredDataTable> structuredDataTableSet =
+          ncbiSampleConversionService.convertNcbiXmlElementToStructuredData(sampleElem, amrData);
+      if (!structuredDataTableSet.isEmpty()) {
+        StructuredData structuredData =
+            StructuredData.build(accession, sample.getCreate(), structuredDataTableSet);
+        bioSamplesClient.persistStructuredData(structuredData);
+      }
+
+      log.trace("Element callable finished");
+    } catch (final Exception e) {
+      log.info("Failed to import NCBI sample having accession " + accession);
     }
-
-    // Generate the sample without the domain
-    Sample sampleWithoutDomain =
-        ncbiSampleConversionService.convertNcbiXmlElementToSample(sampleElem);
-    Sample sample = Sample.Builder.fromSample(sampleWithoutDomain).withDomain(domain).build();
-    bioSamplesClient.persistSampleResource(sample);
-
-    Set<StructuredDataTable> structuredDataTableSet =
-        ncbiSampleConversionService.convertNcbiXmlElementToStructuredData(sampleElem, amrData);
-    if (!structuredDataTableSet.isEmpty()) {
-      StructuredData structuredData =
-          StructuredData.build(accession, sample.getCreate(), structuredDataTableSet);
-      bioSamplesClient.persistStructuredData(structuredData);
-    }
-
-    log.trace("Element callable finished");
 
     return null;
   }

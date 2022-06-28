@@ -114,7 +114,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
           "Curation",
           "Failed for network connectivity issues/ other issues - <ALERT BIOSAMPLES DEV> "
               + e.getMessage(),
-          isPassed);
+          false);
       throw e;
     } finally {
       Instant endTime = Instant.now();

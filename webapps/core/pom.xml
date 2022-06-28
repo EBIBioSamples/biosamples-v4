@@ -65,7 +65,7 @@
 			<artifactId>models-curami</artifactId>
 			<version>5.2.7-SNAPSHOT</version>
 		</dependency>
-		<!-- use Thymleaf for HTML templating -->
+		<!-- use Thymeleaf for HTML templating -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
