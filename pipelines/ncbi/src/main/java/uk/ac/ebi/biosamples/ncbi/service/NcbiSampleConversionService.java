@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.Sample.Builder;
@@ -98,10 +97,11 @@ public class NcbiSampleConversionService {
   private final TaxonomyService taxonomyService;
   private final NcbiAmrConversionService amrConversionService;
 
-  @Autowired NcbiEraProDao ncbiEraProDao;
+  private final NcbiEraProDao ncbiEraProDao;
 
-  public NcbiSampleConversionService(TaxonomyService taxonomyService) {
+  public NcbiSampleConversionService(TaxonomyService taxonomyService, NcbiEraProDao ncbiEraProDao) {
     this.taxonomyService = taxonomyService;
+    this.ncbiEraProDao = ncbiEraProDao;
     this.amrConversionService = new NcbiAmrConversionService();
   }
 
@@ -121,7 +121,6 @@ public class NcbiSampleConversionService {
     String organismIri = null;
     String organismValue = null;
     String geoTag = null;
-    boolean hasOrganismInDescription = false;
     boolean hasSraAccession = false;
 
     for (Element idElem : XmlPathBuilder.of(sampleElem).path(IDS).elements(ID)) {
@@ -238,7 +237,6 @@ public class NcbiSampleConversionService {
         organismAttribute =
             Attribute.build(NCBI_JSON_CORE_ORGANISM, organismValue, organismIri, null);
         attrs.add(organismAttribute);
-        hasOrganismInDescription = true;
       }
     }
 
@@ -279,17 +277,8 @@ public class NcbiSampleConversionService {
         }
       } else {
         // its an attribute
-        if (key.equalsIgnoreCase(ORGANISM) && !hasOrganismInDescription) {
-          organismValue = value;
-        }
 
-        attrs.add(
-            Attribute.build(
-                key,
-                value != null ? value : null,
-                SAMPLE_ATTRIBUTE,
-                Collections.emptyList(),
-                null));
+        attrs.add(Attribute.build(key, value, SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
       }
     }
 
@@ -380,7 +369,6 @@ public class NcbiSampleConversionService {
     String accession = sampleElem.attributeValue(ACCESSION);
     Set<StructuredDataTable> structuredData = new HashSet<>();
     Set<StructuredDataTable> structuredDataTableSet = new HashSet<>();
-    String organismValue = null;
 
     // handle AMR data
     if (XmlPathBuilder.of(sampleElem).path(DESCRIPTION, COMMENT).exists()) {
@@ -390,7 +378,7 @@ public class NcbiSampleConversionService {
         if (antibiogramClass != null && ANTIBIOGRAM_PATTERN.matcher(antibiogramClass).matches()) {
           try {
             Set<Map<String, StructuredDataEntry>> structuredTable =
-                amrConversionService.convertStructuredTable(element, organismValue);
+                amrConversionService.convertStructuredTable(element, null);
             StructuredDataTable structuredDataTable =
                 StructuredDataTable.build(
                     "self.BiosampleImportNCBI", null, "AMR", null, structuredTable);
