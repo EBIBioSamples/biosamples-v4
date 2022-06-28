@@ -13,6 +13,9 @@ package uk.ac.ebi.biosamples.exceptions;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+/*
+All BioSamples exceptions are declared in this class
+ */
 public class GlobalExceptions {
   @ResponseStatus(
       value = HttpStatus.BAD_REQUEST,
@@ -61,7 +64,7 @@ public class GlobalExceptions {
           "This sample is private and not available for browsing. If you think this is an error and/or you should have access please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk")
   public static class SampleNotAccessibleException extends RuntimeException {}
 
-  public class SampleNotAccessibleAdviceException extends RuntimeException {
+  public static class SampleNotAccessibleAdviceException extends RuntimeException {
     private static final long serialVersionUID = -6250819256457895445L;
   }
 
@@ -140,6 +143,12 @@ public class GlobalExceptions {
   @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR, reason = "Bulk accessioning failure")
   public static class BulkAccessionFailureExceptionV2 extends RuntimeException {
     public BulkAccessionFailureExceptionV2(String message) {
+      super(message);
+    }
+  }
+
+  public static class SampleConversionException extends RuntimeException {
+    public SampleConversionException(String message) {
       super(message);
     }
   }
