@@ -19,7 +19,7 @@ import org.phenopackets.schema.v1.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.exceptions.SampleConversionException;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -38,7 +38,8 @@ public class PhenopacketConverter {
           "Trying to export invalid sample in phenopacket format: accession = {}, tax_id = {}",
           sample.getAccession(),
           sample.getTaxId());
-      throw new SampleConversionException("Non human sample can not be exported into phenopacket.");
+      throw new GlobalExceptions.SampleConversionException(
+          "Non human sample can not be exported into phenopacket.");
     }
 
     Phenopacket phenopacket = convert(sample);
@@ -46,7 +47,8 @@ public class PhenopacketConverter {
       return JsonFormat.printer().print(phenopacket);
     } catch (InvalidProtocolBufferException e) {
       LOG.error("Failed to serialise phenopacket into JSON", e);
-      throw new SampleConversionException("Failed to serialise phenopacket into JSON.");
+      throw new GlobalExceptions.SampleConversionException(
+          "Failed to serialise phenopacket into JSON.");
     }
   }
 
