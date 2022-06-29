@@ -19,7 +19,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.function.IntFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -50,7 +49,6 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
   private final MultiValueMap<String, String> params;
   private final ExecutorService executor;
   private final String jwt;
-  private boolean isWebinSubmission;
 
   public IterableResourceFetchAll(
       ExecutorService executor,
@@ -104,15 +102,7 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
         jwt,
         isWebinSubmission,
         params,
-        Arrays.stream(rels)
-            .map(rel -> Hop.rel(rel))
-            .toArray(
-                new IntFunction<Hop[]>() {
-                  @Override
-                  public Hop[] apply(int value) {
-                    return new Hop[value];
-                  }
-                }));
+        Arrays.stream(rels).map(Hop::rel).toArray(Hop[]::new));
   }
 
   public IterableResourceFetchAll(
@@ -131,7 +121,6 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
     this.parameterizedTypeReference = parameterizedTypeReference;
     this.params = params;
     this.jwt = jwt;
-    this.isWebinSubmission = isWebinSubmission;
   }
 
   public Iterator<EntityModel<T>> iterator() {

@@ -35,7 +35,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.ncbi.NcbiEraProDao;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
-import uk.ac.ebi.biosamples.utils.TaxonomyService;
+import uk.ac.ebi.biosamples.service.TaxonomyService;
 
 @RunWith(SpringRunner.class)
 public class NcbiBaseConverterTests {

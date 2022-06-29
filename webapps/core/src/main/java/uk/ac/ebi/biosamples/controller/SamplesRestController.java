@@ -466,7 +466,7 @@ public class SamplesRestController {
   public ResponseEntity<Map<String, EntityModel<Sample>>> getMultipleSampleHals(
       @RequestParam final List<String> accessions,
       @RequestHeader(name = "Authorization", required = false) final String token) {
-    if (accessions == null && !(accessions.size() > 0)) {
+    if (accessions == null) {
       throw new GlobalExceptions.BulkFetchInvalidRequestException();
     }
 
@@ -612,7 +612,7 @@ public class SamplesRestController {
               .map(
                   sample ->
                       bioSamplesWebinAuthenticationService.buildSampleWithWebinSubmissionAccountId(
-                          sample, bioSamplesProperties.getBiosamplesClientWebinUsername()))
+                          sample, webinSubmissionAccountId))
               .collect(Collectors.toList());
     } else {
       if (!samples.isEmpty()) {

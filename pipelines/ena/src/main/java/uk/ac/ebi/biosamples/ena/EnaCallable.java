@@ -206,12 +206,7 @@ public class EnaCallable implements Callable<Void> {
             sample.getRelationships(),
             externalReferences);
 
-    if (publications == null) {
-      sample = Sample.Builder.fromSample(sample).withNoData().build();
-    } else {
-      sample =
-          Sample.Builder.fromSample(sample).withNoData().withPublications(publications).build();
-    }
+    sample = Sample.Builder.fromSample(sample).withNoData().withPublications(publications).build();
 
     bioSamplesWebinClient.persistSampleResource(sample);
 

@@ -29,7 +29,7 @@ import uk.ac.ebi.biosamples.NcbiTestsService;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
-import uk.ac.ebi.biosamples.utils.TaxonomyService;
+import uk.ac.ebi.biosamples.service.TaxonomyService;
 
 @RunWith(SpringRunner.class)
 public class NcbiDatesTests {

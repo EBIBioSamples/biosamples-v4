@@ -113,17 +113,8 @@ public class SampleRestControllerV2 {
     sample =
         Sample.Builder.fromSample(sample).withUpdate(now).withSubmittedVia(submittedVia).build();
 
-    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    if (webinAuth && !isWebinSuperUser) {
-      schemaValidationService.validate(sample);
-      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
-    } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
-      schemaValidationService.validate(sample);
-      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, false);
-    }
-
-    if (submittedVia == SubmittedViaType.FILE_UPLOADER) {
-      schemaValidationService.validate(sample);
+    if (!isWebinSuperUser) {
+      sample = validateSample(sample, webinAuth);
     }
 
     final boolean isFirstTimeMetadataAdded =
@@ -136,5 +127,18 @@ public class SampleRestControllerV2 {
     sample = sampleService.persistSampleV2(sample, isFirstTimeMetadataAdded, authProvider);
 
     return ResponseEntity.status(HttpStatus.OK).body(sample);
+  }
+
+  private Sample validateSample(Sample sample, final boolean isWebinSubmission) {
+    schemaValidationService.validate(sample);
+    sample =
+        taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
+            sample, isWebinSubmission);
+
+    if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
+      schemaValidationService.validate(sample);
+    }
+
+    return sample;
   }
 }
