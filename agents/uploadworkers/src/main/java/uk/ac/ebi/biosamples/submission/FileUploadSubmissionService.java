@@ -66,9 +66,9 @@ public class FileUploadSubmissionService {
   }
 
   private void handleMessage(final String submissionId) {
-    final Optional<MongoFileUpload> fileUploadOptional = mongoFileUploadRepository.findById(submissionId);
-    final MongoFileUpload mongoFileUpload =
-            fileUploadOptional.orElse(null);
+    final Optional<MongoFileUpload> fileUploadOptional =
+        mongoFileUploadRepository.findById(submissionId);
+    final MongoFileUpload mongoFileUpload = fileUploadOptional.orElse(null);
 
     try {
       validationResult = new ValidationResult();

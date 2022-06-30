@@ -167,6 +167,9 @@ public class RestFacetIntegration extends AbstractIntegration {
   @Override
   protected void phaseFive() {}
 
+  @Override
+  protected void phaseSix() {}
+
   private Sample getSampleTest1() {
     String name = "RestFacetIntegration_testRestFacet";
     Instant update = Instant.parse("2016-05-05T11:36:57.00Z");

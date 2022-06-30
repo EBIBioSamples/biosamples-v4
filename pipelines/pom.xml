@@ -21,7 +21,6 @@
 				<module>ena</module>
 				<module>ncbi</module>
 				<module>ebeye-search-export</module>
-				<module>ena-amr</module>
 			</modules>
 		</profile>
 	</profiles>
@@ -29,18 +28,13 @@
 	<modules>
 		<module>curation</module>
 		<module>zooma</module>
-		<module>template</module>
 		<module>reindex</module>
 		<module>export</module>
 		<module>copydown</module>
-		<module>curationundo</module>
 		<module>curami</module>
-		<module>curatedview</module>
 		<module>neoexport</module>
-		<module>clearinghouse</module>
 		<module>sample-release</module>
 		<module>sample-transformation-dtol</module>
-		<module>structured-data-migration</module>
 		<module>ena</module>
 		<module>ncbi</module>
 		<module>ebeye-search-export</module>

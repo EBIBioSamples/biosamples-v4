@@ -158,6 +158,9 @@ public class AmrDataIntegration extends AbstractIntegration {
   @Override
   protected void phaseFive() {}
 
+  @Override
+  protected void phaseSix() {}
+
   private Sample getTestSample() {
     String name = "AMR_Data_Integration_sample_1";
     Instant update = Instant.parse("2016-05-05T11:36:57.00Z");

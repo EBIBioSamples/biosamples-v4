@@ -57,6 +57,7 @@ public class RestIntegration extends AbstractIntegration {
     this.annonymousClient =
         new BioSamplesClient(
             this.clientProperties.getBiosamplesClientUri(),
+            this.clientProperties.getBiosamplesClientUriV2(),
             restTemplateBuilder,
             null,
             null,
@@ -383,6 +384,9 @@ public class RestIntegration extends AbstractIntegration {
           Phase.FIVE);
     }
   }
+
+  @Override
+  protected void phaseSix() {}
 
   private Sample getSampleTest1() {
     String name = "RestIntegration_sample_1";

@@ -51,6 +51,9 @@ public class XmlSearchIntegration extends AbstractIntegration {
   @Override
   protected void phaseFive() {}
 
+  @Override
+  protected void phaseSix() {}
+
   private static class XmlSearchTester {
 
     private final Logger log;

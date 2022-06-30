@@ -96,7 +96,7 @@ public class BigIntegration extends AbstractIntegration {
     // generate one sample to rule them all
     samples.add(generateSample(firstInteger + noSamples, samples, null));
 
-    // time how long it takes to submit them
+    // time how long it takes to post them
 
     long startTime = System.nanoTime();
     client.persistSamples(samples);
@@ -108,7 +108,7 @@ public class BigIntegration extends AbstractIntegration {
         "Submitted " + noSamples + " samples in " + elapsedMs + "ms (" + msPerSample + "ms each)");
     if (msPerSample > 100) {
       throw new RuntimeException(
-          "Took more than 100ms per sample to submit (" + msPerSample + "ms each)");
+          "Took more than 100ms per sample to post (" + msPerSample + "ms each)");
     }
   }
 
@@ -218,6 +218,9 @@ public class BigIntegration extends AbstractIntegration {
     // TODO Auto-generated method stub
 
   }
+
+  @Override
+  protected void phaseSix() {}
 
   public Sample generateSample(int i, List<Sample> samples, Sample root) {
 

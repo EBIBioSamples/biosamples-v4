@@ -63,9 +63,7 @@ public class SamplesRestControllerV2 {
   }
 
   @PreAuthorize("isAuthenticated()")
-  @PostMapping(
-      value = "/submit",
-      consumes = {MediaType.APPLICATION_JSON_VALUE})
+  @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<List<Sample>> postSamplesV2(
       @RequestBody final List<Sample> samples,
       @RequestHeader(name = "Authorization") final String token) {

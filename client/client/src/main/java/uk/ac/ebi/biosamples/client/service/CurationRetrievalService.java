@@ -51,7 +51,6 @@ public class CurationRetrievalService {
         restOperations,
         new ParameterizedTypeReference<PagedModel<EntityModel<Curation>>>() {},
         jwt,
-        false,
         params,
         "curations");
   }
@@ -70,7 +69,6 @@ public class CurationRetrievalService {
         restOperations,
         new ParameterizedTypeReference<PagedModel<EntityModel<CurationLink>>>() {},
         jwt,
-        false,
         params,
         Hop.rel("samples"),
         Hop.rel("sample").withParameter("accession", accession),

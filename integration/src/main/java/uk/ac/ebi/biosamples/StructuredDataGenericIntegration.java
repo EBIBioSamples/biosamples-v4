@@ -120,6 +120,9 @@ public class StructuredDataGenericIntegration extends AbstractIntegration {
     // skip
   }
 
+  @Override
+  protected void phaseSix() {}
+
   private Sample getSampleTest1() {
     String name = "StructuredDataGenericIntegration_sample_1";
     Instant update = Instant.parse("2016-05-05T11:36:57.00Z");

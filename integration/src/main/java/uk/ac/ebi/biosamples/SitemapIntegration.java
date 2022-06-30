@@ -104,6 +104,9 @@ public class SitemapIntegration extends AbstractIntegration {
   @Override
   protected void phaseFive() {}
 
+  @Override
+  protected void phaseSix() {}
+
   private String getAccessionFromUri(UriComponents uri) {
     List<String> pathSegments = uri.getPathSegments();
     return pathSegments.get(pathSegments.size() - 1);

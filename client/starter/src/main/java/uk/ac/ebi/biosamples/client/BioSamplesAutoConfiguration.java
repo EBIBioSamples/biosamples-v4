@@ -120,6 +120,7 @@ public class BioSamplesAutoConfiguration {
 
     return new BioSamplesClient(
         bioSamplesProperties.getBiosamplesClientUri(),
+        bioSamplesProperties.getBiosamplesClientUriV2(),
         restTemplateBuilder,
         sampleValidator,
         clientService,
@@ -139,6 +140,7 @@ public class BioSamplesAutoConfiguration {
 
     return new BioSamplesClient(
         bioSamplesProperties.getBiosamplesClientUri(),
+        bioSamplesProperties.getBiosamplesClientUriV2(),
         restTemplateBuilder,
         sampleValidator,
         clientService,

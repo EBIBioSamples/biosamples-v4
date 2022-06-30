@@ -79,4 +79,7 @@ public class RestAutocompleteIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseFive() {}
+
+  @Override
+  protected void phaseSix() {}
 }

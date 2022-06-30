@@ -234,6 +234,9 @@ public class RestCurationIntegration extends AbstractIntegration {
     Assert.assertTrue(sample3.getRelationships().isEmpty());
   }
 
+  @Override
+  protected void phaseSix() {}
+
   private void testCurations() {
     /*
     //TODO use client

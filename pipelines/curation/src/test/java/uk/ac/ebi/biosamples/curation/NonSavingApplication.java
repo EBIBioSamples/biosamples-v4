@@ -28,6 +28,7 @@ public class NonSavingApplication extends Application {
       AapClientService aapClientService) {
     return new MockBioSamplesClient(
         bioSamplesProperties.getBiosamplesClientUri(),
+        bioSamplesProperties.getBiosamplesClientUriV2(),
         restTemplateBuilder,
         sampleValidator,
         aapClientService,

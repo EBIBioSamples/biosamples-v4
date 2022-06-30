@@ -82,6 +82,9 @@ public class RestPrivateSampleIntegration extends AbstractIntegration {
     // nothing to do here
   }
 
+  @Override
+  protected void phaseSix() {}
+
   private Sample getSampleWithReleaseDateToday() {
     String name = "RestPrivateSampleIntegration_sample_1";
     Instant release = Instant.now();
