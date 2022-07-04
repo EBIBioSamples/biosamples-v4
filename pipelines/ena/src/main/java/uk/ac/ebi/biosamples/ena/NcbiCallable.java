@@ -63,6 +63,8 @@ public class NcbiCallable implements Callable<Void> {
 
           bioSamplesClient.persistSampleResource(sample);
         } catch (final Exception e) {
+          e.printStackTrace();
+
           log.info("Failed to handle NCBI sample with accession " + this.accession);
         }
       } else {

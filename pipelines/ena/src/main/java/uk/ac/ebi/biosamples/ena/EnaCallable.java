@@ -96,6 +96,8 @@ public class EnaCallable implements Callable<Void> {
 
           bioSamplesWebinClient.persistSampleResource(sample);
         } catch (final Exception e) {
+          e.printStackTrace();
+
           log.info("Failed to handle ENA sample with accession " + this.accession);
         }
       }
