@@ -31,7 +31,6 @@ import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.Sample.Builder;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
-import uk.ac.ebi.biosamples.ncbi.NcbiEraProDao;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiAmrConversionService.AmrParsingException;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
@@ -97,11 +96,8 @@ public class NcbiSampleConversionService {
   private final TaxonomyService taxonomyService;
   private final NcbiAmrConversionService amrConversionService;
 
-  private final NcbiEraProDao ncbiEraProDao;
-
-  public NcbiSampleConversionService(TaxonomyService taxonomyService, NcbiEraProDao ncbiEraProDao) {
+  public NcbiSampleConversionService(TaxonomyService taxonomyService) {
     this.taxonomyService = taxonomyService;
-    this.ncbiEraProDao = ncbiEraProDao;
     this.amrConversionService = new NcbiAmrConversionService();
   }
 
@@ -121,7 +117,6 @@ public class NcbiSampleConversionService {
     String organismIri = null;
     String organismValue = null;
     String geoTag = null;
-    boolean hasSraAccession = false;
 
     for (Element idElem : XmlPathBuilder.of(sampleElem).path(IDS).elements(ID)) {
       final String attributeValueIdElementDb = idElem.attributeValue(DB);
@@ -132,7 +127,6 @@ public class NcbiSampleConversionService {
         // NCBI/DDBJ samples, in sync with ENA samples
         attrs.add(Attribute.build(SRA_ACCESSION, idElem.getTextTrim()));
         attrs.add(Attribute.build(INSDC_SECONDARY_ACCESSION, idElem.getTextTrim()));
-        hasSraAccession = true;
       } else if (GENBANK.equalsIgnoreCase(attributeValueIdElementDb)) {
         attrs.add(Attribute.build(COMMON_NAME, idElem.getTextTrim()));
       } else if (SAMPLE_NAME.equals(idElem.attributeValue(DB_LABEL))) {
@@ -153,18 +147,6 @@ public class NcbiSampleConversionService {
                 NAMESPACE_TAG + attributeValueIdElementDb,
                 Collections.emptyList(),
                 null));
-      }
-    }
-
-    if (!hasSraAccession) {
-      log.trace("SRA accession not present in sample - fetching from ERAPRO for " + accession);
-      final String sraAccession = ncbiEraProDao.getSraAccession(accession);
-
-      if (sraAccession != null && !sraAccession.isEmpty()) {
-        log.trace("SRA accession fetched from ERAPRO for " + accession);
-
-        attrs.add(Attribute.build(SRA_ACCESSION, sraAccession));
-        attrs.add(Attribute.build(INSDC_SECONDARY_ACCESSION, sraAccession));
       }
     }
 

@@ -79,12 +79,12 @@ public class MessageHandlerSolr {
               solrSample.getKeywords());
 
       // expand ontology terms from OLS
-      for (List<String> iris : solrSample.getAttributeIris().values()) {
+      /*for (List<String> iris : solrSample.getAttributeIris().values()) {
         for (String iri : iris) {
           solrSample.getKeywords().addAll(olsProcessor.ancestorsAndSynonyms("efo", iri));
           solrSample.getKeywords().addAll(olsProcessor.ancestorsAndSynonyms("NCBITaxon", iri));
         }
-      }
+      }*/
 
       repository.saveWithoutCommit(solrSample);
       LOGGER.info(String.format("added %s to index", sample.getAccession()));

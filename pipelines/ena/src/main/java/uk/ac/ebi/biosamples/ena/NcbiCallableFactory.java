@@ -15,13 +15,17 @@ import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 
 @Service
-public class NcbiCurationCallableFactory {
+public class NcbiCallableFactory {
   private final BioSamplesClient bioSamplesClient;
+  private final EnaSampleTransformationService enaSampleTransformationService;
   private final String domain;
 
-  public NcbiCurationCallableFactory(
-      BioSamplesClient bioSamplesClient, PipelinesProperties pipelinesProperties) {
+  public NcbiCallableFactory(
+      BioSamplesClient bioSamplesClient,
+      EnaSampleTransformationService enaSampleTransformationService,
+      PipelinesProperties pipelinesProperties) {
     this.bioSamplesClient = bioSamplesClient;
+    this.enaSampleTransformationService = enaSampleTransformationService;
     this.domain = pipelinesProperties.getEnaDomain();
   }
 
@@ -31,10 +35,15 @@ public class NcbiCurationCallableFactory {
    * @param accession The accession passed
    * @param statusId The sample status
    * @param suppressionHandler true for this case
-   * @return the callable, {@link NcbiCurationCallable}
+   * @return the callable, {@link NcbiCallable}
    */
-  public NcbiCurationCallable build(String accession, int statusId, boolean suppressionHandler) {
-    return new NcbiCurationCallable(
-        accession, statusId, bioSamplesClient, domain, suppressionHandler);
+  public NcbiCallable build(String accession, int statusId, boolean suppressionHandler) {
+    return new NcbiCallable(
+        accession,
+        statusId,
+        bioSamplesClient,
+        domain,
+        suppressionHandler,
+        enaSampleTransformationService);
   }
 }
