@@ -74,32 +74,41 @@ public class EnaCallable implements Callable<Void> {
     } else {
       boolean sampleWithAllAttributesExists = false;
 
-      final Optional<Resource<Sample>> sampleOptional =
-          bioSamplesWebinClient.fetchSampleResource(this.accession);
+      try {
+        final Optional<Resource<Sample>> sampleOptional =
+            bioSamplesWebinClient.fetchSampleResource(this.accession);
 
-      if (sampleOptional.isPresent()) {
-        final Resource<Sample> sampleResource = sampleOptional.get();
-        final Sample sample = sampleResource.getContent();
+        if (sampleOptional.isPresent()) {
+          final Resource<Sample> sampleResource = sampleOptional.get();
+          final Sample sample = sampleResource.getContent();
 
-        if (sample.getAttributes().size() > 0) {
-          log.info("ENA sample exists with attributes in BioSamples " + this.accession);
+          if (sample.getAttributes().size() > 0) {
+            log.info("ENA sample exists with attributes in BioSamples " + this.accession);
 
-          sampleWithAllAttributesExists = true;
+            sampleWithAllAttributesExists = true;
+          }
         }
-      }
 
-      if (!sampleWithAllAttributesExists) {
-        log.info("ENA sample doesn't exists with attributes in BioSamples " + this.accession);
+        if (!sampleWithAllAttributesExists) {
+          log.info(
+              "ENA sample doesn't exists with attributes in BioSamples, creating "
+                  + this.accession);
 
-        try {
-          final Sample sample = enaSampleTransformationService.enrichSample(this.accession, false);
+          try {
+            final Sample sample =
+                enaSampleTransformationService.enrichSample(this.accession, false);
 
-          bioSamplesWebinClient.persistSampleResource(sample);
-        } catch (final Exception e) {
-          e.printStackTrace();
+            bioSamplesWebinClient.persistSampleResource(sample);
+          } catch (final Exception e) {
+            e.printStackTrace();
 
-          log.info("Failed to handle ENA sample with accession " + this.accession);
+            log.info("Failed to enrich and persist ENA sample with accession " + this.accession);
+          }
         }
+      } catch (final Exception e) {
+        e.printStackTrace();
+
+        log.info("Failed to handle ENA sample with accession " + this.accession);
       }
 
       return null;

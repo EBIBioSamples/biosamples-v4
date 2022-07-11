@@ -53,32 +53,40 @@ public class NcbiCallable implements Callable<Void> {
     if (suppressionHandler) {
       checkAndUpdateSuppressedSample();
     } else {
-      // get the sample to make sure it exists first
-      if (!bioSamplesClient.fetchSampleResource(this.accession).isPresent()) {
-        log.info(
-            "NCBI sample doesn't exists in BioSamples " + this.accession + " fetching from ERAPRO");
+      try {
+        // get the sample to make sure it exists first
+        if (!bioSamplesClient.fetchSampleResource(this.accession).isPresent()) {
+          log.info(
+              "NCBI sample doesn't exists in BioSamples "
+                  + this.accession
+                  + " fetching from ERAPRO");
 
-        try {
-          final Sample sample = enaSampleTransformationService.enrichSample(this.accession, true);
+          try {
+            final Sample sample = enaSampleTransformationService.enrichSample(this.accession, true);
 
-          bioSamplesClient.persistSampleResource(sample);
-        } catch (final Exception e) {
-          e.printStackTrace();
+            bioSamplesClient.persistSampleResource(sample);
+          } catch (final Exception e) {
+            e.printStackTrace();
 
-          log.info("Failed to handle NCBI sample with accession " + this.accession);
+            log.info("Failed to enrich and persist NCBI sample with accession " + this.accession);
+          }
+        } else {
+          log.info("NCBI sample exists " + this.accession + " adding ENA link");
+
+          ExternalReference exRef =
+              ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + this.accession);
+          Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
+
+          try {
+            bioSamplesClient.persistCuration(this.accession, curation, domain, false);
+          } catch (final Exception e) {
+            log.info("Failed to curate NCBI sample with ENA link " + this.accession);
+          }
         }
-      } else {
-        log.info("NCBI sample exists " + this.accession + " adding ENA link");
+      } catch (final Exception e) {
+        e.printStackTrace();
 
-        ExternalReference exRef =
-            ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + this.accession);
-        Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
-
-        try {
-          bioSamplesClient.persistCuration(this.accession, curation, domain, false);
-        } catch (final Exception e) {
-          log.info("Failed to curate NCBI sample with ENA link " + this.accession);
-        }
+        log.info("Failed to handle NCBI sample with accession " + this.accession);
       }
     }
 
