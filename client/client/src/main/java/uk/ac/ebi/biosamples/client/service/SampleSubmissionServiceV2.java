@@ -99,7 +99,7 @@ public class SampleSubmissionServiceV2 {
           UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples")).build(true).toUri();
       log.info("POSTing " + samples.size() + " samples " + v2PostUri);
 
-      RequestEntity<List<Sample>> requestEntity = getApiUri(v2PostUri, jwt, samples);
+      RequestEntity<List<Sample>> requestEntity = buildRequestEntityWithAuthHeader(v2PostUri, jwt, samples);
       ResponseEntity<List<Sample>> responseEntity;
 
       try {
@@ -138,7 +138,7 @@ public class SampleSubmissionServiceV2 {
               .toUri();
       log.info("Accessioning " + samples.size() + " samples " + v2BulkAccessionUri);
 
-      RequestEntity<List<Sample>> requestEntity = getApiUri(v2BulkAccessionUri, jwt, samples);
+      RequestEntity<List<Sample>> requestEntity = buildRequestEntityWithAuthHeader(v2BulkAccessionUri, jwt, samples);
 
       ResponseEntity<Map<String, String>> responseEntity;
 
@@ -159,7 +159,7 @@ public class SampleSubmissionServiceV2 {
     }
   }
 
-  private RequestEntity<List<Sample>> getApiUri(URI uri, String jwt, List<Sample> samples) {
+  private RequestEntity<List<Sample>> buildRequestEntityWithAuthHeader(URI uri, String jwt, List<Sample> samples) {
     final RequestEntity.BodyBuilder bodyBuilder =
         RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).accept(MediaTypes.HAL_JSON);
 
