@@ -162,8 +162,6 @@ public class EnaSampleTransformationService {
               attributes,
               sample.getRelationships(),
               externalReferences);
-
-      return Sample.Builder.fromSample(sample).withNoData().withPublications(publications).build();
     } else {
       sample =
           Sample.build(
@@ -180,9 +178,9 @@ public class EnaSampleTransformationService {
               attributes,
               sample.getRelationships(),
               externalReferences);
-
-      return Sample.Builder.fromSample(sample).withNoData().withPublications(publications).build();
     }
+
+    return Sample.Builder.fromSample(sample).withNoData().withPublications(publications).build();
 
     /*  if (amrData != null && !amrData.isEmpty()) {
       bioSamplesWebinClient.persistStructuredData(

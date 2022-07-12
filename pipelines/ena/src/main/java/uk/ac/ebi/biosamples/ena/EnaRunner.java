@@ -122,14 +122,14 @@ public class EnaRunner implements ApplicationRunner {
       if (suppressionRunner) {
         try {
           // handler for suppressed ENA samples
-          // handleSuppressedEnaSamples();
+          handleSuppressedEnaSamples();
         } catch (final Exception e) {
           failures.append("Some problems in ENA samples suppression runner" + "\n");
         }
 
         try {
           // handler for suppressed NCBI/DDBJ samples
-          // handleSuppressedNcbiDdbjSamples();
+          handleSuppressedNcbiDdbjSamples();
         } catch (final Exception e) {
           failures.append("Some problems in ENA samples suppression runner" + "\n");
         }
@@ -138,7 +138,7 @@ public class EnaRunner implements ApplicationRunner {
       if (killedRunner) {
         try {
           // handler for killed ENA samples
-          // handleKilledEnaSamples();
+          handleKilledEnaSamples();
         } catch (final Exception e) {
           failures.append("Some problems in ENA samples killed runner" + "\n");
         }

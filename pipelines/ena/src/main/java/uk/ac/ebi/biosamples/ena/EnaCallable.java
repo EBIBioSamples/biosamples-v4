@@ -94,21 +94,12 @@ public class EnaCallable implements Callable<Void> {
               "ENA sample doesn't exists with attributes in BioSamples, creating "
                   + this.accession);
 
-          try {
-            final Sample sample =
-                enaSampleTransformationService.enrichSample(this.accession, false);
+          final Sample sample = enaSampleTransformationService.enrichSample(this.accession, false);
 
-            bioSamplesWebinClient.persistSampleResource(sample);
-          } catch (final Exception e) {
-            e.printStackTrace();
-
-            log.info("Failed to enrich and persist ENA sample with accession " + this.accession);
-          }
+          bioSamplesWebinClient.persistSampleResource(sample);
         }
       } catch (final Exception e) {
-        e.printStackTrace();
-
-        log.info("Failed to handle ENA sample with accession " + this.accession);
+        log.info("Failed to handle ENA sample with accession " + this.accession, e);
       }
 
       return null;
