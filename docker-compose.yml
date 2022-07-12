@@ -64,6 +64,8 @@ services:
     - spring.http.encoding.force=true
     - spring.mvc.pathmatch.use-suffix-pattern=true
     - spring.mvc.pathmatch.matching-strategy=ant-path-matcher
+    # File upload
+    - spring.servlet.multipart.location=/data/upload_tmp
     ports:
     - 8081:8080
     - 9090:9090
@@ -105,12 +107,12 @@ services:
       - spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false
       - spring.jackson.serialization.indent_output=true
       #Configure root path to server from
-      - server.servlet.context-path=/biosamples
-      - server.context-path=/biosamples
+      - server.servlet.context-path=/biosamples/v2
+      - server.context-path=/biosamples/v2
       #Enable use behind a proxy with original urls
       - server.use-forward-headers=true
       #Improve logging
-      - LOGGING_FILE=/logs/webapps-core.log
+      - LOGGING_FILE=/logs/webapps-core-v2.log
       - server.tomcat.accesslog.enabled=true
       - server.tomcat.accesslog.directory=/logs
       - server.tomcat.accesslog.prefix=webapps-core.access
@@ -327,6 +329,7 @@ services:
     - integration-5.2.7-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
+    - BIOSAMPLES_CLIENT_URI_V2=http://biosamples-webapps-core-v2:8080/biosamples/v2
     - LOGGING_FILE=/logs/integration.log
     # Provide AAP infos
     #- BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml

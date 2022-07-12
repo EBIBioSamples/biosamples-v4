@@ -54,6 +54,7 @@ public class BioSamplesClient implements AutoCloseable {
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final SampleRetrievalService sampleRetrievalService;
+  private final SampleRetrievalServiceV2 sampleRetrievalServiceV2;
   private final SamplePageRetrievalService samplePageRetrievalService;
   private final SampleCursorRetrievalService sampleCursorRetrievalService;
   private final SampleSubmissionService sampleSubmissionService;
@@ -117,6 +118,9 @@ public class BioSamplesClient implements AutoCloseable {
 
     sampleSubmissionServiceV2 =
         new SampleSubmissionServiceV2(restOperations, uriV2, threadPoolExecutor);
+
+    sampleRetrievalServiceV2 =
+        new SampleRetrievalServiceV2(restOperations, uriV2, threadPoolExecutor);
 
     sampleCertificationService = new SampleCertificationService(restOperations, traverson);
 
@@ -205,6 +209,28 @@ public class BioSamplesClient implements AutoCloseable {
       List<String> accessions, String jwt) throws RestClientException {
     try {
       return sampleRetrievalService.fetchSamplesByAccessions(accessions, jwt).get();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e.getCause());
+    }
+  }
+
+  public Map<String, EntityModel<Sample>> fetchSampleResourcesByAccessionsV2(
+      List<String> accessions) throws RestClientException {
+    try {
+      return sampleRetrievalServiceV2.fetchSamplesByAccessions(accessions).get();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e.getCause());
+    }
+  }
+
+  public Map<String, EntityModel<Sample>> fetchSampleResourcesByAccessionsV2(
+      List<String> accessions, String jwt) throws RestClientException {
+    try {
+      return sampleRetrievalServiceV2.fetchSamplesByAccessions(accessions, jwt).get();
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     } catch (ExecutionException e) {

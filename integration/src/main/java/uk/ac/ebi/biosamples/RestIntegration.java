@@ -256,6 +256,15 @@ public class RestIntegration extends AbstractIntegration {
       throw new IntegrationTestFailException("Multi sample fetch is not working", Phase.THREE);
     }
 
+    // multiple sample fetch by accessions test - v2, authorized user
+    Map<String, EntityModel<Sample>> sampleResourcesV2Map1 =
+        this.webinClient.fetchSampleResourcesByAccessionsV2(
+            Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023"));
+
+    if (sampleResourcesV2Map1 == null || sampleResourcesV2Map1.size() == 0) {
+      throw new IntegrationTestFailException("Multi sample fetch is not working - V2", Phase.THREE);
+    }
+
     // multiple sample fetch by accessions test, unauthorized user
     Map<String, EntityModel<Sample>> sampleResourcesMap2 =
         this.annonymousClient.fetchSampleResourcesByAccessions(
@@ -264,6 +273,17 @@ public class RestIntegration extends AbstractIntegration {
     if (sampleResourcesMap2.size() > 2) {
       throw new IntegrationTestFailException(
           "Multi sample fetch is not working, unauthorized user has access to private samples submitted by other submitters",
+          Phase.THREE);
+    }
+
+    // multiple sample fetch by accessions test - v2, unauthorized user
+    Map<String, EntityModel<Sample>> sampleResourcesV2Map2 =
+        this.annonymousClient.fetchSampleResourcesByAccessionsV2(
+            Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023"));
+
+    if (sampleResourcesV2Map2.size() > 2) {
+      throw new IntegrationTestFailException(
+          "Multi sample fetch is not working - V2, unauthorized user has access to private samples submitted by other submitters",
           Phase.THREE);
     }
 

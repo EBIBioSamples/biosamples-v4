@@ -1,13 +1,13 @@
 /*
- * Copyright 2021 EMBL - European Bioinformatics Institute
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- */
+* Copyright 2021 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.ena;
 
 import java.util.ArrayList;
@@ -43,15 +43,15 @@ public class EnaCallable implements Callable<Void> {
   private int statusId;
 
   public EnaCallable(
-          String accession,
-          String egaId,
-          int statusId,
-          BioSamplesClient bioSamplesWebinClient,
-          EgaSampleExporter egaSampleExporter,
-          EnaSampleTransformationService enaSampleTransformationService,
-          boolean suppressionHandler,
-          boolean killedHandler,
-          Set<StructuredDataTable> amrData) {
+      String accession,
+      String egaId,
+      int statusId,
+      BioSamplesClient bioSamplesWebinClient,
+      EgaSampleExporter egaSampleExporter,
+      EnaSampleTransformationService enaSampleTransformationService,
+      boolean suppressionHandler,
+      boolean killedHandler,
+      Set<StructuredDataTable> amrData) {
     this.accession = accession;
     this.egaId = egaId;
     this.statusId = statusId;
@@ -76,7 +76,7 @@ public class EnaCallable implements Callable<Void> {
 
       try {
         final Optional<EntityModel<Sample>> sampleOptional =
-                bioSamplesWebinClient.fetchSampleResource(this.accession);
+            bioSamplesWebinClient.fetchSampleResource(this.accession);
 
         if (sampleOptional.isPresent()) {
           final EntityModel<Sample> sampleResource = sampleOptional.get();
@@ -91,8 +91,8 @@ public class EnaCallable implements Callable<Void> {
 
         if (!sampleWithAllAttributesExists) {
           log.info(
-                  "ENA sample doesn't exists with attributes in BioSamples, creating "
-                          + this.accession);
+              "ENA sample doesn't exists with attributes in BioSamples, creating "
+                  + this.accession);
 
           final Sample sample = enaSampleTransformationService.enrichSample(this.accession, false);
 
@@ -118,8 +118,8 @@ public class EnaCallable implements Callable<Void> {
 
     try {
       Optional<EntityModel<Sample>> optionalSampleResource =
-              bioSamplesWebinClient.fetchSampleResource(
-                      this.accession, Optional.of(curationDomainBlankList));
+          bioSamplesWebinClient.fetchSampleResource(
+              this.accession, Optional.of(curationDomainBlankList));
 
       if (optionalSampleResource.isPresent()) {
         final Sample sample = optionalSampleResource.get().getContent();
@@ -127,7 +127,7 @@ public class EnaCallable implements Callable<Void> {
 
         for (Attribute attribute : sample.getAttributes()) {
           if (attribute.getType().equals("INSDC status") && attribute.getValue().equals(SUPPRESSED)
-                  || attribute.getValue().equalsIgnoreCase(TEMPORARY_SUPPRESSED)) {
+              || attribute.getValue().equalsIgnoreCase(TEMPORARY_SUPPRESSED)) {
             persistRequired = false;
             break;
           }
@@ -136,10 +136,10 @@ public class EnaCallable implements Callable<Void> {
         if (persistRequired) {
           sample.getAttributes().removeIf(attr -> attr.getType().contains("INSDC status"));
           sample
-                  .getAttributes()
-                  .add(
-                          Attribute.build(
-                                  "INSDC status", statusId == 5 ? SUPPRESSED : TEMPORARY_SUPPRESSED));
+              .getAttributes()
+              .add(
+                  Attribute.build(
+                      "INSDC status", statusId == 5 ? SUPPRESSED : TEMPORARY_SUPPRESSED));
           log.info("Updating status to suppressed of sample: " + this.accession);
           bioSamplesWebinClient.persistSampleResource(sample);
         }
@@ -168,8 +168,8 @@ public class EnaCallable implements Callable<Void> {
 
     try {
       Optional<EntityModel<Sample>> optionalSampleResource =
-              bioSamplesWebinClient.fetchSampleResource(
-                      this.accession, Optional.of(curationDomainBlankList));
+          bioSamplesWebinClient.fetchSampleResource(
+              this.accession, Optional.of(curationDomainBlankList));
 
       if (optionalSampleResource.isPresent()) {
         final Sample sample = optionalSampleResource.get().getContent();
@@ -177,7 +177,7 @@ public class EnaCallable implements Callable<Void> {
 
         for (Attribute attribute : sample.getAttributes()) {
           if (attribute.getType().equals("INSDC status")
-                  && (attribute.getValue().equals(KILLED)
+              && (attribute.getValue().equals(KILLED)
                   || attribute.getValue().equals(TEMPORARY_KILLED))) {
             persistRequired = false;
             break;
@@ -187,8 +187,8 @@ public class EnaCallable implements Callable<Void> {
         if (persistRequired) {
           sample.getAttributes().removeIf(attr -> attr.getType().contains("INSDC status"));
           sample
-                  .getAttributes()
-                  .add(Attribute.build("INSDC status", statusId == 6 ? KILLED : TEMPORARY_KILLED));
+              .getAttributes()
+              .add(Attribute.build("INSDC status", statusId == 6 ? KILLED : TEMPORARY_KILLED));
           log.info("Updating status to killed of sample: " + this.accession);
           bioSamplesWebinClient.persistSampleResource(sample);
         }

@@ -34,7 +34,7 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @RestController
 @ExposesResourceFor(Sample.class)
-@RequestMapping("/v2/samples/{accession}")
+@RequestMapping("/samples/{accession}")
 @CrossOrigin
 public class SampleRestControllerV2 {
   private final Logger log = LoggerFactory.getLogger(getClass());

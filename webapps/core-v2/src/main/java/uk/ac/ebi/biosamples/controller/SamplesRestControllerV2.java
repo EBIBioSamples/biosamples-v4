@@ -35,7 +35,7 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @RestController
 @ExposesResourceFor(Sample.class)
-@RequestMapping("/v2/samples")
+@RequestMapping("/samples")
 @CrossOrigin
 public class SamplesRestControllerV2 {
   private Logger log = LoggerFactory.getLogger(getClass());
@@ -194,7 +194,7 @@ public class SamplesRestControllerV2 {
   public ResponseEntity<Map<String, String>> bulkAccessionSampleV2(
       @RequestBody List<Sample> samples,
       @RequestHeader(name = "Authorization") final String token) {
-    log.info("Received POST for bulk accessioning of " + samples.size() + " samples");
+    log.info("V2-Received POST for bulk accessioning of " + samples.size() + " samples");
 
     samples.forEach(
         sample -> {
@@ -262,7 +262,7 @@ public class SamplesRestControllerV2 {
             .collect(Collectors.toMap(Sample::getName, Sample::getAccession));
 
     log.info(
-        "Received bulk-accessioning request for : "
+        "V2-Received bulk-accessioning request for : "
             + samples.size()
             + " samples and accessioned : "
             + outputMap.size()
@@ -284,7 +284,7 @@ public class SamplesRestControllerV2 {
       throw new GlobalExceptions.BulkFetchInvalidRequestException();
     }
 
-    log.info("Received request to bulk-fetch " + accessions.size() + " accessions");
+    log.info("V2-Received request to bulk-fetch " + accessions.size() + " accessions");
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final List<Sample> samples =
@@ -328,7 +328,7 @@ public class SamplesRestControllerV2 {
             .collect(Collectors.toList());
 
     log.info(
-        "Received bulk-fetch request for : "
+        "V2-Received bulk-fetch request for : "
             + accessions.size()
             + " samples and fetched : "
             + samples.size()

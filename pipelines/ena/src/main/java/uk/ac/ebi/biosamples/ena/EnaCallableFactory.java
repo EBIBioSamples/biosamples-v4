@@ -1,13 +1,13 @@
 /*
- * Copyright 2021 EMBL - European Bioinformatics Institute
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- */
+* Copyright 2021 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.ena;
 
 import java.util.Set;
@@ -26,9 +26,9 @@ public class EnaCallableFactory {
   private final EgaSampleExporter egaSampleExporter;
 
   public EnaCallableFactory(
-          @Qualifier("WEBINCLIENT") BioSamplesClient bioSamplesWebinClient,
-          EnaSampleTransformationService enaSampleTransformationService,
-          EgaSampleExporter egaSampleExporter) {
+      @Qualifier("WEBINCLIENT") BioSamplesClient bioSamplesWebinClient,
+      EnaSampleTransformationService enaSampleTransformationService,
+      EgaSampleExporter egaSampleExporter) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
     this.enaSampleTransformationService = enaSampleTransformationService;
     this.egaSampleExporter = egaSampleExporter;
@@ -44,21 +44,21 @@ public class EnaCallableFactory {
    * @return the callable, {@link EnaCallable}
    */
   public Callable<Void> build(
-          String accession,
-          String egaId,
-          int statusId,
-          boolean suppressionHandler,
-          boolean killedHandler,
-          Set<StructuredDataTable> amrData) {
+      String accession,
+      String egaId,
+      int statusId,
+      boolean suppressionHandler,
+      boolean killedHandler,
+      Set<StructuredDataTable> amrData) {
     return new EnaCallable(
-            accession,
-            egaId,
-            statusId,
-            bioSamplesWebinClient,
-            egaSampleExporter,
-            enaSampleTransformationService,
-            suppressionHandler,
-            killedHandler,
-            amrData);
+        accession,
+        egaId,
+        statusId,
+        bioSamplesWebinClient,
+        egaSampleExporter,
+        enaSampleTransformationService,
+        suppressionHandler,
+        killedHandler,
+        amrData);
   }
 }

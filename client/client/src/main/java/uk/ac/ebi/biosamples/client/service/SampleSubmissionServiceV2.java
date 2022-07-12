@@ -96,7 +96,7 @@ public class SampleSubmissionServiceV2 {
     @Override
     public List<Sample> call() {
       URI v2PostUri =
-          UriComponentsBuilder.fromUri(URI.create(uriV2 + "/v2" + "/samples")).build(true).toUri();
+          UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples")).build(true).toUri();
       log.info("POSTing " + samples.size() + " samples " + v2PostUri);
 
       RequestEntity<List<Sample>> requestEntity = getApiUri(v2PostUri, jwt, samples);
@@ -133,7 +133,7 @@ public class SampleSubmissionServiceV2 {
     @Override
     public Map<String, String> call() {
       URI v2BulkAccessionUri =
-          UriComponentsBuilder.fromUri(URI.create(uriV2 + "/v2" + "/samples" + "/bulk-accession"))
+          UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples" + "/bulk-accession"))
               .build(true)
               .toUri();
       log.info("Accessioning " + samples.size() + " samples " + v2BulkAccessionUri);
@@ -160,8 +160,9 @@ public class SampleSubmissionServiceV2 {
   }
 
   private RequestEntity<List<Sample>> getApiUri(URI uri, String jwt, List<Sample> samples) {
-    RequestEntity.BodyBuilder bodyBuilder =
+    final RequestEntity.BodyBuilder bodyBuilder =
         RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).accept(MediaTypes.HAL_JSON);
+
     if (jwt != null) {
       bodyBuilder.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
     }
