@@ -19,7 +19,6 @@
 			<id>embl-ebi</id>
 			<modules>
 				<module>ena</module>
-				<module>ncbi</module>
 				<module>ebeye-search-export</module>
 				<module>ena-amr</module>
 			</modules>

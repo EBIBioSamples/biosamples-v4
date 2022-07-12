@@ -13,7 +13,6 @@ package uk.ac.ebi.biosamples.ena;
 import static uk.ac.ebi.biosamples.ena.EnaXmlUtil.pretty;
 
 import java.io.StringReader;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.dom4j.*;
 import org.dom4j.io.SAXReader;
@@ -45,24 +44,21 @@ public class EnaXmlEnhancer {
   public EnaDatabaseSample getEnaDatabaseSample(String accession) {
     EnaDatabaseSample enaDatabaseSample = new EnaDatabaseSample();
     RowCallbackHandler rch =
-        new RowCallbackHandler() {
-          @Override
-          public void processRow(ResultSet resultSet) {
-            try {
-              enaDatabaseSample.bioSamplesId = resultSet.getString("BIOSAMPLE_ID");
-              enaDatabaseSample.brokerName = resultSet.getString("BROKER_NAME");
-              enaDatabaseSample.centreName = resultSet.getString("CENTER_NAME");
-              enaDatabaseSample.lastUpdated = resultSet.getString("LAST_UPDATED");
-              enaDatabaseSample.firstPublic = resultSet.getString("FIRST_PUBLIC");
-              enaDatabaseSample.fixed = resultSet.getString("FIXED");
-              enaDatabaseSample.taxId = resultSet.getString("TAX_ID");
-              enaDatabaseSample.scientificName = resultSet.getString("SCIENTIFIC_NAME");
-              enaDatabaseSample.fixedTaxId = resultSet.getString("FIXED_TAX_ID");
-              enaDatabaseSample.fixedCommonName = resultSet.getString("FIXED_COMMON_NAME");
-              enaDatabaseSample.fixedScientificName = resultSet.getString("FIXED_SCIENTIFIC_NAME");
-            } catch (SQLException e) {
-              LOGGER.error("Error processing database result", e);
-            }
+        resultSet -> {
+          try {
+            enaDatabaseSample.bioSamplesId = resultSet.getString("BIOSAMPLE_ID");
+            enaDatabaseSample.brokerName = resultSet.getString("BROKER_NAME");
+            enaDatabaseSample.centreName = resultSet.getString("CENTER_NAME");
+            enaDatabaseSample.lastUpdated = resultSet.getString("LAST_UPDATED");
+            enaDatabaseSample.firstPublic = resultSet.getString("FIRST_PUBLIC");
+            enaDatabaseSample.fixed = resultSet.getString("FIXED");
+            enaDatabaseSample.taxId = resultSet.getString("TAX_ID");
+            enaDatabaseSample.scientificName = resultSet.getString("SCIENTIFIC_NAME");
+            enaDatabaseSample.fixedTaxId = resultSet.getString("FIXED_TAX_ID");
+            enaDatabaseSample.fixedCommonName = resultSet.getString("FIXED_COMMON_NAME");
+            enaDatabaseSample.fixedScientificName = resultSet.getString("FIXED_SCIENTIFIC_NAME");
+          } catch (SQLException e) {
+            LOGGER.error("Error processing database result", e);
           }
         };
     eraProDao.getEnaDatabaseSample(accession, rch);

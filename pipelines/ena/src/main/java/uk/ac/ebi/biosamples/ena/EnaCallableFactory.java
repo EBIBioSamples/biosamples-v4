@@ -14,7 +14,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
@@ -23,28 +22,16 @@ import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 @Service
 public class EnaCallableFactory {
   private final BioSamplesClient bioSamplesWebinClient;
-  private final BioSamplesClient bioSamplesAapClient;
-  private final EnaXmlEnhancer enaXmlEnhancer;
-  private final EnaElementConverter enaElementConverter;
+  private final EnaSampleTransformationService enaSampleTransformationService;
   private final EgaSampleExporter egaSampleExporter;
-  private final EraProDao eraProDao;
-  private final String webinId;
 
   public EnaCallableFactory(
       @Qualifier("WEBINCLIENT") BioSamplesClient bioSamplesWebinClient,
-      BioSamplesClient bioSamplesAapClient,
-      EnaXmlEnhancer enaXmlEnhancer,
-      EnaElementConverter enaElementConverter,
-      EgaSampleExporter egaSampleExporter,
-      EraProDao eraProDao,
-      PipelinesProperties pipelinesProperties) {
+      EnaSampleTransformationService enaSampleTransformationService,
+      EgaSampleExporter egaSampleExporter) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
-    this.bioSamplesAapClient = bioSamplesAapClient;
-    this.enaXmlEnhancer = enaXmlEnhancer;
-    this.enaElementConverter = enaElementConverter;
+    this.enaSampleTransformationService = enaSampleTransformationService;
     this.egaSampleExporter = egaSampleExporter;
-    this.eraProDao = eraProDao;
-    this.webinId = pipelinesProperties.getProxyWebinId();
   }
 
   /**
@@ -68,10 +55,8 @@ public class EnaCallableFactory {
         egaId,
         statusId,
         bioSamplesWebinClient,
-        enaXmlEnhancer,
-        enaElementConverter,
         egaSampleExporter,
-        eraProDao,
+        enaSampleTransformationService,
         suppressionHandler,
         killedHandler,
         amrData);

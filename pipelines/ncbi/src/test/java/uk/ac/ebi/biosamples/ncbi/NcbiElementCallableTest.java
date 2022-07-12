@@ -62,7 +62,7 @@ public class NcbiElementCallableTest {
     when(bioSamplesClient.persistSampleResource(generatedSample.capture())).thenReturn(null);
 
     NcbiSampleConversionService ncbiSampleConversionService =
-        new NcbiSampleConversionService(taxonService, new NcbiEraProDao());
+        new NcbiSampleConversionService(taxonService);
     NcbiElementCallable callable =
         new NcbiElementCallable(
             ncbiSampleConversionService, bioSamplesClient, sample, "test", new HashMap<>());
@@ -88,7 +88,7 @@ public class NcbiElementCallableTest {
     when(bioSamplesClient.persistSampleResource(generatedSample.capture())).thenReturn(null);
 
     NcbiSampleConversionService ncbiSampleConversionService =
-        new NcbiSampleConversionService(taxonService, new NcbiEraProDao());
+        new NcbiSampleConversionService(taxonService);
     NcbiElementCallable callable =
         new NcbiElementCallable(
             ncbiSampleConversionService, bioSamplesClient, sample, "test", null);
