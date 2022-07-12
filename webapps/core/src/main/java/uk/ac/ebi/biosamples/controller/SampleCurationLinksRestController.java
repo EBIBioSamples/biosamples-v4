@@ -12,7 +12,7 @@ package uk.ac.ebi.biosamples.controller;
 
 import java.net.URI;
 import java.time.Instant;
-import javax.servlet.http.HttpServletRequest;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -35,9 +35,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
+import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
-import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.CurationLinkResourceAssembler;
 import uk.ac.ebi.biosamples.service.CurationPersistService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
@@ -113,17 +113,14 @@ public class SampleCurationLinksRestController {
       consumes = {MediaType.APPLICATION_JSON_VALUE},
       produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Resource<CurationLink>> createCurationLinkJson(
-      HttpServletRequest request,
       @PathVariable String accession,
       @RequestBody CurationLink curationLink,
       @RequestHeader(name = "Authorization") final String token) {
 
     log.info("Recieved POST for " + curationLink);
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final boolean webinAuth =
-        accessControlService
-            .extractToken(token)
-            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
-            .orElse(Boolean.FALSE);
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
 
     if (curationLink.getSample() == null) {
       // curationLink has no sample, use the one specified in the URL
@@ -135,20 +132,19 @@ public class SampleCurationLinksRestController {
     }
 
     if (webinAuth) {
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(token).getBody();
+      final String webinSubmissionAccountId = authToken.get().getUser();
 
       curationLink =
           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              curationLink, webinAccount.getId());
+              curationLink, webinSubmissionAccountId);
+
+      if (webinSubmissionAccountId == null) {
+        throw new GlobalExceptions.WebinTokenInvalidException();
+      }
 
       curationLink =
           CurationLink.build(
-              accession,
-              curationLink.getCuration(),
-              null,
-              curationLink.getWebinSubmissionAccountId(),
-              Instant.now());
+              accession, curationLink.getCuration(), null, webinSubmissionAccountId, Instant.now());
     } else {
       curationLink =
           CurationLink.build(
