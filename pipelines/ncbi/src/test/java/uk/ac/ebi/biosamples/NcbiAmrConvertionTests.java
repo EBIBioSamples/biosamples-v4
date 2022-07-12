@@ -23,7 +23,6 @@ import org.junit.Test;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
-import uk.ac.ebi.biosamples.ncbi.NcbiEraProDao;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiAmrConversionService;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 import uk.ac.ebi.biosamples.service.TaxonomyService;
@@ -36,8 +35,7 @@ public class NcbiAmrConvertionTests {
 
   @Before
   public void setUp() {
-    sampleConversionService =
-        new NcbiSampleConversionService(new TaxonomyService(), new NcbiEraProDao());
+    sampleConversionService = new NcbiSampleConversionService(new TaxonomyService());
     amrConversionService = new NcbiAmrConversionService();
   }
 

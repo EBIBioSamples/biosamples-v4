@@ -15,12 +15,11 @@ import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 
 public interface MongoSampleRepositoryCustom {
 
-  public MongoSample insertNew(MongoSample sample);
+  MongoSample insertNew(MongoSample sample);
 
   // to provide static view of samples
-  public void insertSampleToCollection(
-      MongoSample sample, StaticViewWrapper.StaticView collectionName);
+  void insertSampleToCollection(MongoSample sample, StaticViewWrapper.StaticView collectionName);
 
-  public MongoSample findSampleFromCollection(
+  MongoSample findSampleFromCollection(
       String accession, StaticViewWrapper.StaticView collectionName);
 }

@@ -51,7 +51,7 @@ public class EnaRunner implements ApplicationRunner {
   @Autowired private PipelinesProperties pipelinesProperties;
   @Autowired private EraProDao eraProDao;
   @Autowired private EnaCallableFactory enaCallableFactory;
-  @Autowired private NcbiCurationCallableFactory ncbiCallableFactory;
+  @Autowired private NcbiCallableFactory ncbiCallableFactory;
   @Autowired private AmrDataLoaderService amrDataLoaderService;
 
   private Map<String, Future<Void>> futures = new LinkedHashMap<>();
@@ -364,15 +364,15 @@ public class EnaRunner implements ApplicationRunner {
    */
   private static class NcbiDdbjSuppressedSamplesCallbackHandler implements RowCallbackHandler {
     private final AdaptiveThreadPoolExecutor executorService;
-    private final NcbiCurationCallableFactory ncbiCurationCallableFactory;
+    private final NcbiCallableFactory ncbiCallableFactory;
     private final Map<String, Future<Void>> futures;
 
     public NcbiDdbjSuppressedSamplesCallbackHandler(
         final AdaptiveThreadPoolExecutor executorService,
-        final NcbiCurationCallableFactory ncbiCurationCallableFactory,
+        final NcbiCallableFactory ncbiCallableFactory,
         final Map<String, Future<Void>> futures) {
       this.executorService = executorService;
-      this.ncbiCurationCallableFactory = ncbiCurationCallableFactory;
+      this.ncbiCallableFactory = ncbiCallableFactory;
       this.futures = futures;
     }
 
@@ -381,8 +381,7 @@ public class EnaRunner implements ApplicationRunner {
       final String sampleAccession = rs.getString("BIOSAMPLE_ID");
       final int statusId = rs.getInt("STATUS_ID");
 
-      final Callable<Void> callable =
-          ncbiCurationCallableFactory.build(sampleAccession, statusId, true);
+      final Callable<Void> callable = ncbiCallableFactory.build(sampleAccession, statusId, true);
 
       if (executorService == null) {
         try {
@@ -469,9 +468,13 @@ public class EnaRunner implements ApplicationRunner {
           // update if sample already exists else import
 
           if (!amrData.isEmpty()) {
-            callable = enaCallableFactory.build(sampleAccession, egaId, 0, false, false, amrData);
+            callable =
+                enaCallableFactory.build(
+                    sampleAccession, egaId, enaStatus.value, false, false, amrData);
           } else {
-            callable = enaCallableFactory.build(sampleAccession, egaId, 0, false, false, null);
+            callable =
+                enaCallableFactory.build(
+                    sampleAccession, egaId, enaStatus.value, false, false, null);
           }
 
           if (executorService == null) {
@@ -506,13 +509,13 @@ public class EnaRunner implements ApplicationRunner {
 
   private static class NcbiRowCallbackHandler implements RowCallbackHandler {
     private final AdaptiveThreadPoolExecutor executorService;
-    private final NcbiCurationCallableFactory ncbiCallableFactory;
+    private final NcbiCallableFactory ncbiCallableFactory;
     private final Map<String, Future<Void>> futures;
     private Logger log = LoggerFactory.getLogger(getClass());
 
     public NcbiRowCallbackHandler(
         final AdaptiveThreadPoolExecutor executorService,
-        final NcbiCurationCallableFactory ncbiCallableFactory,
+        final NcbiCallableFactory ncbiCallableFactory,
         final Map<String, Future<Void>> futures) {
       this.executorService = executorService;
       this.ncbiCallableFactory = ncbiCallableFactory;

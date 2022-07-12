@@ -13,8 +13,6 @@ package uk.ac.ebi.biosamples.ena;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,31 +34,6 @@ public class EraProDao {
   private static final String STATUS_CLAUSE = "STATUS_ID IN (3, 4, 5, 6, 7, 8)";
   private static final String STATUS_CLAUSE_SUPPRESSED = "STATUS_ID IN (5, 7)";
   private static final String STATUS_CLAUSE_KILLED = "STATUS_ID IN (6, 8)";
-
-  /**
-   * Return a set of BioSamples accessions that have been updated or made public within the
-   * specified date range
-   *
-   * @param minDate
-   * @param maxDate
-   * @return
-   */
-  public SortedSet<String> getSamples(LocalDate minDate, LocalDate maxDate) {
-    String query =
-        "SELECT BIOSAMPLE_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' "
-            + "AND "
-            + STATUS_CLAUSE
-            + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
-
-    SortedSet<String> samples = new TreeSet<>();
-    Date minDateOld = java.sql.Date.valueOf(minDate);
-    Date maxDateOld = java.sql.Date.valueOf(maxDate);
-    List<String> result =
-        jdbcTemplate.queryForList(
-            query, String.class, minDateOld, maxDateOld, minDateOld, maxDateOld);
-    samples.addAll(result);
-    return samples;
-  }
 
   public void doSampleCallback(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
     String query =
@@ -110,7 +83,6 @@ public class EraProDao {
   }
 
   public void getNcbiCallback(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
-
     String query =
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) "
             + "AND "
@@ -132,8 +104,7 @@ public class EraProDao {
               + "STATUS_ID, "
               + "SUBMISSION_ACCOUNT_ID "
               + "FROM SAMPLE "
-              + "WHERE BIOSAMPLE_ID = ? "
-              + "AND SAMPLE_ID LIKE 'ERS%'";
+              + "WHERE BIOSAMPLE_ID = ? ";
       final SampleDBBean sampleData =
           jdbcTemplate.queryForObject(sql, enaSampleRowMapper, biosampleAccession);
 

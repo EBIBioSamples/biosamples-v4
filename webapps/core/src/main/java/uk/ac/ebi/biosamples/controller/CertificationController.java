@@ -12,23 +12,18 @@ package uk.ac.ebi.biosamples.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Instant;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.ExposesResourceFor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
+import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
-import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.certification.BioSamplesCertificationComplainceResult;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
@@ -36,6 +31,10 @@ import uk.ac.ebi.biosamples.service.certification.CertifyService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @ExposesResourceFor(Sample.class)
@@ -53,18 +52,15 @@ public class CertificationController {
 
   @PutMapping("{accession}/certify")
   public EntityModel<Sample> certify(
-      HttpServletRequest request,
       @RequestBody Sample sample,
       @PathVariable String accession,
       @RequestHeader(name = "Authorization", required = false) final String token)
       throws JsonProcessingException {
 
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final boolean webinAuth =
-        accessControlService
-            .extractToken(token)
-            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
-            .orElse(Boolean.FALSE);
-    AuthorizationProvider authProvider =
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
+    final AuthorizationProvider authProvider =
         webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
 
     final ObjectMapper jsonMapper = new ObjectMapper();
@@ -84,22 +80,16 @@ public class CertificationController {
     log.info("Received PUT for validation of " + accession);
 
     if (webinAuth) {
-      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
-      final Authentication authentication = bearerTokenExtractor.extract(request);
-      final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService
-              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-              .getBody();
-
-      final String webinAccountId = webinAccount.getId();
+      final String webinSubmissionAccountId = authToken.get().getUser();
 
       if (sampleService.isNotExistingAccession(accession)
-          && !bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId)) {
+          && !bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId)) {
         throw new GlobalExceptions.SampleAccessionDoesNotExistException();
       }
 
       sample =
-          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(sample, webinAccountId);
+          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+              sample, webinSubmissionAccountId);
     } else {
       sample = bioSamplesAapService.handleSampleDomain(sample);
     }

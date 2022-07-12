@@ -33,7 +33,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
-import uk.ac.ebi.biosamples.ncbi.NcbiEraProDao;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 import uk.ac.ebi.biosamples.service.TaxonomyService;
 
@@ -46,8 +45,7 @@ public class NcbiBaseConverterTests {
 
   @Before
   public void setup() {
-    this.conversionService =
-        new NcbiSampleConversionService(new TaxonomyService(), new NcbiEraProDao());
+    this.conversionService = new NcbiSampleConversionService(new TaxonomyService());
     this.testNcbiBioSamples =
         NcbiTestsService.readNcbiBiosampleElementFromFile("/examples/ncbi_sample_5246317.xml");
   }

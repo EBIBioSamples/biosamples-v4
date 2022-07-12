@@ -40,11 +40,9 @@ public class TestConversion {
 
   @Autowired private EraProDao eraProDao;
 
-  @Autowired private EnaElementConverter enaElementConverter;
-
   @Autowired private EgaSampleExporter egaSampleExporter;
 
-  @Autowired private EnaXmlEnhancer enaXmlEnhancer;
+  @Autowired private EnaSampleTransformationService enaSampleTransformationService;
 
   @Test
   @Ignore
@@ -58,10 +56,8 @@ public class TestConversion {
                   null,
                   0,
                   bioSamplesWebinClient,
-                  enaXmlEnhancer,
-                  enaElementConverter,
                   egaSampleExporter,
-                  eraProDao,
+                  enaSampleTransformationService,
                   false,
                   false,
                   null);
@@ -88,10 +84,8 @@ public class TestConversion {
                   null,
                   0,
                   bioSamplesWebinClient,
-                  enaXmlEnhancer,
-                  enaElementConverter,
                   egaSampleExporter,
-                  eraProDao,
+                  enaSampleTransformationService,
                   false,
                   false,
                   null);
@@ -117,10 +111,8 @@ public class TestConversion {
                   null,
                   0,
                   bioSamplesWebinClient,
-                  enaXmlEnhancer,
-                  enaElementConverter,
                   egaSampleExporter,
-                  eraProDao,
+                  enaSampleTransformationService,
                   false,
                   false,
                   null);
@@ -146,10 +138,8 @@ public class TestConversion {
                   null,
                   0,
                   bioSamplesWebinClient,
-                  enaXmlEnhancer,
-                  enaElementConverter,
                   egaSampleExporter,
-                  eraProDao,
+                  enaSampleTransformationService,
                   false,
                   false,
                   null);
@@ -175,10 +165,8 @@ public class TestConversion {
                   null,
                   0,
                   bioSamplesWebinClient,
-                  enaXmlEnhancer,
-                  enaElementConverter,
                   egaSampleExporter,
-                  eraProDao,
+                  enaSampleTransformationService,
                   false,
                   false,
                   null);

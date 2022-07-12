@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.ncbi.NcbiEraProDao;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 import uk.ac.ebi.biosamples.service.TaxonomyService;
 
@@ -32,14 +31,12 @@ public class NcbiNotSuppressedBaseConverterTests {
 
   @Before
   public void setup() {
-    this.conversionService =
-        new NcbiSampleConversionService(new TaxonomyService(), new NcbiEraProDao());
+    this.conversionService = new NcbiSampleConversionService(new TaxonomyService());
   }
 
   @Test
   public void given_ncbi_live_biosample_ensure_live() {
-    this.conversionService =
-        new NcbiSampleConversionService(new TaxonomyService(), new NcbiEraProDao());
+    this.conversionService = new NcbiSampleConversionService(new TaxonomyService());
     Element testNcbiBioSamples =
         NcbiTestsService.readNcbiBiosampleElementFromFile("/examples/ncbi_sample_6685496.xml");
     Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
@@ -55,8 +52,7 @@ public class NcbiNotSuppressedBaseConverterTests {
 
   @Test
   public void given_ncbi_suppressed_biosample_ensure_suppressed() {
-    this.conversionService =
-        new NcbiSampleConversionService(new TaxonomyService(), new NcbiEraProDao());
+    this.conversionService = new NcbiSampleConversionService(new TaxonomyService());
     Element testNcbiBioSamples =
         NcbiTestsService.readNcbiBiosampleElementFromFile("/examples/ncbi_sample_1553882.xml");
     Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);

@@ -21,7 +21,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @Configuration
 public class EnaConfig {
   @Bean("eraDataSource")
-  @ConfigurationProperties(prefix = "spring.datasource.erapro")
+  @ConfigurationProperties(prefix = "spring.datasource.hikari")
   public DataSource getEraDataSource() {
     return DataSourceBuilder.create().build();
   }
