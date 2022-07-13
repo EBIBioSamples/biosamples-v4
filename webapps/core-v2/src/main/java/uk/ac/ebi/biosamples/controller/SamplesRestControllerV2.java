@@ -96,6 +96,8 @@ public class SamplesRestControllerV2 {
                           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
                               sample, webinSubmissionAccountId);
 
+                      sampleService.validateSampleHasNoRelationshipsV2(sample);
+
                       if (!isWebinSuperUser) {
                         sample = validateSample(sample, true);
                       }
@@ -116,6 +118,8 @@ public class SamplesRestControllerV2 {
                 .map(
                     sample -> {
                       sample = bioSamplesAapService.handleSampleDomain(sample);
+
+                      sampleService.validateSampleHasNoRelationshipsV2(sample);
 
                       if (!bioSamplesAapService.isWriteSuperUser()) {
                         sample = validateSample(sample, false);

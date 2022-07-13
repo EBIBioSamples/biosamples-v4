@@ -462,4 +462,10 @@ public class SampleService {
         .withSubmittedVia(submittedVia)
         .build();
   }
+
+  public void validateSampleHasNoRelationshipsV2(final Sample sample) {
+    if (sample.getRelationships().size() > 0) {
+      throw new GlobalExceptions.SampleWithRelationshipSubmissionExceptionV2();
+    }
+  }
 }

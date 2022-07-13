@@ -109,6 +109,12 @@ public class GlobalExceptions {
   @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample domain mismatch") // 400
   public static class SampleDomainMismatchException extends RuntimeException {}
 
+  @ResponseStatus(
+      value = HttpStatus.BAD_REQUEST,
+      reason =
+          "Sample submitted via V2 submission endpoints shouldn't contain relationships, please use the traditional endpoint instead") // 400
+  public static class SampleWithRelationshipSubmissionExceptionV2 extends RuntimeException {}
+
   @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Unauthorized WEBIN submitter")
   public static class WebinUserLoginUnauthorizedException extends RuntimeException {}
 

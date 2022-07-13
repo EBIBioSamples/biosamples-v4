@@ -14,6 +14,7 @@ import com.google.common.collect.Sets;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,7 +22,6 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
@@ -30,8 +30,6 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 @Order(2)
 public class RestIntegrationV2 extends AbstractIntegration {
   private Logger log = LoggerFactory.getLogger(this.getClass());
-  private final RestTemplate restTemplate;
-  private BioSamplesProperties clientProperties;
   private final BioSamplesClient annonymousClient;
   private BioSamplesClient webinClient;
 
@@ -41,13 +39,11 @@ public class RestIntegrationV2 extends AbstractIntegration {
       BioSamplesProperties clientProperties,
       @Qualifier("WEBINCLIENT") BioSamplesClient webinClient) {
     super(client, webinClient);
-    this.restTemplate = restTemplateBuilder.build();
-    this.clientProperties = clientProperties;
     this.webinClient = webinClient;
     this.annonymousClient =
         new BioSamplesClient(
-            this.clientProperties.getBiosamplesClientUri(),
-            this.clientProperties.getBiosamplesClientUriV2(),
+            clientProperties.getBiosamplesClientUri(),
+            clientProperties.getBiosamplesClientUriV2(),
             restTemplateBuilder,
             null,
             null,
@@ -58,10 +54,10 @@ public class RestIntegrationV2 extends AbstractIntegration {
   protected void phaseOne() {}
 
   @Override
-  protected void phaseTwo() throws InterruptedException {}
+  protected void phaseTwo() {}
 
   @Override
-  protected void phaseThree() throws InterruptedException {}
+  protected void phaseThree() {}
 
   @Override
   protected void phaseFour() {}
@@ -79,7 +75,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
     Optional<EntityModel<Sample>> webinSamplePostPersistance =
         this.webinClient.fetchSampleResource(webinSampleAccession);
 
-    if (!webinSamplePostPersistance.isPresent()) {
+    if (webinSamplePostPersistance.isEmpty()) {
       throw new IntegrationTestFailException(
           "Private sample submitted using webin auth not retrieved", Phase.SIX);
     }
@@ -89,8 +85,70 @@ public class RestIntegrationV2 extends AbstractIntegration {
         this.webinClient.bulkAccessionV2(Collections.singletonList(webinSampleMinimalInfo));
 
     if (sampleAccessionToNameMap.size() == 0) {
-      throw new IntegrationTestFailException("Bulk accession not working", Phase.SIX);
+      throw new IntegrationTestFailException("Bulk accession is not working for V2", Phase.SIX);
     }
+
+    // test private sample create and fetch using webin auth - v2
+    try {
+      Sample webinTestSampleV2Submission = getWebinSampleTest1();
+      List<Sample> apiResponseSampleResourceList =
+          this.webinClient.persistSampleResourceV2(
+              Collections.singletonList(webinTestSampleV2Submission));
+      String apiResponseSampleAccession1 =
+          Objects.requireNonNull(apiResponseSampleResourceList.get(0)).getAccession();
+
+      Map<String, EntityModel<Sample>> apiResponseV2SampleBulkFetch =
+          this.webinClient.fetchSampleResourcesByAccessionsV2(
+              Collections.singletonList(apiResponseSampleAccession1));
+
+      if (apiResponseV2SampleBulkFetch.isEmpty()) {
+        throw new IntegrationTestFailException(
+            "Private sample submitted using webin auth using the V2 end point is not retrieved",
+            Phase.THREE);
+      } else {
+        log.info("Found private sample by webin account");
+      }
+    } catch (final Exception e) {
+      throw new IntegrationTestFailException("V2 persist and fetch tests failed", Phase.SIX);
+    }
+
+    // multiple sample fetch by accessions test - v2, authorized user
+    Map<String, EntityModel<Sample>> sampleResourcesV2Map1 =
+        this.webinClient.fetchSampleResourcesByAccessionsV2(
+            Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023"));
+
+    if (sampleResourcesV2Map1 == null || sampleResourcesV2Map1.size() == 0) {
+      throw new IntegrationTestFailException("Multi sample fetch is not working - V2", Phase.SIX);
+    }
+
+    // multiple sample fetch by accessions test - v2, unauthorized user
+    Map<String, EntityModel<Sample>> sampleResourcesV2Map2 =
+        this.annonymousClient.fetchSampleResourcesByAccessionsV2(
+            Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023"));
+
+    if (sampleResourcesV2Map2.size() > 2) {
+      throw new IntegrationTestFailException(
+          "Multi sample fetch is not working - V2, unauthorized user has access to private samples submitted by other submitters",
+          Phase.SIX);
+    }
+
+    // multiple sample fetch by accessions test, authorized user - v2, all samples not found,
+    // partial
+    // fetch result
+    Map<String, EntityModel<Sample>> sampleResourcesV2Map3 =
+        this.webinClient.fetchSampleResourcesByAccessionsV2(
+            Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023", "SAMEA99999999"));
+
+    if (sampleResourcesV2Map3.size() > 3) {
+      throw new IntegrationTestFailException(
+          "Multi sample fetch is not working - V2, request with not found samples failing",
+          Phase.SIX);
+    }
+  }
+
+  @PreDestroy
+  public void destroy() {
+    annonymousClient.close();
   }
 
   private Sample getWebinSampleTest1() {
