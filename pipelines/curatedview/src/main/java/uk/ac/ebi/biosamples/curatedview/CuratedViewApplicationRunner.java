@@ -114,8 +114,6 @@ public class CuratedViewApplicationRunner implements ApplicationRunner {
         }
 
         final String failures = "Failed files (" + fails.size() + ") " + String.join(" , ", fails);
-
-        MailSender.sendEmail("Curated View", failures, isPassed);
       }
 
       logPipelineStat(startTime, sampleCount);

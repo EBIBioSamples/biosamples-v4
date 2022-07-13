@@ -85,7 +85,7 @@ public class SampleCursorRetrievalService {
 
     params = encodePlusInQueryParameters(params);
 
-    return new IterableResourceFetchAll<Sample>(
+    return new IterableResourceFetchAll<>(
         executor,
         traverson,
         restOperations,

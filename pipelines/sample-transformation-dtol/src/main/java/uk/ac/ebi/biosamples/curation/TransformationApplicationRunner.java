@@ -32,7 +32,6 @@ import uk.ac.ebi.biosamples.model.filter.AttributeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
-import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 @Component
@@ -57,7 +56,6 @@ public class TransformationApplicationRunner implements ApplicationRunner {
     Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
     long sampleCount = 0;
-    boolean isPassed = true;
 
     try (AdaptiveThreadPoolExecutor executorService =
         AdaptiveThreadPoolExecutor.create(
@@ -87,7 +85,6 @@ public class TransformationApplicationRunner implements ApplicationRunner {
       ThreadUtils.checkAndCallbackFutures(futures, 0, pipelineFutureCallback);
     } catch (final Exception e) {
       LOG.error("Pipeline failed to finish successfully", e);
-      isPassed = false;
       throw e;
     } finally {
       Instant endTime = Instant.now();
@@ -97,8 +94,6 @@ public class TransformationApplicationRunner implements ApplicationRunner {
       LOG.info(
           "Pipeline total running time {} seconds",
           Duration.between(startTime, endTime).getSeconds());
-
-      MailSender.sendEmail("DTOL relationship transformation", handleFailedSamples(), isPassed);
     }
   }
 

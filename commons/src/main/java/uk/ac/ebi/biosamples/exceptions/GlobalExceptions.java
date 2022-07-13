@@ -109,7 +109,7 @@ public class GlobalExceptions {
   @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample domain mismatch") // 400
   public static class SampleDomainMismatchException extends RuntimeException {}
 
-  @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Unauthorized WEBIN user")
+  @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Unauthorized WEBIN submitter")
   public static class WebinUserLoginUnauthorizedException extends RuntimeException {}
 
   @ResponseStatus(
@@ -118,8 +118,8 @@ public class GlobalExceptions {
   public static class StructuredDataWebinIdMissingException extends RuntimeException {}
 
   @ResponseStatus(
-      value = HttpStatus.BAD_REQUEST,
-      reason = "You must provide a bearer token to be able to submit") // 400
+      value = HttpStatus.UNAUTHORIZED,
+      reason = "You must provide a bearer token to be able to submit") // 401
   public static class WebinTokenInvalidException extends RuntimeException {}
 
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)

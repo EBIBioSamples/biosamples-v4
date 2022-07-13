@@ -12,11 +12,7 @@ package uk.ac.ebi.biosamples;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -24,45 +20,31 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleAnalytics;
 import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountEntry;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountListContent;
-import uk.ac.ebi.biosamples.mongo.repo.MongoCurationRuleRepository;
 import uk.ac.ebi.biosamples.service.FacetService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
-import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.mongo.AnalyticsService;
 
 @Component
 public class AnalyticsApplicationRunner implements ApplicationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(AnalyticsApplicationRunner.class);
 
-  private final BioSamplesClient bioSamplesClient;
-  private final PipelinesProperties pipelinesProperties;
-  private final Map<String, String> curationRules;
-  private final MongoCurationRuleRepository repository;
   private final AnalyticsService analyticsService;
   private final PipelineFutureCallback pipelineFutureCallback;
   private final FacetService facetService;
   private final SamplePageService samplePageService;
 
   public AnalyticsApplicationRunner(
-      BioSamplesClient bioSamplesClient,
-      PipelinesProperties pipelinesProperties,
-      MongoCurationRuleRepository repository,
       AnalyticsService analyticsService,
       FacetService facetService,
       SamplePageService samplePageService) {
-    this.bioSamplesClient = bioSamplesClient;
-    this.pipelinesProperties = pipelinesProperties;
-    this.repository = repository;
     this.analyticsService = analyticsService;
     this.facetService = facetService;
     this.samplePageService = samplePageService;
-    this.curationRules = new HashMap<>();
     this.pipelineFutureCallback = new PipelineFutureCallback();
   }
 
@@ -71,7 +53,6 @@ public class AnalyticsApplicationRunner implements ApplicationRunner {
     Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
     long sampleCount = 0;
-    boolean isPassed = true;
     SampleAnalytics sampleAnalytics = new SampleAnalytics();
 
     Page<Sample> samplePage =
@@ -98,7 +79,6 @@ public class AnalyticsApplicationRunner implements ApplicationRunner {
         Duration.between(startTime, endTime).getSeconds());
 
     analyticsService.mergeSampleAnalytics(startTime, sampleAnalytics);
-    MailSender.sendEmail("Analytics", null, isPassed);
   }
 
   private void addToFacets(String facetField, SampleAnalytics sampleAnalytics) {

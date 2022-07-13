@@ -29,7 +29,6 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
-import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 public abstract class PipelineApplicationRunner implements ApplicationRunner {
@@ -85,11 +84,6 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
       ThreadUtils.checkAndCallbackFutures(futures, 0, pipelineFutureCallback);
     } catch (final Exception e) {
       LOG.error("Pipeline failed to finish successfully", e);
-      MailSender.sendEmail(
-          getPipelineName(),
-          "Failed for network connectivity issues/ other issues - <ALERT BIOSAMPLES DEV> "
-              + e.getMessage(),
-          false);
       throw e;
     } finally {
       Instant endTime = Instant.now();
@@ -109,11 +103,6 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
               pipelineFutureCallback.getTotalCount());
       pipelineAnalytics.setDateRange(filters);
       //            analyticsService.persistPipelineAnalytics(pipelineAnalytics);
-
-      MailSender.sendEmail(
-          getPipelineName(),
-          String.join(",", pipelineFutureCallback.getFailedSamples()),
-          pipelineFutureCallback.getFailedSamples().isEmpty());
     }
   }
 

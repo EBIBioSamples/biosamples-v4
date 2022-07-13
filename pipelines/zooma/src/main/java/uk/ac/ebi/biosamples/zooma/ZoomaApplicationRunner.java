@@ -35,7 +35,6 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
-import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.mongo.AnalyticsService;
 
@@ -69,7 +68,6 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
     Instant startTime = Instant.now();
     Collection<Filter> filters = ArgUtils.getDateFilters(args);
     long sampleCount = 0;
-    boolean isPassed = true;
 
     try (AdaptiveThreadPoolExecutor executorService =
         AdaptiveThreadPoolExecutor.create(
@@ -106,7 +104,6 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
       ThreadUtils.checkAndCallbackFutures(futures, 0, pipelineFutureCallback);
     } catch (final Exception e) {
       LOG.error("Pipeline failed to finish successfully", e);
-      isPassed = false;
     } finally {
       Instant endTime = Instant.now();
       LOG.info("Total samples processed {}", sampleCount);
@@ -134,7 +131,6 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
         final String failures = "Failed files (" + fails.size() + ") " + String.join(" , ", fails);
 
         LOG.info(failures);
-        MailSender.sendEmail("Zooma", failures, isPassed);
       }
     }
   }

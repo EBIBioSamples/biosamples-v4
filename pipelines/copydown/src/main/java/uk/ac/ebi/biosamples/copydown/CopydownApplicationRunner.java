@@ -31,7 +31,6 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
-import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.mongo.AnalyticsService;
 
@@ -94,11 +93,6 @@ public class CopydownApplicationRunner implements ApplicationRunner {
     } catch (final Exception e) {
       LOG.error("Pipeline failed to finish successfully", e);
       isPassed = false;
-      MailSender.sendEmail(
-          "Copy-down",
-          "Failed for network connectivity issues/ other issues - <ALERT BIOSAMPLES DEV> "
-              + e.getMessage(),
-          isPassed);
       throw e;
     } finally {
       Instant endTime = Instant.now();
@@ -130,7 +124,6 @@ public class CopydownApplicationRunner implements ApplicationRunner {
         final String failures = "Failed files (" + fails.size() + ") " + String.join(" , ", fails);
 
         LOG.info(failures);
-        MailSender.sendEmail("Copy-down", failures, isPassed);
       }
     }
     // TODO re-check existing curations

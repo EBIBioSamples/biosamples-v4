@@ -116,13 +116,8 @@ public class CurationApplicationRunner implements ApplicationRunner {
     } catch (final Exception e) {
       LOG.error("Pipeline failed to finish successfully", e);
       isPassed = false;
-      MailSender.sendEmail(
-          "Curation",
-          "Failed for network connectivity issues/ other issues - <ALERT BIOSAMPLES DEV> "
-              + e.getMessage(),
-          false);
-
       pipelineFailureCause = e.getMessage();
+
       throw e;
     } finally {
       Instant endTime = Instant.now();

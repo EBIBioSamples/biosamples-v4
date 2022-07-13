@@ -131,7 +131,6 @@ public class MigrationApplicationRunner implements ApplicationRunner {
       sampleAnalytics.setProcessedRecords(sampleCount);
       analyticsService.persistSampleAnalytics(startTime, sampleAnalytics);
       analyticsService.persistPipelineAnalytics(pipelineAnalytics);
-      MailSender.sendEmail("StructuredDataMigration", handleFailedSamples(), isPassed);
     }
   }
 

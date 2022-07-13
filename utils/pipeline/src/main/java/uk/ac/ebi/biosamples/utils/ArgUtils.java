@@ -26,7 +26,7 @@ public class ArgUtils {
 
   public static Collection<Filter> getDateFilters(ApplicationArguments args) {
 
-    LocalDate fromDate = null;
+    LocalDate fromDate;
     if (args.getOptionNames().contains("from")) {
       fromDate =
           LocalDate.parse(
@@ -34,7 +34,7 @@ public class ArgUtils {
     } else {
       fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
     }
-    LocalDate toDate = null;
+    LocalDate toDate;
     if (args.getOptionNames().contains("until")) {
       toDate =
           LocalDate.parse(

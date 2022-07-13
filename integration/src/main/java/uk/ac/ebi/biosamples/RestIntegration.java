@@ -247,6 +247,30 @@ public class RestIntegration extends AbstractIntegration {
       log.info("Found private sample by webin account");
     }
 
+    // test private sample create and fetch using webin auth - v2
+    try {
+      Sample webinTestSampleV2Submission = getWebinSampleTest1();
+      List<Sample> apiResponseSampleResourceList =
+          this.webinClient.persistSampleResourceV2(
+              Collections.singletonList(webinTestSampleV2Submission));
+      String apiResponseSampleAccession1 =
+          Objects.requireNonNull(apiResponseSampleResourceList.get(0)).getAccession();
+
+      Map<String, EntityModel<Sample>> apiResponseV2SampleBulkFetch =
+          this.webinClient.fetchSampleResourcesByAccessionsV2(
+              Collections.singletonList(apiResponseSampleAccession1));
+
+      if (apiResponseV2SampleBulkFetch.isEmpty()) {
+        throw new IntegrationTestFailException(
+            "Private sample submitted using webin auth using the V2 end point is not retrieved",
+            Phase.THREE);
+      } else {
+        log.info("Found private sample by webin account");
+      }
+    } catch (final Exception e) {
+      throw new IntegrationTestFailException("V2 persist and fetch tests failed", Phase.THREE);
+    }
+
     // multiple sample fetch by accessions test, authorized user
     Map<String, EntityModel<Sample>> sampleResourcesMap1 =
         this.webinClient.fetchSampleResourcesByAccessions(
@@ -296,6 +320,19 @@ public class RestIntegration extends AbstractIntegration {
     if (sampleResourcesMap3.size() > 3) {
       throw new IntegrationTestFailException(
           "Multi sample fetch is not working, request with not found samples failing", Phase.THREE);
+    }
+
+    // multiple sample fetch by accessions test, authorized user - v2, all samples not found,
+    // partial
+    // fetch result
+    Map<String, EntityModel<Sample>> sampleResourcesV2Map3 =
+        this.webinClient.fetchSampleResourcesByAccessionsV2(
+            Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023", "SAMEA99999999"));
+
+    if (sampleResourcesV2Map3.size() > 3) {
+      throw new IntegrationTestFailException(
+          "Multi sample fetch is not working - V2, request with not found samples failing",
+          Phase.THREE);
     }
   }
 
