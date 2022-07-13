@@ -14,6 +14,8 @@ import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -133,19 +135,41 @@ public class SolrFacetService {
       String facetField) {
     boolean isLandingPage = false;
     // default to search all
-    if (searchTerm == null || searchTerm.trim().length() == 0) {
-      searchTerm = "*:*";
-      if (filters.isEmpty()) {
-        isLandingPage = true;
-      }
-    }
+//    if (searchTerm == null || searchTerm.trim().length() == 0) {
+//      searchTerm = "*:*";
+//      if (filters.isEmpty()) {
+//        isLandingPage = true;
+//      }
+//    }
 
     List<Facet> facets = new ArrayList<>();
 
     // build a query out of the users string and any facets
-    FacetQuery query = new SimpleFacetQuery();
-    query.addCriteria(new Criteria().expression(searchTerm));
-    query.setTimeAllowed(TIMEALLOWED * 1000);
+//    FacetQuery query = new SimpleFacetQuery();
+//    query.addCriteria(new Criteria().expression(searchTerm));
+//    query.setTimeAllowed(TIMEALLOWED * 1000);
+
+    FacetQuery query;
+    if (StringUtils.isBlank(searchTerm) || "*:*".equals(searchTerm.trim())) {
+      query = new SimpleFacetQuery(new Criteria().expression("*:*")); // default to search all
+    } else {
+      // search for copied fields keywords_ss and autocomplete_ss.
+      // (think about merging them as autocomplete feature is not used)
+      query = new SimpleFacetQuery(new Criteria().expression("keywords_ss:" + searchTerm));
+//      Criteria allAttributes = new Criteria().expression("autocomplete_ss:" + searchTerm);
+//      allAttributes.setPartIsOr(true);
+//      query.addCriteria(allAttributes);
+
+      // boosting accession to bring accession matches to the top
+      Criteria boostId = new Criteria("id").is(searchTerm).boost(5);
+      boostId.setPartIsOr(true);
+      query.addCriteria(boostId);
+
+      // boosting name to bring accession matches to the top
+      Criteria boostName = new Criteria("name_s").is(searchTerm).boost(3);
+      boostName.setPartIsOr(true);
+      query.addCriteria(boostName);
+    }
 
     // Add domains and release date filters
     Optional<FilterQuery> domainAndPublicFilterQuery =

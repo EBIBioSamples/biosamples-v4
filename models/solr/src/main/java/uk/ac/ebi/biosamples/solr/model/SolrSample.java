@@ -14,8 +14,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.solr.core.mapping.Dynamic;
 import org.springframework.data.solr.core.mapping.Indexed;
@@ -30,10 +33,7 @@ public class SolrSample {
   @Indexed(name = "id", required = true)
   protected String accession;
 
-  @Indexed(
-      name = "name_s",
-      required = true,
-      copyTo = {"autocomplete_ss"})
+  @Indexed(name = "name_s", required = true, copyTo = "keywords_ss")
   protected String name;
 
   @Indexed(name = "domain_s", required = true)
@@ -66,25 +66,21 @@ public class SolrSample {
   @Dynamic
   protected Map<String, List<String>> attributeValues;
 
-  @Indexed(
-      name = "*_ai_ss",
-      copyTo = {
-        "ontologyiri_ss",
-      })
+  @Indexed(name = "*_ai_ss", copyTo = {"ontologyiri_ss"})
   @Dynamic
   protected Map<String, List<String>> attributeIris;
 
-  @Indexed(name = "*_au_ss")
+  @Indexed(name = "*_au_ss", copyTo = "autocomplete")
   @Dynamic
   protected Map<String, List<String>> attributeUnits;
 
   /** Relationships for which this sample is the source */
-  @Indexed(name = "*_or_ss")
+  @Indexed(name = "*_or_ss", copyTo = "keywords_ss")
   @Dynamic
   protected Map<String, List<String>> outgoingRelationships;
 
   /** Relationships for which this sample is the target */
-  @Indexed(name = "*_ir_ss")
+  @Indexed(name = "*_ir_ss", copyTo = "keywords_ss")
   @Dynamic
   protected Map<String, List<String>> incomingRelationships;
 
@@ -105,11 +101,7 @@ public class SolrSample {
    * and relationships of the sample Since faceting does not require it to be stored, it wont be to
    * save space.
    */
-  @Indexed(
-      name = "facetfields_ss",
-      copyTo = {
-        "autocomplete_ss",
-      })
+  @Indexed(name = "facetfields_ss", copyTo = {"autocomplete_ss"})
   protected List<String> facetFields;
   // TODO consider renaming as used only for faceting
 
@@ -305,7 +297,12 @@ public class SolrSample {
     }
 
     sample.keywords = new ArrayList<>();
+    sample.keywords.add(sample.name.toLowerCase());
     sample.keywords.addAll(keywords);
+    for (Entry<String, List<String>> entry : attributeValues.entrySet()) {
+      sample.keywords.add(SolrFieldService.decodeFieldName(entry.getKey()).toLowerCase());
+      sample.keywords.addAll(entry.getValue().stream().map(String::toLowerCase).collect(Collectors.toSet()));
+    }
 
     return sample;
   }

@@ -195,29 +195,11 @@ public class RestSearchIntegration extends AbstractIntegration {
   @Override
   protected void phaseFour() {
     Sample sample2 = getSampleTest2();
-    Optional<Sample> optionalSample = fetchUniqueSampleByName(sample2.getName());
-    if (optionalSample.isPresent()) {
-      sample2 = optionalSample.get();
-    } else {
-      throw new IntegrationTestFailException(
-          "Sample does not exist, sample name: " + sample2.getName(), Phase.FOUR);
-    }
+    sample2 = fetchByNameOrElseThrow(sample2.getName(), Phase.FOUR);
     Sample sample4 = getSampleTest4();
-    optionalSample = fetchUniqueSampleByName(sample4.getName());
-    if (optionalSample.isPresent()) {
-      sample4 = optionalSample.get();
-    } else {
-      throw new IntegrationTestFailException(
-          "Sample does not exist, sample name: " + sample4.getName(), Phase.FOUR);
-    }
+    sample4 = fetchByNameOrElseThrow(sample4.getName(), Phase.FOUR);
     Sample sample5 = getSampleTest5();
-    optionalSample = fetchUniqueSampleByName(sample5.getName());
-    if (optionalSample.isPresent()) {
-      sample5 = optionalSample.get();
-    } else {
-      throw new IntegrationTestFailException(
-          "Sample does not exist, sample name: " + sample5.getName(), Phase.FOUR);
-    }
+    sample5 = fetchByNameOrElseThrow(sample5.getName(), Phase.FOUR);
 
     List<String> sample2ExpectedSearchResults =
         Arrays.asList(sample2.getAccession(), sample4.getAccession());

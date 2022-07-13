@@ -371,7 +371,7 @@ services:
     - rabbitmq_data:/var/lib/rabbitmq/mnesia
 
   solr:
-    image: solr:6.6-alpine
+    image: solr:8.0.0-alpine
     mem_limit: 1g
     ports:
     - 8983:8983

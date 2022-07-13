@@ -11,6 +11,8 @@
 package uk.ac.ebi.biosamples.solr.service;
 
 import java.util.*;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,18 +109,41 @@ public class SolrSampleService {
       Collection<Filter> filters,
       Collection<String> domains,
       String webinSubmissionAccountId) {
-    // default to search all
-    if (searchTerm == null || searchTerm.trim().length() == 0) {
-      searchTerm = "*:*";
-    }
-    // build a query out of the users string and any facets
-    Query query = new SimpleQuery(searchTerm);
-    query.addProjectionOnField(new SimpleField("id"));
+    Query query;
+    if (StringUtils.isBlank(searchTerm) || "*:*".equals(searchTerm.trim())) {
+      query = new SimpleQuery("*:*"); // default to search all
+    } else {
+      String lowerCasedSearchTerm = searchTerm.toLowerCase();
+      // search for copied fields keywords_ss and autocomplete_ss.
+      // (think about merging them as autocomplete feature is not used)
+      query = new SimpleQuery("keywords_ss:" + lowerCasedSearchTerm);
+//      Criteria allAttributes = new SimpleStringCriteria("autocomplete_ss:" + searchTerm);
+//      allAttributes.setPartIsOr(true);
+//      query.addCriteria(allAttributes);
 
-    // boosting accession to bring accession matches to the top
-    Criteria boostId = new Criteria("id").is(searchTerm).boost((float) 5);
-    boostId.setPartIsOr(true);
-    query.addCriteria(boostId);
+      // boosting accession to bring accession matches to the top
+      Criteria boostId = new Criteria("id").is(searchTerm).boost(5);
+      boostId.setPartIsOr(true);
+      query.addCriteria(boostId);
+
+      // boosting name to bring accession matches to the top
+      Criteria boostName = new Criteria("name_s").is(searchTerm).boost(3);
+      boostName.setPartIsOr(true);
+      query.addCriteria(boostName);
+    }
+
+//    keywords_ss:Eukaryota
+//    {!qf=keywords_ss}Eukaryota
+
+//    SimpleQuery query = new SimpleQuery();
+//    query.addCriteria(new Criteria("keywords_ss").is(searchTerm));
+//    query.addCriteria(new SimpleStringCriteria(searchTerm));
+//    query.setGroupOptions(new GroupOptions().addGroupByField("keywords_ss"));
+
+    // build a query out of the users string and any facets
+//    Query query = new SimpleQuery(queryField);
+
+    query.addProjectionOnField(new SimpleField("id"));
 
     Optional<FilterQuery> publicFilterQuery =
         solrFilterService.getPublicFilterQuery(domains, webinSubmissionAccountId);
