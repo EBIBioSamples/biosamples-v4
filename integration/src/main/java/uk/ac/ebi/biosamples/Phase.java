@@ -29,7 +29,8 @@ public enum Phase {
   TWO(2),
   THREE(3),
   FOUR(4),
-  FIVE(5);
+  FIVE(5),
+  SIX(6);
 
   private static Logger log = LoggerFactory.getLogger(Phase.class);
 

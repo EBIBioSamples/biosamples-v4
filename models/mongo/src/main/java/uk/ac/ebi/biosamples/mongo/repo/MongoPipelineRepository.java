@@ -10,16 +10,7 @@
 */
 package uk.ac.ebi.biosamples.mongo.repo;
 
-import uk.ac.ebi.biosamples.model.StaticViewWrapper;
-import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
 
-public interface MongoSampleRepositoryCustom {
-
-  MongoSample insertNew(MongoSample sample);
-
-  // to provide static view of samples
-  void insertSampleToCollection(MongoSample sample, StaticViewWrapper.StaticView collectionName);
-
-  MongoSample findSampleFromCollection(
-      String accession, StaticViewWrapper.StaticView collectionName);
-}
+public interface MongoPipelineRepository extends MongoRepository<MongoPipeline, String> {}

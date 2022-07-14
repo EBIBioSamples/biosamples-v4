@@ -95,7 +95,7 @@ public class OlsProcessor {
     ResponseEntity<JsonNode> responseEntity = null;
     try {
       responseEntity =
-          ClientUtils.<Void, JsonNode>doRetryQuery(
+          ClientUtils.doRetryQuery(
               requestEntity, restTemplate, 5, new ParameterizedTypeReference<JsonNode>() {});
     } catch (HttpStatusCodeException e) {
       // if we get a 404, return an empty list

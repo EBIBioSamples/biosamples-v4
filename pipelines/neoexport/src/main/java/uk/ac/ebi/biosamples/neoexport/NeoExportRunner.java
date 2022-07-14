@@ -33,7 +33,6 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.neo4j.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
-import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 @Component
@@ -140,7 +139,6 @@ public class NeoExportRunner implements ApplicationRunner {
       pipelineAnalytics.setDateRange(filters);
       sampleAnalytics.setDateRange(filters);
       sampleAnalytics.setProcessedRecords(sampleCount);
-      MailSender.sendEmail("neoExport", handleFailedSamples(), isPassed);
     }
   }
 

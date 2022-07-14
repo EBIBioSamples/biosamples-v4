@@ -8,10 +8,9 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.exceptions;
+package uk.ac.ebi.biosamples.mongo.util;
 
-public class SampleConversionException extends RuntimeException {
-  public SampleConversionException(String message) {
-    super(message);
-  }
+public enum PipelineCompletionStatus {
+  COMPLETED,
+  FAILED
 }

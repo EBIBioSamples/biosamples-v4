@@ -18,8 +18,8 @@ maven-package:
   script:
     - 'mvn -q deploy -P embl-ebi -s ci_settings.xml -Dmaven.source.skip=true'
     - mkdir deployment
-    - mkdir pipelines-deployment
     - cp webapps/core/target/webapps-core-*.war deployment/webapps-core.war
+    - cp webapps/core-v2/target/webapps-core-v2*.jar deployment/webapps-core-v2.jar
     - cp agents/solr/target/agents-solr-*.jar deployment/agents-solr.jar
     - cp agents/uploadworkers/target/agents-uploadworkers-*.jar deployment/agents-uploadworkers.jar
     - cp pipelines/copydown/target/pipelines-copydown-*.jar deployment/pipelines-copydown.jar

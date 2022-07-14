@@ -97,11 +97,7 @@ public class MongoCertificate implements Comparable<MongoCertificate> {
     }
 
     comparison = nullSafeStringComparison(this.version, cert.version);
-    if (comparison != 0) {
-      return comparison;
-    }
-
-    return 0;
+    return comparison;
   }
 
   public int nullSafeStringComparison(String one, String two) {
@@ -132,8 +128,8 @@ public class MongoCertificate implements Comparable<MongoCertificate> {
       throw new IllegalArgumentException("Certificate file name must not be null");
     }
 
-    if (name != null) name = name.trim();
-    if (version != null) version = version.trim();
+    name = name.trim();
+    version = version.trim();
 
     MongoCertificate cert = new MongoCertificate();
     cert.name = name;

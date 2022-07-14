@@ -437,6 +437,9 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
   }
 
+  @Override
+  protected void phaseSix() {}
+
   private Sample getTestSample1() {
     String name = "RestFilterIntegration_sample_1";
     Instant update = Instant.parse("1999-12-25T11:36:57.00Z");

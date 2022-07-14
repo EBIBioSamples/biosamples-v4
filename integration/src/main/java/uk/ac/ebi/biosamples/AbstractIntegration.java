@@ -13,6 +13,7 @@ package uk.ac.ebi.biosamples;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,8 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
   protected abstract void phaseFour();
 
   protected abstract void phaseFive();
+
+  protected abstract void phaseSix() throws ExecutionException, InterruptedException;
 
   public AbstractIntegration(BioSamplesClient client, BioSamplesClient webinClient) {
     this.client = client;
@@ -90,6 +93,10 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
         break;
       case FIVE:
         phaseFive();
+        TimeUnit.SECONDS.sleep(1);
+        break;
+      case SIX:
+        phaseSix();
         TimeUnit.SECONDS.sleep(1);
         break;
       default:

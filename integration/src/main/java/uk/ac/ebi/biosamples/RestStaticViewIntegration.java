@@ -274,6 +274,9 @@ public class RestStaticViewIntegration extends AbstractIntegration {
     // nothing to do here
   }
 
+  @Override
+  protected void phaseSix() {}
+
   private void testDynamicAndStaticView(String accession) {
     Sample dynamicSample;
     Optional<EntityModel<Sample>> optionalSample =

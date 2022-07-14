@@ -10,78 +10,81 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 
-public class NcbiCurationCallable implements Callable<Void> {
+public class NcbiCallable implements Callable<Void> {
+  private Logger log = LoggerFactory.getLogger(getClass());
+
   private static final String SUPPRESSED = "suppressed";
   public static final String TEMPORARY_SUPPRESSED = "temporary_suppressed";
-
-  private Logger log = LoggerFactory.getLogger(getClass());
 
   private final String accession;
   private final int statusId;
   private final BioSamplesClient bioSamplesClient;
   private final String domain;
-  private boolean suppressionHandler;
+  private final boolean suppressionHandler;
 
-  /**
-   * Construction
-   *
-   * @param accession
-   * @param statusId
-   * @param bioSamplesClient
-   * @param domain
-   * @param suppressionHandler
-   */
-  public NcbiCurationCallable(
+  private final EnaSampleTransformationService enaSampleTransformationService;
+
+  /** Construction */
+  public NcbiCallable(
       String accession,
       int statusId,
       BioSamplesClient bioSamplesClient,
       String domain,
-      boolean suppressionHandler) {
+      boolean suppressionHandler,
+      EnaSampleTransformationService enaSampleTransformationService) {
     this.accession = accession;
     this.statusId = statusId;
     this.bioSamplesClient = bioSamplesClient;
     this.domain = domain;
     this.suppressionHandler = suppressionHandler;
+    this.enaSampleTransformationService = enaSampleTransformationService;
   }
 
   @Override
   public Void call() {
-    log.trace("HANDLING " + this.accession);
-    ExternalReference exRef =
-        ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + this.accession);
-    Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
-
-    try {
-      if (suppressionHandler) {
-        checkAndUpdateSuppressedSample();
-      } else {
+    if (suppressionHandler) {
+      checkAndUpdateSuppressedSample();
+    } else {
+      try {
         // get the sample to make sure it exists first
-        if (bioSamplesClient
-            .fetchSampleResource(this.accession, Optional.of(new ArrayList<>()))
-            .isPresent()) {
-          bioSamplesClient.persistCuration(this.accession, curation, domain, false);
-        } else {
-          log.warn("Unable to find " + this.accession);
-        }
-      }
+        if (!bioSamplesClient.fetchSampleResource(this.accession).isPresent()) {
+          log.info(
+              "NCBI sample doesn't exists in BioSamples "
+                  + this.accession
+                  + " fetching from ERAPRO");
 
-      log.trace("HANDLED " + this.accession);
-    } catch (final Exception e) {
-      log.info("Failed to curate NCBI sample with ENA link " + accession);
+          try {
+            final Sample sample = enaSampleTransformationService.enrichSample(this.accession, true);
+
+            bioSamplesClient.persistSampleResource(sample);
+          } catch (final Exception e) {
+            log.info(
+                "Failed to enrich and persist NCBI sample with accession " + this.accession, e);
+          }
+        } else {
+          log.info("NCBI sample exists " + this.accession + " adding ENA link");
+
+          ExternalReference exRef =
+              ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + this.accession);
+          Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
+
+          try {
+            bioSamplesClient.persistCuration(this.accession, curation, domain, false);
+          } catch (final Exception e) {
+            log.info("Failed to curate NCBI sample with ENA link " + this.accession);
+          }
+        }
+      } catch (final Exception e) {
+        log.info("Failed to handle NCBI sample with accession " + this.accession, e);
+      }
     }
 
     return null;

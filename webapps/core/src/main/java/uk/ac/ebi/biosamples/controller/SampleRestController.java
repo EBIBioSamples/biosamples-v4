@@ -272,7 +272,7 @@ public class SampleRestController {
     sample =
         Sample.Builder.fromSample(sample).withUpdate(now).withSubmittedVia(submittedVia).build();
 
-    sample = validateSampleAgainstExternalValidationServices(sample, webinAuth, isWebinSuperUser);
+    sample = validateSample(sample, webinAuth, isWebinSuperUser);
 
     final boolean isFirstTimeMetadataAdded =
         sampleService.checkIfSampleHasMetadata(sample, isWebinSuperUser);
@@ -293,25 +293,8 @@ public class SampleRestController {
     return sampleResourceAssembler.toModel(sample);
   }
 
-  private Sample validateSampleAgainstExternalValidationServices(
-      Sample sample, boolean webinAuth, boolean isWebinSuperUser) {
+  private Sample validateSample(Sample sample, boolean webinAuth, boolean isWebinSuperUser) {
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    return validateAndGetSample(
-        sample,
-        webinAuth,
-        isWebinSuperUser,
-        schemaValidationService,
-        taxonomyClientService,
-        bioSamplesAapService);
-  }
-
-  private Sample validateAndGetSample(
-      Sample sample,
-      final boolean webinAuth,
-      final boolean isWebinSuperUser,
-      final SchemaValidationService schemaValidationService,
-      final TaxonomyClientService taxonomyClientService,
-      final BioSamplesAapService bioSamplesAapService) {
     if (webinAuth && !isWebinSuperUser) {
       schemaValidationService.validate(sample);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);

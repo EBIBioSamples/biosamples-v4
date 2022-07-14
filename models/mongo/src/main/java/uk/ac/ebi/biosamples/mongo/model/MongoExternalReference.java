@@ -98,13 +98,8 @@ public class MongoExternalReference implements Comparable<MongoExternalReference
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("ExternalReference(");
-    sb.append(this.url);
-    sb.append(",");
-    sb.append(duo);
-    sb.append(")");
-    return sb.toString();
+    String sb = "ExternalReference(" + this.url + "," + duo + ")";
+    return sb;
   }
 
   public static MongoExternalReference build(String url, SortedSet<String> duo) {
@@ -113,6 +108,7 @@ public class MongoExternalReference implements Comparable<MongoExternalReference
 
     url = uriComponents.toUriString();
 
+    uriComponents.getPort();
     Hasher hasher =
         Hashing.sha256()
             .newHasher()
@@ -126,7 +122,7 @@ public class MongoExternalReference implements Comparable<MongoExternalReference
                 Objects.nonNull(uriComponents.getUserInfo()) ? uriComponents.getUserInfo() : "")
             .putUnencodedChars(
                 Objects.nonNull(uriComponents.getHost()) ? uriComponents.getHost() : "")
-            .putInt(Objects.nonNull(uriComponents.getPort()) ? uriComponents.getPort() : 0)
+            .putInt(uriComponents.getPort())
             .putUnencodedChars(
                 Objects.nonNull(uriComponents.getPath()) ? uriComponents.getPath() : "")
             .putUnencodedChars(

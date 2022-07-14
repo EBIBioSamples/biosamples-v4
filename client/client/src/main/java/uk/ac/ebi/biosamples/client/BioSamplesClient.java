@@ -54,10 +54,11 @@ public class BioSamplesClient implements AutoCloseable {
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final SampleRetrievalService sampleRetrievalService;
+  private final SampleRetrievalServiceV2 sampleRetrievalServiceV2;
   private final SamplePageRetrievalService samplePageRetrievalService;
   private final SampleCursorRetrievalService sampleCursorRetrievalService;
   private final SampleSubmissionService sampleSubmissionService;
-  /*private final SampleGroupSubmissionService sampleGroupSubmissionService;*/
+  private final SampleSubmissionServiceV2 sampleSubmissionServiceV2;
   private final CurationRetrievalService curationRetrievalService;
   private final CurationSubmissionService curationSubmissionService;
   private final SampleCertificationService sampleCertificationService;
@@ -71,13 +72,13 @@ public class BioSamplesClient implements AutoCloseable {
 
   public BioSamplesClient(
       URI uri,
+      URI uriV2,
       RestTemplateBuilder restTemplateBuilder,
       SampleValidator sampleValidator,
       ClientService clientService,
       BioSamplesProperties bioSamplesProperties) {
 
     RestTemplate restOperations = restTemplateBuilder.build();
-    boolean isWebinSubmission = false;
 
     threadPoolExecutor =
         AdaptiveThreadPoolExecutor.create(
@@ -92,7 +93,6 @@ public class BioSamplesClient implements AutoCloseable {
         log.trace("Adding BsdClientHttpRequestInterceptor");
         restOperations.getInterceptors().add(new BsdClientHttpRequestInterceptor(clientService));
       } else if (clientService instanceof WebinAuthClientService) {
-        isWebinSubmission = true;
         log.trace("Adding WebinClientHttpRequestInterceptor");
         restOperations.getInterceptors().add(new BsdClientHttpRequestInterceptor(clientService));
       } else {
@@ -114,8 +114,13 @@ public class BioSamplesClient implements AutoCloseable {
             bioSamplesProperties.getBiosamplesClientPagesize());
 
     sampleSubmissionService =
-        new SampleSubmissionService(
-            restOperations, traverson, threadPoolExecutor, isWebinSubmission);
+        new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
+
+    sampleSubmissionServiceV2 =
+        new SampleSubmissionServiceV2(restOperations, uriV2, threadPoolExecutor);
+
+    sampleRetrievalServiceV2 =
+        new SampleRetrievalServiceV2(restOperations, uriV2, threadPoolExecutor);
 
     sampleCertificationService = new SampleCertificationService(restOperations, traverson);
 
@@ -143,7 +148,7 @@ public class BioSamplesClient implements AutoCloseable {
       this.publicClient =
           Optional.of(
               new BioSamplesClient(
-                  uri, restTemplateBuilder, sampleValidator, null, bioSamplesProperties));
+                  uri, uriV2, restTemplateBuilder, sampleValidator, null, bioSamplesProperties));
     }
   }
 
@@ -179,9 +184,7 @@ public class BioSamplesClient implements AutoCloseable {
   @PreDestroy
   public void close() {
     // close down public client if present
-    if (publicClient.isPresent()) {
-      publicClient.get().close();
-    }
+    publicClient.ifPresent(BioSamplesClient::close);
     // close down our own thread pools
     threadPoolExecutor.shutdownNow();
     try {
@@ -206,6 +209,28 @@ public class BioSamplesClient implements AutoCloseable {
       List<String> accessions, String jwt) throws RestClientException {
     try {
       return sampleRetrievalService.fetchSamplesByAccessions(accessions, jwt).get();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e.getCause());
+    }
+  }
+
+  public Map<String, EntityModel<Sample>> fetchSampleResourcesByAccessionsV2(
+      List<String> accessions) throws RestClientException {
+    try {
+      return sampleRetrievalServiceV2.fetchSamplesByAccessions(accessions).get();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e.getCause());
+    }
+  }
+
+  public Map<String, EntityModel<Sample>> fetchSampleResourcesByAccessionsV2(
+      List<String> accessions, String jwt) throws RestClientException {
+    try {
+      return sampleRetrievalServiceV2.fetchSamplesByAccessions(accessions, jwt).get();
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     } catch (ExecutionException e) {
@@ -279,11 +304,7 @@ public class BioSamplesClient implements AutoCloseable {
   @Deprecated
   public Optional<Sample> fetchSample(String accession) throws RestClientException {
     Optional<EntityModel<Sample>> resource = fetchSampleResource(accession);
-    if (resource.isPresent()) {
-      return Optional.of(resource.get().getContent());
-    } else {
-      return Optional.empty();
-    }
+    return resource.map(EntityModel::getContent);
   }
 
   /**
@@ -297,6 +318,21 @@ public class BioSamplesClient implements AutoCloseable {
 
   public EntityModel<Sample> persistSampleResource(Sample sample) {
     return persistSampleResource(sample, null, null);
+  }
+
+  public List<Sample> persistSampleResourceV2(List<Sample> samples)
+      throws ExecutionException, InterruptedException {
+    return persistSampleResourceAsyncV2(samples).get();
+  }
+
+  public Map<String, String> bulkAccessionV2(List<Sample> samples)
+      throws ExecutionException, InterruptedException {
+    return bulkAccessionAsyncV2(samples);
+  }
+
+  private Map<String, String> bulkAccessionAsyncV2(List<Sample> samples)
+      throws ExecutionException, InterruptedException {
+    return sampleSubmissionServiceV2.bulkAccessionAsync(samples).get();
   }
 
   public EntityModel<Sample> persistSampleResource(
@@ -323,7 +359,12 @@ public class BioSamplesClient implements AutoCloseable {
       log.error("Sample failed validation : {}", errors);
       throw new IllegalArgumentException("Sample not valid: " + String.join(", ", errors));
     }
+
     return sampleSubmissionService.submitAsync(sample, setFullDetails);
+  }
+
+  public Future<List<Sample>> persistSampleResourceAsyncV2(List<Sample> samples) {
+    return sampleSubmissionServiceV2.postAsync(samples);
   }
 
   public Collection<EntityModel<Sample>> persistSamples(Collection<Sample> samples) {

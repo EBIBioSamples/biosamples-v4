@@ -31,7 +31,6 @@ import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
-import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
 import uk.ac.ebi.biosamples.mongo.util.SampleNameAccessionPair;
 import uk.ac.ebi.biosamples.service.SampleService;
@@ -55,8 +54,6 @@ public class FileUploadService {
   @Autowired private BioSamplesAapService bioSamplesAapService;
 
   @Autowired private MongoFileUploadRepository mongoFileUploadRepository;
-
-  @Autowired private MongoSampleRepository mongoSampleRepository;
 
   @Autowired private FileQueueService fileQueueService;
 

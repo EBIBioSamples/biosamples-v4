@@ -22,22 +22,16 @@ import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 @Service
 public class EnaCallableFactory {
   private final BioSamplesClient bioSamplesWebinClient;
-  private final EnaXmlEnhancer enaXmlEnhancer;
-  private final EnaElementConverter enaElementConverter;
+  private final EnaSampleTransformationService enaSampleTransformationService;
   private final EgaSampleExporter egaSampleExporter;
-  private final EraProDao eraProDao;
 
   public EnaCallableFactory(
       @Qualifier("WEBINCLIENT") BioSamplesClient bioSamplesWebinClient,
-      EnaXmlEnhancer enaXmlEnhancer,
-      EnaElementConverter enaElementConverter,
-      EgaSampleExporter egaSampleExporter,
-      EraProDao eraProDao) {
+      EnaSampleTransformationService enaSampleTransformationService,
+      EgaSampleExporter egaSampleExporter) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
-    this.enaXmlEnhancer = enaXmlEnhancer;
-    this.enaElementConverter = enaElementConverter;
+    this.enaSampleTransformationService = enaSampleTransformationService;
     this.egaSampleExporter = egaSampleExporter;
-    this.eraProDao = eraProDao;
   }
 
   /**
@@ -61,10 +55,8 @@ public class EnaCallableFactory {
         egaId,
         statusId,
         bioSamplesWebinClient,
-        enaXmlEnhancer,
-        enaElementConverter,
         egaSampleExporter,
-        eraProDao,
+        enaSampleTransformationService,
         suppressionHandler,
         killedHandler,
         amrData);

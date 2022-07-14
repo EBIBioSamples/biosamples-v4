@@ -191,6 +191,9 @@ public class ETagIntegration extends AbstractIntegration {
   @Override
   protected void phaseFive() {}
 
+  @Override
+  protected void phaseSix() {}
+
   private Sample getTestSample() {
     return new Sample.Builder("ETAG sample test")
         .withAccession("SAMETAG2031")

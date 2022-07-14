@@ -24,7 +24,6 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.utils.MailSender;
 
 @Component
 public class ExportRunner implements ApplicationRunner {
@@ -79,7 +78,6 @@ public class ExportRunner implements ApplicationRunner {
     } catch (final Exception e) {
       isPassed = false;
     } finally {
-      MailSender.sendEmail("Export", null, isPassed);
       long elapsed = System.nanoTime() - oldTime;
       log.info("Exported " + sampleCount + " samples in " + (elapsed / 1000000000L) + "s");
     }

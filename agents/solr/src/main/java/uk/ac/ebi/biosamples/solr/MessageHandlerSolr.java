@@ -129,8 +129,4 @@ public class MessageHandlerSolr {
     }
     return true;
   }
-
-  static List<String> toLowerCase(Collection<String> collection) {
-    return collection.stream().map(String::toLowerCase).collect(Collectors.toList());
-  }
 }

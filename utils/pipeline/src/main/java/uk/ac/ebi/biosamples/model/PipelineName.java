@@ -8,18 +8,18 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.mongo.repo;
+package uk.ac.ebi.biosamples.model;
 
-import uk.ac.ebi.biosamples.model.StaticViewWrapper;
-import uk.ac.ebi.biosamples.mongo.model.MongoSample;
-
-public interface MongoSampleRepositoryCustom {
-
-  MongoSample insertNew(MongoSample sample);
-
-  // to provide static view of samples
-  void insertSampleToCollection(MongoSample sample, StaticViewWrapper.StaticView collectionName);
-
-  MongoSample findSampleFromCollection(
-      String accession, StaticViewWrapper.StaticView collectionName);
+public enum PipelineName {
+  CURATION,
+  CURAMI,
+  COPYDOWN,
+  ENA,
+  NCBI,
+  ENAAMR,
+  EBEYESEARCH,
+  ZOOMA,
+  DTOL,
+  NEOEXPORT,
+  SAMPLERELEASE
 }

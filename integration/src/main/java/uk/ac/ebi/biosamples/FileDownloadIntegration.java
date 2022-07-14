@@ -76,4 +76,7 @@ public class FileDownloadIntegration extends AbstractIntegration {
   protected void phaseFive() {
     // nothing to do here
   }
+
+  @Override
+  protected void phaseSix() {}
 }

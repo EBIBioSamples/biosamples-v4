@@ -41,12 +41,13 @@ public class MockBioSamplesClient extends BioSamplesClient {
 
   public MockBioSamplesClient(
       URI uri,
+      URI uriV2,
       RestTemplateBuilder restTemplateBuilder,
       SampleValidator sampleValidator,
       AapClientService aapClientService,
       BioSamplesProperties bioSamplesProperties,
       ObjectMapper objectMapper) {
-    super(uri, restTemplateBuilder, sampleValidator, aapClientService, bioSamplesProperties);
+    super(uri, uriV2, restTemplateBuilder, sampleValidator, aapClientService, bioSamplesProperties);
     this.objectMapper = objectMapper;
     try {
       fileWriter = new FileWriter("export.json");

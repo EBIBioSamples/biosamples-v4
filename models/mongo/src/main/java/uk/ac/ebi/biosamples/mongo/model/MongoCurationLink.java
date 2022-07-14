@@ -115,13 +115,8 @@ public class MongoCurationLink implements Comparable<MongoCurationLink> {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("MongoCurationLink(");
-    sb.append(this.sample);
-    sb.append(",");
-    sb.append(this.curation);
-    sb.append(")");
-    return sb.toString();
+    String sb = "MongoCurationLink(" + this.sample + "," + this.curation + ")";
+    return sb;
   }
 
   // Used for deserializtion (JSON -> Java)

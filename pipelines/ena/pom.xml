@@ -23,10 +23,28 @@
 			<artifactId>utils-thread</artifactId>
 			<version>5.2.7-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>models-mongo</artifactId>
+			<version>5.2.7-SNAPSHOT</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jdbc</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.tomcat</groupId>
+					<artifactId>tomcat-jdbc</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- connection pools -->
+		<dependency>
+			<groupId>com.zaxxer</groupId>
+			<artifactId>HikariCP</artifactId>
+			<version>2.6.0</version>
 		</dependency>
 
 		<!-- xml parsing and handling -->

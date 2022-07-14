@@ -30,7 +30,7 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
-import uk.ac.ebi.biosamples.utils.TaxonomyService;
+import uk.ac.ebi.biosamples.service.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @RunWith(SpringRunner.class)
@@ -60,7 +60,7 @@ public class NcbiElementCallableTest {
   }
 
   @Test
-  public void should_extract_double_organism_if_organism_is_in_description() throws Exception {
+  public void should_extract_double_organism_if_organism_is_in_description() {
     ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
     when(bioSamplesClient.persistSampleResource(generatedSample.capture())).thenReturn(null);
 

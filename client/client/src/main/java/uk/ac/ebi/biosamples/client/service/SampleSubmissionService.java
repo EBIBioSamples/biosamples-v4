@@ -38,17 +38,12 @@ public class SampleSubmissionService {
   private final Traverson traverson;
   private final ExecutorService executor;
   private final RestOperations restOperations;
-  private final boolean isWebinSubmission;
 
   public SampleSubmissionService(
-      RestOperations restOperations,
-      Traverson traverson,
-      ExecutorService executor,
-      boolean isWebinSubmission) {
+      RestOperations restOperations, Traverson traverson, ExecutorService executor) {
     this.restOperations = restOperations;
     this.traverson = traverson;
     this.executor = executor;
-    this.isWebinSubmission = isWebinSubmission;
   }
 
   /**

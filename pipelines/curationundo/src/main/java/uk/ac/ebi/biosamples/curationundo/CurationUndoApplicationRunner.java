@@ -73,8 +73,6 @@ public class CurationUndoApplicationRunner implements ApplicationRunner {
       } catch (final Exception e) {
         log.error("Pipeline failed to finish successfully", e);
         isPassed = false;
-      } finally {
-        MailSender.sendEmail("Curation undo", null, isPassed);
       }
     }
   }

@@ -13,8 +13,8 @@ package uk.ac.ebi.biosamples.samplerelease;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,10 +49,10 @@ public class SampleReleaseRunner implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) throws Exception {
-    doGetSamplesToRelease();
+    releaseSamples();
   }
 
-  private void doGetSamplesToRelease() throws Exception {
+  private void releaseSamples() throws Exception {
     final String webinEraServiceSampleReleaseGetUrl =
         pipelinesProperties.getWebinEraServiceSampleReleaseGet();
     log.info(
@@ -71,7 +71,7 @@ public class SampleReleaseRunner implements ApplicationRunner {
         "Response code "
             + response.getStatusCode()
             + " received "
-            + response.getBody().size()
+            + Objects.requireNonNull(response.getBody()).size()
             + " samples from webin-era-service to be made public in BioSamples");
 
     if (response.getStatusCode().is2xxSuccessful()) {
@@ -98,7 +98,7 @@ public class SampleReleaseRunner implements ApplicationRunner {
 
         log.info(
             "Pipeline completed, samples failed are -> \n"
-                + SampleReleaseCallable.failedQueue.stream().collect(Collectors.joining("\n")));
+                + String.join("\n", SampleReleaseCallable.failedQueue));
       } catch (final Exception e) {
         log.info("Sample release pipeline failed ", e);
       } finally {

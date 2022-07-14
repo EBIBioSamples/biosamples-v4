@@ -20,6 +20,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.csv.CSVParser;
 import org.slf4j.Logger;
@@ -65,10 +66,9 @@ public class FileUploadSubmissionService {
   }
 
   private void handleMessage(final String submissionId) {
-    final MongoFileUpload mongoFileUpload =
-        mongoFileUploadRepository.findById(submissionId).isPresent()
-            ? mongoFileUploadRepository.findById(submissionId).get()
-            : null;
+    final Optional<MongoFileUpload> fileUploadOptional =
+        mongoFileUploadRepository.findById(submissionId);
+    final MongoFileUpload mongoFileUpload = fileUploadOptional.orElse(null);
 
     try {
       validationResult = new ValidationResult();

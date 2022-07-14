@@ -102,6 +102,9 @@ public class JsonLdIntegration extends AbstractIntegration {
   @Override
   protected void phaseFive() {}
 
+  @Override
+  protected void phaseSix() {}
+
   private boolean jsonLDIsEmpty(String jsonLDContent) {
     return jsonLDContent.matches("\\{\\s+}");
   }

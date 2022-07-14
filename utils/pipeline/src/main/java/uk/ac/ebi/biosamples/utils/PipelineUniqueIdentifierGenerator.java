@@ -8,18 +8,21 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.mongo.repo;
+package uk.ac.ebi.biosamples.utils;
 
-import uk.ac.ebi.biosamples.model.StaticViewWrapper;
-import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
+import uk.ac.ebi.biosamples.model.PipelineName;
 
-public interface MongoSampleRepositoryCustom {
+public class PipelineUniqueIdentifierGenerator {
+  public static String getPipelineUniqueIdentifier(final PipelineName pipelineName) {
+    final LocalDate localDate = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-  MongoSample insertNew(MongoSample sample);
-
-  // to provide static view of samples
-  void insertSampleToCollection(MongoSample sample, StaticViewWrapper.StaticView collectionName);
-
-  MongoSample findSampleFromCollection(
-      String accession, StaticViewWrapper.StaticView collectionName);
+    return localDate.getDayOfMonth()
+        + String.valueOf(localDate.getMonthValue())
+        + localDate.getYear()
+        + "-"
+        + pipelineName;
+  }
 }

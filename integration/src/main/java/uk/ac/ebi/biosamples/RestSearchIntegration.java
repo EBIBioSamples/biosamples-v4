@@ -112,7 +112,7 @@ public class RestSearchIntegration extends AbstractIntegration {
           "Sample does not exist, sample name: " + test5.getName(), Phase.TWO);
     }
 
-    // submit test4 again with relationships
+    // post test4 again with relationships
     SortedSet<Relationship> relationships = new TreeSet<>();
     relationships.add(
         Relationship.build(test4.getAccession(), "derived from", test2.getAccession()));
@@ -249,6 +249,9 @@ public class RestSearchIntegration extends AbstractIntegration {
   protected void phaseFive() {
     // not doing anything here
   }
+
+  @Override
+  protected void phaseSix() {}
 
   private Sample getSampleTest1() {
     String name = "RestSearchIntegration_sample_1";

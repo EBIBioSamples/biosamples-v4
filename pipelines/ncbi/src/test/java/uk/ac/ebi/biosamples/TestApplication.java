@@ -33,6 +33,7 @@ public class TestApplication extends Application {
       ObjectMapper objectMapper) {
     return new MockBioSamplesClient(
         bioSamplesProperties.getBiosamplesClientUri(),
+        bioSamplesProperties.getBiosamplesClientUriV2(),
         restTemplateBuilder,
         sampleValidator,
         aapClientService(),

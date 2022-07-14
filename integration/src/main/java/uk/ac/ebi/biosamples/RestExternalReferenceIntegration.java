@@ -72,6 +72,9 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
   @Override
   protected void phaseFive() {}
 
+  @Override
+  protected void phaseSix() {}
+
   private void testExternalReferences() {
     /*
     		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri())

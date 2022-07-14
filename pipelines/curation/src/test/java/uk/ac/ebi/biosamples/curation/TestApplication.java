@@ -80,6 +80,7 @@ public class TestApplication {
   public BioSamplesClient bioSamplesClient() {
     return new MockBioSamplesClient(
         bioSamplesProperties().getBiosamplesClientUri(),
+        bioSamplesProperties().getBiosamplesClientUriV2(),
         restTemplateBuilder,
         sampleValidator(),
         aapClientService(),

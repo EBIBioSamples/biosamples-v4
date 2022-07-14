@@ -118,6 +118,9 @@ public class PhenopacketIntegration extends AbstractIntegration {
   @Override
   protected void phaseFive() {}
 
+  @Override
+  protected void phaseSix() {}
+
   private Sample getTestSample() {
     Sample.Builder sampleBuilder =
         new Sample.Builder("Phenopacket_ERS1790018", "Phenopacket_ERS1790018");

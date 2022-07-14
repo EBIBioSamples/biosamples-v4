@@ -83,4 +83,7 @@ public class SamplesGraphIntegration extends AbstractIntegration {
       throw new IntegrationTestFailException("No samples present in neo4j", Phase.FIVE);
     }
   }
+
+  @Override
+  protected void phaseSix() {}
 }

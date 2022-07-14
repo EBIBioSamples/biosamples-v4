@@ -12,8 +12,6 @@ package uk.ac.ebi.biosamples;
 
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.amqp.SimpleRabbitListenerContainerFactoryConfigurer;
@@ -24,16 +22,22 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
+import uk.ac.ebi.tsc.aap.client.repo.*;
 
-@SpringBootApplication
+@SpringBootApplication(
+    exclude = {
+      DomainService.class,
+      DomainRepositoryRest.class,
+      ProfileService.class,
+      ProfileRepositoryRest.class,
+      UserService.class,
+      UserRepositoryRest.class,
+      TokenService.class,
+      TokenRepositoryRest.class
+    })
 public class Application {
   public static void main(String[] args) {
     System.exit(SpringApplication.exit(SpringApplication.run(Application.class, args)));
-  }
-
-  @Bean
-  public MessageConverter getJackson2MessageConverter() {
-    return new Jackson2JsonMessageConverter();
   }
 
   @Bean("biosamplesFileUploadSubmissionContainerFactory")

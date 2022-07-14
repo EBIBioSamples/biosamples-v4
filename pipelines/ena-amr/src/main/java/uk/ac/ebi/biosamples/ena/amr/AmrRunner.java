@@ -89,7 +89,6 @@ public class AmrRunner implements ApplicationRunner {
               + " failed files: accessions are "
               + failedFiles.toString());
 
-      MailSender.sendEmail("ENA-AMR", failedFiles.toString(), isPipelineOk);
     }
   }
 

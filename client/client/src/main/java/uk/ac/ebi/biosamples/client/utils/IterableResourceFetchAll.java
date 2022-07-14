@@ -19,7 +19,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.function.IntFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -40,8 +39,6 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriTemplate;
 
-// import org.springframework.hateoas.UriTemplate;
-
 public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
   private final Traverson traverson;
   private final RestOperations restOperations;
@@ -50,7 +47,6 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
   private final MultiValueMap<String, String> params;
   private final ExecutorService executor;
   private final String jwt;
-  private boolean isWebinSubmission;
 
   public IterableResourceFetchAll(
       ExecutorService executor,
@@ -87,53 +83,6 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
     this.jwt = jwt;
   }
 
-  public IterableResourceFetchAll(
-      ExecutorService executor,
-      Traverson traverson,
-      RestOperations restOperations,
-      ParameterizedTypeReference<PagedModel<EntityModel<T>>> parameterizedTypeReference,
-      String jwt,
-      boolean isWebinSubmission,
-      MultiValueMap<String, String> params,
-      String... rels) {
-    this(
-        executor,
-        traverson,
-        restOperations,
-        parameterizedTypeReference,
-        jwt,
-        isWebinSubmission,
-        params,
-        Arrays.stream(rels)
-            .map(rel -> Hop.rel(rel))
-            .toArray(
-                new IntFunction<Hop[]>() {
-                  @Override
-                  public Hop[] apply(int value) {
-                    return new Hop[value];
-                  }
-                }));
-  }
-
-  public IterableResourceFetchAll(
-      ExecutorService executor,
-      Traverson traverson,
-      RestOperations restOperations,
-      ParameterizedTypeReference<PagedModel<EntityModel<T>>> parameterizedTypeReference,
-      String jwt,
-      boolean isWebinSubmission,
-      MultiValueMap<String, String> params,
-      Hop... hops) {
-    this.executor = executor;
-    this.traverson = traverson;
-    this.restOperations = restOperations;
-    this.hops = hops;
-    this.parameterizedTypeReference = parameterizedTypeReference;
-    this.params = params;
-    this.jwt = jwt;
-    this.isWebinSubmission = isWebinSubmission;
-  }
-
   public Iterator<EntityModel<T>> iterator() {
 
     TraversalBuilder traversonBuilder = null;
@@ -152,15 +101,8 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
             .build()
             .toUri();
 
-    MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-
-    headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
-
-    if (jwt != null) {
-      headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
-    }
-
-    RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
+    RequestEntity<Void> requestEntity =
+        IteratorResourceFetchAll.NextPageCallable.buildRequestEntity(jwt, uri);
 
     ResponseEntity<PagedModel<EntityModel<T>>> responseEntity =
         restOperations.exchange(requestEntity, parameterizedTypeReference);
@@ -279,16 +221,22 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
 
       @Override
       public PagedModel<EntityModel<V>> call() {
+        RequestEntity<Void> requestEntity = buildRequestEntity(jwt, uri);
+        ResponseEntity<PagedModel<EntityModel<V>>> responseEntity =
+            restOperations.exchange(requestEntity, parameterizedTypeReference);
+
+        return responseEntity.getBody();
+      }
+
+      private static RequestEntity<Void> buildRequestEntity(String jwt, URI uri) {
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
+
         if (jwt != null) {
           headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
         }
-        RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
 
-        ResponseEntity<PagedModel<EntityModel<V>>> responseEntity =
-            restOperations.exchange(requestEntity, parameterizedTypeReference);
-        return responseEntity.getBody();
+        return new RequestEntity<>(headers, HttpMethod.GET, uri);
       }
     }
   }

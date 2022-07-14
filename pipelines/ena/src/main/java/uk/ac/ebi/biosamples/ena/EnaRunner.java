@@ -34,10 +34,14 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.biosamples.PipelinesProperties;
+import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
+import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
+import uk.ac.ebi.biosamples.mongo.repo.MongoPipelineRepository;
+import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
 import uk.ac.ebi.biosamples.service.AmrDataLoaderService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-import uk.ac.ebi.biosamples.utils.MailSender;
+import uk.ac.ebi.biosamples.utils.PipelineUniqueIdentifierGenerator;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 @Component
@@ -51,7 +55,8 @@ public class EnaRunner implements ApplicationRunner {
   @Autowired private PipelinesProperties pipelinesProperties;
   @Autowired private EraProDao eraProDao;
   @Autowired private EnaCallableFactory enaCallableFactory;
-  @Autowired private NcbiCurationCallableFactory ncbiCallableFactory;
+  @Autowired private NcbiCallableFactory ncbiCallableFactory;
+  @Autowired private MongoPipelineRepository mongoPipelineRepository;
   @Autowired private AmrDataLoaderService amrDataLoaderService;
 
   private Map<String, Future<Void>> futures = new LinkedHashMap<>();
@@ -62,6 +67,7 @@ public class EnaRunner implements ApplicationRunner {
     boolean isPassed = true;
     boolean includeAmr = true;
     StringBuilder failures = new StringBuilder();
+    String pipelineFailureCause = null;
 
     if (args.getOptionNames().contains("includeAmr")) {
       if (args.getOptionValues("includeAmr").iterator().next().equalsIgnoreCase("false")) {
@@ -124,14 +130,14 @@ public class EnaRunner implements ApplicationRunner {
           // handler for suppressed ENA samples
           handleSuppressedEnaSamples();
         } catch (final Exception e) {
-          failures.append("Some problems in ENA samples suppression runner" + "\n");
+          failures.append("Problems while executing ENA samples suppression runner ");
         }
 
         try {
           // handler for suppressed NCBI/DDBJ samples
           handleSuppressedNcbiDdbjSamples();
         } catch (final Exception e) {
-          failures.append("Some problems in ENA samples suppression runner" + "\n");
+          failures.append("Problems while executing ENA samples suppression runner ");
         }
       }
 
@@ -140,14 +146,38 @@ public class EnaRunner implements ApplicationRunner {
           // handler for killed ENA samples
           handleKilledEnaSamples();
         } catch (final Exception e) {
-          failures.append("Some problems in ENA samples killed runner" + "\n");
+          failures.append("Problems while executing ENA samples killed runner ");
         }
       }
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);
+      failures.append("Problems while importing ENA samples ");
+      pipelineFailureCause = e.getMessage();
       isPassed = false;
     } finally {
-      MailSender.sendEmail("ENA", null, isPassed);
+      final MongoPipeline mongoPipeline;
+
+      if (isPassed) {
+        mongoPipeline =
+            new MongoPipeline(
+                PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.ENA),
+                new Date(),
+                PipelineName.ENA.name(),
+                PipelineCompletionStatus.COMPLETED,
+                failures.toString(),
+                pipelineFailureCause);
+      } else {
+        mongoPipeline =
+            new MongoPipeline(
+                PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.ENA),
+                new Date(),
+                PipelineName.ENA.name(),
+                PipelineCompletionStatus.COMPLETED,
+                failures.toString(),
+                pipelineFailureCause);
+      }
+
+      mongoPipelineRepository.insert(mongoPipeline);
     }
   }
 
@@ -364,15 +394,15 @@ public class EnaRunner implements ApplicationRunner {
    */
   private static class NcbiDdbjSuppressedSamplesCallbackHandler implements RowCallbackHandler {
     private final AdaptiveThreadPoolExecutor executorService;
-    private final NcbiCurationCallableFactory ncbiCurationCallableFactory;
+    private final NcbiCallableFactory ncbiCallableFactory;
     private final Map<String, Future<Void>> futures;
 
     public NcbiDdbjSuppressedSamplesCallbackHandler(
         final AdaptiveThreadPoolExecutor executorService,
-        final NcbiCurationCallableFactory ncbiCurationCallableFactory,
+        final NcbiCallableFactory ncbiCallableFactory,
         final Map<String, Future<Void>> futures) {
       this.executorService = executorService;
-      this.ncbiCurationCallableFactory = ncbiCurationCallableFactory;
+      this.ncbiCallableFactory = ncbiCallableFactory;
       this.futures = futures;
     }
 
@@ -381,8 +411,7 @@ public class EnaRunner implements ApplicationRunner {
       final String sampleAccession = rs.getString("BIOSAMPLE_ID");
       final int statusId = rs.getInt("STATUS_ID");
 
-      final Callable<Void> callable =
-          ncbiCurationCallableFactory.build(sampleAccession, statusId, true);
+      final Callable<Void> callable = ncbiCallableFactory.build(sampleAccession, statusId, true);
 
       if (executorService == null) {
         try {
@@ -469,9 +498,13 @@ public class EnaRunner implements ApplicationRunner {
           // update if sample already exists else import
 
           if (!amrData.isEmpty()) {
-            callable = enaCallableFactory.build(sampleAccession, egaId, 0, false, false, amrData);
+            callable =
+                enaCallableFactory.build(
+                    sampleAccession, egaId, enaStatus.value, false, false, amrData);
           } else {
-            callable = enaCallableFactory.build(sampleAccession, egaId, 0, false, false, null);
+            callable =
+                enaCallableFactory.build(
+                    sampleAccession, egaId, enaStatus.value, false, false, null);
           }
 
           if (executorService == null) {
@@ -506,13 +539,13 @@ public class EnaRunner implements ApplicationRunner {
 
   private static class NcbiRowCallbackHandler implements RowCallbackHandler {
     private final AdaptiveThreadPoolExecutor executorService;
-    private final NcbiCurationCallableFactory ncbiCallableFactory;
+    private final NcbiCallableFactory ncbiCallableFactory;
     private final Map<String, Future<Void>> futures;
     private Logger log = LoggerFactory.getLogger(getClass());
 
     public NcbiRowCallbackHandler(
         final AdaptiveThreadPoolExecutor executorService,
-        final NcbiCurationCallableFactory ncbiCallableFactory,
+        final NcbiCallableFactory ncbiCallableFactory,
         final Map<String, Future<Void>> futures) {
       this.executorService = executorService;
       this.ncbiCallableFactory = ncbiCallableFactory;

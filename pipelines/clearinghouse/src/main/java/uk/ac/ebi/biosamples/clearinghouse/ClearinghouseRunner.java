@@ -128,7 +128,6 @@ public class ClearinghouseRunner implements ApplicationRunner {
               + "s";
 
       LOGGER.info(logMessage);
-      MailSender.sendEmail("Clearinghouse pipeline", logMessage, isPassed);
     }
   }
 }
