@@ -153,12 +153,9 @@ public class SolrFacetService {
     if (StringUtils.isBlank(searchTerm) || "*:*".equals(searchTerm.trim())) {
       query = new SimpleFacetQuery(new Criteria().expression("*:*")); // default to search all
     } else {
-      // search for copied fields keywords_ss and autocomplete_ss.
-      // (think about merging them as autocomplete feature is not used)
-      query = new SimpleFacetQuery(new Criteria().expression("keywords_ss:" + searchTerm));
-//      Criteria allAttributes = new Criteria().expression("autocomplete_ss:" + searchTerm);
-//      allAttributes.setPartIsOr(true);
-//      query.addCriteria(allAttributes);
+      String lowerCasedSearchTerm = searchTerm.toLowerCase();
+      // search for copied fields keywords_ss
+      query = new SimpleFacetQuery(new Criteria().expression("keywords_ss:" + lowerCasedSearchTerm));
 
       // boosting accession to bring accession matches to the top
       Criteria boostId = new Criteria("id").is(searchTerm).boost(5);

@@ -12,9 +12,11 @@ package uk.ac.ebi.biosamples.solr.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -62,7 +64,7 @@ public class SolrSample {
   @Indexed(name = "indexed_dt", required = true, type = "date") // TODO why type=date ?
   protected String indexed;
 
-  @Indexed(name = "*_av_ss", copyTo = "autocomplete")
+  @Indexed(name = "*_av_ss")
   @Dynamic
   protected Map<String, List<String>> attributeValues;
 
@@ -70,7 +72,7 @@ public class SolrSample {
   @Dynamic
   protected Map<String, List<String>> attributeIris;
 
-  @Indexed(name = "*_au_ss", copyTo = "autocomplete")
+  @Indexed(name = "*_au_ss")
   @Dynamic
   protected Map<String, List<String>> attributeUnits;
 
@@ -101,16 +103,9 @@ public class SolrSample {
    * and relationships of the sample Since faceting does not require it to be stored, it wont be to
    * save space.
    */
-  @Indexed(name = "facetfields_ss", copyTo = {"autocomplete_ss"})
+  @Indexed(name = "facetfields_ss")
   protected List<String> facetFields;
   // TODO consider renaming as used only for faceting
-
-  /**
-   * This field is required to use with autocomplete faceting. Since faceting does not require it to
-   * be stored, it wont be to save space
-   */
-  @Indexed(name = "autocomplete_ss")
-  protected List<String> autocompleteTerms;
 
   /** This field is required to store the ontology expansion and attributes from related samples */
   @Indexed(name = "keywords_ss")
@@ -176,10 +171,6 @@ public class SolrSample {
 
   public Map<String, List<String>> getOutgoingRelationships() {
     return outgoingRelationships;
-  }
-
-  public List<String> getAutocompletes() {
-    return autocompleteTerms;
   }
 
   public List<String> getKeywords() {
@@ -262,25 +253,25 @@ public class SolrSample {
     sample.externalReferencesData = externalReferencesData;
 
     SortedSet<String> facetFieldSet = new TreeSet<>();
-    if (attributeValues != null && attributeValues.keySet().size() > 0) {
+    if (attributeValues != null && !attributeValues.keySet().isEmpty()) {
       for (String attributeValueKey : attributeValues.keySet()) {
         facetFieldSet.add(attributeValueKey + "_av_ss");
       }
     }
 
-    if (outgoingRelationships != null && outgoingRelationships.keySet().size() > 0) {
+    if (outgoingRelationships != null && !outgoingRelationships.keySet().isEmpty()) {
       for (String outgoingRelationshipsKey : outgoingRelationships.keySet()) {
         facetFieldSet.add(outgoingRelationshipsKey + "_or_ss");
       }
     }
 
-    if (incomingRelationships != null && incomingRelationships.keySet().size() > 0) {
+    if (incomingRelationships != null && !incomingRelationships.keySet().isEmpty()) {
       for (String incomingRelationshipsKey : incomingRelationships.keySet()) {
         facetFieldSet.add(incomingRelationshipsKey + "_ir_ss");
       }
     }
 
-    if (externalReferencesData != null && externalReferencesData.keySet().size() > 0) {
+    if (externalReferencesData != null && !externalReferencesData.keySet().isEmpty()) {
       for (String externalReferencesDataKey : externalReferencesData.keySet()) {
         facetFieldSet.add(externalReferencesDataKey + "_erd_ss");
       }
@@ -290,19 +281,14 @@ public class SolrSample {
 
     // copy into the other fields
     // this should be done in a copyfield but that doesn't work for some reason?
-    sample.autocompleteTerms = new ArrayList<>();
-    for (String key : attributeValues.keySet()) {
-      sample.autocompleteTerms.add(SolrFieldService.decodeFieldName(key));
-      sample.autocompleteTerms.addAll(attributeValues.get(key));
-    }
-
-    sample.keywords = new ArrayList<>();
-    sample.keywords.add(sample.name.toLowerCase());
-    sample.keywords.addAll(keywords);
+    Set<String> searchTerms = new HashSet<>();
+    searchTerms.add(sample.name.toLowerCase());
+    searchTerms.addAll(keywords);
     for (Entry<String, List<String>> entry : attributeValues.entrySet()) {
-      sample.keywords.add(SolrFieldService.decodeFieldName(entry.getKey()).toLowerCase());
-      sample.keywords.addAll(entry.getValue().stream().map(String::toLowerCase).collect(Collectors.toSet()));
+      searchTerms.add(SolrFieldService.decodeFieldName(entry.getKey()).toLowerCase());
+      searchTerms.addAll(entry.getValue().stream().map(String::toLowerCase).collect(Collectors.toSet()));
     }
+    sample.keywords = new ArrayList<>(searchTerms);
 
     return sample;
   }

@@ -10,25 +10,26 @@
 */
 package uk.ac.ebi.biosamples.solr.service;
 
-import java.util.*;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.solr.core.query.*;
-import org.springframework.data.solr.core.query.result.FacetFieldEntry;
-import org.springframework.data.solr.core.query.result.FacetPage;
+import org.springframework.data.solr.core.query.Criteria;
+import org.springframework.data.solr.core.query.FilterQuery;
+import org.springframework.data.solr.core.query.Query;
+import org.springframework.data.solr.core.query.SimpleField;
+import org.springframework.data.solr.core.query.SimpleQuery;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
+
+import java.util.Collection;
+import java.util.Optional;
 
 @Service
 public class SolrSampleService {
@@ -114,12 +115,8 @@ public class SolrSampleService {
       query = new SimpleQuery("*:*"); // default to search all
     } else {
       String lowerCasedSearchTerm = searchTerm.toLowerCase();
-      // search for copied fields keywords_ss and autocomplete_ss.
-      // (think about merging them as autocomplete feature is not used)
+      // search for copied fields keywords_ss.
       query = new SimpleQuery("keywords_ss:" + lowerCasedSearchTerm);
-//      Criteria allAttributes = new SimpleStringCriteria("autocomplete_ss:" + searchTerm);
-//      allAttributes.setPartIsOr(true);
-//      query.addCriteria(allAttributes);
 
       // boosting accession to bring accession matches to the top
       Criteria boostId = new Criteria("id").is(searchTerm).boost(5);
@@ -153,43 +150,5 @@ public class SolrSampleService {
     optionalFilter.ifPresent(query::addFilterQuery);
 
     return query;
-  }
-
-  public Autocomplete getAutocomplete(
-      String autocompletePrefix, Collection<Filter> filters, int maxSuggestions) {
-
-    // default to search all
-    String searchTerm = "*:*";
-    // build a query out of the users string and any facets
-    FacetQuery query = new SimpleFacetQuery();
-    query.addCriteria(new Criteria().expression(searchTerm));
-    query.addProjectionOnField(new SimpleField("id"));
-
-    Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
-    optionalFilter.ifPresent(query::addFilterQuery);
-
-    // filter out non-public
-    Optional<FilterQuery> publicSampleFilterQuery =
-        solrFilterService.getPublicFilterQuery(Collections.EMPTY_LIST, null);
-    publicSampleFilterQuery.ifPresent(query::addFilterQuery);
-
-    query.setPageRequest(PageRequest.of(0, 1));
-
-    FacetOptions facetOptions = new FacetOptions();
-    facetOptions.addFacetOnField("autocomplete_ss");
-    facetOptions.setPageable(PageRequest.of(0, maxSuggestions));
-    facetOptions.setFacetPrefix(autocompletePrefix);
-    query.setFacetOptions(facetOptions);
-    query.setTimeAllowed(TIMEALLOWED * 1000);
-
-    FacetPage<?> facetPage = solrSampleRepository.findByFacetQuery(query);
-
-    Page<FacetFieldEntry> facetFiledEntryPage = facetPage.getFacetResultPage("autocomplete_ss");
-
-    List<String> autocompleted = new ArrayList<>();
-    for (FacetFieldEntry facetFieldEntry : facetFiledEntryPage) {
-      autocompleted.add(facetFieldEntry.getValue());
-    }
-    return new Autocomplete(autocompletePrefix, autocompleted);
   }
 }

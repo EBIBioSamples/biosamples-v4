@@ -14,13 +14,6 @@ function getFacets(path, load) {
 }
 
 function enableFacetButtons() {
-    $('#local-searchbox').autocomplete({
-        serviceUrl: '[(@{/samples/autocomplete})]',
-        paramName: 'text',
-        onSelect: function (suggestion) {
-            //location.href = '[(@{/samples})]?'+$.param({text:suggestion.value});
-        }
-    });
     let $filterApplyButton = $("#filter-apply");
     let $filterClearButton = $("#filter-clear");
     let $filtersCheckboxes = $(".facet-checkbox");
