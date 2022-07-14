@@ -119,6 +119,7 @@ public class EnaRunner implements ApplicationRunner {
         }
       }
 
+      log.info("Running from date range from " + fromDate + " until " + toDate);
       log.info("Suppression Runner is to be executed: " + suppressionRunner);
       log.info("Killed Runner is to be executed: " + killedRunner);
 
@@ -128,14 +129,14 @@ public class EnaRunner implements ApplicationRunner {
       if (suppressionRunner) {
         try {
           // handler for suppressed ENA samples
-          handleSuppressedEnaSamples();
+          // handleSuppressedEnaSamples();
         } catch (final Exception e) {
           failures.append("Problems while executing ENA samples suppression runner ");
         }
 
         try {
           // handler for suppressed NCBI/DDBJ samples
-          handleSuppressedNcbiDdbjSamples();
+          // handleSuppressedNcbiDdbjSamples();
         } catch (final Exception e) {
           failures.append("Problems while executing ENA samples suppression runner ");
         }
@@ -144,7 +145,7 @@ public class EnaRunner implements ApplicationRunner {
       if (killedRunner) {
         try {
           // handler for killed ENA samples
-          handleKilledEnaSamples();
+          // handleKilledEnaSamples();
         } catch (final Exception e) {
           failures.append("Problems while executing ENA samples killed runner ");
         }
@@ -477,6 +478,7 @@ public class EnaRunner implements ApplicationRunner {
       final int statusId = rs.getInt("STATUS_ID");
       final String egaId = rs.getString("EGA_ID");
       final ENAStatus enaStatus = ENAStatus.valueOf(statusId);
+      final java.sql.Date lastUpdated = rs.getDate("LAST_UPDATED");
       Set<StructuredDataTable> amrData = new HashSet<>();
 
       if (sampleToAmrMap.containsKey(sampleAccession)) {
@@ -493,7 +495,8 @@ public class EnaRunner implements ApplicationRunner {
         case CANCELLED:
           log.info(
               String.format(
-                  "%s is being handled as status is %s", sampleAccession, enaStatus.name()));
+                  "%s is being handled as status is %s and last updated is %s",
+                  sampleAccession, enaStatus.name(), lastUpdated));
           Callable<Void> callable;
           // update if sample already exists else import
 
@@ -555,6 +558,11 @@ public class EnaRunner implements ApplicationRunner {
     @Override
     public void processRow(ResultSet rs) throws SQLException {
       String sampleAccession = rs.getString("BIOSAMPLE_ID");
+      java.sql.Date lastUpdated = rs.getDate("LAST_UPDATED");
+
+      log.info(
+          String.format(
+              "%s is being handled and last updated is %s", sampleAccession, lastUpdated));
 
       Callable<Void> callable = ncbiCallableFactory.build(sampleAccession, 0, false);
 

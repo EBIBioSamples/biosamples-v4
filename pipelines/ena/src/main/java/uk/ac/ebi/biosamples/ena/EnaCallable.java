@@ -72,32 +72,11 @@ public class EnaCallable implements Callable<Void> {
     } else if (killedHandler) {
       return checkAndUpdateKilledSamples();
     } else {
-      boolean sampleWithAllAttributesExists = false;
-
       try {
-        final Optional<EntityModel<Sample>> sampleOptional =
-            bioSamplesWebinClient.fetchSampleResource(this.accession);
 
-        if (sampleOptional.isPresent()) {
-          final EntityModel<Sample> sampleResource = sampleOptional.get();
-          final Sample sample = sampleResource.getContent();
+        final Sample sample = enaSampleTransformationService.enrichSample(this.accession, false);
 
-          if (sample.getAttributes().size() > 0) {
-            log.info("ENA sample exists with attributes in BioSamples " + this.accession);
-
-            sampleWithAllAttributesExists = true;
-          }
-        }
-
-        if (!sampleWithAllAttributesExists) {
-          log.info(
-              "ENA sample doesn't exists with attributes in BioSamples, creating "
-                  + this.accession);
-
-          final Sample sample = enaSampleTransformationService.enrichSample(this.accession, false);
-
-          bioSamplesWebinClient.persistSampleResource(sample);
-        }
+        bioSamplesWebinClient.persistSampleResource(sample);
       } catch (final Exception e) {
         log.info("Failed to handle ENA sample with accession " + this.accession, e);
       }
