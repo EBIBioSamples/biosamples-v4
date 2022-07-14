@@ -37,10 +37,10 @@ public class EraProDao {
 
   public void doSampleCallback(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
     String query =
-        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' "
+        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID, LAST_UPDATED FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' "
             + "AND "
             + STATUS_CLAUSE
-            + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
+            + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY LAST_UPDATED ASC";
 
     Date minDateOld = java.sql.Date.valueOf(minDate);
     Date maxDateOld = java.sql.Date.valueOf(maxDate);
@@ -84,10 +84,10 @@ public class EraProDao {
 
   public void getNcbiCallback(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
     String query =
-        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) "
+        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, LAST_UPDATED FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) "
             + "AND "
             + STATUS_CLAUSE
-            + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
+            + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY LAST_UPDATED ASC";
 
     Date minDateOld = java.sql.Date.valueOf(minDate);
     Date maxDateOld = java.sql.Date.valueOf(maxDate);

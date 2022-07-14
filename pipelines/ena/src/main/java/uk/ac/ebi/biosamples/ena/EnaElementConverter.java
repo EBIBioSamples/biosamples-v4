@@ -144,11 +144,13 @@ public class EnaElementConverter implements Converter<Element, Sample> {
         XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID);
 
     if (submitterIdPathBuilder.exists()) {
+      final String namespaceOfSubmitterId = submitterIdPathBuilder.attribute(NAMESPACE);
+
       attributes.add(
           Attribute.build(
               SUBMITTER_ID_JSON,
               submitterIdPathBuilder.text(),
-              NAMESPACE_TAG + submitterIdPathBuilder.attribute(NAMESPACE),
+              namespaceOfSubmitterId != null ? NAMESPACE_TAG + namespaceOfSubmitterId : null,
               Collections.emptyList(),
               null));
     }
