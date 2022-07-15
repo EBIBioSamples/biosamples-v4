@@ -142,10 +142,13 @@ public class EnaElementConverter implements Converter<Element, Sample> {
     // ENA SUBMITTER_ID - BSD-1743 - Un-tag core attributes and sample attributes from synonyms
     final XmlPathBuilder submitterIdPathBuilder =
         XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID);
+    String namespaceOfSubmitterId = null;
+
+    if (submitterIdPathBuilder != null && submitterIdPathBuilder.attributeExists(NAMESPACE)) {
+      namespaceOfSubmitterId = submitterIdPathBuilder.attribute(NAMESPACE);
+    }
 
     if (submitterIdPathBuilder.exists()) {
-      final String namespaceOfSubmitterId = submitterIdPathBuilder.attribute(NAMESPACE);
-
       attributes.add(
           Attribute.build(
               SUBMITTER_ID_JSON,
