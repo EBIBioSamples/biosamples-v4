@@ -12,8 +12,6 @@ package uk.ac.ebi.biosamples.solr.service;
 
 import java.util.*;
 import org.apache.solr.client.solrj.util.ClientUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,9 +33,7 @@ public class SolrSampleService {
 
   // maximum time allowed for a solr search in s
   // TODO application.properties this
-  private static final int TIMEALLOWED = 30;
-
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private static final int TIMEALLOWED = 55;
 
   public SolrSampleService(
       SolrSampleRepository solrSampleRepository, SolrFilterService solrFilterService) {
