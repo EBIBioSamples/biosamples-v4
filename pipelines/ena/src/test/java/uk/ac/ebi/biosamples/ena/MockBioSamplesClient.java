@@ -24,7 +24,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.client.service.AapClientService;
+import uk.ac.ebi.biosamples.client.service.ClientService;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
@@ -44,7 +44,7 @@ public class MockBioSamplesClient extends BioSamplesClient {
       URI uriV2,
       RestTemplateBuilder restTemplateBuilder,
       SampleValidator sampleValidator,
-      AapClientService aapClientService,
+      ClientService aapClientService,
       BioSamplesProperties bioSamplesProperties,
       ObjectMapper objectMapper) {
     super(uri, uriV2, restTemplateBuilder, sampleValidator, aapClientService, bioSamplesProperties);

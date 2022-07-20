@@ -450,14 +450,11 @@ public class ApiDocumentationTest {
             + "\"update\" : \""
             + dateTimeFormatter.format(sample.getUpdate().atOffset(ZoneOffset.UTC))
             + "\", "
-            +
-            //                "\"release\" : \""
-            // +dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC)) +
-            // "\", " +
-            "\"domain\" : \"self.ExampleDomain\" "
+            + "\"domain\" : \"self.ExampleDomain\" "
             + "}";
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
+    when(sampleService.buildPrivateSample(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
     when(sampleService.persistSample(any(Sample.class), eq(false), eq(AuthorizationProvider.AAP)))
         .thenReturn(sampleWithUpdatedDate);
     when(accessControlService.extractToken(anyString()))
@@ -512,6 +509,7 @@ public class ApiDocumentationTest {
         .thenReturn(sampleWithWebinId);
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
         .thenReturn(ResponseEntity.ok(submissionAccount));
+    when(sampleService.buildPrivateSample(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
     when(sampleService.persistSample(any(Sample.class), eq(false), eq(AuthorizationProvider.WEBIN)))
         .thenReturn(sampleWithUpdatedDate);
     when(accessControlService.extractToken(anyString()))

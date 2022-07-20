@@ -28,7 +28,7 @@ public class TestConversion {
 
   @Test
   @Ignore
-  public void test_with_all_ncbi_samples() throws Exception {
+  public void test_with_all_ncbi_samples() {
     System.out.println("A");
   }
 }

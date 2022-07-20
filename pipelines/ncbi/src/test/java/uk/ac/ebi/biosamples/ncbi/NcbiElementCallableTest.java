@@ -40,8 +40,7 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 @ActiveProfiles("test")
 public class NcbiElementCallableTest {
 
-  @MockBean(name = "AAPCLIENT")
-  BioSamplesClient bioSamplesClient;
+  @MockBean BioSamplesClient bioSamplesClient;
 
   TestUtilities testUtils = new TestUtilities();
   TaxonomyService taxonService = new TaxonomyService();
@@ -85,8 +84,7 @@ public class NcbiElementCallableTest {
   }
 
   @Test
-  public void should_extract_double_organism_if_organism_is_in_description_with_null_amr_map()
-      throws Exception {
+  public void should_extract_double_organism_if_organism_is_in_description_with_null_amr_map() {
     ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
     when(bioSamplesClient.persistSampleResource(generatedSample.capture())).thenReturn(null);
 
