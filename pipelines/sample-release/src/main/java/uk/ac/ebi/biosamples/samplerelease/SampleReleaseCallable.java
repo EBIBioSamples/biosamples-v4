@@ -82,7 +82,7 @@ public class SampleReleaseCallable implements Callable<Void> {
             // hence this workaround of fetching twice
             // TODO: fix the curation domain blank list based find in client
             final Optional<Resource<Sample>> optionalSampleResourceWithoutCurations =
-                bioSamplesWebinClient.fetchSampleResource(
+                bioSamplesAapClient.fetchSampleResource(
                     accession, Optional.of(curationDomainBlankList));
 
             final Sample sampleWithoutCurations =

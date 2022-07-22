@@ -181,14 +181,21 @@ public class EnaRunner implements ApplicationRunner {
         while (!success) {
           try {
             final Optional<Resource<Sample>> sampleOptional =
-                bioSamplesWebinClient.fetchSampleResource(
-                    bioSampleId, Optional.of(curationDomainBlankList));
+                bioSamplesWebinClient.fetchSampleResource(bioSampleId);
 
             if (sampleOptional.isPresent()) {
-              log.info("Sample exists, reset update date " + bioSampleId);
+              log.info(
+                  "Sample exists, fetch un-curated view and  reset update date " + bioSampleId);
+
+              final Optional<Resource<Sample>> optionalSampleResourceWithoutCurations =
+                  bioSamplesWebinClient.fetchSampleResource(
+                      bioSampleId, Optional.of(curationDomainBlankList));
+
+              final Sample sampleWithoutCurations =
+                  optionalSampleResourceWithoutCurations.get().getContent();
 
               bioSamplesWebinClient.persistSampleResource(
-                  Sample.Builder.fromSample(sampleOptional.get().getContent()).build());
+                  Sample.Builder.fromSample(sampleWithoutCurations).build());
             } else {
               log.info("Sample doesn't exists, fetch from ERAPRO " + bioSampleId);
 
@@ -212,13 +219,19 @@ public class EnaRunner implements ApplicationRunner {
         while (!success) {
           try {
             final Optional<Resource<Sample>> sampleOptional =
-                bioSamplesAapClient.fetchSampleResource(
-                    bioSampleId, Optional.of(curationDomainBlankList));
+                bioSamplesAapClient.fetchSampleResource(bioSampleId);
 
             if (sampleOptional.isPresent()) {
-              log.info("Sample exists, reset update date " + bioSampleId);
+              log.info("Sample exists, fetch un-curated view and reset update date " + bioSampleId);
+
+              final Optional<Resource<Sample>> optionalSampleResourceWithoutCurations =
+                  bioSamplesAapClient.fetchSampleResource(
+                      bioSampleId, Optional.of(curationDomainBlankList));
+              final Sample sampleWithoutCurations =
+                  optionalSampleResourceWithoutCurations.get().getContent();
+
               bioSamplesAapClient.persistSampleResource(
-                  Sample.Builder.fromSample(sampleOptional.get().getContent())
+                  Sample.Builder.fromSample(sampleWithoutCurations)
                       .withDomain(pipelinesProperties.getNcbiDomain())
                       .withNoWebinSubmissionAccountId()
                       .build());
