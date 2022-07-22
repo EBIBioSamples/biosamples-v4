@@ -52,12 +52,9 @@ public class TestConversion {
               new EnaCallable(
                   sampleAccession,
                   null,
-                  0,
                   bioSamplesWebinClient,
                   egaSampleExporter,
                   enaSampleTransformationService,
-                  false,
-                  false,
                   null);
           try {
             enaCallable.call();
@@ -79,12 +76,9 @@ public class TestConversion {
               new EnaCallable(
                   sampleAccession,
                   null,
-                  0,
                   bioSamplesWebinClient,
                   egaSampleExporter,
                   enaSampleTransformationService,
-                  false,
-                  false,
                   null);
           try {
             enaCallable.call();
@@ -105,12 +99,9 @@ public class TestConversion {
               new EnaCallable(
                   sampleAccession,
                   null,
-                  0,
                   bioSamplesWebinClient,
                   egaSampleExporter,
                   enaSampleTransformationService,
-                  false,
-                  false,
                   null);
           try {
             enaCallable.call();
@@ -131,12 +122,9 @@ public class TestConversion {
               new EnaCallable(
                   sampleAccession,
                   null,
-                  0,
                   bioSamplesWebinClient,
                   egaSampleExporter,
                   enaSampleTransformationService,
-                  false,
-                  false,
                   null);
           try {
             enaCallable.call();
@@ -157,12 +145,9 @@ public class TestConversion {
               new EnaCallable(
                   sampleAccession,
                   null,
-                  0,
                   bioSamplesWebinClient,
                   egaSampleExporter,
                   enaSampleTransformationService,
-                  false,
-                  false,
                   null);
           try {
             enaCallable.call();
