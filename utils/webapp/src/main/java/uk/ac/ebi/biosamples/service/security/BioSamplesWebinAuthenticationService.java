@@ -112,6 +112,13 @@ public class BioSamplesWebinAuthenticationService {
             }
           }
 
+          // ENA samples which are updates in BioSamples using FILE UPLOADER or JSON API, don't
+          // revert changes while a re-import
+          if (oldSample.isPresent()
+              && oldSample.get().getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
+            throw new GlobalExceptions.IllegalImportException();
+          }
+
           if (oldSample.isPresent()) {
             final Sample oldSavedSample = oldSample.get();
             final String oldSavedSampleWebinSubmissionAccountId =
