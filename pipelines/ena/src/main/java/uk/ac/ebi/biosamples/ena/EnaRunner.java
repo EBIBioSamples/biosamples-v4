@@ -10,6 +10,10 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
@@ -67,14 +71,27 @@ public class EnaRunner implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) {
-    final Set<String> failures = new HashSet<>();
+    log.info("Processing ENA pipeline...");
+
+    final Map<String, String> failures = new HashMap<>();
     boolean isPassed = true;
     boolean includeAmr = true;
+    boolean processBacklogs = true;
 
     if (args.getOptionNames().contains("includeAmr")) {
       if (args.getOptionValues("includeAmr").iterator().next().equalsIgnoreCase("false")) {
         includeAmr = false;
       }
+    } else {
+      includeAmr = false;
+    }
+
+    if (args.getOptionNames().contains("processBacklogs")) {
+      if (args.getOptionValues("processBacklogs").iterator().next().equalsIgnoreCase("false")) {
+        processBacklogs = false;
+      }
+    } else {
+      processBacklogs = false;
     }
 
     if (includeAmr && isFirstDayOfTheWeek()) {
@@ -86,7 +103,6 @@ public class EnaRunner implements ApplicationRunner {
     }
 
     try {
-      log.info("Processing ENA pipeline...");
       // date format is YYYY-mm-dd
       LocalDate fromDate;
       LocalDate toDate;
@@ -110,9 +126,11 @@ public class EnaRunner implements ApplicationRunner {
       log.info("Running from date range from " + fromDate + " until " + toDate);
 
       // Import ENA samples
-      // importEraSamples(fromDate, toDate, sampleToAmrMap);
+      importEraSamples(fromDate, toDate, sampleToAmrMap);
 
-      backfillEnaBrowserMissingSamples(args, failures);
+      if (processBacklogs) {
+        backfillEnaBrowserMissingSamples(args, failures);
+      }
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);
       isPassed = false;
@@ -122,7 +140,8 @@ public class EnaRunner implements ApplicationRunner {
   }
 
   private void backfillEnaBrowserMissingSamples(
-      final ApplicationArguments args, final Set<String> failures) throws InterruptedException {
+      final ApplicationArguments args, final Map<String, String> failures)
+      throws InterruptedException {
     final ExecutorService executorService = Executors.newSingleThreadExecutor();
     String enaBackFillerFile = null;
 
@@ -142,17 +161,22 @@ public class EnaRunner implements ApplicationRunner {
               if (sampleDBBean != null) {
                 handleSingleSampleBackFill(executorService, sampleDBBean);
               } else {
-                log.info(
+                final String errorMessage =
                     "No sample details from ERAPRO for "
                         + sampleId
-                        + " possible BioSample Authority sample");
+                        + " possible BioSample Authority sample";
+                log.info(errorMessage);
 
-                failures.add(sampleId);
+                failures.put(sampleId, errorMessage);
               }
             } catch (Exception e) {
-              log.info("Failed to handle " + sampleDBBean.getBiosampleId(), e);
+              final String errorMessage =
+                  "Failed to handle " + sampleDBBean != null
+                      ? sampleDBBean.getBiosampleId()
+                      : sampleId + e;
+              log.info(errorMessage);
 
-              failures.add(sampleId);
+              failures.put(sampleId, errorMessage);
             }
           });
     } catch (final Exception e) {
@@ -161,6 +185,28 @@ public class EnaRunner implements ApplicationRunner {
     } finally {
       executorService.shutdown();
       executorService.awaitTermination(1, TimeUnit.MINUTES);
+
+      BufferedWriter bf = null;
+      File file = new File("ena_backfill_failures.txt");
+
+      try {
+        bf = new BufferedWriter(new FileWriter(file));
+        for (Map.Entry<String, String> entry : failures.entrySet()) {
+          bf.write(entry.getKey() + " : " + entry.getValue());
+          bf.newLine();
+        }
+
+        bf.flush();
+      } catch (IOException e) {
+        e.printStackTrace();
+      } finally {
+        try {
+          assert bf != null;
+          bf.close();
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
     }
   }
 

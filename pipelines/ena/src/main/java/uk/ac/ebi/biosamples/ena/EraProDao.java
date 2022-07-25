@@ -81,7 +81,7 @@ public class EraProDao {
 
       return sampleData;
     } catch (final IncorrectResultSizeDataAccessException e) {
-      log.error("Result set size expected is 1 and got more that that, skipping");
+      log.error("Result set size expected is 1 and got more/ less that that, skipping");
     }
 
     return null;
@@ -100,7 +100,7 @@ public class EraProDao {
 
       return sampleData;
     } catch (final IncorrectResultSizeDataAccessException e) {
-      log.error("Result set size expected is 1 and got more that that, skipping");
+      log.error("Result set size expected is 1 and got more/ less that that, skipping");
     }
 
     return null;
