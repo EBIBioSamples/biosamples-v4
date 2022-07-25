@@ -38,27 +38,16 @@ public class EnaCallableFactory {
    * Builds callable for dealing most ENA samples
    *
    * @param accession The accession passed
-   * @param statusId sample status
-   * @param suppressionHandler Is running to set samples to SUPPRESSED
    * @param amrData The AMR {@link AbstractData} of the sample
    * @return the callable, {@link EnaCallable}
    */
-  public Callable<Void> build(
-      String accession,
-      String egaId,
-      int statusId,
-      boolean suppressionHandler,
-      boolean killedHandler,
-      Set<StructuredDataTable> amrData) {
+  public Callable<Void> build(String accession, String egaId, Set<StructuredDataTable> amrData) {
     return new EnaCallable(
         accession,
         egaId,
-        statusId,
         bioSamplesWebinClient,
         egaSampleExporter,
         enaSampleTransformationService,
-        suppressionHandler,
-        killedHandler,
         amrData);
   }
 }

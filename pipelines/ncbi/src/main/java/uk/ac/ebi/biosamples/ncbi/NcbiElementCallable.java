@@ -24,6 +24,8 @@ import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 
 public class NcbiElementCallable implements Callable<Void> {
+  private static final int MAX_RETRIES = 5;
+
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final Element sampleElem;
   private final String domain;
@@ -49,6 +51,9 @@ public class NcbiElementCallable implements Callable<Void> {
     final String accession = sampleElem.attributeValue("accession");
 
     try {
+      boolean success = false;
+      int numRetry = 0;
+
       Set<StructuredDataTable> amrData = new HashSet<>();
 
       log.trace("Element callable starting for " + accession);
@@ -61,7 +66,19 @@ public class NcbiElementCallable implements Callable<Void> {
       Sample sampleWithoutDomain =
           ncbiSampleConversionService.convertNcbiXmlElementToSample(sampleElem);
       Sample sample = Sample.Builder.fromSample(sampleWithoutDomain).withDomain(domain).build();
-      bioSamplesClient.persistSampleResource(sample);
+      while (!success) {
+        try {
+          bioSamplesClient.persistSampleResource(sample);
+
+          success = true;
+        } catch (final Exception e) {
+          if (++numRetry == MAX_RETRIES) {
+            throw new RuntimeException("Failed to handle the sample with accession " + accession);
+          }
+
+          success = false;
+        }
+      }
 
       Set<StructuredDataTable> structuredDataTableSet =
           ncbiSampleConversionService.convertNcbiXmlElementToStructuredData(sampleElem, amrData);

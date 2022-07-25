@@ -45,7 +45,7 @@ public class EnaSampleTransformationService {
       final EnaXmlEnhancer enaXmlEnhancer,
       final EraProDao eraProDao,
       final EnaElementConverter enaElementConverter,
-      PipelinesProperties pipelinesProperties) {
+      final PipelinesProperties pipelinesProperties) {
     this.enaXmlEnhancer = enaXmlEnhancer;
     this.eraProDao = eraProDao;
     this.enaElementConverter = enaElementConverter;
@@ -60,7 +60,7 @@ public class EnaSampleTransformationService {
    */
   public Sample enrichSample(final String accession, final boolean isNcbi)
       throws DocumentException {
-    final SampleDBBean sampleDBBean = eraProDao.getAllSampleData(accession);
+    final SampleDBBean sampleDBBean = eraProDao.getSampleDetailsByBioSampleId(accession);
 
     if (sampleDBBean != null) {
       return enrichSample(sampleDBBean, accession, isNcbi);

@@ -12,7 +12,6 @@ package uk.ac.ebi.biosamples.ena;
 
 import java.time.LocalDate;
 import java.util.Date;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +31,6 @@ public class EraProDao {
   private Logger log = LoggerFactory.getLogger(getClass());
 
   private static final String STATUS_CLAUSE = "STATUS_ID IN (3, 4, 5, 6, 7, 8)";
-  private static final String STATUS_CLAUSE_SUPPRESSED = "STATUS_ID IN (5, 7)";
-  private static final String STATUS_CLAUSE_KILLED = "STATUS_ID IN (6, 8)";
 
   public void doSampleCallback(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
     String query =
@@ -45,32 +42,6 @@ public class EraProDao {
     Date minDateOld = java.sql.Date.valueOf(minDate);
     Date maxDateOld = java.sql.Date.valueOf(maxDate);
     jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
-  }
-
-  /**
-   * Returns SUPPRESSED ENA samples
-   *
-   * @param rch {@link RowCallbackHandler}
-   */
-  public void doGetSuppressedEnaSamples(RowCallbackHandler rch) {
-    String query =
-        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND "
-            + STATUS_CLAUSE_SUPPRESSED;
-
-    jdbcTemplate.query(query, rch);
-  }
-
-  /**
-   * Returns SUPPRESSED NCBI/DDBJ samples
-   *
-   * @param rch {@link RowCallbackHandler}
-   */
-  public void doGetSuppressedNcbiDdbjSamples(RowCallbackHandler rch) {
-    String query =
-        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND "
-            + STATUS_CLAUSE_SUPPRESSED;
-
-    jdbcTemplate.query(query, rch);
   }
 
   public void getSingleSample(String bioSampleId, RowCallbackHandler rch) {
@@ -94,7 +65,7 @@ public class EraProDao {
     jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
   }
 
-  public SampleDBBean getAllSampleData(final String biosampleAccession) {
+  public SampleDBBean getSampleDetailsByBioSampleId(final String biosampleAccession) {
     try {
       String sql =
           "SELECT SAMPLE_XML, TAX_ID, "
@@ -104,13 +75,32 @@ public class EraProDao {
               + "STATUS_ID, "
               + "SUBMISSION_ACCOUNT_ID "
               + "FROM SAMPLE "
-              + "WHERE BIOSAMPLE_ID = ? ";
+              + "WHERE BIOSAMPLE_ID = ? fetch first row only ";
       final SampleDBBean sampleData =
-          jdbcTemplate.queryForObject(sql, enaSampleRowMapper, biosampleAccession);
+          jdbcTemplate.queryForObject(sql, sampleRowMapper, biosampleAccession);
 
       return sampleData;
     } catch (final IncorrectResultSizeDataAccessException e) {
-      log.error("Result set size expected is 1 and got more that that, skipping");
+      log.error("Result set size expected is 1 and got more/ less that that, skipping");
+    }
+
+    return null;
+  }
+
+  public SampleDBBean getSampleDetailsByEnaSampleId(final String sampleId) {
+    try {
+      String sql =
+          "SELECT STATUS_ID, SAMPLE_ID, "
+              + "BIOSAMPLE_ID, "
+              + "BIOSAMPLE_AUTHORITY "
+              + "FROM SAMPLE "
+              + "WHERE SAMPLE_ID = ? AND BIOSAMPLE_AUTHORITY= 'N' "
+              + "fetch first row only ";
+      final SampleDBBean sampleData = jdbcTemplate.queryForObject(sql, sampleRowMapper2, sampleId);
+
+      return sampleData;
+    } catch (final IncorrectResultSizeDataAccessException e) {
+      log.error("Result set size expected is 1 and got more/ less that that, skipping");
     }
 
     return null;
@@ -140,17 +130,7 @@ public class EraProDao {
     jdbcTemplate.query(query, rch, enaAccession);
   }
 
-  public String getSraAccession(final String sampleAccession) {
-    String sql = "SELECT SAMPLE_ID FROM SAMPLE WHERE BIOSAMPLE_ID = ? ";
-
-    List<String> resultList =
-        jdbcTemplate.queryForList(sql, new Object[] {sampleAccession}, String.class);
-
-    if (resultList != null && resultList.size() > 0) return resultList.get(0);
-    else return null;
-  }
-
-  RowMapper<SampleDBBean> enaSampleRowMapper =
+  RowMapper<SampleDBBean> sampleRowMapper =
       (rs, rowNum) -> {
         final SampleDBBean sampleBean = new SampleDBBean();
 
@@ -165,11 +145,15 @@ public class EraProDao {
         return sampleBean;
       };
 
-  public void doGetKilledEnaSamples(RowCallbackHandler rch) {
-    String query =
-        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND "
-            + STATUS_CLAUSE_KILLED;
+  RowMapper<SampleDBBean> sampleRowMapper2 =
+      (rs, rowNum) -> {
+        final SampleDBBean sampleBean = new SampleDBBean();
 
-    jdbcTemplate.query(query, rch);
-  }
+        sampleBean.setStatus(rs.getInt("STATUS_ID"));
+        sampleBean.setSampleId(rs.getString("SAMPLE_ID"));
+        sampleBean.setBiosampleId(rs.getString("BIOSAMPLE_ID"));
+        sampleBean.setBiosampleAuthority(rs.getString("BIOSAMPLE_AUTHORITY"));
+
+        return sampleBean;
+      };
 }

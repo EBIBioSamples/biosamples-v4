@@ -25,6 +25,33 @@ public class SampleDBBean {
   private String submissionAccountId;
   private Long taxId;
   private int status;
+  private String sampleId;
+  private String biosampleId;
+  private String biosampleAuthority;
+
+  public String getSampleId() {
+    return sampleId;
+  }
+
+  public void setSampleId(String sampleId) {
+    this.sampleId = sampleId;
+  }
+
+  public String getBiosampleId() {
+    return biosampleId;
+  }
+
+  public void setBiosampleId(String biosampleId) {
+    this.biosampleId = biosampleId;
+  }
+
+  public String getBiosampleAuthority() {
+    return biosampleAuthority;
+  }
+
+  public void setBiosampleAuthority(String biosampleAuthority) {
+    this.biosampleAuthority = biosampleAuthority;
+  }
 
   public Long getTaxId() {
     return taxId;

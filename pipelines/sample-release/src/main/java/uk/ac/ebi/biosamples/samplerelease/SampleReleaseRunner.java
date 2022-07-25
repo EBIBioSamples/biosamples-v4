@@ -58,7 +58,7 @@ public class SampleReleaseRunner implements ApplicationRunner {
     log.info(
         "Starting sample release pipeline, Getting from " + webinEraServiceSampleReleaseGetUrl);
 
-    final Map<String, Future<String>> futures = new HashMap<>();
+    final Map<String, Future<Void>> futures = new HashMap<>();
 
     final ResponseEntity<List<String>> response =
         restTemplate.exchange(
@@ -82,7 +82,7 @@ public class SampleReleaseRunner implements ApplicationRunner {
             .getBody()
             .forEach(
                 accession -> {
-                  final Callable<String> task =
+                  final Callable<Void> task =
                       new SampleReleaseCallable(
                           bioSamplesWebinClient,
                           bioSamplesAapClient,
