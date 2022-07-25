@@ -190,7 +190,7 @@ public class Ncbi implements ApplicationRunner {
                 PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.NCBI),
                 new Date(),
                 PipelineName.NCBI.name(),
-                PipelineCompletionStatus.COMPLETED,
+                PipelineCompletionStatus.FAILED,
                 null,
                 pipelineFailureCause);
       }
