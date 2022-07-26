@@ -10,22 +10,26 @@
 */
 package uk.ac.ebi.biosamples.utils;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
-public class ArgUtils {
-  private static Logger log = LoggerFactory.getLogger(ArgUtils.class);
+public class PipelineUtils {
+  private static Logger log = LoggerFactory.getLogger(PipelineUtils.class);
 
   public static Collection<Filter> getDateFilters(ApplicationArguments args) {
-
     LocalDate fromDate;
     if (args.getOptionNames().contains("from")) {
       fromDate =
@@ -54,5 +58,29 @@ public class ArgUtils {
     Collection<Filter> filters = new ArrayList<>();
     filters.add(fromDateFilter);
     return filters;
+  }
+
+  public static void writeFailedSamplesToFile(final Map<String, String> failures) {
+    BufferedWriter bf = null;
+    final File file = new File("ena_backfill_failures.txt");
+
+    try {
+      bf = new BufferedWriter(new FileWriter(file));
+      for (final Map.Entry<String, String> entry : failures.entrySet()) {
+        bf.write(entry.getKey() + " : " + entry.getValue());
+        bf.newLine();
+      }
+
+      bf.flush();
+    } catch (final IOException e) {
+      e.printStackTrace();
+    } finally {
+      try {
+        assert bf != null;
+        bf.close();
+      } catch (final Exception e) {
+        e.printStackTrace();
+      }
+    }
   }
 }

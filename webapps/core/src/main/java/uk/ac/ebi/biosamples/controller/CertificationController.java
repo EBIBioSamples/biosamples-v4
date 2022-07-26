@@ -110,7 +110,7 @@ public class CertificationController {
 
     log.trace("Sample with certificates " + sample);
 
-    sample = sampleService.persistSample(sample, false, authProvider);
+    sample = sampleService.persistSample(sample, authProvider, false);
 
     // assemble a resource to return
     // create the response object with the appropriate status

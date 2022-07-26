@@ -102,7 +102,7 @@ public class SamplesRestControllerV2 {
                         sample = validateSample(sample, true);
                       }
 
-                      return sampleService.persistSampleV2(sample, true, authProvider);
+                      return sampleService.persistSampleV2(sample, authProvider, isWebinSuperUser);
                     })
                 .collect(Collectors.toList());
       } catch (final Exception e) {
@@ -125,7 +125,7 @@ public class SamplesRestControllerV2 {
                         sample = validateSample(sample, false);
                       }
 
-                      return sampleService.persistSampleV2(sample, true, authProvider);
+                      return sampleService.persistSampleV2(sample, authProvider, false);
                     })
                 .collect(Collectors.toList());
       } catch (final Exception e) {
@@ -163,6 +163,8 @@ public class SamplesRestControllerV2 {
       throw new GlobalExceptions.SampleWithAccessionSubmissionException();
     }
 
+    boolean isWebinSuperUser = false;
+
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final boolean webinAuth =
         authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
@@ -176,6 +178,9 @@ public class SamplesRestControllerV2 {
         throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
+      isWebinSuperUser =
+          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
+
       sample =
           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
               sample, webinSubmissionAccountId);
@@ -185,7 +190,7 @@ public class SamplesRestControllerV2 {
 
     sample = sampleService.buildPrivateSample(sample);
 
-    sample = sampleService.persistSampleV2(sample, false, authProvider);
+    sample = sampleService.persistSampleV2(sample, authProvider, isWebinSuperUser);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(sample);
   }
@@ -310,7 +315,7 @@ public class SamplesRestControllerV2 {
                       if (webinAuth) {
                         final String webinSubmissionAccountId = authToken.get().getUser();
 
-                        bioSamplesWebinAuthenticationService.checkSampleAccessibility(
+                        bioSamplesWebinAuthenticationService.isSampleAccessible(
                             sample, webinSubmissionAccountId);
                       } else {
                         bioSamplesAapService.checkSampleAccessibility(sample);

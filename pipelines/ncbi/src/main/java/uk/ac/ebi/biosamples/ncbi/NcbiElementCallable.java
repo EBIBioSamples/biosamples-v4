@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
@@ -66,7 +67,10 @@ public class NcbiElementCallable implements Callable<Void> {
       final Sample sampleWithoutDomain =
           ncbiSampleConversionService.convertNcbiXmlElementToSample(sampleElem);
       final Sample sample =
-          Sample.Builder.fromSample(sampleWithoutDomain).withDomain(domain).build();
+          Sample.Builder.fromSample(sampleWithoutDomain)
+              .withDomain(domain)
+              .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
+              .build();
 
       while (!success) {
         try {

@@ -115,7 +115,7 @@ public class SampleRestController {
       if (webinAuth) {
         final String webinSubmissionAccountId = authToken.get().getUser();
 
-        bioSamplesWebinAuthenticationService.checkSampleAccessibility(
+        bioSamplesWebinAuthenticationService.isSampleAccessible(
             sample.get(), webinSubmissionAccountId);
       } else {
         bioSamplesAapService.checkSampleAccessibility(sample.get());
@@ -274,19 +274,12 @@ public class SampleRestController {
 
     sample = validateSample(sample, webinAuth, isWebinSuperUser);
 
-    final boolean isFirstTimeMetadataAdded =
-        sampleService.checkIfSampleHasMetadata(sample, isWebinSuperUser);
-
-    if (isFirstTimeMetadataAdded) {
-      sample = Sample.Builder.fromSample(sample).withSubmitted(now).build();
-    }
-
     if (!setFullDetails) {
       log.trace("Removing contact legacy fields for " + accession);
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
-    sample = sampleService.persistSample(sample, isFirstTimeMetadataAdded, authProvider);
+    sample = sampleService.persistSample(sample, authProvider, isWebinSuperUser);
 
     // assemble a resource to return
     // create the response object with the appropriate status

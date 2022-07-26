@@ -64,8 +64,11 @@ public class GlobalExceptions {
           "This sample is private and not available for browsing. If you think this is an error and/or you should have access please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk")
   public static class SampleNotAccessibleException extends RuntimeException {}
 
-  @ResponseStatus(value = HttpStatus.FORBIDDEN)
-  public static class IllegalImportException extends RuntimeException {}
+  @ResponseStatus(
+      value = HttpStatus.FORBIDDEN,
+      reason =
+          "This sample has been imported from other INSDC databases, please update at source. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk for more information")
+  public static class InvalidSubmissionSourceException extends RuntimeException {}
 
   public static class SampleNotAccessibleAdviceException extends RuntimeException {
     private static final long serialVersionUID = -6250819256457895445L;

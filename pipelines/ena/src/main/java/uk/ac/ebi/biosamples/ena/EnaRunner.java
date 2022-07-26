@@ -10,10 +10,6 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
@@ -46,6 +42,7 @@ import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
 import uk.ac.ebi.biosamples.service.AmrDataLoaderService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.PipelineUniqueIdentifierGenerator;
+import uk.ac.ebi.biosamples.utils.PipelineUtils;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 @Component
@@ -135,11 +132,12 @@ public class EnaRunner implements ApplicationRunner {
       log.info("Running from date range from " + fromDate + " until " + toDate);
 
       // Import ENA samples
-      importEraSamples(fromDate, toDate, sampleToAmrMap);
+      // importEraSamples(fromDate, toDate, sampleToAmrMap);
 
       if (processBacklogs) {
-        backfillEnaBrowserMissingSamples(args, failures);
+        // backfillEnaBrowserMissingSamples(args, failures);
       }
+      eraProDao.doWWWDEVMapping();
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);
       pipelineFailureCause = e.getMessage();
@@ -155,7 +153,7 @@ public class EnaRunner implements ApplicationRunner {
                 PipelineName.ENA.name(),
                 PipelineCompletionStatus.COMPLETED,
                 failures.keySet().stream().collect(Collectors.joining(",")),
-                pipelineFailureCause);
+                null);
       } else {
         mongoPipeline =
             new MongoPipeline(
@@ -168,6 +166,8 @@ public class EnaRunner implements ApplicationRunner {
       }
 
       mongoPipelineRepository.insert(mongoPipeline);
+
+      PipelineUtils.writeFailedSamplesToFile(failures);
     }
   }
 
@@ -217,28 +217,6 @@ public class EnaRunner implements ApplicationRunner {
     } finally {
       executorService.shutdown();
       executorService.awaitTermination(1, TimeUnit.MINUTES);
-
-      BufferedWriter bf = null;
-      File file = new File("ena_backfill_failures.txt");
-
-      try {
-        bf = new BufferedWriter(new FileWriter(file));
-        for (Map.Entry<String, String> entry : failures.entrySet()) {
-          bf.write(entry.getKey() + " : " + entry.getValue());
-          bf.newLine();
-        }
-
-        bf.flush();
-      } catch (IOException e) {
-        e.printStackTrace();
-      } finally {
-        try {
-          assert bf != null;
-          bf.close();
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-      }
     }
   }
 

@@ -119,14 +119,7 @@ public class SampleRestControllerV2 {
       sample = validateSample(sample, webinAuth);
     }
 
-    final boolean isFirstTimeMetadataAdded =
-        sampleService.checkIfSampleHasMetadata(sample, isWebinSuperUser);
-
-    if (isFirstTimeMetadataAdded) {
-      sample = Sample.Builder.fromSample(sample).withSubmitted(now).build();
-    }
-
-    sample = sampleService.persistSampleV2(sample, isFirstTimeMetadataAdded, authProvider);
+    sample = sampleService.persistSampleV2(sample, authProvider, isWebinSuperUser);
 
     return ResponseEntity.status(HttpStatus.OK).body(sample);
   }

@@ -26,10 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Publication;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
@@ -180,7 +177,11 @@ public class EnaSampleTransformationService {
               externalReferences);
     }
 
-    return Sample.Builder.fromSample(sample).withNoData().withPublications(publications).build();
+    return Sample.Builder.fromSample(sample)
+        .withNoData()
+        .withPublications(publications)
+        .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
+        .build();
 
     /*  if (amrData != null && !amrData.isEmpty()) {
       bioSamplesWebinClient.persistStructuredData(
