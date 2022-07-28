@@ -27,6 +27,7 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.service.TaxonomyService;
 
+@Ignore
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     classes = {

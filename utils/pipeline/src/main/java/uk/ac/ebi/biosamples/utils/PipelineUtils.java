@@ -23,6 +23,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
+import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
@@ -60,9 +61,10 @@ public class PipelineUtils {
     return filters;
   }
 
-  public static void writeFailedSamplesToFile(final Map<String, String> failures) {
+  public static void writeFailedSamplesToFile(
+      final Map<String, String> failures, final PipelineName pipelineName) {
     BufferedWriter bf = null;
-    final File file = new File("ena_backfill_failures.txt");
+    final File file = new File(pipelineName + ".failed");
 
     try {
       bf = new BufferedWriter(new FileWriter(file));
@@ -73,13 +75,13 @@ public class PipelineUtils {
 
       bf.flush();
     } catch (final IOException e) {
-      e.printStackTrace();
+      log.info("Failed to write failed file ", e);
     } finally {
       try {
         assert bf != null;
         bf.close();
       } catch (final Exception e) {
-        e.printStackTrace();
+        log.error(e.getMessage(), e);
       }
     }
   }

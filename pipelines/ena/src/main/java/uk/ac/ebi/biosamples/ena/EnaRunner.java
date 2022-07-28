@@ -18,7 +18,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,12 +131,15 @@ public class EnaRunner implements ApplicationRunner {
       log.info("Running from date range from " + fromDate + " until " + toDate);
 
       // Import ENA samples
-      // importEraSamples(fromDate, toDate, sampleToAmrMap);
+      importEraSamples(fromDate, toDate, sampleToAmrMap);
 
       if (processBacklogs) {
-        // backfillEnaBrowserMissingSamples(args, failures);
+        backfillEnaBrowserMissingSamples(args, failures);
       }
-      eraProDao.doWWWDEVMapping();
+
+      /*final List<String> bsdIds = eraProDao.doWWWDEVMapping();
+
+      handleWWWDevMapping(bsdIds);*/
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);
       pipelineFailureCause = e.getMessage();
@@ -152,7 +154,7 @@ public class EnaRunner implements ApplicationRunner {
                 new Date(),
                 PipelineName.ENA.name(),
                 PipelineCompletionStatus.COMPLETED,
-                failures.keySet().stream().collect(Collectors.joining(",")),
+                String.join(",", failures.keySet()),
                 null);
       } else {
         mongoPipeline =
@@ -161,15 +163,74 @@ public class EnaRunner implements ApplicationRunner {
                 new Date(),
                 PipelineName.ENA.name(),
                 PipelineCompletionStatus.FAILED,
-                failures.keySet().stream().collect(Collectors.joining(",")),
+                String.join(",", failures.keySet()),
                 pipelineFailureCause);
       }
 
       mongoPipelineRepository.insert(mongoPipeline);
 
-      PipelineUtils.writeFailedSamplesToFile(failures);
+      PipelineUtils.writeFailedSamplesToFile(failures, PipelineName.ENA);
     }
   }
+
+  /*private void handleWWWDevMapping(final List<String> bsdIds) {
+    final RestTemplate restTemplate = new RestTemplate();
+    final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
+
+    bsdIds.forEach(
+        bsdId -> {
+          log.info("Handling BSD ID " + bsdId);
+
+          try {
+            final String baseUrl =
+                "https://wwwdev.ebi.ac.uk/biosamples/samples/" + bsdId + ".json?curationdomain=";
+            final RequestEntity<Void> requestEntity =
+                new RequestEntity<>(headers, HttpMethod.GET, URI.create(baseUrl));
+            final ResponseEntity<EntityModel<Sample>> responseEntity =
+                restTemplate.exchange(
+                    requestEntity, new ParameterizedTypeReference<EntityModel<Sample>>() {});
+
+            final EntityModel<Sample> sampleEntityInWWWDev = responseEntity.getBody();
+
+            if (sampleEntityInWWWDev != null) {
+              final Sample sampleInWWWDEV = sampleEntityInWWWDev.getContent();
+
+              if (sampleInWWWDEV.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
+                final Optional<EntityModel<Sample>> sampleOptionalInProd =
+                    bioSamplesWebinClient.fetchSampleResource(bsdId);
+
+                if (sampleOptionalInProd.isPresent()) {
+                  final Sample sampleInProd = sampleOptionalInProd.get().getContent();
+
+                  if (sampleInProd.getSubmittedVia() == SubmittedViaType.JSON_API) {
+                    log.info(
+                        "Sample uploaded using the FILE UPLOADER: "
+                            + bsdId
+                            + " and reverted in prod while pipeline re-import, merge WWWDEV sample to WWW");
+
+                    final Sample sampleToPostToWWW =
+                        Sample.Builder.fromSample(sampleInWWWDEV).build();
+
+                    bioSamplesWebinClient.persistSampleResource(sampleToPostToWWW);
+                  } else {
+                    log.info("Sample not updated in WWW: " + bsdId);
+                  }
+                } else {
+                  log.info("Sample not found in WWW: " + bsdId);
+                }
+              } else {
+                log.info("Sample not updated in WWWDEV using FILE UPLOADER: " + bsdId);
+              }
+            } else {
+              log.info("Sample not found in WWWDEV: " + bsdId);
+            }
+          } catch (final Exception e) {
+            log.info("Failed to handle BsdId: " + bsdId, e);
+          }
+        });
+  }*/
 
   private void backfillEnaBrowserMissingSamples(
       final ApplicationArguments args, final Map<String, String> failures)

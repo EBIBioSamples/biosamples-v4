@@ -12,7 +12,6 @@ package uk.ac.ebi.biosamples.ena;
 
 import java.time.LocalDate;
 import java.util.Date;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,9 +32,9 @@ public class EraProDao {
 
   private static final String STATUS_CLAUSE = "STATUS_ID IN (3, 4, 5, 6, 7, 8)";
 
-  private static final String SQL_WWWDEV_MAPPING =
-      "SELECT BIOSAMPLE_ID FROM SAMPLE WHERE SUBMISSION_ACCOUNT_ID = 'Webin-161' AND BIOSAMPLE_AUTHORITY= 'N' AND ((LAST_UPDATED BETWEEN TO_DATE('2022-01-01', 'YYYY-MM-DD') AND TO_DATE('2022-07-15', 'YYYY-MM-DD')) OR (FIRST_PUBLIC BETWEEN TO_DATE('2022-01-01', 'YYYY-MM-DD') AND TO_DATE('2022-07-15', 'YYYY-MM-DD'))) ORDER BY BIOSAMPLE_ID DESC";
-
+  /*private static final String SQL_WWWDEV_MAPPING =
+        "SELECT BIOSAMPLE_ID FROM SAMPLE WHERE SUBMISSION_ACCOUNT_ID = 'Webin-161' AND BIOSAMPLE_AUTHORITY= 'N' AND ((LAST_UPDATED BETWEEN TO_DATE('2022-01-01', 'YYYY-MM-DD') AND TO_DATE('2022-07-15', 'YYYY-MM-DD')) OR (FIRST_PUBLIC BETWEEN TO_DATE('2022-01-01', 'YYYY-MM-DD') AND TO_DATE('2022-07-15', 'YYYY-MM-DD'))) ORDER BY BIOSAMPLE_ID DESC";
+  */
   public void doSampleCallback(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
     String query =
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID, LAST_UPDATED FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' "
@@ -48,12 +47,9 @@ public class EraProDao {
     jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
   }
 
-  public void doWWWDEVMapping() {
-    final List<String> wwwDevMappingList =
-        jdbcTemplate.queryForList(SQL_WWWDEV_MAPPING, String.class);
-
-    wwwDevMappingList.forEach(System.out::println);
-  }
+  /*public List<String> doWWWDEVMapping() {
+    return jdbcTemplate.queryForList(SQL_WWWDEV_MAPPING, String.class);
+  }*/
 
   public void getSingleSample(String bioSampleId, RowCallbackHandler rch) {
     String query =
