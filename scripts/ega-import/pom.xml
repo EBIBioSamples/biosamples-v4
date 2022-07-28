@@ -33,11 +33,6 @@
 			<version>5.2.6-RC1</version>
 		</dependency>
 
-		<!--<dependency>-->
-			<!--<groupId>org.springframework.hateoas</groupId>-->
-			<!--<artifactId>spring-hateoas</artifactId>-->
-		<!--</dependency>-->
-
 		<!-- HTTP POST handling -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>

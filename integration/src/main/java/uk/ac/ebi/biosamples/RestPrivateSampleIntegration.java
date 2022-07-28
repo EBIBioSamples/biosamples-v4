@@ -22,7 +22,6 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component
 public class RestPrivateSampleIntegration extends AbstractIntegration {
-
   public RestPrivateSampleIntegration(BioSamplesClient client) {
     super(client);
   }
@@ -55,7 +54,8 @@ public class RestPrivateSampleIntegration extends AbstractIntegration {
     Sample privateSample = getSampleWithFutureReleaseDate();
 
     Optional<Sample> optionalSample = fetchUniqueSampleByName(publicSampleToday.getName());
-    if (optionalSample.isEmpty()) {
+
+    if (!optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
           "Sample does not exist, sample name: " + publicSampleToday.getName(), Phase.TWO);
     }
@@ -81,6 +81,9 @@ public class RestPrivateSampleIntegration extends AbstractIntegration {
   protected void phaseFive() {
     // nothing to do here
   }
+
+  @Override
+  protected void phaseSix() {}
 
   private Sample getSampleWithReleaseDateToday() {
     String name = "RestPrivateSampleIntegration_sample_1";

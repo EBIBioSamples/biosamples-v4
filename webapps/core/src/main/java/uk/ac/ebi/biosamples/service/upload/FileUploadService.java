@@ -31,7 +31,6 @@ import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
-import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
 import uk.ac.ebi.biosamples.mongo.util.SampleNameAccessionPair;
 import uk.ac.ebi.biosamples.service.SampleService;
@@ -47,17 +46,10 @@ public class FileUploadService {
   private FileUploadUtils fileUploadUtils;
 
   @Autowired private SampleService sampleService;
-
   @Autowired private SchemaValidationService schemaValidationService;
-
   @Autowired private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
-
   @Autowired private BioSamplesAapService bioSamplesAapService;
-
   @Autowired private MongoFileUploadRepository mongoFileUploadRepository;
-
-  @Autowired private MongoSampleRepository mongoSampleRepository;
-
   @Autowired private FileQueueService fileQueueService;
 
   public synchronized File upload(
@@ -245,7 +237,7 @@ public class FileUploadService {
 
       sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
       try {
-        sample = storeSample(sample, false, isWebin(isWebin));
+        sample = storeSample(sample, isWebin(isWebin));
       } catch (final Exception e) {
         final String sampleName = sample.getName();
 
@@ -282,11 +274,8 @@ public class FileUploadService {
       isValidatedAgainstChecklist = performChecklistValidation(sample);
 
       if (isValidatedAgainstChecklist) {
-        final boolean isFirstTimeMetadataAdded =
-            sampleService.checkIfSampleHasMetadata(sample, false);
-
         try {
-          sample = storeSample(sample, isFirstTimeMetadataAdded, isWebin(isWebin));
+          sample = storeSample(sample, isWebin(isWebin));
 
           if (sample != null) {
             if (sampleWithAccession) {
@@ -347,10 +336,13 @@ public class FileUploadService {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
                 sample.getName(), "Sample " + sample.getName() + " is not accessible for you"));
-      } else if (e instanceof GlobalExceptions.SampleNotAccessibleException) {
+      } else if (e instanceof GlobalExceptions.InvalidSubmissionSourceException) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
-                sample.getName(), "Sample " + sample.getName() + " is not accessible for you"));
+                sample.getName(),
+                "Sample "
+                    + sample.getName()
+                    + " has been imported from other INSDC databases, please update at source. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk for more information"));
       } else {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(sample.getName(), "Please retry submission!"));
@@ -364,8 +356,7 @@ public class FileUploadService {
     return isWebin ? FileUploadUtils.WEBIN_AUTH : FileUploadUtils.AAP;
   }
 
-  private Sample storeSample(
-      final Sample sample, final boolean isFirstTimeMetadataAdded, final String authProvider) {
+  private Sample storeSample(final Sample sample, final String authProvider) {
     /*final String sampleName = sample.getName();
     final String accession = sample.getAccession();
 
@@ -398,7 +389,7 @@ public class FileUploadService {
 
     try {
       return sampleService.persistSample(
-          sample, isFirstTimeMetadataAdded, AuthorizationProvider.valueOf(authProvider));
+          sample, AuthorizationProvider.valueOf(authProvider), false);
     } catch (final Exception e) {
       throw new RuntimeException("Failed to persist sample with name " + sample.getName());
     }
@@ -418,7 +409,10 @@ public class FileUploadService {
   }
 
   public MongoFileUpload getSamples(final String submissionId) {
-    final MongoFileUpload mongoFileUpload = mongoFileUploadRepository.findOne(submissionId);
+    final MongoFileUpload mongoFileUpload =
+        mongoFileUploadRepository.findById(submissionId).isPresent()
+            ? mongoFileUploadRepository.findById(submissionId).get()
+            : null;
 
     if (mongoFileUpload != null) {
       return mongoFileUpload;
@@ -436,7 +430,7 @@ public class FileUploadService {
 
   public List<MongoFileUpload> getUserSubmissions(final List<String> userRoles) {
     try {
-      final Pageable page = new PageRequest(0, 10);
+      final Pageable page = PageRequest.of(0, 10);
       return mongoFileUploadRepository.findBySubmitterDetailsIn(userRoles, page);
     } catch (final Exception e) {
       log.info("Failed in fetch submissions in getUserSubmissions() " + e.getMessage());

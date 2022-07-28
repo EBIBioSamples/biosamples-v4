@@ -13,10 +13,10 @@ package uk.ac.ebi.biosamples.mongo.service;
 import java.time.Instant;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.ExternalReference;
@@ -28,7 +28,7 @@ import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 
 @Service
-public class MongoSampleToSampleConverter implements Converter<MongoSample, Sample> {
+public class MongoSampleToSampleConverter implements Function<MongoSample, Sample> {
   @Autowired
   private MongoExternalReferenceToExternalReferenceConverter
       mongoExternalReferenceToExternalReferenceConverter;
@@ -40,7 +40,7 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
   private static Logger LOGGER = LoggerFactory.getLogger(MongoSampleToSampleConverter.class);
 
   @Override
-  public Sample convert(MongoSample sample) {
+  public Sample apply(MongoSample sample) {
     Sample convertedSample;
     final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 

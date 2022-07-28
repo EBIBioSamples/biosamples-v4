@@ -84,9 +84,9 @@ public class MongoRelationship implements Comparable<MongoRelationship> {
     }
 
     if (!Objects.equals(this.source, other.source)) {
-      if (this.source == null && other.source != null) {
+      if (this.source == null) {
         return 1;
-      } else if (this.source != null && other.source == null) {
+      } else if (other.source == null) {
         return -1;
       } else {
         return this.source.compareTo(other.source);
@@ -97,15 +97,8 @@ public class MongoRelationship implements Comparable<MongoRelationship> {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("Relationships(");
-    sb.append(source);
-    sb.append(",");
-    sb.append(type);
-    sb.append(",");
-    sb.append(target);
-    sb.append(")");
-    return sb.toString();
+    String sb = "Relationships(" + source + "," + type + "," + target + ")";
+    return sb;
   }
 
   @JsonCreator
@@ -127,7 +120,6 @@ public class MongoRelationship implements Comparable<MongoRelationship> {
 
     String hash = hasher.hash().toString();
 
-    MongoRelationship rel = new MongoRelationship(type, target, source, hash);
-    return rel;
+    return new MongoRelationship(type, target, source, hash);
   }
 }

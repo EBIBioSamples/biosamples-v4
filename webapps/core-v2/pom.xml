@@ -9,7 +9,6 @@
 		<relativePath>../../</relativePath>
 	</parent>
 	<properties>
-		<snippetsDirectory>${project.build.directory}/generated-snippets</snippetsDirectory>
 		<bootstrap.version>4.0.0-2</bootstrap.version>
 		<lombok.version>1.18.2</lombok.version>
 	</properties>
@@ -50,10 +49,6 @@
 			<artifactId>spring-boot-actuator</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.hateoas</groupId>
-			<artifactId>spring-hateoas</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-rest</artifactId>
 		</dependency>
@@ -71,21 +66,6 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-oxm</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient-cache</artifactId>
-			<version>4.5.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.restdocs</groupId>
-			<artifactId>spring-restdocs-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.restdocs</groupId>
-			<artifactId>spring-restdocs-mockmvc</artifactId>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.github.javafaker</groupId>
@@ -121,12 +101,6 @@
 			<version>1.14.2</version>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-test</artifactId>
-			<version>1.4.0.RELEASE</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
 		</dependency>
@@ -153,11 +127,6 @@
 			<groupId>org.webjars</groupId>
 			<artifactId>bootstrap</artifactId>
 			<version>${bootstrap.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>webjars-locator</artifactId>
-			<version>${webjars-locator.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -203,34 +172,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.asciidoctor</groupId>
-				<artifactId>asciidoctor-maven-plugin</artifactId>
-				<version>2.1.0</version>
-				<executions>
-					<execution>
-						<id>output-html</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>process-asciidoc</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<sourceDirectory>src/main/asciidoc</sourceDirectory>
-					<outputDirectory>${project.build.outputDirectory}/templates/asciidoc</outputDirectory>
-					<!--<outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/classes/templates/asciidoc/</outputDirectory>-->
-					<backend>html</backend>
-					<doctype>book</doctype>
-					<preserveDirectories>true</preserveDirectories>
-					<attributes>
-						<snippets>${snippetsDirectory}</snippets>
-						<source-highlighter>highlightjs</source-highlighter>
-						<toc-title>Contents</toc-title>
-						<toclevels>2</toclevels>
-					</attributes>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

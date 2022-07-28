@@ -11,11 +11,10 @@
 package uk.ac.ebi.biosamples.client.service;
 
 import java.net.URI;
-import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.HttpHeaders;
@@ -27,27 +26,23 @@ import org.springframework.web.client.RestOperations;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 
 public class StructuredDataSubmissionService {
-
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final Traverson traverson;
-  private final ExecutorService executor;
   private final RestOperations restOperations;
 
-  public StructuredDataSubmissionService(
-      RestOperations restOperations, Traverson traverson, ExecutorService executor) {
+  public StructuredDataSubmissionService(RestOperations restOperations, Traverson traverson) {
     this.restOperations = restOperations;
     this.traverson = traverson;
-    this.executor = executor;
   }
 
-  public Resource<StructuredData> submit(StructuredData structuredData, boolean isWebin)
+  public EntityModel<StructuredData> submit(StructuredData structuredData)
       throws RestClientException {
-    return persistStructuredData(structuredData, null, isWebin);
+    return persistStructuredData(structuredData, null);
   }
 
-  public Resource<StructuredData> persistStructuredData(
-      StructuredData structuredData, String jwt, boolean isWebin) throws RestClientException {
+  public EntityModel<StructuredData> persistStructuredData(
+      StructuredData structuredData, String jwt) throws RestClientException {
     String addWebinRequestParam = "";
 
     // TODO throw new expetion if data is null or empty, might be easier to reuse existing
@@ -72,9 +67,9 @@ public class StructuredDataSubmissionService {
     }
     RequestEntity<StructuredData> requestEntity = bodyBuilder.body(structuredData);
 
-    ResponseEntity<Resource<StructuredData>> responseEntity =
+    ResponseEntity<EntityModel<StructuredData>> responseEntity =
         restOperations.exchange(
-            requestEntity, new ParameterizedTypeReference<Resource<StructuredData>>() {});
+            requestEntity, new ParameterizedTypeReference<EntityModel<StructuredData>>() {});
 
     return responseEntity.getBody();
   }

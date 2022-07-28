@@ -47,10 +47,10 @@ docker-compose run --rm mongo mongo --eval 'db.setProfilingLevel(1)' mongo:27017
 docker-compose -f docker-compose.yml -f docker-compose.debug.override.yml -f docker-compose.override.yml up -d biosamples-webapps-core
 sleep 40
 echo "checking webapps-core is up"
-./http-status-check -u http://localhost:8081/biosamples/health -t 6000
+./http-status-check -u http://localhost:8081/biosamples/actuator/health -t 6000
 
 docker-compose up -d biosamples-webapps-core-v2
 sleep 40
 echo "checking webapps-core-v2 is up"
-./http-status-check -u http://localhost:8082/biosamples/health -t 6000
+./http-status-check -u http://localhost:8082/biosamples/actuator/health -t 6000
 

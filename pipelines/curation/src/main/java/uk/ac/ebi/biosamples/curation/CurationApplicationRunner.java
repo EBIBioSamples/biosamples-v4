@@ -18,11 +18,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelineFutureCallback;
 import uk.ac.ebi.biosamples.PipelineResult;
@@ -30,14 +29,15 @@ import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.curation.service.IriUrlValidatorService;
 import uk.ac.ebi.biosamples.model.PipelineAnalytics;
+import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
+import uk.ac.ebi.biosamples.mongo.repo.MongoPipelineRepository;
+import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
 import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
-import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-import uk.ac.ebi.biosamples.utils.ArgUtils;
-import uk.ac.ebi.biosamples.utils.MailSender;
-import uk.ac.ebi.biosamples.utils.ThreadUtils;
+import uk.ac.ebi.biosamples.utils.*;
 import uk.ac.ebi.biosamples.utils.mongo.AnalyticsService;
 
 @Component
@@ -49,29 +49,34 @@ public class CurationApplicationRunner implements ApplicationRunner {
   private final CurationApplicationService curationApplicationService;
   private final AnalyticsService analyticsService;
   private final PipelineFutureCallback pipelineFutureCallback;
-
-  @Autowired IriUrlValidatorService iriUrlValidatorService;
+  private final MongoPipelineRepository mongoPipelineRepository;
+  private final IriUrlValidatorService iriUrlValidatorService;
 
   public CurationApplicationRunner(
       @Qualifier("AAPCLIENT") BioSamplesClient bioSamplesClient,
       PipelinesProperties pipelinesProperties,
       OlsProcessor olsProcessor,
       CurationApplicationService curationApplicationService,
-      AnalyticsService analyticsService) {
+      AnalyticsService analyticsService,
+      MongoPipelineRepository mongoPipelineRepository,
+      IriUrlValidatorService iriUrlValidatorService) {
     this.bioSamplesClient = bioSamplesClient;
     this.pipelinesProperties = pipelinesProperties;
     this.olsProcessor = olsProcessor;
     this.curationApplicationService = curationApplicationService;
     this.analyticsService = analyticsService;
+    this.mongoPipelineRepository = mongoPipelineRepository;
+    this.iriUrlValidatorService = iriUrlValidatorService;
     this.pipelineFutureCallback = new PipelineFutureCallback();
   }
 
   @Override
   public void run(ApplicationArguments args) throws Exception {
     Instant startTime = Instant.now();
-    Collection<Filter> filters = ArgUtils.getDateFilters(args);
+    Collection<Filter> filters = PipelineUtils.getDateFilters(args);
     boolean isPassed = true;
     long sampleCount = 0;
+    String pipelineFailureCause = null;
 
     try (AdaptiveThreadPoolExecutor executorService =
         AdaptiveThreadPoolExecutor.create(
@@ -82,7 +87,8 @@ public class CurationApplicationRunner implements ApplicationRunner {
             pipelinesProperties.getThreadCountMax())) {
 
       Map<String, Future<PipelineResult>> futures = new HashMap<>();
-      for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters)) {
+      for (EntityModel<Sample> sampleResource :
+          bioSamplesClient.fetchSampleResourceAll("", filters)) {
         LOG.trace("Handling {}", sampleResource);
         Sample sample = sampleResource.getContent();
         if (sample == null) {
@@ -110,14 +116,13 @@ public class CurationApplicationRunner implements ApplicationRunner {
     } catch (final Exception e) {
       LOG.error("Pipeline failed to finish successfully", e);
       isPassed = false;
-      MailSender.sendEmail(
-          "Curation",
-          "Failed for network connectivity issues/ other issues - <ALERT BIOSAMPLES DEV> "
-              + e.getMessage(),
-          isPassed);
+      pipelineFailureCause = e.getMessage();
+
       throw e;
     } finally {
       Instant endTime = Instant.now();
+      String failures = null;
+
       LOG.info("Total samples processed {}", sampleCount);
       LOG.info("Total curation objects added {}", pipelineFutureCallback.getTotalCount());
       LOG.info("Pipeline finished at {}", endTime);
@@ -142,10 +147,35 @@ public class CurationApplicationRunner implements ApplicationRunner {
           fails.add(failedQueue.poll());
         }
 
-        final String failures = "Failed files (" + fails.size() + ") " + String.join(" , ", fails);
+        failures = "Failed files (" + fails.size() + ") " + String.join(" , ", fails);
         LOG.info(failures);
-        MailSender.sendEmail("Curation", failures, isPassed);
       }
+
+      final MongoPipeline mongoPipeline;
+
+      if (isPassed) {
+        mongoPipeline =
+            new MongoPipeline(
+                PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(
+                    PipelineName.CURATION),
+                new Date(),
+                PipelineName.CURATION.name(),
+                PipelineCompletionStatus.COMPLETED,
+                failures,
+                pipelineFailureCause);
+      } else {
+        mongoPipeline =
+            new MongoPipeline(
+                PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(
+                    PipelineName.CURATION),
+                new Date(),
+                PipelineName.CURATION.name(),
+                PipelineCompletionStatus.COMPLETED,
+                failures,
+                pipelineFailureCause);
+      }
+
+      mongoPipelineRepository.insert(mongoPipeline);
     }
   }
 }

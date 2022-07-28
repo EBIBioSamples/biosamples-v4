@@ -12,10 +12,10 @@ package uk.ac.ebi.biosamples.service.upload;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import com.mongodb.gridfs.GridFSFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,10 +75,10 @@ public class FileQueueService {
 
     metaData.put("upload_timestamp", new Date());
 
-    GridFSFile gridFSFile =
+    ObjectId gridFSFileId =
         gridFsTemplate.store(
             file.getInputStream(), file.getOriginalFilename(), file.getContentType(), metaData);
 
-    return gridFSFile.getId().toString();
+    return gridFSFileId.toString();
   }
 }

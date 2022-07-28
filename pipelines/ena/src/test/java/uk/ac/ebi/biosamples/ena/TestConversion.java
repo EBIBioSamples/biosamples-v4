@@ -22,27 +22,35 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
+import uk.ac.ebi.biosamples.service.TaxonomyService;
 
+@Ignore
 @RunWith(SpringRunner.class)
 @SpringBootTest(
-    classes = TestApplication.class,
+    classes = {
+      TestApplication.class,
+      EraProDao.class,
+      EgaSampleExporter.class,
+      EnaSampleTransformationService.class,
+      EnaXmlEnhancer.class,
+      EnaElementConverter.class,
+      TaxonomyService.class,
+      PipelinesProperties.class
+    },
     properties = {"job.autorun.enabled=false"})
 public class TestConversion {
-  @Qualifier("WEBINCLIENT")
+  @Qualifier("MOCKCLIENT")
   @Autowired
   public BioSamplesClient bioSamplesWebinClient;
 
-  @Autowired public BioSamplesClient bioSamplesAapClient;
-
   @Autowired private EraProDao eraProDao;
-
-  @Autowired private EnaElementConverter enaElementConverter;
 
   @Autowired private EgaSampleExporter egaSampleExporter;
 
-  @Autowired private EnaXmlEnhancer enaXmlEnhancer;
+  @Autowired private EnaSampleTransformationService enaSampleTransformationService;
 
   @Test
   @Ignore
@@ -54,14 +62,9 @@ public class TestConversion {
               new EnaCallable(
                   sampleAccession,
                   null,
-                  0,
                   bioSamplesWebinClient,
-                  enaXmlEnhancer,
-                  enaElementConverter,
                   egaSampleExporter,
-                  eraProDao,
-                  false,
-                  false,
+                  enaSampleTransformationService,
                   null);
           try {
             enaCallable.call();
@@ -83,14 +86,9 @@ public class TestConversion {
               new EnaCallable(
                   sampleAccession,
                   null,
-                  0,
                   bioSamplesWebinClient,
-                  enaXmlEnhancer,
-                  enaElementConverter,
                   egaSampleExporter,
-                  eraProDao,
-                  false,
-                  false,
+                  enaSampleTransformationService,
                   null);
           try {
             enaCallable.call();
@@ -111,14 +109,9 @@ public class TestConversion {
               new EnaCallable(
                   sampleAccession,
                   null,
-                  0,
                   bioSamplesWebinClient,
-                  enaXmlEnhancer,
-                  enaElementConverter,
                   egaSampleExporter,
-                  eraProDao,
-                  false,
-                  false,
+                  enaSampleTransformationService,
                   null);
           try {
             enaCallable.call();
@@ -139,14 +132,9 @@ public class TestConversion {
               new EnaCallable(
                   sampleAccession,
                   null,
-                  0,
                   bioSamplesWebinClient,
-                  enaXmlEnhancer,
-                  enaElementConverter,
                   egaSampleExporter,
-                  eraProDao,
-                  false,
-                  false,
+                  enaSampleTransformationService,
                   null);
           try {
             enaCallable.call();
@@ -167,14 +155,9 @@ public class TestConversion {
               new EnaCallable(
                   sampleAccession,
                   null,
-                  0,
                   bioSamplesWebinClient,
-                  enaXmlEnhancer,
-                  enaElementConverter,
                   egaSampleExporter,
-                  eraProDao,
-                  false,
-                  false,
+                  enaSampleTransformationService,
                   null);
           try {
             enaCallable.call();

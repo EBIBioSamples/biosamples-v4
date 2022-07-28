@@ -11,11 +11,9 @@
 package uk.ac.ebi.biosamples.client.service;
 
 import java.util.concurrent.ExecutorService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.util.LinkedMultiValueMap;
@@ -26,8 +24,6 @@ import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 
 public class CurationRetrievalService {
-
-  private Logger log = LoggerFactory.getLogger(getClass());
 
   private final Traverson traverson;
   private final ExecutorService executor;
@@ -42,38 +38,37 @@ public class CurationRetrievalService {
     this.pageSize = pageSize;
   }
 
-  public Iterable<Resource<Curation>> fetchAll() {
+  public Iterable<EntityModel<Curation>> fetchAll() {
     return fetchAll(null);
   }
 
-  public Iterable<Resource<Curation>> fetchAll(String jwt) {
+  public Iterable<EntityModel<Curation>> fetchAll(String jwt) {
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
     params.add("size", Integer.toString(pageSize));
-    return new IterableResourceFetchAll<Curation>(
+    return new IterableResourceFetchAll<>(
         executor,
         traverson,
         restOperations,
-        new ParameterizedTypeReference<PagedResources<Resource<Curation>>>() {},
+        new ParameterizedTypeReference<PagedModel<EntityModel<Curation>>>() {},
         jwt,
-        false,
         params,
         "curations");
   }
 
-  public Iterable<Resource<CurationLink>> fetchCurationLinksOfSample(String accession) {
+  public Iterable<EntityModel<CurationLink>> fetchCurationLinksOfSample(String accession) {
     return fetchCurationLinksOfSample(accession, null);
   }
 
-  public Iterable<Resource<CurationLink>> fetchCurationLinksOfSample(String accession, String jwt) {
+  public Iterable<EntityModel<CurationLink>> fetchCurationLinksOfSample(
+      String accession, String jwt) {
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
     params.add("size", Integer.toString(pageSize));
-    return new IterableResourceFetchAll<CurationLink>(
+    return new IterableResourceFetchAll<>(
         executor,
         traverson,
         restOperations,
-        new ParameterizedTypeReference<PagedResources<Resource<CurationLink>>>() {},
+        new ParameterizedTypeReference<PagedModel<EntityModel<CurationLink>>>() {},
         jwt,
-        false,
         params,
         Hop.rel("samples"),
         Hop.rel("sample").withParameter("accession", accession),

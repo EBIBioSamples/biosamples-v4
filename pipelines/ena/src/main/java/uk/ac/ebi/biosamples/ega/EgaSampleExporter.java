@@ -11,16 +11,12 @@
 package uk.ac.ebi.biosamples.ega;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -77,7 +73,7 @@ public class EgaSampleExporter {
     }
 
     EgaSample egaSample = new EgaSample();
-    if (response.getBody().getResponse().getNumTotalResults() == 1) {
+    if (Objects.requireNonNull(response.getBody()).getResponse().getNumTotalResults() == 1) {
       Result result = response.getBody().getResponse().getResult().get(0);
       egaSample.setEgaId(result.getEgaStableId());
       egaSample.setBiosampleId(result.getBioSampleId());
@@ -92,10 +88,10 @@ public class EgaSampleExporter {
   }
 
   public Sample getBioSample(String biosampleId) {
-    Optional<Resource<Sample>> sample =
+    Optional<EntityModel<Sample>> sample =
         bioSamplesClient.fetchSampleResource(biosampleId, Optional.of(Collections.emptyList()));
     return sample
-        .map(Resource::getContent)
+        .map(EntityModel::getContent)
         .orElseThrow(() -> new RuntimeException("Could not retrieve BioSamples"));
   }
 
@@ -113,7 +109,7 @@ public class EgaSampleExporter {
     }
 
     List<String> datasetIds;
-    if (response.getBody().getResponse().getNumTotalResults() >= 1) {
+    if (Objects.requireNonNull(response.getBody()).getResponse().getNumTotalResults() >= 1) {
       datasetIds =
           response.getBody().getResponse().getResult().stream()
               .map(Result::getEgaStableId)
@@ -139,7 +135,7 @@ public class EgaSampleExporter {
     }
 
     List<DataUseCondition> duoCodes;
-    if (response.getBody().getDataUseConditions() != null
+    if (Objects.requireNonNull(response.getBody()).getDataUseConditions() != null
         && !response.getBody().getDataUseConditions().isEmpty()) {
       duoCodes = response.getBody().getDataUseConditions();
     } else {

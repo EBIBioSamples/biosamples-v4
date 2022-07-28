@@ -27,13 +27,10 @@ maven-package:
     - cp pipelines/curation/target/pipelines-curation-*.jar deployment/pipelines-curation.jar
     - cp pipelines/ena/target/pipelines-ena-*.jar deployment/pipelines-ena.jar
     - cp pipelines/sample-release/target/pipelines-sample-release-*.jar deployment/pipelines-sample-release.jar
-    - cp pipelines/ena-amr/target/pipelines-ena-amr-*.jar deployment/pipelines-ena-amr.jar
     - cp pipelines/export/target/pipelines-export-*.jar deployment/pipelines-export.jar
     - cp pipelines/ncbi/target/pipelines-ncbi-*.jar deployment/pipelines-ncbi.jar
-    - cp pipelines/neoexport/target/pipelines-neoexport-*.jar deployment/pipelines-neoexport.jar
     - cp pipelines/reindex/target/pipelines-reindex-*.jar deployment/pipelines-reindex.jar
     - cp pipelines/zooma/target/pipelines-zooma-*.jar deployment/pipelines-zooma.jar
-    - cp pipelines/sample-transformation-dtol/target/pipelines-sample-transformation-dtol-*.jar deployment/pipelines-sample-transformation-dtol.jar
   artifacts:
     paths:
       - deployment
@@ -81,6 +78,7 @@ deploy-preproduction:
     - ./deploy.sh bsd_dev wp-np2-40
   when: manual
   only:
+    - upgrade-to-spring-boot-2
     - gitlab_ci_improvements
     - dev
     - master

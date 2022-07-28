@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.MethodParameter;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -28,19 +28,19 @@ import uk.ac.ebi.biosamples.controller.SampleRestController;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @RestControllerAdvice(assignableTypes = SampleRestController.class)
-public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource<Sample>> {
+public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<EntityModel<Sample>> {
 
   private Logger log = LoggerFactory.getLogger(getClass());
 
   @Override
   public boolean supports(
       MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-    return returnType.getMethod().getReturnType() == Resource.class;
+    return returnType.getMethod().getReturnType() == EntityModel.class;
   }
 
   @Override
-  public Resource<Sample> beforeBodyWrite(
-      Resource<Sample> body,
+  public EntityModel<Sample> beforeBodyWrite(
+      EntityModel<Sample> body,
       MethodParameter returnType,
       MediaType selectedContentType,
       Class<? extends HttpMessageConverter<?>> selectedConverterType,

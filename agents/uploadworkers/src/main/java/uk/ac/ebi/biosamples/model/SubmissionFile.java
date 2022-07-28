@@ -22,10 +22,6 @@ public class SubmissionFile {
     this.stream = stream;
   }
 
-  public String getFileName() {
-    return fileName;
-  }
-
   public InputStream getStream() {
     return stream;
   }

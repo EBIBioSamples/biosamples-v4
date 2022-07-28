@@ -8,7 +8,7 @@ docker-compose up -d biosamples-agents-solr
 docker-compose up -d biosamples-agents-upload-workers
 
 #ARGS=--spring.profiles.active=big
-for X in 1 2 3 4 5
+for X in 1 2 3 4 5 6
 do
   echo "============================================================================================================"
   echo "=================================== STARTING INTEGRATION TESTS PHASE-"$X "====================================="

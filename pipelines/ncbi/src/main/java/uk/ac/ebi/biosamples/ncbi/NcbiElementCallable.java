@@ -19,11 +19,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 
 public class NcbiElementCallable implements Callable<Void> {
+  private static final int MAX_RETRIES = 5;
+
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final Element sampleElem;
   private final String domain;
@@ -45,31 +48,57 @@ public class NcbiElementCallable implements Callable<Void> {
   }
 
   @Override
-  public Void call() throws Exception {
-    Set<StructuredDataTable> amrData = new HashSet<>();
-    String accession = sampleElem.attributeValue("accession");
+  public Void call() {
+    final String accession = sampleElem.attributeValue("accession");
 
-    log.trace("Element callable starting for " + accession);
+    try {
+      boolean success = false;
+      int numRetry = 0;
 
-    if (sampleToAmrMap != null && sampleToAmrMap.containsKey(accession)) {
-      amrData = sampleToAmrMap.get(accession);
+      Set<StructuredDataTable> amrData = new HashSet<>();
+
+      log.trace("Element callable starting for " + accession);
+
+      if (sampleToAmrMap != null && sampleToAmrMap.containsKey(accession)) {
+        amrData = sampleToAmrMap.get(accession);
+      }
+
+      // Generate the sample without the domain
+      final Sample sampleWithoutDomain =
+          ncbiSampleConversionService.convertNcbiXmlElementToSample(sampleElem);
+      final Sample sample =
+          Sample.Builder.fromSample(sampleWithoutDomain)
+              .withDomain(domain)
+              .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
+              .build();
+
+      while (!success) {
+        try {
+          bioSamplesClient.persistSampleResource(sample);
+
+          success = true;
+        } catch (final Exception e) {
+          if (++numRetry == MAX_RETRIES) {
+            throw new RuntimeException("Failed to handle the sample with accession " + accession);
+          }
+
+          success = false;
+        }
+      }
+
+      final Set<StructuredDataTable> structuredDataTableSet =
+          ncbiSampleConversionService.convertNcbiXmlElementToStructuredData(sampleElem, amrData);
+
+      if (!structuredDataTableSet.isEmpty()) {
+        StructuredData structuredData =
+            StructuredData.build(accession, sample.getCreate(), structuredDataTableSet);
+        bioSamplesClient.persistStructuredData(structuredData);
+      }
+
+      log.trace("Element callable finished");
+    } catch (final Exception e) {
+      log.info("Failed to import NCBI sample having accession " + accession);
     }
-
-    // Generate the sample without the domain
-    Sample sampleWithoutDomain =
-        ncbiSampleConversionService.convertNcbiXmlElementToSample(sampleElem);
-    Sample sample = Sample.Builder.fromSample(sampleWithoutDomain).withDomain(domain).build();
-    bioSamplesClient.persistSampleResource(sample);
-
-    Set<StructuredDataTable> structuredDataTableSet =
-        ncbiSampleConversionService.convertNcbiXmlElementToStructuredData(sampleElem, amrData);
-    if (!structuredDataTableSet.isEmpty()) {
-      StructuredData structuredData =
-          StructuredData.build(accession, sample.getCreate(), structuredDataTableSet);
-      bioSamplesClient.persistStructuredData(structuredData);
-    }
-
-    log.trace("Element callable finished");
 
     return null;
   }

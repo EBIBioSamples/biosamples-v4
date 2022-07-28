@@ -10,12 +10,11 @@
 */
 package uk.ac.ebi.biosamples.service;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.MethodParameter;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -30,19 +29,17 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 @RestControllerAdvice(assignableTypes = SamplesRestController.class)
 public class SamplesRestResponseBodyAdvice
-    implements ResponseBodyAdvice<PagedResources<Resource<Sample>>> {
-
-  private Logger log = LoggerFactory.getLogger(getClass());
+    implements ResponseBodyAdvice<PagedModel<EntityModel<Sample>>> {
 
   @Override
   public boolean supports(
       MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-    return returnType.getMethod().getReturnType() == PagedResources.class;
+    return Objects.requireNonNull(returnType.getMethod()).getReturnType() == PagedModel.class;
   }
 
   @Override
-  public PagedResources<Resource<Sample>> beforeBodyWrite(
-      PagedResources<Resource<Sample>> body,
+  public PagedModel<EntityModel<Sample>> beforeBodyWrite(
+      PagedModel<EntityModel<Sample>> body,
       MethodParameter returnType,
       MediaType selectedContentType,
       Class<? extends HttpMessageConverter<?>> selectedConverterType,
@@ -51,7 +48,7 @@ public class SamplesRestResponseBodyAdvice
 
     // TODO application.properties the cache time
 
-    if (request.getMethod().equals(HttpMethod.GET)) {
+    if (Objects.equals(request.getMethod(), HttpMethod.GET)) {
       // if there is an authorization header, then keep it private
       if (request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
         response

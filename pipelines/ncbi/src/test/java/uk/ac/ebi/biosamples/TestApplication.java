@@ -11,8 +11,6 @@
 package uk.ac.ebi.biosamples;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,23 +20,25 @@ import uk.ac.ebi.biosamples.ncbi.MockBioSamplesClient;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
 @Configuration
-@EnableAutoConfiguration
-public class TestApplication extends Application {
-
-  @Autowired
+public class TestApplication {
   @Bean
   public BioSamplesClient bioSamplesClient(
       BioSamplesProperties bioSamplesProperties,
       RestTemplateBuilder restTemplateBuilder,
       SampleValidator sampleValidator,
-      AapClientService aapClientService,
       ObjectMapper objectMapper) {
     return new MockBioSamplesClient(
         bioSamplesProperties.getBiosamplesClientUri(),
+        bioSamplesProperties.getBiosamplesClientUriV2(),
         restTemplateBuilder,
         sampleValidator,
-        aapClientService,
+        aapClientService(),
         bioSamplesProperties,
         objectMapper);
+  }
+
+  @Bean
+  AapClientService aapClientService() {
+    return null;
   }
 }

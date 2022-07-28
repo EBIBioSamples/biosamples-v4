@@ -52,7 +52,7 @@ public class ApplicatorTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void given_null_planResult_throw_exception() throws IOException {
+  public void given_null_planResult_throw_exception() {
     applicator.apply(null);
   }
 }

@@ -26,15 +26,13 @@ import java.util.regex.Pattern;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.Sample.Builder;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
-import uk.ac.ebi.biosamples.ncbi.NcbiEraProDao;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiAmrConversionService.AmrParsingException;
-import uk.ac.ebi.biosamples.utils.TaxonomyService;
+import uk.ac.ebi.biosamples.service.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
@@ -98,8 +96,6 @@ public class NcbiSampleConversionService {
   private final TaxonomyService taxonomyService;
   private final NcbiAmrConversionService amrConversionService;
 
-  @Autowired NcbiEraProDao ncbiEraProDao;
-
   public NcbiSampleConversionService(TaxonomyService taxonomyService) {
     this.taxonomyService = taxonomyService;
     this.amrConversionService = new NcbiAmrConversionService();
@@ -121,8 +117,6 @@ public class NcbiSampleConversionService {
     String organismIri = null;
     String organismValue = null;
     String geoTag = null;
-    boolean hasOrganismInDescription = false;
-    boolean hasSraAccession = false;
 
     for (Element idElem : XmlPathBuilder.of(sampleElem).path(IDS).elements(ID)) {
       final String attributeValueIdElementDb = idElem.attributeValue(DB);
@@ -133,7 +127,6 @@ public class NcbiSampleConversionService {
         // NCBI/DDBJ samples, in sync with ENA samples
         attrs.add(Attribute.build(SRA_ACCESSION, idElem.getTextTrim()));
         attrs.add(Attribute.build(INSDC_SECONDARY_ACCESSION, idElem.getTextTrim()));
-        hasSraAccession = true;
       } else if (GENBANK.equalsIgnoreCase(attributeValueIdElementDb)) {
         attrs.add(Attribute.build(COMMON_NAME, idElem.getTextTrim()));
       } else if (SAMPLE_NAME.equals(idElem.attributeValue(DB_LABEL))) {
@@ -154,18 +147,6 @@ public class NcbiSampleConversionService {
                 NAMESPACE_TAG + attributeValueIdElementDb,
                 Collections.emptyList(),
                 null));
-      }
-    }
-
-    if (!hasSraAccession) {
-      log.trace("SRA accession not present in sample - fetching from ERAPRO for " + accession);
-      final String sraAccession = ncbiEraProDao.getSraAccession(accession);
-
-      if (sraAccession != null && !sraAccession.isEmpty()) {
-        log.trace("SRA accession fetched from ERAPRO for " + accession);
-
-        attrs.add(Attribute.build(SRA_ACCESSION, sraAccession));
-        attrs.add(Attribute.build(INSDC_SECONDARY_ACCESSION, sraAccession));
       }
     }
 
@@ -238,7 +219,6 @@ public class NcbiSampleConversionService {
         organismAttribute =
             Attribute.build(NCBI_JSON_CORE_ORGANISM, organismValue, organismIri, null);
         attrs.add(organismAttribute);
-        hasOrganismInDescription = true;
       }
     }
 
@@ -279,17 +259,8 @@ public class NcbiSampleConversionService {
         }
       } else {
         // its an attribute
-        if (key.equalsIgnoreCase(ORGANISM) && !hasOrganismInDescription) {
-          organismValue = value;
-        }
 
-        attrs.add(
-            Attribute.build(
-                key,
-                value != null ? value : null,
-                SAMPLE_ATTRIBUTE,
-                Collections.emptyList(),
-                null));
+        attrs.add(Attribute.build(key, value, SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
       }
     }
 
@@ -380,7 +351,6 @@ public class NcbiSampleConversionService {
     String accession = sampleElem.attributeValue(ACCESSION);
     Set<StructuredDataTable> structuredData = new HashSet<>();
     Set<StructuredDataTable> structuredDataTableSet = new HashSet<>();
-    String organismValue = null;
 
     // handle AMR data
     if (XmlPathBuilder.of(sampleElem).path(DESCRIPTION, COMMENT).exists()) {
@@ -390,7 +360,7 @@ public class NcbiSampleConversionService {
         if (antibiogramClass != null && ANTIBIOGRAM_PATTERN.matcher(antibiogramClass).matches()) {
           try {
             Set<Map<String, StructuredDataEntry>> structuredTable =
-                amrConversionService.convertStructuredTable(element, organismValue);
+                amrConversionService.convertStructuredTable(element, null);
             StructuredDataTable structuredDataTable =
                 StructuredDataTable.build(
                     "self.BiosampleImportNCBI", null, "AMR", null, structuredTable);

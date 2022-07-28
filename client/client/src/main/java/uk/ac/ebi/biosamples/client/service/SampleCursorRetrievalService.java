@@ -10,16 +10,13 @@
 */
 package uk.ac.ebi.biosamples.client.service;
 
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -31,44 +28,33 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 
 public class SampleCursorRetrievalService {
 
-  private Logger log = LoggerFactory.getLogger(getClass());
-
-  public static final DateTimeFormatter solrFormatter =
-      DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
-
-  private static final ParameterizedTypeReference<PagedResources<Resource<Sample>>>
+  private static final ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>
       parameterizedTypeReferencePagedResourcesSample =
-          new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {};
+          new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {};
 
   private final Traverson traverson;
   private final ExecutorService executor;
   private final RestOperations restOperations;
   private final int pageSize;
-  private final boolean isWebinSubmission;
 
   public SampleCursorRetrievalService(
-      RestOperations restOperations,
-      Traverson traverson,
-      ExecutorService executor,
-      int pageSize,
-      boolean isWebinSubmission) {
+      RestOperations restOperations, Traverson traverson, ExecutorService executor, int pageSize) {
     this.restOperations = restOperations;
     this.traverson = traverson;
     this.executor = executor;
     this.pageSize = pageSize;
-    this.isWebinSubmission = isWebinSubmission;
   }
 
-  public Iterable<Resource<Sample>> fetchAll(String text, Collection<Filter> filterCollection) {
+  public Iterable<EntityModel<Sample>> fetchAll(String text, Collection<Filter> filterCollection) {
     return fetchAll(text, filterCollection, null);
   }
 
-  public Iterable<Resource<Sample>> fetchAll(
+  public Iterable<EntityModel<Sample>> fetchAll(
       String text, Collection<Filter> filterCollection, String jwt) {
     return fetchAll(text, filterCollection, jwt, null);
   }
 
-  public Iterable<Resource<Sample>> fetchAll(
+  public Iterable<EntityModel<Sample>> fetchAll(
       String text,
       Collection<Filter> filterCollection,
       String jwt,
@@ -77,7 +63,7 @@ public class SampleCursorRetrievalService {
     return fetchAll(text, filterCollection, jwt, staticView, true);
   }
 
-  public Iterable<Resource<Sample>> fetchAll(
+  public Iterable<EntityModel<Sample>> fetchAll(
       String text,
       Collection<Filter> filterCollection,
       String jwt,
@@ -99,13 +85,12 @@ public class SampleCursorRetrievalService {
 
     params = encodePlusInQueryParameters(params);
 
-    return new IterableResourceFetchAll<Sample>(
+    return new IterableResourceFetchAll<>(
         executor,
         traverson,
         restOperations,
         parameterizedTypeReferencePagedResourcesSample,
         jwt,
-        isWebinSubmission,
         params,
         "samples",
         "cursor");

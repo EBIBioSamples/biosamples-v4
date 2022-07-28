@@ -25,7 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ena.amr.service.  EnaAmrDataProcessService;
@@ -89,7 +89,6 @@ public class AmrRunner implements ApplicationRunner {
               + " failed files: accessions are "
               + failedFiles.toString());
 
-      MailSender.sendEmail("ENA-AMR", failedFiles.toString(), isPipelineOk);
     }
   }
 
@@ -224,7 +223,7 @@ public class AmrRunner implements ApplicationRunner {
       curationDomainBlankList.add("");
 
       try {
-        final Optional<Resource<Sample>> sample =
+        final Optional<EntityModel<Sample>> sample =
             bioSamplesClient.fetchSampleResource(accession, Optional.of(curationDomainBlankList));
 
         if (sample.isPresent()) {

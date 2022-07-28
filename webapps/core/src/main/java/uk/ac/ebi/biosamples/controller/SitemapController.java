@@ -39,7 +39,6 @@ import uk.ac.ebi.biosamples.service.SampleService;
 @Controller
 @RequestMapping("/sitemap")
 public class SitemapController {
-
   private Logger log = LoggerFactory.getLogger(this.getClass());
 
   @Value("${model.page.size:10000}")
@@ -92,7 +91,7 @@ public class SitemapController {
   public XmlUrlSet createSampleSitemapPage(
       @PathVariable("id") int pageNumber, HttpServletRequest request) throws ParseException {
     final long startTime = System.currentTimeMillis();
-    Pageable pageRequest = new PageRequest(pageNumber - 1, sitemapPageSize);
+    Pageable pageRequest = PageRequest.of(pageNumber - 1, sitemapPageSize);
     Page<Sample> samplePage =
         samplePageService.getSamplesByText(
             "",
@@ -142,7 +141,7 @@ public class SitemapController {
    * @return the number of samples
    */
   private long getTotalSamples() {
-    Pageable pageable = new PageRequest(0, 1);
+    Pageable pageable = PageRequest.of(0, 1);
     Collection<Filter> filters = Collections.emptyList();
     Collection<String> domains = Collections.emptyList();
     Page<Sample> samplePage =

@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ebeye.gen.*;
@@ -155,7 +155,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
 
     boolean pagesRemaining = true;
     int pageProcessed = 0;
-    Iterable<Resource<Sample>> filteredCovidSamples = null;
+    Iterable<EntityModel<Sample>> filteredCovidSamples = null;
 
     while (pagesRemaining) {
       int retryCount = 0;
@@ -167,7 +167,6 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
                   filterText, filterCollection, pageProcessed++, 1000);
 
           if (filteredCovidSamples != null) {
-
             break;
           }
         } catch (final Exception e) {
@@ -479,7 +478,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   }
 
   private List<Sample> getSamplesListCovid(
-      final Iterable<Resource<Sample>> filteredCovidSamples, final String fileNameSpec) {
+      final Iterable<EntityModel<Sample>> filteredCovidSamples, final String fileNameSpec) {
     final List<Sample> sampleList = new ArrayList<>();
 
     filteredCovidSamples.forEach(

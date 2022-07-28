@@ -145,6 +145,7 @@ public class Sample implements Comparable<Sample> {
   }
 
   @JsonProperty(value = "releaseDate", access = JsonProperty.Access.READ_ONLY)
+  @JsonIgnore
   public String getReleaseDate() {
     return release != null
         ? ZonedDateTime.ofInstant(release, ZoneOffset.UTC).format(ISO_LOCAL_DATE)
@@ -152,6 +153,7 @@ public class Sample implements Comparable<Sample> {
   }
 
   @JsonProperty(value = "updateDate", access = JsonProperty.Access.READ_ONLY)
+  @JsonIgnore
   public String getUpdateDate() {
     return update != null
         ? ZonedDateTime.ofInstant(update, ZoneOffset.UTC).format(ISO_LOCAL_DATE)
@@ -159,6 +161,7 @@ public class Sample implements Comparable<Sample> {
   }
 
   @JsonProperty(value = "submittedDate", access = JsonProperty.Access.READ_ONLY)
+  @JsonIgnore
   public String getSubmittedDate() {
     return submitted != null
         ? ZonedDateTime.ofInstant(submitted, ZoneOffset.UTC).format(ISO_LOCAL_DATE)

@@ -16,7 +16,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -26,7 +26,7 @@ import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 
-public class SampleReleaseCallable implements Callable<String> {
+public class SampleReleaseCallable implements Callable<Void> {
   private static final Logger log = LoggerFactory.getLogger(SampleReleaseCallable.class);
   private final PipelinesProperties pipelinesProperties;
   private final BioSamplesClient bioSamplesWebinClient;
@@ -50,57 +50,90 @@ public class SampleReleaseCallable implements Callable<String> {
     this.accession = accession;
 
     curationDomainBlankList = new ArrayList<>();
+    curationDomainBlankList.add("");
   }
 
   @Override
-  public String call() {
+  public Void call() {
     boolean isAap = false;
+    boolean isHandled = false;
 
     try {
       log.info("Handling sample with accession " + accession);
 
-      Optional<Resource<Sample>> optionalSampleResource =
-          bioSamplesWebinClient.fetchSampleResource(accession);
+      Optional<EntityModel<Sample>> optionalSampleResource =
+          bioSamplesWebinClient.fetchSampleResource(
+              accession, Optional.of(curationDomainBlankList));
 
       if (!optionalSampleResource.isPresent()) {
-        optionalSampleResource =
-            bioSamplesAapClient.fetchSampleResource(
-                accession, Optional.of(curationDomainBlankList));
+        optionalSampleResource = bioSamplesAapClient.fetchSampleResource(accession);
         isAap = true;
       }
 
       if (optionalSampleResource.isPresent()) {
-        Sample sample = optionalSampleResource.get().getContent();
+        final Sample sample = optionalSampleResource.get().getContent();
+
         log.info("Sample with accession " + sample.getAccession() + " exists in BioSamples");
 
         if (sample.getRelease().isAfter(Instant.now())) {
+          // private sample, make it public
           if (isAap) {
+            // re-fetch the sample without curations, passing curation domain list as blank to the
+            // client API fails with an exception if the sample is not present
+            // hence this workaround of fetching twice
+            // TODO: fix the curation domain blank list based find in client
+            final Optional<EntityModel<Sample>> optionalSampleResourceWithoutCurations =
+                bioSamplesAapClient.fetchSampleResource(
+                    accession, Optional.of(curationDomainBlankList));
+
+            final Sample sampleWithoutCurations =
+                optionalSampleResourceWithoutCurations.get().getContent();
+
             bioSamplesAapClient
                 .persistSampleResource(
-                    Sample.Builder.fromSample(sample).withRelease(Instant.now()).build())
+                    Sample.Builder.fromSample(sampleWithoutCurations)
+                        .withRelease(Instant.now())
+                        .build())
                 .getContent();
           } else {
+            // re-fetch the sample without curations, passing curation domain list as blank to the
+            // client API fails with an exception if the sample is not present
+            // hence this workaround of fetching twice
+            // TODO: fix the curation domain blank list based find in client
+            final Optional<EntityModel<Sample>> optionalSampleResourceWithoutCurations =
+                bioSamplesWebinClient.fetchSampleResource(
+                    accession, Optional.of(curationDomainBlankList));
+
+            final Sample sampleWithoutCurations =
+                optionalSampleResourceWithoutCurations.get().getContent();
+
             bioSamplesWebinClient
                 .persistSampleResource(
-                    Sample.Builder.fromSample(sample).withRelease(Instant.now()).build())
+                    Sample.Builder.fromSample(sampleWithoutCurations)
+                        .withRelease(Instant.now())
+                        .build())
                 .getContent();
           }
         }
+
+        isHandled = true;
       } else {
         log.info("Failed to find " + accession + " in BioSamples");
         failedQueue.add("Failed to find " + accession + " in BioSamples");
       }
 
-      final ResponseEntity response = deleteSampleReleaseMessageInEna(accession);
+      if (isHandled) {
+        final ResponseEntity response = deleteSampleReleaseMessageInEna(accession);
 
-      final HttpStatus deleteApiStatusCode = response.getStatusCode();
-      log.info("Delete response is " + deleteApiStatusCode + " for " + accession);
+        final HttpStatus deleteApiStatusCode = response.getStatusCode();
+        log.info("Delete response is " + deleteApiStatusCode + " for " + accession);
 
-      if (!deleteApiStatusCode.is2xxSuccessful()) {
-        failedQueue.add("Failed to delete " + accession);
+        if (!deleteApiStatusCode.is2xxSuccessful()) {
+          failedQueue.add("Failed to delete " + accession);
+        }
       }
 
-      return accession;
+      return null;
     } catch (final Exception e) {
       failedQueue.add("Exception in processing " + accession);
 

@@ -22,9 +22,6 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
 public class SampleValidator {
-  private static final String VALIDATION_MESSAGE =
-      "Only Sample name, sample accession and sample structured data can be provided through this API";
-  private static final String NO_STRUCTURED_DATA_IS_PROVIDED = "No structured data is provided";
   private final AttributeValidator attributeValidator;
   private final RelationshipValidator relationshipValidator;
 
@@ -34,7 +31,7 @@ public class SampleValidator {
   }
 
   public Collection<String> validate(Sample sample) {
-    Collection<String> errors = new ArrayList<String>();
+    Collection<String> errors = new ArrayList<>();
     validate(sample, errors);
     return errors;
   }

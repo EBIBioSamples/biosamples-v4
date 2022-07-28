@@ -88,15 +88,8 @@ public class MongoCurationRule implements Comparable<MongoCurationRule> {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("MongoCurationRule(");
-    sb.append(attributePre);
-    sb.append(",");
-    sb.append(attributePost);
-    sb.append(",");
-    sb.append(created);
-    sb.append(")");
-    return sb.toString();
+    String sb = "MongoCurationRule(" + attributePre + "," + attributePost + "," + created + ")";
+    return sb;
   }
 
   @JsonCreator

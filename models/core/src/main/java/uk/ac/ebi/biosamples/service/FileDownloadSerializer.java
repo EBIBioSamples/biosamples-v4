@@ -13,6 +13,7 @@ package uk.ac.ebi.biosamples.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.IOException;
+import java.util.Objects;
 import uk.ac.ebi.biosamples.model.Sample;
 
 public interface FileDownloadSerializer {
@@ -63,7 +64,7 @@ public interface FileDownloadSerializer {
         new SampleToXmlConverter(new ExternalReferenceService());
 
     public String asString(Sample sample) {
-      return converter.convert(sample).getRootElement().asXML();
+      return Objects.requireNonNull(converter.convert(sample)).getRootElement().asXML();
     }
 
     public String startOfFile() {

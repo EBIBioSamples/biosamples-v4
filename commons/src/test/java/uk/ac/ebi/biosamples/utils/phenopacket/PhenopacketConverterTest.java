@@ -34,7 +34,8 @@ public class PhenopacketConverterTest {
 
     JsonNode phenopacketExpected =
         jsonMapper.readValue(
-            new ClassPathResource("phenopacket/phenopacket_1.json").getInputStream(), JsonNode.class);
+            new ClassPathResource("phenopacket/phenopacket_1.json").getInputStream(),
+            JsonNode.class);
     Assert.assertEquals(
         phenopacketExpected.get("biosamples").get(0).get("id").textValue(),
         phenopacket.getBiosamples(0).getId());
@@ -77,6 +78,12 @@ public class PhenopacketConverterTest {
         .addAttribute(
             Attribute.build(
                 "lung disease", "yes", "http://purl.obolibrary.org/obo/UBERON_0002107", ""))
+        .addAttribute(
+            Attribute.build(
+                "disease state",
+                "Duchenne muscular dystrophy",
+                "http://www.orpha.net/ORDO/Orphanet_98896",
+                null))
         .build();
   }
 

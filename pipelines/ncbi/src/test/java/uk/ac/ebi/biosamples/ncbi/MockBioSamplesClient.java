@@ -21,7 +21,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
@@ -42,12 +42,13 @@ public class MockBioSamplesClient extends BioSamplesClient {
 
   public MockBioSamplesClient(
       URI uri,
+      URI uriV2,
       RestTemplateBuilder restTemplateBuilder,
       SampleValidator sampleValidator,
       AapClientService aapClientService,
       BioSamplesProperties bioSamplesProperties,
       ObjectMapper objectMapper) {
-    super(uri, restTemplateBuilder, sampleValidator, aapClientService, bioSamplesProperties);
+    super(uri, uriV2, restTemplateBuilder, sampleValidator, aapClientService, bioSamplesProperties);
     this.objectMapper = objectMapper;
     try {
       fileWriter = new FileWriter("ncbi-import.json");
@@ -73,9 +74,9 @@ public class MockBioSamplesClient extends BioSamplesClient {
   }
 
   @Override
-  public Resource<Sample> persistSampleResource(Sample sample) {
+  public EntityModel<Sample> persistSampleResource(Sample sample) {
     logSample(sample);
-    return Mockito.mock(Resource.class);
+    return Mockito.mock(EntityModel.class);
   }
 
   public void finalize() {

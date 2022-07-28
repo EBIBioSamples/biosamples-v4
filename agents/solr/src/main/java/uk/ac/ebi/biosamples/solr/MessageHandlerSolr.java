@@ -14,9 +14,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -55,10 +53,14 @@ public class MessageHandlerSolr {
   }
 
   private void handleSample(Sample sample, String modifiedTime) {
+    final String accession = sample.getAccession();
+
     if (isIndexingCandidate(sample)) {
       SolrSample solrSample = sampleToSolrSampleConverter.convert(sample);
       // add the modified time to the solrSample
       String indexedTime = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
+
+      assert solrSample != null;
 
       solrSample =
           SolrSample.build(
@@ -79,19 +81,19 @@ public class MessageHandlerSolr {
               solrSample.getKeywords());
 
       // expand ontology terms from OLS
-      for (List<String> iris : solrSample.getAttributeIris().values()) {
+      /*for (List<String> iris : solrSample.getAttributeIris().values()) {
         for (String iri : iris) {
           solrSample.getKeywords().addAll(olsProcessor.ancestorsAndSynonyms("efo", iri));
           solrSample.getKeywords().addAll(olsProcessor.ancestorsAndSynonyms("NCBITaxon", iri));
         }
-      }
+      }*/
 
       repository.saveWithoutCommit(solrSample);
-      LOGGER.info(String.format("added %s to index", sample.getAccession()));
+      LOGGER.info(String.format("added %s to index", accession));
     } else {
-      if (repository.exists(sample.getAccession())) {
-        repository.delete(sample.getAccession());
-        LOGGER.info(String.format("removed %s from index", sample.getAccession()));
+      if (repository.existsById(accession)) {
+        repository.deleteById(accession);
+        LOGGER.info(String.format("removed %s from index", accession));
       }
     }
   }
@@ -117,9 +119,5 @@ public class MessageHandlerSolr {
       }
     }
     return true;
-  }
-
-  static List<String> toLowerCase(Collection<String> collection) {
-    return collection.stream().map(String::toLowerCase).collect(Collectors.toList());
   }
 }

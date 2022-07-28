@@ -12,18 +12,11 @@ package uk.ac.ebi.biosamples.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.ExposesResourceFor;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.ExposesResourceFor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
@@ -59,20 +52,20 @@ public class StructuredDataRestController {
 
   @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   @GetMapping()
-  public Resource<StructuredData> get(@PathVariable String accession) {
+  public EntityModel<StructuredData> get(@PathVariable String accession) {
     if (accession == null || accession.isEmpty()) {
       throw new GlobalExceptions.SampleAccessionMismatchException();
     }
 
-    return new Resource<>(
+    return new EntityModel<>(
         structuredDataService
             .getStructuredData(accession)
-            .orElseThrow(() -> new GlobalExceptions.SampleNotFoundException()));
+            .orElseThrow(GlobalExceptions.SampleNotFoundException::new));
   }
 
   @PreAuthorize("isAuthenticated()")
   @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public Resource<StructuredData> put(
+  public EntityModel<StructuredData> put(
       @PathVariable String accession,
       @RequestBody StructuredData structuredData,
       @RequestHeader("Authorization") final String token) {
@@ -100,6 +93,6 @@ public class StructuredDataRestController {
 
     StructuredData storedData = structuredDataService.saveStructuredData(structuredData);
 
-    return new Resource<>(storedData);
+    return new EntityModel<>(storedData);
   }
 }

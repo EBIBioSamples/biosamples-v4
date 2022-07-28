@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.utils.TaxonomyService;
+import uk.ac.ebi.biosamples.service.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
@@ -140,25 +140,34 @@ public class EnaElementConverter implements Converter<Element, Sample> {
     }
 
     // ENA SUBMITTER_ID - BSD-1743 - Un-tag core attributes and sample attributes from synonyms
-    final XmlPathBuilder submitterIdPathBuilder =
-        XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID);
+    try {
+      final XmlPathBuilder submitterIdPathBuilder =
+          XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID);
+      String namespaceOfSubmitterId = null;
 
-    if (submitterIdPathBuilder.exists()) {
-      attributes.add(
-          Attribute.build(
-              SUBMITTER_ID_JSON,
-              submitterIdPathBuilder.text(),
-              NAMESPACE_TAG + submitterIdPathBuilder.attribute(NAMESPACE),
-              Collections.emptyList(),
-              null));
+      if (submitterIdPathBuilder != null && submitterIdPathBuilder.attributeExists(NAMESPACE)) {
+        namespaceOfSubmitterId = submitterIdPathBuilder.attribute(NAMESPACE);
+      }
+
+      if (submitterIdPathBuilder.exists()) {
+        attributes.add(
+            Attribute.build(
+                SUBMITTER_ID_JSON,
+                submitterIdPathBuilder.text(),
+                namespaceOfSubmitterId != null ? NAMESPACE_TAG + namespaceOfSubmitterId : null,
+                Collections.emptyList(),
+                null));
+      }
+    } catch (final Exception e) {
+      log.info("Issues with parsing SUBMITTER_ID and associated PATHS");
     }
 
     // ENA EXTERNAL_ID - BSD-1743 - Un-tag core attributes and sample attributes
     // from synonyms
-    accession = getString(root, attributes, accession, EXTERNAL_ID, EXTERNAL_ID_JSON);
+    accession = getId(root, attributes, accession, EXTERNAL_ID, EXTERNAL_ID_JSON);
 
     // ENA SECONDARY_ID
-    accession = getString(root, attributes, accession, SECONDARY_ID, SECONDARY_ID_JSON);
+    accession = getId(root, attributes, accession, SECONDARY_ID, SECONDARY_ID_JSON);
 
     // ENA ANONYMIZED_NAME - BSD-1743 - Un-tag core attributes and sample attributes
     // from synonyms
@@ -291,34 +300,35 @@ public class EnaElementConverter implements Converter<Element, Sample> {
         .build();
   }
 
-  private String getString(
-      Element root,
-      SortedSet<Attribute> attributes,
-      String accession,
-      String externalId,
-      String externalIdJson) {
-    final XmlPathBuilder idPathBuilder =
-        XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, externalId);
+  private String getId(
+      Element root, SortedSet<Attribute> attributes, String accession, String id, String idJson) {
+    try {
+      final XmlPathBuilder idPathBuilder = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, id);
 
-    if (idPathBuilder.exists()) {
-      for (final Element element :
-          XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS).elements(externalId)) {
-        final String externalIdElement = XmlPathBuilder.of(element).text();
+      if (idPathBuilder.exists()) {
+        for (final Element element :
+            XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS).elements(id)) {
+          final String externalIdElement = XmlPathBuilder.of(element).text();
 
-        attributes.add(
-            Attribute.build(
-                externalIdJson,
-                externalIdElement,
-                NAMESPACE_TAG + idPathBuilder.attribute(NAMESPACE),
-                Collections.emptyList(),
-                null));
+          attributes.add(
+              Attribute.build(
+                  idJson,
+                  externalIdElement,
+                  NAMESPACE_TAG + idPathBuilder.attribute(NAMESPACE),
+                  Collections.emptyList(),
+                  null));
 
-        if (BIOSAMPLE.equals(element.attributeValue(NAMESPACE))) {
-          accession = externalIdElement;
+          if (BIOSAMPLE.equals(element.attributeValue(NAMESPACE))) {
+            accession = externalIdElement;
+          }
         }
       }
-    }
 
-    return accession;
+      return accession;
+    } catch (final Exception e) {
+      log.info("Failed to parse PATH for " + id);
+
+      return null;
+    }
   }
 }

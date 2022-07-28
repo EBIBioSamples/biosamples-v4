@@ -10,23 +10,28 @@
 */
 package uk.ac.ebi.biosamples.utils;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
+import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
-public class ArgUtils {
-  private static Logger log = LoggerFactory.getLogger(ArgUtils.class);
+public class PipelineUtils {
+  private static Logger log = LoggerFactory.getLogger(PipelineUtils.class);
 
   public static Collection<Filter> getDateFilters(ApplicationArguments args) {
-
-    LocalDate fromDate = null;
+    LocalDate fromDate;
     if (args.getOptionNames().contains("from")) {
       fromDate =
           LocalDate.parse(
@@ -34,7 +39,7 @@ public class ArgUtils {
     } else {
       fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
     }
-    LocalDate toDate = null;
+    LocalDate toDate;
     if (args.getOptionNames().contains("until")) {
       toDate =
           LocalDate.parse(
@@ -54,5 +59,30 @@ public class ArgUtils {
     Collection<Filter> filters = new ArrayList<>();
     filters.add(fromDateFilter);
     return filters;
+  }
+
+  public static void writeFailedSamplesToFile(
+      final Map<String, String> failures, final PipelineName pipelineName) {
+    BufferedWriter bf = null;
+    final File file = new File(pipelineName + ".failed");
+
+    try {
+      bf = new BufferedWriter(new FileWriter(file));
+      for (final Map.Entry<String, String> entry : failures.entrySet()) {
+        bf.write(entry.getKey() + " : " + entry.getValue());
+        bf.newLine();
+      }
+
+      bf.flush();
+    } catch (final IOException e) {
+      log.info("Failed to write failed file ", e);
+    } finally {
+      try {
+        assert bf != null;
+        bf.close();
+      } catch (final Exception e) {
+        log.error(e.getMessage(), e);
+      }
+    }
   }
 }

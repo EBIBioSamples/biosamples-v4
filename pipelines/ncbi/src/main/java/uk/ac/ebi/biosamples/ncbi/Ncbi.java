@@ -25,22 +25,22 @@ import java.util.zip.GZIPInputStream;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
+import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
+import uk.ac.ebi.biosamples.mongo.repo.MongoPipelineRepository;
+import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
 import uk.ac.ebi.biosamples.service.AmrDataLoaderService;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
-import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-import uk.ac.ebi.biosamples.utils.MailSender;
-import uk.ac.ebi.biosamples.utils.ThreadUtils;
-import uk.ac.ebi.biosamples.utils.XmlFragmenter;
+import uk.ac.ebi.biosamples.utils.*;
 
 @Component
 @Profile("!test")
@@ -50,24 +50,29 @@ public class Ncbi implements ApplicationRunner {
   private final XmlFragmenter xmlFragmenter;
   private final NcbiFragmentCallback sampleCallback;
   private final BioSamplesClient bioSamplesClient;
-
-  @Autowired private AmrDataLoaderService amrDataLoaderService;
-
-  private Map<String, Set<StructuredDataTable>> sampleToAmrMap = new HashMap<>();
+  private final AmrDataLoaderService amrDataLoaderService;
+  private final MongoPipelineRepository mongoPipelineRepository;
+  private final Map<String, Set<StructuredDataTable>> sampleToAmrMap;
 
   public Ncbi(
       PipelinesProperties pipelinesProperties,
       XmlFragmenter xmlFragmenter,
       NcbiFragmentCallback sampleCallback,
-      BioSamplesClient bioSamplesClient) {
+      BioSamplesClient bioSamplesClient,
+      AmrDataLoaderService amrDataLoaderService,
+      MongoPipelineRepository mongoPipelineRepository) {
     this.pipelinesProperties = pipelinesProperties;
     this.xmlFragmenter = xmlFragmenter;
     this.sampleCallback = sampleCallback;
     this.bioSamplesClient = bioSamplesClient;
+    this.amrDataLoaderService = amrDataLoaderService;
+    this.mongoPipelineRepository = mongoPipelineRepository;
+    this.sampleToAmrMap = new HashMap<>();
   }
 
   @Override
   public void run(ApplicationArguments args) {
+    String pipelineFailureCause = null;
     boolean isPassed = true;
     boolean includeAmr = true;
 
@@ -96,7 +101,7 @@ public class Ncbi implements ApplicationRunner {
       } else {
         fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
       }
-      LocalDate toDate = null;
+      LocalDate toDate;
       if (args.getOptionNames().contains("until")) {
         toDate =
             LocalDate.parse(
@@ -147,6 +152,7 @@ public class Ncbi implements ApplicationRunner {
             ThreadUtils.checkFutures(futures, 0);
           } finally {
             log.info("shutting down");
+            assert executorService != null;
             executorService.shutdown();
             executorService.awaitTermination(1, TimeUnit.MINUTES);
           }
@@ -160,13 +166,36 @@ public class Ncbi implements ApplicationRunner {
       log.info("Number of accession from NCBI = " + sampleCallback.getAccessions().size());
       // remove old NCBI samples no longer present
       // get all existing NCBI samples
-      // makingNcbiSamplesPrivate();
+      makingNcbiSamplesPrivate();
       log.info("Processed NCBI pipeline");
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);
+      pipelineFailureCause = e.getMessage();
       isPassed = false;
     } finally {
-      MailSender.sendEmail("NCBI", null, isPassed);
+      final MongoPipeline mongoPipeline;
+
+      if (isPassed) {
+        mongoPipeline =
+            new MongoPipeline(
+                PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.NCBI),
+                new Date(),
+                PipelineName.NCBI.name(),
+                PipelineCompletionStatus.COMPLETED,
+                null,
+                null);
+      } else {
+        mongoPipeline =
+            new MongoPipeline(
+                PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.NCBI),
+                new Date(),
+                PipelineName.NCBI.name(),
+                PipelineCompletionStatus.FAILED,
+                null,
+                pipelineFailureCause);
+      }
+
+      mongoPipelineRepository.insert(mongoPipeline);
     }
   }
 
@@ -195,7 +224,7 @@ public class Ncbi implements ApplicationRunner {
       long startTime = System.nanoTime();
       // make sure to only get the public samples
       Set<String> existingAccessions = new TreeSet<>();
-      for (Resource<Sample> sample :
+      for (EntityModel<Sample> sample :
           bioSamplesClient
               .getPublicClient()
               .get()
@@ -225,7 +254,7 @@ public class Ncbi implements ApplicationRunner {
     try {
       for (String accession : toRemoveAccessions) {
         // this must get the ORIGINAL sample without curation
-        Optional<Resource<Sample>> sampleOptional =
+        Optional<EntityModel<Sample>> sampleOptional =
             bioSamplesClient.fetchSampleResource(accession, Optional.of(curationDomainBlankList));
         if (sampleOptional.isPresent()) {
           Sample sample = sampleOptional.get().getContent();

@@ -51,7 +51,7 @@ public class SchemaValidationTests {
     mockMvc
         .perform(get("/schemas/amr.json"))
         .andExpect(status().is2xxSuccessful())
-        .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM))
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.title").value("amr"));
   }
 

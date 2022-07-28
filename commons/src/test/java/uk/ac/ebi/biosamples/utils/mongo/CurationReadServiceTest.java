@@ -57,7 +57,7 @@ public class CurationReadServiceTest {
     List<MongoCurationLink> mongoCurationLinks =
         convertToMongoCurationList(getCurationLinksForTest());
     Mockito.when(mongoCurationLinkRepository.findBySample(Mockito.anyString(), Mockito.any()))
-        .thenReturn(new PageImpl<>(mongoCurationLinks, new PageRequest(0, 10), 1));
+        .thenReturn(new PageImpl<>(mongoCurationLinks, PageRequest.of(0, 10), 1));
   }
 
   @Test

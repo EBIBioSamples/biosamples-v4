@@ -23,6 +23,9 @@ public class BioSamplesProperties {
   @Value("${biosamples.client.uri:http://localhost:8081}")
   private URI biosamplesClientUri;
 
+  @Value("${biosamples.client.uri.v2:http://localhost:8082}")
+  private URI biosamplesClientUriV2;
+
   @Value("${biosamples.client.pagesize:1000}")
   private int biosamplesClientPagesize;
 
@@ -132,6 +135,10 @@ public class BioSamplesProperties {
 
   public URI getBiosamplesClientUri() {
     return biosamplesClientUri;
+  }
+
+  public URI getBiosamplesClientUriV2() {
+    return biosamplesClientUriV2;
   }
 
   public URI getBiosamplesWebinAuthTokenUri() {

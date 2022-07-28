@@ -10,37 +10,24 @@
 */
 package uk.ac.ebi.biosamples;
 
-import java.io.StringReader;
 import java.time.Instant;
 import java.util.*;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Component
 public class XmlSearchIntegration extends AbstractIntegration {
-
   private final XmlSearchTester xmlSearchTester;
 
   Logger log = LoggerFactory.getLogger(getClass());
 
-  public XmlSearchIntegration(
-      BioSamplesClient client,
-      RestTemplateBuilder restTemplateBuilder,
-      IntegrationProperties integrationProperties) {
+  public XmlSearchIntegration(BioSamplesClient client) {
     super(client);
-    RestTemplate restTemplate = restTemplateBuilder.build();
-    this.xmlSearchTester = new XmlSearchTester(log, client, restTemplate, integrationProperties);
+    this.xmlSearchTester = new XmlSearchTester(log, client);
   }
 
   @Override
@@ -64,22 +51,17 @@ public class XmlSearchIntegration extends AbstractIntegration {
   @Override
   protected void phaseFive() {}
 
+  @Override
+  protected void phaseSix() {}
+
   private static class XmlSearchTester {
 
-    private final IntegrationProperties integrationProperties;
     private final Logger log;
     private final BioSamplesClient client;
-    private final RestTemplate restTemplate;
 
-    public XmlSearchTester(
-        Logger log,
-        BioSamplesClient client,
-        RestTemplate restTemplate,
-        IntegrationProperties integrationProperties) {
+    public XmlSearchTester(Logger log, BioSamplesClient client) {
       this.log = log;
       this.client = client;
-      this.restTemplate = restTemplate;
-      this.integrationProperties = integrationProperties;
     }
 
     public void registerTestSamplesInBioSamples() {
@@ -94,31 +76,29 @@ public class XmlSearchIntegration extends AbstractIntegration {
               TestSampleGenerator.getSampleReleasedExaclyTheDayAfterSAMD0912312());
 
       for (Sample sample : baseSampleList) {
-        Optional<Resource<Sample>> optional = client.fetchSampleResource(sample.getAccession());
-        if (optional.isPresent()) {
-          /*throw new RuntimeException("Found existing " + sample.getAccession());*/
-        }
+        /*throw new RuntimeException("Found existing " + sample.getAccession());*/
 
-        Resource<Sample> resource = client.persistSampleResource(sample);
+        EntityModel<Sample> resource = client.persistSampleResource(sample);
         if (!sample.equals(resource.getContent())) {
           throw new RuntimeException("Expected response to equal submission");
         }
       }
 
       Sample sampleWithinGroup = TestSampleGenerator.getSampleWithinGroup();
-      Optional<Resource<Sample>> optional =
+      Optional<EntityModel<Sample>> optional =
           client.fetchSampleResource(sampleWithinGroup.getAccession());
       if (optional.isPresent()) {
         throw new RuntimeException("Found existing " + sampleWithinGroup.getAccession());
       }
 
-      Resource<Sample> sampleWithinGroupResource = client.persistSampleResource(sampleWithinGroup);
+      EntityModel<Sample> sampleWithinGroupResource =
+          client.persistSampleResource(sampleWithinGroup);
       // The result and the submitted will not be equal because of the new inverse relation
       // created
       // automatically
       if (!sampleWithinGroup
           .getAccession()
-          .equals(sampleWithinGroupResource.getContent().getAccession())) {
+          .equals(Objects.requireNonNull(sampleWithinGroupResource.getContent()).getAccession())) {
         throw new RuntimeException("Expected response to equal submission");
       }
 
@@ -130,14 +110,14 @@ public class XmlSearchIntegration extends AbstractIntegration {
             "Found existing " + sampleWithContactInformations.getAccession());
       }
 
-      Resource<Sample> sampleWithContactResource =
+      EntityModel<Sample> sampleWithContactResource =
           client.persistSampleResource(sampleWithContactInformations, false, true);
       // The result and the submitted will not be equal because of the new inverse relation
       // created
       // automatically
       if (!sampleWithContactInformations
           .getAccession()
-          .equals(sampleWithContactResource.getContent().getAccession())) {
+          .equals(Objects.requireNonNull(sampleWithContactResource.getContent()).getAccession())) {
         throw new RuntimeException("Expected response to equal submission");
       }
       log.info(
@@ -150,14 +130,15 @@ public class XmlSearchIntegration extends AbstractIntegration {
         throw new RuntimeException("Found existing " + groupWithMsiData.getAccession());
       }
 
-      Resource<Sample> groupWithMsiDetailsResource =
+      EntityModel<Sample> groupWithMsiDetailsResource =
           client.persistSampleResource(groupWithMsiData, false, true);
       // The result and the submitted will not be equal because of the new inverse relation
       // created
       // automatically
       if (!groupWithMsiData
           .getAccession()
-          .equals(groupWithMsiDetailsResource.getContent().getAccession())) {
+          .equals(
+              Objects.requireNonNull(groupWithMsiDetailsResource.getContent()).getAccession())) {
         throw new RuntimeException("Expected response to equal submission");
       }
       log.info(String.format("Successfully persisted %s", groupWithMsiData.getAccession()));
@@ -168,7 +149,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
       log.info("Check existence of sample " + test1.getAccession());
 
-      Optional<Resource<Sample>> optional = client.fetchSampleResource(test1.getAccession());
+      Optional<EntityModel<Sample>> optional = client.fetchSampleResource(test1.getAccession());
       if (!optional.isPresent()) {
         throw new RuntimeException("Expected sample not found " + test1.getAccession());
       }
@@ -194,7 +175,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
       // release,
       // update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
       return new Sample.Builder(name, accession)
-          .withTaxId(Long.valueOf(9606))
+          .withTaxId(9606L)
           .withDomain(domain)
           .withRelease(release)
           .withUpdate(update)
@@ -218,7 +199,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
       // release,
       // update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
       return new Sample.Builder(name, accession)
-          .withTaxId(Long.valueOf(9606))
+          .withTaxId(9606L)
           .withDomain(domain)
           .withRelease(release)
           .withUpdate(update)
@@ -390,55 +371,6 @@ public class XmlSearchIntegration extends AbstractIntegration {
           .withUpdate(update)
           .withAttributes(attributes)
           .build();
-    }
-  }
-
-  private static class XmlMatcher {
-
-    public static boolean matchesSampleInGroup(String serializedXml, Sample sampleInGroup) {
-      SAXReader reader = new SAXReader();
-
-      Document xml;
-      try {
-        xml = reader.read(new StringReader(serializedXml));
-      } catch (DocumentException e) {
-        return false;
-      }
-
-      Element root = xml.getRootElement();
-      if (!root.getName().equals("ResultQuery")) {
-        return false;
-      }
-
-      String sampleWithinGroupAccession = XmlPathBuilder.of(root).path("BioSample").attribute("id");
-
-      return sampleWithinGroupAccession.equals(sampleInGroup.getAccession());
-    }
-
-    public static boolean matchesSample(String serializedXml, Sample referenceSample) {
-
-      SAXReader reader = new SAXReader();
-
-      Document xml;
-      try {
-        xml = reader.read(new StringReader(serializedXml));
-      } catch (DocumentException e) {
-        return false;
-      }
-
-      Element root = xml.getRootElement();
-      if (!XmlPathBuilder.of(root).element().getName().equals("BioSample")
-          && !XmlPathBuilder.of(root).element().getName().equals("BioSampleGroup")) {
-        return false;
-      }
-
-      String sampleAccession = XmlPathBuilder.of(root).attribute("id");
-      Element sampleNameElement = XmlPathBuilder.of(root).path("Property").element();
-      String sampleName =
-          XmlPathBuilder.of(sampleNameElement).path("QualifiedValue", "Value").text();
-
-      return sampleAccession.equals(referenceSample.getAccession())
-          && sampleName.equals(referenceSample.getName());
     }
   }
 }

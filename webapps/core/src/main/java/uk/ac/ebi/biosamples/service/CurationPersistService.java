@@ -10,10 +10,10 @@
 */
 package uk.ac.ebi.biosamples.service;
 
+import java.util.Objects;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -30,11 +30,6 @@ import uk.ac.ebi.biosamples.mongo.service.MongoCurationLinkToCurationLinkConvert
 
 @Service
 public class CurationPersistService {
-
-  private Logger log = LoggerFactory.getLogger(getClass());
-
-  // TODO use constructor injection
-
   @Autowired private MongoCurationLinkRepository mongoCurationLinkRepository;
 
   @Autowired
@@ -45,13 +40,12 @@ public class CurationPersistService {
 
   @Autowired private MongoCurationRepository mongoCurationRepository;
   @Autowired private CurationToMongoCurationConverter curationToMongoCurationConverter;
-
   @Autowired private MessagingService messagingSerivce;
 
   public CurationLink store(CurationLink curationLink) {
     // TODO do this as a trigger on the curation link repo
     // if it already exists, no need to save
-    if (mongoCurationRepository.findOne(curationLink.getCuration().getHash()) == null) {
+    if (!mongoCurationRepository.findById(curationLink.getCuration().getHash()).isPresent()) {
       MongoCuration mongoCuration =
           curationToMongoCurationConverter.convert(curationLink.getCuration());
       try {
@@ -59,8 +53,10 @@ public class CurationPersistService {
       } catch (DuplicateKeyException e) {
         // sometimes, if there are multiple threads there may be a collision
         // check if its a true duplicate and not an accidental hash collision
-        MongoCuration existingMongoCuration =
-            mongoCurationRepository.findOne(mongoCuration.getHash());
+        final Optional<MongoCuration> byId =
+            mongoCurationRepository.findById(mongoCuration.getHash());
+        final MongoCuration existingMongoCuration = byId.isPresent() ? byId.get() : null;
+
         if (!existingMongoCuration.equals(mongoCuration)) {
           // if it is a different curation with an hash collision, then throw an exception
           throw e;
@@ -69,11 +65,12 @@ public class CurationPersistService {
     }
 
     // if it already exists, no need to save
-    if (mongoCurationLinkRepository.findOne(curationLink.getHash()) == null) {
+    if (!mongoCurationLinkRepository.findById(curationLink.getHash()).isPresent()) {
       curationLink =
-          mongoCurationLinkToCurationLinkConverter.convert(
+          mongoCurationLinkToCurationLinkConverter.apply(
               mongoCurationLinkRepository.save(
-                  curationLinkToMongoCurationLinkConverter.convert(curationLink)));
+                  Objects.requireNonNull(
+                      curationLinkToMongoCurationLinkConverter.convert(curationLink))));
     }
 
     // for each relationship curation create reverse relationship curation
@@ -87,7 +84,7 @@ public class CurationPersistService {
     if (curationLink == null) throw new IllegalArgumentException("curationLink must not be null");
     MongoCurationLink mongoCurationLink =
         curationLinkToMongoCurationLinkConverter.convert(curationLink);
-    mongoCurationLinkRepository.delete(mongoCurationLink.getHash());
+    mongoCurationLinkRepository.deleteById(mongoCurationLink.getHash());
     messagingSerivce.fetchThenSendMessage(curationLink.getSample());
   }
 
@@ -95,6 +92,7 @@ public class CurationPersistService {
   private void createReverseRelationshipCurations(CurationLink curationLink) {
     SortedSet<Relationship> relationshipsPre = curationLink.getCuration().getRelationshipsPre();
     SortedSet<Relationship> relationshipsPost = curationLink.getCuration().getRelationshipsPost();
+
     if (!relationshipsPre.isEmpty()) {
       for (Relationship rel : relationshipsPre) {
         SortedSet<Relationship> reverseRelationships = new TreeSet<>();
@@ -109,12 +107,15 @@ public class CurationPersistService {
                 curationLink.getDomain(),
                 null,
                 curationLink.getCreated());
-        if (mongoCurationLinkRepository.findOne(reverseCurationLink.getHash()) == null) {
+
+        if (!mongoCurationLinkRepository.findById(reverseCurationLink.getHash()).isPresent()) {
           mongoCurationLinkRepository.save(
-              curationLinkToMongoCurationLinkConverter.convert(reverseCurationLink));
+              Objects.requireNonNull(
+                  curationLinkToMongoCurationLinkConverter.convert(reverseCurationLink)));
         }
       }
     }
+
     if (!relationshipsPost.isEmpty()) {
       for (Relationship rel : relationshipsPost) {
         SortedSet<Relationship> reverseRelationships = new TreeSet<>();
@@ -129,9 +130,11 @@ public class CurationPersistService {
                 curationLink.getDomain(),
                 null,
                 curationLink.getCreated());
-        if (mongoCurationLinkRepository.findOne(reverseCurationLink.getHash()) == null) {
+
+        if (!mongoCurationLinkRepository.findById(reverseCurationLink.getHash()).isPresent()) {
           mongoCurationLinkRepository.save(
-              curationLinkToMongoCurationLinkConverter.convert(reverseCurationLink));
+              Objects.requireNonNull(
+                  curationLinkToMongoCurationLinkConverter.convert(reverseCurationLink)));
         }
       }
     }

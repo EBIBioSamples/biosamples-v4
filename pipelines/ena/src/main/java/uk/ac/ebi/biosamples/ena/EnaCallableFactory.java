@@ -14,7 +14,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
@@ -23,57 +22,32 @@ import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 @Service
 public class EnaCallableFactory {
   private final BioSamplesClient bioSamplesWebinClient;
-  private final BioSamplesClient bioSamplesAapClient;
-  private final EnaXmlEnhancer enaXmlEnhancer;
-  private final EnaElementConverter enaElementConverter;
+  private final EnaSampleTransformationService enaSampleTransformationService;
   private final EgaSampleExporter egaSampleExporter;
-  private final EraProDao eraProDao;
-  private final String webinId;
 
   public EnaCallableFactory(
       @Qualifier("WEBINCLIENT") BioSamplesClient bioSamplesWebinClient,
-      BioSamplesClient bioSamplesAapClient,
-      EnaXmlEnhancer enaXmlEnhancer,
-      EnaElementConverter enaElementConverter,
-      EgaSampleExporter egaSampleExporter,
-      EraProDao eraProDao,
-      PipelinesProperties pipelinesProperties) {
+      EnaSampleTransformationService enaSampleTransformationService,
+      EgaSampleExporter egaSampleExporter) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
-    this.bioSamplesAapClient = bioSamplesAapClient;
-    this.enaXmlEnhancer = enaXmlEnhancer;
-    this.enaElementConverter = enaElementConverter;
+    this.enaSampleTransformationService = enaSampleTransformationService;
     this.egaSampleExporter = egaSampleExporter;
-    this.eraProDao = eraProDao;
-    this.webinId = pipelinesProperties.getProxyWebinId();
   }
 
   /**
    * Builds callable for dealing most ENA samples
    *
    * @param accession The accession passed
-   * @param statusId sample status
-   * @param suppressionHandler Is running to set samples to SUPPRESSED
    * @param amrData The AMR {@link AbstractData} of the sample
    * @return the callable, {@link EnaCallable}
    */
-  public Callable<Void> build(
-      String accession,
-      String egaId,
-      int statusId,
-      boolean suppressionHandler,
-      boolean killedHandler,
-      Set<StructuredDataTable> amrData) {
+  public Callable<Void> build(String accession, String egaId, Set<StructuredDataTable> amrData) {
     return new EnaCallable(
         accession,
         egaId,
-        statusId,
         bioSamplesWebinClient,
-        enaXmlEnhancer,
-        enaElementConverter,
         egaSampleExporter,
-        eraProDao,
-        suppressionHandler,
-        killedHandler,
+        enaSampleTransformationService,
         amrData);
   }
 }

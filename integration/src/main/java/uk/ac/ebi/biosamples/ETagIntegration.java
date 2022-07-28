@@ -11,15 +11,14 @@
 package uk.ac.ebi.biosamples;
 
 import java.net.URI;
-import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.HttpStatus;
@@ -55,7 +54,7 @@ public class ETagIntegration extends AbstractIntegration {
 
     log.info("Submitting sample for ETAG check");
 
-    Resource<Sample> resource = client.persistSampleResource(testSample);
+    EntityModel<Sample> resource = client.persistSampleResource(testSample);
     if (!testSample.equals(resource.getContent())) {
       throw new RuntimeException(
           "Expected response ("
@@ -192,6 +191,9 @@ public class ETagIntegration extends AbstractIntegration {
   @Override
   protected void phaseFive() {}
 
+  @Override
+  protected void phaseSix() {}
+
   private Sample getTestSample() {
     return new Sample.Builder("ETAG sample test")
         .withAccession("SAMETAG2031")
@@ -227,8 +229,7 @@ public class ETagIntegration extends AbstractIntegration {
         new Traverson(bioSamplesProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON)
             .follow("samples")
             .follow(Hop.rel("sample").withParameter("accession", sample.getAccession()))
-            .follow(
-                Hop.rel("curationDomain").withParameter("curationdomain", Collections.EMPTY_LIST))
+            .follow(Hop.rel("curationDomain").withParameter("curationdomain", ""))
             .asLink();
 
     return RequestEntity.get(URI.create(sampleLink.getHref())).accept(MediaTypes.HAL_JSON).build();

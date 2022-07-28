@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
@@ -85,7 +85,6 @@ public class EGAImportRunner implements ApplicationRunner {
     final String dataFolderUrl = args.getSourceArgs()[0];
     final String datasetDuoUrl = dataFolderUrl + "datasets_duo.csv";
     final String sampleDataUrl = dataFolderUrl + "sanger_released_samples.csv";
-    final String phenotypeIriFile = dataFolderUrl + "sanger_datasets_public_phenotype_hpo.csv";
 
     Map<String, SortedSet<String>> datasetToDuoCodesMap = loadDuoCodeMap(datasetDuoUrl);
     //        Map<String, List<OlsResult>> phenotypeIriMap =
@@ -126,7 +125,7 @@ public class EGAImportRunner implements ApplicationRunner {
       throws JsonProcessingException {
 
     final ObjectMapper jsonMapper = new ObjectMapper();
-    Optional<Resource<Sample>> sampleResource = bioSamplesClient.fetchSampleResource(accession);
+    Optional<EntityModel<Sample>> sampleResource = bioSamplesClient.fetchSampleResource(accession);
     if (sampleResource.isPresent()) {
       Sample sample = sampleResource.get().getContent();
       LOG.info("Original sample: {}", jsonMapper.writeValueAsString(sample));
@@ -192,38 +191,6 @@ public class EGAImportRunner implements ApplicationRunner {
       LOG.error("couldn't read file: " + datasetDuoUrl, e);
     }
     return datasetToDuoCodesMap;
-  }
-
-  private Map<String, List<OlsResult>> loadPhenotypeIriMap(String phenotypeIriFile) {
-    Map<String, List<OlsResult>> phenotypeIriMap = new HashMap<>();
-
-    try (BufferedReader br = new BufferedReader(new FileReader(phenotypeIriFile))) {
-      String line = br.readLine(); // ignore header
-      LOG.info("Reading file: {}, headers: {}", phenotypeIriFile, line);
-      while ((line = br.readLine()) != null && !line.isEmpty()) {
-        String[] record = line.split(",", -1);
-        String publicPhenotype = record[0];
-        String mappedPhenotype = record[1];
-        String hpoId = record[2];
-        String efoId = record[3];
-        List<OlsResult> iriSet = new ArrayList<>();
-
-        if (hpoId != null && !"".equals(hpoId)) {
-          Optional<OlsResult> olsResult = getOlsMappedTerm(hpoId);
-          olsResult.ifPresent(iriSet::add);
-        }
-        if (efoId != null && !"".equals(efoId)) {
-          Optional<OlsResult> olsResult = getOlsMappedTerm(efoId);
-          olsResult.ifPresent(iriSet::add);
-        }
-
-        phenotypeIriMap.put(publicPhenotype, iriSet);
-      }
-
-    } catch (IOException e) {
-      LOG.error("couldn't read file: " + phenotypeIriFile, e);
-    }
-    return phenotypeIriMap;
   }
 
   private void removeMigrationRelatedAttributes(Sample sample) {

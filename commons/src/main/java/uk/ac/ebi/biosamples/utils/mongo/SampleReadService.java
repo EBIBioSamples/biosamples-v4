@@ -39,7 +39,6 @@ import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
  */
 @Service
 public class SampleReadService {
-
   private static Logger LOGGER = LoggerFactory.getLogger(SampleReadService.class);
 
   private final MongoSampleRepository mongoSampleRepository;
@@ -94,7 +93,10 @@ public class SampleReadService {
     long startTime, endTime;
 
     startTime = System.nanoTime();
-    MongoSample mongoSample = mongoSampleRepository.findOne(accession);
+
+    final Optional<MongoSample> byId = mongoSampleRepository.findById(accession);
+    MongoSample mongoSample = byId.orElse(null);
+
     if (mongoSample == null) {
       LOGGER.warn(String.format("failed to retrieve sample with accession %s", accession));
       return Optional.empty();
@@ -115,7 +117,7 @@ public class SampleReadService {
             + "ms");
 
     // convert it into the format to return
-    Sample sample = mongoSampleToSampleConverter.convert(mongoSample);
+    Sample sample = mongoSampleToSampleConverter.apply(mongoSample);
 
     // add curation from a set of users
     startTime = System.nanoTime();
@@ -141,17 +143,20 @@ public class SampleReadService {
       sample = null;
     } else if (staticViews.equals(StaticViewWrapper.StaticView.SAMPLES_DYNAMIC)) {
       mongoSample = mongoInverseRelationshipService.addInverseRelationships(mongoSample);
-      sample = mongoSampleToSampleConverter.convert(mongoSample);
+      sample = mongoSampleToSampleConverter.apply(mongoSample);
       sample = curationReadService.applyAllCurationToSample(sample, curationDomains);
     } else {
-      sample = mongoSampleToSampleConverter.convert(mongoSample);
+      sample = mongoSampleToSampleConverter.apply(mongoSample);
     }
 
     // todo add structured data
-    MongoStructuredData mongoStructuredData = mongoStructuredDataRepository.findOne(accession);
+    final Optional<MongoStructuredData> byId = mongoStructuredDataRepository.findById(accession);
+    MongoStructuredData mongoStructuredData = byId.orElse(null);
+
     if (mongoStructuredData != null) {
       StructuredData structuredData =
           mongoStructuredDataToStructuredDataConverter.convert(mongoStructuredData);
+      assert sample != null;
       sample =
           Sample.Builder.fromSample(sample).withStructuredData(structuredData.getData()).build();
     }
@@ -187,7 +192,7 @@ public class SampleReadService {
     }
 
     @Override
-    public Optional<Sample> call() throws Exception {
+    public Optional<Sample> call() {
       Optional<Sample> opt = sampleReadService.fetch(accession, curationDomains);
       if (!opt.isPresent()) {
         LOGGER.warn(String.format("failed to retrieve sample with accession %s", accession));

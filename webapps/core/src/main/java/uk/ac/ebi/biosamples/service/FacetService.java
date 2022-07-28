@@ -24,13 +24,12 @@ import uk.ac.ebi.biosamples.solr.service.SolrFacetService;
 
 @Service
 public class FacetService {
-
   private Logger log = LoggerFactory.getLogger(getClass());
 
   private final SolrFacetService solrFacetService;
 
-  public FacetService(SolrFacetService solrSampleService) {
-    this.solrFacetService = solrSampleService;
+  public FacetService(SolrFacetService solrFacetService) {
+    this.solrFacetService = solrFacetService;
   }
 
   public List<Facet> getFacets(
@@ -49,12 +48,12 @@ public class FacetService {
       int noOfFacets,
       int noOfFacetValues,
       String facetField) {
-    Pageable facetPageable = new PageRequest(0, noOfFacets);
-    Pageable facetValuePageable = new PageRequest(0, noOfFacetValues);
+    Pageable facetPageable = PageRequest.of(0, noOfFacets);
+    Pageable facetValuePageable = PageRequest.of(0, noOfFacetValues);
     // TODO if a facet is enabled as a filter, then that value will be the only filter displayed
     // TODO allow update date range
 
-    // todo if (text == null && filters.isEmpty()) cache results for the search landing page
+    // TODO if (text == null && filters.isEmpty()) cache results for the search landing page
     long startTime = System.nanoTime();
     String escapedText = text == null ? null : ClientUtils.escapeQueryChars(text);
     List<Facet> facets =
