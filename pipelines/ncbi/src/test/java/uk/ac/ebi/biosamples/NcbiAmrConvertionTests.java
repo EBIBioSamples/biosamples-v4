@@ -25,7 +25,7 @@ import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiAmrConversionService;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
-import uk.ac.ebi.biosamples.utils.TaxonomyService;
+import uk.ac.ebi.biosamples.service.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 public class NcbiAmrConvertionTests {

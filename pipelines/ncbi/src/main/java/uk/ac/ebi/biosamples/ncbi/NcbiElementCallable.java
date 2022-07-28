@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
@@ -63,9 +64,14 @@ public class NcbiElementCallable implements Callable<Void> {
       }
 
       // Generate the sample without the domain
-      Sample sampleWithoutDomain =
+      final Sample sampleWithoutDomain =
           ncbiSampleConversionService.convertNcbiXmlElementToSample(sampleElem);
-      Sample sample = Sample.Builder.fromSample(sampleWithoutDomain).withDomain(domain).build();
+      final Sample sample =
+          Sample.Builder.fromSample(sampleWithoutDomain)
+              .withDomain(domain)
+              .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
+              .build();
+
       while (!success) {
         try {
           bioSamplesClient.persistSampleResource(sample);
@@ -80,8 +86,9 @@ public class NcbiElementCallable implements Callable<Void> {
         }
       }
 
-      Set<StructuredDataTable> structuredDataTableSet =
+      final Set<StructuredDataTable> structuredDataTableSet =
           ncbiSampleConversionService.convertNcbiXmlElementToStructuredData(sampleElem, amrData);
+
       if (!structuredDataTableSet.isEmpty()) {
         StructuredData structuredData =
             StructuredData.build(accession, sample.getCreate(), structuredDataTableSet);

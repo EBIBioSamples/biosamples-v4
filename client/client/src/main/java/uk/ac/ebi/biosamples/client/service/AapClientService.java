@@ -14,7 +14,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import java.net.URI;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Optional;
@@ -60,7 +60,7 @@ public class AapClientService implements ClientService {
     if (!jwt.isPresent() || (expiry.isPresent() && expiry.get().before(new Date()))) {
 
       String auth = username + ":" + password;
-      byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(Charset.forName("US-ASCII")));
+      byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.US_ASCII));
       String authHeader = "Basic " + new String(encodedAuth);
 
       RequestEntity<?> request =
@@ -71,7 +71,7 @@ public class AapClientService implements ClientService {
 
       ResponseEntity<String> response = restOperations.exchange(request, String.class);
 
-      jwt = Optional.of(response.getBody());
+      jwt = Optional.ofNullable(response.getBody());
 
       try {
         DecodedJWT decodedJwt = JWT.decode(jwt.get());

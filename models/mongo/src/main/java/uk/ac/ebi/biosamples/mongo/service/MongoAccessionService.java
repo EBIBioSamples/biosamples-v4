@@ -53,8 +53,7 @@ public class MongoAccessionService {
     MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
 
     mongoSample = accessionAndInsert(mongoSample);
-
-    return mongoSampleToSampleConverter.convert(mongoSample);
+    return mongoSampleToSampleConverter.apply(mongoSample);
   }
 
   private MongoSample accessionAndInsert(MongoSample sample) {

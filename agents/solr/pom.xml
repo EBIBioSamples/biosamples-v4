@@ -48,12 +48,6 @@
 			<!-- <version>${httpclient.version}</version> -->
 			<version>4.5.3</version>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-
 	</dependencies>
 
 	<build>

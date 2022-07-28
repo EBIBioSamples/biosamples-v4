@@ -16,7 +16,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -61,8 +61,9 @@ public class SampleReleaseCallable implements Callable<Void> {
     try {
       log.info("Handling sample with accession " + accession);
 
-      Optional<Resource<Sample>> optionalSampleResource =
-          bioSamplesWebinClient.fetchSampleResource(accession);
+      Optional<EntityModel<Sample>> optionalSampleResource =
+          bioSamplesWebinClient.fetchSampleResource(
+              accession, Optional.of(curationDomainBlankList));
 
       if (!optionalSampleResource.isPresent()) {
         optionalSampleResource = bioSamplesAapClient.fetchSampleResource(accession);
@@ -81,7 +82,7 @@ public class SampleReleaseCallable implements Callable<Void> {
             // client API fails with an exception if the sample is not present
             // hence this workaround of fetching twice
             // TODO: fix the curation domain blank list based find in client
-            final Optional<Resource<Sample>> optionalSampleResourceWithoutCurations =
+            final Optional<EntityModel<Sample>> optionalSampleResourceWithoutCurations =
                 bioSamplesAapClient.fetchSampleResource(
                     accession, Optional.of(curationDomainBlankList));
 
@@ -99,7 +100,7 @@ public class SampleReleaseCallable implements Callable<Void> {
             // client API fails with an exception if the sample is not present
             // hence this workaround of fetching twice
             // TODO: fix the curation domain blank list based find in client
-            final Optional<Resource<Sample>> optionalSampleResourceWithoutCurations =
+            final Optional<EntityModel<Sample>> optionalSampleResourceWithoutCurations =
                 bioSamplesWebinClient.fetchSampleResource(
                     accession, Optional.of(curationDomainBlankList));
 

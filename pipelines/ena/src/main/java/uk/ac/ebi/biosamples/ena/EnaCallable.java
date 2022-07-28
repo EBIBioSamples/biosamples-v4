@@ -10,13 +10,16 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 
 public class EnaCallable implements Callable<Void> {
@@ -55,19 +58,37 @@ public class EnaCallable implements Callable<Void> {
         int numRetry = 0;
 
         final Sample sample = enaSampleTransformationService.enrichSample(this.accession, false);
+        final Optional<EntityModel<Sample>> sampleOptionalInBioSamples =
+            bioSamplesWebinClient.fetchSampleResource(accession);
+        final Sample sampleInBioSamples =
+            sampleOptionalInBioSamples.map(EntityModel::getContent).orElse(null);
 
-        while (!success) {
-          try {
-            bioSamplesWebinClient.persistSampleResource(sample);
+        boolean isEnaSampleUpdatedInBioSamples = false;
 
-            success = true;
-          } catch (final Exception e) {
-            if (++numRetry == MAX_RETRIES) {
-              throw new RuntimeException(
-                  "Failed to handle the sample with accession " + this.accession);
+        if (sampleInBioSamples != null) {
+          if (sampleInBioSamples.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
+            log.info(
+                "ENA sample has been updated in BioSamples using the FILE Uploader, don't re-import "
+                    + accession);
+
+            isEnaSampleUpdatedInBioSamples = true;
+          }
+        }
+
+        if (!isEnaSampleUpdatedInBioSamples) {
+          while (!success) {
+            try {
+              bioSamplesWebinClient.persistSampleResource(sample);
+
+              success = true;
+            } catch (final Exception e) {
+              if (++numRetry == MAX_RETRIES) {
+                throw new RuntimeException(
+                    "Failed to handle the sample with accession " + this.accession);
+              }
+
+              success = false;
             }
-
-            success = false;
           }
         }
       } catch (final Exception e) {

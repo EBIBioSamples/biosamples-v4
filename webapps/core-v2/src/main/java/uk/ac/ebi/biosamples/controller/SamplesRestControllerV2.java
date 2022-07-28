@@ -10,17 +10,12 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.ExposesResourceFor;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.server.ExposesResourceFor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +35,7 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @RestController
 @ExposesResourceFor(Sample.class)
-@RequestMapping("/v2/samples")
+@RequestMapping("/samples")
 @CrossOrigin
 public class SamplesRestControllerV2 {
   private Logger log = LoggerFactory.getLogger(getClass());
@@ -68,14 +63,13 @@ public class SamplesRestControllerV2 {
   }
 
   @PreAuthorize("isAuthenticated()")
-  @PostMapping(
-      value = "/submit",
-      consumes = {MediaType.APPLICATION_JSON_VALUE})
+  @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<List<Sample>> postSamplesV2(
       @RequestBody final List<Sample> samples,
       @RequestHeader(name = "Authorization") final String token) {
     log.info("Received POST for " + samples.size() + " samples");
 
+    List<Sample> createdSamples;
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final boolean webinAuth =
         authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
@@ -92,46 +86,68 @@ public class SamplesRestControllerV2 {
 
       isWebinSuperUser =
           bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
-      final boolean finalIsWebinSuperUser = isWebinSuperUser;
 
-      return ResponseEntity.status(HttpStatus.CREATED)
-          .body(
-              samples.stream()
-                  .map(
-                      sample -> {
-                        sample =
-                            bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-                                sample, webinSubmissionAccountId);
+      try {
+        createdSamples =
+            samples.stream()
+                .map(
+                    sample -> {
+                      sample =
+                          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+                              sample, webinSubmissionAccountId);
 
-                        if (!finalIsWebinSuperUser) {
-                          schemaValidationService.validate(sample);
-                          sample =
-                              taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
-                                  sample, true);
-                        }
+                      sampleService.validateSampleHasNoRelationshipsV2(sample);
 
-                        return sampleService.persistSampleV2(sample, true, authProvider);
-                      })
-                  .collect(Collectors.toList()));
+                      if (!isWebinSuperUser) {
+                        sample = validateSample(sample, true);
+                      }
+
+                      return sampleService.persistSampleV2(sample, authProvider, isWebinSuperUser);
+                    })
+                .collect(Collectors.toList());
+      } catch (final Exception e) {
+        // check auth exception
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+      }
+
+      return ResponseEntity.status(HttpStatus.CREATED).body(createdSamples);
     } else {
-      return ResponseEntity.status(HttpStatus.CREATED)
-          .body(
-              samples.stream()
-                  .map(
-                      sample -> {
-                        sample = bioSamplesAapService.handleSampleDomain(sample);
+      try {
+        createdSamples =
+            samples.stream()
+                .map(
+                    sample -> {
+                      sample = bioSamplesAapService.handleSampleDomain(sample);
 
-                        if (!bioSamplesAapService.isWriteSuperUser()) {
-                          schemaValidationService.validate(sample);
-                          sample =
-                              taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
-                                  sample, false);
-                        }
+                      sampleService.validateSampleHasNoRelationshipsV2(sample);
 
-                        return sampleService.persistSampleV2(sample, true, authProvider);
-                      })
-                  .collect(Collectors.toList()));
+                      if (!bioSamplesAapService.isWriteSuperUser()) {
+                        sample = validateSample(sample, false);
+                      }
+
+                      return sampleService.persistSampleV2(sample, authProvider, false);
+                    })
+                .collect(Collectors.toList());
+      } catch (final Exception e) {
+        // check auth exception
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+      }
+
+      return ResponseEntity.status(HttpStatus.CREATED).body(createdSamples);
     }
+  }
+
+  private Sample validateSample(Sample sample, boolean isWebinSubmission) {
+    schemaValidationService.validate(sample);
+    sample =
+        taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
+            sample, isWebinSubmission);
+
+    if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
+      schemaValidationService.validate(sample);
+    }
+
+    return sample;
   }
 
   @PreAuthorize("isAuthenticated()")
@@ -141,11 +157,13 @@ public class SamplesRestControllerV2 {
   @RequestMapping("/accession")
   public ResponseEntity<Sample> accessionSampleV2(
       @RequestBody Sample sample, @RequestHeader(name = "Authorization") final String token) {
-
     log.debug("Received POST for accessioning " + sample);
+
     if (sample.hasAccession()) {
       throw new GlobalExceptions.SampleWithAccessionSubmissionException();
     }
+
+    boolean isWebinSuperUser = false;
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final boolean webinAuth =
@@ -160,6 +178,9 @@ public class SamplesRestControllerV2 {
         throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
+      isWebinSuperUser =
+          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
+
       sample =
           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
               sample, webinSubmissionAccountId);
@@ -167,26 +188,11 @@ public class SamplesRestControllerV2 {
       sample = bioSamplesAapService.handleSampleDomain(sample);
     }
 
-    sample = buildPrivateSampleV2(sample);
+    sample = sampleService.buildPrivateSample(sample);
 
-    sample = sampleService.persistSampleV2(sample, false, authProvider);
+    sample = sampleService.persistSampleV2(sample, authProvider, isWebinSuperUser);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(sample);
-  }
-
-  private Sample buildPrivateSampleV2(final Sample sample) {
-    final Instant release =
-        Instant.ofEpochSecond(
-            LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
-    final Instant update = Instant.now();
-    final SubmittedViaType submittedVia =
-        sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
-
-    return Sample.Builder.fromSample(sample)
-        .withRelease(release)
-        .withUpdate(update)
-        .withSubmittedVia(submittedVia)
-        .build();
   }
 
   @PreAuthorize("isAuthenticated()")
@@ -197,74 +203,150 @@ public class SamplesRestControllerV2 {
   public ResponseEntity<Map<String, String>> bulkAccessionSampleV2(
       @RequestBody List<Sample> samples,
       @RequestHeader(name = "Authorization") final String token) {
-    log.info("Received POST for bulk accessioning of " + samples.size() + " samples");
+    log.info("V2-Received POST for bulk accessioning of " + samples.size() + " samples");
+
+    samples.forEach(
+        sample -> {
+          if (sample.hasAccession()) {
+            throw new GlobalExceptions.SampleWithAccessionSubmissionException();
+          }
+        });
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final boolean webinAuth =
         authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
 
-    try {
-      samples.forEach(
-          sample -> {
-            if (sample.hasAccession()) {
-              throw new GlobalExceptions.SampleWithAccessionSubmissionException();
-            }
-          });
+    if (webinAuth) {
+      final String webinSubmissionAccountId = authToken.get().getUser();
 
-      if (webinAuth) {
-        final String webinSubmissionAccountId = authToken.get().getUser();
+      if (webinSubmissionAccountId == null) {
+        throw new GlobalExceptions.WebinTokenInvalidException();
+      }
 
-        if (webinSubmissionAccountId == null) {
-          throw new GlobalExceptions.WebinTokenInvalidException();
-        }
+      samples =
+          samples.stream()
+              .map(
+                  sample ->
+                      bioSamplesWebinAuthenticationService.buildSampleWithWebinSubmissionAccountId(
+                          sample, webinSubmissionAccountId))
+              .collect(Collectors.toList());
+    } else {
+      if (!samples.isEmpty()) {
+        // check the first sample domain only
+        Sample firstSample = samples.get(0);
+        firstSample = bioSamplesAapService.handleSampleDomain(firstSample);
+
+        final Sample finalFirstSample = firstSample;
 
         samples =
             samples.stream()
                 .map(
                     sample ->
-                        bioSamplesWebinAuthenticationService
-                            .buildSampleWithWebinSubmissionAccountId(
-                                sample, webinSubmissionAccountId))
+                        Sample.Builder.fromSample(sample)
+                            .withDomain(finalFirstSample.getDomain())
+                            .withNoWebinSubmissionAccountId()
+                            .build())
                 .collect(Collectors.toList());
-      } else {
-        if (!samples.isEmpty()) {
-          Sample firstSample = samples.get(0);
-          firstSample = bioSamplesAapService.handleSampleDomain(firstSample);
-
-          final Sample finalFirstSample = firstSample;
-
-          samples =
-              samples.stream()
-                  .map(
-                      sample ->
-                          Sample.Builder.fromSample(sample)
-                              .withDomain(finalFirstSample.getDomain())
-                              .withNoWebinSubmissionAccountId()
-                              .build())
-                  .collect(Collectors.toList());
-        }
       }
-
-      final List<Sample> createdSamplesList =
-          samples.stream()
-              .map(
-                  sample -> {
-                    log.trace("Initiating persistSample() for " + sample.getName());
-                    sample = buildPrivateSampleV2(sample);
-                    return sampleService.accessionSample(sample);
-                  })
-              .collect(Collectors.toList());
-
-      final Map<String, String> outputMap =
-          createdSamplesList.stream()
-              .filter(Objects::nonNull)
-              .collect(Collectors.toMap(Sample::getName, Sample::getAccession));
-
-      return ResponseEntity.ok(outputMap);
-    } catch (final Exception e) {
-      log.info("Failed to assign accessions to " + samples.size() + " samples");
-
-      throw new GlobalExceptions.BulkAccessionFailureExceptionV2(e.getMessage());
     }
+
+    final List<Sample> createdSamplesList =
+        samples.stream()
+            .map(
+                sample -> {
+                  log.trace("Initiating persistSample() for " + sample.getName());
+
+                  sample = sampleService.buildPrivateSample(sample);
+                  /*
+                  Call the accessionSample from SampleService, it doesn't do a lot of housekeeping like reporting to Rabbit,
+                  saving to MongoSampleCurated etc which is not required for bulk-accessioning
+                   */
+                  return sampleService.accessionSample(sample);
+                })
+            .collect(Collectors.toList());
+
+    final Map<String, String> outputMap =
+        createdSamplesList.stream()
+            .filter(Objects::nonNull)
+            .collect(Collectors.toMap(Sample::getName, Sample::getAccession));
+
+    log.info(
+        "V2-Received bulk-accessioning request for : "
+            + samples.size()
+            + " samples and accessioned : "
+            + outputMap.size()
+            + " samples.");
+
+    return ResponseEntity.ok(outputMap);
+  }
+
+  @PreAuthorize("isAuthenticated()")
+  @CrossOrigin(methods = RequestMethod.GET)
+  @GetMapping(
+      produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE},
+      params = "accessions",
+      value = "/bulk-fetch")
+  public ResponseEntity<Map<String, Sample>> getMultipleSamples(
+      @RequestParam final List<String> accessions,
+      @RequestHeader(name = "Authorization", required = false) final String token) {
+    if (accessions == null) {
+      throw new GlobalExceptions.BulkFetchInvalidRequestException();
+    }
+
+    log.info("V2-Received request to bulk-fetch " + accessions.size() + " accessions");
+
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
+    final List<Sample> samples =
+        accessions.stream()
+            .map(
+                accession -> {
+                  final String cleanAccession = accession.trim();
+                  final Optional<Sample> sampleOptional =
+                      sampleService.fetch(cleanAccession, Optional.empty(), "");
+
+                  if (sampleOptional.isPresent()) {
+                    final boolean webinAuth =
+                        authToken
+                            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+                            .orElse(Boolean.FALSE);
+                    final Sample sample = sampleOptional.get();
+
+                    try {
+                      if (webinAuth) {
+                        final String webinSubmissionAccountId = authToken.get().getUser();
+
+                        bioSamplesWebinAuthenticationService.isSampleAccessible(
+                            sample, webinSubmissionAccountId);
+                      } else {
+                        bioSamplesAapService.checkSampleAccessibility(sample);
+                      }
+                    } catch (final Exception e) {
+                      log.info("Bulk-fetch forbidden sample: " + sample.getAccession());
+
+                      return null;
+                    }
+
+                    return sample;
+                  } else {
+                    log.info("Bulk-fetch not found sample: " + accession);
+
+                    return null;
+                  }
+                })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+    log.info(
+        "V2-Received bulk-fetch request for : "
+            + accessions.size()
+            + " samples and fetched : "
+            + samples.size()
+            + " samples.");
+
+    return ResponseEntity.ok(
+        samples.stream()
+            .collect(
+                Collectors.toMap(
+                    sample -> Objects.requireNonNull(sample).getAccession(), sample -> sample)));
   }
 }

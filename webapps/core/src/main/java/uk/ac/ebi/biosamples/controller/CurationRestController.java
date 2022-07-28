@@ -10,55 +10,41 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityLinks;
-import org.springframework.hateoas.ExposesResourceFor;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.server.EntityLinks;
+import org.springframework.hateoas.server.ExposesResourceFor;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.service.CurationResourceAssembler;
+import uk.ac.ebi.biosamples.service.SamplePageService;
+import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.utils.mongo.CurationReadService;
-import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
 
 @RestController
 @ExposesResourceFor(Curation.class)
 @RequestMapping("/curations")
 public class CurationRestController {
-
-  private final SampleReadService sampleService;
   private final SamplePageService samplePageService;
   private final CurationReadService curationReadService;
-
   private final SampleResourceAssembler sampleResourceAssembler;
   private final CurationResourceAssembler curationResourceAssembler;
-
   private final EntityLinks entityLinks;
 
-  private Logger log = LoggerFactory.getLogger(getClass());
-
   public CurationRestController(
-      SampleReadService sampleService,
       SamplePageService samplePageService,
       CurationReadService curationService,
       SampleResourceAssembler sampleResourceAssembler,
       CurationResourceAssembler curationResourceAssembler,
       EntityLinks entityLinks) {
-    this.sampleService = sampleService;
     this.samplePageService = samplePageService;
     this.entityLinks = entityLinks;
     this.sampleResourceAssembler = sampleResourceAssembler;
@@ -68,11 +54,11 @@ public class CurationRestController {
 
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<PagedResources<Resource<Curation>>> getPagedHal(
+  public ResponseEntity<PagedModel<EntityModel<Curation>>> getPagedHal(
       Pageable page, PagedResourcesAssembler<Curation> pageAssembler) {
     Page<Curation> pageExternalReference = curationReadService.getPage(page);
-    PagedResources<Resource<Curation>> pagedResources =
-        pageAssembler.toResource(
+    PagedModel<EntityModel<Curation>> pagedResources =
+        pageAssembler.toModel(
             pageExternalReference,
             curationResourceAssembler,
             entityLinks.linkToCollectionResource(Curation.class));
@@ -84,12 +70,12 @@ public class CurationRestController {
   @GetMapping(
       value = "/{hash}",
       produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<Resource<Curation>> getCurationHal(@PathVariable String hash) {
+  public ResponseEntity<EntityModel<Curation>> getCurationHal(@PathVariable String hash) {
     Curation curation = curationReadService.getCuration(hash);
     if (curation == null) {
       return ResponseEntity.notFound().build();
     }
-    Resource<Curation> resource = curationResourceAssembler.toResource(curation);
+    EntityModel<Curation> resource = curationResourceAssembler.toModel(curation);
     return ResponseEntity.ok().body(resource);
   }
 
@@ -97,11 +83,11 @@ public class CurationRestController {
   @GetMapping(
       value = "/{hash}/samples",
       produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<PagedResources<Resource<Sample>>> getCurationSamplesHal(
+  public ResponseEntity<PagedModel<EntityModel<Sample>>> getCurationSamplesHal(
       @PathVariable String hash, Pageable pageable, PagedResourcesAssembler<Sample> pageAssembler) {
 
     // get the response as if we'd called the externalReference endpoint
-    ResponseEntity<Resource<Curation>> externalReferenceResponse = getCurationHal(hash);
+    ResponseEntity<EntityModel<Curation>> externalReferenceResponse = getCurationHal(hash);
     if (!externalReferenceResponse.getStatusCode().is2xxSuccessful()) {
       // propagate any non-2xx status code from /{id}/ to this endpoint
       return ResponseEntity.status(externalReferenceResponse.getStatusCode()).build();
@@ -111,12 +97,12 @@ public class CurationRestController {
     Page<Sample> pageSample = samplePageService.getSamplesOfCuration(hash, pageable);
 
     // use the resource assembler and a link to this method to build out the response content
-    PagedResources<Resource<Sample>> pagedResources =
-        pageAssembler.toResource(
+    PagedModel<EntityModel<Sample>> pagedResources =
+        pageAssembler.toModel(
             pageSample,
             sampleResourceAssembler,
-            ControllerLinkBuilder.linkTo(
-                    ControllerLinkBuilder.methodOn(CurationRestController.class)
+            WebMvcLinkBuilder.linkTo(
+                    WebMvcLinkBuilder.methodOn(CurationRestController.class)
                         .getCurationSamplesHal(hash, pageable, pageAssembler))
                 .withRel("samples"));
 

@@ -10,12 +10,14 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import java.util.*;
+import java.util.Collections;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Sample;
 
 public class NcbiCallable implements Callable<Void> {
   private static final int MAX_RETRIES = 5;

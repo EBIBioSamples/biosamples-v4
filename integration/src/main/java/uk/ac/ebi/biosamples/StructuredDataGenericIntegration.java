@@ -14,13 +14,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
+import java.util.*;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
@@ -32,7 +27,6 @@ import uk.ac.ebi.biosamples.utils.TestUtilities;
 
 @Component
 public class StructuredDataGenericIntegration extends AbstractIntegration {
-  private final Logger log = LoggerFactory.getLogger(this.getClass());
   private ObjectMapper mapper;
 
   public StructuredDataGenericIntegration(BioSamplesClient client) {
@@ -50,10 +44,10 @@ public class StructuredDataGenericIntegration extends AbstractIntegration {
       throw new IntegrationTestFailException(
           "RestIntegration test sample should not be available during phase 1", Phase.ONE);
     } else {
-      Resource<Sample> resource = client.persistSampleResource(testSample);
+      EntityModel<Sample> resource = client.persistSampleResource(testSample);
       Sample testSampleWithAccession =
           Sample.Builder.fromSample(testSample)
-              .withAccession(resource.getContent().getAccession())
+              .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
               .build();
 
       accession = resource.getContent().getAccession();
@@ -77,7 +71,7 @@ public class StructuredDataGenericIntegration extends AbstractIntegration {
           "An error occurred while converting json to Sample class" + e, Phase.ONE);
     }
 
-    Resource<StructuredData> dataResource = client.persistStructuredData(structuredData);
+    EntityModel<StructuredData> dataResource = client.persistStructuredData(structuredData);
     if (!structuredData.equals(dataResource.getContent())) {
       try {
         String expected = mapper.writeValueAsString(structuredData);
@@ -98,8 +92,6 @@ public class StructuredDataGenericIntegration extends AbstractIntegration {
     if (!optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
           "Cant find sample " + sampleTest1.getName(), Phase.TWO);
-    } else {
-
     }
 
     Sample sample =
@@ -127,6 +119,9 @@ public class StructuredDataGenericIntegration extends AbstractIntegration {
   protected void phaseFive() {
     // skip
   }
+
+  @Override
+  protected void phaseSix() {}
 
   private Sample getSampleTest1() {
     String name = "StructuredDataGenericIntegration_sample_1";

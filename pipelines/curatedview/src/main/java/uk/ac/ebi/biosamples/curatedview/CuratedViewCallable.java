@@ -15,7 +15,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.StaticViewWrapper;
@@ -50,7 +50,8 @@ public class CuratedViewCallable implements Callable<Void> {
   }
 
   private void persistSamplesToStaticViewCollection() {
-    Optional<Resource<Sample>> optionalResource = bioSamplesClient.fetchSampleResource(accession);
+    Optional<EntityModel<Sample>> optionalResource =
+        bioSamplesClient.fetchSampleResource(accession);
     if (optionalResource.isPresent()) {
       Sample sample = optionalResource.get().getContent();
       MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);

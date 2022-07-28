@@ -10,10 +10,11 @@
 */
 package uk.ac.ebi.biosamples.service;
 
-import org.springframework.hateoas.EntityLinks;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceAssembler;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.EntityLinks;
+import org.springframework.hateoas.server.RepresentationModelAssembler;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.controller.SampleCurationLinksRestController;
 import uk.ac.ebi.biosamples.controller.SampleRestController;
@@ -22,8 +23,7 @@ import uk.ac.ebi.biosamples.model.CurationLink;
 
 @Service
 public class CurationLinkResourceAssembler
-    implements ResourceAssembler<CurationLink, Resource<CurationLink>> {
-
+    implements RepresentationModelAssembler<CurationLink, EntityModel<CurationLink>> {
   private final EntityLinks entityLinks;
 
   public CurationLinkResourceAssembler(EntityLinks entityLinks) {
@@ -31,24 +31,30 @@ public class CurationLinkResourceAssembler
   }
 
   @Override
-  public Resource<CurationLink> toResource(CurationLink curationLink) {
-    Resource<CurationLink> resource = new Resource<>(curationLink);
+  public EntityModel<CurationLink> toModel(CurationLink curationLink) {
+    EntityModel<CurationLink> resource = new EntityModel<>(curationLink);
 
     resource.add(
-        ControllerLinkBuilder.linkTo(
-                ControllerLinkBuilder.methodOn(SampleCurationLinksRestController.class)
+        WebMvcLinkBuilder.linkTo(
+                WebMvcLinkBuilder.methodOn(SampleCurationLinksRestController.class)
                     .getCurationLinkJson(curationLink.getSample(), curationLink.getHash()))
             .withSelfRel());
 
     resource.add(
-        ControllerLinkBuilder.linkTo(SampleRestController.class, curationLink.getSample())
+        WebMvcLinkBuilder.linkTo(SampleRestController.class, curationLink.getSample())
             .withRel("sample"));
 
     resource.add(
         entityLinks
-            .linkToSingleResource(Curation.class, curationLink.getCuration().getHash())
+            .linkToItemResource(Curation.class, curationLink.getCuration().getHash())
             .withRel("curation"));
 
     return resource;
+  }
+
+  @Override
+  public CollectionModel<EntityModel<CurationLink>> toCollectionModel(
+      Iterable<? extends CurationLink> entities) {
+    return null;
   }
 }

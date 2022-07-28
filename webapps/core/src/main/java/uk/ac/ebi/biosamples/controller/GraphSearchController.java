@@ -10,8 +10,6 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,19 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.neo4j.model.CypherQuery;
 import uk.ac.ebi.biosamples.neo4j.model.GraphSearchQuery;
 import uk.ac.ebi.biosamples.service.GraphSearchService;
-import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 
 @RestController
 @RequestMapping("/graph/search")
 public class GraphSearchController {
-  private static final Logger LOG = LoggerFactory.getLogger(GraphSearchController.class);
-
-  private final SampleResourceAssembler sampleResourceAssembler;
   private final GraphSearchService graphSearchService;
 
-  public GraphSearchController(
-      SampleResourceAssembler sampleResourceAssembler, GraphSearchService graphSearchService) {
-    this.sampleResourceAssembler = sampleResourceAssembler;
+  public GraphSearchController(GraphSearchService graphSearchService) {
     this.graphSearchService = graphSearchService;
   }
 

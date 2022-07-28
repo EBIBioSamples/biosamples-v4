@@ -13,6 +13,7 @@ package uk.ac.ebi.biosamples.client;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
@@ -28,19 +29,18 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.web.WebClientAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.ResourceSupport;
-import org.springframework.hateoas.hal.Jackson2HalModule;
-import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
+import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -112,13 +112,15 @@ public class BioSamplesAutoConfiguration {
   public BioSamplesClient bioSamplesWebinClient(
       BioSamplesProperties bioSamplesProperties,
       RestTemplateBuilder restTemplateBuilder,
-      SampleValidator sampleValidator,
-      @Qualifier("WEBIN") ClientService clientService) {
+      SampleValidator sampleValidator) {
     restTemplateBuilder =
         restTemplateBuilder.additionalCustomizers(
             new BioSampleClientRestTemplateCustomizer(bioSamplesProperties));
+    ClientService clientService = webinAuthClientService(restTemplateBuilder, bioSamplesProperties);
+
     return new BioSamplesClient(
         bioSamplesProperties.getBiosamplesClientUri(),
+        bioSamplesProperties.getBiosamplesClientUriV2(),
         restTemplateBuilder,
         sampleValidator,
         clientService,
@@ -130,13 +132,15 @@ public class BioSamplesAutoConfiguration {
   public BioSamplesClient bioSamplesAapClient(
       BioSamplesProperties bioSamplesProperties,
       RestTemplateBuilder restTemplateBuilder,
-      SampleValidator sampleValidator,
-      @Qualifier("AAP") ClientService clientService) {
+      SampleValidator sampleValidator) {
     restTemplateBuilder =
         restTemplateBuilder.additionalCustomizers(
             new BioSampleClientRestTemplateCustomizer(bioSamplesProperties));
+    ClientService clientService = aapClientService(restTemplateBuilder, bioSamplesProperties);
+
     return new BioSamplesClient(
         bioSamplesProperties.getBiosamplesClientUri(),
+        bioSamplesProperties.getBiosamplesClientUriV2(),
         restTemplateBuilder,
         sampleValidator,
         clientService,
@@ -208,11 +212,10 @@ public class BioSamplesAutoConfiguration {
       // ebi load balancers return a 500 error when a service is unavaliable not a 503
       ServiceUnavailableRetryStrategy serviceUnavailStrategy =
           new ServiceUnavailableRetryStrategy() {
-            private final int maxRetries = 100;
-            private final int retryInterval = 1000;
 
             public boolean retryRequest(
                 HttpResponse response, int executionCount, HttpContext context) {
+              int maxRetries = 100;
               return executionCount <= maxRetries
                   && (response.getStatusLine().getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE
                       || response.getStatusLine().getStatusCode()
@@ -221,7 +224,7 @@ public class BioSamplesAutoConfiguration {
 
             public long getRetryInterval() {
               // measured in milliseconds
-              return retryInterval;
+              return 1000;
             }
           };
 
@@ -248,9 +251,9 @@ public class BioSamplesAutoConfiguration {
       mapper.registerModule(new Jackson2HalModule());
       mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
       MappingJackson2HttpMessageConverter halConverter =
-          new TypeConstrainedMappingJackson2HttpMessageConverter(ResourceSupport.class);
+          new TypeConstrainedMappingJackson2HttpMessageConverter(RepresentationModel.class);
       halConverter.setObjectMapper(mapper);
-      halConverter.setSupportedMediaTypes(Arrays.asList(MediaTypes.HAL_JSON));
+      halConverter.setSupportedMediaTypes(Collections.singletonList(MediaTypes.HAL_JSON));
       // make sure this is inserted first
       converters.add(0, halConverter);
       restTemplate.setMessageConverters(converters);

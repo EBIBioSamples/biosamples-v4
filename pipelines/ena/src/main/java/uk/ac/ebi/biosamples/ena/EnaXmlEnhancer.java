@@ -131,14 +131,12 @@ public class EnaXmlEnhancer {
       XmlPathBuilder xmlPathBuilder =
           XmlPathBuilder.of(sampleXml).path("SAMPLE", "IDENTIFIERS", "SUBMITTER_ID");
       if (xmlPathBuilder.exists()) {
-        if (xmlPathBuilder.attributeExists("namespace")
-            && !xmlPathBuilder.attribute("namespace").isEmpty()) {
-          return sampleXml;
-        } else {
+        if (!xmlPathBuilder.attributeExists("namespace")
+            || xmlPathBuilder.attribute("namespace").isEmpty()) {
           String centerName = XmlPathBuilder.of(sampleXml).path("SAMPLE").attribute("center_name");
           xmlPathBuilder.element().addAttribute("namespace", centerName);
-          return sampleXml;
         }
+        return sampleXml;
       }
       return sampleXml;
     }
@@ -246,9 +244,7 @@ public class EnaXmlEnhancer {
           }
         }
         if (!bioSamplesExternalIdExists) {
-          xmlPathBuilder
-              .element()
-              .add(createExternalRef("BioSample", enaDatabaseSample.bioSamplesId));
+          xmlPathBuilder.element().add(createExternalRef(enaDatabaseSample.bioSamplesId));
         }
       }
       return sampleXml;
@@ -336,12 +332,14 @@ public class EnaXmlEnhancer {
     } catch (DocumentException e) {
       LOGGER.error("Error reading XML", e);
     }
+    assert xml != null;
+
     return xml.getRootElement();
   }
 
-  private static Element createExternalRef(String namespace, String bioSamplesId) {
+  private static Element createExternalRef(String bioSamplesId) {
     Element externalIdElement = DocumentHelper.createElement("EXTERNAL_ID");
-    externalIdElement.addAttribute("namespace", namespace);
+    externalIdElement.addAttribute("namespace", "BioSample");
     externalIdElement.setText(bioSamplesId);
     return externalIdElement;
   }

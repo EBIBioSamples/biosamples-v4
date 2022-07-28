@@ -10,34 +10,102 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Collections;
+import javax.sql.DataSource;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import uk.ac.ebi.biosamples.Application;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
+import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
+import uk.ac.ebi.biosamples.client.service.WebinAuthClientService;
+import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
 @Configuration
-public class TestApplication extends Application {
-
-  @Autowired
+public class TestApplication {
   @Bean
-  public BioSamplesClient bioSamplesClient(
-      BioSamplesProperties bioSamplesProperties,
-      RestTemplateBuilder restTemplateBuilder,
-      SampleValidator sampleValidator,
-      AapClientService aapClientService,
-      ObjectMapper objectMapper) {
+  public RestTemplate restTemplate() {
+    return new RestTemplate();
+  }
+
+  @Bean
+  public RestTemplateBuilder restTemplateBuilder() {
+    return new RestTemplateBuilder();
+  }
+
+  @Bean
+  public ObjectMapper objectMapper() {
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.registerModule(new Jackson2HalModule());
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    MappingJackson2HttpMessageConverter halConverter =
+        new TypeConstrainedMappingJackson2HttpMessageConverter(RepresentationModel.class);
+    halConverter.setObjectMapper(mapper);
+    halConverter.setSupportedMediaTypes(Collections.singletonList(MediaTypes.HAL_JSON));
+    return mapper;
+  }
+
+  @Bean
+  SampleValidator sampleValidator() {
+    return null;
+  }
+
+  @Bean
+  AapClientService aapClientService() {
+    return null;
+  }
+
+  @Bean
+  WebinAuthClientService webinAuthClientService() {
+    return null;
+  }
+
+  @Bean
+  public BioSamplesProperties bioSamplesProperties() {
+    return new BioSamplesProperties();
+  }
+
+  @Bean
+  public CurationApplicationService curationApplicationService() {
+    return new CurationApplicationService();
+  }
+
+  @Bean("MOCKCLIENT")
+  public BioSamplesClient bioSamplesClient() {
     return new MockBioSamplesClient(
-        bioSamplesProperties.getBiosamplesClientUri(),
-        restTemplateBuilder,
-        sampleValidator,
-        aapClientService,
-        bioSamplesProperties,
-        objectMapper);
+        bioSamplesProperties().getBiosamplesClientUri(),
+        bioSamplesProperties().getBiosamplesClientUriV2(),
+        restTemplateBuilder(),
+        sampleValidator(),
+        webinAuthClientService(),
+        bioSamplesProperties(),
+        objectMapper());
+  }
+
+  @Bean
+  public DataSource getDataSource() {
+    DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
+    dataSourceBuilder.driverClassName("oracle.jdbc.OracleDriver");
+    dataSourceBuilder.url("jdbc:oracle:thin:@//ora-era-pro-hl.ebi.ac.uk:1531/ERAPRO");
+    dataSourceBuilder.username("era_reader");
+    dataSourceBuilder.password("reader");
+
+    return dataSourceBuilder.build();
+  }
+
+  @Bean("eraJdbcTemplate")
+  public JdbcTemplate jdbcTemplate() {
+    return new JdbcTemplate(getDataSource());
   }
 }

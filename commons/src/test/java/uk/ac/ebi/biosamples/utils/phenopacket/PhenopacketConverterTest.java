@@ -78,6 +78,12 @@ public class PhenopacketConverterTest {
         .addAttribute(
             Attribute.build(
                 "lung disease", "yes", "http://purl.obolibrary.org/obo/UBERON_0002107", ""))
+        .addAttribute(
+            Attribute.build(
+                "disease state",
+                "Duchenne muscular dystrophy",
+                "http://www.orpha.net/ORDO/Orphanet_98896",
+                null))
         .build();
   }
 

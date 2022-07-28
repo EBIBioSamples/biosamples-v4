@@ -26,7 +26,6 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 @RestController
 @RequestMapping(produces = "application/ld+json")
 public class BioschemasController {
-
   private final JsonLDService jsonLDService;
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;

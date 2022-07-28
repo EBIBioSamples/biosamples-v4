@@ -22,14 +22,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-import uk.ac.ebi.biosamples.utils.ArgUtils;
-import uk.ac.ebi.biosamples.utils.MailSender;
+import uk.ac.ebi.biosamples.utils.PipelineUtils;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 public abstract class PipelineApplicationRunner implements ApplicationRunner {
@@ -54,7 +53,7 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
   public void run(ApplicationArguments args) throws Exception {
     Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
-    Collection<Filter> filters = ArgUtils.getDateFilters(args);
+    Collection<Filter> filters = PipelineUtils.getDateFilters(args);
     long sampleCount = 0;
 
     loadPreConfiguration();
@@ -68,7 +67,8 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
             pipelinesProperties.getThreadCountMax())) {
 
       Map<String, Future<PipelineResult>> futures = new HashMap<>();
-      for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters)) {
+      for (EntityModel<Sample> sampleResource :
+          bioSamplesClient.fetchSampleResourceAll("", filters)) {
         Sample sample = Objects.requireNonNull(sampleResource.getContent());
         LOG.trace("Handling {}", sample);
 
@@ -84,11 +84,6 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
       ThreadUtils.checkAndCallbackFutures(futures, 0, pipelineFutureCallback);
     } catch (final Exception e) {
       LOG.error("Pipeline failed to finish successfully", e);
-      MailSender.sendEmail(
-          getPipelineName(),
-          "Failed for network connectivity issues/ other issues - <ALERT BIOSAMPLES DEV> "
-              + e.getMessage(),
-          false);
       throw e;
     } finally {
       Instant endTime = Instant.now();
@@ -108,11 +103,6 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
               pipelineFutureCallback.getTotalCount());
       pipelineAnalytics.setDateRange(filters);
       //            analyticsService.persistPipelineAnalytics(pipelineAnalytics);
-
-      MailSender.sendEmail(
-          getPipelineName(),
-          String.join(",", pipelineFutureCallback.getFailedSamples()),
-          pipelineFutureCallback.getFailedSamples().isEmpty());
     }
   }
 

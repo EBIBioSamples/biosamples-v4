@@ -22,8 +22,8 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.*;
-import org.springframework.hateoas.hal.Jackson2HalModule;
-import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
+import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
+import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -68,9 +68,9 @@ public class BigIntegration extends AbstractIntegration {
     mapper.registerModule(new Jackson2HalModule());
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     MappingJackson2HttpMessageConverter halConverter =
-        new TypeConstrainedMappingJackson2HttpMessageConverter(ResourceSupport.class);
+        new TypeConstrainedMappingJackson2HttpMessageConverter(RepresentationModel.class);
     halConverter.setObjectMapper(mapper);
-    halConverter.setSupportedMediaTypes(Arrays.asList(MediaTypes.HAL_JSON));
+    halConverter.setSupportedMediaTypes(Collections.singletonList(MediaTypes.HAL_JSON));
     // make sure this is inserted first
     converters.add(0, halConverter);
     restTemplate.setMessageConverters(converters);
@@ -96,19 +96,19 @@ public class BigIntegration extends AbstractIntegration {
     // generate one sample to rule them all
     samples.add(generateSample(firstInteger + noSamples, samples, null));
 
-    // time how long it takes to submit them
+    // time how long it takes to post them
 
     long startTime = System.nanoTime();
     client.persistSamples(samples);
     long endTime = System.nanoTime();
 
-    double elapsedMs = (int) ((endTime - startTime) / 1000000l);
+    double elapsedMs = (int) ((endTime - startTime) / 1000000L);
     double msPerSample = elapsedMs / noSamples;
     log.info(
         "Submitted " + noSamples + " samples in " + elapsedMs + "ms (" + msPerSample + "ms each)");
     if (msPerSample > 100) {
       throw new RuntimeException(
-          "Took more than 100ms per sample to submit (" + msPerSample + "ms each)");
+          "Took more than 100ms per sample to post (" + msPerSample + "ms each)");
     }
   }
 
@@ -123,7 +123,7 @@ public class BigIntegration extends AbstractIntegration {
     startTime = System.nanoTime();
     client.fetchSample("SAMEA" + (firstInteger + noSamples));
     endTime = System.nanoTime();
-    elapsedMs = (int) ((endTime - startTime) / 1000000l);
+    elapsedMs = (int) ((endTime - startTime) / 1000000L);
     if (elapsedMs > timeout) {
       throw new RuntimeException(
           "Took more than "
@@ -137,7 +137,7 @@ public class BigIntegration extends AbstractIntegration {
     startTime = System.nanoTime();
     client.fetchSample("SAMEA" + firstInteger);
     endTime = System.nanoTime();
-    elapsedMs = (int) ((endTime - startTime) / 1000000l);
+    elapsedMs = (int) ((endTime - startTime) / 1000000L);
     if (elapsedMs > timeout) {
       throw new RuntimeException(
           "Took more than  "
@@ -151,11 +151,9 @@ public class BigIntegration extends AbstractIntegration {
     // time how long it takes to loop over all of them
 
     startTime = System.nanoTime();
-    for (Resource<Sample> sample : client.fetchSampleResourceAll()) {
-      // do nothing
-    }
+    client.fetchSampleResourceAll(); // do nothing
     endTime = System.nanoTime();
-    elapsedMs = (int) ((endTime - startTime) / 1000000l);
+    elapsedMs = (int) ((endTime - startTime) / 1000000L);
     if (elapsedMs > timeout) {
       throw new RuntimeException(
           "Took more than  " + timeout + "ms to fetch all samples (" + elapsedMs + "ms)");
@@ -173,17 +171,17 @@ public class BigIntegration extends AbstractIntegration {
             .encode()
             .toUri();
     log.info("checking HAL links on " + uri);
-    ResponseEntity<PagedResources<Resource<Sample>>> responseEntity =
+    ResponseEntity<PagedModel<EntityModel<Sample>>> responseEntity =
         restOperations.exchange(
             RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build(),
-            new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {});
+            new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {});
 
-    PagedResources<Resource<Sample>> page = responseEntity.getBody();
+    PagedModel<EntityModel<Sample>> page = responseEntity.getBody();
     log.info("looking for links in " + page);
     for (Link link : page.getLinks()) {
       log.info("Found link " + link);
     }
-    Link firstLink = page.getLink(Link.REL_FIRST);
+    Link firstLink = page.getLink(Link.REL_FIRST).get();
     UriComponents firstLinkUriComponents =
         UriComponentsBuilder.fromUriString(firstLink.getHref()).build();
 
@@ -220,6 +218,9 @@ public class BigIntegration extends AbstractIntegration {
     // TODO Auto-generated method stub
 
   }
+
+  @Override
+  protected void phaseSix() {}
 
   public Sample generateSample(int i, List<Sample> samples, Sample root) {
 

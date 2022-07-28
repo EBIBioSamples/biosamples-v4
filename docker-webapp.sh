@@ -17,10 +17,10 @@ then
 	#remove any images, in case of out-of-date or corrupt images
 	#docker-compose down --volumes --remove-orphans
 	docker-compose down --volumes --rmi local --remove-orphans
-	mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait
+	mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait -s ci_settings.xml
 else
 	docker-compose down --rmi local --remove-orphans
-	mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait
+	mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait -s ci_settings.xml
 fi
 set -e
 
@@ -51,10 +51,10 @@ docker-compose run --rm mongo mongo --eval 'db.setProfilingLevel(1)' mongo:27017
 docker-compose up -d biosamples-webapps-core
 sleep 40
 echo "checking webapps-core is up"
-./http-status-check -u http://localhost:8081/biosamples/health -t 600
+./http-status-check -u http://localhost:8081/biosamples/actuator/health -t 600
 
 docker-compose up -d biosamples-webapps-core-v2
 sleep 40
 echo "checking webapps-core-v2 is up"
-./http-status-check -u http://localhost:8082/biosamples/health -t 600
+./http-status-check -u http://localhost:8082/biosamples/v2/actuator/health -t 600
 

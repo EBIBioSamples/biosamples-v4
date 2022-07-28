@@ -39,7 +39,6 @@ import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 
 @Service
 public class SampleToXmlConverter implements Converter<Sample, Document> {
-
   private final Namespace xmlns =
       Namespace.get("http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0");
   private final Namespace xsi = Namespace.get("xsi", "http://www.w3.org/2001/XMLSchema-instance");

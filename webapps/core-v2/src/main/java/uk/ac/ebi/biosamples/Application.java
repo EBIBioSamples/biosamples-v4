@@ -14,7 +14,7 @@ import java.util.concurrent.Executor;
 import javax.servlet.Filter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -33,8 +33,19 @@ import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.service.SampleAsXMLHttpMessageConverter;
 import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
+import uk.ac.ebi.tsc.aap.client.repo.*;
 
-@SpringBootApplication
+@SpringBootApplication(
+    exclude = {
+      DomainService.class,
+      DomainRepositoryRest.class,
+      ProfileService.class,
+      ProfileRepositoryRest.class,
+      UserService.class,
+      UserRepositoryRest.class,
+      TokenService.class,
+      TokenRepositoryRest.class
+    })
 @EnableAsync
 @EnableCaching
 public class Application extends SpringBootServletInitializer {

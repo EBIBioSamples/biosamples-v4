@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelineFutureCallback;
 import uk.ac.ebi.biosamples.PipelineResult;
@@ -30,8 +30,7 @@ import uk.ac.ebi.biosamples.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-import uk.ac.ebi.biosamples.utils.ArgUtils;
-import uk.ac.ebi.biosamples.utils.MailSender;
+import uk.ac.ebi.biosamples.utils.PipelineUtils;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.mongo.AnalyticsService;
 
@@ -56,7 +55,7 @@ public class CopydownApplicationRunner implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) throws Exception {
-    final Collection<Filter> filters = ArgUtils.getDateFilters(args);
+    final Collection<Filter> filters = PipelineUtils.getDateFilters(args);
     Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
     long sampleCount = 0;
@@ -71,7 +70,7 @@ public class CopydownApplicationRunner implements ApplicationRunner {
             pipelinesProperties.getThreadCountMax())) {
       final Map<String, Future<PipelineResult>> futures = new HashMap<>();
 
-      for (final Resource<Sample> sampleResource :
+      for (final EntityModel<Sample> sampleResource :
           bioSamplesClient.fetchSampleResourceAll("", filters)) {
         LOG.trace("Handling " + sampleResource);
         final Sample sample = sampleResource.getContent();
@@ -94,11 +93,6 @@ public class CopydownApplicationRunner implements ApplicationRunner {
     } catch (final Exception e) {
       LOG.error("Pipeline failed to finish successfully", e);
       isPassed = false;
-      MailSender.sendEmail(
-          "Copy-down",
-          "Failed for network connectivity issues/ other issues - <ALERT BIOSAMPLES DEV> "
-              + e.getMessage(),
-          isPassed);
       throw e;
     } finally {
       Instant endTime = Instant.now();
@@ -130,7 +124,6 @@ public class CopydownApplicationRunner implements ApplicationRunner {
         final String failures = "Failed files (" + fails.size() + ") " + String.join(" , ", fails);
 
         LOG.info(failures);
-        MailSender.sendEmail("Copy-down", failures, isPassed);
       }
     }
     // TODO re-check existing curations

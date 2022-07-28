@@ -18,7 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.hateoas.core.Relation;
+import org.springframework.hateoas.server.core.Relation;
 import uk.ac.ebi.biosamples.model.facet.content.FacetContent;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountEntry;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountListContent;
@@ -27,7 +27,6 @@ import uk.ac.ebi.biosamples.model.filter.FilterType;
 @Relation(collectionRelation = "facets")
 @JsonDeserialize(builder = DateRangeFacet.Builder.class)
 public class DateRangeFacet implements Facet {
-
   private String facetLabel;
   private Long facetCount;
   private LabelCountListContent content;

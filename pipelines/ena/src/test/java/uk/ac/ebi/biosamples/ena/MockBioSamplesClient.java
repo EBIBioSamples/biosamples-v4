@@ -21,15 +21,14 @@ import java.net.URI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.client.service.AapClientService;
+import uk.ac.ebi.biosamples.client.service.ClientService;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
 public class MockBioSamplesClient extends BioSamplesClient {
-
   private Logger log = LoggerFactory.getLogger(getClass());
 
   private static PrintWriter printWriter;
@@ -42,12 +41,13 @@ public class MockBioSamplesClient extends BioSamplesClient {
 
   public MockBioSamplesClient(
       URI uri,
+      URI uriV2,
       RestTemplateBuilder restTemplateBuilder,
       SampleValidator sampleValidator,
-      AapClientService aapClientService,
+      ClientService aapClientService,
       BioSamplesProperties bioSamplesProperties,
       ObjectMapper objectMapper) {
-    super(uri, restTemplateBuilder, sampleValidator, aapClientService, bioSamplesProperties);
+    super(uri, uriV2, restTemplateBuilder, sampleValidator, aapClientService, bioSamplesProperties);
     this.objectMapper = objectMapper;
     try {
       fileWriter = new FileWriter("export.json");
@@ -64,7 +64,7 @@ public class MockBioSamplesClient extends BioSamplesClient {
       // objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
       sampleJson = objectMapper.writeValueAsString(sample);
       // System.out.println(sampleJson);
-    } catch (JsonProcessingException e) {
+    } catch (JsonProcessingException ignored) {
 
     }
     printWriter.printf("%s\n", sampleJson);
@@ -74,9 +74,9 @@ public class MockBioSamplesClient extends BioSamplesClient {
   }
 
   @Override
-  public Resource<Sample> persistSampleResource(Sample sample) {
+  public EntityModel<Sample> persistSampleResource(Sample sample) {
     logSample(sample);
-    return mock(Resource.class);
+    return mock(EntityModel.class);
   }
 
   public void finalize() {

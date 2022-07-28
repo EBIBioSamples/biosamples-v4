@@ -11,12 +11,11 @@
 package uk.ac.ebi.biosamples.client.service;
 
 import java.net.URI;
-import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.HttpHeaders;
@@ -28,27 +27,22 @@ import org.springframework.web.client.RestOperations;
 import uk.ac.ebi.biosamples.model.CurationLink;
 
 public class CurationSubmissionService {
-
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final Traverson traverson;
-  private final ExecutorService executor;
   private final RestOperations restOperations;
 
-  public CurationSubmissionService(
-      RestOperations restOperations, Traverson traverson, ExecutorService executor) {
+  public CurationSubmissionService(RestOperations restOperations, Traverson traverson) {
     this.restOperations = restOperations;
     this.traverson = traverson;
-    this.executor = executor;
   }
 
-  public Resource<CurationLink> submit(CurationLink curationLink, boolean isWebin)
+  public EntityModel<CurationLink> submit(CurationLink curationLink) throws RestClientException {
+    return persistCuration(curationLink, null);
+  }
+
+  public EntityModel<CurationLink> persistCuration(CurationLink curationLink, String jwt)
       throws RestClientException {
-    return persistCuration(curationLink, null, isWebin);
-  }
-
-  public Resource<CurationLink> persistCuration(
-      CurationLink curationLink, String jwt, boolean isWebin) throws RestClientException {
     String addWebinRequestParam = "";
 
     URI target =
@@ -72,9 +66,9 @@ public class CurationSubmissionService {
     }
     RequestEntity<CurationLink> requestEntity = bodyBuilder.body(curationLink);
 
-    ResponseEntity<Resource<CurationLink>> responseEntity =
+    ResponseEntity<EntityModel<CurationLink>> responseEntity =
         restOperations.exchange(
-            requestEntity, new ParameterizedTypeReference<Resource<CurationLink>>() {});
+            requestEntity, new ParameterizedTypeReference<EntityModel<CurationLink>>() {});
 
     return responseEntity.getBody();
   }

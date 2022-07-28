@@ -25,20 +25,22 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.ac.ebi.biosamples.TestApplication;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
-import uk.ac.ebi.biosamples.utils.TaxonomyService;
+import uk.ac.ebi.biosamples.service.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(
+    classes = TestApplication.class,
+    properties = {"job.autorun.enabled=false"})
 @ActiveProfiles("test")
 public class NcbiElementCallableTest {
 
-  @MockBean(name = "AAPCLIENT")
-  BioSamplesClient bioSamplesClient;
+  @MockBean BioSamplesClient bioSamplesClient;
 
   TestUtilities testUtils = new TestUtilities();
   TaxonomyService taxonService = new TaxonomyService();
@@ -82,8 +84,7 @@ public class NcbiElementCallableTest {
   }
 
   @Test
-  public void should_extract_double_organism_if_organism_is_in_description_with_null_amr_map()
-      throws Exception {
+  public void should_extract_double_organism_if_organism_is_in_description_with_null_amr_map() {
     ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
     when(bioSamplesClient.persistSampleResource(generatedSample.capture())).thenReturn(null);
 

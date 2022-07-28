@@ -13,7 +13,7 @@ package uk.ac.ebi.biosamples;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -51,7 +51,7 @@ public class SamplesGraphIntegration extends AbstractIntegration {
   @Override
   protected void phaseFour() {
     List<Sample> samples = new ArrayList<>();
-    for (Resource<Sample> sample : client.fetchSampleResourceAll()) {
+    for (EntityModel<Sample> sample : client.fetchSampleResourceAll()) {
       samples.add(sample.getContent());
     }
 
@@ -83,4 +83,7 @@ public class SamplesGraphIntegration extends AbstractIntegration {
       throw new IntegrationTestFailException("No samples present in neo4j", Phase.FIVE);
     }
   }
+
+  @Override
+  protected void phaseSix() {}
 }

@@ -32,30 +32,26 @@ import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
-import uk.ac.ebi.tsc.aap.client.repo.DomainService;
-import uk.ac.ebi.tsc.aap.client.repo.TokenService;
 import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
 
 @Service
 public class BioSamplesAapService {
-
   private Logger log = LoggerFactory.getLogger(getClass());
 
-  private final Traverson traverson;
   private final BioSamplesProperties bioSamplesProperties;
   private final SampleService sampleService;
-  private final TokenService tokenService;
-  private final DomainService domainService;
+  private final AapTokenService tokenService;
+  private final AapDomainService domainService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
 
   public BioSamplesAapService(
       RestTemplateBuilder restTemplateBuilder,
       BioSamplesProperties bioSamplesProperties,
       SampleService sampleService,
-      TokenService tokenService,
-      DomainService domainService,
+      AapTokenService tokenService,
+      AapDomainService domainService,
       BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService) {
-    traverson =
+    Traverson traverson =
         new Traverson(bioSamplesProperties.getBiosamplesClientAapUri(), MediaTypes.HAL_JSON);
     this.tokenService = tokenService;
     this.domainService = domainService;
@@ -70,22 +66,16 @@ public class BioSamplesAapService {
   }
 
   public List<String> getDomains(String token) {
-    List<String> domains = new ArrayList<>();
-
     domainService.getMyDomains(token).forEach(domain -> log.info(domain.getDomainName()));
-    domains.addAll(
-        domainService.getMyDomains(token).stream()
-            .map(domain -> domain.getDomainName())
-            .collect(Collectors.toList()));
 
-    return domains;
+    return domainService.getMyDomains(token).stream()
+        .map(Domain::getDomainName)
+        .collect(Collectors.toList());
   }
 
   /**
    * Returns a set of domains that the current user has access to (uses thread-bound spring
    * security) Always returns a set, even if its empty if not logged in
-   *
-   * @return
    */
   public Set<String> getDomains() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -148,11 +138,6 @@ public class BioSamplesAapService {
    *
    * <p>May return a different version of the sample, so return needs to be stored in future for
    * that sample.
-   *
-   * @param sample
-   * @return
-   * @throws GlobalExceptions.SampleNotAccessibleException
-   * @throws GlobalExceptions.DomainMissingException
    */
   public Sample handleSampleDomain(Sample sample)
       throws GlobalExceptions.SampleNotAccessibleException,
@@ -166,6 +151,14 @@ public class BioSamplesAapService {
     // for some cases
     if (sample.getAccession() != null) {
       oldSample = sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+    }
+
+    if (oldSample.isPresent()
+        && oldSample.get().getSubmittedVia()
+            == SubmittedViaType.PIPELINE_IMPORT) { // pipeline imports access protection
+      if (sample.getSubmittedVia() != SubmittedViaType.PIPELINE_IMPORT) {
+        throw new GlobalExceptions.InvalidSubmissionSourceException();
+      }
     }
 
     // check if FILE UPLOADER submission, domain changes are not allowed, handled differently
@@ -241,12 +234,6 @@ public class BioSamplesAapService {
             });
   }
 
-  /**
-   * @param sample
-   * @return
-   * @throws GlobalExceptions.StructuredDataNotAccessibleException
-   * @throws GlobalExceptions.StructuredDataDomainMissingException
-   */
   public boolean isStructuredDataSubmittedBySampleSubmitter(Sample sample)
       throws GlobalExceptions.StructuredDataNotAccessibleException,
           GlobalExceptions.StructuredDataDomainMissingException {
@@ -286,10 +273,6 @@ public class BioSamplesAapService {
    *
    * <p>May return a different version of the CurationLink, so return needs to be stored in future
    * for that CurationLink.
-   *
-   * @return
-   * @throws GlobalExceptions.SampleNotAccessibleException
-   * @throws GlobalExceptions.DomainMissingException
    */
   public CurationLink handleCurationLinkDomain(CurationLink curationLink)
       throws GlobalExceptions.CurationLinkDomainMissingException {
@@ -327,10 +310,6 @@ public class BioSamplesAapService {
               + usersDomains);
       throw new GlobalExceptions.SampleNotAccessibleException();
     }
-  }
-
-  public boolean isReadSuperUser() {
-    return getDomains().contains(bioSamplesProperties.getBiosamplesAapSuperRead());
   }
 
   public boolean isWriteSuperUser() {

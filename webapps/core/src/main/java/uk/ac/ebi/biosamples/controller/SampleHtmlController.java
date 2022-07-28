@@ -10,7 +10,6 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import java.net.URI;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -28,7 +27,10 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
@@ -50,7 +52,6 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 @Controller
 @RequestMapping(value = "/", produces = MediaType.TEXT_HTML_VALUE)
 public class SampleHtmlController {
-
   private Logger log = LoggerFactory.getLogger(getClass());
 
   private final SampleService sampleService;
@@ -58,7 +59,6 @@ public class SampleHtmlController {
   private final JsonLDService jsonLDService;
   private final FacetService facetService;
   private final FilterService filterService;
-  private final StatService statService;
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesProperties bioSamplesProperties;
 
@@ -68,7 +68,6 @@ public class SampleHtmlController {
       JsonLDService jsonLDService,
       FacetService facetService,
       FilterService filterService,
-      StatService statService,
       BioSamplesAapService bioSamplesAapService,
       BioSamplesProperties bioSamplesProperties) {
     this.sampleService = sampleService;
@@ -76,7 +75,6 @@ public class SampleHtmlController {
     this.jsonLDService = jsonLDService;
     this.facetService = facetService;
     this.filterService = filterService;
-    this.statService = statService;
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesProperties = bioSamplesProperties;
   }
@@ -150,7 +148,7 @@ public class SampleHtmlController {
     Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);
     Collection<String> domains = bioSamplesAapService.getDomains();
 
-    Pageable pageable = new PageRequest(page - 1, size);
+    Pageable pageable = PageRequest.of(page - 1, size);
     Page<Sample> pageSample =
         samplePageService.getSamplesByText(
             text, filterCollection, domains, null, pageable, curationRepo, Optional.empty());
@@ -210,14 +208,13 @@ public class SampleHtmlController {
   }
 
   @GetMapping(value = "/graph/search")
-  public String samplesGraph(
-      Model model, HttpServletRequest request, HttpServletResponse response) {
+  public String samplesGraph() {
     //		return "error/feature_not_supported"; //until this is ready for the production
     return "samples_graph";
   }
 
   @GetMapping(value = "/uploadLogin")
-  public String login(Model model, HttpServletRequest request, HttpServletResponse response) {
+  public String login(Model model) {
     AuthorizationProvider[] loginWays = AuthorizationProvider.values();
     List<String> logins = new ArrayList<>();
 
@@ -274,12 +271,12 @@ public class SampleHtmlController {
 
     Pagination previous = null;
     if (pageCurrent > 1) {
-      previous = new Pagination(pageCurrent - 1, false, pageCurrent, uriBuilder, pageSample);
+      previous = new Pagination(pageCurrent - 1, false, pageCurrent, uriBuilder);
     }
 
     Pagination next = null;
     if (pageCurrent < pageTotal) {
-      next = new Pagination(pageCurrent + 1, false, pageCurrent, uriBuilder, pageSample);
+      next = new Pagination(pageCurrent + 1, false, pageCurrent, uriBuilder);
     }
 
     Paginations paginations = new Paginations(pageCurrent, pageTotal, previous, next);
@@ -287,33 +284,32 @@ public class SampleHtmlController {
     if (pageTotal <= 6) {
       // few enough pages to fit onto a single bar
       for (int i = 1; i <= pageTotal; i++) {
-        paginations.add(new Pagination(i, false, pageCurrent, uriBuilder, pageSample));
+        paginations.add(new Pagination(i, false, pageCurrent, uriBuilder));
       }
     } else {
       // need at least one ellipsis
       // if we are in the first 4 or the last 4
       if (pageCurrent <= 4) {
-        paginations.add(new Pagination(1, false, pageCurrent, uriBuilder, pageSample));
-        paginations.add(new Pagination(2, false, pageCurrent, uriBuilder, pageSample));
-        paginations.add(new Pagination(3, false, pageCurrent, uriBuilder, pageSample));
-        paginations.add(new Pagination(4, false, pageCurrent, uriBuilder, pageSample));
-        paginations.add(new Pagination(5, false, pageCurrent, uriBuilder, pageSample));
-        paginations.add(new Pagination(pageTotal, true, pageCurrent, uriBuilder, pageSample));
+        paginations.add(new Pagination(1, false, pageCurrent, uriBuilder));
+        paginations.add(new Pagination(2, false, pageCurrent, uriBuilder));
+        paginations.add(new Pagination(3, false, pageCurrent, uriBuilder));
+        paginations.add(new Pagination(4, false, pageCurrent, uriBuilder));
+        paginations.add(new Pagination(5, false, pageCurrent, uriBuilder));
+        paginations.add(new Pagination(pageTotal, true, pageCurrent, uriBuilder));
       } else if (pageTotal - pageCurrent <= 3) {
-        paginations.add(new Pagination(1, false, pageCurrent, uriBuilder, pageSample));
-        paginations.add(new Pagination(pageTotal - 4, true, pageCurrent, uriBuilder, pageSample));
-        paginations.add(new Pagination(pageTotal - 3, false, pageCurrent, uriBuilder, pageSample));
-        paginations.add(new Pagination(pageTotal - 2, false, pageCurrent, uriBuilder, pageSample));
-        paginations.add(new Pagination(pageTotal - 1, false, pageCurrent, uriBuilder, pageSample));
-        paginations.add(new Pagination(pageTotal, false, pageCurrent, uriBuilder, pageSample));
+        paginations.add(new Pagination(1, false, pageCurrent, uriBuilder));
+        paginations.add(new Pagination(pageTotal - 4, true, pageCurrent, uriBuilder));
+        paginations.add(new Pagination(pageTotal - 3, false, pageCurrent, uriBuilder));
+        paginations.add(new Pagination(pageTotal - 2, false, pageCurrent, uriBuilder));
+        paginations.add(new Pagination(pageTotal - 1, false, pageCurrent, uriBuilder));
+        paginations.add(new Pagination(pageTotal, false, pageCurrent, uriBuilder));
       } else {
         // will need two sets of ellipsis
-        paginations.add(new Pagination(1, false, pageCurrent, uriBuilder, pageSample));
-        paginations.add(new Pagination(pageCurrent - 1, true, pageCurrent, uriBuilder, pageSample));
-        paginations.add(new Pagination(pageCurrent, false, pageCurrent, uriBuilder, pageSample));
-        paginations.add(
-            new Pagination(pageCurrent + 1, false, pageCurrent, uriBuilder, pageSample));
-        paginations.add(new Pagination(pageTotal, true, pageCurrent, uriBuilder, pageSample));
+        paginations.add(new Pagination(1, false, pageCurrent, uriBuilder));
+        paginations.add(new Pagination(pageCurrent - 1, true, pageCurrent, uriBuilder));
+        paginations.add(new Pagination(pageCurrent, false, pageCurrent, uriBuilder));
+        paginations.add(new Pagination(pageCurrent + 1, false, pageCurrent, uriBuilder));
+        paginations.add(new Pagination(pageTotal, true, pageCurrent, uriBuilder));
       }
     }
 
@@ -351,56 +347,12 @@ public class SampleHtmlController {
     public final boolean skip;
     public final boolean current;
 
-    public Pagination(
-        int pageNo,
-        boolean skip,
-        int currentNo,
-        UriComponentsBuilder uriBuilder,
-        Page<Sample> pageSample) {
+    public Pagination(int pageNo, boolean skip, int currentNo, UriComponentsBuilder uriBuilder) {
       this.page = pageNo;
       this.skip = skip;
       this.current = (currentNo == pageNo);
       this.url = uriBuilder.cloneBuilder().replaceQueryParam("page", pageNo).build().toUriString();
     }
-  }
-
-  private URI getFilterUri(
-      UriComponentsBuilder uriBuilder,
-      List<String> filters,
-      String filterAdd,
-      String filterRemove) {
-    List<String> tempFiltersList = new ArrayList<>(filters);
-    if (filterAdd != null) {
-      tempFiltersList.add(filterAdd);
-      // if turning on a facet-all filter, remove facet-value filters for that facet
-      // if turning on a facet-value filter, remove facet-all filters for that facet
-      if (filterAdd.contains(":")) {
-        // remove facet-all filters when adding a specific facet
-        tempFiltersList.remove(filterAdd.split(":")[0]);
-      } else {
-        // remove facet-specific filters when adding a filter-all facet
-        Iterator<String> it = tempFiltersList.iterator();
-        while (it.hasNext()) {
-          if (it.next().startsWith(filterAdd + ":")) {
-            it.remove();
-          }
-        }
-      }
-    }
-    if (filterRemove != null) {
-      tempFiltersList.remove(filterRemove);
-    }
-    Collections.sort(tempFiltersList);
-    String[] tempFiltersArray = new String[tempFiltersList.size()];
-    tempFiltersArray = tempFiltersList.toArray(tempFiltersArray);
-    URI uri =
-        uriBuilder
-            .cloneBuilder()
-            .replaceQueryParam("filter", (Object[]) tempFiltersArray)
-            .replaceQueryParam("start") // reset back to page 1
-            .build(false)
-            .toUri();
-    return uri;
   }
 
   @GetMapping(value = "/samples/{accession}")
@@ -413,17 +365,8 @@ public class SampleHtmlController {
     // TODO allow curation domain specification
     Optional<Sample> sample = sampleService.fetch(accession, Optional.empty(), curationRepo);
     if (!sample.isPresent()) {
-      // did not exist, throw 404
-      // TODO do as an exception
       log.info("Returning a 404 for " + request.getRequestURL());
-      //			response.setStatus(HttpStatus.NOT_FOUND.value());
-      //			return "error/4xx";
       throw new ResourceNotFoundException();
-    }
-
-    if (sample == null || !sample.isPresent()) {
-      // throw internal server error
-      throw new RuntimeException("Unable to retrieve " + accession);
     }
 
     bioSamplesAapService.checkSampleAccessibility(sample.get());
@@ -444,13 +387,26 @@ public class SampleHtmlController {
 
     Instant submitted = sample.get().getSubmitted();
 
-    if (submitted != null) model.addAttribute("submitted", submitted.atOffset(ZoneOffset.UTC));
-    else model.addAttribute("submitted", null);
+    if (submitted != null) {
+      model.addAttribute("submitted", submitted.atOffset(ZoneOffset.UTC));
+    } else {
+      model.addAttribute("submitted", null);
+    }
 
     Instant reviewed = sample.get().getReviewed();
 
-    if (reviewed != null) model.addAttribute("reviewed", reviewed.atOffset(ZoneOffset.UTC));
-    else model.addAttribute("reviewed", null);
+    if (reviewed != null) {
+      model.addAttribute("reviewed", reviewed.atOffset(ZoneOffset.UTC));
+    } else {
+      model.addAttribute("reviewed", null);
+    }
+
+    // Note - EBI load balancer does cache but doesn't add age header, so clients could cache up
+    // to
+    // twice this age
+    CacheControl cacheControl = CacheControl.maxAge(10, TimeUnit.SECONDS);
+
+    response.setHeader("Cache-Control", cacheControl.getHeaderValue());
 
     return "sample";
   }

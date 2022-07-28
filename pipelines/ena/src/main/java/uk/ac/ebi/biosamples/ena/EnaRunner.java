@@ -10,10 +10,6 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
@@ -30,17 +26,22 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
+import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
+import uk.ac.ebi.biosamples.mongo.repo.MongoPipelineRepository;
+import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
 import uk.ac.ebi.biosamples.service.AmrDataLoaderService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-import uk.ac.ebi.biosamples.utils.MailSender;
+import uk.ac.ebi.biosamples.utils.PipelineUniqueIdentifierGenerator;
+import uk.ac.ebi.biosamples.utils.PipelineUtils;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 @Component
@@ -59,6 +60,7 @@ public class EnaRunner implements ApplicationRunner {
   @Autowired private EraProDao eraProDao;
   @Autowired private EnaCallableFactory enaCallableFactory;
   @Autowired private NcbiCallableFactory ncbiCallableFactory;
+  @Autowired private MongoPipelineRepository mongoPipelineRepository;
   @Autowired private AmrDataLoaderService amrDataLoaderService;
 
   @Autowired
@@ -69,14 +71,17 @@ public class EnaRunner implements ApplicationRunner {
   private Map<String, Future<Void>> futures = new LinkedHashMap<>();
   private Map<String, Set<StructuredDataTable>> sampleToAmrMap = new HashMap<>();
 
+  public static final Map<String, String> failures = new HashMap<>();
+
   @Override
   public void run(ApplicationArguments args) {
     log.info("Processing ENA pipeline...");
 
-    final Map<String, String> failures = new HashMap<>();
-    boolean isPassed = true;
     boolean includeAmr = true;
     boolean processBacklogs = true;
+    boolean isPassed = true;
+
+    String pipelineFailureCause = null;
 
     if (args.getOptionNames().contains("includeAmr")) {
       if (args.getOptionValues("includeAmr").iterator().next().equalsIgnoreCase("false")) {
@@ -131,13 +136,101 @@ public class EnaRunner implements ApplicationRunner {
       if (processBacklogs) {
         backfillEnaBrowserMissingSamples(args, failures);
       }
+
+      /*final List<String> bsdIds = eraProDao.doWWWDEVMapping();
+
+      handleWWWDevMapping(bsdIds);*/
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);
+      pipelineFailureCause = e.getMessage();
       isPassed = false;
     } finally {
-      MailSender.sendEmail("ENA", null, isPassed);
+      final MongoPipeline mongoPipeline;
+
+      if (isPassed) {
+        mongoPipeline =
+            new MongoPipeline(
+                PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.ENA),
+                new Date(),
+                PipelineName.ENA.name(),
+                PipelineCompletionStatus.COMPLETED,
+                String.join(",", failures.keySet()),
+                null);
+      } else {
+        mongoPipeline =
+            new MongoPipeline(
+                PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.ENA),
+                new Date(),
+                PipelineName.ENA.name(),
+                PipelineCompletionStatus.FAILED,
+                String.join(",", failures.keySet()),
+                pipelineFailureCause);
+      }
+
+      mongoPipelineRepository.insert(mongoPipeline);
+
+      PipelineUtils.writeFailedSamplesToFile(failures, PipelineName.ENA);
     }
   }
+
+  /*private void handleWWWDevMapping(final List<String> bsdIds) {
+    final RestTemplate restTemplate = new RestTemplate();
+    final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
+
+    bsdIds.forEach(
+        bsdId -> {
+          log.info("Handling BSD ID " + bsdId);
+
+          try {
+            final String baseUrl =
+                "https://wwwdev.ebi.ac.uk/biosamples/samples/" + bsdId + ".json?curationdomain=";
+            final RequestEntity<Void> requestEntity =
+                new RequestEntity<>(headers, HttpMethod.GET, URI.create(baseUrl));
+            final ResponseEntity<EntityModel<Sample>> responseEntity =
+                restTemplate.exchange(
+                    requestEntity, new ParameterizedTypeReference<EntityModel<Sample>>() {});
+
+            final EntityModel<Sample> sampleEntityInWWWDev = responseEntity.getBody();
+
+            if (sampleEntityInWWWDev != null) {
+              final Sample sampleInWWWDEV = sampleEntityInWWWDev.getContent();
+
+              if (sampleInWWWDEV.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
+                final Optional<EntityModel<Sample>> sampleOptionalInProd =
+                    bioSamplesWebinClient.fetchSampleResource(bsdId);
+
+                if (sampleOptionalInProd.isPresent()) {
+                  final Sample sampleInProd = sampleOptionalInProd.get().getContent();
+
+                  if (sampleInProd.getSubmittedVia() == SubmittedViaType.JSON_API) {
+                    log.info(
+                        "Sample uploaded using the FILE UPLOADER: "
+                            + bsdId
+                            + " and reverted in prod while pipeline re-import, merge WWWDEV sample to WWW");
+
+                    final Sample sampleToPostToWWW =
+                        Sample.Builder.fromSample(sampleInWWWDEV).build();
+
+                    bioSamplesWebinClient.persistSampleResource(sampleToPostToWWW);
+                  } else {
+                    log.info("Sample not updated in WWW: " + bsdId);
+                  }
+                } else {
+                  log.info("Sample not found in WWW: " + bsdId);
+                }
+              } else {
+                log.info("Sample not updated in WWWDEV using FILE UPLOADER: " + bsdId);
+              }
+            } else {
+              log.info("Sample not found in WWWDEV: " + bsdId);
+            }
+          } catch (final Exception e) {
+            log.info("Failed to handle BsdId: " + bsdId, e);
+          }
+        });
+  }*/
 
   private void backfillEnaBrowserMissingSamples(
       final ApplicationArguments args, final Map<String, String> failures)
@@ -185,28 +278,6 @@ public class EnaRunner implements ApplicationRunner {
     } finally {
       executorService.shutdown();
       executorService.awaitTermination(1, TimeUnit.MINUTES);
-
-      BufferedWriter bf = null;
-      File file = new File("ena_backfill_failures.txt");
-
-      try {
-        bf = new BufferedWriter(new FileWriter(file));
-        for (Map.Entry<String, String> entry : failures.entrySet()) {
-          bf.write(entry.getKey() + " : " + entry.getValue());
-          bf.newLine();
-        }
-
-        bf.flush();
-      } catch (IOException e) {
-        e.printStackTrace();
-      } finally {
-        try {
-          assert bf != null;
-          bf.close();
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-      }
     }
   }
 
@@ -226,14 +297,14 @@ public class EnaRunner implements ApplicationRunner {
       if (bioSampleId.startsWith(SAMEA)) {
         while (!success) {
           try {
-            final Optional<Resource<Sample>> sampleOptional =
+            final Optional<EntityModel<Sample>> sampleOptional =
                 bioSamplesWebinClient.fetchSampleResource(bioSampleId);
 
             if (sampleOptional.isPresent()) {
               log.info(
                   "Sample exists, fetch un-curated view and  reset update date " + bioSampleId);
 
-              final Optional<Resource<Sample>> optionalSampleResourceWithoutCurations =
+              final Optional<EntityModel<Sample>> optionalSampleResourceWithoutCurations =
                   bioSamplesWebinClient.fetchSampleResource(
                       bioSampleId, Optional.of(curationDomainBlankList));
 
@@ -264,13 +335,13 @@ public class EnaRunner implements ApplicationRunner {
       } else {
         while (!success) {
           try {
-            final Optional<Resource<Sample>> sampleOptional =
+            final Optional<EntityModel<Sample>> sampleOptional =
                 bioSamplesAapClient.fetchSampleResource(bioSampleId);
 
             if (sampleOptional.isPresent()) {
               log.info("Sample exists, fetch un-curated view and reset update date " + bioSampleId);
 
-              final Optional<Resource<Sample>> optionalSampleResourceWithoutCurations =
+              final Optional<EntityModel<Sample>> optionalSampleResourceWithoutCurations =
                   bioSamplesAapClient.fetchSampleResource(
                       bioSampleId, Optional.of(curationDomainBlankList));
               final Sample sampleWithoutCurations =
@@ -364,7 +435,6 @@ public class EnaRunner implements ApplicationRunner {
     }
 
     private enum ENAStatus {
-      PRIVATE(2),
       CANCELLED(3),
       PUBLIC(4),
       SUPPRESSED(5),

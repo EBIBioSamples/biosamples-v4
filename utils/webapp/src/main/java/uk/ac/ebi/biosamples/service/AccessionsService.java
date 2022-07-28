@@ -37,7 +37,7 @@ public class AccessionsService {
       final String webinSubmissionAccountId,
       final Integer page,
       final Integer size) {
-    final PageRequest pageable = new PageRequest(page, size);
+    final PageRequest pageable = PageRequest.of(page, size);
     final String decodedText = LinkUtils.decodeText(text);
     final String[] decodedFilter = LinkUtils.decodeTexts(requestfilters);
     final Collection<Filter> filtersAfterDecode = filterService.getFiltersCollection(decodedFilter);

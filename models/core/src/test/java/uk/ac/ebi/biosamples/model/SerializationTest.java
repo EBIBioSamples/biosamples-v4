@@ -18,7 +18,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.SortedSet;
@@ -53,7 +52,7 @@ public class SerializationTest {
     JacksonTester.initFields(this, objectMapper);
   }
 
-  private Sample getSimpleSample() throws URISyntaxException {
+  private Sample getSimpleSample() {
     String name = "Test Sample";
     String accession = "SAMEA1234";
     String domain = "abcde12345";

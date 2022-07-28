@@ -11,6 +11,7 @@
 package uk.ac.ebi.biosamples;
 
 import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -56,19 +58,23 @@ public class EtagTests {
             .addAttribute(new Attribute.Builder("Organism", "Homo sapiens").build())
             .build();
 
-    when(sampleService.fetch(eq(sampleAccession), any(Optional.class), any(String.class)))
+    when(sampleService.fetch(sampleAccession, Optional.empty(), null))
         .thenReturn(Optional.of(testSample));
     when(bioSamplesAapService.handleSampleDomain(testSample)).thenReturn(testSample);
+    doNothing().when(bioSamplesAapService).checkSampleAccessibility(isA(Sample.class));
     when(accessControlService.extractToken(anyString()))
         .thenReturn(
             Optional.of(
                 new AuthToken(
                     "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
 
+    mockMvc
+        .perform(get("/samples/{accession}", sampleAccession).accept(MediaTypes.HAL_JSON))
+        .andExpect(status().is2xxSuccessful());
+
     MvcResult sampleRequestResult =
         mockMvc
-            .perform(
-                get("/samples/{accession}", sampleAccession).accept(MediaType.APPLICATION_JSON))
+            .perform(get("/samples/{accession}", sampleAccession).accept(MediaTypes.HAL_JSON))
             .andReturn();
 
     String etag = sampleRequestResult.getResponse().getHeader("Etag");

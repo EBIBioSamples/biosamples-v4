@@ -18,8 +18,8 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.ExposesResourceFor;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.ExposesResourceFor;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
@@ -50,7 +50,7 @@ public class CertificationController {
   @Autowired private AccessControlService accessControlService;
 
   @PutMapping("{accession}/certify")
-  public Resource<Sample> certify(
+  public EntityModel<Sample> certify(
       @RequestBody Sample sample,
       @PathVariable String accession,
       @RequestHeader(name = "Authorization", required = false) final String token)
@@ -110,11 +110,11 @@ public class CertificationController {
 
     log.trace("Sample with certificates " + sample);
 
-    sample = sampleService.persistSample(sample, false, authProvider);
+    sample = sampleService.persistSample(sample, authProvider, false);
 
     // assemble a resource to return
     // create the response object with the appropriate status
-    return sampleResourceAssembler.toResource(sample);
+    return sampleResourceAssembler.toModel(sample);
   }
 
   @PostMapping("/checkCompliance")

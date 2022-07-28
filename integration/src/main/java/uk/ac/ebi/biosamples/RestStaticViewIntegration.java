@@ -12,9 +12,8 @@ package uk.ac.ebi.biosamples;
 
 import java.time.Instant;
 import java.util.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
+import java.util.concurrent.TimeUnit;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.*;
@@ -22,7 +21,6 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component
 public class RestStaticViewIntegration extends AbstractIntegration {
-  private Logger log = LoggerFactory.getLogger(this.getClass());
 
   public RestStaticViewIntegration(BioSamplesClient client) {
     super(client);
@@ -36,10 +34,10 @@ public class RestStaticViewIntegration extends AbstractIntegration {
     Sample test5 = getSampleTest5();
 
     // put a private sample
-    Resource<Sample> resource = client.persistSampleResource(test1);
+    EntityModel<Sample> resource = client.persistSampleResource(test1);
     test1 =
         Sample.Builder.fromSample(test1)
-            .withAccession(resource.getContent().getAccession())
+            .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
             .build();
     if (!test1.equals(resource.getContent())) {
       throw new IntegrationTestFailException(
@@ -51,7 +49,7 @@ public class RestStaticViewIntegration extends AbstractIntegration {
     resource = client.persistSampleResource(test2);
     test2 =
         Sample.Builder.fromSample(test2)
-            .withAccession(resource.getContent().getAccession())
+            .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
             .build();
     if (!test2.equals(resource.getContent())) {
       throw new IntegrationTestFailException(
@@ -62,7 +60,7 @@ public class RestStaticViewIntegration extends AbstractIntegration {
     resource = client.persistSampleResource(test4);
     test4 =
         Sample.Builder.fromSample(test4)
-            .withAccession(resource.getContent().getAccession())
+            .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
             .build();
     if (!test4.equals(resource.getContent())) {
       throw new IntegrationTestFailException(
@@ -73,7 +71,7 @@ public class RestStaticViewIntegration extends AbstractIntegration {
     resource = client.persistSampleResource(test5);
     test5 =
         Sample.Builder.fromSample(test5)
-            .withAccession(resource.getContent().getAccession())
+            .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
             .build();
     if (!test5.equals(resource.getContent())) {
       throw new IntegrationTestFailException(
@@ -83,11 +81,12 @@ public class RestStaticViewIntegration extends AbstractIntegration {
   }
 
   @Override
-  protected void phaseTwo() {
+  protected void phaseTwo() throws InterruptedException {
     Sample test2 = getSampleTest2();
     Sample test4 = getSampleTest4();
     Sample test5 = getSampleTest5();
 
+    TimeUnit.SECONDS.sleep(2);
     Optional<Sample> optionalSample = fetchUniqueSampleByName(test2.getName());
     if (optionalSample.isPresent()) {
       test2 = optionalSample.get();
@@ -143,7 +142,7 @@ public class RestStaticViewIntegration extends AbstractIntegration {
     relationships.add(Relationship.build(test4.getAccession(), "derive to", test5.getAccession()));
     Sample sample4WithRelationships =
         Sample.Builder.fromSample(test4).withRelationships(relationships).build();
-    Resource<Sample> resource = client.persistSampleResource(sample4WithRelationships);
+    EntityModel<Sample> resource = client.persistSampleResource(sample4WithRelationships);
     if (!sample4WithRelationships.equals(resource.getContent())) {
       throw new IntegrationTestFailException(
           "Expected response ("
@@ -226,8 +225,8 @@ public class RestStaticViewIntegration extends AbstractIntegration {
           "Sample does not exist, sample name: " + test5.getName(), Phase.THREE);
     }
 
-    List<Resource<Sample>> samples = new ArrayList<>();
-    for (Resource<Sample> sample : client.fetchSampleResourceAll()) {
+    List<EntityModel<Sample>> samples = new ArrayList<>();
+    for (EntityModel<Sample> sample : client.fetchSampleResourceAll()) {
       samples.add(sample);
     }
 
@@ -237,7 +236,7 @@ public class RestStaticViewIntegration extends AbstractIntegration {
 
     // check that the private sample is not in search results
     // check that the referenced non-existing sample not in search result
-    for (Resource<Sample> resource : client.fetchSampleResourceAll()) {
+    for (EntityModel<Sample> resource : client.fetchSampleResourceAll()) {
       if (resource.getContent().getAccession().equals(test1.getName())) {
         throw new IntegrationTestFailException(
             "Found non-public sample " + test1.getName() + " in search samples", Phase.THREE);
@@ -250,7 +249,7 @@ public class RestStaticViewIntegration extends AbstractIntegration {
 
     test4 = Sample.Builder.fromSample(getSampleTest4()).withAccession(test4.getAccession()).build();
     // delete relationships again
-    Resource<Sample> resource = client.persistSampleResource(test4);
+    EntityModel<Sample> resource = client.persistSampleResource(test4);
     if (!test4.equals(resource.getContent())) {
       throw new IntegrationTestFailException(
           "Expected response (" + resource.getContent() + ") to equal submission (" + test4 + ")");
@@ -275,9 +274,12 @@ public class RestStaticViewIntegration extends AbstractIntegration {
     // nothing to do here
   }
 
+  @Override
+  protected void phaseSix() {}
+
   private void testDynamicAndStaticView(String accession) {
     Sample dynamicSample;
-    Optional<Resource<Sample>> optionalSample =
+    Optional<EntityModel<Sample>> optionalSample =
         client.fetchSampleResource(
             accession, Optional.empty(), null, StaticViewWrapper.StaticView.SAMPLES_DYNAMIC);
     if (optionalSample.isPresent()) {
