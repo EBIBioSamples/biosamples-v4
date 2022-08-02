@@ -54,8 +54,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.jdbc</groupId>
-			<artifactId>ojdbc10</artifactId>
-			<version>19.3.0.0</version>
+			<artifactId>ojdbc8</artifactId>
+			<version>12.2.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.jdbc</groupId>
@@ -65,7 +65,7 @@
 		<dependency>
 			<groupId>com.oracle.jdbc</groupId>
 			<artifactId>xmlparserv2</artifactId>
-			<version>19.3.0.0</version>
+			<version>12.2.0.1</version>
 		</dependency>
 	</dependencies>
 
