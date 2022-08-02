@@ -124,10 +124,11 @@ public class ReindexRunner implements ApplicationRunner {
     }
 
     @Override
-    public Void call() throws Exception {
+    public Void call() {
       if (!fetchSampleAndSendMessage(false)) {
         fetchSampleAndSendMessage(true);
       }
+
       return null;
     }
 
@@ -140,6 +141,7 @@ public class ReindexRunner implements ApplicationRunner {
         }
       }
       Optional<Sample> opt = sampleReadService.fetch(accession, Optional.empty());
+
       if (opt.isPresent()) {
         try {
           Sample sample = opt.get();
