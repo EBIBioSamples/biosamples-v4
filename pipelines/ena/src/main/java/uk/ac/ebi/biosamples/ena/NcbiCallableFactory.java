@@ -33,17 +33,11 @@ public class NcbiCallableFactory {
    * Builds a callable for dealing samples that are SUPPRESSED
    *
    * @param accession The accession passed
-   * @param statusId The sample status
-   * @param suppressionHandler true for this case
    * @return the callable, {@link NcbiCallable}
    */
-  public NcbiCallable build(String accession, int statusId, boolean suppressionHandler) {
+  public NcbiCallable build(String accession) {
     return new NcbiCallable(
-        accession,
-        statusId,
-        bioSamplesClient,
-        domain,
-        suppressionHandler,
-        enaSampleTransformationService);
+        accession, bioSamplesClient,
+        domain, enaSampleTransformationService);
   }
 }

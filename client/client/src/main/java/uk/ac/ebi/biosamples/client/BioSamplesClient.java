@@ -33,6 +33,7 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.service.*;
 import uk.ac.ebi.biosamples.model.Curation;
@@ -77,8 +78,11 @@ public class BioSamplesClient implements AutoCloseable {
       SampleValidator sampleValidator,
       ClientService clientService,
       BioSamplesProperties bioSamplesProperties) {
+    if (uriV2 == null) {
+      uriV2 = UriComponentsBuilder.fromUri(URI.create(uri + "/v2")).build().toUri();
+    }
 
-    RestTemplate restOperations = restTemplateBuilder.build();
+    final RestTemplate restOperations = restTemplateBuilder.build();
 
     threadPoolExecutor =
         AdaptiveThreadPoolExecutor.create(

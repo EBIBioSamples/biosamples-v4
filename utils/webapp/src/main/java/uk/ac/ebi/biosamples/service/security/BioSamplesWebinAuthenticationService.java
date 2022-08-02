@@ -85,7 +85,7 @@ public class BioSamplesWebinAuthenticationService {
     }
   }
 
-  public Sample handleWebinUserSubmission(Sample sample, String webinId) {
+  public Sample handleWebinUserSubmission(final Sample sample, final String webinId) {
     final String biosamplesClientWebinUsername =
         bioSamplesProperties.getBiosamplesClientWebinUsername();
     final String webinSubmissionAccountIdInMetadata = sample.getWebinSubmissionAccountId();
@@ -99,12 +99,14 @@ public class BioSamplesWebinAuthenticationService {
 
       if (sample.getAccession() != null) { // sample updates, where sample has an accession
         final Optional<Sample> oldSample = fetchOldSample(sample);
+        final boolean oldSamplePresent = oldSample.isPresent();
 
         if (webinId.equalsIgnoreCase(
             biosamplesClientWebinUsername)) { // ENA pipeline submissions or super user submission
           // (via FILE UPLOADER)
-          if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-            if (oldSample.isPresent()
+          if (sample.getSubmittedVia()
+              == SubmittedViaType.FILE_UPLOADER) { // uploader submission access protection
+            if (oldSamplePresent
                 && !sample
                     .getWebinSubmissionAccountId()
                     .equals(oldSample.get().getWebinSubmissionAccountId())) {
@@ -112,7 +114,15 @@ public class BioSamplesWebinAuthenticationService {
             }
           }
 
-          if (oldSample.isPresent()) {
+          if (oldSamplePresent
+              && oldSample.get().getSubmittedVia()
+                  == SubmittedViaType.PIPELINE_IMPORT) { // pipeline imports access protection
+            if (sample.getSubmittedVia() != SubmittedViaType.PIPELINE_IMPORT) {
+              throw new GlobalExceptions.InvalidSubmissionSourceException();
+            }
+          }
+
+          if (oldSamplePresent) {
             final Sample oldSavedSample = oldSample.get();
             final String oldSavedSampleWebinSubmissionAccountId =
                 oldSavedSample.getWebinSubmissionAccountId();
@@ -147,8 +157,15 @@ public class BioSamplesWebinAuthenticationService {
           }
         } else { // normal sample update - not pipeline, check for old user, if mismatch throw
           // exception, else build the Sample
-          if (oldSample.isPresent()) {
+          if (oldSamplePresent) {
             final Sample oldSavedSample = oldSample.get();
+
+            if (oldSavedSample.getSubmittedVia()
+                == SubmittedViaType.PIPELINE_IMPORT) { // pipleine imports access protection
+              if (sample.getSubmittedVia() != SubmittedViaType.PIPELINE_IMPORT) {
+                throw new GlobalExceptions.InvalidSubmissionSourceException();
+              }
+            }
 
             if (!webinId.equalsIgnoreCase(
                 oldSavedSample.getWebinSubmissionAccountId())) { // original submitter mismatch
@@ -308,7 +325,7 @@ public class BioSamplesWebinAuthenticationService {
         && webinId.equalsIgnoreCase(bioSamplesProperties.getBiosamplesClientWebinUsername());
   }
 
-  public void checkSampleAccessibility(final Sample sample, final String webinSubmissionAccountId) {
+  public void isSampleAccessible(final Sample sample, final String webinSubmissionAccountId) {
     if (webinSubmissionAccountId == null) {
       if (!sample.getRelease().isBefore(Instant.now())) {
         throw new GlobalExceptions.SampleNotAccessibleException();

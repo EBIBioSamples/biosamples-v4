@@ -66,7 +66,6 @@ public class BioSamplesAapService {
   }
 
   public List<String> getDomains(String token) {
-
     domainService.getMyDomains(token).forEach(domain -> log.info(domain.getDomainName()));
 
     return domainService.getMyDomains(token).stream()
@@ -77,8 +76,6 @@ public class BioSamplesAapService {
   /**
    * Returns a set of domains that the current user has access to (uses thread-bound spring
    * security) Always returns a set, even if its empty if not logged in
-   *
-   * @return
    */
   public Set<String> getDomains() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -141,11 +138,6 @@ public class BioSamplesAapService {
    *
    * <p>May return a different version of the sample, so return needs to be stored in future for
    * that sample.
-   *
-   * @param sample
-   * @return
-   * @throws GlobalExceptions.SampleNotAccessibleException
-   * @throws GlobalExceptions.DomainMissingException
    */
   public Sample handleSampleDomain(Sample sample)
       throws GlobalExceptions.SampleNotAccessibleException,
@@ -159,6 +151,14 @@ public class BioSamplesAapService {
     // for some cases
     if (sample.getAccession() != null) {
       oldSample = sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+    }
+
+    if (oldSample.isPresent()
+        && oldSample.get().getSubmittedVia()
+            == SubmittedViaType.PIPELINE_IMPORT) { // pipeline imports access protection
+      if (sample.getSubmittedVia() != SubmittedViaType.PIPELINE_IMPORT) {
+        throw new GlobalExceptions.InvalidSubmissionSourceException();
+      }
     }
 
     // check if FILE UPLOADER submission, domain changes are not allowed, handled differently
@@ -234,12 +234,6 @@ public class BioSamplesAapService {
             });
   }
 
-  /**
-   * @param sample
-   * @return
-   * @throws GlobalExceptions.StructuredDataNotAccessibleException
-   * @throws GlobalExceptions.StructuredDataDomainMissingException
-   */
   public boolean isStructuredDataSubmittedBySampleSubmitter(Sample sample)
       throws GlobalExceptions.StructuredDataNotAccessibleException,
           GlobalExceptions.StructuredDataDomainMissingException {
@@ -279,10 +273,6 @@ public class BioSamplesAapService {
    *
    * <p>May return a different version of the CurationLink, so return needs to be stored in future
    * for that CurationLink.
-   *
-   * @return
-   * @throws GlobalExceptions.SampleNotAccessibleException
-   * @throws GlobalExceptions.DomainMissingException
    */
   public CurationLink handleCurationLinkDomain(CurationLink curationLink)
       throws GlobalExceptions.CurationLinkDomainMissingException {

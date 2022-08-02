@@ -5,11 +5,10 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.2.7-SNAPSHOT</version>
+		<version>5.2.8-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 	<properties>
-		<snippetsDirectory>${project.build.directory}/generated-snippets</snippetsDirectory>
 		<bootstrap.version>4.0.0-2</bootstrap.version>
 		<lombok.version>1.18.2</lombok.version>
 	</properties>
@@ -17,32 +16,32 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-mongo</artifactId>
-			<version>5.2.7-SNAPSHOT</version>
+			<version>5.2.8-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-webapp</artifactId>
-			<version>5.2.7-SNAPSHOT</version>
+			<version>5.2.8-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>commons</artifactId>
-			<version>5.2.7-SNAPSHOT</version>
+			<version>5.2.8-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-thread</artifactId>
-			<version>5.2.7-SNAPSHOT</version>
+			<version>5.2.8-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-validation</artifactId>
-			<version>5.2.7-SNAPSHOT</version>
+			<version>5.2.8-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>properties</artifactId>
-			<version>5.2.7-SNAPSHOT</version>
+			<version>5.2.8-SNAPSHOT</version>
 		</dependency>
 		<!-- other spring dependencies -->
 		<dependency>
@@ -67,16 +66,6 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-oxm</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.restdocs</groupId>
-			<artifactId>spring-restdocs-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.restdocs</groupId>
-			<artifactId>spring-restdocs-mockmvc</artifactId>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.github.javafaker</groupId>
@@ -183,34 +172,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.asciidoctor</groupId>
-				<artifactId>asciidoctor-maven-plugin</artifactId>
-				<version>2.1.0</version>
-				<executions>
-					<execution>
-						<id>output-html</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>process-asciidoc</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<sourceDirectory>src/main/asciidoc</sourceDirectory>
-					<outputDirectory>${project.build.outputDirectory}/templates/asciidoc</outputDirectory>
-					<!--<outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/classes/templates/asciidoc/</outputDirectory>-->
-					<backend>html</backend>
-					<doctype>book</doctype>
-					<preserveDirectories>true</preserveDirectories>
-					<attributes>
-						<snippets>${snippetsDirectory}</snippets>
-						<source-highlighter>highlightjs</source-highlighter>
-						<toc-title>Contents</toc-title>
-						<toclevels>2</toclevels>
-					</attributes>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

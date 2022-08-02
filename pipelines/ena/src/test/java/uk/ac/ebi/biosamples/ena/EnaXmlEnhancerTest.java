@@ -24,7 +24,7 @@ import uk.ac.ebi.biosamples.ena.EnaXmlEnhancer.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
-    classes = TestApplication.class,
+    classes = {TestApplication.class, EnaXmlEnhancer.class, EraProDao.class},
     properties = {"job.autorun.enabled=false"})
 public class EnaXmlEnhancerTest {
 

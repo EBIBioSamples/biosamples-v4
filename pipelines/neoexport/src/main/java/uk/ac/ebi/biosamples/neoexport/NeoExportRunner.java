@@ -32,7 +32,7 @@ import uk.ac.ebi.biosamples.model.SampleAnalytics;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.neo4j.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-import uk.ac.ebi.biosamples.utils.ArgUtils;
+import uk.ac.ebi.biosamples.utils.PipelineUtils;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 @Component
@@ -59,7 +59,7 @@ public class NeoExportRunner implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) throws Exception {
-    Collection<Filter> filters = ArgUtils.getDateFilters(args);
+    Collection<Filter> filters = PipelineUtils.getDateFilters(args);
     //    RelationFilter relationFilter = new RelationFilter.Builder("has member").build();
     //    filters.add(relationFilter);
     //    ExternalReferenceDataFilter externalFilter = new ExternalReferenceDataFilter.Builder("EGA

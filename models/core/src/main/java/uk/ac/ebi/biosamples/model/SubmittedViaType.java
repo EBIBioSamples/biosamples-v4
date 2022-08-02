@@ -13,6 +13,7 @@ package uk.ac.ebi.biosamples.model;
 public enum SubmittedViaType {
   JSON_API,
   FILE_UPLOADER,
+  PIPELINE_IMPORT,
   FILE_UPLOADER_PLACEHOLDER,
   USI,
   SAMPLETAB

@@ -12,8 +12,6 @@ package uk.ac.ebi.biosamples.solr.service;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.util.ClientUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -38,9 +36,7 @@ public class SolrSampleService {
 
   // maximum time allowed for a solr search in s
   // TODO application.properties this
-  private static final int TIMEALLOWED = 30;
-
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private static final int TIMEALLOWED = 55;
 
   public SolrSampleService(
       SolrSampleRepository solrSampleRepository, SolrFilterService solrFilterService) {
@@ -128,17 +124,6 @@ public class SolrSampleService {
       boostName.setPartIsOr(true);
       query.addCriteria(boostName);
     }
-
-//    keywords_ss:Eukaryota
-//    {!qf=keywords_ss}Eukaryota
-
-//    SimpleQuery query = new SimpleQuery();
-//    query.addCriteria(new Criteria("keywords_ss").is(searchTerm));
-//    query.addCriteria(new SimpleStringCriteria(searchTerm));
-//    query.setGroupOptions(new GroupOptions().addGroupByField("keywords_ss"));
-
-    // build a query out of the users string and any facets
-//    Query query = new SimpleQuery(queryField);
 
     query.addProjectionOnField(new SimpleField("id"));
 

@@ -73,7 +73,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
   @Override
   public void run(ApplicationArguments args) throws Exception {
     Instant startTime = Instant.now();
-    Collection<Filter> filters = ArgUtils.getDateFilters(args);
+    Collection<Filter> filters = PipelineUtils.getDateFilters(args);
     boolean isPassed = true;
     long sampleCount = 0;
     String pipelineFailureCause = null;

@@ -10,16 +10,13 @@
 */
 package uk.ac.ebi.biosamples.service.security;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.*;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
@@ -27,7 +24,6 @@ import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 
 @Service
 public class AccessControlService {
-  private Logger log = LoggerFactory.getLogger(getClass());
   private final ObjectMapper objectMapper;
 
   public AccessControlService(ObjectMapper objectMapper) {
@@ -47,12 +43,13 @@ public class AccessControlService {
       String header = new String(decoder.decode(chunks[0]));
       String payload = new String(decoder.decode(chunks[1]));
 
-      if (!verifySignature(token)) {
+      if (!verifySignature()) {
         throw new GlobalExceptions.AccessControlException(
             "Failed to verify the integrity of the token");
       }
 
       AuthToken authToken;
+
       try {
         String algorithm = objectMapper.readTree(header).get("alg").asText();
         AuthorizationProvider authority;
@@ -66,6 +63,8 @@ public class AccessControlService {
           roles =
               objectMapper.convertValue(node.get("domains"), new TypeReference<List<String>>() {});
         } else {
+          verifyValidity(token);
+
           authority = AuthorizationProvider.WEBIN;
           user = node.get("principle").asText();
           roles = objectMapper.convertValue(node.get("role"), new TypeReference<List<String>>() {});
@@ -82,13 +81,20 @@ public class AccessControlService {
     }
   }
 
+  private void verifyValidity(final String token) {
+    final DecodedJWT jwt = JWT.decode(token);
+
+    if (jwt.getExpiresAt().before(new Date())) {
+      throw new GlobalExceptions.AccessControlException(
+          "JWT token has expired, please obtain a new JWT token before submission");
+    }
+  }
+
   private static boolean isAap(JsonNode node) {
     return node.get("iss") != null && node.get("iss").asText().contains("aai.ebi.ac.uk");
   }
 
-  public boolean verifySignature(String token) {
-    // todo without verifying with the authority we cant make any claims about the validity of the
-    // token
+  public boolean verifySignature() {
     return true;
   }
 

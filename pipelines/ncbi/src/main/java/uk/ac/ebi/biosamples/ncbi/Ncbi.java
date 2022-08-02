@@ -183,14 +183,14 @@ public class Ncbi implements ApplicationRunner {
                 PipelineName.NCBI.name(),
                 PipelineCompletionStatus.COMPLETED,
                 null,
-                pipelineFailureCause);
+                null);
       } else {
         mongoPipeline =
             new MongoPipeline(
                 PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.NCBI),
                 new Date(),
                 PipelineName.NCBI.name(),
-                PipelineCompletionStatus.COMPLETED,
+                PipelineCompletionStatus.FAILED,
                 null,
                 pipelineFailureCause);
       }

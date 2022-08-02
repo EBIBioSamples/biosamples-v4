@@ -30,7 +30,7 @@ import uk.ac.ebi.biosamples.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-import uk.ac.ebi.biosamples.utils.ArgUtils;
+import uk.ac.ebi.biosamples.utils.PipelineUtils;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.mongo.AnalyticsService;
 
@@ -55,7 +55,7 @@ public class CopydownApplicationRunner implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) throws Exception {
-    final Collection<Filter> filters = ArgUtils.getDateFilters(args);
+    final Collection<Filter> filters = PipelineUtils.getDateFilters(args);
     Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
     long sampleCount = 0;

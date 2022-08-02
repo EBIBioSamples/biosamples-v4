@@ -489,7 +489,7 @@ public class SamplesRestController {
                       if (webinAuth) {
                         final String webinSubmissionAccountId = authToken.get().getUser();
 
-                        bioSamplesWebinAuthenticationService.checkSampleAccessibility(
+                        bioSamplesWebinAuthenticationService.isSampleAccessible(
                             sample, webinSubmissionAccountId);
                       } else {
                         bioSamplesAapService.checkSampleAccessibility(sample);
@@ -543,6 +543,7 @@ public class SamplesRestController {
   @RequestMapping("/accession")
   public ResponseEntity<EntityModel<Sample>> accessionSample(
       @RequestBody Sample sample, @RequestHeader(name = "Authorization") final String token) {
+    boolean isWebinSuperUser = false;
 
     if (sample.hasAccession()) {
       throw new GlobalExceptions.SampleWithAccessionSubmissionException();
@@ -561,6 +562,9 @@ public class SamplesRestController {
         throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
+      isWebinSuperUser =
+          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
+
       sample =
           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
               sample, webinSubmissionAccountId);
@@ -569,7 +573,7 @@ public class SamplesRestController {
     }
 
     sample = sampleService.buildPrivateSample(sample);
-    sample = sampleService.persistSample(sample, false, authProvider);
+    sample = sampleService.persistSample(sample, authProvider, isWebinSuperUser);
     final EntityModel<Sample> sampleResource = sampleResourceAssembler.toModel(sample);
 
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").get().getHref()))
@@ -728,7 +732,7 @@ public class SamplesRestController {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
-    sample = sampleService.persistSample(sample, true, authProvider);
+    sample = sampleService.persistSample(sample, authProvider, isWebinSuperUser);
 
     // assemble a resource to return
     EntityModel<Sample> sampleResource = sampleResourceAssembler.toModel(sample, this.getClass());

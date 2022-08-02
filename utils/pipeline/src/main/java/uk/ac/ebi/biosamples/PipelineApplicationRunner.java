@@ -28,7 +28,7 @@ import uk.ac.ebi.biosamples.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-import uk.ac.ebi.biosamples.utils.ArgUtils;
+import uk.ac.ebi.biosamples.utils.PipelineUtils;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 public abstract class PipelineApplicationRunner implements ApplicationRunner {
@@ -53,7 +53,7 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
   public void run(ApplicationArguments args) throws Exception {
     Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
-    Collection<Filter> filters = ArgUtils.getDateFilters(args);
+    Collection<Filter> filters = PipelineUtils.getDateFilters(args);
     long sampleCount = 0;
 
     loadPreConfiguration();

@@ -19,11 +19,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 
 public class NcbiElementCallable implements Callable<Void> {
+  private static final int MAX_RETRIES = 5;
+
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final Element sampleElem;
   private final String domain;
@@ -49,6 +52,9 @@ public class NcbiElementCallable implements Callable<Void> {
     final String accession = sampleElem.attributeValue("accession");
 
     try {
+      boolean success = false;
+      int numRetry = 0;
+
       Set<StructuredDataTable> amrData = new HashSet<>();
 
       log.trace("Element callable starting for " + accession);
@@ -58,13 +64,31 @@ public class NcbiElementCallable implements Callable<Void> {
       }
 
       // Generate the sample without the domain
-      Sample sampleWithoutDomain =
+      final Sample sampleWithoutDomain =
           ncbiSampleConversionService.convertNcbiXmlElementToSample(sampleElem);
-      Sample sample = Sample.Builder.fromSample(sampleWithoutDomain).withDomain(domain).build();
-      bioSamplesClient.persistSampleResource(sample);
+      final Sample sample =
+          Sample.Builder.fromSample(sampleWithoutDomain)
+              .withDomain(domain)
+              .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
+              .build();
 
-      Set<StructuredDataTable> structuredDataTableSet =
+      while (!success) {
+        try {
+          bioSamplesClient.persistSampleResource(sample);
+
+          success = true;
+        } catch (final Exception e) {
+          if (++numRetry == MAX_RETRIES) {
+            throw new RuntimeException("Failed to handle the sample with accession " + accession);
+          }
+
+          success = false;
+        }
+      }
+
+      final Set<StructuredDataTable> structuredDataTableSet =
           ncbiSampleConversionService.convertNcbiXmlElementToStructuredData(sampleElem, amrData);
+
       if (!structuredDataTableSet.isEmpty()) {
         StructuredData structuredData =
             StructuredData.build(accession, sample.getCreate(), structuredDataTableSet);
