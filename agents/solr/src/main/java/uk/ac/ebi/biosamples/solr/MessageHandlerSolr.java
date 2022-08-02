@@ -37,7 +37,9 @@ public class MessageHandlerSolr {
   @Autowired private SampleToSolrSampleConverter sampleToSolrSampleConverter;
   @Autowired private OlsProcessor olsProcessor;
 
-  @RabbitListener(queues = Messaging.queueToBeIndexedSolr)
+  @RabbitListener(
+      queues = Messaging.queueToBeIndexedSolr,
+      containerFactory = "biosamplesAgentSolrContainerFactory")
   public void handle(MessageContent messageContent) {
 
     if (messageContent.getSample() == null) {

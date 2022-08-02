@@ -75,7 +75,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
     Optional<EntityModel<Sample>> webinSamplePostPersistance =
         this.webinClient.fetchSampleResource(webinSampleAccession);
 
-    if (webinSamplePostPersistance.isEmpty()) {
+    if (!webinSamplePostPersistance.isPresent()) {
       throw new IntegrationTestFailException(
           "Private sample submitted using webin auth not retrieved", Phase.SIX);
     }
