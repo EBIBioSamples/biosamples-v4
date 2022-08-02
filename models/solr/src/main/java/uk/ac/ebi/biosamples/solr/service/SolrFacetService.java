@@ -56,24 +56,12 @@ public class SolrFacetService {
       Pageable facetValuesPageInfo,
       String facetField) {
     boolean isLandingPage = false;
-    // default to search all
-//    if (searchTerm == null || searchTerm.trim().length() == 0) {
-//      searchTerm = "*:*";
-//      if (filters.isEmpty()) {
-//        isLandingPage = true;
-//      }
-//    }
 
     List<Facet> facets = new ArrayList<>();
-
-    // build a query out of the users string and any facets
-//    FacetQuery query = new SimpleFacetQuery();
-//    query.addCriteria(new Criteria().expression(searchTerm));
-//    query.setTimeAllowed(TIMEALLOWED * 1000);
-
     FacetQuery query;
     if (StringUtils.isBlank(searchTerm) || "*:*".equals(searchTerm.trim())) {
       query = new SimpleFacetQuery(new Criteria().expression("*:*")); // default to search all
+      isLandingPage = filters.isEmpty();
     } else {
       String lowerCasedSearchTerm = searchTerm.toLowerCase();
       // search for copied fields keywords_ss
@@ -89,10 +77,10 @@ public class SolrFacetService {
       boostName.setPartIsOr(true);
       query.addCriteria(boostName);
     }
+    query.setTimeAllowed(TIMEALLOWED * 1000); // some facet queries could take longer to return
 
     // Add domains and release date filters
-    Optional<FilterQuery> domainAndPublicFilterQuery =
-        solrFilterService.getPublicFilterQuery(domains, null);
+    Optional<FilterQuery> domainAndPublicFilterQuery = solrFilterService.getPublicFilterQuery(domains, null);
     domainAndPublicFilterQuery.ifPresent(query::addFilterQuery);
 
     // Add all the provided filters
