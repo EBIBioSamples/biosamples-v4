@@ -79,7 +79,7 @@ deploy-preproduction:
   when: manual
   only:
     - upgrade-to-spring-boot-2
-    - gitlab_ci_improvements
+    - spring-boot-2-and-solr-upgrade
     - dev
     - master
 
