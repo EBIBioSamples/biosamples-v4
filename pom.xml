@@ -4,7 +4,7 @@
 
 <groupId>uk.ac.ebi.biosamples</groupId>
 <artifactId>biosamples</artifactId>
-<version>5.2.8-SNAPSHOT</version>
+<version>5.2.9-SNAPSHOT</version>
 <packaging>pom</packaging>
 
 <parent>
@@ -14,7 +14,7 @@
 </parent>
 
 <properties>
-	<java.version>11</java.version>
+	<java.version>8</java.version>
 	<neo4j-ogm.version>2.1.4</neo4j-ogm.version>
 	<maven.compiler.source>1.8</maven.compiler.source>
 	<maven.compiler.target>1.8</maven.compiler.target>

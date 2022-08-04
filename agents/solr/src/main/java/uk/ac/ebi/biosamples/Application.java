@@ -28,8 +28,11 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.amqp.SimpleRabbitListenerContainerFactoryConfigurer;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.hateoas.MediaTypes;
@@ -160,5 +163,17 @@ public class Application {
       converters.add(0, halConverter);
       restTemplate.setMessageConverters(converters);
     };
+  }
+
+  @Bean("biosamplesAgentSolrContainerFactory")
+  public SimpleRabbitListenerContainerFactory containerFactory(
+      SimpleRabbitListenerContainerFactoryConfigurer configurer,
+      ConnectionFactory connectionFactory) {
+    SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+    factory.setConcurrentConsumers(64);
+    factory.setMaxConcurrentConsumers(128);
+    configurer.configure(factory, connectionFactory);
+
+    return factory;
   }
 }

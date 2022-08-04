@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.2.8-SNAPSHOT</version>
+		<version>5.2.9-SNAPSHOT</version>
 		<relativePath>../..</relativePath>
 	</parent>
 
@@ -39,13 +39,13 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-thread</artifactId>
-			<version>5.2.8-SNAPSHOT</version>
+			<version>5.2.9-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-pipeline</artifactId>
-			<version>5.2.8-SNAPSHOT</version>
+			<version>5.2.9-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -54,8 +54,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.jdbc</groupId>
-			<artifactId>ojdbc10</artifactId>
-			<version>19.3.0.0</version>
+			<artifactId>ojdbc8</artifactId>
+			<version>12.2.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.jdbc</groupId>
@@ -65,7 +65,7 @@
 		<dependency>
 			<groupId>com.oracle.jdbc</groupId>
 			<artifactId>xmlparserv2</artifactId>
-			<version>19.3.0.0</version>
+			<version>12.2.0.1</version>
 		</dependency>
 	</dependencies>
 

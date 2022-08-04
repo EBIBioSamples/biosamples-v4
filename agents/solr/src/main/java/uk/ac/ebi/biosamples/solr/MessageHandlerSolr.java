@@ -49,7 +49,9 @@ public class MessageHandlerSolr {
     this.olsProcessor = olsProcessor;
   }
 
-  @RabbitListener(queues = Messaging.queueToBeIndexedSolr)
+  @RabbitListener(
+      queues = Messaging.queueToBeIndexedSolr,
+      containerFactory = "biosamplesAgentSolrContainerFactory")
   public void handle(MessageContent messageContent) {
 
     if (messageContent.getSample() == null) {
@@ -92,20 +94,20 @@ public class MessageHandlerSolr {
               solrSample.getExternalReferencesData(),
               solrSample.getKeywords());
 
-      // expand ontology terms from OLS
-      Set<String> expandedTerms = new HashSet<>();
-      for (List<String> iris : solrSample.getAttributeIris().values()) {
-        for (String iri : iris) {
-          expandedTerms.addAll(
-              olsProcessor.ancestorsAndSynonyms("efo", iri).stream()
-                          .map(String::toLowerCase)
-                          .collect(Collectors.toSet()));
-          expandedTerms.addAll(olsProcessor.ancestorsAndSynonyms("NCBITaxon", iri).stream()
-                                                      .map(String::toLowerCase)
-                                                      .collect(Collectors.toSet()));
-        }
-      }
-      solrSample.getKeywords().addAll(expandedTerms);
+      // expand ontology terms from OLS // todo move this expansion somewhere else
+//      Set<String> expandedTerms = new HashSet<>();
+//      for (List<String> iris : solrSample.getAttributeIris().values()) {
+//        for (String iri : iris) {
+//          expandedTerms.addAll(
+//              olsProcessor.ancestorsAndSynonyms("efo", iri).stream()
+//                          .map(String::toLowerCase)
+//                          .collect(Collectors.toSet()));
+//          expandedTerms.addAll(olsProcessor.ancestorsAndSynonyms("NCBITaxon", iri).stream()
+//                                                      .map(String::toLowerCase)
+//                                                      .collect(Collectors.toSet()));
+//        }
+//      }
+//      solrSample.getKeywords().addAll(expandedTerms);
 
       repository.saveWithoutCommit(solrSample);
       LOGGER.info(String.format("added %s to index", accession));
