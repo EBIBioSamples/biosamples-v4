@@ -48,7 +48,7 @@ public class SampleAsXMLHttpMessageConverter extends AbstractHttpMessageConverte
 
   @Override
   protected Sample readInternal(Class<? extends Sample> clazz, HttpInputMessage inputMessage)
-      throws IOException, HttpMessageNotReadableException {
+      throws HttpMessageNotReadableException {
     throw new HttpMessageNotReadableException("Cannot read xml");
   }
 

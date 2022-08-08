@@ -28,6 +28,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -37,13 +38,15 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
+import uk.ac.ebi.biosamples.utils.PipelineUtils;
 
 @SpringBootApplication
 @EnableCaching
 public class Application {
 
   public static void main(String[] args) {
-    SpringApplication.exit(SpringApplication.run(Application.class, args));
+    final ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
+    PipelineUtils.exitApplication(ctx);
   }
 
   @Bean
