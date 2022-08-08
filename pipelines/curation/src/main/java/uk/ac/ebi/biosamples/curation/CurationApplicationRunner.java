@@ -29,12 +29,9 @@ import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.curation.service.IriUrlValidatorService;
 import uk.ac.ebi.biosamples.model.PipelineAnalytics;
-import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
 import uk.ac.ebi.biosamples.mongo.repo.MongoPipelineRepository;
-import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
 import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.utils.*;
@@ -151,7 +148,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
         LOG.info(failures);
       }
 
-      final MongoPipeline mongoPipeline;
+      /*final MongoPipeline mongoPipeline;
 
       if (isPassed) {
         mongoPipeline =
@@ -175,7 +172,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
                 pipelineFailureCause);
       }
 
-      mongoPipelineRepository.insert(mongoPipeline);
+      mongoPipelineRepository.insert(mongoPipeline);*/
     }
   }
 }

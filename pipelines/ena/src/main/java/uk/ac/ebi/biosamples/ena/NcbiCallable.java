@@ -79,12 +79,11 @@ public class NcbiCallable implements Callable<Void> {
 
           try {
             bioSamplesClient.persistCuration(this.accession, curation, domain, false);
-            success = true;
           } catch (final Exception e) {
             log.info("Failed to curate NCBI sample with ENA link " + this.accession);
-
-            success = true;
           }
+
+          success = true;
         }
       }
     } catch (final Exception e) {

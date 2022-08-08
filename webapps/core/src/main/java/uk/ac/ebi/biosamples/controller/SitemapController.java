@@ -10,7 +10,6 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import java.net.MalformedURLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -34,7 +33,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.SamplePageService;
-import uk.ac.ebi.biosamples.service.SampleService;
 
 @Controller
 @RequestMapping("/sitemap")
@@ -44,11 +42,9 @@ public class SitemapController {
   @Value("${model.page.size:10000}")
   private int sitemapPageSize;
 
-  private SampleService sampleService;
   private SamplePageService samplePageService;
 
-  public SitemapController(SampleService service, SamplePageService pageService) {
-    this.sampleService = service;
+  public SitemapController(SamplePageService pageService) {
     this.samplePageService = pageService;
   }
 
@@ -57,12 +53,10 @@ public class SitemapController {
    *
    * @param request the request
    * @return the sitemap index in xml format
-   * @throws MalformedURLException
    */
   @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
   @ResponseBody
-  public XmlSitemapIndex createSampleSitemapIndex(HttpServletRequest request)
-      throws MalformedURLException {
+  public XmlSitemapIndex createSampleSitemapIndex(HttpServletRequest request) {
 
     long sampleCount = getTotalSamples();
     long pageNumber = (sampleCount / (long) sitemapPageSize) + 1L;

@@ -50,11 +50,15 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 
   @Override
   public Document convert(Sample source) {
-    if (source.getAccession().startsWith("SAMEG")) {
-      // its a group
-      return sampleToBioSampleGroupXml(source);
+    if (source != null && source.getAccession() != null) {
+      if (source.getAccession().startsWith("SAMEG")) {
+        // its a group
+        return sampleToBioSampleGroupXml(source);
+      } else {
+        return sampleToBioSampleXml(source);
+      }
     } else {
-      return sampleToBioSampleXml(source);
+      return null;
     }
   }
 
