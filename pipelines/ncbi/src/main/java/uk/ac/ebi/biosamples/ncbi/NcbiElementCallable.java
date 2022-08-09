@@ -103,12 +103,7 @@ public class NcbiElementCallable implements Callable<Void> {
     return null;
   }
 
-  /**
-   * Safe way to extract the taxonomy id from the string
-   *
-   * @param value
-   * @return
-   */
+  /** Safe way to extract the taxonomy id from the string */
   @SuppressWarnings("unused")
   private int getTaxId(String value) {
     if (value == null) {

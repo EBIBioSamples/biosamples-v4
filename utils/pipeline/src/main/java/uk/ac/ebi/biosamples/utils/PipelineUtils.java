@@ -23,6 +23,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
@@ -84,5 +86,12 @@ public class PipelineUtils {
         log.error(e.getMessage(), e);
       }
     }
+  }
+
+  public static void exitApplication(final ConfigurableApplicationContext ctx) {
+    int exitCode = SpringApplication.exit(ctx, () -> 0);
+    log.info("Exit Spring Boot");
+
+    System.exit(exitCode);
   }
 }
