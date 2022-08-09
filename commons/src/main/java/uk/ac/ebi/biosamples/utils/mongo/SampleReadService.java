@@ -89,10 +89,6 @@ public class SampleReadService {
   // @Cacheable(cacheNames=WebappProperties.fetchUsing, key="#root.args[0]")
   public Optional<Sample> fetch(String accession, Optional<List<String>> curationDomains)
       throws IllegalArgumentException {
-    // return the sample from the repository
-    long startTime, endTime;
-
-    startTime = System.nanoTime();
 
     final Optional<MongoSample> byId = mongoSampleRepository.findById(accession);
     MongoSample mongoSample = byId.orElse(null);
@@ -101,79 +97,29 @@ public class SampleReadService {
       LOGGER.warn(String.format("failed to retrieve sample with accession %s", accession));
       return Optional.empty();
     }
-    endTime = System.nanoTime();
-    LOGGER.trace(
-        "Got mongo original " + accession + " in " + ((endTime - startTime) / 1000000) + "ms");
 
     // add on inverse relationships
-    startTime = System.nanoTime();
     mongoSample = mongoInverseRelationshipService.addInverseRelationships(mongoSample);
-    endTime = System.nanoTime();
-    LOGGER.trace(
-        "Got inverse relationships "
-            + accession
-            + " in "
-            + ((endTime - startTime) / 1000000)
-            + "ms");
 
     // convert it into the format to return
     Sample sample = mongoSampleToSampleConverter.apply(mongoSample);
 
     // add curation from a set of users
-    startTime = System.nanoTime();
     sample = curationReadService.applyAllCurationToSample(sample, curationDomains);
-    endTime = System.nanoTime();
-    LOGGER.trace(
-        "Applied curation to " + accession + " in " + ((endTime - startTime) / 1000000) + "ms");
+
+    // add structured data
+    final Optional<MongoStructuredData> mongoStructuredData = mongoStructuredDataRepository.findById(accession);
+    if (mongoStructuredData.isPresent()) {
+      StructuredData structuredData = mongoStructuredDataToStructuredDataConverter.convert(mongoStructuredData.get());
+      sample = Sample.Builder.fromSample(sample).withStructuredData(structuredData.getData()).build();
+    }
 
     return Optional.of(sample);
-  }
-
-  public Optional<Sample> fetch(
-      String accession,
-      Optional<List<String>> curationDomains,
-      StaticViewWrapper.StaticView staticViews) {
-
-    Sample sample;
-    MongoSample mongoSample =
-        mongoSampleRepository.findSampleFromCollection(accession, staticViews);
-
-    if (mongoSample == null) {
-      LOGGER.warn("failed to retrieve sample with accession {}", accession);
-      sample = null;
-    } else if (staticViews.equals(StaticViewWrapper.StaticView.SAMPLES_DYNAMIC)) {
-      mongoSample = mongoInverseRelationshipService.addInverseRelationships(mongoSample);
-      sample = mongoSampleToSampleConverter.apply(mongoSample);
-      sample = curationReadService.applyAllCurationToSample(sample, curationDomains);
-    } else {
-      sample = mongoSampleToSampleConverter.apply(mongoSample);
-    }
-
-    // todo add structured data
-    final Optional<MongoStructuredData> byId = mongoStructuredDataRepository.findById(accession);
-    MongoStructuredData mongoStructuredData = byId.orElse(null);
-
-    if (mongoStructuredData != null) {
-      StructuredData structuredData =
-          mongoStructuredDataToStructuredDataConverter.convert(mongoStructuredData);
-      assert sample != null;
-      sample =
-          Sample.Builder.fromSample(sample).withStructuredData(structuredData.getData()).build();
-    }
-
-    return sample == null ? Optional.empty() : Optional.of(sample);
   }
 
   public Future<Optional<Sample>> fetchAsync(
       String accession, Optional<List<String>> curationDomains) {
     return executorService.submit(new FetchCallable(accession, this, curationDomains));
-  }
-
-  public Future<Optional<Sample>> fetchAsync(
-      String accession,
-      Optional<List<String>> curationDomains,
-      StaticViewWrapper.StaticView staticViews) {
-    return executorService.submit(() -> fetch(accession, curationDomains, staticViews));
   }
 
   private static class FetchCallable implements Callable<Optional<Sample>> {

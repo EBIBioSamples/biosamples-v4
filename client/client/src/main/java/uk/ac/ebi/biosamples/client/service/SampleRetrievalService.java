@@ -87,14 +87,6 @@ public class SampleRetrievalService {
     return executor.submit(new FetchCallable(accession, curationDomains, jwt));
   }
 
-  public Future<Optional<EntityModel<Sample>>> fetch(
-      String accession,
-      Optional<List<String>> curationDomains,
-      String jwt,
-      StaticViewWrapper.StaticView staticView) {
-    return executor.submit(new FetchCallable(accession, curationDomains, jwt, staticView));
-  }
-
   private class FetchAccessionsCallable implements Callable<Map<String, EntityModel<Sample>>> {
     private final List<String> accessions;
     private final String jwt;

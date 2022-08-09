@@ -359,11 +359,10 @@ public class SampleHtmlController {
   public String samplesAccession(
       Model model,
       @PathVariable String accession,
-      @RequestParam(name = "curationrepo", required = false) final String curationRepo,
       HttpServletRequest request,
       HttpServletResponse response) {
     // TODO allow curation domain specification
-    Optional<Sample> sample = sampleService.fetch(accession, Optional.empty(), curationRepo);
+    Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
     if (!sample.isPresent()) {
       log.info("Returning a 404 for " + request.getRequestURL());
       throw new ResourceNotFoundException();

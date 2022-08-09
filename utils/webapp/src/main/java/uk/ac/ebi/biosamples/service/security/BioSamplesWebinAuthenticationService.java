@@ -205,7 +205,7 @@ public class BioSamplesWebinAuthenticationService {
   }
 
   private Optional<Sample> fetchOldSample(final Sample sample) {
-    return sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+    return sampleService.fetch(sample.getAccession(), Optional.empty());
   }
 
   public Sample buildSampleWithWebinSubmissionAccountId(final Sample sample, final String webinId) {
