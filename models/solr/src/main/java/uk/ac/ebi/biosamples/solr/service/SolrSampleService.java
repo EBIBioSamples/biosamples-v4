@@ -112,7 +112,12 @@ public class SolrSampleService {
     } else {
       String lowerCasedSearchTerm = searchTerm.toLowerCase();
       // search for copied fields keywords_ss.
-      query = new SimpleQuery("keywords_ss:" + lowerCasedSearchTerm);
+      // query = new SimpleQuery("keywords_ss:\"" + lowerCasedSearchTerm + "\"");
+
+      query = new SimpleQuery();
+      Criteria searchCriteria = new Criteria("keywords_ss").fuzzy(lowerCasedSearchTerm);
+      searchCriteria.setPartIsOr(true);
+      query.addCriteria(searchCriteria);
 
       // boosting accession to bring accession matches to the top
       Criteria boostId = new Criteria("id").is(searchTerm).boost(5);
