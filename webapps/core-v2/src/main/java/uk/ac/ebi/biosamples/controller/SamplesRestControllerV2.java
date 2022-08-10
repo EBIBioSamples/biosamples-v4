@@ -62,6 +62,9 @@ public class SamplesRestControllerV2 {
     this.accessControlService = accessControlService;
   }
 
+  /*
+  Submit multiple samples, without any relationship information
+   */
   @PreAuthorize("isAuthenticated()")
   @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<List<Sample>> postSamplesV2(
@@ -110,7 +113,6 @@ public class SamplesRestControllerV2 {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
       }
 
-      return ResponseEntity.status(HttpStatus.CREATED).body(createdSamples);
     } else {
       try {
         createdSamples =
@@ -132,9 +134,8 @@ public class SamplesRestControllerV2 {
         // check auth exception
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
       }
-
-      return ResponseEntity.status(HttpStatus.CREATED).body(createdSamples);
     }
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdSamples);
   }
 
   private Sample validateSample(Sample sample, boolean isWebinSubmission) {
@@ -150,6 +151,9 @@ public class SamplesRestControllerV2 {
     return sample;
   }
 
+  /*
+  Accession a single sample
+   */
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
       consumes = {MediaType.APPLICATION_JSON_VALUE},
@@ -195,6 +199,9 @@ public class SamplesRestControllerV2 {
     return ResponseEntity.status(HttpStatus.CREATED).body(sample);
   }
 
+  /*
+  Bulk accession multiple samples
+   */
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
       consumes = {MediaType.APPLICATION_JSON_VALUE},
@@ -280,6 +287,9 @@ public class SamplesRestControllerV2 {
     return ResponseEntity.ok(outputMap);
   }
 
+  /*
+  Bulk fetch multiple samples
+   */
   @PreAuthorize("isAuthenticated()")
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(

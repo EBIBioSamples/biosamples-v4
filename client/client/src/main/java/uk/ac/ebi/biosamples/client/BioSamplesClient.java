@@ -242,6 +242,27 @@ public class BioSamplesClient implements AutoCloseable {
     }
   }
 
+  public Sample fetchSampleResourceV2(final String accession) throws RestClientException {
+    try {
+      return sampleRetrievalServiceV2.fetchSampleByAccession(accession).get();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e.getCause());
+    }
+  }
+
+  public Sample fetchSampleResourceV2(final String accession, final String jwt)
+      throws RestClientException {
+    try {
+      return sampleRetrievalServiceV2.fetchSampleByAccession(accession, jwt).get();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e.getCause());
+    }
+  }
+
   public Optional<EntityModel<Sample>> fetchSampleResource(String accession)
       throws RestClientException {
     return fetchSampleResource(accession, Optional.empty());
