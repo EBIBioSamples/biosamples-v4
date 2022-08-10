@@ -65,6 +65,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
   @Override
   protected void phaseFive() {}
 
+  // TODO: cleanup this test
   @Override
   protected void phaseSix() throws ExecutionException, InterruptedException {
     Sample webinSampleTest1 = getWebinSampleTest1();
@@ -118,7 +119,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
     // multiple sample fetch by accessions test - v2, authorized user
     Map<String, Sample> sampleResourcesV2Map1 =
         this.webinClient.fetchSampleResourcesByAccessionsV2(
-            Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023"));
+            Arrays.asList(webinSampleAccession, "SAMEA1", "SAMEA8"));
 
     if (sampleResourcesV2Map1 == null || sampleResourcesV2Map1.size() == 0) {
       throw new IntegrationTestFailException("Multi sample fetch is not working - V2", Phase.SIX);
@@ -135,11 +136,17 @@ public class RestIntegrationV2 extends AbstractIntegration {
     // multiple sample fetch by accessions test - v2, unauthorized user
     Map<String, Sample> sampleResourcesV2Map2 =
         this.annonymousClient.fetchSampleResourcesByAccessionsV2(
-            Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023"));
+            Arrays.asList(webinSampleAccession, "SAMEA1", "SAMEA8"));
 
     if (sampleResourcesV2Map2.size() > 2) {
       throw new IntegrationTestFailException(
           "Multi sample fetch is not working - V2, unauthorized user has access to private samples submitted by other submitters",
+          Phase.SIX);
+    }
+
+    if (sampleResourcesV2Map2.size() < 2) {
+      throw new IntegrationTestFailException(
+          "Multi sample fetch is not working - V2, unauthorized user unable to fetch public samples",
           Phase.SIX);
     }
 
@@ -153,7 +160,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
     }
 
     // single public sample fetch by accessions test - v2, unauthorized user
-    Sample fetchedSample3 = this.webinClient.fetchSampleResourceV2("SAMEA100008");
+    Sample fetchedSample3 = this.webinClient.fetchSampleResourceV2("SAMEA8");
 
     if (fetchedSample3 == null) {
       throw new IntegrationTestFailException(
