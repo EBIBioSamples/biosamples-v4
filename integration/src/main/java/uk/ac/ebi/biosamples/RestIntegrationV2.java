@@ -124,6 +124,14 @@ public class RestIntegrationV2 extends AbstractIntegration {
       throw new IntegrationTestFailException("Multi sample fetch is not working - V2", Phase.SIX);
     }
 
+    // single private sample fetch by accessions test - v2, authorized user
+    Sample fetchedSample = this.webinClient.fetchSampleResourceV2(webinSampleAccession);
+
+    if (fetchedSample == null) {
+      throw new IntegrationTestFailException(
+          "Single private sample fetch is not working - V2, authorized user", Phase.SIX);
+    }
+
     // multiple sample fetch by accessions test - v2, unauthorized user
     Map<String, Sample> sampleResourcesV2Map2 =
         this.annonymousClient.fetchSampleResourcesByAccessionsV2(
@@ -132,6 +140,24 @@ public class RestIntegrationV2 extends AbstractIntegration {
     if (sampleResourcesV2Map2.size() > 2) {
       throw new IntegrationTestFailException(
           "Multi sample fetch is not working - V2, unauthorized user has access to private samples submitted by other submitters",
+          Phase.SIX);
+    }
+
+    // single private sample fetch by accessions test - v2, authorized user
+    Sample fetchedSample2 = this.annonymousClient.fetchSampleResourceV2(webinSampleAccession);
+
+    if (fetchedSample2 != null) {
+      throw new IntegrationTestFailException(
+          "Single private sample fetch is not working - V2, fetching possible for unauthorized user",
+          Phase.SIX);
+    }
+
+    // single public sample fetch by accessions test - v2, unauthorized user
+    Sample fetchedSample3 = this.webinClient.fetchSampleResourceV2("SAMEA100008");
+
+    if (fetchedSample3 == null) {
+      throw new IntegrationTestFailException(
+          "Single public sample fetch is not working - V2, fetching of public sample not working for unauthorized user",
           Phase.SIX);
     }
 

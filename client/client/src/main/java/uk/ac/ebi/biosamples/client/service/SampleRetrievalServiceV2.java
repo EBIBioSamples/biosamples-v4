@@ -41,6 +41,16 @@ public class SampleRetrievalServiceV2 {
     this.uriV2 = uriV2;
   }
 
+  /** Accepts a accession and returns the sample */
+  public Future<Sample> fetchSampleByAccession(final String accession) {
+    return executor.submit(new FetchAccessionCallable(accession, uriV2));
+  }
+
+  /** Accepts a accession and returns the sample */
+  public Future<Sample> fetchSampleByAccession(final String accession, final String jwt) {
+    return executor.submit(new FetchAccessionCallable(accession, jwt, uriV2));
+  }
+
   /**
    * Accepts a list of accessions and returns a Map having accession as key and sample as value
    *
@@ -115,7 +125,61 @@ public class SampleRetrievalServiceV2 {
         }
       }
 
-      log.trace("GETted " + uriV2);
+      log.trace("GETted " + bulkFetchSamplesUri);
+
+      return responseEntity.getBody();
+    }
+  }
+
+  private class FetchAccessionCallable implements Callable<Sample> {
+    private final String accession;
+    private final String jwt;
+    private final URI uriV2;
+
+    public FetchAccessionCallable(final String accession, final String jwt, final URI uriV2) {
+      this.accession = accession;
+      this.jwt = jwt;
+      this.uriV2 = uriV2;
+    }
+
+    public FetchAccessionCallable(final String accession, final URI uriV2) {
+      this.accession = accession;
+      this.jwt = null;
+      this.uriV2 = uriV2;
+    }
+
+    @Override
+    public Sample call() {
+      URI sampleGetUri =
+          UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples" + "/" + accession))
+              .build(true)
+              .toUri();
+      log.info("GETing " + sampleGetUri);
+
+      final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+
+      headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
+
+      if (jwt != null) {
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+      }
+
+      final RequestEntity<Void> requestEntity =
+          new RequestEntity<>(headers, HttpMethod.GET, sampleGetUri);
+      final ResponseEntity<Sample> responseEntity;
+
+      try {
+        responseEntity = restOperations.exchange(requestEntity, Sample.class);
+      } catch (HttpStatusCodeException e) {
+        if (e.getStatusCode().equals(HttpStatus.FORBIDDEN)
+            || e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+          return null;
+        } else {
+          throw e;
+        }
+      }
+
+      log.trace("GETted " + sampleGetUri);
 
       return responseEntity.getBody();
     }
