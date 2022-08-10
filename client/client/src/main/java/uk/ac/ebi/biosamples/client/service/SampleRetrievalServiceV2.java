@@ -18,7 +18,6 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
@@ -48,8 +47,7 @@ public class SampleRetrievalServiceV2 {
    * @param accessions
    * @return
    */
-  public Future<Map<String, EntityModel<Sample>>> fetchSamplesByAccessions(
-      final List<String> accessions) {
+  public Future<Map<String, Sample>> fetchSamplesByAccessions(final List<String> accessions) {
     return executor.submit(new FetchAccessionsCallable(accessions, uriV2));
   }
 
@@ -59,12 +57,12 @@ public class SampleRetrievalServiceV2 {
    * @param accessions
    * @return
    */
-  public Future<Map<String, EntityModel<Sample>>> fetchSamplesByAccessions(
+  public Future<Map<String, Sample>> fetchSamplesByAccessions(
       final List<String> accessions, final String jwt) {
     return executor.submit(new FetchAccessionsCallable(accessions, uriV2, jwt));
   }
 
-  private class FetchAccessionsCallable implements Callable<Map<String, EntityModel<Sample>>> {
+  private class FetchAccessionsCallable implements Callable<Map<String, Sample>> {
     private final List<String> accessions;
     private final String jwt;
     private final URI uriV2;
@@ -83,7 +81,7 @@ public class SampleRetrievalServiceV2 {
     }
 
     @Override
-    public Map<String, EntityModel<Sample>> call() {
+    public Map<String, Sample> call() {
       URI bulkFetchSamplesUri =
           UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples" + "/bulk-fetch"))
               .queryParam("accessions", String.join(",", accessions))
@@ -102,13 +100,12 @@ public class SampleRetrievalServiceV2 {
 
       final RequestEntity<Void> requestEntity =
           new RequestEntity<>(headers, HttpMethod.GET, bulkFetchSamplesUri);
-      final ResponseEntity<Map<String, EntityModel<Sample>>> responseEntity;
+      final ResponseEntity<Map<String, Sample>> responseEntity;
 
       try {
         responseEntity =
             restOperations.exchange(
-                requestEntity,
-                new ParameterizedTypeReference<Map<String, EntityModel<Sample>>>() {});
+                requestEntity, new ParameterizedTypeReference<Map<String, Sample>>() {});
       } catch (HttpStatusCodeException e) {
         if (e.getStatusCode().equals(HttpStatus.FORBIDDEN)
             || e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {

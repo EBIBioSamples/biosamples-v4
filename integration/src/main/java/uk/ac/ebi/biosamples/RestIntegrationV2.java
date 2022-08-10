@@ -97,7 +97,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
       String apiResponseSampleAccession1 =
           Objects.requireNonNull(apiResponseSampleResourceList.get(0)).getAccession();
 
-      Map<String, EntityModel<Sample>> apiResponseV2SampleBulkFetch =
+      Map<String, Sample> apiResponseV2SampleBulkFetch =
           this.webinClient.fetchSampleResourcesByAccessionsV2(
               Collections.singletonList(apiResponseSampleAccession1));
 
@@ -107,13 +107,16 @@ public class RestIntegrationV2 extends AbstractIntegration {
             Phase.THREE);
       } else {
         log.info("Found private sample by webin account");
+        final Collection<Sample> foundSamples = apiResponseV2SampleBulkFetch.values();
+
+        foundSamples.forEach(sample -> log.info(String.valueOf(sample)));
       }
     } catch (final Exception e) {
       throw new IntegrationTestFailException("V2 persist and fetch tests failed", Phase.SIX);
     }
 
     // multiple sample fetch by accessions test - v2, authorized user
-    Map<String, EntityModel<Sample>> sampleResourcesV2Map1 =
+    Map<String, Sample> sampleResourcesV2Map1 =
         this.webinClient.fetchSampleResourcesByAccessionsV2(
             Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023"));
 
@@ -122,7 +125,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
     }
 
     // multiple sample fetch by accessions test - v2, unauthorized user
-    Map<String, EntityModel<Sample>> sampleResourcesV2Map2 =
+    Map<String, Sample> sampleResourcesV2Map2 =
         this.annonymousClient.fetchSampleResourcesByAccessionsV2(
             Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023"));
 
@@ -135,7 +138,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
     // multiple sample fetch by accessions test, authorized user - v2, all samples not found,
     // partial
     // fetch result
-    Map<String, EntityModel<Sample>> sampleResourcesV2Map3 =
+    Map<String, Sample> sampleResourcesV2Map3 =
         this.webinClient.fetchSampleResourcesByAccessionsV2(
             Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023", "SAMEA99999999"));
 
