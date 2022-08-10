@@ -95,12 +95,12 @@ deploy-production-p2m-servers:
     - master
 
 deploy-production-p1m-servers:
-    image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/ubuntu
-    stage: deploy
-    script:
-      - chmod +x deploy.sh
-      - ./deploy.sh bsd_prod wp-p1m-40
-      - ./deploy.sh bsd_prod wp-p1m-41
-    when: manual
-    only:
-      - master
+  image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/ubuntu
+  stage: deploy
+  script:
+    - chmod +x deploy.sh
+    - ./deploy.sh bsd_prod wp-p1m-40
+    - ./deploy.sh bsd_prod wp-p1m-41
+  when: manual
+  only:
+    - master

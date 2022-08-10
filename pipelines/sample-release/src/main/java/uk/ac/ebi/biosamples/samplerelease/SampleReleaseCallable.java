@@ -62,8 +62,7 @@ public class SampleReleaseCallable implements Callable<Void> {
       log.info("Handling sample with accession " + accession);
 
       Optional<EntityModel<Sample>> optionalSampleResource =
-          bioSamplesWebinClient.fetchSampleResource(
-              accession, Optional.of(curationDomainBlankList));
+          bioSamplesWebinClient.fetchSampleResource(accession);
 
       if (!optionalSampleResource.isPresent()) {
         optionalSampleResource = bioSamplesAapClient.fetchSampleResource(accession);

@@ -19,7 +19,8 @@ import org.springframework.web.client.RestTemplate;
 @SpringBootApplication
 public class Application {
   public static void main(String[] args) {
-    SpringApplication.exit(SpringApplication.run(Application.class, args));
+    final ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
+    PipelineUtils.exitApplication(ctx);
   }
 
   @Bean

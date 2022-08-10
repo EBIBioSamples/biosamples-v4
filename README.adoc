@@ -28,8 +28,8 @@ This document provides information about the local installation, development env
 == Softwares
 
 * Git 2.17.1
-* Java 8+
-* JDK 8+
+* Java 8
+* JDK 8
 * Maven 3.6.0
 * Docker 18.6
 
@@ -57,7 +57,7 @@ docker -v
 
 java -version
 # Output
-# openjdk version "11.0.7" 2020-04-14
+# openjdk version "1.8.0_222"
 ----
 . Install BioSamples on your computer.
 +
@@ -85,9 +85,9 @@ Please run `+sudo docker-compose up+` instead.
 . Now you can access the public interface at
 http://localhost:8081/biosamples/. So far, there is no data in the local
 sample.
-. Create an AAP or a ENA WEBIN account for API authentication and data upload
+. Create an AAP or an ENA WEBIN account for API authentication and data upload
 + 
-An AAP account is required to upload data through API.
+An AAP account or a WEBIN is required to upload data through API.
 The API account can be registered at
 https://explore.aai.ebi.ac.uk/registerUser. A detailed instruction about user account and authentication can be
 found on https://www.ebi.ac.uk/biosamples/docs/guides/authentication.
