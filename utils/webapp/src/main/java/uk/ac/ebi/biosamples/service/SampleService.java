@@ -69,11 +69,6 @@ public class SampleService {
     return sampleReadService.fetch(accession, curationDomains, staticView);
   }
 
-  public Autocomplete getAutocomplete(
-      String autocompletePrefix, Collection<Filter> filters, int noSuggestions) {
-    return solrSampleService.getAutocomplete(autocompletePrefix, filters, noSuggestions);
-  }
-
   public boolean isEmptySample(
       final Sample sample, final boolean isWebinSuperUser, final MongoSample mongoOldSample) {
     final String domain = sample.getDomain();

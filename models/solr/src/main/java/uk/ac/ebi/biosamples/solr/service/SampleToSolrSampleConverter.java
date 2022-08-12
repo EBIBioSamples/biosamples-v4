@@ -152,6 +152,10 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
     SortedSet<Relationship> sampleOutgoingRelationships =
         SampleRelationshipUtils.getOutgoingRelationships(sample);
     if (sampleOutgoingRelationships != null && !sampleOutgoingRelationships.isEmpty()) {
+      String attributeValueKey = SolrFieldService.encodeFieldName("outgoing relationships");
+      if (!attributeValues.containsKey(attributeValueKey)) {
+        attributeValues.put(attributeValueKey, new ArrayList<>());
+      }
       outgoingRelationships = new HashMap<>();
       for (Relationship rel : sampleOutgoingRelationships) {
         String key = SolrFieldService.encodeFieldName(rel.getType());
@@ -159,6 +163,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
           outgoingRelationships.put(key, new ArrayList<>());
         }
         outgoingRelationships.get(key).add(rel.getTarget());
+        attributeValues.get(attributeValueKey).add(rel.getTarget());
       }
     }
 
@@ -166,6 +171,10 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
     SortedSet<Relationship> sampleIngoingRelationships =
         SampleRelationshipUtils.getIncomingRelationships(sample);
     if (sampleIngoingRelationships != null && !sampleIngoingRelationships.isEmpty()) {
+      String attributeValueKey = SolrFieldService.encodeFieldName("incoming relationships");
+      if (!attributeValues.containsKey(attributeValueKey)) {
+        attributeValues.put(attributeValueKey, new ArrayList<>());
+      }
       incomingRelationships = new HashMap<>();
       for (Relationship rel : sampleIngoingRelationships) {
         String key = SolrFieldService.encodeFieldName(rel.getType());
@@ -173,6 +182,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
           incomingRelationships.put(key, new ArrayList<>());
         }
         incomingRelationships.get(key).add(rel.getSource());
+        attributeValues.get(attributeValueKey).add(rel.getSource());
       }
     }
 

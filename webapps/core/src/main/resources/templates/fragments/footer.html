@@ -59,14 +59,6 @@
 
 	<script th:inline="javascript">
         $(document).ready(function() {
-            $('#local-searchbox').autocomplete({
-                serviceUrl: '[(@{/samples/autocomplete})]',
-                paramName: 'text',
-                onSelect: function (suggestion) {
-                    //alert('You selected: ' + suggestion.value + ', ' + suggestion.data);
-                    //location.href = '[(@{/samples})]?'+$.param({text:suggestion.value});
-                }
-            });
             let $filterApplyButton = $("#filter-apply");
             let $filterClearButton = $("#filter-clear");
             let $filtersCheckboxes = $(".facet-checkbox");

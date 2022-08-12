@@ -14,11 +14,14 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
@@ -32,10 +35,19 @@ import uk.ac.ebi.biosamples.solr.service.SampleToSolrSampleConverter;
 @Service
 public class MessageHandlerSolr {
   private static final Logger LOGGER = LoggerFactory.getLogger(MessageHandlerSolr.class);
+  private static final List<String> INDEXABLE_STATUSES =
+      Arrays.asList("public", "live", "suppressed", "killed", "temporary_suppressed", "temporary_killed");
 
-  @Autowired private SolrSampleRepository repository;
-  @Autowired private SampleToSolrSampleConverter sampleToSolrSampleConverter;
-  @Autowired private OlsProcessor olsProcessor;
+  private final SolrSampleRepository repository;
+  private final SampleToSolrSampleConverter sampleToSolrSampleConverter;
+  private final OlsProcessor olsProcessor;
+
+  public MessageHandlerSolr(SolrSampleRepository repository, SampleToSolrSampleConverter sampleToSolrSampleConverter,
+                            OlsProcessor olsProcessor) {
+    this.repository = repository;
+    this.sampleToSolrSampleConverter = sampleToSolrSampleConverter;
+    this.olsProcessor = olsProcessor;
+  }
 
   @RabbitListener(
       queues = Messaging.queueToBeIndexedSolr,
@@ -82,13 +94,20 @@ public class MessageHandlerSolr {
               solrSample.getExternalReferencesData(),
               solrSample.getKeywords());
 
-      // expand ontology terms from OLS
-      /*for (List<String> iris : solrSample.getAttributeIris().values()) {
-        for (String iri : iris) {
-          solrSample.getKeywords().addAll(olsProcessor.ancestorsAndSynonyms("efo", iri));
-          solrSample.getKeywords().addAll(olsProcessor.ancestorsAndSynonyms("NCBITaxon", iri));
-        }
-      }*/
+      // expand ontology terms from OLS // todo move this expansion somewhere else
+//      Set<String> expandedTerms = new HashSet<>();
+//      for (List<String> iris : solrSample.getAttributeIris().values()) {
+//        for (String iri : iris) {
+//          expandedTerms.addAll(
+//              olsProcessor.ancestorsAndSynonyms("efo", iri).stream()
+//                          .map(String::toLowerCase)
+//                          .collect(Collectors.toSet()));
+//          expandedTerms.addAll(olsProcessor.ancestorsAndSynonyms("NCBITaxon", iri).stream()
+//                                                      .map(String::toLowerCase)
+//                                                      .collect(Collectors.toSet()));
+//        }
+//      }
+//      solrSample.getKeywords().addAll(expandedTerms);
 
       repository.saveWithoutCommit(solrSample);
       LOGGER.info(String.format("added %s to index", accession));
@@ -103,19 +122,9 @@ public class MessageHandlerSolr {
   static boolean isIndexingCandidate(Sample sample) {
     for (Attribute attribute : sample.getAttributes()) {
       if (attribute.getType().equals("INSDC status")) {
-        List<String> indexableStatuses =
-            Arrays.asList(
-                "public",
-                "live",
-                "suppressed",
-                "killed",
-                "temporary_suppressed",
-                "temporary_killed");
-        if (!indexableStatuses.contains(attribute.getValue())) {
+        if (!INDEXABLE_STATUSES.contains(attribute.getValue())) {
           LOGGER.debug(
-              String.format(
-                  "not indexing %s as INSDC status is %s",
-                  sample.getAccession(), attribute.getValue()));
+              String.format("not indexing %s as INSDC status is %s", sample.getAccession(), attribute.getValue()));
           return false;
         }
       }

@@ -359,9 +359,6 @@ public class SamplesRestController {
               this.getClass()));
     }
 
-    resources.add(
-        SampleAutocompleteRestController.getLink(decodedText, decodedFilter, null, "autocomplete"));
-
     UriComponentsBuilder uriComponentsBuilder =
         WebMvcLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
     // This is a bit of a hack, but best we can do for now...

@@ -378,12 +378,12 @@ services:
     - rabbitmq_data:/var/lib/rabbitmq/mnesia
 
   solr:
-    image: solr:6.6-alpine
+    image: solr:8.11.2-slim
     mem_limit: 1g
     ports:
     - 8983:8983
     volumes:
-    - solr_data:/opt/solr/server/solr/mycores
+    - solr_data:/var/solr
     environment:
     - VERBOSE=yes
     - SOLR_HEAP=1g
