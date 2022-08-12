@@ -38,7 +38,7 @@ public class SampleSubmissionServiceV2 {
   private final URI uriV2;
 
   public SampleSubmissionServiceV2(
-      RestOperations restOperations, URI uriV2, ExecutorService executor) {
+      final RestOperations restOperations, final URI uriV2, final ExecutorService executor) {
     this.restOperations = restOperations;
     this.uriV2 = uriV2;
     this.executor = executor;
@@ -52,7 +52,7 @@ public class SampleSubmissionServiceV2 {
    * @param samples samples to be submitted
    * @return sample wrapped in resource
    */
-  public Future<List<Sample>> postAsync(List<Sample> samples) throws RestClientException {
+  public Future<List<Sample>> postAsync(final List<Sample> samples) throws RestClientException {
     return executor.submit(new PostCallable(samples));
   }
 
@@ -64,18 +64,18 @@ public class SampleSubmissionServiceV2 {
    * @param samples samples to be submitted
    * @return sample wrapped in resource
    */
-  public Future<List<Sample>> postAsync(List<Sample> samples, String jwt)
+  public Future<List<Sample>> postAsync(final List<Sample> samples, final String jwt)
       throws RestClientException {
     return executor.submit(new PostCallable(samples, jwt));
   }
 
-  public Future<Map<String, String>> bulkAccessionAsync(List<Sample> samples)
+  public Future<Map<String, String>> bulkAccessionAsync(final List<Sample> samples)
       throws RestClientException {
     return executor.submit(new BulkAccessionCallable(samples));
   }
 
-  public Future<Map<String, String>> bulkAccessionAsync(List<Sample> samples, String jwt)
-      throws RestClientException {
+  public Future<Map<String, String>> bulkAccessionAsync(
+      final List<Sample> samples, final String jwt) throws RestClientException {
     return executor.submit(new BulkAccessionCallable(samples, jwt));
   }
 
@@ -83,19 +83,19 @@ public class SampleSubmissionServiceV2 {
     private final List<Sample> samples;
     private final String jwt;
 
-    public PostCallable(List<Sample> samples) {
+    public PostCallable(final List<Sample> samples) {
       this.samples = samples;
       this.jwt = null;
     }
 
-    public PostCallable(List<Sample> samples, String jwt) {
+    public PostCallable(final List<Sample> samples, final String jwt) {
       this.samples = samples;
       this.jwt = jwt;
     }
 
     @Override
     public List<Sample> call() {
-      URI v2PostUri =
+      final URI v2PostUri =
           UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples")).build(true).toUri();
       log.info("POSTing " + samples.size() + " samples " + v2PostUri);
 
@@ -121,19 +121,19 @@ public class SampleSubmissionServiceV2 {
     private final List<Sample> samples;
     private final String jwt;
 
-    public BulkAccessionCallable(List<Sample> samples) {
+    public BulkAccessionCallable(final List<Sample> samples) {
       this.samples = samples;
       this.jwt = null;
     }
 
-    public BulkAccessionCallable(List<Sample> samples, String jwt) {
+    public BulkAccessionCallable(final List<Sample> samples, final String jwt) {
       this.samples = samples;
       this.jwt = jwt;
     }
 
     @Override
     public Map<String, String> call() {
-      URI v2BulkAccessionUri =
+      final URI v2BulkAccessionUri =
           UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples" + "/bulk-accession"))
               .build(true)
               .toUri();

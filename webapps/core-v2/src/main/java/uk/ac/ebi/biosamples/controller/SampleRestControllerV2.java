@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.ExposesResourceFor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -61,6 +62,9 @@ public class SampleRestControllerV2 {
     this.accessControlService = accessControlService;
   }
 
+  /*
+  Update single sample
+   */
   @PreAuthorize("isAuthenticated()")
   @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Sample> putSampleV2(
@@ -135,5 +139,36 @@ public class SampleRestControllerV2 {
     }
 
     return sample;
+  }
+
+  /*
+  Fetch single sample
+   */
+  @PreAuthorize("isAuthenticated()")
+  @CrossOrigin(methods = RequestMethod.GET)
+  @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
+  public Sample getSample(
+      @PathVariable String accession,
+      @RequestHeader(name = "Authorization", required = false) final String token) {
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
+    Optional<Sample> sample = sampleService.fetch(accession, Optional.empty(), "");
+
+    if (sample.isPresent()) {
+      final boolean webinAuth =
+          authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
+
+      if (webinAuth) {
+        final String webinSubmissionAccountId = authToken.get().getUser();
+
+        bioSamplesWebinAuthenticationService.isSampleAccessible(
+            sample.get(), webinSubmissionAccountId);
+      } else {
+        bioSamplesAapService.checkSampleAccessibility(sample.get());
+      }
+
+      return sample.get();
+    } else {
+      throw new GlobalExceptions.SampleNotFoundException();
+    }
   }
 }
