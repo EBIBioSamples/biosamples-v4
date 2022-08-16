@@ -74,6 +74,9 @@ public class SampleService {
     return solrSampleService.getAutocomplete(autocompletePrefix, filters, noSuggestions);
   }
 
+  /*
+  Checks if the current sample that exists has no metadata, returns true if empty
+   */
   public boolean isEmptySample(
       final Sample sample, final boolean isWebinSuperUser, final MongoSample mongoOldSample) {
     final String domain = sample.getDomain();
@@ -96,6 +99,9 @@ public class SampleService {
     }
   }
 
+  /*
+  Checks if the current sample that exists has no metadata, returns true if empty
+   */
   private boolean isEmptySample(final Sample sample, final MongoSample mongoOldSample) {
     if (sample.hasAccession()) {
       if (mongoOldSample != null) {
@@ -110,6 +116,9 @@ public class SampleService {
     return isPipelineEnaDomain(domain) || isPipelineNcbiDomain(domain);
   }
 
+  /*
+  Checks if the current sample that exists has no metadata, returns true if empty
+   */
   private boolean isEmptySample(final MongoSample mongoOldSample) {
     Sample oldSample = mongoSampleToSampleConverter.apply(mongoOldSample);
 
@@ -200,6 +209,8 @@ public class SampleService {
 
       MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
 
+      assert mongoSample != null;
+
       mongoSample = mongoSampleRepository.save(mongoSample);
 
       if (isSampleTaxIdUpdated) {
@@ -266,6 +277,8 @@ public class SampleService {
       }
 
       MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
+
+      assert mongoSample != null;
 
       mongoSample = mongoSampleRepository.save(mongoSample);
       sample = mongoSampleToSampleConverter.apply(mongoSample);
