@@ -114,7 +114,7 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
     	</QualifiedValue>
     </Property>
     */
-    handleAttribute(source, attributeTypesAndValuesMap, attributeIris, attributeUnits);
+    handleAttributeConversion(source, attributeTypesAndValuesMap, attributeIris, attributeUnits);
 
     // relationships other than derived from
 
@@ -131,7 +131,8 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
       }
     }
 
-    handleAttributes(bioSample, attributeTypesAndValuesMap, attributeIris, attributeUnits);
+    handleAttributesConversion(
+        bioSample, attributeTypesAndValuesMap, attributeIris, attributeUnits);
 
     // derivedFrom element
     for (Relationship relationship : source.getRelationships()) {
@@ -174,7 +175,7 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
     return doc;
   }
 
-  private void handleAttribute(
+  private void handleAttributeConversion(
       Sample source,
       SortedMap<String, SortedSet<String>> attrTypeValue,
       SortedMap<String, SortedMap<String, String>> attrIri,
@@ -284,9 +285,10 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
     	</QualifiedValue>
     </Property>
     */
-    handleAttribute(source, attributeTypesAndValuesMap, attributeIris, attributeUnits);
+    handleAttributeConversion(source, attributeTypesAndValuesMap, attributeIris, attributeUnits);
 
-    handleAttributes(bioSample, attributeTypesAndValuesMap, attributeIris, attributeUnits);
+    handleAttributesConversion(
+        bioSample, attributeTypesAndValuesMap, attributeIris, attributeUnits);
 
     for (Contact contact : source.getContacts()) {
       Element person = new BaseElement(QName.get("Person", xmlns));
@@ -377,7 +379,7 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
     return doc;
   }
 
-  private void handleAttributes(
+  private void handleAttributesConversion(
       Element bioSample,
       SortedMap<String, SortedSet<String>> attrTypeValue,
       SortedMap<String, SortedMap<String, String>> attrIri,
