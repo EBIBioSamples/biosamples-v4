@@ -368,7 +368,7 @@ services:
     - 27017:27017
 
   rabbitmq:
-    image: rabbitmq:3.6-management-alpine
+    image: rabbitmq:3.10.7-management-alpine
     mem_limit: 1g
     hostname: biosamples-rabbitmq
     ports:

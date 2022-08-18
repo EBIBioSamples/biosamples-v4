@@ -14,11 +14,8 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -50,7 +47,7 @@ public class MessageHandlerSolr {
   }
 
   @RabbitListener(
-      queues = Messaging.queueToBeIndexedSolr,
+      queues = Messaging.INDEXING_QUEUE,
       containerFactory = "biosamplesAgentSolrContainerFactory")
   public void handle(MessageContent messageContent) {
 

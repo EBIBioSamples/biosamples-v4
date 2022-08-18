@@ -80,7 +80,7 @@ public class MessagingService {
 
       // send the original sample with the extras as related samples
       amqpTemplate.convertAndSend(
-          Messaging.exchangeForIndexingSolr,
+          Messaging.INDEXING_EXCHANGE,
           "",
           MessageContent.build(sample.get(), null, related, false));
     }

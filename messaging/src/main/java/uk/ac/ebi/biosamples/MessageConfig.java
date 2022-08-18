@@ -30,7 +30,14 @@ public class MessageConfig {
 
   @Bean(name = "solrQueue")
   public Queue getQueueToBeIndexedSolr() {
-    return QueueBuilder.durable(Messaging.queueToBeIndexedSolr)
+    return QueueBuilder.durable(Messaging.INDEXING_QUEUE)
+        .withArgument("x-dead-letter-exchange", Messaging.exchangeDeadLetter)
+        .build();
+  }
+
+  @Bean(name = "reindxingQueue")
+  public Queue getReindexingQueue() {
+    return QueueBuilder.durable(Messaging.REINDEXING_QUEUE)
         .withArgument("x-dead-letter-exchange", Messaging.exchangeDeadLetter)
         .build();
   }
@@ -48,7 +55,7 @@ public class MessageConfig {
   public Queue getQueueRetryDeadLetter() {
     return QueueBuilder.durable(Messaging.queueRetryDeadLetter)
         .withArgument("x-message-ttl", 30000) // 60 seconds
-        .withArgument("x-dead-letter-exchange", Messaging.exchangeForIndexingSolr)
+        .withArgument("x-dead-letter-exchange", Messaging.INDEXING_EXCHANGE)
         .build();
   }
 
@@ -56,7 +63,7 @@ public class MessageConfig {
 
   @Bean(name = "solrExchange")
   public Exchange getExchangeForIndexingSolr() {
-    return ExchangeBuilder.fanoutExchange(Messaging.exchangeForIndexingSolr).durable(true).build();
+    return ExchangeBuilder.directExchange(Messaging.INDEXING_EXCHANGE).durable(true).build();
   }
 
   @Bean(name = "uploaderExchange")
@@ -75,7 +82,15 @@ public class MessageConfig {
   public Binding bindingForIndexingSolr() {
     return BindingBuilder.bind(getQueueToBeIndexedSolr())
         .to(getExchangeForIndexingSolr())
-        .with(Messaging.queueToBeIndexedSolr)
+        .with(Messaging.INDEXING_QUEUE)
+        .noargs();
+  }
+
+  @Bean(name = "reindexingBinding")
+  public Binding getReindexingBinding() {
+    return BindingBuilder.bind(getReindexingQueue())
+        .to(getExchangeForIndexingSolr())
+        .with(Messaging.REINDEXING_QUEUE)
         .noargs();
   }
 
