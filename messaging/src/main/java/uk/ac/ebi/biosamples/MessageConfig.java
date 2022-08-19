@@ -60,10 +60,14 @@ public class MessageConfig {
   }
 
   // declare exchanges
-
   @Bean(name = "solrExchange")
   public Exchange getExchangeForIndexingSolr() {
     return ExchangeBuilder.directExchange(Messaging.INDEXING_EXCHANGE).durable(true).build();
+  }
+
+  @Bean(name = "reindxingEchange")
+  public Exchange getReIndexingExcahnge() {
+    return ExchangeBuilder.directExchange(Messaging.REINDEXING_EXCHANGE).durable(true).build();
   }
 
   @Bean(name = "uploaderExchange")
@@ -77,7 +81,6 @@ public class MessageConfig {
   }
 
   // bind queues to exchanges
-
   @Bean(name = "solrBindings")
   public Binding bindingForIndexingSolr() {
     return BindingBuilder.bind(getQueueToBeIndexedSolr())
@@ -87,9 +90,9 @@ public class MessageConfig {
   }
 
   @Bean(name = "reindexingBinding")
-  public Binding getReindexingBinding() {
+  public Binding getReIndexingBinding() {
     return BindingBuilder.bind(getReindexingQueue())
-        .to(getExchangeForIndexingSolr())
+        .to(getReIndexingExcahnge())
         .with(Messaging.REINDEXING_QUEUE)
         .noargs();
   }

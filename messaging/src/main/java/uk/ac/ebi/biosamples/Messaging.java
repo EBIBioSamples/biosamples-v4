@@ -14,6 +14,8 @@ public class Messaging {
 
   public static final String INDEXING_EXCHANGE = "biosamples.forindexing.solr";
   public static final String INDEXING_QUEUE = "biosamples.tobeindexed.solr";
+
+  public static final String REINDEXING_EXCHANGE = "biosamples.reindex.solr";
   public static final String REINDEXING_QUEUE = "biosamples.reindex.solr";
 
   public static final String fileUploadQueue = "biosamples.uploaded.files";
