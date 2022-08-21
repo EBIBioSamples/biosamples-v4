@@ -134,8 +134,10 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
   }
 
   Sample fetchByNameOrElseThrow(String name, Phase phase) {
-    return fetchUniqueSampleByName(name).orElseThrow(() -> new IntegrationTestFailException(
-        "Sample does not exist, sample name: " + name, phase));
+    return fetchUniqueSampleByName(name)
+        .orElseThrow(
+            () ->
+                new IntegrationTestFailException(
+                    "Sample does not exist, sample name: " + name, phase));
   }
-
 }
