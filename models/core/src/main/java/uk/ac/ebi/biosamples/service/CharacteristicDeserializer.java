@@ -11,7 +11,6 @@
 package uk.ac.ebi.biosamples.service;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
@@ -53,8 +52,7 @@ public class CharacteristicDeserializer extends StdDeserializer<SortedSet> {
   }
 
   @Override
-  public SortedSet deserialize(JsonParser p, DeserializationContext ctxt)
-      throws IOException {
+  public SortedSet deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
     SortedSet<Attribute> attributes = new TreeSet<>();
     Map<String, List<LegacyAttribute>> characteristics =
         p.readValueAs(new TypeReference<Map<String, List<LegacyAttribute>>>() {});
