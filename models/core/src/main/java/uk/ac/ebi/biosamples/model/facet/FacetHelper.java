@@ -19,8 +19,7 @@ public class FacetHelper {
   }
 
   public static final List<String> FACETING_FIELDS;
-  public static final List<String>
-      RANGE_FACETING_FIELDS; // we are only supporting date range facets now
+  public static final List<String> RANGE_FACETING_FIELDS; // we are only supporting date range facets now
   public static final List<String> IGNORE_FACETING_FIELDS;
 
   static {

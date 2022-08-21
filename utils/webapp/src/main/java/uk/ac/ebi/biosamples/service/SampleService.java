@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
-import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -32,7 +31,6 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
-import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
 
 /**
@@ -57,7 +55,6 @@ public class SampleService {
   @Autowired private MongoSampleToSampleConverter mongoSampleToSampleConverter;
   @Autowired private SampleToMongoSampleConverter sampleToMongoSampleConverter;
   @Autowired private SampleValidator sampleValidator;
-  @Autowired private SolrSampleService solrSampleService;
   @Autowired private SampleReadService sampleReadService;
   @Autowired private MessagingService messagingSerivce;
 
@@ -67,11 +64,6 @@ public class SampleService {
     StaticViewWrapper.StaticView staticView =
         StaticViewWrapper.getStaticView(curationDomains.orElse(null), curationRepo);
     return sampleReadService.fetch(accession, curationDomains, staticView);
-  }
-
-  public Autocomplete getAutocomplete(
-      String autocompletePrefix, Collection<Filter> filters, int noSuggestions) {
-    return solrSampleService.getAutocomplete(autocompletePrefix, filters, noSuggestions);
   }
 
   /*
