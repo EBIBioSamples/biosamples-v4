@@ -11,7 +11,6 @@
 package uk.ac.ebi.biosamples.service;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
@@ -54,7 +53,7 @@ public class CharacteristicSerializer extends StdSerializer<SortedSet> {
 
   @Override
   public void serialize(SortedSet attributesRaw, JsonGenerator gen, SerializerProvider arg2)
-      throws IOException, JsonProcessingException {
+      throws IOException {
     SortedSet<Attribute> attributes = (SortedSet<Attribute>) attributesRaw;
 
     gen.writeStartObject();

@@ -14,11 +14,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -36,14 +32,17 @@ import uk.ac.ebi.biosamples.solr.service.SampleToSolrSampleConverter;
 public class MessageHandlerSolr {
   private static final Logger LOGGER = LoggerFactory.getLogger(MessageHandlerSolr.class);
   private static final List<String> INDEXABLE_STATUSES =
-      Arrays.asList("public", "live", "suppressed", "killed", "temporary_suppressed", "temporary_killed");
+      Arrays.asList(
+          "public", "live", "suppressed", "killed", "temporary_suppressed", "temporary_killed");
 
   private final SolrSampleRepository repository;
   private final SampleToSolrSampleConverter sampleToSolrSampleConverter;
   private final OlsProcessor olsProcessor;
 
-  public MessageHandlerSolr(SolrSampleRepository repository, SampleToSolrSampleConverter sampleToSolrSampleConverter,
-                            OlsProcessor olsProcessor) {
+  public MessageHandlerSolr(
+      SolrSampleRepository repository,
+      SampleToSolrSampleConverter sampleToSolrSampleConverter,
+      OlsProcessor olsProcessor) {
     this.repository = repository;
     this.sampleToSolrSampleConverter = sampleToSolrSampleConverter;
     this.olsProcessor = olsProcessor;
@@ -95,19 +94,19 @@ public class MessageHandlerSolr {
               solrSample.getKeywords());
 
       // expand ontology terms from OLS // todo move this expansion somewhere else
-//      Set<String> expandedTerms = new HashSet<>();
-//      for (List<String> iris : solrSample.getAttributeIris().values()) {
-//        for (String iri : iris) {
-//          expandedTerms.addAll(
-//              olsProcessor.ancestorsAndSynonyms("efo", iri).stream()
-//                          .map(String::toLowerCase)
-//                          .collect(Collectors.toSet()));
-//          expandedTerms.addAll(olsProcessor.ancestorsAndSynonyms("NCBITaxon", iri).stream()
-//                                                      .map(String::toLowerCase)
-//                                                      .collect(Collectors.toSet()));
-//        }
-//      }
-//      solrSample.getKeywords().addAll(expandedTerms);
+      //      Set<String> expandedTerms = new HashSet<>();
+      //      for (List<String> iris : solrSample.getAttributeIris().values()) {
+      //        for (String iri : iris) {
+      //          expandedTerms.addAll(
+      //              olsProcessor.ancestorsAndSynonyms("efo", iri).stream()
+      //                          .map(String::toLowerCase)
+      //                          .collect(Collectors.toSet()));
+      //          expandedTerms.addAll(olsProcessor.ancestorsAndSynonyms("NCBITaxon", iri).stream()
+      //                                                      .map(String::toLowerCase)
+      //                                                      .collect(Collectors.toSet()));
+      //        }
+      //      }
+      //      solrSample.getKeywords().addAll(expandedTerms);
 
       repository.saveWithoutCommit(solrSample);
       LOGGER.info(String.format("added %s to index", accession));
@@ -124,7 +123,9 @@ public class MessageHandlerSolr {
       if (attribute.getType().equals("INSDC status")) {
         if (!INDEXABLE_STATUSES.contains(attribute.getValue())) {
           LOGGER.debug(
-              String.format("not indexing %s as INSDC status is %s", sample.getAccession(), attribute.getValue()));
+              String.format(
+                  "not indexing %s as INSDC status is %s",
+                  sample.getAccession(), attribute.getValue()));
           return false;
         }
       }

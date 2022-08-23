@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.solr.core.mapping.Dynamic;
 import org.springframework.data.solr.core.mapping.Indexed;
@@ -68,7 +67,9 @@ public class SolrSample {
   @Dynamic
   protected Map<String, List<String>> attributeValues;
 
-  @Indexed(name = "*_ai_ss", copyTo = {"ontologyiri_ss"})
+  @Indexed(
+      name = "*_ai_ss",
+      copyTo = {"ontologyiri_ss"})
   @Dynamic
   protected Map<String, List<String>> attributeIris;
 
@@ -286,7 +287,8 @@ public class SolrSample {
     searchTerms.addAll(keywords);
     for (Entry<String, List<String>> entry : attributeValues.entrySet()) {
       searchTerms.add(SolrFieldService.decodeFieldName(entry.getKey()).toLowerCase());
-      searchTerms.addAll(entry.getValue().stream().map(String::toLowerCase).collect(Collectors.toSet()));
+      searchTerms.addAll(
+          entry.getValue().stream().map(String::toLowerCase).collect(Collectors.toSet()));
     }
     sample.keywords = new ArrayList<>(searchTerms);
 

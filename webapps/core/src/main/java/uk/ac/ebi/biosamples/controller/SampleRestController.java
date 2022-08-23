@@ -197,7 +197,6 @@ public class SampleRestController {
       @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
           boolean setFullDetails,
       @RequestHeader("Authorization") final String token) {
-
     if (sample == null) {
       throw new RuntimeException("No sample provided");
     }
