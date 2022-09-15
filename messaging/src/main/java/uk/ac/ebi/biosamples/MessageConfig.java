@@ -27,7 +27,6 @@ import org.springframework.context.annotation.Configuration;
 public class MessageConfig {
 
   // declare queues
-
   @Bean(name = "solrQueue")
   public Queue getQueueToBeIndexedSolr() {
     return QueueBuilder.durable(Messaging.INDEXING_QUEUE)
@@ -38,7 +37,6 @@ public class MessageConfig {
   @Bean(name = "reindxingQueue")
   public Queue getReindexingQueue() {
     return QueueBuilder.durable(Messaging.REINDEXING_QUEUE)
-        .withArgument("x-dead-letter-exchange", Messaging.exchangeDeadLetter)
         .build();
   }
 
