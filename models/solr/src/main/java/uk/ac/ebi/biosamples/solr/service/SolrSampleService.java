@@ -10,6 +10,8 @@
 */
 package uk.ac.ebi.biosamples.solr.service;
 
+import java.util.Collection;
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.springframework.data.domain.Page;
@@ -25,9 +27,6 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
-
-import java.util.Collection;
-import java.util.Optional;
 
 @Service
 public class SolrSampleService {
