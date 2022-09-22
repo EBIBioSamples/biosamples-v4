@@ -10,6 +10,7 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
@@ -136,6 +137,8 @@ public class EnaRunner implements ApplicationRunner {
       if (processBacklogs) {
         backfillEnaBrowserMissingSamples(args);
       }
+
+      // handleSingleSampleBackFill_2();
 
       /*final List<String> bsdIds = eraProDao.doWWWDEVMapping();
 
@@ -371,6 +374,35 @@ public class EnaRunner implements ApplicationRunner {
     }
   }
 
+  /*
+  TODO: Very dirty code for one time use, remove once confirmed by user to be working fine.
+   */
+  private void handleSingleSampleBackFill_2() {
+    try {
+      final File file = new File("C:\\Users\\dgupta\\ena_backfill_failures.txt");
+      final BufferedWriter writer =
+          new BufferedWriter(
+              new FileWriter("C:\\Users\\dgupta\\ena_backfill_failures_bsd_acc.txt"));
+
+      try (final BufferedReader br = new BufferedReader(new FileReader(file))) {
+        String line;
+
+        while ((line = br.readLine()) != null) {
+          String enaId = line.substring(0, line.indexOf(":") - 1);
+
+          writer.write(eraProDao.getBioSampleAccessionByEnaAccession(enaId));
+          writer.write("\n");
+        }
+
+        writer.close();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private void importEraSamples(
       final LocalDate fromDate,
       final LocalDate toDate,
@@ -382,7 +414,7 @@ public class EnaRunner implements ApplicationRunner {
       final EraRowCallbackHandler eraRowCallbackHandler =
           new EraRowCallbackHandler(null, enaCallableFactory, futures, sampleToAmrMap);
 
-      eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
+      // eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
 
       final NcbiRowCallbackHandler ncbiRowCallbackHandler =
           new NcbiRowCallbackHandler(null, ncbiCallableFactory, futures);
@@ -400,7 +432,7 @@ public class EnaRunner implements ApplicationRunner {
         final EraRowCallbackHandler eraRowCallbackHandler =
             new EraRowCallbackHandler(executorService, enaCallableFactory, futures, sampleToAmrMap);
 
-        eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
+        // eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
 
         final NcbiRowCallbackHandler ncbiRowCallbackHandler =
             new NcbiRowCallbackHandler(executorService, ncbiCallableFactory, futures);

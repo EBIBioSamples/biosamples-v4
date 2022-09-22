@@ -215,17 +215,18 @@ public class SamplesRestController {
       // to twice this age
       return ResponseEntity.ok().cacheControl(cacheControl).body(resources);
     } else {
-      String[] effectiveSort = sort;
 
-      if (sort == null) {
+      /*if (sort == null) {
         // if there is no existing sort, sort by score then accession
         effectiveSort = new String[2];
         effectiveSort[0] = "score,desc";
         effectiveSort[1] = "id,asc";
-      }
+      }*/
 
       Sort pageSort =
-          Sort.by(Arrays.stream(effectiveSort).map(this::parseSort).collect(Collectors.toList()));
+          sort != null
+              ? Sort.by(Arrays.stream(sort).map(this::parseSort).collect(Collectors.toList()))
+              : Sort.unsorted();
       Pageable pageable = PageRequest.of(effectivePage, effectiveSize, pageSort);
       Page<Sample> pageSample =
           samplePageService.getSamplesByText(
@@ -495,13 +496,13 @@ public class SamplesRestController {
 
       sample =
           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              sample, webinSubmissionAccountId);
+              sample, webinSubmissionAccountId, Optional.empty());
     } else {
-      sample = bioSamplesAapService.handleSampleDomain(sample);
+      sample = bioSamplesAapService.handleSampleDomain(sample, Optional.empty());
     }
 
     sample = sampleService.buildPrivateSample(sample);
-    sample = sampleService.persistSample(sample, authProvider, isWebinSuperUser);
+    sample = sampleService.persistSample(sample, null, authProvider, isWebinSuperUser);
     final EntityModel<Sample> sampleResource = sampleResourceAssembler.toModel(sample);
 
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").get().getHref()))
@@ -531,6 +532,7 @@ public class SamplesRestController {
     final AuthorizationProvider authProvider =
         webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
     boolean isWebinSuperUser = false;
+    Optional<Sample> oldSample = Optional.empty();
 
     if (webinAuth) {
       final String webinSubmissionAccountId = authToken.get().getUser();
@@ -542,19 +544,41 @@ public class SamplesRestController {
       isWebinSuperUser =
           bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
 
-      if (sample.hasAccession() && !isWebinSuperUser) {
-        throw new GlobalExceptions.SampleWithAccessionSubmissionException();
+      if (sample.hasAccession()) {
+        if (!isWebinSuperUser) {
+          throw new GlobalExceptions.SampleWithAccessionSubmissionException();
+        } else {
+          final boolean notExistingAccession =
+              sampleService.isNotExistingAccession(sample.getAccession());
+
+          if (!notExistingAccession) {
+            oldSample = sampleService.fetchOldSample(sample.getAccession());
+          } else {
+            oldSample = Optional.empty();
+          }
+        }
       }
 
       sample =
           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              sample, webinSubmissionAccountId);
+              sample, webinSubmissionAccountId, oldSample);
     } else {
-      if (sample.hasAccession() && !bioSamplesAapService.isWriteSuperUser()) {
-        throw new GlobalExceptions.SampleWithAccessionSubmissionException();
+      if (sample.hasAccession()) {
+        if (!bioSamplesAapService.isWriteSuperUser()) {
+          throw new GlobalExceptions.SampleWithAccessionSubmissionException();
+        } else {
+          final boolean notExistingAccession =
+              sampleService.isNotExistingAccession(sample.getAccession());
+
+          if (!notExistingAccession) {
+            oldSample = sampleService.fetchOldSample(sample.getAccession());
+          } else {
+            oldSample = Optional.empty();
+          }
+        }
       }
 
-      sample = bioSamplesAapService.handleSampleDomain(sample);
+      sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
     }
 
     // update, create date are system generated fields
@@ -575,7 +599,8 @@ public class SamplesRestController {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
-    sample = sampleService.persistSample(sample, authProvider, isWebinSuperUser);
+    sample =
+        sampleService.persistSample(sample, oldSample.orElse(null), authProvider, isWebinSuperUser);
 
     // assemble a resource to return
     EntityModel<Sample> sampleResource = sampleResourceAssembler.toModel(sample, this.getClass());

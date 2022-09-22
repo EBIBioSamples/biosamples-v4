@@ -42,7 +42,7 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @Service
 public class FileUploadService {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private FileUploadUtils fileUploadUtils;
 
   @Autowired private SampleService sampleService;
@@ -228,16 +228,22 @@ public class FileUploadService {
     final Multimap<String, String> relationshipMap =
         fileUploadUtils.parseRelationships(sampleMultimapEntry.getValue());
     Sample sample = sampleMultimapEntry.getKey();
+    Optional<Sample> oldSample = Optional.empty();
+
     final List<Relationship> relationships =
         fileUploadUtils.createRelationships(
             sample, sampleNameToAccessionMap, relationshipMap, validationResult);
+
+    if (!sampleService.isNotExistingAccession(sample.getAccession())) {
+      oldSample = sampleService.fetchOldSample(sample.getAccession());
+    }
 
     if (relationships != null && relationships.size() > 0) {
       relationships.forEach(relationship -> log.info(relationship.toString()));
 
       sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
       try {
-        sample = storeSample(sample, isWebin(isWebin));
+        sample = storeSample(sample, oldSample, isWebin(isWebin));
       } catch (final Exception e) {
         final String sampleName = sample.getName();
 
@@ -261,12 +267,17 @@ public class FileUploadService {
     boolean sampleWithAccession = false;
 
     Sample sample = fileUploadUtils.buildSample(multiMap, validationResult);
+    Optional<Sample> oldSample = Optional.empty();
 
     if (sample.getAccession() != null) {
       sampleWithAccession = true;
+
+      if (!sampleService.isNotExistingAccession(sample.getAccession())) {
+        oldSample = sampleService.fetchOldSample(sample.getAccession());
+      }
     }
 
-    sample = handleAuthentication(aapDomain, webinId, isWebin, sample, validationResult);
+    sample = handleAuthentication(aapDomain, webinId, isWebin, sample, oldSample, validationResult);
 
     if (sample != null) {
       sample = fileUploadUtils.addChecklistAttributeAndBuildSample(checklist, sample);
@@ -275,7 +286,7 @@ public class FileUploadService {
 
       if (isValidatedAgainstChecklist) {
         try {
-          sample = storeSample(sample, isWebin(isWebin));
+          sample = storeSample(sample, oldSample, isWebin(isWebin));
 
           if (sample != null) {
             if (sampleWithAccession) {
@@ -312,13 +323,16 @@ public class FileUploadService {
       final String webinId,
       final boolean isWebin,
       Sample sample,
+      final Optional<Sample> oldSample,
       final ValidationResult validationResult) {
     try {
       if (isWebin) {
-        sample = bioSamplesWebinAuthenticationService.handleWebinUserSubmission(sample, webinId);
+        sample =
+            bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+                sample, webinId, oldSample);
       } else {
         sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
-        sample = bioSamplesAapService.handleSampleDomain(sample);
+        sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
       }
 
       return sample;
@@ -356,7 +370,8 @@ public class FileUploadService {
     return isWebin ? FileUploadUtils.WEBIN_AUTH : FileUploadUtils.AAP;
   }
 
-  private Sample storeSample(final Sample sample, final String authProvider) {
+  private Sample storeSample(
+      final Sample sample, final Optional<Sample> oldSample, final String authProvider) {
     /*final String sampleName = sample.getName();
     final String accession = sample.getAccession();
 
@@ -389,7 +404,7 @@ public class FileUploadService {
 
     try {
       return sampleService.persistSample(
-          sample, AuthorizationProvider.valueOf(authProvider), false);
+          sample, oldSample.orElse(null), AuthorizationProvider.valueOf(authProvider), false);
     } catch (final Exception e) {
       throw new RuntimeException("Failed to persist sample with name " + sample.getName());
     }

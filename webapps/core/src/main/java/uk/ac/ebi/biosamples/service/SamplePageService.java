@@ -106,9 +106,7 @@ public class SamplePageService {
                 } else {
                   return null;
                 }
-              } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-              } catch (ExecutionException e) {
+              } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
               }
             });
@@ -153,9 +151,7 @@ public class SamplePageService {
             ss -> {
               try {
                 return ss.get().get();
-              } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-              } catch (ExecutionException e) {
+              } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
               }
             })

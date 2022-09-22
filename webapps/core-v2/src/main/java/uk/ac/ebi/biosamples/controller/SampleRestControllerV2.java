@@ -82,6 +82,14 @@ public class SampleRestControllerV2 {
         authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
     final AuthorizationProvider authProvider =
         webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
+    final boolean notExistingAccession = sampleService.isNotExistingAccession(accession);
+    final Optional<Sample> oldSample;
+
+    if (!notExistingAccession) {
+      oldSample = sampleService.fetchOldSample(sample.getAccession());
+    } else {
+      oldSample = Optional.empty();
+    }
 
     log.debug("Received PUT for " + accession);
 
@@ -95,21 +103,21 @@ public class SampleRestControllerV2 {
       isWebinSuperUser =
           bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
 
-      if (sampleService.isNotExistingAccession(accession) && !isWebinSuperUser) {
+      if (notExistingAccession && !isWebinSuperUser) {
         throw new GlobalExceptions.SampleAccessionMismatchException();
       }
 
       sample =
           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              sample, webinSubmissionAccountId);
+              sample, webinSubmissionAccountId, oldSample);
     } else {
-      if (sampleService.isNotExistingAccession(accession)
+      if (notExistingAccession
           && !(bioSamplesAapService.isWriteSuperUser()
               || bioSamplesAapService.isIntegrationTestUser())) {
         throw new GlobalExceptions.SampleAccessionMismatchException();
       }
 
-      sample = bioSamplesAapService.handleSampleDomain(sample);
+      sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
     }
 
     final Instant now = Instant.now();
@@ -123,7 +131,9 @@ public class SampleRestControllerV2 {
       sample = validateSample(sample, webinAuth);
     }
 
-    sample = sampleService.persistSampleV2(sample, authProvider, isWebinSuperUser);
+    sample =
+        sampleService.persistSampleV2(
+            sample, oldSample.orElse(null), authProvider, isWebinSuperUser);
 
     return ResponseEntity.status(HttpStatus.OK).body(sample);
   }

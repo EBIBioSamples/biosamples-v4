@@ -88,9 +88,9 @@ public class CertificationController {
 
       sample =
           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              sample, webinSubmissionAccountId);
+              sample, webinSubmissionAccountId, Optional.empty());
     } else {
-      sample = bioSamplesAapService.handleSampleDomain(sample);
+      sample = bioSamplesAapService.handleSampleDomain(sample, Optional.empty());
     }
 
     List<Certificate> certificates =
@@ -110,7 +110,7 @@ public class CertificationController {
 
     log.trace("Sample with certificates " + sample);
 
-    sample = sampleService.persistSample(sample, authProvider, false);
+    sample = sampleService.persistSample(sample, null, authProvider, false);
 
     // assemble a resource to return
     // create the response object with the appropriate status

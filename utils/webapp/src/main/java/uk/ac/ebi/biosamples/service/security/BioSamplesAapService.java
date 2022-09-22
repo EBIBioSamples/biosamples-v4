@@ -139,19 +139,12 @@ public class BioSamplesAapService {
    * <p>May return a different version of the sample, so return needs to be stored in future for
    * that sample.
    */
-  public Sample handleSampleDomain(Sample sample)
+  public Sample handleSampleDomain(Sample sample, Optional<Sample> oldSample)
       throws GlobalExceptions.SampleNotAccessibleException,
           GlobalExceptions.DomainMissingException {
     // Get the domains the current user has access to
     final Set<String> usersDomains = getDomains();
     final String domain = sample.getDomain();
-    Optional<Sample> oldSample = Optional.empty();
-
-    // Get the old sample while sample updates, domain needs to be compared with old sample domain
-    // for some cases
-    if (sample.getAccession() != null) {
-      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty(), null);
-    }
 
     if (oldSample.isPresent()
         && oldSample.get().getSubmittedVia()

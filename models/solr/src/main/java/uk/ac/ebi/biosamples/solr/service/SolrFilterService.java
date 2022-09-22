@@ -117,7 +117,7 @@ public class SolrFilterService {
                         }
                       } else {
                         // Create a new criteria
-                        return Optional.of(currentCriteria.get());
+                        return currentCriteria;
                       }
                     }
                     return Optional.empty();

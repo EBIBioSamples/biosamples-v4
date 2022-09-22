@@ -200,6 +200,7 @@ public class SampleRestController {
     if (sample == null) {
       throw new RuntimeException("No sample provided");
     }
+
     final SortedSet<AbstractData> abstractData = sample.getData();
     boolean isWebinSuperUser = false;
 
@@ -214,6 +215,14 @@ public class SampleRestController {
         authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
     final AuthorizationProvider authProvider =
         webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
+    final boolean notExistingAccession = sampleService.isNotExistingAccession(accession);
+    final Optional<Sample> oldSample;
+
+    if (!notExistingAccession) {
+      oldSample = sampleService.fetchOldSample(sample.getAccession());
+    } else {
+      oldSample = Optional.empty();
+    }
 
     if (webinAuth) {
       final String webinSubmissionAccountId = authToken.get().getUser();
@@ -225,13 +234,13 @@ public class SampleRestController {
       isWebinSuperUser =
           bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
 
-      if (sampleService.isNotExistingAccession(accession) && !isWebinSuperUser) {
+      if (notExistingAccession && !isWebinSuperUser) {
         throw new GlobalExceptions.SampleAccessionDoesNotExistException();
       }
 
       sample =
           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              sample, webinSubmissionAccountId);
+              sample, webinSubmissionAccountId, oldSample);
 
       if (abstractData != null && abstractData.size() > 0) {
         if (bioSamplesWebinAuthenticationService.isSampleSubmitter(
@@ -242,13 +251,13 @@ public class SampleRestController {
         }
       }
     } else {
-      if (sampleService.isNotExistingAccession(accession)
+      if (notExistingAccession
           && !(bioSamplesAapService.isWriteSuperUser()
               || bioSamplesAapService.isIntegrationTestUser())) {
         throw new GlobalExceptions.SampleAccessionDoesNotExistException();
       }
 
-      sample = bioSamplesAapService.handleSampleDomain(sample);
+      sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
 
       if (abstractData != null && abstractData.size() > 0) {
         if (bioSamplesAapService.isStructuredDataSubmittedBySampleSubmitter(sample)) {
@@ -278,7 +287,8 @@ public class SampleRestController {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
-    sample = sampleService.persistSample(sample, authProvider, isWebinSuperUser);
+    sample =
+        sampleService.persistSample(sample, oldSample.orElse(null), authProvider, isWebinSuperUser);
 
     // assemble a resource to return
     // create the response object with the appropriate status

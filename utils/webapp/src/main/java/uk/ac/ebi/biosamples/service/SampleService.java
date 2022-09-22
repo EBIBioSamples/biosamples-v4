@@ -44,7 +44,7 @@ public class SampleService {
   private static final String NCBI_IMPORT_DOMAIN = "self.BiosampleImportNCBI";
   private static final String ENA_IMPORT_DOMAIN = "self.BiosampleImportENA";
   private static final String ENA_CHECKLIST = "ENA-CHECKLIST";
-  private static Logger log = LoggerFactory.getLogger(SampleService.class);
+  private static final Logger log = LoggerFactory.getLogger(SampleService.class);
 
   @Qualifier("SampleAccessionService")
   @Autowired
@@ -70,14 +70,14 @@ public class SampleService {
   Checks if the current sample that exists has no metadata, returns true if empty
    */
   public boolean isEmptySample(
-      final Sample sample, final boolean isWebinSuperUser, final MongoSample mongoOldSample) {
+      final Sample sample, final boolean isWebinSuperUser, final Sample oldSample) {
     final String domain = sample.getDomain();
 
     if (isWebinSuperUser) {
       if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
         // file uploader submissions are done via super user but they are non imported samples,
         // needs to be handled safely
-        return isEmptySample(sample, mongoOldSample);
+        return isEmptySample(sample, oldSample);
       } else {
         // otherwise it is a ENA pipeline import, cannot be empty
         return false;
@@ -87,17 +87,17 @@ public class SampleService {
     if (isAPipelineAapDomain(domain)) {
       return false; // imported sample - never submitted first time to BSD, always has metadata
     } else {
-      return isEmptySample(sample, mongoOldSample);
+      return isEmptySample(sample, oldSample);
     }
   }
 
   /*
   Checks if the current sample that exists has no metadata, returns true if empty
    */
-  private boolean isEmptySample(final Sample sample, final MongoSample mongoOldSample) {
+  private boolean isEmptySample(final Sample sample, final Sample oldSample) {
     if (sample.hasAccession()) {
-      if (mongoOldSample != null) {
-        return isEmptySample(mongoOldSample);
+      if (oldSample != null) {
+        return isEmptySample(oldSample);
       }
     }
 
@@ -111,9 +111,7 @@ public class SampleService {
   /*
   Checks if the current sample that exists has no metadata, returns true if empty
    */
-  private boolean isEmptySample(final MongoSample mongoOldSample) {
-    Sample oldSample = mongoSampleToSampleConverter.apply(mongoOldSample);
-
+  private boolean isEmptySample(final Sample oldSample) {
     if (oldSample.getTaxId() != null && oldSample.getTaxId() > 0) {
       return false;
     }
@@ -146,7 +144,7 @@ public class SampleService {
       return false;
     }
 
-    return oldSample.getStructuredData().size() <= 0;
+    return oldSample.getStructuredData().size() == 0;
   }
 
   // because the fetchUsing caches the sample, if an updated version is stored, we need to make
@@ -159,7 +157,10 @@ public class SampleService {
   Called by V1 endpoints to persist samples
    */
   public Sample persistSample(
-      Sample sample, final AuthorizationProvider authProvider, final boolean isWebinSuperUser) {
+      Sample sample,
+      final Sample oldSample,
+      final AuthorizationProvider authProvider,
+      final boolean isWebinSuperUser) {
     boolean isSampleTaxIdUpdated = false;
     Collection<String> errors = sampleValidator.validate(sample);
 
@@ -169,24 +170,20 @@ public class SampleService {
     }
 
     if (sample.hasAccession()) {
-      final Optional<MongoSample> sampleOptional =
-          mongoSampleRepository.findById(sample.getAccession());
-      final MongoSample mongoOldSample = sampleOptional.orElse(null);
-      final boolean isEmptySample = isEmptySample(sample, isWebinSuperUser, mongoOldSample);
+      final boolean isEmptySample = isEmptySample(sample, isWebinSuperUser, oldSample);
 
       if (isEmptySample) {
         sample = Sample.Builder.fromSample(sample).withSubmitted(Instant.now()).build();
       }
 
+      final Long taxId = sample.getTaxId();
       List<String> existingRelationshipTargets = new ArrayList<>();
 
-      final Long taxId = sample.getTaxId();
-
-      if (mongoOldSample != null) {
-        final Sample oldSample = mongoSampleToSampleConverter.apply(mongoOldSample);
-
+      if (oldSample != null) {
         existingRelationshipTargets =
-            getExistingRelationshipTargets(sample.getAccession(), mongoOldSample);
+            getExistingRelationshipTargets(
+                sample.getAccession(),
+                Objects.requireNonNull(sampleToMongoSampleConverter.convert(oldSample)));
 
         sample = compareWithExistingAndUpdateSample(sample, oldSample, isEmptySample, authProvider);
 
@@ -242,7 +239,10 @@ public class SampleService {
   Called by V2 endpoints to persist samples
    */
   public Sample persistSampleV2(
-      Sample sample, final AuthorizationProvider authProvider, final boolean isWebinSuperUser) {
+      Sample sample,
+      final Sample oldSample,
+      final AuthorizationProvider authProvider,
+      final boolean isWebinSuperUser) {
     Collection<String> errors = sampleValidator.validate(sample);
 
     if (!errors.isEmpty()) {
@@ -251,17 +251,12 @@ public class SampleService {
     }
 
     if (sample.hasAccession()) {
-      final Optional<MongoSample> byId = mongoSampleRepository.findById(sample.getAccession());
-      final MongoSample mongoOldSample = byId.orElse(null);
-
-      if (mongoOldSample != null) {
-        final boolean isEmptySample = isEmptySample(sample, isWebinSuperUser, mongoOldSample);
+      if (oldSample != null) {
+        final boolean isEmptySample = isEmptySample(sample, isWebinSuperUser, oldSample);
 
         if (isEmptySample) {
           sample = Sample.Builder.fromSample(sample).withSubmitted(Instant.now()).build();
         }
-
-        final Sample oldSample = mongoSampleToSampleConverter.apply(mongoOldSample);
 
         sample = compareWithExistingAndUpdateSample(sample, oldSample, isEmptySample, authProvider);
       } else {
@@ -282,7 +277,7 @@ public class SampleService {
   }
 
   /*
-  Called by both V1 and V2 endpoints to build a sample with a newly generated sample accession
+  Called by V2 endpoints to build a sample with a newly generated sample accession
    */
   public Sample accessionSample(Sample sample) {
     Collection<String> errors = sampleValidator.validate(sample);
@@ -295,8 +290,19 @@ public class SampleService {
     return mongoAccessionService.generateAccession(sample);
   }
 
-  public boolean isNotExistingAccession(String accession) {
-    return !mongoSampleRepository.findById(accession).isPresent();
+  /*
+  Returns true if a sample does not exist in BioSamples
+   */
+  public boolean isNotExistingAccession(final String accession) {
+    if (accession != null) {
+      return !mongoSampleRepository.findById(accession).isPresent();
+    } else {
+      return true;
+    }
+  }
+
+  public Optional<Sample> fetchOldSample(final String accession) {
+    return fetch(accession, Optional.empty(), null);
   }
 
   private List<String> getExistingRelationshipTargets(
@@ -354,6 +360,11 @@ public class SampleService {
 
   private void isImportedSampleUpdatedByNonPipelineSource(
       final Sample newSample, final Sample oldSample) {
+    /*
+    Old sample has ENA-CHECKLIST attribute, hence it can be concluded that it is imported from ENA
+    New sample has ENA-CHECKLIST attribute, means its updated by ENA pipeline, allow further computation
+    New sample doesn't have ENA-CHECKLIST attribute, means it's not updated by ENA pipeline, don't allow further computation and throw exception
+     */
     if (oldSample.getAttributes().stream()
         .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(ENA_CHECKLIST))) {
       if (newSample.getAttributes().stream()

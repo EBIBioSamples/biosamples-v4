@@ -102,7 +102,8 @@ public class EnaSampleTransformationService {
     final String lastUpdated = sampleDBBean.getLastUpdate();
     final String firstPublic = sampleDBBean.getFirstPublic();
     final String firstCreated = sampleDBBean.getFirstCreated();
-    final String webinId = sampleDBBean.getSubmissionAccountId();
+    final String webinId =
+        pipelinesProperties.getProxyWebinId(); // sampleDBBean.getSubmissionAccountId();
     final String status = handleStatus(sampleDBBean.getStatus());
     final Long taxId = sampleDBBean.getTaxId();
     Instant release;

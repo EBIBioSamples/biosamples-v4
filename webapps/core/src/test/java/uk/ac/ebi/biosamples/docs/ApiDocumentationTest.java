@@ -197,9 +197,9 @@ public class ApiDocumentationTest {
             null,
             null);
 
-    when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(wrongSample);
-    when(sampleService.persistSample(wrongSample, null, false)).thenCallRealMethod();
-    when(sampleService.persistSample(wrongSample, null, false)).thenCallRealMethod();
+    when(aapService.handleSampleDomain(any(Sample.class), any())).thenReturn(wrongSample);
+    when(sampleService.persistSample(wrongSample, null, null, false)).thenCallRealMethod();
+    when(sampleService.persistSample(wrongSample, null, null, false)).thenCallRealMethod();
     when(certifyService.certify(jsonMapper.writeValueAsString(wrongSample), true))
         .thenReturn(Collections.emptyList());
 
@@ -262,8 +262,9 @@ public class ApiDocumentationTest {
             + "\"domain\" : \"self.ExampleDomain\" "
             + "}";
 
-    when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
-    when(sampleService.persistSample(any(Sample.class), eq(AuthorizationProvider.AAP), eq(false)))
+    when(aapService.handleSampleDomain(any(Sample.class), any())).thenReturn(sampleWithDomain);
+    when(sampleService.persistSample(
+            any(Sample.class), eq(null), eq(AuthorizationProvider.AAP), eq(false)))
         .thenReturn(sampleWithDomain);
     when(schemaValidationService.validate(any(Sample.class))).thenReturn("BSDC00001");
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
@@ -313,11 +314,12 @@ public class ApiDocumentationTest {
             + "}";
 
     when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-            any(Sample.class), any(String.class)))
+            any(Sample.class), any(String.class), eq(Optional.empty())))
         .thenReturn(sampleWithWebinId);
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
         .thenReturn(ResponseEntity.ok(submissionAccount));
-    when(sampleService.persistSample(any(Sample.class), eq(AuthorizationProvider.WEBIN), eq(false)))
+    when(sampleService.persistSample(
+            any(Sample.class), eq(null), eq(AuthorizationProvider.WEBIN), eq(false)))
         .thenReturn(sampleWithWebinId);
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
             any(Sample.class), eq(true)))
@@ -368,8 +370,9 @@ public class ApiDocumentationTest {
             + "  } ]"
             + "}";
 
-    when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
-    when(sampleService.persistSample(any(Sample.class), eq(AuthorizationProvider.AAP), eq(false)))
+    when(aapService.handleSampleDomain(any(Sample.class), any())).thenReturn(sampleWithDomain);
+    when(sampleService.persistSample(
+            any(Sample.class), eq(null), eq(AuthorizationProvider.AAP), eq(false)))
         .thenReturn(sampleWithDomain);
     when(schemaValidationService.validate(any(Sample.class))).thenReturn("BSDC00001");
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
@@ -453,9 +456,10 @@ public class ApiDocumentationTest {
             + "\"domain\" : \"self.ExampleDomain\" "
             + "}";
 
-    when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
+    when(aapService.handleSampleDomain(any(Sample.class), any())).thenReturn(sampleWithUpdatedDate);
     when(sampleService.buildPrivateSample(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
-    when(sampleService.persistSample(any(Sample.class), eq(AuthorizationProvider.AAP), eq(false)))
+    when(sampleService.persistSample(
+            any(Sample.class), eq(null), eq(AuthorizationProvider.AAP), eq(false)))
         .thenReturn(sampleWithUpdatedDate);
     when(accessControlService.extractToken(anyString()))
         .thenReturn(
@@ -505,12 +509,13 @@ public class ApiDocumentationTest {
     submissionAccount.setId("WEBIN-12345");
 
     when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-            any(Sample.class), any(String.class)))
+            any(Sample.class), any(String.class), eq(Optional.empty())))
         .thenReturn(sampleWithWebinId);
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
         .thenReturn(ResponseEntity.ok(submissionAccount));
     when(sampleService.buildPrivateSample(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
-    when(sampleService.persistSample(any(Sample.class), eq(AuthorizationProvider.WEBIN), eq(false)))
+    when(sampleService.persistSample(
+            any(Sample.class), eq(null), eq(AuthorizationProvider.WEBIN), eq(false)))
         .thenReturn(sampleWithUpdatedDate);
     when(accessControlService.extractToken(anyString()))
         .thenReturn(
@@ -556,8 +561,9 @@ public class ApiDocumentationTest {
             + "\"domain\" : \"self.ExampleDomain\" "
             + "}";
 
-    when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
-    when(sampleService.persistSample(any(Sample.class), eq(AuthorizationProvider.WEBIN), eq(false)))
+    when(aapService.handleSampleDomain(any(Sample.class), any())).thenReturn(sampleWithDomain);
+    when(sampleService.persistSample(
+            any(Sample.class), eq(null), eq(AuthorizationProvider.WEBIN), eq(false)))
         .thenReturn(sampleWithDomain);
 
     this.mockMvc
@@ -672,7 +678,7 @@ public class ApiDocumentationTest {
 
     when(sampleService.fetch(eq(sample.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sample));
-    when(aapService.handleSampleDomain(sample)).thenReturn(sample);
+    when(aapService.handleSampleDomain(sample, Optional.empty())).thenReturn(sample);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
     when(accessControlService.extractToken(anyString()))
@@ -694,7 +700,8 @@ public class ApiDocumentationTest {
         Certificate.build(
             "biosamples-minimal", "0.0.1", "schemas/certification/biosamples-minimal.json"));
 
-    when(sampleService.persistSample(any(Sample.class), eq(AuthorizationProvider.AAP), eq(false)))
+    when(sampleService.persistSample(
+            any(Sample.class), eq(null), eq(AuthorizationProvider.AAP), eq(false)))
         .thenReturn(Sample.Builder.fromSample(sample).withCertificates(certificates).build());
     doNothing().when(aapService).checkSampleAccessibility(isA(Sample.class));
 
@@ -726,14 +733,15 @@ public class ApiDocumentationTest {
     submissionAccount.setId("WEBIN-12345");
 
     when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-            any(Sample.class), any(String.class)))
+            any(Sample.class), any(String.class), eq(Optional.empty())))
         .thenReturn(sampleWithWebinId);
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
         .thenReturn(ResponseEntity.ok(submissionAccount));
     when(sampleService.fetch(
             eq(sampleWithWebinId.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sampleWithWebinId));
-    when(aapService.handleSampleDomain(sampleWithWebinId)).thenReturn(sampleWithWebinId);
+    when(aapService.handleSampleDomain(sampleWithWebinId, Optional.empty()))
+        .thenReturn(sampleWithWebinId);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
 
@@ -745,7 +753,7 @@ public class ApiDocumentationTest {
     when(certifyService.certify(new ObjectMapper().writeValueAsString(sampleWithWebinId), true))
         .thenReturn(certificates);
     when(sampleService.persistSample(
-            eq(sampleWithWebinId), eq(AuthorizationProvider.WEBIN), eq(false)))
+            eq(sampleWithWebinId), eq(null), eq(AuthorizationProvider.WEBIN), eq(false)))
         .thenReturn(
             Sample.Builder.fromSample(sampleWithWebinId).withCertificates(certificates).build());
     doNothing().when(aapService).checkSampleAccessibility(isA(Sample.class));
@@ -844,10 +852,13 @@ public class ApiDocumentationTest {
     when(sampleService.fetch(
             eq(sampleWithDomain.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sampleWithDomain));
+    when(sampleService.fetchOldSample(eq(sampleWithDomain.getAccession())))
+        .thenReturn(Optional.of(sampleWithDomain));
     when(sampleService.persistSample(
-            eq(sampleWithDomain), eq(AuthorizationProvider.AAP), eq(false)))
+            eq(sampleWithDomain), eq(sampleWithDomain), eq(AuthorizationProvider.AAP), eq(false)))
         .thenReturn(sampleWithDomain);
-    when(aapService.handleSampleDomain(sampleWithDomain)).thenReturn(sampleWithDomain);
+    when(aapService.handleSampleDomain(sampleWithDomain, Optional.of(sampleWithDomain)))
+        .thenReturn(sampleWithDomain);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
     doNothing().when(aapService).checkSampleAccessibility(isA(Sample.class));
@@ -878,15 +889,21 @@ public class ApiDocumentationTest {
     submissionAccount.setId("WEBIN-12345");
 
     when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-            any(Sample.class), any(String.class)))
+            any(Sample.class), any(String.class), eq(Optional.of(sampleWithWebinId))))
         .thenReturn(sampleWithWebinId);
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
         .thenReturn(ResponseEntity.ok(submissionAccount));
     when(sampleService.fetch(
             eq(sampleWithWebinId.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sampleWithWebinId));
+    when(sampleService.isNotExistingAccession(sampleWithWebinId.getAccession())).thenReturn(false);
+    when(sampleService.fetchOldSample(eq(sampleWithWebinId.getAccession())))
+        .thenReturn(Optional.of(sampleWithWebinId));
     when(sampleService.persistSample(
-            eq(sampleWithWebinId), eq(AuthorizationProvider.WEBIN), eq(false)))
+            eq(sampleWithWebinId),
+            eq(sampleWithWebinId),
+            eq(AuthorizationProvider.WEBIN),
+            eq(false)))
         .thenReturn(sampleWithWebinId);
 
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
@@ -924,10 +941,13 @@ public class ApiDocumentationTest {
     when(sampleService.fetch(
             eq(sampleWithDomain.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sampleWithDomain));
+    when(sampleService.fetchOldSample(eq(sampleWithDomain.getAccession())))
+        .thenReturn(Optional.of(sampleWithDomain));
     when(sampleService.persistSample(
-            eq(sampleWithDomain), eq(AuthorizationProvider.AAP), eq(false)))
+            eq(sampleWithDomain), eq(sampleWithDomain), eq(AuthorizationProvider.AAP), eq(false)))
         .thenReturn(sampleWithDomain);
-    when(aapService.handleSampleDomain(sampleWithDomain)).thenReturn(sampleWithDomain);
+    when(aapService.handleSampleDomain(sampleWithDomain, Optional.of(sampleWithDomain)))
+        .thenReturn(sampleWithDomain);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
     doNothing().when(aapService).checkSampleAccessibility(isA(Sample.class));

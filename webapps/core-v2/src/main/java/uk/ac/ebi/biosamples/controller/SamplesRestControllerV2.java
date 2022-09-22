@@ -37,7 +37,7 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 @RequestMapping("/samples")
 @CrossOrigin
 public class SamplesRestControllerV2 {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
@@ -71,7 +71,7 @@ public class SamplesRestControllerV2 {
       @RequestHeader(name = "Authorization") final String token) {
     log.info("Received POST for " + samples.size() + " samples");
 
-    List<Sample> createdSamples;
+    final List<Sample> createdSamples;
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final boolean webinAuth =
         authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
@@ -96,7 +96,7 @@ public class SamplesRestControllerV2 {
                     sample -> {
                       sample =
                           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-                              sample, webinSubmissionAccountId);
+                              sample, webinSubmissionAccountId, Optional.empty());
 
                       sampleService.validateSampleHasNoRelationshipsV2(sample);
 
@@ -104,7 +104,8 @@ public class SamplesRestControllerV2 {
                         sample = validateSample(sample, true);
                       }
 
-                      return sampleService.persistSampleV2(sample, authProvider, isWebinSuperUser);
+                      return sampleService.persistSampleV2(
+                          sample, null, authProvider, isWebinSuperUser);
                     })
                 .collect(Collectors.toList());
       } catch (final Exception e) {
@@ -118,7 +119,7 @@ public class SamplesRestControllerV2 {
             samples.stream()
                 .map(
                     sample -> {
-                      sample = bioSamplesAapService.handleSampleDomain(sample);
+                      sample = bioSamplesAapService.handleSampleDomain(sample, Optional.empty());
 
                       sampleService.validateSampleHasNoRelationshipsV2(sample);
 
@@ -126,7 +127,7 @@ public class SamplesRestControllerV2 {
                         sample = validateSample(sample, false);
                       }
 
-                      return sampleService.persistSampleV2(sample, authProvider, false);
+                      return sampleService.persistSampleV2(sample, null, authProvider, false);
                     })
                 .collect(Collectors.toList());
       } catch (final Exception e) {
@@ -186,14 +187,14 @@ public class SamplesRestControllerV2 {
 
       sample =
           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              sample, webinSubmissionAccountId);
+              sample, webinSubmissionAccountId, Optional.empty());
     } else {
-      sample = bioSamplesAapService.handleSampleDomain(sample);
+      sample = bioSamplesAapService.handleSampleDomain(sample, Optional.empty());
     }
 
     sample = sampleService.buildPrivateSample(sample);
 
-    sample = sampleService.persistSampleV2(sample, authProvider, isWebinSuperUser);
+    sample = sampleService.persistSampleV2(sample, null, authProvider, isWebinSuperUser);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(sample);
   }

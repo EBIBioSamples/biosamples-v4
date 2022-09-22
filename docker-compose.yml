@@ -100,15 +100,11 @@ services:
       - BIOSAMPLES_NEO_URL=bolt://neo4j:7687
       - biosamples.schemaValidator=http://json-schema-validator:3020/validate
       - biosamples.schemaStore=http://schema-store:8085
-      - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
-      - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
-      - SPRING_RABBITMQ_LISTENER_SIMPLE_PREFETCH=100
-      - SPRING_RABBITMQ_LISTENER_SIMPLE_TRANSACTION-SIZE=25
       - spring.jackson.serialization-inclusion=non_null
       - spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false
       - spring.jackson.serialization.indent_output=true
       - management.health.solr.enabled=false
+      - management.health.rabbit.enabled=false
       - management.endpoint.health.show-details=always
       #Configure root path to server from
       - server.servlet.context-path=/biosamples/v2
