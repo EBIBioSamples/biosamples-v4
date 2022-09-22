@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions.PaginationException;
 import uk.ac.ebi.biosamples.model.JsonLDDataCatalog;
 import uk.ac.ebi.biosamples.model.JsonLDDataset;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -127,23 +128,21 @@ public class SampleHtmlController {
       @RequestParam(name = "text", required = false) String text,
       @RequestParam(name = "filter", required = false) String[] filtersArray,
       @RequestParam(name = "page", defaultValue = "1") Integer page,
+//      @RequestParam(name = "cursor", defaultValue = "*") String cursor,
       @RequestParam(name = "size", defaultValue = "10") Integer size,
       @RequestParam(name = "curationrepo", defaultValue = "none") final String curationRepo,
       HttpServletRequest request,
       HttpServletResponse response) {
 
-    // force a minimum of 1 result
-    if (size < 1) {
-      size = 1;
-    }
-    // cap it for our protection
-    if (size > 1000) {
-      size = 1000;
+    page = page == null || page < 1 ? 1 : page;
+    size = size == null || size < 1 ? 10 : size;
+    if (page > 500 || size > 200) {
+      throw new PaginationException(); // solr degrades with high page and size params, use cursor instead
     }
 
-    if (page < 1) {
-      page = 1;
-    }
+//    if (cursor == null && page == 1) { // cursor crawling is the default
+//      cursor = "*";
+//    }
 
     Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);
     Collection<String> domains = bioSamplesAapService.getDomains();
@@ -262,6 +261,10 @@ public class SampleHtmlController {
 
     response.setHeader("Cache-Control", cacheControl.getHeaderValue());
     return "fragments/facets";
+  }
+
+  private Paginations getPaginationsForCursor(Page<Sample> pageSample, UriComponentsBuilder uriBuilder) {
+
   }
 
   private Paginations getPaginations(Page<Sample> pageSample, UriComponentsBuilder uriBuilder) {

@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions.PaginationException;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
@@ -121,7 +122,15 @@ public class SamplesRestController {
     String webinSubmissionAccountId = null;
     Collection<String> domains = null;
 
-    int effectivePage;
+    int effectivePage = page == null || page < 0 ? 0 : page;
+    int effectiveSize = size == null || size < 1 ? 20 : size;
+    if (effectivePage > 500 || effectiveSize > 200) {
+      throw new PaginationException(); // solr degrades with high page and size params, use cursor instead
+    }
+
+    if (cursor == null && effectivePage == 0) { // cursor crawling is the default
+      cursor = "*";
+    }
 
     Optional<AuthToken> authToken = accessControlService.extractToken(token);
 
@@ -132,20 +141,6 @@ public class SamplesRestController {
       webinSubmissionAccountId = authToken.map(AuthToken::getUser).orElse(null);
     } else {
       domains = bioSamplesAapService.getDomains();
-    }
-
-    if (page == null) {
-      effectivePage = 0;
-    } else {
-      effectivePage = page;
-    }
-
-    int effectiveSize;
-
-    if (size == null) {
-      effectiveSize = 20;
-    } else {
-      effectiveSize = size;
     }
 
     Collection<Filter> filters = filterService.getFiltersCollection(decodedFilter);
@@ -329,7 +324,7 @@ public class SamplesRestController {
               effectivePage + 1,
               effectiveSize,
               sort,
-              Link.REL_NEXT.value(),
+              IanaLinkRelations.NEXT.value(),
               this.getClass()));
     }
     // if theres more than one page, link to first and last

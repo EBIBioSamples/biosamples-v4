@@ -164,4 +164,10 @@ public class GlobalExceptions {
       super(message);
     }
   }
+
+  @ResponseStatus(
+      value = HttpStatus.BAD_REQUEST,
+      reason = "BioSamples pagination using start and page parameters are limited due to performance reasons. " +
+               "(max start = 500 and Max page size = 200). Please use cursor and size for pagination.")
+  public static class PaginationException extends RuntimeException {}
 }

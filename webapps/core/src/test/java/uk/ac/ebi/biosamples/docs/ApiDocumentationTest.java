@@ -163,7 +163,8 @@ public class ApiDocumentationTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestParameters(
-                    parameterWithName("page").description("The page to retrieve").optional(),
+//                    parameterWithName("page").description("The page to retrieve").optional(),
+                    parameterWithName("cursor").description("Next page of a collection. * for first page").optional(),
                     parameterWithName("size").description("Entries per page").optional(),
                     parameterWithName("text").description("Text to search").optional(),
                     parameterWithName("filter")
