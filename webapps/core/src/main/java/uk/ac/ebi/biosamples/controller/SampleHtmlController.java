@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions.PaginationException;
 import uk.ac.ebi.biosamples.model.JsonLDDataCatalog;
 import uk.ac.ebi.biosamples.model.JsonLDDataset;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -41,6 +42,8 @@ import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
+import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 /**
  * Primary controller for HTML operations.
@@ -110,17 +113,6 @@ public class SampleHtmlController {
     return "submit";
   }
 
-  // TODO: 2018/10/29 Maintaining old method for legacy purpose, we can think of deleting this if
-  // no-one is actually using it
-  //	@GetMapping(value = "/samples")
-  //	public String oldSamples(Model model, @RequestParam(name="text", required=false) String text,
-  //			@RequestParam(name="filter", required=false) String[] filtersArray,
-  //			@RequestParam(name="start", defaultValue="0") Integer start,
-  //			@RequestParam(name="rows", defaultValue="10") Integer rows,
-  //			HttpServletRequest request, HttpServletResponse response) {
-  //		return this.samples(model, text, filtersArray, start/rows, rows, request, response);
-  //	}
-
   @GetMapping(value = "/samples")
   public String samples(
       Model model,
@@ -132,17 +124,10 @@ public class SampleHtmlController {
       HttpServletRequest request,
       HttpServletResponse response) {
 
-    // force a minimum of 1 result
-    if (size < 1) {
-      size = 1;
-    }
-    // cap it for our protection
-    if (size > 1000) {
-      size = 1000;
-    }
-
-    if (page < 1) {
-      page = 1;
+    page = page == null || page < 1 ? 1 : page;
+    size = size == null || size < 1 ? 10 : size;
+    if (page > 500 || size > 200) {
+      throw new PaginationException(); // solr degrades with high page and size params, use cursor instead
     }
 
     Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);
@@ -152,10 +137,6 @@ public class SampleHtmlController {
     Page<Sample> pageSample =
         samplePageService.getSamplesByText(
             text, filterCollection, domains, null, pageable, curationRepo, Optional.empty());
-
-    // default to getting 10 values from 10 facets
-    // List<Facet> sampleFacets = facetService.getFacets(text, filterCollection, domains, 10,
-    // 10);
 
     // build URLs for the facets depending on if they are enabled or not
     UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);
@@ -179,17 +160,6 @@ public class SampleHtmlController {
     model.addAttribute("paginations", getPaginations(pageSample, uriBuilder));
     model.addAttribute("jsonLD", jsonLDService.jsonLDToString(jsonLDDataset));
     model.addAttribute("downloadURL", downloadURL);
-    //    model.addAttribute(
-    //        "facets",
-    //        new LazyContextVariable<List<Facet>>() {
-    //          @Override
-    //          protected List<Facet> loadValue() {
-    //            return facetService.getFacets(text, filterCollection, domains, 10, 10);
-    //          }
-    //        });
-
-    // TODO add "clear all facets" button
-    // TODO title of webpage
 
     // Note - EBI load balancer does cache but doesn't add age header, so clients could cache up
     // to
@@ -200,7 +170,7 @@ public class SampleHtmlController {
     // if the user has access to any domains, then mark the response as private as must be using
     // AAP
     // and responses will be different
-    if (domains.size() > 0) {
+    if (!domains.isEmpty()) {
       cacheControl.cachePrivate();
     }
     response.setHeader("Cache-Control", cacheControl.getHeaderValue());
