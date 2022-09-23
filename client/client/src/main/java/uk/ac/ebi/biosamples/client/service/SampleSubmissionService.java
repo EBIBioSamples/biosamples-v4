@@ -130,7 +130,7 @@ public class SampleSubmissionService {
             traverson
                 .follow("samples")
                 .toObject(new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {});
-        Link sampleLink = pagedSamples.getLink("sample").get();
+        Link sampleLink = pagedSamples.getLink("sample").get();//no value present
 
         sampleLink = sampleLink.expand(sample.getAccession());
         URI uri = getSamplePersistURI(sampleLink);

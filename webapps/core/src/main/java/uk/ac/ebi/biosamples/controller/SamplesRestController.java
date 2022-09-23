@@ -113,6 +113,9 @@ public class SamplesRestController {
       @RequestParam(name = "curationrepo", required = false) final String curationRepo,
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
       @RequestHeader(name = "Authorization", required = false) final String token) {
+
+
+
     // Need to decode the %20 and similar from the parameters
     // this is *not* needed for the html controller
     String decodedText = LinkUtils.decodeText(text);
@@ -128,8 +131,9 @@ public class SamplesRestController {
       throw new PaginationException(); // solr degrades with high page and size params, use cursor instead
     }
 
-    if (cursor == null && effectivePage == 0) { // cursor crawling is the default
+    if (cursor == null && page == null) { // cursor crawling is the default
       cursor = "*";
+      decodedCursor = "*";
     }
 
     Optional<AuthToken> authToken = accessControlService.extractToken(token);
@@ -189,7 +193,7 @@ public class SamplesRestController {
               decodedCurationDomains,
               decodedCursor,
               effectiveSize,
-              Link.REL_SELF.value(),
+              IanaLinkRelations.SELF.value(),
               this.getClass()));
       // only display the next link if there is a next cursor to go to
       if (!LinkUtils.decodeText(samples.getNextCursorMark()).equals(decodedCursor)
@@ -201,12 +205,29 @@ public class SamplesRestController {
                 decodedCurationDomains,
                 samples.getNextCursorMark(),
                 effectiveSize,
-                Link.REL_NEXT.value(),
+                IanaLinkRelations.NEXT.value(),
                 this.getClass()));
       }
 
-      // Note - EBI load balancer does cache but doesn't add age header, so clients could
-      // cache up
+      if (cursor == "*") {
+        resources.add(
+            getCursorLink(
+                decodedText,
+                decodedFilter,
+                decodedCurationDomains,
+                "*",
+                effectiveSize,
+                "cursor",
+                this.getClass()));
+      }
+
+      UriComponentsBuilder uriComponentsBuilder =
+          WebMvcLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
+      // This is a bit of a hack, but best we can do for now...
+      resources.add(
+          new Link(uriComponentsBuilder.build(true).toUriString() + "/{accession}", "sample"));
+
+      // Note - EBI load balancer does cache but doesn't add age header, so clients could cache up
       // to twice this age
       return ResponseEntity.ok().cacheControl(cacheControl).body(resources);
     } else {
@@ -283,7 +304,7 @@ public class SamplesRestController {
               0,
               effectiveSize,
               sort,
-              Link.REL_FIRST.value(),
+              IanaLinkRelations.FIRST.value(),
               this.getClass()));
     }
     // if there was a previous page, link to it
@@ -297,7 +318,7 @@ public class SamplesRestController {
               effectivePage - 1,
               effectiveSize,
               sort,
-              Link.REL_PREVIOUS.value(),
+              IanaLinkRelations.PREVIOUS.value(),
               this.getClass()));
     }
 
@@ -310,7 +331,7 @@ public class SamplesRestController {
             effectivePage,
             effectiveSize,
             sort,
-            Link.REL_SELF.value(),
+            IanaLinkRelations.SELF.value(),
             this.getClass()));
 
     // if there is a next page, link to it
@@ -338,7 +359,7 @@ public class SamplesRestController {
               pageSample.getTotalPages(),
               effectiveSize,
               sort,
-              Link.REL_LAST.value(),
+              IanaLinkRelations.LAST.value(),
               this.getClass()));
     }
     // if we are on the first page and not sorting

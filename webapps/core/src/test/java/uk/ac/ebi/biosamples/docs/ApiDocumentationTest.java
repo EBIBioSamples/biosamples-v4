@@ -62,6 +62,7 @@ import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
+import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.mongo.CurationReadService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
@@ -143,18 +144,15 @@ public class ApiDocumentationTest {
   @Test
   public void getSamples() throws Exception {
     Sample fakeSample = this.faker.getExampleSample();
-    Page<Sample> samplePage =
-        new PageImpl<>(Collections.singletonList(fakeSample), getDefaultPageable(), 100);
-    when(samplePageService.getSamplesByText(
-            nullable(String.class),
-            anyList(),
-            anySet(),
-            nullable(String.class),
-            any(Pageable.class),
-            nullable(String.class),
-            any()))
-        .thenReturn(samplePage);
-    this.mockMvc
+    when(samplePageService.getSamplesByText(nullable(String.class), anyList(), anySet(), nullable(String.class),
+                                            any(Pageable.class), nullable(String.class), any()))
+        .thenReturn(new PageImpl<>(Collections.singletonList(fakeSample), getDefaultPageable(), 100));
+
+    when(samplePageService.getSamplesByText(nullable(String.class), anyList(), anySet(), nullable(String.class),
+                                            nullable(String.class), anyInt(), any(), any()))
+        .thenReturn(new CursorArrayList<>(Collections.singletonList(fakeSample), ""));
+
+    mockMvc
         .perform(get("/biosamples/samples").accept(MediaTypes.HAL_JSON))
         .andExpect(status().isOk())
         .andDo(
@@ -163,8 +161,8 @@ public class ApiDocumentationTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestParameters(
-//                    parameterWithName("page").description("The page to retrieve").optional(),
-                    parameterWithName("cursor").description("Next page of a collection. * for first page").optional(),
+                    parameterWithName("page").description("Not recommended to use for pagination of large number of results").optional(),
+                    parameterWithName("cursor").description("Next page of a collection. Pass * for the first page").optional(),
                     parameterWithName("size").description("Entries per page").optional(),
                     parameterWithName("text").description("Text to search").optional(),
                     parameterWithName("filter")
