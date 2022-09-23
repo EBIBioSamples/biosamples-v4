@@ -161,9 +161,9 @@ public class ApiDocumentationTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestParameters(
-                    parameterWithName("page").description("Not recommended to use for pagination of large number of results").optional(),
                     parameterWithName("cursor").description("Next page of a collection. Pass * for the first page").optional(),
                     parameterWithName("size").description("Entries per page").optional(),
+                    parameterWithName("page").description("The page to retrieve. Not recommended to use for pagination of large number of results").optional(),
                     parameterWithName("text").description("Text to search").optional(),
                     parameterWithName("filter")
                         .description("List of filters to apply to search results")
