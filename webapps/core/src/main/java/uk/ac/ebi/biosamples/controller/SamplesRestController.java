@@ -479,12 +479,12 @@ public class SamplesRestController {
     }
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
     final AuthorizationProvider authProvider =
-        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
+            ? AuthorizationProvider.WEBIN
+            : AuthorizationProvider.AAP;
 
-    if (webinAuth) {
+    if (authProvider == AuthorizationProvider.WEBIN) {
       final String webinSubmissionAccountId = authToken.get().getUser();
 
       if (webinSubmissionAccountId == null) {
@@ -527,14 +527,14 @@ public class SamplesRestController {
     }
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
     final AuthorizationProvider authProvider =
-        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
+            ? AuthorizationProvider.WEBIN
+            : AuthorizationProvider.AAP;
     boolean isWebinSuperUser = false;
     Optional<Sample> oldSample = Optional.empty();
 
-    if (webinAuth) {
+    if (authProvider == AuthorizationProvider.WEBIN) {
       final String webinSubmissionAccountId = authToken.get().getUser();
 
       if (webinSubmissionAccountId == null) {
@@ -593,7 +593,7 @@ public class SamplesRestController {
             .withSubmittedVia(submittedVia)
             .build();
 
-    sample = validateSample(sample, webinAuth, isWebinSuperUser);
+    sample = validateSample(sample, authProvider, isWebinSuperUser);
 
     if (!setFullDetails) {
       sample = sampleManipulationService.removeLegacyFields(sample);
@@ -609,12 +609,15 @@ public class SamplesRestController {
         .body(sampleResource);
   }
 
-  private Sample validateSample(Sample sample, boolean webinAuth, boolean isWebinSuperUser) {
+  private Sample validateSample(
+      Sample sample, AuthorizationProvider authorizationProvider, boolean isWebinSuperUser) {
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    if (webinAuth && !isWebinSuperUser) {
+    final boolean isWebinAuth = authorizationProvider == AuthorizationProvider.WEBIN;
+
+    if (isWebinAuth && !isWebinSuperUser) {
       schemaValidationService.validate(sample);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
-    } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
+    } else if (!isWebinAuth && !bioSamplesAapService.isWriteSuperUser()) {
       schemaValidationService.validate(sample);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, false);
     }

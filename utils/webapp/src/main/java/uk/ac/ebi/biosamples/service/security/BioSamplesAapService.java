@@ -165,7 +165,7 @@ public class BioSamplesAapService {
       if (domain == null || domain.length() == 0) {
         // if the sample doesn't have a domain, and the user has one domain, then they must be
         // submitting to that domain
-        if (usersDomains.size() == 1) {
+        if (usersDomains.size() > 0) {
           sample =
               Sample.Builder.fromSample(sample)
                   .withDomain(usersDomains.iterator().next())
@@ -176,25 +176,8 @@ public class BioSamplesAapService {
         }
       }
 
-      // TODO: Review the webin user check, Dipayan
-      // Non super user submission
-      if (sample.getAccession() != null && !(isWriteSuperUser() || isIntegrationTestUser())) {
-        final boolean oldSamplePresent = oldSample.isPresent();
-
-        if (!oldSamplePresent || !usersDomains.contains(oldSample.get().getDomain())) {
-          final boolean webinProxyUser =
-              (oldSamplePresent
-                  && bioSamplesWebinAuthenticationService.isWebinSuperUser(
-                      oldSample.get().getWebinSubmissionAccountId()));
-
-          if (!webinProxyUser) {
-            throw new GlobalExceptions.SampleDomainMismatchException();
-          }
-        }
-      }
-
-      // Super user submission
       if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
+        // Super user submission
         return sample;
       } else if (usersDomains.contains(domain)) {
         return sample;

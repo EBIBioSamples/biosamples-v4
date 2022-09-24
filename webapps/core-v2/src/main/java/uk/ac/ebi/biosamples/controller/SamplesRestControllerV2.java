@@ -73,13 +73,13 @@ public class SamplesRestControllerV2 {
 
     final List<Sample> createdSamples;
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
     final AuthorizationProvider authProvider =
-        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
+            ? AuthorizationProvider.WEBIN
+            : AuthorizationProvider.AAP;
     boolean isWebinSuperUser;
 
-    if (webinAuth) {
+    if (authProvider == AuthorizationProvider.WEBIN) {
       final String webinSubmissionAccountId = authToken.get().getUser();
 
       if (webinSubmissionAccountId == null) {
@@ -110,9 +110,21 @@ public class SamplesRestControllerV2 {
                 .collect(Collectors.toList());
       } catch (final Exception e) {
         // check auth exception
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        if (e instanceof GlobalExceptions.WebinTokenInvalidException
+            || e instanceof GlobalExceptions.WebinUserLoginUnauthorizedException
+            || e instanceof GlobalExceptions.SampleNotAccessibleException
+            || e instanceof GlobalExceptions.SampleNotAccessibleAdviceException
+            || e instanceof GlobalExceptions.InvalidSubmissionSourceException) {
+          return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+          // check validation exception
+        } else if (e instanceof GlobalExceptions.SampleWithRelationshipSubmissionExceptionV2
+            || e instanceof GlobalExceptions.SampleValidationException
+            || e instanceof GlobalExceptions.SampleValidationControllerException) {
+          return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } else {
+          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
       }
-
     } else {
       try {
         createdSamples =
@@ -132,9 +144,21 @@ public class SamplesRestControllerV2 {
                 .collect(Collectors.toList());
       } catch (final Exception e) {
         // check auth exception
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        if (e instanceof GlobalExceptions.InvalidSubmissionSourceException
+            || e instanceof GlobalExceptions.SampleDomainMismatchException
+            || e instanceof GlobalExceptions.DomainMissingException) {
+          return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+          // check validation exception
+        } else if (e instanceof GlobalExceptions.SampleWithRelationshipSubmissionExceptionV2
+            || e instanceof GlobalExceptions.SampleValidationException
+            || e instanceof GlobalExceptions.SampleValidationControllerException) {
+          return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } else {
+          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
       }
     }
+
     return ResponseEntity.status(HttpStatus.CREATED).body(createdSamples);
   }
 
@@ -170,12 +194,12 @@ public class SamplesRestControllerV2 {
     boolean isWebinSuperUser = false;
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
     final AuthorizationProvider authProvider =
-        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
+            ? AuthorizationProvider.WEBIN
+            : AuthorizationProvider.AAP;
 
-    if (webinAuth) {
+    if (authProvider == AuthorizationProvider.WEBIN) {
       final String webinSubmissionAccountId = authToken.get().getUser();
 
       if (webinSubmissionAccountId == null) {

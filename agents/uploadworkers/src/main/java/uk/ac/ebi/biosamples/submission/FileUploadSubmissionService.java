@@ -42,7 +42,7 @@ import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
 
 @Service
 public class FileUploadSubmissionService {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private ValidationResult validationResult;
   private FileUploadUtils fileUploadUtils;
 

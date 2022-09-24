@@ -121,7 +121,7 @@ public class SampleRestController {
         bioSamplesAapService.checkSampleAccessibility(sample.get());
       }
 
-      if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
+      if (decodedLegacyDetails.isPresent()) {
         sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
       }
 
@@ -211,10 +211,10 @@ public class SampleRestController {
     log.debug("Received PUT for " + accession);
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
     final AuthorizationProvider authProvider =
-        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
+            ? AuthorizationProvider.WEBIN
+            : AuthorizationProvider.AAP;
     final boolean notExistingAccession = sampleService.isNotExistingAccession(accession);
     final Optional<Sample> oldSample;
 
@@ -224,7 +224,7 @@ public class SampleRestController {
       oldSample = Optional.empty();
     }
 
-    if (webinAuth) {
+    if (authProvider == AuthorizationProvider.WEBIN) {
       final String webinSubmissionAccountId = authToken.get().getUser();
 
       if (webinSubmissionAccountId == null) {
@@ -280,7 +280,7 @@ public class SampleRestController {
     sample =
         Sample.Builder.fromSample(sample).withUpdate(now).withSubmittedVia(submittedVia).build();
 
-    sample = validateSample(sample, webinAuth, isWebinSuperUser);
+    sample = validateSample(sample, authProvider, isWebinSuperUser);
 
     if (!setFullDetails) {
       log.trace("Removing contact legacy fields for " + accession);
@@ -295,12 +295,15 @@ public class SampleRestController {
     return sampleResourceAssembler.toModel(sample);
   }
 
-  private Sample validateSample(Sample sample, boolean webinAuth, boolean isWebinSuperUser) {
+  private Sample validateSample(
+      Sample sample, AuthorizationProvider authorizationProvider, boolean isWebinSuperUser) {
+    final boolean isWebinAuth = authorizationProvider == AuthorizationProvider.WEBIN;
+
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    if (webinAuth && !isWebinSuperUser) {
+    if (isWebinAuth && !isWebinSuperUser) {
       schemaValidationService.validate(sample);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
-    } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
+    } else if (!isWebinAuth && !bioSamplesAapService.isWriteSuperUser()) {
       schemaValidationService.validate(sample);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, false);
     }

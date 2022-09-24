@@ -49,8 +49,19 @@ public class MessageHandlerSolr {
   }
 
   @RabbitListener(
-      queues = Messaging.queueToBeIndexedSolr,
+      queues = Messaging.INDEXING_QUEUE,
       containerFactory = "biosamplesAgentSolrContainerFactory")
+  public void handleIndexing(MessageContent messageContent) {
+    handle(messageContent);
+  }
+
+  @RabbitListener(
+      queues = Messaging.REINDEXING_QUEUE,
+      containerFactory = "biosamplesAgentSolrContainerFactory")
+  public void handleReindxing(MessageContent messageContent) {
+    handle(messageContent);
+  }
+
   public void handle(MessageContent messageContent) {
 
     if (messageContent.getSample() == null) {

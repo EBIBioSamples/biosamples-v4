@@ -32,7 +32,7 @@ import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.*;
 
 public class FileUploadUtils {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   public static final String WEBIN_AUTH = "WEBIN";
   public static final String AAP = "AAP";
@@ -352,7 +352,7 @@ public class FileUploadUtils {
               log.trace(entryKey + " " + entryValue);
 
               if (entryKey.startsWith("comment") && entryKey.contains("external db ref")) {
-                if (entryValue != null && !entryValue.isEmpty() && entryValue.length() > 1) {
+                if (entryValue != null && entryValue.length() > 1) {
                   externalReferenceList.add(ExternalReference.build(entryValue));
                 }
               }

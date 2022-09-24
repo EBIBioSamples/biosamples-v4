@@ -143,7 +143,7 @@ public class BioSamplesWebinAuthenticationService {
               if (sampleService.isAPipelineAapDomain(oldSampleDomain)
                   || isOldRegistrationDomain(
                       oldSampleDomain)) { // if old sample was a pipeline submission using AAP, or
-                // pre registration, allow
+                // pre-registration, allow
                 // webin replacement
                 return buildSampleWithWebinSubmissionAccountId(
                     sample, webinIdToUseWhileBioSamplesClientSubmissions);
