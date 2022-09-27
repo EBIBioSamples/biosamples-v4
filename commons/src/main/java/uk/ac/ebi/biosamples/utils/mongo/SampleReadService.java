@@ -40,7 +40,6 @@ import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 @Service
 public class SampleReadService {
   private static Logger LOGGER = LoggerFactory.getLogger(SampleReadService.class);
-
   private final MongoSampleRepository mongoSampleRepository;
 
   // TODO use a ConversionService to manage all these
@@ -78,13 +77,7 @@ public class SampleReadService {
             bioSamplesProperties.getBiosamplesCorePageThreadCountMax());
   }
 
-  /**
-   * Throws an IllegalArgumentException of no sample with that accession exists
-   *
-   * @param accession
-   * @return
-   * @throws IllegalArgumentException
-   */
+  /** Throws an IllegalArgumentException of no sample with that accession exists */
   // can't use a sync cache because we need to use CacheEvict
   // @Cacheable(cacheNames=WebappProperties.fetchUsing, key="#root.args[0]")
   public Optional<Sample> fetch(String accession, Optional<List<String>> curationDomains)
@@ -177,7 +170,6 @@ public class SampleReadService {
   }
 
   private static class FetchCallable implements Callable<Optional<Sample>> {
-
     private final SampleReadService sampleReadService;
     private final String accession;
     private final Optional<List<String>> curationDomains;

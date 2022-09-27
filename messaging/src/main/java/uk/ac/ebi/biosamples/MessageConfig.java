@@ -27,12 +27,16 @@ import org.springframework.context.annotation.Configuration;
 public class MessageConfig {
 
   // declare queues
-
   @Bean(name = "solrQueue")
   public Queue getQueueToBeIndexedSolr() {
-    return QueueBuilder.durable(Messaging.queueToBeIndexedSolr)
+    return QueueBuilder.durable(Messaging.INDEXING_QUEUE)
         .withArgument("x-dead-letter-exchange", Messaging.exchangeDeadLetter)
         .build();
+  }
+
+  @Bean(name = "reindxingQueue")
+  public Queue getReindexingQueue() {
+    return QueueBuilder.durable(Messaging.REINDEXING_QUEUE).build();
   }
 
   @Bean(name = "uploaderQueue")
@@ -48,15 +52,19 @@ public class MessageConfig {
   public Queue getQueueRetryDeadLetter() {
     return QueueBuilder.durable(Messaging.queueRetryDeadLetter)
         .withArgument("x-message-ttl", 30000) // 60 seconds
-        .withArgument("x-dead-letter-exchange", Messaging.exchangeForIndexingSolr)
+        .withArgument("x-dead-letter-exchange", Messaging.INDEXING_EXCHANGE)
         .build();
   }
 
   // declare exchanges
-
   @Bean(name = "solrExchange")
   public Exchange getExchangeForIndexingSolr() {
-    return ExchangeBuilder.fanoutExchange(Messaging.exchangeForIndexingSolr).durable(true).build();
+    return ExchangeBuilder.directExchange(Messaging.INDEXING_EXCHANGE).durable(true).build();
+  }
+
+  @Bean(name = "reindxingEchange")
+  public Exchange getReIndexingExcahnge() {
+    return ExchangeBuilder.directExchange(Messaging.REINDEXING_EXCHANGE).durable(true).build();
   }
 
   @Bean(name = "uploaderExchange")
@@ -70,12 +78,19 @@ public class MessageConfig {
   }
 
   // bind queues to exchanges
-
   @Bean(name = "solrBindings")
   public Binding bindingForIndexingSolr() {
     return BindingBuilder.bind(getQueueToBeIndexedSolr())
         .to(getExchangeForIndexingSolr())
-        .with(Messaging.queueToBeIndexedSolr)
+        .with(Messaging.INDEXING_QUEUE)
+        .noargs();
+  }
+
+  @Bean(name = "reindexingBinding")
+  public Binding getReIndexingBinding() {
+    return BindingBuilder.bind(getReindexingQueue())
+        .to(getReIndexingExcahnge())
+        .with(Messaging.REINDEXING_QUEUE)
         .noargs();
   }
 

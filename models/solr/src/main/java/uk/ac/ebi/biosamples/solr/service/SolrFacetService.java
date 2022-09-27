@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.solr.core.query.Criteria;
@@ -52,20 +53,29 @@ public class SolrFacetService {
       Pageable facetValuesPageInfo,
       String facetField) {
     boolean isLandingPage = false;
-    // default to search all
-    if (searchTerm == null || searchTerm.trim().length() == 0) {
-      searchTerm = "*:*";
-      if (filters.isEmpty()) {
-        isLandingPage = true;
-      }
-    }
 
     List<Facet> facets = new ArrayList<>();
+    FacetQuery query;
+    if (StringUtils.isBlank(searchTerm) || "*:*".equals(searchTerm.trim())) {
+      query = new SimpleFacetQuery(new Criteria().expression("*:*")); // default to search all
+      isLandingPage = filters.isEmpty();
+    } else {
+      String lowerCasedSearchTerm = searchTerm.toLowerCase();
+      // search for copied fields keywords_ss
+      query =
+          new SimpleFacetQuery(new Criteria().expression("keywords_ss:" + lowerCasedSearchTerm));
 
-    // build a query out of the users string and any facets
-    FacetQuery query = new SimpleFacetQuery();
-    query.addCriteria(new Criteria().expression(searchTerm));
-    query.setTimeAllowed(TIMEALLOWED * 1000);
+      // boosting accession to bring accession matches to the top
+      Criteria boostId = new Criteria("id").is(searchTerm).boost(5);
+      boostId.setPartIsOr(true);
+      query.addCriteria(boostId);
+
+      // boosting name to bring accession matches to the top
+      Criteria boostName = new Criteria("name_s").is(searchTerm).boost(3);
+      boostName.setPartIsOr(true);
+      query.addCriteria(boostName);
+    }
+    query.setTimeAllowed(TIMEALLOWED * 1000); // some facet queries could take longer to return
 
     // Add domains and release date filters
     Optional<FilterQuery> domainAndPublicFilterQuery =
@@ -80,6 +90,16 @@ public class SolrFacetService {
         getFacetFields(facetFieldPageInfo, query, isLandingPage, facetField);
 
     List<Entry<SolrSampleField, Long>> rangeFacetFields = Collections.emptyList();
+    if (facetField == null) {
+      rangeFacetFields =
+          FacetHelper.RANGE_FACETING_FIELDS.stream()
+              .map(
+                  s ->
+                      new SimpleEntry<>(
+                          this.solrFieldService.decodeField(s + FacetHelper.get_encoding_suffix(s)),
+                          0L))
+              .collect(Collectors.toList());
+    }
 
     if (!allFacetFields.isEmpty()) {
       allFacetFields

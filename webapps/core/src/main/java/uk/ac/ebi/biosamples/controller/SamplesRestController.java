@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions.PaginationException;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
@@ -112,6 +113,7 @@ public class SamplesRestController {
       @RequestParam(name = "curationrepo", required = false) final String curationRepo,
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
       @RequestHeader(name = "Authorization", required = false) final String token) {
+
     // Need to decode the %20 and similar from the parameters
     // this is *not* needed for the html controller
     String decodedText = LinkUtils.decodeText(text);
@@ -121,7 +123,17 @@ public class SamplesRestController {
     String webinSubmissionAccountId = null;
     Collection<String> domains = null;
 
-    int effectivePage;
+    int effectivePage = page == null || page < 0 ? 0 : page;
+    int effectiveSize = size == null || size < 1 ? 20 : size;
+    if (effectivePage > 500 || effectiveSize > 200) {
+      throw new PaginationException(); // solr degrades with high page and size params, use cursor
+      // instead
+    }
+
+    if (cursor == null && page == null) { // cursor crawling is the default
+      cursor = "*";
+      decodedCursor = "*";
+    }
 
     Optional<AuthToken> authToken = accessControlService.extractToken(token);
 
@@ -132,20 +144,6 @@ public class SamplesRestController {
       webinSubmissionAccountId = authToken.map(AuthToken::getUser).orElse(null);
     } else {
       domains = bioSamplesAapService.getDomains();
-    }
-
-    if (page == null) {
-      effectivePage = 0;
-    } else {
-      effectivePage = page;
-    }
-
-    int effectiveSize;
-
-    if (size == null) {
-      effectiveSize = 20;
-    } else {
-      effectiveSize = size;
     }
 
     Collection<Filter> filters = filterService.getFiltersCollection(decodedFilter);
@@ -194,7 +192,7 @@ public class SamplesRestController {
               decodedCurationDomains,
               decodedCursor,
               effectiveSize,
-              Link.REL_SELF.value(),
+              IanaLinkRelations.SELF.value(),
               this.getClass()));
       // only display the next link if there is a next cursor to go to
       if (!LinkUtils.decodeText(samples.getNextCursorMark()).equals(decodedCursor)
@@ -206,12 +204,29 @@ public class SamplesRestController {
                 decodedCurationDomains,
                 samples.getNextCursorMark(),
                 effectiveSize,
-                Link.REL_NEXT.value(),
+                IanaLinkRelations.NEXT.value(),
                 this.getClass()));
       }
 
-      // Note - EBI load balancer does cache but doesn't add age header, so clients could
-      // cache up
+      if (cursor == "*") {
+        resources.add(
+            getCursorLink(
+                decodedText,
+                decodedFilter,
+                decodedCurationDomains,
+                "*",
+                effectiveSize,
+                "cursor",
+                this.getClass()));
+      }
+
+      UriComponentsBuilder uriComponentsBuilder =
+          WebMvcLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
+      // This is a bit of a hack, but best we can do for now...
+      resources.add(
+          new Link(uriComponentsBuilder.build(true).toUriString() + "/{accession}", "sample"));
+
+      // Note - EBI load balancer does cache but doesn't add age header, so clients could cache up
       // to twice this age
       return ResponseEntity.ok().cacheControl(cacheControl).body(resources);
     } else {
@@ -288,7 +303,7 @@ public class SamplesRestController {
               0,
               effectiveSize,
               sort,
-              Link.REL_FIRST.value(),
+              IanaLinkRelations.FIRST.value(),
               this.getClass()));
     }
     // if there was a previous page, link to it
@@ -302,7 +317,7 @@ public class SamplesRestController {
               effectivePage - 1,
               effectiveSize,
               sort,
-              Link.REL_PREVIOUS.value(),
+              IanaLinkRelations.PREVIOUS.value(),
               this.getClass()));
     }
 
@@ -315,7 +330,7 @@ public class SamplesRestController {
             effectivePage,
             effectiveSize,
             sort,
-            Link.REL_SELF.value(),
+            IanaLinkRelations.SELF.value(),
             this.getClass()));
 
     // if there is a next page, link to it
@@ -329,7 +344,7 @@ public class SamplesRestController {
               effectivePage + 1,
               effectiveSize,
               sort,
-              Link.REL_NEXT.value(),
+              IanaLinkRelations.NEXT.value(),
               this.getClass()));
     }
     // if theres more than one page, link to first and last
@@ -343,7 +358,7 @@ public class SamplesRestController {
               pageSample.getTotalPages(),
               effectiveSize,
               sort,
-              Link.REL_LAST.value(),
+              IanaLinkRelations.LAST.value(),
               this.getClass()));
     }
     // if we are on the first page and not sorting
@@ -358,9 +373,6 @@ public class SamplesRestController {
               "cursor",
               this.getClass()));
     }
-
-    resources.add(
-        SampleAutocompleteRestController.getLink(decodedText, decodedFilter, null, "autocomplete"));
 
     UriComponentsBuilder uriComponentsBuilder =
         WebMvcLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
@@ -457,78 +469,6 @@ public class SamplesRestController {
     return new Link(builder.toUriString(), rel);
   }
 
-  @PreAuthorize("isAuthenticated()")
-  @CrossOrigin(methods = RequestMethod.GET)
-  @GetMapping(
-      produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE},
-      params = "accessions",
-      value = "/bulk-fetch")
-  public ResponseEntity<Map<String, EntityModel<Sample>>> getMultipleSampleHals(
-      @RequestParam final List<String> accessions,
-      @RequestHeader(name = "Authorization", required = false) final String token) {
-    if (accessions == null) {
-      throw new GlobalExceptions.BulkFetchInvalidRequestException();
-    }
-
-    log.info("Received request to bulk-fetch " + accessions.size() + " accessions");
-
-    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final List<EntityModel<Sample>> samples =
-        accessions.stream()
-            .map(
-                accession -> {
-                  final String cleanAccession = accession.trim();
-                  final Optional<Sample> sampleOptional =
-                      sampleService.fetch(cleanAccession, Optional.empty(), "");
-
-                  if (sampleOptional.isPresent()) {
-                    final boolean webinAuth =
-                        authToken
-                            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
-                            .orElse(Boolean.FALSE);
-                    final Sample sample = sampleOptional.get();
-
-                    try {
-                      if (webinAuth) {
-                        final String webinSubmissionAccountId = authToken.get().getUser();
-
-                        bioSamplesWebinAuthenticationService.isSampleAccessible(
-                            sample, webinSubmissionAccountId);
-                      } else {
-                        bioSamplesAapService.checkSampleAccessibility(sample);
-                      }
-                    } catch (final Exception e) {
-                      log.info("Bulk-fetch forbidden sample: " + sample.getAccession());
-
-                      return null;
-                    }
-
-                    return sampleResourceAssembler.toModel(
-                        sample, Optional.of(false), Optional.empty());
-                  } else {
-                    log.info("Bulk-fetch not found sample: " + accession);
-
-                    return null;
-                  }
-                })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
-
-    log.info(
-        "Received bulk-fetch request for : "
-            + accessions.size()
-            + " samples and fetched : "
-            + samples.size()
-            + " samples.");
-
-    return ResponseEntity.ok(
-        samples.stream()
-            .collect(
-                Collectors.toMap(
-                    sample -> Objects.requireNonNull(sample.getContent()).getAccession(),
-                    sample -> sample)));
-  }
-
   @PostMapping(
       consumes = {MediaType.APPLICATION_JSON_VALUE},
       produces = {MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE})
@@ -581,91 +521,6 @@ public class SamplesRestController {
 
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").get().getHref()))
         .body(sampleResource);
-  }
-
-  @PreAuthorize("isAuthenticated()")
-  @PostMapping(
-      consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE})
-  @RequestMapping("/bulk-accession")
-  public ResponseEntity<Map<String, String>> bulkAccessionSample(
-      @RequestBody List<Sample> samples,
-      @RequestHeader(name = "Authorization") final String token) {
-    log.info("Received POST for bulk accessioning of " + samples.size() + " samples");
-
-    samples.forEach(
-        sample -> {
-          if (sample.hasAccession()) {
-            throw new GlobalExceptions.SampleWithAccessionSubmissionException();
-          }
-        });
-
-    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
-
-    if (webinAuth) {
-      final String webinSubmissionAccountId = authToken.get().getUser();
-
-      if (webinSubmissionAccountId == null) {
-        throw new GlobalExceptions.WebinTokenInvalidException();
-      }
-
-      samples =
-          samples.stream()
-              .map(
-                  sample ->
-                      bioSamplesWebinAuthenticationService.buildSampleWithWebinSubmissionAccountId(
-                          sample, webinSubmissionAccountId))
-              .collect(Collectors.toList());
-    } else {
-      if (!samples.isEmpty()) {
-        // check the first sample domain only
-        Sample firstSample = samples.get(0);
-        firstSample = bioSamplesAapService.handleSampleDomain(firstSample);
-
-        final Sample finalFirstSample = firstSample;
-
-        samples =
-            samples.stream()
-                .map(
-                    sample ->
-                        Sample.Builder.fromSample(sample)
-                            .withDomain(finalFirstSample.getDomain())
-                            .withNoWebinSubmissionAccountId()
-                            .build())
-                .collect(Collectors.toList());
-      }
-    }
-
-    final List<Sample> createdSamplesList =
-        samples.stream()
-            .map(
-                sample -> {
-                  log.trace("Initiating persistSample() for " + sample.getName());
-
-                  sample = sampleService.buildPrivateSample(sample);
-                  /*
-                  Call the accessionSample from SampleService, it doesn't do a lot of housekeeping like reporting to Rabbit,
-                  saving to MongoSampleCurated etc which is not required for bulk-accessioning
-                   */
-                  return sampleService.accessionSample(sample);
-                })
-            .collect(Collectors.toList());
-
-    final Map<String, String> outputMap =
-        createdSamplesList.stream()
-            .filter(Objects::nonNull)
-            .collect(Collectors.toMap(Sample::getName, Sample::getAccession));
-
-    log.info(
-        "Received bulk-accessioning request for : "
-            + samples.size()
-            + " samples and accessioned : "
-            + outputMap.size()
-            + " samples.");
-
-    return ResponseEntity.ok(outputMap);
   }
 
   @PreAuthorize("isAuthenticated()")

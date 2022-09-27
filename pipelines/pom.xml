@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.2.9-RC1</version>
+		<version>5.2.10-SNAPSHOT</version>
 	</parent>
 
 	<profiles>
@@ -19,7 +19,6 @@
 			<id>embl-ebi</id>
 			<modules>
 				<module>ena</module>
-				<module>ebeye-search-export</module>
 			</modules>
 		</profile>
 	</profiles>

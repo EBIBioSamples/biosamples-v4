@@ -147,7 +147,7 @@ public class SampleRestControllerV2 {
   @PreAuthorize("isAuthenticated()")
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-  public Sample getSample(
+  public Sample getSampleV2(
       @PathVariable String accession,
       @RequestHeader(name = "Authorization", required = false) final String token) {
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);

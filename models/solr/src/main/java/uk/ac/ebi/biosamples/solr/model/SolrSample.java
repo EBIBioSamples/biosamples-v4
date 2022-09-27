@@ -12,10 +12,14 @@ package uk.ac.ebi.biosamples.solr.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.solr.core.mapping.Dynamic;
 import org.springframework.data.solr.core.mapping.Indexed;
@@ -30,10 +34,7 @@ public class SolrSample {
   @Indexed(name = "id", required = true)
   protected String accession;
 
-  @Indexed(
-      name = "name_s",
-      required = true,
-      copyTo = {"autocomplete_ss"})
+  @Indexed(name = "name_s", required = true, copyTo = "keywords_ss")
   protected String name;
 
   @Indexed(name = "domain_s", required = true)
@@ -62,15 +63,13 @@ public class SolrSample {
   @Indexed(name = "indexed_dt", required = true, type = "date") // TODO why type=date ?
   protected String indexed;
 
-  @Indexed(name = "*_av_ss", copyTo = "autocomplete")
+  @Indexed(name = "*_av_ss")
   @Dynamic
   protected Map<String, List<String>> attributeValues;
 
   @Indexed(
       name = "*_ai_ss",
-      copyTo = {
-        "ontologyiri_ss",
-      })
+      copyTo = {"ontologyiri_ss"})
   @Dynamic
   protected Map<String, List<String>> attributeIris;
 
@@ -79,12 +78,12 @@ public class SolrSample {
   protected Map<String, List<String>> attributeUnits;
 
   /** Relationships for which this sample is the source */
-  @Indexed(name = "*_or_ss")
+  @Indexed(name = "*_or_ss", copyTo = "keywords_ss")
   @Dynamic
   protected Map<String, List<String>> outgoingRelationships;
 
   /** Relationships for which this sample is the target */
-  @Indexed(name = "*_ir_ss")
+  @Indexed(name = "*_ir_ss", copyTo = "keywords_ss")
   @Dynamic
   protected Map<String, List<String>> incomingRelationships;
 
@@ -105,20 +104,9 @@ public class SolrSample {
    * and relationships of the sample Since faceting does not require it to be stored, it wont be to
    * save space.
    */
-  @Indexed(
-      name = "facetfields_ss",
-      copyTo = {
-        "autocomplete_ss",
-      })
+  @Indexed(name = "facetfields_ss")
   protected List<String> facetFields;
   // TODO consider renaming as used only for faceting
-
-  /**
-   * This field is required to use with autocomplete faceting. Since faceting does not require it to
-   * be stored, it wont be to save space
-   */
-  @Indexed(name = "autocomplete_ss")
-  protected List<String> autocompleteTerms;
 
   /** This field is required to store the ontology expansion and attributes from related samples */
   @Indexed(name = "keywords_ss")
@@ -184,10 +172,6 @@ public class SolrSample {
 
   public Map<String, List<String>> getOutgoingRelationships() {
     return outgoingRelationships;
-  }
-
-  public List<String> getAutocompletes() {
-    return autocompleteTerms;
   }
 
   public List<String> getKeywords() {
@@ -270,25 +254,25 @@ public class SolrSample {
     sample.externalReferencesData = externalReferencesData;
 
     SortedSet<String> facetFieldSet = new TreeSet<>();
-    if (attributeValues != null && attributeValues.keySet().size() > 0) {
+    if (attributeValues != null && !attributeValues.keySet().isEmpty()) {
       for (String attributeValueKey : attributeValues.keySet()) {
         facetFieldSet.add(attributeValueKey + "_av_ss");
       }
     }
 
-    if (outgoingRelationships != null && outgoingRelationships.keySet().size() > 0) {
+    if (outgoingRelationships != null && !outgoingRelationships.keySet().isEmpty()) {
       for (String outgoingRelationshipsKey : outgoingRelationships.keySet()) {
         facetFieldSet.add(outgoingRelationshipsKey + "_or_ss");
       }
     }
 
-    if (incomingRelationships != null && incomingRelationships.keySet().size() > 0) {
+    if (incomingRelationships != null && !incomingRelationships.keySet().isEmpty()) {
       for (String incomingRelationshipsKey : incomingRelationships.keySet()) {
         facetFieldSet.add(incomingRelationshipsKey + "_ir_ss");
       }
     }
 
-    if (externalReferencesData != null && externalReferencesData.keySet().size() > 0) {
+    if (externalReferencesData != null && !externalReferencesData.keySet().isEmpty()) {
       for (String externalReferencesDataKey : externalReferencesData.keySet()) {
         facetFieldSet.add(externalReferencesDataKey + "_erd_ss");
       }
@@ -298,14 +282,15 @@ public class SolrSample {
 
     // copy into the other fields
     // this should be done in a copyfield but that doesn't work for some reason?
-    sample.autocompleteTerms = new ArrayList<>();
-    for (String key : attributeValues.keySet()) {
-      sample.autocompleteTerms.add(SolrFieldService.decodeFieldName(key));
-      sample.autocompleteTerms.addAll(attributeValues.get(key));
+    Set<String> searchTerms = new HashSet<>();
+    searchTerms.add(sample.name.toLowerCase());
+    searchTerms.addAll(keywords);
+    for (Entry<String, List<String>> entry : attributeValues.entrySet()) {
+      searchTerms.add(SolrFieldService.decodeFieldName(entry.getKey()).toLowerCase());
+      searchTerms.addAll(
+          entry.getValue().stream().map(String::toLowerCase).collect(Collectors.toSet()));
     }
-
-    sample.keywords = new ArrayList<>();
-    sample.keywords.addAll(keywords);
+    sample.keywords = new ArrayList<>(searchTerms);
 
     return sample;
   }
