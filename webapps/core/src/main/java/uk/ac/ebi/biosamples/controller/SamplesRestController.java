@@ -114,8 +114,6 @@ public class SamplesRestController {
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
       @RequestHeader(name = "Authorization", required = false) final String token) {
 
-
-
     // Need to decode the %20 and similar from the parameters
     // this is *not* needed for the html controller
     String decodedText = LinkUtils.decodeText(text);
@@ -128,7 +126,8 @@ public class SamplesRestController {
     int effectivePage = page == null || page < 0 ? 0 : page;
     int effectiveSize = size == null || size < 1 ? 20 : size;
     if (effectivePage > 500 || effectiveSize > 200) {
-      throw new PaginationException(); // solr degrades with high page and size params, use cursor instead
+      throw new PaginationException(); // solr degrades with high page and size params, use cursor
+      // instead
     }
 
     if (cursor == null && page == null) { // cursor crawling is the default

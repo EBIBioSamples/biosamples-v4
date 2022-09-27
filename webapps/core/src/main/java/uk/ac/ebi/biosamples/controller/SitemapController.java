@@ -39,7 +39,7 @@ import uk.ac.ebi.biosamples.service.SamplePageService;
 public class SitemapController {
   private Logger log = LoggerFactory.getLogger(this.getClass());
 
-  @Value("${model.page.size:10000}")
+  @Value("${model.page.size:10}")
   private int sitemapPageSize;
 
   private SamplePageService samplePageService;

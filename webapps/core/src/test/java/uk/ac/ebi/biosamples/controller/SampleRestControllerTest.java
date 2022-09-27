@@ -1,15 +1,21 @@
 /*
- * Copyright 2021 EMBL - European Bioinformatics Institute
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- */
+* Copyright 2021 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.controller;
 
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,28 +34,17 @@ import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.mongo.CurationReadService;
 
-import java.util.Collections;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class SampleRestControllerTest {
 
-  @Autowired
-  private WebApplicationContext context;
+  @Autowired private WebApplicationContext context;
 
-  @MockBean
-  private SamplePageService samplePageService;
+  @MockBean private SamplePageService samplePageService;
 
-  @MockBean
-  CurationPersistService curationPersistService;
+  @MockBean CurationPersistService curationPersistService;
 
-  @MockBean
-  CurationReadService curationReadService;
+  @MockBean CurationReadService curationReadService;
 
   private DocumentationHelper faker;
   private MockMvc mockMvc;
@@ -59,8 +54,8 @@ public class SampleRestControllerTest {
     faker = new DocumentationHelper();
     mockMvc =
         MockMvcBuilders.webAppContextSetup(this.context)
-                       .defaultRequest(get("/").contextPath("/biosamples"))
-                       .build();
+            .defaultRequest(get("/").contextPath("/biosamples"))
+            .build();
   }
 
   @Test
@@ -68,8 +63,15 @@ public class SampleRestControllerTest {
     Sample fakeSample = faker.getExampleSample();
     CursorArrayList<Sample> sampleCursorArrayList =
         new CursorArrayList<>(Collections.singletonList(fakeSample), "");
-    when(samplePageService.getSamplesByText(nullable(String.class), anyList(), anySet(), nullable(String.class),
-                                            nullable(String.class), anyInt(), any(), any()))
+    when(samplePageService.getSamplesByText(
+            nullable(String.class),
+            anyList(),
+            anySet(),
+            nullable(String.class),
+            nullable(String.class),
+            anyInt(),
+            any(),
+            any()))
         .thenReturn(sampleCursorArrayList);
 
     mockMvc
