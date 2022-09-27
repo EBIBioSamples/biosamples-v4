@@ -36,8 +36,7 @@ public class MessageConfig {
 
   @Bean(name = "reindxingQueue")
   public Queue getReindexingQueue() {
-    return QueueBuilder.durable(Messaging.REINDEXING_QUEUE)
-        .build();
+    return QueueBuilder.durable(Messaging.REINDEXING_QUEUE).build();
   }
 
   @Bean(name = "uploaderQueue")

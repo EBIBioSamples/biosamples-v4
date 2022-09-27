@@ -42,8 +42,6 @@ import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
-import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
-import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 /**
  * Primary controller for HTML operations.
@@ -127,7 +125,8 @@ public class SampleHtmlController {
     page = page == null || page < 1 ? 1 : page;
     size = size == null || size < 1 ? 10 : size;
     if (page > 500 || size > 200) {
-      throw new PaginationException(); // solr degrades with high page and size params, use cursor instead
+      throw new PaginationException(); // solr degrades with high page and size params, use cursor
+      // instead
     }
 
     Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);

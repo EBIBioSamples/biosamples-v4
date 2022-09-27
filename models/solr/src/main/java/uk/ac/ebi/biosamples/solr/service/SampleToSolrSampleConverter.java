@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.Attribute;
@@ -87,9 +86,10 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
         if (attr.getIri().isEmpty()) {
           attributeIris.get(key).add("");
         } else {
-          List<String> iris = attr.getIri().stream()
-                                  .map(iri -> getOntologyFromIri(iri))
-                                  .collect(Collectors.toList());
+          List<String> iris =
+              attr.getIri().stream()
+                  .map(iri -> getOntologyFromIri(iri))
+                  .collect(Collectors.toList());
           attributeIris.get(key).addAll(iris);
           keywords.addAll(iris.stream().map(String::toLowerCase).collect(Collectors.toList()));
         }
