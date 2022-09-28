@@ -170,6 +170,6 @@ public class GlobalExceptions {
       reason =
           "BioSamples pagination using 'page' and 'size' parameters are limited due to performance reasons. "
               + "(max page = 500 and max page size = 200). Please use 'cursor' and 'size' for pagination and crawling. "
-              + "You can find more information about the cursor in our documentation")
+              + "You can find more information about using cursor in our documentation")
   public static class PaginationException extends RuntimeException {}
 }

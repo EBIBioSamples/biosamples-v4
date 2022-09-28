@@ -37,7 +37,7 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationServic
 @RequestMapping("/samples")
 @CrossOrigin
 public class BulkActionControllerV2 {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
