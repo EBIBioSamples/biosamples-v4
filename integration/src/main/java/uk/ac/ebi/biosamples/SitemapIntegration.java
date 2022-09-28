@@ -35,7 +35,7 @@ public class SitemapIntegration extends AbstractIntegration {
 
   private final RestOperations restTemplate;
 
-  @Value("${model.page.size:10000}")
+  @Value("${model.page.size:10}")
   private int sitemapPageSize;
 
   public SitemapIntegration(
