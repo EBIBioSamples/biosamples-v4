@@ -42,7 +42,7 @@ import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
 
 @Service
 public class FileUploadSubmissionService {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private ValidationResult validationResult;
   private FileUploadUtils fileUploadUtils;
 
@@ -111,7 +111,8 @@ public class FileUploadSubmissionService {
       log.info("CSV data size: " + csvDataMap.size());
 
       final List<Sample> samples =
-          buildSamples(csvDataMap, aapDomain, webinId, checklist, validationResult, isWebin);
+          buildAndPersistSamples(
+              csvDataMap, aapDomain, webinId, checklist, validationResult, isWebin);
       final List<SampleNameAccessionPair> accessionsList =
           samples.stream()
               .filter(sample -> sample.getAccession() != null)
@@ -120,7 +121,7 @@ public class FileUploadSubmissionService {
       final String persistenceMessage = "Number of samples persisted: " + accessionsList.size();
 
       validationResult.addValidationMessage(
-          new ValidationResult.ValidationMessage(submissionId, persistenceMessage));
+          new ValidationResult.ValidationMessage(submissionId, persistenceMessage, false));
 
       final String joinedValidationMessage =
           validationResult.getValidationMessagesList().stream()
@@ -131,10 +132,19 @@ public class FileUploadSubmissionService {
 
       log.info(joinedValidationMessage);
 
+      BioSamplesFileUploadSubmissionStatus bioSamplesFileUploadSubmissionStatus =
+          BioSamplesFileUploadSubmissionStatus.COMPLETED;
+
+      if (validationResult.getValidationMessagesList().stream()
+          .anyMatch(ValidationResult.ValidationMessage::isError)) {
+        bioSamplesFileUploadSubmissionStatus =
+            BioSamplesFileUploadSubmissionStatus.COMPLETED_WITH_ERRORS;
+      }
+
       final MongoFileUpload mongoFileUploadCompleted =
           new MongoFileUpload(
               submissionId,
-              BioSamplesFileUploadSubmissionStatus.COMPLETED,
+              bioSamplesFileUploadSubmissionStatus,
               mongoFileUpload.getSubmitterDetails(),
               mongoFileUpload.getChecklist(),
               isWebin,
@@ -148,7 +158,7 @@ public class FileUploadSubmissionService {
               + e.getMessage()
               + "********FEEDBACK TO BSD DEV TEAM END********";
       validationResult.addValidationMessage(
-          new ValidationResult.ValidationMessage(submissionId, messageForBsdDevTeam));
+          new ValidationResult.ValidationMessage(submissionId, messageForBsdDevTeam, true));
 
       final MongoFileUpload mongoFileUploadFailed =
           new MongoFileUpload(
@@ -173,12 +183,27 @@ public class FileUploadSubmissionService {
   }
 
   private void performFinalActions(
-      final String submissionId, final MongoFileUpload mongoFileUploadCompleted) {
-    mongoFileUploadRepository.save(mongoFileUploadCompleted);
-    fileUploadStorageService.deleteFile(submissionId);
+      final String submissionId, final MongoFileUpload mongoFileUpload) {
+    try {
+      mongoFileUploadRepository.save(mongoFileUpload);
+    } catch (final Exception e) {
+      final MongoFileUpload mongoFileUploadLite =
+          new MongoFileUpload(
+              mongoFileUpload.getSubmissionId(),
+              mongoFileUpload.getSubmissionStatus(),
+              mongoFileUpload.getSubmitterDetails(),
+              mongoFileUpload.getChecklist(),
+              mongoFileUpload.isWebin(),
+              mongoFileUpload.getSampleNameAccessionPairs(),
+              null);
+
+      mongoFileUploadRepository.save(mongoFileUploadLite);
+    } finally {
+      fileUploadStorageService.deleteFile(submissionId);
+    }
   }
 
-  private List<Sample> buildSamples(
+  private List<Sample> buildAndPersistSamples(
       final List<Multimap<String, String>> csvDataMap,
       final String aapDomain,
       final String webinId,
@@ -199,13 +224,15 @@ public class FileUploadSubmissionService {
               validationResult.addValidationMessage(
                   new ValidationResult.ValidationMessage(
                       fileUploadUtils.getSampleName(csvRecordMap),
-                      "Failed to create sample in the file"));
+                      "Failed to create sample in the file",
+                      true));
             }
           } catch (Exception e) {
             validationResult.addValidationMessage(
                 new ValidationResult.ValidationMessage(
                     fileUploadUtils.getSampleName(csvRecordMap),
-                    "Failed to create sample in the file " + e.getMessage()));
+                    "Failed to create sample in the file " + e.getMessage(),
+                    true));
           }
 
           if (sample != null) {
@@ -257,7 +284,7 @@ public class FileUploadSubmissionService {
       } catch (final Exception e) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
-                sample.getAccession(), "Failed to add relationships for sample"));
+                sample.getAccession(), "Failed to add relationships for sample", true));
       }
     }
 
@@ -322,17 +349,22 @@ public class FileUploadSubmissionService {
       }
 
       if (sampleWithAccession && persisted) {
+        assert sample != null;
+
         validationResult.addValidationMessage(
-            new ValidationResult.ValidationMessage(sample.getAccession(), "Sample updated"));
+            new ValidationResult.ValidationMessage(sample.getAccession(), "Sample updated", false));
 
         log.info("Updated sample " + sample.getAccession());
 
         return sample;
       } else if (!sampleWithAccession && persisted) {
+        assert sample != null;
+
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
                 sample.getAccession(),
-                "Sample " + sample.getName() + " created with accession " + sample.getAccession()));
+                "Sample " + sample.getName() + " created with accession " + sample.getAccession(),
+                false));
 
         log.info("Sample " + sampleName + " created with accession " + sample.getAccession());
 
@@ -362,6 +394,6 @@ public class FileUploadSubmissionService {
 
     validationResult.addValidationMessage(
         new ValidationResult.ValidationMessage(
-            sampleWithAccession ? accession : sampleName, validationMessage));
+            sampleWithAccession ? accession : sampleName, validationMessage, true));
   }
 }
