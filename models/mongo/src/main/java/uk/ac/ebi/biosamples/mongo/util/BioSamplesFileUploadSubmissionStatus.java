@@ -14,5 +14,6 @@ public enum BioSamplesFileUploadSubmissionStatus {
   ACTIVE,
   FAILED,
   COMPLETED,
-  NOT_FOUND
+  NOT_FOUND,
+  COMPLETED_WITH_ERRORS
 }
