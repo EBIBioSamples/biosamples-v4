@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
-import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -32,7 +31,6 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
-import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
 
 /**
@@ -57,7 +55,6 @@ public class SampleService {
   @Autowired private MongoSampleToSampleConverter mongoSampleToSampleConverter;
   @Autowired private SampleToMongoSampleConverter sampleToMongoSampleConverter;
   @Autowired private SampleValidator sampleValidator;
-  @Autowired private SolrSampleService solrSampleService;
   @Autowired private SampleReadService sampleReadService;
   @Autowired private MessagingService messagingSerivce;
 
@@ -67,6 +64,9 @@ public class SampleService {
     return sampleReadService.fetch(accession, curationDomains);
   }
 
+  /*
+  Checks if the current sample that exists has no metadata, returns true if empty
+   */
   public boolean isEmptySample(
       final Sample sample, final boolean isWebinSuperUser, final MongoSample mongoOldSample) {
     final String domain = sample.getDomain();
@@ -89,6 +89,9 @@ public class SampleService {
     }
   }
 
+  /*
+  Checks if the current sample that exists has no metadata, returns true if empty
+   */
   private boolean isEmptySample(final Sample sample, final MongoSample mongoOldSample) {
     if (sample.hasAccession()) {
       if (mongoOldSample != null) {
@@ -103,6 +106,9 @@ public class SampleService {
     return isPipelineEnaDomain(domain) || isPipelineNcbiDomain(domain);
   }
 
+  /*
+  Checks if the current sample that exists has no metadata, returns true if empty
+   */
   private boolean isEmptySample(final MongoSample mongoOldSample) {
     Sample oldSample = mongoSampleToSampleConverter.apply(mongoOldSample);
 
@@ -193,6 +199,8 @@ public class SampleService {
 
       MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
 
+      assert mongoSample != null;
+
       mongoSample = mongoSampleRepository.save(mongoSample);
 
       if (isSampleTaxIdUpdated) {
@@ -259,6 +267,8 @@ public class SampleService {
       }
 
       MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
+
+      assert mongoSample != null;
 
       mongoSample = mongoSampleRepository.save(mongoSample);
       sample = mongoSampleToSampleConverter.apply(mongoSample);

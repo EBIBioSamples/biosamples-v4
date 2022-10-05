@@ -134,7 +134,7 @@ public class EnaRunner implements ApplicationRunner {
       importEraSamples(fromDate, toDate, sampleToAmrMap);
 
       if (processBacklogs) {
-        backfillEnaBrowserMissingSamples(args, failures);
+        backfillEnaBrowserMissingSamples(args);
       }
 
       /*final List<String> bsdIds = eraProDao.doWWWDEVMapping();
@@ -232,8 +232,7 @@ public class EnaRunner implements ApplicationRunner {
         });
   }*/
 
-  private void backfillEnaBrowserMissingSamples(
-      final ApplicationArguments args, final Map<String, String> failures)
+  private void backfillEnaBrowserMissingSamples(final ApplicationArguments args)
       throws InterruptedException {
     final ExecutorService executorService = Executors.newSingleThreadExecutor();
     String enaBackFillerFile = null;
@@ -260,16 +259,13 @@ public class EnaRunner implements ApplicationRunner {
                         + " possible BioSample Authority sample";
                 log.info(errorMessage);
 
-                failures.put(sampleId, errorMessage);
+                EnaRunner.failures.put(sampleId, errorMessage);
               }
             } catch (Exception e) {
-              final String errorMessage =
-                  "Failed to handle " + sampleDBBean != null
-                      ? sampleDBBean.getBiosampleId()
-                      : sampleId + e;
+              final String errorMessage = sampleDBBean.getBiosampleId();
               log.info(errorMessage);
 
-              failures.put(sampleId, errorMessage);
+              EnaRunner.failures.put(sampleId, errorMessage);
             }
           });
     } catch (final Exception e) {

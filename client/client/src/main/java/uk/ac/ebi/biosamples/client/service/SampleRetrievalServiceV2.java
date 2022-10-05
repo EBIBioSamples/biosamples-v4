@@ -18,7 +18,6 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
@@ -42,14 +41,23 @@ public class SampleRetrievalServiceV2 {
     this.uriV2 = uriV2;
   }
 
+  /** Accepts a accession and returns the sample */
+  public Future<Sample> fetchSampleByAccession(final String accession) {
+    return executor.submit(new FetchAccessionCallable(accession, uriV2));
+  }
+
+  /** Accepts a accession and returns the sample */
+  public Future<Sample> fetchSampleByAccession(final String accession, final String jwt) {
+    return executor.submit(new FetchAccessionCallable(accession, jwt, uriV2));
+  }
+
   /**
    * Accepts a list of accessions and returns a Map having accession as key and sample as value
    *
    * @param accessions
    * @return
    */
-  public Future<Map<String, EntityModel<Sample>>> fetchSamplesByAccessions(
-      final List<String> accessions) {
+  public Future<Map<String, Sample>> fetchSamplesByAccessions(final List<String> accessions) {
     return executor.submit(new FetchAccessionsCallable(accessions, uriV2));
   }
 
@@ -59,12 +67,12 @@ public class SampleRetrievalServiceV2 {
    * @param accessions
    * @return
    */
-  public Future<Map<String, EntityModel<Sample>>> fetchSamplesByAccessions(
+  public Future<Map<String, Sample>> fetchSamplesByAccessions(
       final List<String> accessions, final String jwt) {
     return executor.submit(new FetchAccessionsCallable(accessions, uriV2, jwt));
   }
 
-  private class FetchAccessionsCallable implements Callable<Map<String, EntityModel<Sample>>> {
+  private class FetchAccessionsCallable implements Callable<Map<String, Sample>> {
     private final List<String> accessions;
     private final String jwt;
     private final URI uriV2;
@@ -83,7 +91,7 @@ public class SampleRetrievalServiceV2 {
     }
 
     @Override
-    public Map<String, EntityModel<Sample>> call() {
+    public Map<String, Sample> call() {
       URI bulkFetchSamplesUri =
           UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples" + "/bulk-fetch"))
               .queryParam("accessions", String.join(",", accessions))
@@ -102,13 +110,12 @@ public class SampleRetrievalServiceV2 {
 
       final RequestEntity<Void> requestEntity =
           new RequestEntity<>(headers, HttpMethod.GET, bulkFetchSamplesUri);
-      final ResponseEntity<Map<String, EntityModel<Sample>>> responseEntity;
+      final ResponseEntity<Map<String, Sample>> responseEntity;
 
       try {
         responseEntity =
             restOperations.exchange(
-                requestEntity,
-                new ParameterizedTypeReference<Map<String, EntityModel<Sample>>>() {});
+                requestEntity, new ParameterizedTypeReference<Map<String, Sample>>() {});
       } catch (HttpStatusCodeException e) {
         if (e.getStatusCode().equals(HttpStatus.FORBIDDEN)
             || e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
@@ -118,7 +125,61 @@ public class SampleRetrievalServiceV2 {
         }
       }
 
-      log.trace("GETted " + uriV2);
+      log.trace("GETted " + bulkFetchSamplesUri);
+
+      return responseEntity.getBody();
+    }
+  }
+
+  private class FetchAccessionCallable implements Callable<Sample> {
+    private final String accession;
+    private final String jwt;
+    private final URI uriV2;
+
+    public FetchAccessionCallable(final String accession, final String jwt, final URI uriV2) {
+      this.accession = accession;
+      this.jwt = jwt;
+      this.uriV2 = uriV2;
+    }
+
+    public FetchAccessionCallable(final String accession, final URI uriV2) {
+      this.accession = accession;
+      this.jwt = null;
+      this.uriV2 = uriV2;
+    }
+
+    @Override
+    public Sample call() {
+      URI sampleGetUri =
+          UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples" + "/" + accession))
+              .build(true)
+              .toUri();
+      log.info("GETing " + sampleGetUri);
+
+      final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+
+      headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
+
+      if (jwt != null) {
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+      }
+
+      final RequestEntity<Void> requestEntity =
+          new RequestEntity<>(headers, HttpMethod.GET, sampleGetUri);
+      final ResponseEntity<Sample> responseEntity;
+
+      try {
+        responseEntity = restOperations.exchange(requestEntity, Sample.class);
+      } catch (HttpStatusCodeException e) {
+        if (e.getStatusCode().equals(HttpStatus.FORBIDDEN)
+            || e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+          return null;
+        } else {
+          throw e;
+        }
+      }
+
+      log.trace("GETted " + sampleGetUri);
 
       return responseEntity.getBody();
     }

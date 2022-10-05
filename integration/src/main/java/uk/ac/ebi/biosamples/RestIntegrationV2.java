@@ -65,6 +65,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
   @Override
   protected void phaseFive() {}
 
+  // TODO: cleanup this test
   @Override
   protected void phaseSix() throws ExecutionException, InterruptedException {
     Sample webinSampleTest1 = getWebinSampleTest1();
@@ -97,7 +98,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
       String apiResponseSampleAccession1 =
           Objects.requireNonNull(apiResponseSampleResourceList.get(0)).getAccession();
 
-      Map<String, EntityModel<Sample>> apiResponseV2SampleBulkFetch =
+      Map<String, Sample> apiResponseV2SampleBulkFetch =
           this.webinClient.fetchSampleResourcesByAccessionsV2(
               Collections.singletonList(apiResponseSampleAccession1));
 
@@ -107,24 +108,35 @@ public class RestIntegrationV2 extends AbstractIntegration {
             Phase.THREE);
       } else {
         log.info("Found private sample by webin account");
+        final Collection<Sample> foundSamples = apiResponseV2SampleBulkFetch.values();
+
+        foundSamples.forEach(sample -> log.info(String.valueOf(sample)));
       }
     } catch (final Exception e) {
       throw new IntegrationTestFailException("V2 persist and fetch tests failed", Phase.SIX);
     }
 
     // multiple sample fetch by accessions test - v2, authorized user
-    Map<String, EntityModel<Sample>> sampleResourcesV2Map1 =
+    Map<String, Sample> sampleResourcesV2Map1 =
         this.webinClient.fetchSampleResourcesByAccessionsV2(
-            Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023"));
+            Arrays.asList(webinSampleAccession, "SAMEA1", "SAMEA8"));
 
     if (sampleResourcesV2Map1 == null || sampleResourcesV2Map1.size() == 0) {
       throw new IntegrationTestFailException("Multi sample fetch is not working - V2", Phase.SIX);
     }
 
+    // single private sample fetch by accessions test - v2, authorized user
+    Sample fetchedSample = this.webinClient.fetchSampleResourceV2(webinSampleAccession);
+
+    if (fetchedSample == null) {
+      throw new IntegrationTestFailException(
+          "Single private sample fetch is not working - V2, authorized user", Phase.SIX);
+    }
+
     // multiple sample fetch by accessions test - v2, unauthorized user
-    Map<String, EntityModel<Sample>> sampleResourcesV2Map2 =
+    Map<String, Sample> sampleResourcesV2Map2 =
         this.annonymousClient.fetchSampleResourcesByAccessionsV2(
-            Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023"));
+            Arrays.asList(webinSampleAccession, "SAMEA1", "SAMEA8"));
 
     if (sampleResourcesV2Map2.size() > 2) {
       throw new IntegrationTestFailException(
@@ -132,10 +144,34 @@ public class RestIntegrationV2 extends AbstractIntegration {
           Phase.SIX);
     }
 
+    if (sampleResourcesV2Map2.size() < 2) {
+      throw new IntegrationTestFailException(
+          "Multi sample fetch is not working - V2, unauthorized user unable to fetch public samples",
+          Phase.SIX);
+    }
+
+    // single private sample fetch by accessions test - v2, authorized user
+    Sample fetchedSample2 = this.annonymousClient.fetchSampleResourceV2(webinSampleAccession);
+
+    if (fetchedSample2 != null) {
+      throw new IntegrationTestFailException(
+          "Single private sample fetch is not working - V2, fetching possible for unauthorized user",
+          Phase.SIX);
+    }
+
+    // single public sample fetch by accessions test - v2, unauthorized user
+    Sample fetchedSample3 = this.webinClient.fetchSampleResourceV2("SAMEA8");
+
+    if (fetchedSample3 == null) {
+      throw new IntegrationTestFailException(
+          "Single public sample fetch is not working - V2, fetching of public sample not working for unauthorized user",
+          Phase.SIX);
+    }
+
     // multiple sample fetch by accessions test, authorized user - v2, all samples not found,
     // partial
     // fetch result
-    Map<String, EntityModel<Sample>> sampleResourcesV2Map3 =
+    Map<String, Sample> sampleResourcesV2Map3 =
         this.webinClient.fetchSampleResourcesByAccessionsV2(
             Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023", "SAMEA99999999"));
 

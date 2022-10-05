@@ -14,9 +14,10 @@ For more details about links, check out the https://tools.ietf.org/html/rfc5988[
 
 | `self` | current page of a collection
 | `first` | first page of a collection
-| `last` | last page of a collection
-| `next` | next page of a collection
+| `last` | last page of a collection ('page' parameter is deprecated. Use 'cursor' to retrieve next page and for pagination)
+| `next` | next page of a collection ('page' parameter is deprecated. Use 'cursor' to retrieve next page and for pagination)
 | `prev` | previous page of a collection
+| `cursor` | next page of a collection
 |===
 
 == BioSamples relations type

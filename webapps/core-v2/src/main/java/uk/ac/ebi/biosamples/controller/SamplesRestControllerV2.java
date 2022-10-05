@@ -14,7 +14,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.ExposesResourceFor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -62,6 +61,9 @@ public class SamplesRestControllerV2 {
     this.accessControlService = accessControlService;
   }
 
+  /*
+  Submit multiple samples, without any relationship information
+   */
   @PreAuthorize("isAuthenticated()")
   @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<List<Sample>> postSamplesV2(
@@ -110,7 +112,6 @@ public class SamplesRestControllerV2 {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
       }
 
-      return ResponseEntity.status(HttpStatus.CREATED).body(createdSamples);
     } else {
       try {
         createdSamples =
@@ -132,9 +133,8 @@ public class SamplesRestControllerV2 {
         // check auth exception
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
       }
-
-      return ResponseEntity.status(HttpStatus.CREATED).body(createdSamples);
     }
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdSamples);
   }
 
   private Sample validateSample(Sample sample, boolean isWebinSubmission) {
@@ -150,6 +150,9 @@ public class SamplesRestControllerV2 {
     return sample;
   }
 
+  /*
+  Accession a single sample
+   */
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
       consumes = {MediaType.APPLICATION_JSON_VALUE},
@@ -193,160 +196,5 @@ public class SamplesRestControllerV2 {
     sample = sampleService.persistSampleV2(sample, authProvider, isWebinSuperUser);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(sample);
-  }
-
-  @PreAuthorize("isAuthenticated()")
-  @PostMapping(
-      consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE})
-  @RequestMapping("/bulk-accession")
-  public ResponseEntity<Map<String, String>> bulkAccessionSampleV2(
-      @RequestBody List<Sample> samples,
-      @RequestHeader(name = "Authorization") final String token) {
-    log.info("V2-Received POST for bulk accessioning of " + samples.size() + " samples");
-
-    samples.forEach(
-        sample -> {
-          if (sample.hasAccession()) {
-            throw new GlobalExceptions.SampleWithAccessionSubmissionException();
-          }
-        });
-
-    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
-
-    if (webinAuth) {
-      final String webinSubmissionAccountId = authToken.get().getUser();
-
-      if (webinSubmissionAccountId == null) {
-        throw new GlobalExceptions.WebinTokenInvalidException();
-      }
-
-      samples =
-          samples.stream()
-              .map(
-                  sample ->
-                      bioSamplesWebinAuthenticationService.buildSampleWithWebinSubmissionAccountId(
-                          sample, webinSubmissionAccountId))
-              .collect(Collectors.toList());
-    } else {
-      if (!samples.isEmpty()) {
-        // check the first sample domain only
-        Sample firstSample = samples.get(0);
-        firstSample = bioSamplesAapService.handleSampleDomain(firstSample);
-
-        final Sample finalFirstSample = firstSample;
-
-        samples =
-            samples.stream()
-                .map(
-                    sample ->
-                        Sample.Builder.fromSample(sample)
-                            .withDomain(finalFirstSample.getDomain())
-                            .withNoWebinSubmissionAccountId()
-                            .build())
-                .collect(Collectors.toList());
-      }
-    }
-
-    final List<Sample> createdSamplesList =
-        samples.stream()
-            .map(
-                sample -> {
-                  log.trace("Initiating persistSample() for " + sample.getName());
-
-                  sample = sampleService.buildPrivateSample(sample);
-                  /*
-                  Call the accessionSample from SampleService, it doesn't do a lot of housekeeping like reporting to Rabbit,
-                  saving to MongoSampleCurated etc which is not required for bulk-accessioning
-                   */
-                  return sampleService.accessionSample(sample);
-                })
-            .collect(Collectors.toList());
-
-    final Map<String, String> outputMap =
-        createdSamplesList.stream()
-            .filter(Objects::nonNull)
-            .collect(Collectors.toMap(Sample::getName, Sample::getAccession));
-
-    log.info(
-        "V2-Received bulk-accessioning request for : "
-            + samples.size()
-            + " samples and accessioned : "
-            + outputMap.size()
-            + " samples.");
-
-    return ResponseEntity.ok(outputMap);
-  }
-
-  @PreAuthorize("isAuthenticated()")
-  @CrossOrigin(methods = RequestMethod.GET)
-  @GetMapping(
-      produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE},
-      params = "accessions",
-      value = "/bulk-fetch")
-  public ResponseEntity<Map<String, Sample>> getMultipleSamples(
-      @RequestParam final List<String> accessions,
-      @RequestHeader(name = "Authorization", required = false) final String token) {
-    if (accessions == null) {
-      throw new GlobalExceptions.BulkFetchInvalidRequestException();
-    }
-
-    log.info("V2-Received request to bulk-fetch " + accessions.size() + " accessions");
-
-    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final List<Sample> samples =
-        accessions.stream()
-            .map(
-                accession -> {
-                  final String cleanAccession = accession.trim();
-                  final Optional<Sample> sampleOptional =
-                      sampleService.fetch(cleanAccession, Optional.empty());
-
-                  if (sampleOptional.isPresent()) {
-                    final boolean webinAuth =
-                        authToken
-                            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
-                            .orElse(Boolean.FALSE);
-                    final Sample sample = sampleOptional.get();
-
-                    try {
-                      if (webinAuth) {
-                        final String webinSubmissionAccountId = authToken.get().getUser();
-
-                        bioSamplesWebinAuthenticationService.isSampleAccessible(
-                            sample, webinSubmissionAccountId);
-                      } else {
-                        bioSamplesAapService.checkSampleAccessibility(sample);
-                      }
-                    } catch (final Exception e) {
-                      log.info("Bulk-fetch forbidden sample: " + sample.getAccession());
-
-                      return null;
-                    }
-
-                    return sample;
-                  } else {
-                    log.info("Bulk-fetch not found sample: " + accession);
-
-                    return null;
-                  }
-                })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
-
-    log.info(
-        "V2-Received bulk-fetch request for : "
-            + accessions.size()
-            + " samples and fetched : "
-            + samples.size()
-            + " samples.");
-
-    return ResponseEntity.ok(
-        samples.stream()
-            .collect(
-                Collectors.toMap(
-                    sample -> Objects.requireNonNull(sample).getAccession(), sample -> sample)));
   }
 }

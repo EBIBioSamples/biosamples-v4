@@ -107,7 +107,7 @@ public class BioSamplesClient implements AutoCloseable {
     traverson.setRestOperations(restOperations);
 
     sampleRetrievalService =
-        new SampleRetrievalService(restOperations, traverson, uri, threadPoolExecutor);
+        new SampleRetrievalService(restOperations, traverson, threadPoolExecutor);
     samplePageRetrievalService = new SamplePageRetrievalService(restOperations, traverson);
     sampleCursorRetrievalService =
         new SampleCursorRetrievalService(
@@ -197,30 +197,8 @@ public class BioSamplesClient implements AutoCloseable {
     }
   }
 
-  public Map<String, EntityModel<Sample>> fetchSampleResourcesByAccessions(List<String> accessions)
+  public Map<String, Sample> fetchSampleResourcesByAccessionsV2(List<String> accessions)
       throws RestClientException {
-    try {
-      return sampleRetrievalService.fetchSamplesByAccessions(accessions).get();
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    } catch (ExecutionException e) {
-      throw new RuntimeException(e.getCause());
-    }
-  }
-
-  public Map<String, EntityModel<Sample>> fetchSampleResourcesByAccessions(
-      List<String> accessions, String jwt) throws RestClientException {
-    try {
-      return sampleRetrievalService.fetchSamplesByAccessions(accessions, jwt).get();
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    } catch (ExecutionException e) {
-      throw new RuntimeException(e.getCause());
-    }
-  }
-
-  public Map<String, EntityModel<Sample>> fetchSampleResourcesByAccessionsV2(
-      List<String> accessions) throws RestClientException {
     try {
       return sampleRetrievalServiceV2.fetchSamplesByAccessions(accessions).get();
     } catch (InterruptedException e) {
@@ -230,10 +208,31 @@ public class BioSamplesClient implements AutoCloseable {
     }
   }
 
-  public Map<String, EntityModel<Sample>> fetchSampleResourcesByAccessionsV2(
-      List<String> accessions, String jwt) throws RestClientException {
+  public Map<String, Sample> fetchSampleResourcesByAccessionsV2(List<String> accessions, String jwt)
+      throws RestClientException {
     try {
       return sampleRetrievalServiceV2.fetchSamplesByAccessions(accessions, jwt).get();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e.getCause());
+    }
+  }
+
+  public Sample fetchSampleResourceV2(final String accession) throws RestClientException {
+    try {
+      return sampleRetrievalServiceV2.fetchSampleByAccession(accession).get();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e.getCause());
+    }
+  }
+
+  public Sample fetchSampleResourceV2(final String accession, final String jwt)
+      throws RestClientException {
+    try {
+      return sampleRetrievalServiceV2.fetchSampleByAccession(accession, jwt).get();
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     } catch (ExecutionException e) {

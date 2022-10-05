@@ -10,6 +10,8 @@
 */
 package uk.ac.ebi.biosamples.solr.service;
 
+import java.util.Collection;
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.springframework.data.domain.Page;
@@ -25,9 +27,6 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
-
-import java.util.Collection;
-import java.util.Optional;
 
 @Service
 public class SolrSampleService {
@@ -112,7 +111,12 @@ public class SolrSampleService {
     } else {
       String lowerCasedSearchTerm = searchTerm.toLowerCase();
       // search for copied fields keywords_ss.
-      query = new SimpleQuery("keywords_ss:" + lowerCasedSearchTerm);
+      // query = new SimpleQuery("keywords_ss:\"" + lowerCasedSearchTerm + "\"");
+
+      query = new SimpleQuery();
+      Criteria searchCriteria = new Criteria("keywords_ss").fuzzy(lowerCasedSearchTerm);
+      searchCriteria.setPartIsOr(true);
+      query.addCriteria(searchCriteria);
 
       // boosting accession to bring accession matches to the top
       Criteria boostId = new Criteria("id").is(searchTerm).boost(5);

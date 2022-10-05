@@ -38,8 +38,8 @@ public class SolrRunner implements ApplicationRunner {
         || messageCount == null
         || messageCount > 0) {
       Thread.sleep(1000);
-      messageCount = messageUtils.getQueueCount(Messaging.queueToBeIndexedSolr);
-      log.trace("Messages remaining in " + Messaging.queueToBeIndexedSolr + " " + messageCount);
+      messageCount = messageUtils.getQueueCount(Messaging.INDEXING_QUEUE);
+      log.trace("Messages remaining in " + Messaging.INDEXING_QUEUE + " " + messageCount);
     }
   }
 }
