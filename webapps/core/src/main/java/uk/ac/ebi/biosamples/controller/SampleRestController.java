@@ -91,7 +91,6 @@ public class SampleRestController {
       @PathVariable String accession,
       @RequestParam(name = "legacydetails", required = false) String legacydetails,
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
-      @RequestParam(name = "curationrepo", required = false) String curationRepo,
       @RequestHeader(name = "Authorization", required = false) final String token) {
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     // decode percent-encoding from curation domains
@@ -106,7 +105,7 @@ public class SampleRestController {
     }
 
     // convert it into the format to return
-    Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains, curationRepo);
+    Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains);
 
     if (sample.isPresent()) {
       final boolean webinAuth =
@@ -139,8 +138,7 @@ public class SampleRestController {
   public String getSamplePhenopacket(
       @PathVariable String accession,
       @RequestParam(name = "legacydetails", required = false) String legacydetails,
-      @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
-      @RequestParam(name = "curationrepo", required = false) final String curationRepo) {
+      @RequestParam(name = "curationdomain", required = false) String[] curationdomain) {
 
     // decode percent-encoding from curation domains
     Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
@@ -153,7 +151,7 @@ public class SampleRestController {
     }
 
     // convert it into the format to return
-    Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains, curationRepo);
+    Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains);
 
     if (sample.isPresent()) {
       bioSamplesAapService.checkSampleAccessibility(sample.get());
@@ -174,9 +172,8 @@ public class SampleRestController {
   @GetMapping(produces = {MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
   public Sample getSampleXml(
       @PathVariable String accession,
-      @RequestParam(name = "curationrepo", required = false) final String curationRepo,
       @RequestHeader(name = "Authorization", required = false) final String token) {
-    Sample sample = getSampleHal(accession, "true", null, curationRepo, token).getContent();
+    Sample sample = getSampleHal(accession, "true", null, token).getContent();
     if (!sample.getAccession().matches("SAMEG\\d+")) {
       sample =
           Sample.Builder.fromSample(sample)

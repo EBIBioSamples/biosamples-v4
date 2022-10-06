@@ -150,7 +150,6 @@ public class ApiDocumentationTest {
             anySet(),
             nullable(String.class),
             any(Pageable.class),
-            nullable(String.class),
             any()))
         .thenReturn(
             new PageImpl<>(Collections.singletonList(fakeSample), getDefaultPageable(), 100));
@@ -162,7 +161,6 @@ public class ApiDocumentationTest {
             nullable(String.class),
             nullable(String.class),
             anyInt(),
-            any(),
             any()))
         .thenReturn(new CursorArrayList<>(Collections.singletonList(fakeSample), ""));
 
@@ -688,7 +686,7 @@ public class ApiDocumentationTest {
             .withAttributes(Collections.unmodifiableList(Arrays.asList(attribute)))
             .build();
 
-    when(sampleService.fetch(eq(sample.getAccession()), eq(Optional.empty()), any(String.class)))
+    when(sampleService.fetch(eq(sample.getAccession()), eq(Optional.empty())))
         .thenReturn(Optional.of(sample));
     when(aapService.handleSampleDomain(sample)).thenReturn(sample);
     when(aapService.isWriteSuperUser()).thenReturn(true);
@@ -749,7 +747,7 @@ public class ApiDocumentationTest {
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
         .thenReturn(ResponseEntity.ok(submissionAccount));
     when(sampleService.fetch(
-            eq(sampleWithWebinId.getAccession()), eq(Optional.empty()), any(String.class)))
+            eq(sampleWithWebinId.getAccession()), eq(Optional.empty())))
         .thenReturn(Optional.of(sampleWithWebinId));
     when(aapService.handleSampleDomain(sampleWithWebinId)).thenReturn(sampleWithWebinId);
     when(aapService.isWriteSuperUser()).thenReturn(true);
@@ -860,7 +858,7 @@ public class ApiDocumentationTest {
     Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
 
     when(sampleService.fetch(
-            eq(sampleWithDomain.getAccession()), eq(Optional.empty()), any(String.class)))
+            eq(sampleWithDomain.getAccession()), eq(Optional.empty())))
         .thenReturn(Optional.of(sampleWithDomain));
     when(sampleService.persistSample(
             eq(sampleWithDomain), eq(AuthorizationProvider.AAP), eq(false)))
@@ -901,7 +899,7 @@ public class ApiDocumentationTest {
     when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
         .thenReturn(ResponseEntity.ok(submissionAccount));
     when(sampleService.fetch(
-            eq(sampleWithWebinId.getAccession()), eq(Optional.empty()), any(String.class)))
+            eq(sampleWithWebinId.getAccession()), eq(Optional.empty())))
         .thenReturn(Optional.of(sampleWithWebinId));
     when(sampleService.persistSample(
             eq(sampleWithWebinId), eq(AuthorizationProvider.WEBIN), eq(false)))
@@ -940,7 +938,7 @@ public class ApiDocumentationTest {
     Sample sampleWithDomain = this.faker.getExampleSampleWithRelationships();
 
     when(sampleService.fetch(
-            eq(sampleWithDomain.getAccession()), eq(Optional.empty()), any(String.class)))
+            eq(sampleWithDomain.getAccession()), eq(Optional.empty())))
         .thenReturn(Optional.of(sampleWithDomain));
     when(sampleService.persistSample(
             eq(sampleWithDomain), eq(AuthorizationProvider.AAP), eq(false)))
@@ -1031,7 +1029,7 @@ public class ApiDocumentationTest {
   @Test
   public void getSample() throws Exception {
     Sample sample = faker.getExampleSampleBuilder().withDomain(faker.getExampleDomain()).build();
-    when(sampleService.fetch(sample.getAccession(), Optional.empty(), null))
+    when(sampleService.fetch(sample.getAccession(), Optional.empty()))
         .thenReturn(Optional.of(sample));
     doNothing().when(aapService).checkSampleAccessibility(isA(Sample.class));
     when(accessControlService.extractToken(anyString())).thenReturn(Optional.empty());

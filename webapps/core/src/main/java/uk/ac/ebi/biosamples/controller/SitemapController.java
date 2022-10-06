@@ -93,7 +93,6 @@ public class SitemapController {
             Collections.emptyList(),
             null,
             pageRequest,
-            null,
             Optional.empty());
     XmlUrlSet xmlUrlSet = new XmlUrlSet();
     for (Sample sample : samplePage.getContent()) {
@@ -140,7 +139,7 @@ public class SitemapController {
     Collection<String> domains = Collections.emptyList();
     Page<Sample> samplePage =
         samplePageService.getSamplesByText(
-            "", filters, domains, null, pageable, null, Optional.empty());
+            "", filters, domains, null, pageable, Optional.empty());
     return samplePage.getTotalElements();
   }
 }

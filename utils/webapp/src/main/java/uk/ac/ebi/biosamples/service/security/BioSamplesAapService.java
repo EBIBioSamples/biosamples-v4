@@ -150,7 +150,7 @@ public class BioSamplesAapService {
     // Get the old sample while sample updates, domain needs to be compared with old sample domain
     // for some cases
     if (sample.getAccession() != null) {
-      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
     }
 
     if (oldSample.isPresent()

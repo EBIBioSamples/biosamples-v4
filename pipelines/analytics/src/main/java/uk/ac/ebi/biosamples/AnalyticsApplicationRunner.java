@@ -62,7 +62,6 @@ public class AnalyticsApplicationRunner implements ApplicationRunner {
             Collections.emptyList(),
             null,
             PageRequest.of(0, 1),
-            null,
             Optional.empty());
     sampleAnalytics.setTotalRecords(samplePage.getTotalElements());
     addToFacets("organism", sampleAnalytics);

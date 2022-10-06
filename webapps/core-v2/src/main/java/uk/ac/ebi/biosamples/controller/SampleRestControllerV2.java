@@ -151,7 +151,7 @@ public class SampleRestControllerV2 {
       @PathVariable String accession,
       @RequestHeader(name = "Authorization", required = false) final String token) {
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    Optional<Sample> sample = sampleService.fetch(accession, Optional.empty(), "");
+    Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
 
     if (sample.isPresent()) {
       final boolean webinAuth =
