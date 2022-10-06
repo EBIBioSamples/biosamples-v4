@@ -23,7 +23,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.model.MongoCurationLink;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -79,7 +78,6 @@ public class SamplePageService {
       Collection<String> domains,
       String webinSubmissionAccountId,
       Pageable pageable,
-      String curationRepo,
       Optional<List<String>> curationDomains) {
     long startTime = System.nanoTime();
     Page<SolrSample> pageSolrSample =
@@ -121,7 +119,6 @@ public class SamplePageService {
       String webinSubmissionAccountId,
       String cursorMark,
       int size,
-      String curationRepo,
       Optional<List<String>> curationDomains) {
     cursorMark = validateCursor(cursorMark);
     size = validatePageSize(size);

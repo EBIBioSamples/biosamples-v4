@@ -168,7 +168,7 @@ public class BulkActionControllerV2 {
                 accession -> {
                   final String cleanAccession = accession.trim();
                   final Optional<Sample> sampleOptional =
-                      sampleService.fetch(cleanAccession, Optional.empty(), "");
+                      sampleService.fetch(cleanAccession, Optional.empty());
 
                   if (sampleOptional.isPresent()) {
                     final boolean webinAuth =

@@ -25,7 +25,6 @@ import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
@@ -67,11 +66,6 @@ public class MessagingService {
 
     Optional<Sample> sample = sampleReadService.fetch(accession, Optional.empty());
     if (sample.isPresent()) {
-      // save sample with curations and relationships in static view collection
-      mongoSampleRepository.insertSampleToCollection(
-          sampleToMongoSampleConverter.convert(sample.get()),
-          StaticViewWrapper.StaticView.SAMPLES_CURATED);
-
       // for each sample we have a relationship to, update it to index this sample as an
       // inverse
       // relationship
@@ -86,8 +80,7 @@ public class MessagingService {
     }
   }
 
-  private List<Sample> updateInverseRelationships(
-      Sample sample, List<String> existingRelationshipTargets) {
+  private List<Sample> updateInverseRelationships(Sample sample, List<String> existingRelationshipTargets) {
     List<Future<Optional<Sample>>> futures = new ArrayList<>();
 
     // remove deleted relationships
@@ -104,17 +97,9 @@ public class MessagingService {
     }
 
     List<Sample> related = new ArrayList<>();
-    for (Future<Optional<Sample>> future : futures) {
+    for (Future<Optional<Sample>> sampleFuture : futures) {
       try {
-        Optional<Sample> optionalSample = future.get();
-        if (optionalSample.isPresent()) {
-          related.add(optionalSample.get());
-          // todo if we  add inverse relationships we also have to think about deleting
-          // them
-          mongoSampleRepository.insertSampleToCollection(
-              sampleToMongoSampleConverter.convert(optionalSample.get()),
-              StaticViewWrapper.StaticView.SAMPLES_CURATED);
-        }
+        sampleFuture.get().ifPresent(related::add);
       } catch (InterruptedException e) {
         log.warn("Interrupted fetching future relationships", e);
       } catch (ExecutionException e) {

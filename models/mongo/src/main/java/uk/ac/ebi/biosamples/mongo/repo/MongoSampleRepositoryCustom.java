@@ -10,16 +10,9 @@
 */
 package uk.ac.ebi.biosamples.mongo.repo;
 
-import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 
 public interface MongoSampleRepositoryCustom {
 
   MongoSample insertNew(MongoSample sample);
-
-  // to provide static view of samples
-  void insertSampleToCollection(MongoSample sample, StaticViewWrapper.StaticView collectionName);
-
-  MongoSample findSampleFromCollection(
-      String accession, StaticViewWrapper.StaticView collectionName);
 }

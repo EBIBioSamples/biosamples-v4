@@ -150,7 +150,6 @@ public class ApiDocumentationTest {
             anySet(),
             nullable(String.class),
             any(Pageable.class),
-            nullable(String.class),
             any()))
         .thenReturn(
             new PageImpl<>(Collections.singletonList(fakeSample), getDefaultPageable(), 100));
@@ -162,7 +161,6 @@ public class ApiDocumentationTest {
             nullable(String.class),
             nullable(String.class),
             anyInt(),
-            any(),
             any()))
         .thenReturn(new CursorArrayList<>(Collections.singletonList(fakeSample), ""));
 
