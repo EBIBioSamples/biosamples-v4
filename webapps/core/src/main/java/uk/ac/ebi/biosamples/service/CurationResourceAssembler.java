@@ -30,7 +30,7 @@ public class CurationResourceAssembler
 
   @Override
   public EntityModel<Curation> toModel(Curation curation) {
-    EntityModel<Curation> resource = new EntityModel<>(curation);
+    EntityModel<Curation> resource = EntityModel.of(curation);
 
     resource.add(entityLinks.linkToItemResource(Curation.class, curation.getHash()).withSelfRel());
 

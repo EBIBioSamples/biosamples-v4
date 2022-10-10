@@ -181,7 +181,7 @@ public class BigIntegration extends AbstractIntegration {
     for (Link link : page.getLinks()) {
       log.info("Found link " + link);
     }
-    Link firstLink = page.getLink(Link.REL_FIRST).get();
+    Link firstLink = page.getLink(IanaLinkRelations.FIRST).get();
     UriComponents firstLinkUriComponents =
         UriComponentsBuilder.fromUriString(firstLink.getHref()).build();
 

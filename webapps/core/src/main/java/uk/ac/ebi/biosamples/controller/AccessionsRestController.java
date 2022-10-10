@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.Link;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -83,7 +83,7 @@ public class AccessionsRestController {
             pageAccessions.getTotalPages());
 
     CollectionModel<Accession> resources =
-        new PagedModel<>(
+        PagedModel.of(
             pageAccessions.getContent().stream().map(Accession::build).collect(Collectors.toList()),
             pageMetadata);
 
@@ -110,7 +110,7 @@ public class AccessionsRestController {
             effectivePage,
             effectiveSize,
             null,
-            Link.REL_SELF.value(),
+            IanaLinkRelations.SELF.value(),
             this.getClass()));
 
     // if theres more than one page, link to first and last
@@ -124,7 +124,7 @@ public class AccessionsRestController {
               0,
               effectiveSize,
               null,
-              Link.REL_FIRST.value(),
+              IanaLinkRelations.FIRST.value(),
               this.getClass()));
       resources.add(
           SamplesRestController.getPageLink(
@@ -135,7 +135,7 @@ public class AccessionsRestController {
               pageAccessions.getTotalPages(),
               effectiveSize,
               null,
-              Link.REL_LAST.value(),
+              IanaLinkRelations.LAST.value(),
               this.getClass()));
     }
     // if there was a previous page, link to it
@@ -149,7 +149,7 @@ public class AccessionsRestController {
               effectivePage - 1,
               effectiveSize,
               null,
-              Link.REL_PREVIOUS.value(),
+              IanaLinkRelations.PREVIOUS.value(),
               this.getClass()));
     }
 
@@ -164,7 +164,7 @@ public class AccessionsRestController {
               effectivePage + 1,
               effectiveSize,
               null,
-              Link.REL_NEXT.value(),
+              IanaLinkRelations.NEXT.value(),
               this.getClass()));
     }
   }

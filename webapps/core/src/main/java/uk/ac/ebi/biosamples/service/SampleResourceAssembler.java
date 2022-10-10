@@ -16,6 +16,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Service;
@@ -60,16 +61,16 @@ public class SampleResourceAssembler
         }
       }
     }
-    return new Link(uriComponentsBuilder.build().toUriString(), Link.REL_SELF);
+    return Link.of(uriComponentsBuilder.build().toUriString(), IanaLinkRelations.SELF);
   }
 
   private Link getCurationDomainLink(Link selfLink) {
     UriComponents selfUriComponents =
         UriComponentsBuilder.fromUriString(selfLink.getHref()).build();
     if (selfUriComponents.getQueryParams().size() == 0) {
-      return new Link(selfLink.getHref() + "{?curationdomain}", REL_CURATIONDOMAIN);
+      return Link.of(selfLink.getHref() + "{?curationdomain}", REL_CURATIONDOMAIN);
     } else {
-      return new Link(selfLink.getHref() + "{&curationdomain}", REL_CURATIONDOMAIN);
+      return Link.of(selfLink.getHref() + "{&curationdomain}", REL_CURATIONDOMAIN);
     }
   }
 
@@ -96,11 +97,11 @@ public class SampleResourceAssembler
       Optional<Boolean> legacydetails,
       Optional<List<String>> curationDomains,
       Class controllerClass) {
-    EntityModel<Sample> sampleResource = new EntityModel<>(sample);
+    EntityModel<Sample> sampleResource = EntityModel.of(sample);
     sampleResource.add(
         getSelfLink(sample.getAccession(), legacydetails, curationDomains, controllerClass));
     // add link to select curation domain
-    sampleResource.add(getCurationDomainLink(sampleResource.getLink(Link.REL_SELF).get()));
+    sampleResource.add(getCurationDomainLink(sampleResource.getLink(IanaLinkRelations.SELF).get()));
     // add link to curationLinks on this sample
     sampleResource.add(getCurationLinksLink(sample.getAccession()));
     sampleResource.add(getCurationLinkLink(sample.getAccession()));

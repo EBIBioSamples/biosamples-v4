@@ -176,7 +176,7 @@ public class SamplesRestController {
       log.trace("Next cursor = " + samples.getNextCursorMark());
 
       CollectionModel<EntityModel<Sample>> resources =
-          new CollectionModel<>(
+          CollectionModel.of(
               samples.stream()
                   .map(
                       s ->
@@ -224,7 +224,7 @@ public class SamplesRestController {
           WebMvcLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
       // This is a bit of a hack, but best we can do for now...
       resources.add(
-          new Link(uriComponentsBuilder.build(true).toUriString() + "/{accession}", "sample"));
+          Link.of(uriComponentsBuilder.build(true).toUriString() + "/{accession}", "sample"));
 
       // Note - EBI load balancer does cache but doesn't add age header, so clients could cache up
       // to twice this age
@@ -283,7 +283,7 @@ public class SamplesRestController {
             pageSample.getTotalElements(),
             pageSample.getTotalPages());
     CollectionModel<EntityModel<Sample>> resources =
-        new PagedModel<>(
+        PagedModel.of(
             pageSample.getContent().stream()
                 .map(
                     s ->
@@ -379,7 +379,7 @@ public class SamplesRestController {
         WebMvcLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
     // This is a bit of a hack, but best we can do for now...
     resources.add(
-        new Link(uriComponentsBuilder.build(true).toUriString() + "/{accession}", "sample"));
+        Link.of(uriComponentsBuilder.build(true).toUriString() + "/{accession}", "sample"));
 
     return resources;
   }
@@ -411,7 +411,7 @@ public class SamplesRestController {
 
     builder.queryParam("cursor", cursor);
     builder.queryParam("size", size);
-    return new Link(builder.toUriString(), rel);
+    return Link.of(builder.toUriString(), rel);
   }
 
   private static UriComponentsBuilder getUriComponentsBuilder(
@@ -467,7 +467,7 @@ public class SamplesRestController {
         builder.queryParam("sort", sortString);
       }
     }
-    return new Link(builder.toUriString(), rel);
+    return Link.of(builder.toUriString(), rel);
   }
 
   @PostMapping(
@@ -568,8 +568,6 @@ public class SamplesRestController {
 
           if (!notExistingAccession) {
             oldSample = sampleService.fetchOldSample(sample.getAccession());
-          } else {
-            oldSample = Optional.empty();
           }
         }
       }
@@ -587,8 +585,6 @@ public class SamplesRestController {
 
           if (!notExistingAccession) {
             oldSample = sampleService.fetchOldSample(sample.getAccession());
-          } else {
-            oldSample = Optional.empty();
           }
         }
       }
@@ -597,15 +593,15 @@ public class SamplesRestController {
     }
 
     // update, create date are system generated fields
-    SubmittedViaType submittedVia =
-        sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
-
     sample =
         Sample.Builder.fromSample(sample)
             .withCreate(sampleService.defineCreateDate(sample))
             .withSubmitted(sampleService.defineSubmittedDate(sample))
             .withUpdate(Instant.now())
-            .withSubmittedVia(submittedVia)
+            .withSubmittedVia(
+                sample.getSubmittedVia() == null
+                    ? SubmittedViaType.JSON_API
+                    : sample.getSubmittedVia())
             .build();
 
     sample = validateSample(sample, authProvider, isWebinSuperUser);
@@ -618,7 +614,8 @@ public class SamplesRestController {
         sampleService.persistSample(sample, oldSample.orElse(null), authProvider, isWebinSuperUser);
 
     // assemble a resource to return
-    EntityModel<Sample> sampleResource = sampleResourceAssembler.toModel(sample, this.getClass());
+    final EntityModel<Sample> sampleResource =
+        sampleResourceAssembler.toModel(sample, this.getClass());
     // create the response object with the appropriate status
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").get().getHref()))
         .body(sampleResource);

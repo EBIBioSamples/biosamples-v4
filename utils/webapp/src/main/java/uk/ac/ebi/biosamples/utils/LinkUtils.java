@@ -57,7 +57,7 @@ public class LinkUtils {
     // expand template to nothing
     link = link.expand(Collections.emptyMap());
     // this won't handle encodings correctly, so need to manually fix that
-    link = new Link(decodeText(decodeText(link.getHref())), link.getRel());
+    link = Link.of(decodeText(decodeText(link.getHref())), link.getRel());
 
     return link;
   }

@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.UriTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.util.UriUtils;
 
@@ -65,8 +66,6 @@ public class UrlDecodingTest {
         "http://localhost:8081/biosamples/samples?text=&cursor=AoErVGVzdEZpbHRlcjM%3D&size=1000";
     Assert.assertEquals(
         uriUntemplated,
-        new org.springframework.hateoas.UriTemplate(uriTemplated.replaceAll("\\{.*\\}", ""))
-            .expand()
-            .toString());
+        UriTemplate.of(uriTemplated.replaceAll("\\{.*\\}", "")).expand().toString());
   }
 }

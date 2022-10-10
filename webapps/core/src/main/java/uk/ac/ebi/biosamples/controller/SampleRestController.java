@@ -216,12 +216,10 @@ public class SampleRestController {
             ? AuthorizationProvider.WEBIN
             : AuthorizationProvider.AAP;
     final boolean notExistingAccession = sampleService.isNotExistingAccession(accession);
-    final Optional<Sample> oldSample;
+    Optional<Sample> oldSample = Optional.empty();
 
     if (!notExistingAccession) {
       oldSample = sampleService.fetchOldSample(sample.getAccession());
-    } else {
-      oldSample = Optional.empty();
     }
 
     if (authProvider == AuthorizationProvider.WEBIN) {
