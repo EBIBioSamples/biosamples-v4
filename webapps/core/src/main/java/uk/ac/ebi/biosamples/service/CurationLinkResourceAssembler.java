@@ -32,7 +32,7 @@ public class CurationLinkResourceAssembler
 
   @Override
   public EntityModel<CurationLink> toModel(CurationLink curationLink) {
-    EntityModel<CurationLink> resource = new EntityModel<>(curationLink);
+    EntityModel<CurationLink> resource = EntityModel.of(curationLink);
 
     resource.add(
         WebMvcLinkBuilder.linkTo(

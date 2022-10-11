@@ -28,12 +28,16 @@ public class ValidationResult {
   }
 
   public static class ValidationMessage {
-    private String messageKey;
-    private String messageValue;
+    private final String messageKey;
+    private final String messageValue;
 
-    public ValidationMessage(String messageKey, String messageValue) {
+    private final boolean error;
+
+    public ValidationMessage(
+        final String messageKey, final String messageValue, final boolean error) {
       this.messageKey = messageKey;
       this.messageValue = messageValue;
+      this.error = error;
     }
 
     public String getMessageKey() {
@@ -42,6 +46,10 @@ public class ValidationResult {
 
     public String getMessageValue() {
       return messageValue;
+    }
+
+    public boolean isError() {
+      return error;
     }
   }
 }

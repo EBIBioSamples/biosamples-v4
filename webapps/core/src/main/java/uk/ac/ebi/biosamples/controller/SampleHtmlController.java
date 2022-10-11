@@ -118,7 +118,6 @@ public class SampleHtmlController {
       @RequestParam(name = "filter", required = false) String[] filtersArray,
       @RequestParam(name = "page", defaultValue = "1") Integer page,
       @RequestParam(name = "size", defaultValue = "10") Integer size,
-      @RequestParam(name = "curationrepo", defaultValue = "none") final String curationRepo,
       HttpServletRequest request,
       HttpServletResponse response) {
 
@@ -135,7 +134,7 @@ public class SampleHtmlController {
     Pageable pageable = PageRequest.of(page - 1, size);
     Page<Sample> pageSample =
         samplePageService.getSamplesByText(
-            text, filterCollection, domains, null, pageable, curationRepo, Optional.empty());
+            text, filterCollection, domains, null, pageable, Optional.empty());
 
     // build URLs for the facets depending on if they are enabled or not
     UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);
@@ -328,11 +327,10 @@ public class SampleHtmlController {
   public String samplesAccession(
       Model model,
       @PathVariable String accession,
-      @RequestParam(name = "curationrepo", required = false) final String curationRepo,
       HttpServletRequest request,
       HttpServletResponse response) {
     // TODO allow curation domain specification
-    Optional<Sample> sample = sampleService.fetch(accession, Optional.empty(), curationRepo);
+    Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
     if (!sample.isPresent()) {
       log.info("Returning a 404 for " + request.getRequestURL());
       throw new ResourceNotFoundException();

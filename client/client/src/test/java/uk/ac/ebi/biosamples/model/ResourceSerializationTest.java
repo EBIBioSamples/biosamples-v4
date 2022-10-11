@@ -93,7 +93,7 @@ public class ResourceSerializationTest {
 
   @Test
   public void testSerialize() throws Exception {
-    EntityModel<Sample> details = new EntityModel<>(getSimpleSample());
+    EntityModel<Sample> details = EntityModel.of(getSimpleSample());
 
     log.info(this.json.write(details).getJson());
 
@@ -110,7 +110,7 @@ public class ResourceSerializationTest {
   @Test
   public void testDeserialize() throws Exception {
     EntityModel<Sample> fileSample = this.json.readObject("/TEST1.json");
-    EntityModel<Sample> simpleSample = new EntityModel<>(getSimpleSample());
+    EntityModel<Sample> simpleSample = EntityModel.of(getSimpleSample());
     log.info("fileSample = " + fileSample);
     log.info("simpleSample = " + simpleSample);
     // Use JSON path based assertions
@@ -129,7 +129,7 @@ public class ResourceSerializationTest {
 
   @Test
   public void testRoundTrip() throws Exception {
-    EntityModel<Sample> sample = new EntityModel<>(getSimpleSample());
+    EntityModel<Sample> sample = EntityModel.of(getSimpleSample());
     log.info("roundTrip sample = " + sample);
 
     String json = this.json.write(sample).getJson();

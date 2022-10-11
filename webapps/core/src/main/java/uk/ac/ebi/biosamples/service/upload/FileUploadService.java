@@ -42,7 +42,7 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @Service
 public class FileUploadService {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private FileUploadUtils fileUploadUtils;
 
   @Autowired private SampleService sampleService;
@@ -109,7 +109,8 @@ public class FileUploadService {
       }
 
       final List<Sample> samples =
-          buildSamples(csvDataMap, aapDomain, webinId, checklist, validationResult, isWebin);
+          buildAndPersistSamples(
+              csvDataMap, aapDomain, webinId, checklist, validationResult, isWebin);
       final List<SampleNameAccessionPair> accessionsList =
           samples.stream()
               .filter(sample -> sample.getAccession() != null)
@@ -119,7 +120,7 @@ public class FileUploadService {
 
       log.info("Persistence message: " + persistenceMessage);
       validationResult.addValidationMessage(
-          new ValidationResult.ValidationMessage(uniqueUploadId, persistenceMessage));
+          new ValidationResult.ValidationMessage(uniqueUploadId, persistenceMessage, false));
       log.info(
           "Final message: "
               + validationResult.getValidationMessagesList().stream()
@@ -130,10 +131,19 @@ public class FileUploadService {
                               + validationMessage.getMessageValue())
                   .collect(Collectors.joining("\n")));
 
+      BioSamplesFileUploadSubmissionStatus bioSamplesFileUploadSubmissionStatus =
+          BioSamplesFileUploadSubmissionStatus.COMPLETED;
+
+      if (validationResult.getValidationMessagesList().stream()
+          .anyMatch(ValidationResult.ValidationMessage::isError)) {
+        bioSamplesFileUploadSubmissionStatus =
+            BioSamplesFileUploadSubmissionStatus.COMPLETED_WITH_ERRORS;
+      }
+
       final MongoFileUpload mongoFileUploadCompleted =
           new MongoFileUpload(
               uniqueUploadId,
-              BioSamplesFileUploadSubmissionStatus.COMPLETED,
+              bioSamplesFileUploadSubmissionStatus,
               isWebin ? webinId : aapDomain,
               checklist,
               isWebin,
@@ -149,7 +159,7 @@ public class FileUploadService {
               + e.getMessage()
               + "********FEEDBACK TO BSD DEV TEAM END********";
       validationResult.addValidationMessage(
-          new ValidationResult.ValidationMessage(uniqueUploadId, messageForBsdDevTeam));
+          new ValidationResult.ValidationMessage(uniqueUploadId, messageForBsdDevTeam, true));
       throw new GlobalExceptions.UploadInvalidException(
           validationResult.getValidationMessagesList().stream()
               .map(
@@ -161,7 +171,7 @@ public class FileUploadService {
     }
   }
 
-  private List<Sample> buildSamples(
+  private List<Sample> buildAndPersistSamples(
       final List<Multimap<String, String>> csvDataMap,
       final String aapDomain,
       final String webinId,
@@ -184,13 +194,15 @@ public class FileUploadService {
               validationResult.addValidationMessage(
                   new ValidationResult.ValidationMessage(
                       fileUploadUtils.getSampleName(csvRecordMap),
-                      "Failed to create sample in the file"));
+                      "Failed to create sample in the file",
+                      true));
             }
           } catch (Exception e) {
             validationResult.addValidationMessage(
                 new ValidationResult.ValidationMessage(
                     fileUploadUtils.getSampleName(csvRecordMap),
-                    "Failed to create sample in the file"));
+                    "Failed to create sample in the file",
+                    true));
           }
 
           if (sample != null) {
@@ -228,21 +240,27 @@ public class FileUploadService {
     final Multimap<String, String> relationshipMap =
         fileUploadUtils.parseRelationships(sampleMultimapEntry.getValue());
     Sample sample = sampleMultimapEntry.getKey();
+    Optional<Sample> oldSample = Optional.empty();
+
     final List<Relationship> relationships =
         fileUploadUtils.createRelationships(
             sample, sampleNameToAccessionMap, relationshipMap, validationResult);
+
+    if (!sampleService.isNotExistingAccession(sample.getAccession())) {
+      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
+    }
 
     if (relationships != null && relationships.size() > 0) {
       relationships.forEach(relationship -> log.info(relationship.toString()));
 
       sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
       try {
-        sample = storeSample(sample, isWebin(isWebin));
+        sample = storeSample(sample, oldSample, isWebin(isWebin));
       } catch (final Exception e) {
         final String sampleName = sample.getName();
 
         new ValidationResult.ValidationMessage(
-            sampleName, sampleName + "failed to persist relationships");
+            sampleName, sampleName + "failed to persist relationships", true);
       }
     }
 
@@ -261,12 +279,17 @@ public class FileUploadService {
     boolean sampleWithAccession = false;
 
     Sample sample = fileUploadUtils.buildSample(multiMap, validationResult);
+    Optional<Sample> oldSample = Optional.empty();
 
     if (sample.getAccession() != null) {
       sampleWithAccession = true;
+
+      if (!sampleService.isNotExistingAccession(sample.getAccession())) {
+        oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
+      }
     }
 
-    sample = handleAuthentication(aapDomain, webinId, isWebin, sample, validationResult);
+    sample = handleAuthentication(aapDomain, webinId, isWebin, sample, oldSample, validationResult);
 
     if (sample != null) {
       sample = fileUploadUtils.addChecklistAttributeAndBuildSample(checklist, sample);
@@ -275,7 +298,7 @@ public class FileUploadService {
 
       if (isValidatedAgainstChecklist) {
         try {
-          sample = storeSample(sample, isWebin(isWebin));
+          sample = storeSample(sample, oldSample, isWebin(isWebin));
 
           if (sample != null) {
             if (sampleWithAccession) {
@@ -291,14 +314,15 @@ public class FileUploadService {
 
           return sample;
         } catch (final Exception e) {
-          new ValidationResult.ValidationMessage(sampleName, sampleName + "failed to persist");
+          new ValidationResult.ValidationMessage(
+              sampleName, sampleName + "failed to persist", true);
 
           return null;
         }
       } else {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
-                sampleName, sampleName + " failed validation against " + checklist));
+                sampleName, sampleName + " failed validation against " + checklist, true));
 
         return null;
       }
@@ -312,13 +336,16 @@ public class FileUploadService {
       final String webinId,
       final boolean isWebin,
       Sample sample,
+      final Optional<Sample> oldSample,
       final ValidationResult validationResult) {
     try {
       if (isWebin) {
-        sample = bioSamplesWebinAuthenticationService.handleWebinUserSubmission(sample, webinId);
+        sample =
+            bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+                sample, webinId, oldSample);
       } else {
         sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
-        sample = bioSamplesAapService.handleSampleDomain(sample);
+        sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
       }
 
       return sample;
@@ -326,26 +353,33 @@ public class FileUploadService {
       if (e instanceof GlobalExceptions.SampleNotAccessibleException) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
-                sample.getName(), "Sample " + sample.getName() + " is not accessible for you"));
+                sample.getName(),
+                "Sample " + sample.getName() + " is not accessible for you",
+                true));
       } else if (e instanceof GlobalExceptions.WebinUserLoginUnauthorizedException) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
                 sample.getName(),
-                "Sample " + sample.getName() + " not persisted as WEBIN user is not authorized"));
+                "Sample " + sample.getName() + " not persisted as WEBIN user is not authorized",
+                true));
       } else if (e instanceof GlobalExceptions.SampleDomainMismatchException) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
-                sample.getName(), "Sample " + sample.getName() + " is not accessible for you"));
+                sample.getName(),
+                "Sample " + sample.getName() + " is not accessible for you",
+                true));
       } else if (e instanceof GlobalExceptions.InvalidSubmissionSourceException) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
                 sample.getName(),
                 "Sample "
                     + sample.getName()
-                    + " has been imported from other INSDC databases, please update at source. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk for more information"));
+                    + " has been imported from other INSDC databases, please update at source. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk for more information",
+                true));
       } else {
         validationResult.addValidationMessage(
-            new ValidationResult.ValidationMessage(sample.getName(), "Please retry submission!"));
+            new ValidationResult.ValidationMessage(
+                sample.getName(), "Please retry submission!", true));
       }
 
       return null;
@@ -356,7 +390,8 @@ public class FileUploadService {
     return isWebin ? FileUploadUtils.WEBIN_AUTH : FileUploadUtils.AAP;
   }
 
-  private Sample storeSample(final Sample sample, final String authProvider) {
+  private Sample storeSample(
+      final Sample sample, final Optional<Sample> oldSample, final String authProvider) {
     /*final String sampleName = sample.getName();
     final String accession = sample.getAccession();
 
@@ -389,7 +424,7 @@ public class FileUploadService {
 
     try {
       return sampleService.persistSample(
-          sample, AuthorizationProvider.valueOf(authProvider), false);
+          sample, oldSample.orElse(null), AuthorizationProvider.valueOf(authProvider), false);
     } catch (final Exception e) {
       throw new RuntimeException("Failed to persist sample with name " + sample.getName());
     }

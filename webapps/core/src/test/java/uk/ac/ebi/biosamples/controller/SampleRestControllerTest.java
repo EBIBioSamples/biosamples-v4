@@ -70,7 +70,6 @@ public class SampleRestControllerTest {
             nullable(String.class),
             nullable(String.class),
             anyInt(),
-            any(),
             any()))
         .thenReturn(sampleCursorArrayList);
 

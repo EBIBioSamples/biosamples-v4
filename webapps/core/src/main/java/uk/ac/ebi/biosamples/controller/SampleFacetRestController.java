@@ -53,7 +53,7 @@ public class SampleFacetRestController {
     //    	PagedResources<StringListFacet> resources = new PagedResources<>(
     //    			sampleFacets,
     //				new PagedResources.PageMetadata(10, 1, 10, 5));
-    CollectionModel<Facet> resources = new CollectionModel<>(sampleFacets);
+    CollectionModel<Facet> resources = CollectionModel.of(sampleFacets);
 
     // Links for the entire page
     // this is hacky, but no clear way to do this in spring-hateoas currently
@@ -72,7 +72,7 @@ public class SampleFacetRestController {
         LinkUtils.cleanLink(
             WebMvcLinkBuilder.linkTo(
                     WebMvcLinkBuilder.methodOn(SamplesRestController.class)
-                        .searchHal(text, filter, null, null, null, null, null, null, "AAP"))
+                        .searchHal(text, filter, null, null, null, null, null, "AAP"))
                 .withRel("samples")));
 
     return ResponseEntity.ok().body(resources);

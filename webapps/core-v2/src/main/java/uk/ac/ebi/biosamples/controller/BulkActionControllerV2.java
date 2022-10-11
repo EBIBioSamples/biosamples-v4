@@ -37,7 +37,7 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationServic
 @RequestMapping("/samples")
 @CrossOrigin
 public class BulkActionControllerV2 {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
@@ -97,7 +97,7 @@ public class BulkActionControllerV2 {
       if (!samples.isEmpty()) {
         // check the first sample domain only
         Sample firstSample = samples.get(0);
-        firstSample = bioSamplesAapService.handleSampleDomain(firstSample);
+        firstSample = bioSamplesAapService.handleSampleDomain(firstSample, Optional.empty());
 
         final Sample finalFirstSample = firstSample;
 
@@ -168,7 +168,7 @@ public class BulkActionControllerV2 {
                 accession -> {
                   final String cleanAccession = accession.trim();
                   final Optional<Sample> sampleOptional =
-                      sampleService.fetch(cleanAccession, Optional.empty(), "");
+                      sampleService.fetch(cleanAccession, Optional.empty());
 
                   if (sampleOptional.isPresent()) {
                     final boolean webinAuth =

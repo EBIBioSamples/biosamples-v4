@@ -11,7 +11,6 @@
 package uk.ac.ebi.biosamples.mongo.repo;
 
 import org.springframework.data.mongodb.core.MongoOperations;
-import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 
 public class MongoSampleRepositoryImpl implements MongoSampleRepositoryCustom {
@@ -30,18 +29,5 @@ public class MongoSampleRepositoryImpl implements MongoSampleRepositoryCustom {
   public MongoSample insertNew(MongoSample sample) {
     mongoOperations.insert(sample);
     return sample;
-  }
-
-  @Override
-  public void insertSampleToCollection(
-      MongoSample sample, StaticViewWrapper.StaticView collectionName) {
-    mongoOperations.save(sample, collectionName.getCollectionName());
-  }
-
-  @Override
-  public MongoSample findSampleFromCollection(
-      String accession, StaticViewWrapper.StaticView collectionName) {
-    return mongoOperations.findById(
-        accession, MongoSample.class, collectionName.getCollectionName());
   }
 }

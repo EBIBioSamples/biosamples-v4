@@ -58,9 +58,10 @@ public class EtagTests {
             .addAttribute(new Attribute.Builder("Organism", "Homo sapiens").build())
             .build();
 
-    when(sampleService.fetch(sampleAccession, Optional.empty(), null))
+    when(sampleService.fetch(sampleAccession, Optional.empty()))
         .thenReturn(Optional.of(testSample));
-    when(bioSamplesAapService.handleSampleDomain(testSample)).thenReturn(testSample);
+    when(bioSamplesAapService.handleSampleDomain(testSample, Optional.empty()))
+        .thenReturn(testSample);
     doNothing().when(bioSamplesAapService).checkSampleAccessibility(isA(Sample.class));
     when(accessControlService.extractToken(anyString()))
         .thenReturn(

@@ -32,7 +32,7 @@ import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.*;
 
 public class FileUploadUtils {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   public static final String WEBIN_AUTH = "WEBIN";
   public static final String AAP = "AAP";
@@ -352,7 +352,7 @@ public class FileUploadUtils {
               log.trace(entryKey + " " + entryValue);
 
               if (entryKey.startsWith("comment") && entryKey.contains("external db ref")) {
-                if (entryValue != null && !entryValue.isEmpty() && entryValue.length() > 1) {
+                if (entryValue != null && entryValue.length() > 1) {
                   externalReferenceList.add(ExternalReference.build(entryValue));
                 }
               }
@@ -388,7 +388,8 @@ public class FileUploadUtils {
           validationResult.addValidationMessage(
               new ValidationResult.ValidationMessage(
                   sample.getAccession(),
-                  "Failed to add all relationships for " + sample.getAccession()));
+                  "Failed to add all relationships for " + sample.getAccession(),
+                  true));
 
           return null;
         }
@@ -397,7 +398,8 @@ public class FileUploadUtils {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
                 sample.getAccession(),
-                "Failed to add all relationships for " + sample.getAccession()));
+                "Failed to add all relationships for " + sample.getAccession(),
+                true));
 
         return null;
       }
@@ -533,7 +535,8 @@ public class FileUploadUtils {
       validationResult.addValidationMessage(
           new ValidationResult.ValidationMessage(
               "MESSAGE#1",
-              "All samples in the file must have a sample name, some samples are missing sample name and hence are not created"));
+              "All samples in the file must have a sample name, some samples are missing sample name and hence are not created",
+              true));
       isValidSample = false;
     }
 
@@ -543,7 +546,8 @@ public class FileUploadUtils {
               "MESSAGE#2",
               "All samples in the file must have a release date "
                   + sampleName
-                  + " doesn't have a release date and is not created"));
+                  + " doesn't have a release date and is not created",
+              true));
       isValidSample = false;
     }
 
@@ -671,7 +675,8 @@ public class FileUploadUtils {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
                 "GENERAL_VALIDATION_MESSAGE",
-                "ISA tab file must have Source Name as first column, followed by Sample Name and Release Date."));
+                "ISA tab file must have Source Name as first column, followed by Sample Name and Release Date.",
+                true));
 
         throw new GlobalExceptions.UploadInvalidException(
             validationResult.getValidationMessagesList().stream()

@@ -23,7 +23,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 import uk.ac.ebi.biosamples.client.utils.IterableResourceFetchAll;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
 public class SampleCursorRetrievalService {
@@ -51,24 +50,11 @@ public class SampleCursorRetrievalService {
 
   public Iterable<EntityModel<Sample>> fetchAll(
       String text, Collection<Filter> filterCollection, String jwt) {
-    return fetchAll(text, filterCollection, jwt, null);
+    return fetchAll(text, filterCollection, jwt, true);
   }
 
   public Iterable<EntityModel<Sample>> fetchAll(
-      String text,
-      Collection<Filter> filterCollection,
-      String jwt,
-      StaticViewWrapper.StaticView staticView) {
-
-    return fetchAll(text, filterCollection, jwt, staticView, true);
-  }
-
-  public Iterable<EntityModel<Sample>> fetchAll(
-      String text,
-      Collection<Filter> filterCollection,
-      String jwt,
-      StaticViewWrapper.StaticView staticView,
-      boolean addCurations) {
+      String text, Collection<Filter> filterCollection, String jwt, boolean addCurations) {
 
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
     params.add("text", text);
@@ -76,9 +62,6 @@ public class SampleCursorRetrievalService {
       params.add("filter", filter.getSerialization());
     }
     params.add("size", Integer.toString(pageSize));
-    if (staticView != null) {
-      params.add("curationrepo", staticView.getCurationRepositoryName());
-    }
     if (!addCurations) {
       params.add("curationdomain", "");
     }
