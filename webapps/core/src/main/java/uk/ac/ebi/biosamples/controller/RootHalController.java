@@ -33,10 +33,10 @@ public class RootHalController {
     resource.add(WebMvcLinkBuilder.linkTo(SamplesRestController.class).withRel("samples"));
     resource.add(WebMvcLinkBuilder.linkTo(CurationRestController.class).withRel("curations"));
     resource.add(
-        new Link(
+        Link.of(
             "https://www.ebi.ac.uk/data-protection/privacy-notice/embl-ebi-public-website",
             "privacyNotice"));
-    resource.add(new Link("https://www.ebi.ac.uk/about/terms-of-use", "termsOfUse"));
+    resource.add(Link.of("https://www.ebi.ac.uk/about/terms-of-use", "termsOfUse"));
 
     return ResponseEntity.ok()
         .header(

@@ -87,9 +87,7 @@ public class SampleRetrievalService {
             URI.create(
                 traverson
                     .follow("samples")
-                    .follow(
-                        Hop.rel("sample")
-                            .withParameter("accession", accession))
+                    .follow(Hop.rel("sample").withParameter("accession", accession))
                     .asLink()
                     .getHref());
       } else {

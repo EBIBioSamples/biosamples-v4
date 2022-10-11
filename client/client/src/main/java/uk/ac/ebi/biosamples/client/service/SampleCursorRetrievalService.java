@@ -54,10 +54,7 @@ public class SampleCursorRetrievalService {
   }
 
   public Iterable<EntityModel<Sample>> fetchAll(
-      String text,
-      Collection<Filter> filterCollection,
-      String jwt,
-      boolean addCurations) {
+      String text, Collection<Filter> filterCollection, String jwt, boolean addCurations) {
 
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
     params.add("text", text);

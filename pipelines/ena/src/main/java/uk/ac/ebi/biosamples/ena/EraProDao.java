@@ -60,6 +60,11 @@ public class EraProDao {
     jdbcTemplate.query(query, rch, bioSampleId);
   }
 
+  public String getBioSampleAccessionByEnaAccession(String enaId) {
+    String query = "SELECT BIOSAMPLE_ID FROM SAMPLE WHERE SAMPLE_ID = ?";
+    return jdbcTemplate.queryForObject(query, String.class, new Object[] {enaId});
+  }
+
   public void getNcbiCallback(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
     String query =
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, LAST_UPDATED FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND BIOSAMPLE_AUTHORITY= 'N' "

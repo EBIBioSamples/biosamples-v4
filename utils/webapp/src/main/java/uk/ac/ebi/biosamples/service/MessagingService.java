@@ -80,7 +80,8 @@ public class MessagingService {
     }
   }
 
-  private List<Sample> updateInverseRelationships(Sample sample, List<String> existingRelationshipTargets) {
+  private List<Sample> updateInverseRelationships(
+      Sample sample, List<String> existingRelationshipTargets) {
     List<Future<Optional<Sample>>> futures = new ArrayList<>();
 
     // remove deleted relationships

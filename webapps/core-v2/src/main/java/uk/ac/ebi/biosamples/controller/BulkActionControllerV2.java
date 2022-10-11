@@ -97,7 +97,7 @@ public class BulkActionControllerV2 {
       if (!samples.isEmpty()) {
         // check the first sample domain only
         Sample firstSample = samples.get(0);
-        firstSample = bioSamplesAapService.handleSampleDomain(firstSample);
+        firstSample = bioSamplesAapService.handleSampleDomain(firstSample, Optional.empty());
 
         final Sample finalFirstSample = firstSample;
 

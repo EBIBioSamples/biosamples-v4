@@ -85,7 +85,8 @@ public class BioSamplesWebinAuthenticationService {
     }
   }
 
-  public Sample handleWebinUserSubmission(final Sample sample, final String webinId) {
+  public Sample handleWebinUserSubmission(
+      final Sample sample, final String webinId, final Optional<Sample> oldSample) {
     final String biosamplesClientWebinUsername =
         bioSamplesProperties.getBiosamplesClientWebinUsername();
     final String webinSubmissionAccountIdInMetadata = sample.getWebinSubmissionAccountId();
@@ -98,7 +99,6 @@ public class BioSamplesWebinAuthenticationService {
               : biosamplesClientWebinUsername;
 
       if (sample.getAccession() != null) { // sample updates, where sample has an accession
-        final Optional<Sample> oldSample = fetchOldSample(sample);
         final boolean oldSamplePresent = oldSample.isPresent();
 
         if (webinId.equalsIgnoreCase(
@@ -143,7 +143,7 @@ public class BioSamplesWebinAuthenticationService {
               if (sampleService.isAPipelineAapDomain(oldSampleDomain)
                   || isOldRegistrationDomain(
                       oldSampleDomain)) { // if old sample was a pipeline submission using AAP, or
-                // pre registration, allow
+                // pre-registration, allow
                 // webin replacement
                 return buildSampleWithWebinSubmissionAccountId(
                     sample, webinIdToUseWhileBioSamplesClientSubmissions);
@@ -161,7 +161,7 @@ public class BioSamplesWebinAuthenticationService {
             final Sample oldSavedSample = oldSample.get();
 
             if (oldSavedSample.getSubmittedVia()
-                == SubmittedViaType.PIPELINE_IMPORT) { // pipleine imports access protection
+                == SubmittedViaType.PIPELINE_IMPORT) { // pipeline imports access protection
               if (sample.getSubmittedVia() != SubmittedViaType.PIPELINE_IMPORT) {
                 throw new GlobalExceptions.InvalidSubmissionSourceException();
               }
@@ -202,10 +202,6 @@ public class BioSamplesWebinAuthenticationService {
     } else {
       return false;
     }
-  }
-
-  private Optional<Sample> fetchOldSample(final Sample sample) {
-    return sampleService.fetch(sample.getAccession(), Optional.empty());
   }
 
   public Sample buildSampleWithWebinSubmissionAccountId(final Sample sample, final String webinId) {
@@ -269,7 +265,7 @@ public class BioSamplesWebinAuthenticationService {
 
   private boolean isStructuredDataAccessible(final Sample sample, final String webinId) {
     final AtomicBoolean isWebinIdValid = new AtomicBoolean(false);
-    final Optional<Sample> oldSample = fetchOldSample(sample);
+    final Optional<Sample> oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
 
     if (oldSample.isPresent()) {
       Sample oldSampleRetrieved = oldSample.get();

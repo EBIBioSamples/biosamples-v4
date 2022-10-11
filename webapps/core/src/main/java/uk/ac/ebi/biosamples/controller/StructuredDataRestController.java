@@ -57,7 +57,7 @@ public class StructuredDataRestController {
       throw new GlobalExceptions.SampleAccessionMismatchException();
     }
 
-    return new EntityModel<>(
+    return EntityModel.of(
         structuredDataService
             .getStructuredData(accession)
             .orElseThrow(GlobalExceptions.SampleNotFoundException::new));
@@ -93,6 +93,6 @@ public class StructuredDataRestController {
 
     StructuredData storedData = structuredDataService.saveStructuredData(structuredData);
 
-    return new EntityModel<>(storedData);
+    return EntityModel.of(storedData);
   }
 }

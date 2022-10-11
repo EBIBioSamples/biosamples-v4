@@ -89,8 +89,7 @@ public class SamplePageService {
     startTime = System.nanoTime();
     Page<Future<Optional<Sample>>> pageFutureSample;
     pageFutureSample =
-        pageSolrSample.map(
-            ss -> sampleService.fetchAsync(ss.getAccession(), curationDomains));
+        pageSolrSample.map(ss -> sampleService.fetchAsync(ss.getAccession(), curationDomains));
 
     Page<Sample> pageSample =
         pageFutureSample.map(
@@ -101,9 +100,7 @@ public class SamplePageService {
                 } else {
                   return null;
                 }
-              } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-              } catch (ExecutionException e) {
+              } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
               }
             });
@@ -144,9 +141,7 @@ public class SamplePageService {
             ss -> {
               try {
                 return ss.get().get();
-              } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-              } catch (ExecutionException e) {
+              } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
               }
             })

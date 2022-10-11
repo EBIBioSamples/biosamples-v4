@@ -37,7 +37,7 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 @RequestMapping("/samples")
 @CrossOrigin
 public class SamplesRestControllerV2 {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
@@ -71,15 +71,15 @@ public class SamplesRestControllerV2 {
       @RequestHeader(name = "Authorization") final String token) {
     log.info("Received POST for " + samples.size() + " samples");
 
-    List<Sample> createdSamples;
+    final List<Sample> createdSamples;
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
     final AuthorizationProvider authProvider =
-        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
+            ? AuthorizationProvider.WEBIN
+            : AuthorizationProvider.AAP;
     boolean isWebinSuperUser;
 
-    if (webinAuth) {
+    if (authProvider == AuthorizationProvider.WEBIN) {
       final String webinSubmissionAccountId = authToken.get().getUser();
 
       if (webinSubmissionAccountId == null) {
@@ -96,7 +96,7 @@ public class SamplesRestControllerV2 {
                     sample -> {
                       sample =
                           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-                              sample, webinSubmissionAccountId);
+                              sample, webinSubmissionAccountId, Optional.empty());
 
                       sampleService.validateSampleHasNoRelationshipsV2(sample);
 
@@ -104,21 +104,34 @@ public class SamplesRestControllerV2 {
                         sample = validateSample(sample, true);
                       }
 
-                      return sampleService.persistSampleV2(sample, authProvider, isWebinSuperUser);
+                      return sampleService.persistSampleV2(
+                          sample, null, authProvider, isWebinSuperUser);
                     })
                 .collect(Collectors.toList());
       } catch (final Exception e) {
         // check auth exception
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        if (e instanceof GlobalExceptions.WebinTokenInvalidException
+            || e instanceof GlobalExceptions.WebinUserLoginUnauthorizedException
+            || e instanceof GlobalExceptions.SampleNotAccessibleException
+            || e instanceof GlobalExceptions.SampleNotAccessibleAdviceException
+            || e instanceof GlobalExceptions.InvalidSubmissionSourceException) {
+          return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+          // check validation exception
+        } else if (e instanceof GlobalExceptions.SampleWithRelationshipSubmissionExceptionV2
+            || e instanceof GlobalExceptions.SampleValidationException
+            || e instanceof GlobalExceptions.SampleValidationControllerException) {
+          return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } else {
+          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
       }
-
     } else {
       try {
         createdSamples =
             samples.stream()
                 .map(
                     sample -> {
-                      sample = bioSamplesAapService.handleSampleDomain(sample);
+                      sample = bioSamplesAapService.handleSampleDomain(sample, Optional.empty());
 
                       sampleService.validateSampleHasNoRelationshipsV2(sample);
 
@@ -126,14 +139,26 @@ public class SamplesRestControllerV2 {
                         sample = validateSample(sample, false);
                       }
 
-                      return sampleService.persistSampleV2(sample, authProvider, false);
+                      return sampleService.persistSampleV2(sample, null, authProvider, false);
                     })
                 .collect(Collectors.toList());
       } catch (final Exception e) {
         // check auth exception
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        if (e instanceof GlobalExceptions.InvalidSubmissionSourceException
+            || e instanceof GlobalExceptions.SampleDomainMismatchException
+            || e instanceof GlobalExceptions.DomainMissingException) {
+          return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+          // check validation exception
+        } else if (e instanceof GlobalExceptions.SampleWithRelationshipSubmissionExceptionV2
+            || e instanceof GlobalExceptions.SampleValidationException
+            || e instanceof GlobalExceptions.SampleValidationControllerException) {
+          return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } else {
+          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
       }
     }
+
     return ResponseEntity.status(HttpStatus.CREATED).body(createdSamples);
   }
 
@@ -169,12 +194,12 @@ public class SamplesRestControllerV2 {
     boolean isWebinSuperUser = false;
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
     final AuthorizationProvider authProvider =
-        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
+            ? AuthorizationProvider.WEBIN
+            : AuthorizationProvider.AAP;
 
-    if (webinAuth) {
+    if (authProvider == AuthorizationProvider.WEBIN) {
       final String webinSubmissionAccountId = authToken.get().getUser();
 
       if (webinSubmissionAccountId == null) {
@@ -186,14 +211,14 @@ public class SamplesRestControllerV2 {
 
       sample =
           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              sample, webinSubmissionAccountId);
+              sample, webinSubmissionAccountId, Optional.empty());
     } else {
-      sample = bioSamplesAapService.handleSampleDomain(sample);
+      sample = bioSamplesAapService.handleSampleDomain(sample, Optional.empty());
     }
 
     sample = sampleService.buildPrivateSample(sample);
 
-    sample = sampleService.persistSampleV2(sample, authProvider, isWebinSuperUser);
+    sample = sampleService.persistSampleV2(sample, null, authProvider, isWebinSuperUser);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(sample);
   }

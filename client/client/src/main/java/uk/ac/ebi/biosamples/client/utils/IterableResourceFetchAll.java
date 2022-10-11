@@ -22,10 +22,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.*;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.hateoas.client.Traverson.TraversalBuilder;
@@ -143,9 +140,9 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
     @Override
     public synchronized boolean hasNext() {
       // pre-emptively grab the next page as a future
-      if (nextPageFuture == null && page.hasLink(Link.REL_NEXT)) {
+      if (nextPageFuture == null && page.hasLink(IanaLinkRelations.NEXT)) {
 
-        Link nextLink = page.getLink(Link.REL_NEXT).get();
+        Link nextLink = page.getLink(IanaLinkRelations.NEXT).get();
 
         URI uri;
         if (nextLink.isTemplated()) {

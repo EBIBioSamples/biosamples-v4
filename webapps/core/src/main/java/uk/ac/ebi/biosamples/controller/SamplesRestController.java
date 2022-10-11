@@ -174,7 +174,7 @@ public class SamplesRestController {
       log.trace("Next cursor = " + samples.getNextCursorMark());
 
       CollectionModel<EntityModel<Sample>> resources =
-          new CollectionModel<>(
+          CollectionModel.of(
               samples.stream()
                   .map(
                       s ->
@@ -222,32 +222,28 @@ public class SamplesRestController {
           WebMvcLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
       // This is a bit of a hack, but best we can do for now...
       resources.add(
-          new Link(uriComponentsBuilder.build(true).toUriString() + "/{accession}", "sample"));
+          Link.of(uriComponentsBuilder.build(true).toUriString() + "/{accession}", "sample"));
 
       // Note - EBI load balancer does cache but doesn't add age header, so clients could cache up
       // to twice this age
       return ResponseEntity.ok().cacheControl(cacheControl).body(resources);
     } else {
-      String[] effectiveSort = sort;
 
-      if (sort == null) {
+      /*if (sort == null) {
         // if there is no existing sort, sort by score then accession
         effectiveSort = new String[2];
         effectiveSort[0] = "score,desc";
         effectiveSort[1] = "id,asc";
-      }
+      }*/
 
       Sort pageSort =
-          Sort.by(Arrays.stream(effectiveSort).map(this::parseSort).collect(Collectors.toList()));
+          sort != null
+              ? Sort.by(Arrays.stream(sort).map(this::parseSort).collect(Collectors.toList()))
+              : Sort.unsorted();
       Pageable pageable = PageRequest.of(effectivePage, effectiveSize, pageSort);
       Page<Sample> pageSample =
           samplePageService.getSamplesByText(
-              text,
-              filters,
-              domains,
-              webinSubmissionAccountId,
-              pageable,
-              decodedCurationDomains);
+              text, filters, domains, webinSubmissionAccountId, pageable, decodedCurationDomains);
       CollectionModel<EntityModel<Sample>> resources =
           populateResources(
               pageSample,
@@ -279,7 +275,7 @@ public class SamplesRestController {
             pageSample.getTotalElements(),
             pageSample.getTotalPages());
     CollectionModel<EntityModel<Sample>> resources =
-        new PagedModel<>(
+        PagedModel.of(
             pageSample.getContent().stream()
                 .map(
                     s ->
@@ -375,7 +371,7 @@ public class SamplesRestController {
         WebMvcLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
     // This is a bit of a hack, but best we can do for now...
     resources.add(
-        new Link(uriComponentsBuilder.build(true).toUriString() + "/{accession}", "sample"));
+        Link.of(uriComponentsBuilder.build(true).toUriString() + "/{accession}", "sample"));
 
     return resources;
   }
@@ -407,7 +403,7 @@ public class SamplesRestController {
 
     builder.queryParam("cursor", cursor);
     builder.queryParam("size", size);
-    return new Link(builder.toUriString(), rel);
+    return Link.of(builder.toUriString(), rel);
   }
 
   private static UriComponentsBuilder getUriComponentsBuilder(
@@ -463,7 +459,7 @@ public class SamplesRestController {
         builder.queryParam("sort", sortString);
       }
     }
-    return new Link(builder.toUriString(), rel);
+    return Link.of(builder.toUriString(), rel);
   }
 
   @PostMapping(
@@ -490,12 +486,12 @@ public class SamplesRestController {
     }
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
     final AuthorizationProvider authProvider =
-        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
+            ? AuthorizationProvider.WEBIN
+            : AuthorizationProvider.AAP;
 
-    if (webinAuth) {
+    if (authProvider == AuthorizationProvider.WEBIN) {
       final String webinSubmissionAccountId = authToken.get().getUser();
 
       if (webinSubmissionAccountId == null) {
@@ -507,13 +503,13 @@ public class SamplesRestController {
 
       sample =
           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              sample, webinSubmissionAccountId);
+              sample, webinSubmissionAccountId, Optional.empty());
     } else {
-      sample = bioSamplesAapService.handleSampleDomain(sample);
+      sample = bioSamplesAapService.handleSampleDomain(sample, Optional.empty());
     }
 
     sample = sampleService.buildPrivateSample(sample);
-    sample = sampleService.persistSample(sample, authProvider, isWebinSuperUser);
+    sample = sampleService.persistSample(sample, null, authProvider, isWebinSuperUser);
     final EntityModel<Sample> sampleResource = sampleResourceAssembler.toModel(sample);
 
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").get().getHref()))
@@ -538,13 +534,14 @@ public class SamplesRestController {
     }
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
     final AuthorizationProvider authProvider =
-        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
+            ? AuthorizationProvider.WEBIN
+            : AuthorizationProvider.AAP;
     boolean isWebinSuperUser = false;
+    Optional<Sample> oldSample = Optional.empty();
 
-    if (webinAuth) {
+    if (authProvider == AuthorizationProvider.WEBIN) {
       final String webinSubmissionAccountId = authToken.get().getUser();
 
       if (webinSubmissionAccountId == null) {
@@ -554,54 +551,77 @@ public class SamplesRestController {
       isWebinSuperUser =
           bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
 
-      if (sample.hasAccession() && !isWebinSuperUser) {
-        throw new GlobalExceptions.SampleWithAccessionSubmissionException();
+      if (sample.hasAccession()) {
+        if (!isWebinSuperUser) {
+          throw new GlobalExceptions.SampleWithAccessionSubmissionException();
+        } else {
+          final boolean notExistingAccession =
+              sampleService.isNotExistingAccession(sample.getAccession());
+
+          if (!notExistingAccession) {
+            oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
+          }
+        }
       }
 
       sample =
           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              sample, webinSubmissionAccountId);
+              sample, webinSubmissionAccountId, oldSample);
     } else {
-      if (sample.hasAccession() && !bioSamplesAapService.isWriteSuperUser()) {
-        throw new GlobalExceptions.SampleWithAccessionSubmissionException();
+      if (sample.hasAccession()) {
+        if (!bioSamplesAapService.isWriteSuperUser()) {
+          throw new GlobalExceptions.SampleWithAccessionSubmissionException();
+        } else {
+          final boolean notExistingAccession =
+              sampleService.isNotExistingAccession(sample.getAccession());
+
+          if (!notExistingAccession) {
+            oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
+          }
+        }
       }
 
-      sample = bioSamplesAapService.handleSampleDomain(sample);
+      sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
     }
 
     // update, create date are system generated fields
-    SubmittedViaType submittedVia =
-        sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
-
     sample =
         Sample.Builder.fromSample(sample)
             .withCreate(sampleService.defineCreateDate(sample))
             .withSubmitted(sampleService.defineSubmittedDate(sample))
             .withUpdate(Instant.now())
-            .withSubmittedVia(submittedVia)
+            .withSubmittedVia(
+                sample.getSubmittedVia() == null
+                    ? SubmittedViaType.JSON_API
+                    : sample.getSubmittedVia())
             .build();
 
-    sample = validateSample(sample, webinAuth, isWebinSuperUser);
+    sample = validateSample(sample, authProvider, isWebinSuperUser);
 
     if (!setFullDetails) {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
-    sample = sampleService.persistSample(sample, authProvider, isWebinSuperUser);
+    sample =
+        sampleService.persistSample(sample, oldSample.orElse(null), authProvider, isWebinSuperUser);
 
     // assemble a resource to return
-    EntityModel<Sample> sampleResource = sampleResourceAssembler.toModel(sample, this.getClass());
+    final EntityModel<Sample> sampleResource =
+        sampleResourceAssembler.toModel(sample, this.getClass());
     // create the response object with the appropriate status
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").get().getHref()))
         .body(sampleResource);
   }
 
-  private Sample validateSample(Sample sample, boolean webinAuth, boolean isWebinSuperUser) {
+  private Sample validateSample(
+      Sample sample, AuthorizationProvider authorizationProvider, boolean isWebinSuperUser) {
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    if (webinAuth && !isWebinSuperUser) {
+    final boolean isWebinAuth = authorizationProvider == AuthorizationProvider.WEBIN;
+
+    if (isWebinAuth && !isWebinSuperUser) {
       schemaValidationService.validate(sample);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
-    } else if (!webinAuth && !bioSamplesAapService.isWriteSuperUser()) {
+    } else if (!isWebinAuth && !bioSamplesAapService.isWriteSuperUser()) {
       schemaValidationService.validate(sample);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, false);
     }

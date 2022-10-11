@@ -16,9 +16,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.client.Traverson;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -30,35 +27,24 @@ import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
-import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
 
 @Service
 public class BioSamplesAapService {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final BioSamplesProperties bioSamplesProperties;
-  private final SampleService sampleService;
   private final AapTokenService tokenService;
   private final AapDomainService domainService;
-  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
 
   public BioSamplesAapService(
-      RestTemplateBuilder restTemplateBuilder,
       BioSamplesProperties bioSamplesProperties,
-      SampleService sampleService,
       AapTokenService tokenService,
-      AapDomainService domainService,
-      BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService) {
-    Traverson traverson =
-        new Traverson(bioSamplesProperties.getBiosamplesClientAapUri(), MediaTypes.HAL_JSON);
+      AapDomainService domainService) {
     this.tokenService = tokenService;
     this.domainService = domainService;
-    traverson.setRestOperations(restTemplateBuilder.build());
     this.bioSamplesProperties = bioSamplesProperties;
-    this.sampleService = sampleService;
-    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
   }
 
   public String authenticate(String userName, String password) {
@@ -139,19 +125,12 @@ public class BioSamplesAapService {
    * <p>May return a different version of the sample, so return needs to be stored in future for
    * that sample.
    */
-  public Sample handleSampleDomain(Sample sample)
+  public Sample handleSampleDomain(Sample sample, Optional<Sample> oldSample)
       throws GlobalExceptions.SampleNotAccessibleException,
           GlobalExceptions.DomainMissingException {
     // Get the domains the current user has access to
     final Set<String> usersDomains = getDomains();
     final String domain = sample.getDomain();
-    Optional<Sample> oldSample = Optional.empty();
-
-    // Get the old sample while sample updates, domain needs to be compared with old sample domain
-    // for some cases
-    if (sample.getAccession() != null) {
-      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
-    }
 
     if (oldSample.isPresent()
         && oldSample.get().getSubmittedVia()
@@ -172,7 +151,7 @@ public class BioSamplesAapService {
       if (domain == null || domain.length() == 0) {
         // if the sample doesn't have a domain, and the user has one domain, then they must be
         // submitting to that domain
-        if (usersDomains.size() == 1) {
+        if (usersDomains.size() > 0) {
           sample =
               Sample.Builder.fromSample(sample)
                   .withDomain(usersDomains.iterator().next())
@@ -183,25 +162,8 @@ public class BioSamplesAapService {
         }
       }
 
-      // TODO: Review the webin user check, Dipayan
-      // Non super user submission
-      if (sample.getAccession() != null && !(isWriteSuperUser() || isIntegrationTestUser())) {
-        final boolean oldSamplePresent = oldSample.isPresent();
-
-        if (!oldSamplePresent || !usersDomains.contains(oldSample.get().getDomain())) {
-          final boolean webinProxyUser =
-              (oldSamplePresent
-                  && bioSamplesWebinAuthenticationService.isWebinSuperUser(
-                      oldSample.get().getWebinSubmissionAccountId()));
-
-          if (!webinProxyUser) {
-            throw new GlobalExceptions.SampleDomainMismatchException();
-          }
-        }
-      }
-
-      // Super user submission
       if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
+        // Super user submission
         return sample;
       } else if (usersDomains.contains(domain)) {
         return sample;

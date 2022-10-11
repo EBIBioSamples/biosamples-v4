@@ -262,8 +262,7 @@ public class BioSamplesClient implements AutoCloseable {
 
   public Iterable<EntityModel<Sample>> fetchSampleResourceAll(boolean addCurations)
       throws RestClientException {
-    return sampleCursorRetrievalService.fetchAll(
-        "", Collections.emptyList(), null, addCurations);
+    return sampleCursorRetrievalService.fetchAll("", Collections.emptyList(), null, addCurations);
   }
 
   public Iterable<EntityModel<Sample>> fetchSampleResourceAll(String text)

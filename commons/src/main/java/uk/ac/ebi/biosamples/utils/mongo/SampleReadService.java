@@ -100,10 +100,13 @@ public class SampleReadService {
     sample = curationReadService.applyAllCurationToSample(sample, curationDomains);
 
     // add structured data
-    final Optional<MongoStructuredData> mongoStructuredData = mongoStructuredDataRepository.findById(accession);
+    final Optional<MongoStructuredData> mongoStructuredData =
+        mongoStructuredDataRepository.findById(accession);
     if (mongoStructuredData.isPresent()) {
-      StructuredData structuredData = mongoStructuredDataToStructuredDataConverter.convert(mongoStructuredData.get());
-      sample = Sample.Builder.fromSample(sample).withStructuredData(structuredData.getData()).build();
+      StructuredData structuredData =
+          mongoStructuredDataToStructuredDataConverter.convert(mongoStructuredData.get());
+      sample =
+          Sample.Builder.fromSample(sample).withStructuredData(structuredData.getData()).build();
     }
 
     return Optional.of(sample);
