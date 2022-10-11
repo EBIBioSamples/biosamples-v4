@@ -39,7 +39,6 @@ import uk.ac.ebi.biosamples.client.service.*;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.SampleValidator;
@@ -263,8 +262,7 @@ public class BioSamplesClient implements AutoCloseable {
 
   public Iterable<EntityModel<Sample>> fetchSampleResourceAll(boolean addCurations)
       throws RestClientException {
-    return sampleCursorRetrievalService.fetchAll(
-        "", Collections.emptyList(), null, null, addCurations);
+    return sampleCursorRetrievalService.fetchAll("", Collections.emptyList(), null, addCurations);
   }
 
   public Iterable<EntityModel<Sample>> fetchSampleResourceAll(String text)
@@ -442,21 +440,6 @@ public class BioSamplesClient implements AutoCloseable {
     }
   }
 
-  public Optional<EntityModel<Sample>> fetchSampleResource(
-      String accession,
-      Optional<List<String>> curationDomains,
-      String jwt,
-      StaticViewWrapper.StaticView staticView)
-      throws RestClientException {
-    try {
-      return sampleRetrievalService.fetch(accession, curationDomains, jwt, staticView).get();
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    } catch (ExecutionException e) {
-      throw new RuntimeException(e.getCause());
-    }
-  }
-
   public Iterable<Optional<EntityModel<Sample>>> fetchSampleResourceAll(
       Iterable<String> accessions, String jwt) throws RestClientException {
     return sampleRetrievalService.fetchAll(accessions, jwt);
@@ -465,14 +448,6 @@ public class BioSamplesClient implements AutoCloseable {
   public Iterable<EntityModel<Sample>> fetchSampleResourceAll(
       String text, Collection<Filter> filters, String jwt) {
     return sampleCursorRetrievalService.fetchAll(text, filters, jwt);
-  }
-
-  public Iterable<EntityModel<Sample>> fetchSampleResourceAll(
-      String text,
-      Collection<Filter> filters,
-      String jwt,
-      StaticViewWrapper.StaticView staticView) {
-    return sampleCursorRetrievalService.fetchAll(text, filters, jwt, staticView);
   }
 
   public PagedModel<EntityModel<Sample>> fetchPagedSampleResource(

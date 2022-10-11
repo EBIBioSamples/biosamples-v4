@@ -110,7 +110,6 @@ public class SamplesRestController {
       @RequestParam(name = "page", required = false) final Integer page,
       @RequestParam(name = "size", required = false) final Integer size,
       @RequestParam(name = "sort", required = false) final String[] sort,
-      @RequestParam(name = "curationrepo", required = false) final String curationRepo,
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
       @RequestHeader(name = "Authorization", required = false) final String token) {
 
@@ -171,7 +170,6 @@ public class SamplesRestController {
               webinSubmissionAccountId,
               decodedCursor,
               effectiveSize,
-              curationRepo,
               decodedCurationDomains);
       log.trace("Next cursor = " + samples.getNextCursorMark());
 
@@ -245,13 +243,7 @@ public class SamplesRestController {
       Pageable pageable = PageRequest.of(effectivePage, effectiveSize, pageSort);
       Page<Sample> pageSample =
           samplePageService.getSamplesByText(
-              text,
-              filters,
-              domains,
-              webinSubmissionAccountId,
-              pageable,
-              curationRepo,
-              decodedCurationDomains);
+              text, filters, domains, webinSubmissionAccountId, pageable, decodedCurationDomains);
       CollectionModel<EntityModel<Sample>> resources =
           populateResources(
               pageSample,
@@ -567,7 +559,7 @@ public class SamplesRestController {
               sampleService.isNotExistingAccession(sample.getAccession());
 
           if (!notExistingAccession) {
-            oldSample = sampleService.fetchOldSample(sample.getAccession());
+            oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
           }
         }
       }
@@ -584,7 +576,7 @@ public class SamplesRestController {
               sampleService.isNotExistingAccession(sample.getAccession());
 
           if (!notExistingAccession) {
-            oldSample = sampleService.fetchOldSample(sample.getAccession());
+            oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
           }
         }
       }

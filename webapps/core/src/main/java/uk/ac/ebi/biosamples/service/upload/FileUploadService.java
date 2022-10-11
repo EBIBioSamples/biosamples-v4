@@ -247,7 +247,7 @@ public class FileUploadService {
             sample, sampleNameToAccessionMap, relationshipMap, validationResult);
 
     if (!sampleService.isNotExistingAccession(sample.getAccession())) {
-      oldSample = sampleService.fetchOldSample(sample.getAccession());
+      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
     }
 
     if (relationships != null && relationships.size() > 0) {
@@ -285,7 +285,7 @@ public class FileUploadService {
       sampleWithAccession = true;
 
       if (!sampleService.isNotExistingAccession(sample.getAccession())) {
-        oldSample = sampleService.fetchOldSample(sample.getAccession());
+        oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
       }
     }
 

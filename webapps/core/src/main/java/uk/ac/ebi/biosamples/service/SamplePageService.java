@@ -23,7 +23,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.model.MongoCurationLink;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -79,7 +78,6 @@ public class SamplePageService {
       Collection<String> domains,
       String webinSubmissionAccountId,
       Pageable pageable,
-      String curationRepo,
       Optional<List<String>> curationDomains) {
     long startTime = System.nanoTime();
     Page<SolrSample> pageSolrSample =
@@ -90,12 +88,8 @@ public class SamplePageService {
 
     startTime = System.nanoTime();
     Page<Future<Optional<Sample>>> pageFutureSample;
-    StaticViewWrapper.StaticView staticViews =
-        StaticViewWrapper.getStaticView(
-            (domains != null && domains.isEmpty()) ? domains : null, curationRepo);
     pageFutureSample =
-        pageSolrSample.map(
-            ss -> sampleService.fetchAsync(ss.getAccession(), curationDomains, staticViews));
+        pageSolrSample.map(ss -> sampleService.fetchAsync(ss.getAccession(), curationDomains));
 
     Page<Sample> pageSample =
         pageFutureSample.map(
@@ -122,7 +116,6 @@ public class SamplePageService {
       String webinSubmissionAccountId,
       String cursorMark,
       int size,
-      String curationRepo,
       Optional<List<String>> curationDomains) {
     cursorMark = validateCursor(cursorMark);
     size = validatePageSize(size);
@@ -131,13 +124,10 @@ public class SamplePageService {
         solrSampleService.fetchSolrSampleByText(
             text, filters, domains, webinSubmissionAccountId, cursorMark, size);
 
-    StaticViewWrapper.StaticView staticViews =
-        StaticViewWrapper.getStaticView(
-            (domains != null && !domains.isEmpty()) ? domains : null, curationRepo);
     List<Future<Optional<Sample>>> listFutureSample;
     listFutureSample =
         cursorSolrSample.stream()
-            .map(s -> sampleService.fetchAsync(s.getAccession(), curationDomains, staticViews))
+            .map(s -> sampleService.fetchAsync(s.getAccession(), curationDomains))
             .collect(Collectors.toList());
 
     List<Sample> listSample = collectSampleFutures(listFutureSample);

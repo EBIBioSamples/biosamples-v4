@@ -83,12 +83,10 @@ public class SampleRestControllerV2 {
     final AuthorizationProvider authProvider =
         webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
     final boolean notExistingAccession = sampleService.isNotExistingAccession(accession);
-    final Optional<Sample> oldSample;
+    Optional<Sample> oldSample = Optional.empty();
 
     if (!notExistingAccession) {
-      oldSample = sampleService.fetchOldSample(sample.getAccession());
-    } else {
-      oldSample = Optional.empty();
+      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
     }
 
     log.debug("Received PUT for " + accession);
@@ -161,7 +159,7 @@ public class SampleRestControllerV2 {
       @PathVariable String accession,
       @RequestHeader(name = "Authorization", required = false) final String token) {
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    Optional<Sample> sample = sampleService.fetch(accession, Optional.empty(), "");
+    Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
 
     if (sample.isPresent()) {
       final boolean webinAuth =

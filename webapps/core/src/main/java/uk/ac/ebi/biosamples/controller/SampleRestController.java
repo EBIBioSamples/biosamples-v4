@@ -91,7 +91,6 @@ public class SampleRestController {
       @PathVariable String accession,
       @RequestParam(name = "legacydetails", required = false) String legacydetails,
       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
-      @RequestParam(name = "curationrepo", required = false) String curationRepo,
       @RequestHeader(name = "Authorization", required = false) final String token) {
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     // decode percent-encoding from curation domains
@@ -106,7 +105,7 @@ public class SampleRestController {
     }
 
     // convert it into the format to return
-    Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains, curationRepo);
+    Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains);
 
     if (sample.isPresent()) {
       final boolean webinAuth =
@@ -139,8 +138,7 @@ public class SampleRestController {
   public String getSamplePhenopacket(
       @PathVariable String accession,
       @RequestParam(name = "legacydetails", required = false) String legacydetails,
-      @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
-      @RequestParam(name = "curationrepo", required = false) final String curationRepo) {
+      @RequestParam(name = "curationdomain", required = false) String[] curationdomain) {
 
     // decode percent-encoding from curation domains
     Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
@@ -153,13 +151,13 @@ public class SampleRestController {
     }
 
     // convert it into the format to return
-    Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains, curationRepo);
+    Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains);
 
     if (sample.isPresent()) {
       bioSamplesAapService.checkSampleAccessibility(sample.get());
 
       // TODO If user is not Read super user, reduce the fields to show
-      if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
+      if (decodedLegacyDetails.isPresent()) {
         sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
       }
 
@@ -174,9 +172,11 @@ public class SampleRestController {
   @GetMapping(produces = {MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
   public Sample getSampleXml(
       @PathVariable String accession,
-      @RequestParam(name = "curationrepo", required = false) final String curationRepo,
       @RequestHeader(name = "Authorization", required = false) final String token) {
-    Sample sample = getSampleHal(accession, "true", null, curationRepo, token).getContent();
+    Sample sample = getSampleHal(accession, "true", null, token).getContent();
+
+    assert sample != null;
+
     if (!sample.getAccession().matches("SAMEG\\d+")) {
       sample =
           Sample.Builder.fromSample(sample)
@@ -219,7 +219,7 @@ public class SampleRestController {
     Optional<Sample> oldSample = Optional.empty();
 
     if (!notExistingAccession) {
-      oldSample = sampleService.fetchOldSample(sample.getAccession());
+      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
     }
 
     if (authProvider == AuthorizationProvider.WEBIN) {

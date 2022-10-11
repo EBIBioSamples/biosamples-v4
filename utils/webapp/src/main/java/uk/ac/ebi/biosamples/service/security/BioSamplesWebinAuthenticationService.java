@@ -265,7 +265,7 @@ public class BioSamplesWebinAuthenticationService {
 
   private boolean isStructuredDataAccessible(final Sample sample, final String webinId) {
     final AtomicBoolean isWebinIdValid = new AtomicBoolean(false);
-    final Optional<Sample> oldSample = sampleService.fetchOldSample(sample.getAccession());
+    final Optional<Sample> oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
 
     if (oldSample.isPresent()) {
       Sample oldSampleRetrieved = oldSample.get();

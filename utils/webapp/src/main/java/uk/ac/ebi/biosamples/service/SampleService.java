@@ -59,11 +59,8 @@ public class SampleService {
   @Autowired private MessagingService messagingSerivce;
 
   /** Throws an IllegalArgumentException of no sample with that accession exists */
-  public Optional<Sample> fetch(
-      String accession, Optional<List<String>> curationDomains, String curationRepo) {
-    StaticViewWrapper.StaticView staticView =
-        StaticViewWrapper.getStaticView(curationDomains.orElse(null), curationRepo);
-    return sampleReadService.fetch(accession, curationDomains, staticView);
+  public Optional<Sample> fetch(String accession, Optional<List<String>> curationDomains) {
+    return sampleReadService.fetch(accession, curationDomains);
   }
 
   /*
@@ -219,7 +216,7 @@ public class SampleService {
     }
 
     // do a fetch to return it with accession, curation objects, inverse relationships
-    final Optional<Sample> sampleOptional = fetch(sample.getAccession(), Optional.empty(), null);
+    final Optional<Sample> sampleOptional = fetch(sample.getAccession(), Optional.empty());
 
     if (sampleOptional.isPresent()) {
       return sampleOptional.get();
@@ -299,10 +296,6 @@ public class SampleService {
     } else {
       return true;
     }
-  }
-
-  public Optional<Sample> fetchOldSample(final String accession) {
-    return fetch(accession, Optional.empty(), null);
   }
 
   private List<String> getExistingRelationshipTargets(
