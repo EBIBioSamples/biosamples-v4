@@ -414,7 +414,7 @@ public class EnaRunner implements ApplicationRunner {
       final EraRowCallbackHandler eraRowCallbackHandler =
           new EraRowCallbackHandler(null, enaCallableFactory, futures, sampleToAmrMap);
 
-      // eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
+      eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
 
       final NcbiRowCallbackHandler ncbiRowCallbackHandler =
           new NcbiRowCallbackHandler(null, ncbiCallableFactory, futures);
@@ -432,7 +432,7 @@ public class EnaRunner implements ApplicationRunner {
         final EraRowCallbackHandler eraRowCallbackHandler =
             new EraRowCallbackHandler(executorService, enaCallableFactory, futures, sampleToAmrMap);
 
-        // eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
+        eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
 
         final NcbiRowCallbackHandler ncbiRowCallbackHandler =
             new NcbiRowCallbackHandler(executorService, ncbiCallableFactory, futures);
