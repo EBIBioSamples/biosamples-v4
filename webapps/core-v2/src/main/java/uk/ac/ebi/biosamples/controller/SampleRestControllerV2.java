@@ -102,7 +102,7 @@ public class SampleRestControllerV2 {
           bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
 
       if (notExistingAccession && !isWebinSuperUser) {
-        throw new GlobalExceptions.SampleAccessionMismatchException();
+        throw new GlobalExceptions.SampleAccessionDoesNotExistException();
       }
 
       sample =
@@ -112,18 +112,22 @@ public class SampleRestControllerV2 {
       if (notExistingAccession
           && !(bioSamplesAapService.isWriteSuperUser()
               || bioSamplesAapService.isIntegrationTestUser())) {
-        throw new GlobalExceptions.SampleAccessionMismatchException();
+        throw new GlobalExceptions.SampleAccessionDoesNotExistException();
       }
 
       sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
     }
 
     final Instant now = Instant.now();
-    final SubmittedViaType submittedVia =
-        sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
 
     sample =
-        Sample.Builder.fromSample(sample).withUpdate(now).withSubmittedVia(submittedVia).build();
+        Sample.Builder.fromSample(sample)
+            .withUpdate(now)
+            .withSubmittedVia(
+                sample.getSubmittedVia() == null
+                    ? SubmittedViaType.JSON_API
+                    : sample.getSubmittedVia())
+            .build();
 
     if (!isWebinSuperUser) {
       sample = validateSample(sample, webinAuth);
@@ -171,7 +175,7 @@ public class SampleRestControllerV2 {
         bioSamplesWebinAuthenticationService.isSampleAccessible(
             sample.get(), webinSubmissionAccountId);
       } else {
-        bioSamplesAapService.checkSampleAccessibility(sample.get());
+        bioSamplesAapService.isSampleAccessible(sample.get());
       }
 
       return sample.get();

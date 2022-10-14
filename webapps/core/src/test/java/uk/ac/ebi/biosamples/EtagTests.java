@@ -62,7 +62,7 @@ public class EtagTests {
         .thenReturn(Optional.of(testSample));
     when(bioSamplesAapService.handleSampleDomain(testSample, Optional.empty()))
         .thenReturn(testSample);
-    doNothing().when(bioSamplesAapService).checkSampleAccessibility(isA(Sample.class));
+    doNothing().when(bioSamplesAapService).isSampleAccessible(isA(Sample.class));
     when(accessControlService.extractToken(anyString()))
         .thenReturn(
             Optional.of(

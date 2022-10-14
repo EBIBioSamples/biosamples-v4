@@ -429,7 +429,7 @@ public class ApiDocumentationTest {
     doNothing().when(aapService).handleStructuredDataDomain(eq(structuredData));
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
-    doNothing().when(aapService).checkSampleAccessibility(isA(Sample.class));
+    doNothing().when(aapService).isSampleAccessible(isA(Sample.class));
     when(accessControlService.extractToken(anyString()))
         .thenReturn(
             Optional.of(
@@ -719,7 +719,7 @@ public class ApiDocumentationTest {
     when(sampleService.persistSample(
             any(Sample.class), eq(null), eq(AuthorizationProvider.AAP), eq(false)))
         .thenReturn(Sample.Builder.fromSample(sample).withCertificates(certificates).build());
-    doNothing().when(aapService).checkSampleAccessibility(isA(Sample.class));
+    doNothing().when(aapService).isSampleAccessible(isA(Sample.class));
 
     this.mockMvc
         .perform(
@@ -771,7 +771,7 @@ public class ApiDocumentationTest {
             eq(sampleWithWebinId), eq(null), eq(AuthorizationProvider.WEBIN), eq(false)))
         .thenReturn(
             Sample.Builder.fromSample(sampleWithWebinId).withCertificates(certificates).build());
-    doNothing().when(aapService).checkSampleAccessibility(isA(Sample.class));
+    doNothing().when(aapService).isSampleAccessible(isA(Sample.class));
     when(accessControlService.extractToken(anyString()))
         .thenReturn(
             Optional.of(
@@ -873,7 +873,7 @@ public class ApiDocumentationTest {
         .thenReturn(sampleWithDomain);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
-    doNothing().when(aapService).checkSampleAccessibility(isA(Sample.class));
+    doNothing().when(aapService).isSampleAccessible(isA(Sample.class));
     when(accessControlService.extractToken(anyString()))
         .thenReturn(
             Optional.of(
@@ -956,7 +956,7 @@ public class ApiDocumentationTest {
         .thenReturn(sampleWithDomain);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
-    doNothing().when(aapService).checkSampleAccessibility(isA(Sample.class));
+    doNothing().when(aapService).isSampleAccessible(isA(Sample.class));
     when(accessControlService.extractToken(anyString()))
         .thenReturn(
             Optional.of(
@@ -1041,7 +1041,7 @@ public class ApiDocumentationTest {
     Sample sample = faker.getExampleSampleBuilder().withDomain(faker.getExampleDomain()).build();
     when(sampleService.fetch(sample.getAccession(), Optional.empty()))
         .thenReturn(Optional.of(sample));
-    doNothing().when(aapService).checkSampleAccessibility(isA(Sample.class));
+    doNothing().when(aapService).isSampleAccessible(isA(Sample.class));
     when(accessControlService.extractToken(anyString())).thenReturn(Optional.empty());
 
     mockMvc

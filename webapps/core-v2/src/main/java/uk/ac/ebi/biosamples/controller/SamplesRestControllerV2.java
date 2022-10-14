@@ -10,8 +10,8 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
+import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.server.ExposesResourceFor;
@@ -66,12 +66,8 @@ public class SamplesRestControllerV2 {
    */
   @PreAuthorize("isAuthenticated()")
   @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<List<Sample>> postSamplesV2(
-      @RequestBody final List<Sample> samples,
-      @RequestHeader(name = "Authorization") final String token) {
-    log.info("Received POST for " + samples.size() + " samples");
-
-    final List<Sample> createdSamples;
+  public ResponseEntity<Sample> postSamplesV2(
+      @RequestBody Sample sample, @RequestHeader(name = "Authorization") final String token) {
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final AuthorizationProvider authProvider =
         authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
@@ -89,77 +85,42 @@ public class SamplesRestControllerV2 {
       isWebinSuperUser =
           bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
 
-      try {
-        createdSamples =
-            samples.stream()
-                .map(
-                    sample -> {
-                      sample =
-                          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-                              sample, webinSubmissionAccountId, Optional.empty());
+      sample =
+          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+              sample, webinSubmissionAccountId, Optional.empty());
+      sample = buildSample(sample, isWebinSuperUser);
 
-                      sampleService.validateSampleHasNoRelationshipsV2(sample);
+      sampleService.validateSampleHasNoRelationshipsV2(sample);
 
-                      if (!isWebinSuperUser) {
-                        sample = validateSample(sample, true);
-                      }
-
-                      return sampleService.persistSampleV2(
-                          sample, null, authProvider, isWebinSuperUser);
-                    })
-                .collect(Collectors.toList());
-      } catch (final Exception e) {
-        // check auth exception
-        if (e instanceof GlobalExceptions.WebinTokenInvalidException
-            || e instanceof GlobalExceptions.WebinUserLoginUnauthorizedException
-            || e instanceof GlobalExceptions.SampleNotAccessibleException
-            || e instanceof GlobalExceptions.SampleNotAccessibleAdviceException
-            || e instanceof GlobalExceptions.InvalidSubmissionSourceException) {
-          return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-          // check validation exception
-        } else if (e instanceof GlobalExceptions.SampleWithRelationshipSubmissionExceptionV2
-            || e instanceof GlobalExceptions.SampleValidationException
-            || e instanceof GlobalExceptions.SampleValidationControllerException) {
-          return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        } else {
-          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+      if (!isWebinSuperUser) {
+        sample = validateSample(sample, true);
       }
+
+      sample = sampleService.persistSampleV2(sample, null, authProvider, isWebinSuperUser);
     } else {
-      try {
-        createdSamples =
-            samples.stream()
-                .map(
-                    sample -> {
-                      sample = bioSamplesAapService.handleSampleDomain(sample, Optional.empty());
+      sample = bioSamplesAapService.handleSampleDomain(sample, Optional.empty());
+      sample = buildSample(sample, false);
 
-                      sampleService.validateSampleHasNoRelationshipsV2(sample);
+      sampleService.validateSampleHasNoRelationshipsV2(sample);
 
-                      if (!bioSamplesAapService.isWriteSuperUser()) {
-                        sample = validateSample(sample, false);
-                      }
-
-                      return sampleService.persistSampleV2(sample, null, authProvider, false);
-                    })
-                .collect(Collectors.toList());
-      } catch (final Exception e) {
-        // check auth exception
-        if (e instanceof GlobalExceptions.InvalidSubmissionSourceException
-            || e instanceof GlobalExceptions.SampleDomainMismatchException
-            || e instanceof GlobalExceptions.DomainMissingException) {
-          return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-          // check validation exception
-        } else if (e instanceof GlobalExceptions.SampleWithRelationshipSubmissionExceptionV2
-            || e instanceof GlobalExceptions.SampleValidationException
-            || e instanceof GlobalExceptions.SampleValidationControllerException) {
-          return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        } else {
-          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+      if (!bioSamplesAapService.isWriteSuperUser()) {
+        sample = validateSample(sample, false);
       }
+
+      sample = sampleService.persistSampleV2(sample, null, authProvider, false);
     }
 
-    return ResponseEntity.status(HttpStatus.CREATED).body(createdSamples);
+    return ResponseEntity.status(HttpStatus.CREATED).body(sample);
+  }
+
+  private Sample buildSample(final Sample sample, final boolean isWebinSuperUser) {
+    return Sample.Builder.fromSample(sample)
+        .withCreate(sampleService.defineCreateDate(sample, isWebinSuperUser))
+        .withSubmitted(sampleService.defineSubmittedDate(sample, isWebinSuperUser))
+        .withUpdate(Instant.now())
+        .withSubmittedVia(
+            sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia())
+        .build();
   }
 
   private Sample validateSample(Sample sample, boolean isWebinSubmission) {

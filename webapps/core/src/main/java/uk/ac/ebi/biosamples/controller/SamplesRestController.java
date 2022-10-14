@@ -553,12 +553,14 @@ public class SamplesRestController {
 
       if (sample.hasAccession()) {
         if (!isWebinSuperUser) {
+          // Cannot submit sample with accession unless superuser
           throw new GlobalExceptions.SampleWithAccessionSubmissionException();
         } else {
           final boolean notExistingAccession =
               sampleService.isNotExistingAccession(sample.getAccession());
 
           if (!notExistingAccession) {
+            // fetch old sample if sample exists
             oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
           }
         }
@@ -570,12 +572,14 @@ public class SamplesRestController {
     } else {
       if (sample.hasAccession()) {
         if (!bioSamplesAapService.isWriteSuperUser()) {
+          // Cannot submit sample with accession unless superuser
           throw new GlobalExceptions.SampleWithAccessionSubmissionException();
         } else {
           final boolean notExistingAccession =
               sampleService.isNotExistingAccession(sample.getAccession());
 
           if (!notExistingAccession) {
+            // fetch old sample if sample exists
             oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
           }
         }
@@ -587,8 +591,8 @@ public class SamplesRestController {
     // update, create date are system generated fields
     sample =
         Sample.Builder.fromSample(sample)
-            .withCreate(sampleService.defineCreateDate(sample))
-            .withSubmitted(sampleService.defineSubmittedDate(sample))
+            .withCreate(sampleService.defineCreateDate(sample, isWebinSuperUser))
+            .withSubmitted(sampleService.defineSubmittedDate(sample, isWebinSuperUser))
             .withUpdate(Instant.now())
             .withSubmittedVia(
                 sample.getSubmittedVia() == null

@@ -66,7 +66,7 @@ public class SampleService {
   /*
   Checks if the current sample that exists has no metadata, returns true if empty
    */
-  public boolean isEmptySample(
+  public boolean isExistingSampleEmpty(
       final Sample sample, final boolean isWebinSuperUser, final Sample oldSample) {
     final String domain = sample.getDomain();
 
@@ -74,7 +74,11 @@ public class SampleService {
       if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
         // file uploader submissions are done via super user but they are non imported samples,
         // needs to be handled safely
-        return isEmptySample(sample, oldSample);
+        if (sample.hasAccession()) {
+          return isExistingSampleEmpty(oldSample);
+        }
+
+        return true;
       } else {
         // otherwise it is a ENA pipeline import, cannot be empty
         return false;
@@ -84,21 +88,12 @@ public class SampleService {
     if (isAPipelineAapDomain(domain)) {
       return false; // imported sample - never submitted first time to BSD, always has metadata
     } else {
-      return isEmptySample(sample, oldSample);
-    }
-  }
-
-  /*
-  Checks if the current sample that exists has no metadata, returns true if empty
-   */
-  private boolean isEmptySample(final Sample sample, final Sample oldSample) {
-    if (sample.hasAccession()) {
-      if (oldSample != null) {
-        return isEmptySample(oldSample);
+      if (sample.hasAccession()) {
+        return isExistingSampleEmpty(oldSample);
       }
-    }
 
-    return true;
+      return true;
+    }
   }
 
   public boolean isAPipelineAapDomain(String domain) {
@@ -108,7 +103,7 @@ public class SampleService {
   /*
   Checks if the current sample that exists has no metadata, returns true if empty
    */
-  private boolean isEmptySample(final Sample oldSample) {
+  private boolean isExistingSampleEmpty(final Sample oldSample) {
     if (oldSample.getTaxId() != null && oldSample.getTaxId() > 0) {
       return false;
     }
@@ -167,22 +162,25 @@ public class SampleService {
     }
 
     if (sample.hasAccession()) {
-      final boolean isEmptySample = isEmptySample(sample, isWebinSuperUser, oldSample);
-
-      if (isEmptySample) {
-        sample = Sample.Builder.fromSample(sample).withSubmitted(Instant.now()).build();
-      }
-
       final Long taxId = sample.getTaxId();
       List<String> existingRelationshipTargets = new ArrayList<>();
 
       if (oldSample != null) {
+        final boolean isExistingSampleEmpty =
+            isExistingSampleEmpty(sample, isWebinSuperUser, oldSample);
+
+        if (isExistingSampleEmpty) {
+          sample = Sample.Builder.fromSample(sample).withSubmitted(Instant.now()).build();
+        }
+
         existingRelationshipTargets =
             getExistingRelationshipTargets(
                 sample.getAccession(),
                 Objects.requireNonNull(sampleToMongoSampleConverter.convert(oldSample)));
 
-        sample = compareWithExistingAndUpdateSample(sample, oldSample, isEmptySample, authProvider);
+        sample =
+            compareWithExistingAndUpdateSample(
+                sample, oldSample, isExistingSampleEmpty, authProvider);
 
         final Long oldSampleTaxId = oldSample.getTaxId();
 
@@ -249,13 +247,16 @@ public class SampleService {
 
     if (sample.hasAccession()) {
       if (oldSample != null) {
-        final boolean isEmptySample = isEmptySample(sample, isWebinSuperUser, oldSample);
+        final boolean isExistingSampleEmpty =
+            isExistingSampleEmpty(sample, isWebinSuperUser, oldSample);
 
-        if (isEmptySample) {
+        if (isExistingSampleEmpty) {
           sample = Sample.Builder.fromSample(sample).withSubmitted(Instant.now()).build();
         }
 
-        sample = compareWithExistingAndUpdateSample(sample, oldSample, isEmptySample, authProvider);
+        sample =
+            compareWithExistingAndUpdateSample(
+                sample, oldSample, isExistingSampleEmpty, authProvider);
       } else {
         log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
       }
@@ -371,7 +372,7 @@ public class SampleService {
       final Sample newSample, final Sample oldSample, final AuthorizationProvider authProvider) {
     final String domain = newSample.getDomain();
 
-    if (isWebinAuthentication(authProvider)) {
+    if (authProvider == AuthorizationProvider.WEBIN) {
       return (oldSample.getCreate() != null ? oldSample.getCreate() : newSample.getCreate());
     } else {
       if (isPipelineNcbiDomain(domain)) {
@@ -384,10 +385,6 @@ public class SampleService {
         return oldSample.getCreate() != null ? oldSample.getCreate() : newSample.getCreate();
       }
     }
-  }
-
-  public boolean isWebinAuthentication(AuthorizationProvider authProvider) {
-    return authProvider.name().equalsIgnoreCase("WEBIN");
   }
 
   private boolean isPipelineEnaDomain(String domain) {
@@ -405,7 +402,7 @@ public class SampleService {
       final Sample oldSample,
       boolean isEmptySample,
       AuthorizationProvider authProvider) {
-    if (isWebinAuthentication(authProvider)) {
+    if (authProvider == AuthorizationProvider.WEBIN) {
       if (isEmptySample) {
         return newSample.getSubmitted();
       } else {
@@ -436,20 +433,23 @@ public class SampleService {
     }
   }
 
-  public Instant defineCreateDate(final Sample sample) {
+  public Instant defineCreateDate(final Sample sample, final boolean isWebinSuperUserSubmission) {
     final Instant now = Instant.now();
     final String domain = sample.getDomain();
     final Instant create = sample.getCreate();
 
-    return (domain != null && isAPipelineAapDomain(domain)) ? (create != null ? create : now) : now;
+    return ((domain != null && isAPipelineAapDomain(domain)) || isWebinSuperUserSubmission)
+        ? (create != null ? create : now)
+        : now;
   }
 
-  public Instant defineSubmittedDate(final Sample sample) {
+  public Instant defineSubmittedDate(
+      final Sample sample, final boolean isWebinSuperUserSubmission) {
     final Instant now = Instant.now();
     final String domain = sample.getDomain();
     final Instant submitted = sample.getSubmitted();
 
-    return (domain != null && isAPipelineAapDomain(domain))
+    return ((domain != null && isAPipelineAapDomain(domain)) || isWebinSuperUserSubmission)
         ? (submitted != null ? submitted : now)
         : now;
   }

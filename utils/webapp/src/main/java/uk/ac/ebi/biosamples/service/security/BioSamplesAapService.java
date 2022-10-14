@@ -282,7 +282,7 @@ public class BioSamplesAapService {
     return getDomains().contains("self.BiosampleIntegrationTest");
   }
 
-  public void checkSampleAccessibility(Sample sample)
+  public void isSampleAccessible(Sample sample)
       throws GlobalExceptions.SampleNotAccessibleException {
     // TODO throw different exceptions in different situations
     if (sample.getRelease().isBefore(Instant.now())) {

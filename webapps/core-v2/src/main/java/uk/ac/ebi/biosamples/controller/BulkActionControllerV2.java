@@ -10,6 +10,7 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -19,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.ExposesResourceFor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,11 +28,14 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
+import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @RestController
 @ExposesResourceFor(Sample.class)
@@ -43,16 +48,22 @@ public class BulkActionControllerV2 {
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final AccessControlService accessControlService;
+  private final SchemaValidationService schemaValidationService;
+  private final TaxonomyClientService taxonomyClientService;
 
   public BulkActionControllerV2(
       final SampleService sampleService,
       final BioSamplesAapService bioSamplesAapService,
       final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-      final AccessControlService accessControlService) {
+      final AccessControlService accessControlService,
+      final SchemaValidationService schemaValidationService,
+      final TaxonomyClientService taxonomyClientService) {
     this.sampleService = sampleService;
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.accessControlService = accessControlService;
+    this.schemaValidationService = schemaValidationService;
+    this.taxonomyClientService = taxonomyClientService;
   }
 
   /*
@@ -184,7 +195,7 @@ public class BulkActionControllerV2 {
                         bioSamplesWebinAuthenticationService.isSampleAccessible(
                             sample, webinSubmissionAccountId);
                       } else {
-                        bioSamplesAapService.checkSampleAccessibility(sample);
+                        bioSamplesAapService.isSampleAccessible(sample);
                       }
                     } catch (final Exception e) {
                       log.info("Bulk-fetch forbidden sample: " + sample.getAccession());
@@ -214,5 +225,98 @@ public class BulkActionControllerV2 {
             .collect(
                 Collectors.toMap(
                     sample -> Objects.requireNonNull(sample).getAccession(), sample -> sample)));
+  }
+
+  /*
+  Submit multiple samples, without any relationship information
+   */
+  @PreAuthorize("isAuthenticated()")
+  @RequestMapping("/bulk-submit")
+  @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
+  public ResponseEntity<List<Sample>> postSamplesV2(
+      @RequestBody final List<Sample> samples,
+      @RequestHeader(name = "Authorization") final String token) {
+    log.info("Received POST for " + samples.size() + " samples");
+
+    final List<Sample> createdSamples;
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
+    final AuthorizationProvider authProvider =
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
+            ? AuthorizationProvider.WEBIN
+            : AuthorizationProvider.AAP;
+    boolean isWebinSuperUser;
+
+    if (authProvider == AuthorizationProvider.WEBIN) {
+      final String webinSubmissionAccountId = authToken.get().getUser();
+
+      if (webinSubmissionAccountId == null) {
+        throw new GlobalExceptions.WebinTokenInvalidException();
+      }
+
+      isWebinSuperUser =
+          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
+
+      createdSamples =
+          samples.stream()
+              .map(
+                  sample -> {
+                    sample =
+                        bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+                            sample, webinSubmissionAccountId, Optional.empty());
+                    sample = buildSample(sample, isWebinSuperUser);
+
+                    sampleService.validateSampleHasNoRelationshipsV2(sample);
+
+                    if (!isWebinSuperUser) {
+                      sample = validateSample(sample, true);
+                    }
+
+                    return sampleService.persistSampleV2(
+                        sample, null, authProvider, isWebinSuperUser);
+                  })
+              .collect(Collectors.toList());
+    } else {
+      createdSamples =
+          samples.stream()
+              .map(
+                  sample -> {
+                    sample = bioSamplesAapService.handleSampleDomain(sample, Optional.empty());
+                    sample = buildSample(sample, false);
+
+                    sampleService.validateSampleHasNoRelationshipsV2(sample);
+
+                    if (!bioSamplesAapService.isWriteSuperUser()) {
+                      sample = validateSample(sample, false);
+                    }
+
+                    return sampleService.persistSampleV2(sample, null, authProvider, false);
+                  })
+              .collect(Collectors.toList());
+    }
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdSamples);
+  }
+
+  private Sample buildSample(final Sample sample, final boolean isWebinSuperUser) {
+    return Sample.Builder.fromSample(sample)
+        .withCreate(sampleService.defineCreateDate(sample, isWebinSuperUser))
+        .withSubmitted(sampleService.defineSubmittedDate(sample, isWebinSuperUser))
+        .withUpdate(Instant.now())
+        .withSubmittedVia(
+            sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia())
+        .build();
+  }
+
+  private Sample validateSample(Sample sample, boolean isWebinSubmission) {
+    schemaValidationService.validate(sample);
+    sample =
+        taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
+            sample, isWebinSubmission);
+
+    if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
+      schemaValidationService.validate(sample);
+    }
+
+    return sample;
   }
 }
