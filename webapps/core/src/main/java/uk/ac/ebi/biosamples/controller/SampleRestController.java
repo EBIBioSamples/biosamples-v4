@@ -117,7 +117,7 @@ public class SampleRestController {
         bioSamplesWebinAuthenticationService.isSampleAccessible(
             sample.get(), webinSubmissionAccountId);
       } else {
-        bioSamplesAapService.checkSampleAccessibility(sample.get());
+        bioSamplesAapService.isSampleAccessible(sample.get());
       }
 
       if (decodedLegacyDetails.isPresent()) {
@@ -154,7 +154,7 @@ public class SampleRestController {
     Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains);
 
     if (sample.isPresent()) {
-      bioSamplesAapService.checkSampleAccessibility(sample.get());
+      bioSamplesAapService.isSampleAccessible(sample.get());
 
       // TODO If user is not Read super user, reduce the fields to show
       if (decodedLegacyDetails.isPresent()) {
@@ -272,11 +272,14 @@ public class SampleRestController {
     // now date is system generated field
     final Instant now = Instant.now();
 
-    SubmittedViaType submittedVia =
-        sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
-
     sample =
-        Sample.Builder.fromSample(sample).withUpdate(now).withSubmittedVia(submittedVia).build();
+        Sample.Builder.fromSample(sample)
+            .withUpdate(now)
+            .withSubmittedVia(
+                sample.getSubmittedVia() == null
+                    ? SubmittedViaType.JSON_API
+                    : sample.getSubmittedVia())
+            .build();
 
     sample = validateSample(sample, authProvider, isWebinSuperUser);
 

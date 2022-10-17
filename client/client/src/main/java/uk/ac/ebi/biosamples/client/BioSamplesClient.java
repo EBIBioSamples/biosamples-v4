@@ -326,14 +326,29 @@ public class BioSamplesClient implements AutoCloseable {
     return persistSampleResourceAsyncV2(samples).get();
   }
 
-  public Map<String, String> bulkAccessionV2(List<Sample> samples)
+  public List<Sample> persistSampleResourceV2(List<Sample> samples, String jwt)
       throws ExecutionException, InterruptedException {
-    return bulkAccessionAsyncV2(samples);
+    return persistSampleResourceAsyncV2(samples, jwt).get();
   }
 
-  private Map<String, String> bulkAccessionAsyncV2(List<Sample> samples)
+  public Map<String, String> bulkAccessionV2(List<Sample> samples)
       throws ExecutionException, InterruptedException {
-    return sampleSubmissionServiceV2.bulkAccessionAsync(samples).get();
+    return bulkAccessionAsyncV2(samples).get();
+  }
+
+  public Map<String, String> bulkAccessionV2(List<Sample> samples, String jwt)
+      throws ExecutionException, InterruptedException {
+    return bulkAccessionAsyncV2(samples, jwt).get();
+  }
+
+  private Future<Map<String, String>> bulkAccessionAsyncV2(List<Sample> samples)
+      throws ExecutionException, InterruptedException {
+    return sampleSubmissionServiceV2.bulkAccessionAsync(samples);
+  }
+
+  private Future<Map<String, String>> bulkAccessionAsyncV2(List<Sample> samples, String jwt)
+      throws ExecutionException, InterruptedException {
+    return sampleSubmissionServiceV2.bulkAccessionAsync(samples, jwt);
   }
 
   public EntityModel<Sample> persistSampleResource(
@@ -366,6 +381,10 @@ public class BioSamplesClient implements AutoCloseable {
 
   public Future<List<Sample>> persistSampleResourceAsyncV2(List<Sample> samples) {
     return sampleSubmissionServiceV2.postAsync(samples);
+  }
+
+  public Future<List<Sample>> persistSampleResourceAsyncV2(List<Sample> samples, String jwt) {
+    return sampleSubmissionServiceV2.postAsync(samples, jwt);
   }
 
   public Collection<EntityModel<Sample>> persistSamples(Collection<Sample> samples) {

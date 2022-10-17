@@ -96,7 +96,9 @@ public class SampleSubmissionServiceV2 {
     @Override
     public List<Sample> call() {
       final URI v2PostUri =
-          UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples")).build(true).toUri();
+          UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples/bulk-submit"))
+              .build(true)
+              .toUri();
       log.info("POSTing " + samples.size() + " samples " + v2PostUri);
 
       RequestEntity<List<Sample>> requestEntity =

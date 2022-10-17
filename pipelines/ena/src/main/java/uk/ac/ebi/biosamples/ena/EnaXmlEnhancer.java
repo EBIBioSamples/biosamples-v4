@@ -25,7 +25,7 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 @Service
 public class EnaXmlEnhancer {
 
-  private EraProDao eraProDao;
+  private final EraProDao eraProDao;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EnaXmlEnhancer.class);
 
