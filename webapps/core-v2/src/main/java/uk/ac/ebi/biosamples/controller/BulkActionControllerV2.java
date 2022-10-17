@@ -260,9 +260,16 @@ public class BulkActionControllerV2 {
           samples.stream()
               .map(
                   sample -> {
+                    final String sampleAccession = sample.getAccession();
+                    Optional<Sample> oldSample = Optional.empty();
+
+                    if (sampleAccession != null) {
+                      oldSample = sampleService.fetch(sampleAccession, Optional.empty());
+                    }
+
                     sample =
                         bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-                            sample, webinSubmissionAccountId, Optional.empty());
+                            sample, webinSubmissionAccountId, oldSample);
                     sample = buildSample(sample, isWebinSuperUser);
 
                     sampleService.validateSampleHasNoRelationshipsV2(sample);
@@ -272,7 +279,7 @@ public class BulkActionControllerV2 {
                     }
 
                     return sampleService.persistSampleV2(
-                        sample, null, authProvider, isWebinSuperUser);
+                        sample, oldSample.orElse(null), authProvider, isWebinSuperUser);
                   })
               .collect(Collectors.toList());
     } else {
@@ -280,7 +287,14 @@ public class BulkActionControllerV2 {
           samples.stream()
               .map(
                   sample -> {
-                    sample = bioSamplesAapService.handleSampleDomain(sample, Optional.empty());
+                    final String sampleAccession = sample.getAccession();
+                    Optional<Sample> oldSample = Optional.empty();
+
+                    if (sampleAccession != null) {
+                      oldSample = sampleService.fetch(sampleAccession, Optional.empty());
+                    }
+
+                    sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
                     sample = buildSample(sample, false);
 
                     sampleService.validateSampleHasNoRelationshipsV2(sample);
@@ -289,7 +303,8 @@ public class BulkActionControllerV2 {
                       sample = validateSample(sample, false);
                     }
 
-                    return sampleService.persistSampleV2(sample, null, authProvider, false);
+                    return sampleService.persistSampleV2(
+                        sample, oldSample.orElse(null), authProvider, false);
                   })
               .collect(Collectors.toList());
     }

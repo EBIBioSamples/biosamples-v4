@@ -247,6 +247,10 @@ public class SampleService {
 
     if (sample.hasAccession()) {
       if (oldSample != null) {
+        log.info(
+            "Trying to update sample that exists in database, accession: {}",
+            sample.getAccession());
+
         final boolean isExistingSampleEmpty =
             isExistingSampleEmpty(sample, isWebinSuperUser, oldSample);
 
