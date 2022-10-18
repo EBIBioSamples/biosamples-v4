@@ -44,8 +44,7 @@ public class AccessControlService {
       String payload = new String(decoder.decode(chunks[1]));
 
       if (!verifySignature()) {
-        throw new GlobalExceptions.AccessControlException(
-            "Failed to verify the integrity of the token");
+        throw new GlobalExceptions.AccessControlException();
       }
 
       AuthToken authToken;
@@ -72,12 +71,12 @@ public class AccessControlService {
 
         authToken = new AuthToken(algorithm, authority, user, roles);
       } catch (IOException e) {
-        throw new GlobalExceptions.AccessControlException("Could not decode token", e);
+        throw new GlobalExceptions.AccessControlException(e);
       }
 
       return Optional.of(authToken);
     } catch (final Exception e) {
-      throw new GlobalExceptions.AccessControlException("Could not decode token", e);
+      throw new GlobalExceptions.AccessControlException(e);
     }
   }
 
@@ -85,8 +84,7 @@ public class AccessControlService {
     final DecodedJWT jwt = JWT.decode(token);
 
     if (jwt.getExpiresAt().before(new Date())) {
-      throw new GlobalExceptions.AccessControlException(
-          "JWT token has expired, please obtain a new JWT token before submission");
+      throw new GlobalExceptions.AccessControlException();
     }
   }
 

@@ -93,6 +93,27 @@ public class EraProDao {
 
       return sampleData;
     } catch (final IncorrectResultSizeDataAccessException e) {
+      log.error(
+          "Result set size expected is 1 and got more/ less that that, skipping "
+              + biosampleAccession);
+    }
+
+    return null;
+  }
+
+  public SampleDBBean getSampleMetaInfoByBioSampleId(final String sampleId) {
+    try {
+      String sql =
+          "SELECT STATUS_ID, SAMPLE_ID, "
+              + "BIOSAMPLE_ID, "
+              + "BIOSAMPLE_AUTHORITY "
+              + "FROM SAMPLE "
+              + "WHERE BIOSAMPLE_ID = ? AND BIOSAMPLE_AUTHORITY= 'N' "
+              + "fetch first row only ";
+      final SampleDBBean sampleData = jdbcTemplate.queryForObject(sql, sampleRowMapper2, sampleId);
+
+      return sampleData;
+    } catch (final IncorrectResultSizeDataAccessException e) {
       log.error("Result set size expected is 1 and got more/ less that that, skipping");
     }
 

@@ -72,10 +72,7 @@ public class StructuredDataRestController {
     final AuthToken authToken =
         accessControlService
             .extractToken(token)
-            .orElseThrow(
-                () ->
-                    new GlobalExceptions.AccessControlException(
-                        "Invalid token. Please provide valid token."));
+            .orElseThrow(GlobalExceptions.AccessControlException::new);
     final boolean webinAuth = authToken.getAuthority() == AuthorizationProvider.WEBIN;
 
     log.info("PUT request for structured data: {}", accession);

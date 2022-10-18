@@ -31,10 +31,11 @@ import uk.ac.ebi.biosamples.curation.service.IriUrlValidatorService;
 import uk.ac.ebi.biosamples.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.mongo.repo.MongoPipelineRepository;
 import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
-import uk.ac.ebi.biosamples.utils.*;
+import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.PipelineUtils;
+import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.mongo.AnalyticsService;
 
 @Component
@@ -46,7 +47,6 @@ public class CurationApplicationRunner implements ApplicationRunner {
   private final CurationApplicationService curationApplicationService;
   private final AnalyticsService analyticsService;
   private final PipelineFutureCallback pipelineFutureCallback;
-  private final MongoPipelineRepository mongoPipelineRepository;
   private final IriUrlValidatorService iriUrlValidatorService;
 
   public CurationApplicationRunner(
@@ -55,14 +55,12 @@ public class CurationApplicationRunner implements ApplicationRunner {
       OlsProcessor olsProcessor,
       CurationApplicationService curationApplicationService,
       AnalyticsService analyticsService,
-      MongoPipelineRepository mongoPipelineRepository,
       IriUrlValidatorService iriUrlValidatorService) {
     this.bioSamplesClient = bioSamplesClient;
     this.pipelinesProperties = pipelinesProperties;
     this.olsProcessor = olsProcessor;
     this.curationApplicationService = curationApplicationService;
     this.analyticsService = analyticsService;
-    this.mongoPipelineRepository = mongoPipelineRepository;
     this.iriUrlValidatorService = iriUrlValidatorService;
     this.pipelineFutureCallback = new PipelineFutureCallback();
   }
@@ -71,9 +69,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
   public void run(ApplicationArguments args) throws Exception {
     Instant startTime = Instant.now();
     Collection<Filter> filters = PipelineUtils.getDateFilters(args);
-    boolean isPassed = true;
     long sampleCount = 0;
-    String pipelineFailureCause = null;
 
     try (AdaptiveThreadPoolExecutor executorService =
         AdaptiveThreadPoolExecutor.create(
@@ -112,13 +108,11 @@ public class CurationApplicationRunner implements ApplicationRunner {
       ThreadUtils.checkAndCallbackFutures(futures, 0, pipelineFutureCallback);
     } catch (final Exception e) {
       LOG.error("Pipeline failed to finish successfully", e);
-      isPassed = false;
-      pipelineFailureCause = e.getMessage();
 
       throw e;
     } finally {
       Instant endTime = Instant.now();
-      String failures = null;
+      String failures;
 
       LOG.info("Total samples processed {}", sampleCount);
       LOG.info("Total curation objects added {}", pipelineFutureCallback.getTotalCount());
