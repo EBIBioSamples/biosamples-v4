@@ -26,7 +26,7 @@ public class BioSamplesProperties {
   @Value("${biosamples.client.uri.v2:http://localhost:8082}")
   private URI biosamplesClientUriV2;
 
-  @Value("${biosamples.client.pagesize:1000}")
+  @Value("${biosamples.client.pagesize:499}")
   private int biosamplesClientPagesize;
 
   // in milliseconds

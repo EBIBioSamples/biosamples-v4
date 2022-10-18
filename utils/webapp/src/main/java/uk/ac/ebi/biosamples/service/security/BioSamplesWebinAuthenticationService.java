@@ -13,6 +13,8 @@ package uk.ac.ebi.biosamples.service.security;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -29,6 +31,7 @@ import uk.ac.ebi.biosamples.service.SampleService;
 
 @Service
 public class BioSamplesWebinAuthenticationService {
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final RestTemplate restTemplate;
   private final SampleService sampleService;
   private final BioSamplesProperties bioSamplesProperties;
@@ -106,6 +109,8 @@ public class BioSamplesWebinAuthenticationService {
           // (via FILE UPLOADER)
           if (sample.getSubmittedVia()
               == SubmittedViaType.FILE_UPLOADER) { // uploader submission access protection
+            log.info("Super user and file upload submission");
+
             if (oldSamplePresent
                 && !sample
                     .getWebinSubmissionAccountId()

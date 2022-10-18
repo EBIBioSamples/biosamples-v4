@@ -11,17 +11,23 @@
 package uk.ac.ebi.biosamples.ncbi;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
+import javax.xml.parsers.ParserConfigurationException;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +36,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
+import org.xml.sax.SAXException;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.PipelineName;
@@ -38,19 +45,20 @@ import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
 import uk.ac.ebi.biosamples.mongo.repo.MongoPipelineRepository;
 import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
-import uk.ac.ebi.biosamples.service.AmrDataLoaderService;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
-import uk.ac.ebi.biosamples.utils.*;
+import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.PipelineUniqueIdentifierGenerator;
+import uk.ac.ebi.biosamples.utils.ThreadUtils;
+import uk.ac.ebi.biosamples.utils.XmlFragmenter;
 
 @Component
 @Profile("!test")
 public class Ncbi implements ApplicationRunner {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final PipelinesProperties pipelinesProperties;
   private final XmlFragmenter xmlFragmenter;
   private final NcbiFragmentCallback sampleCallback;
   private final BioSamplesClient bioSamplesClient;
-  private final AmrDataLoaderService amrDataLoaderService;
   private final MongoPipelineRepository mongoPipelineRepository;
   private final Map<String, Set<StructuredDataTable>> sampleToAmrMap;
 
@@ -59,19 +67,19 @@ public class Ncbi implements ApplicationRunner {
       XmlFragmenter xmlFragmenter,
       NcbiFragmentCallback sampleCallback,
       BioSamplesClient bioSamplesClient,
-      AmrDataLoaderService amrDataLoaderService,
       MongoPipelineRepository mongoPipelineRepository) {
     this.pipelinesProperties = pipelinesProperties;
     this.xmlFragmenter = xmlFragmenter;
     this.sampleCallback = sampleCallback;
     this.bioSamplesClient = bioSamplesClient;
-    this.amrDataLoaderService = amrDataLoaderService;
     this.mongoPipelineRepository = mongoPipelineRepository;
     this.sampleToAmrMap = new HashMap<>();
   }
 
   @Override
-  public void run(ApplicationArguments args) {
+  public void run(ApplicationArguments args)
+      throws IOException, ParserConfigurationException, ExecutionException, InterruptedException,
+          SAXException {
     String pipelineFailureCause = null;
     boolean isPassed = true;
     boolean includeAmr = true;
@@ -172,6 +180,8 @@ public class Ncbi implements ApplicationRunner {
       log.error("Pipeline failed to finish successfully", e);
       pipelineFailureCause = e.getMessage();
       isPassed = false;
+
+      throw e;
     } finally {
       final MongoPipeline mongoPipeline;
 
