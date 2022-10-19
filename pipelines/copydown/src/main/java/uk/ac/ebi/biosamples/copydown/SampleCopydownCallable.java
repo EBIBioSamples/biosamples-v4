@@ -10,7 +10,6 @@
 */
 package uk.ac.ebi.biosamples.copydown;
 
-import com.google.common.collect.Sets;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -61,11 +60,7 @@ public class SampleCopydownCallable implements Callable<PipelineResult> {
                 .anyMatch(attribute -> "organism".equalsIgnoreCase(attribute.getType()));
         final Set<Attribute> attributesOfAllParentSamples = getAttributesOfParentSamples(sample);
         final Set<Attribute> qualifyingCopyDownAttributes =
-            new TreeSet<>(
-                Sets.difference(
-                    Sets.symmetricDifference(attributesOfAllParentSamples, attributes)
-                        .immutableCopy(),
-                    attributes));
+            getQualifyingCopyDownAttributes(attributesOfAllParentSamples, attributes);
 
         if (hasOrganism) {
           // if child sample has organism, use it, don't copy down organism(s) from parent
@@ -91,6 +86,22 @@ public class SampleCopydownCallable implements Callable<PipelineResult> {
     }
 
     return new PipelineResult(accession, curationCount, success);
+  }
+
+  private static Set<Attribute> getQualifyingCopyDownAttributes(
+      Set<Attribute> attributesOfAllParentSamples,
+      SortedSet<Attribute> attributesOfTheChildSample) {
+    final Set<Attribute> qualifyingCopyDownAttributes = new TreeSet<>();
+
+    attributesOfAllParentSamples.forEach(
+        parentAttr -> {
+          if (attributesOfTheChildSample.stream()
+              .noneMatch(childAttr -> childAttr.getType().equalsIgnoreCase(parentAttr.getType()))) {
+            qualifyingCopyDownAttributes.add(parentAttr);
+          }
+        });
+
+    return qualifyingCopyDownAttributes;
   }
 
   private void applyCuration(final Attribute attribute) {
