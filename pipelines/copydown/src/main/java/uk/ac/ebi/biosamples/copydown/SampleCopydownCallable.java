@@ -44,6 +44,8 @@ public class SampleCopydownCallable implements Callable<PipelineResult> {
     boolean success = true;
     final String accession = sample.getAccession();
 
+    LOG.info("Handling sample for copy-down " + accession);
+
     try {
       final SortedSet<Attribute> attributes = sample.getAttributes();
 
@@ -79,7 +81,19 @@ public class SampleCopydownCallable implements Callable<PipelineResult> {
           }
         }
 
-        qualifyingCopyDownAttributes.forEach(this::applyCuration);
+        final int qualifyingCopyDownAttributesCount = qualifyingCopyDownAttributes.size();
+
+        if (qualifyingCopyDownAttributesCount > 0) {
+          LOG.info(
+              "Adding "
+                  + qualifyingCopyDownAttributesCount
+                  + " copy-down curations for sample "
+                  + accession);
+
+          qualifyingCopyDownAttributes.forEach(this::applyCuration);
+        } else {
+          LOG.info("No copy-down curations for sample " + accession);
+        }
       }
     } catch (final Exception e) {
       success = false;
