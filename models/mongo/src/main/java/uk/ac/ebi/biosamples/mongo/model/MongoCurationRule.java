@@ -14,8 +14,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.Objects;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
+import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
 @Document
 public class MongoCurationRule implements Comparable<MongoCurationRule> {
@@ -23,6 +28,8 @@ public class MongoCurationRule implements Comparable<MongoCurationRule> {
   @Id private String id;
   private String attributePre;
   private String attributePost;
+  @JsonSerialize(using = CustomInstantSerializer.class)
+  @JsonDeserialize(using = CustomInstantDeserializer.class)
   private final Instant created;
 
   private MongoCurationRule(String attributePre, String attributePost) {

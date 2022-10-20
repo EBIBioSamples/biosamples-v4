@@ -110,7 +110,7 @@ public class NeoSampleRepository implements AutoCloseable {
       response.setLinks(responseLinks);
 
       while (result.hasNext()) {
-        Record record = result.next();
+        org.neo4j.driver.Record record = result.next();
         for (Value value : record.values()) {
           addToResponse(value, responseNodes, responseLinks);
         }
