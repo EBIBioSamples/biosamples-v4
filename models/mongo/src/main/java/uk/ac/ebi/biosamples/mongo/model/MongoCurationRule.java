@@ -12,11 +12,10 @@ package uk.ac.ebi.biosamples.mongo.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.time.Instant;
-import java.util.Objects;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.time.Instant;
+import java.util.Objects;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
@@ -28,6 +27,7 @@ public class MongoCurationRule implements Comparable<MongoCurationRule> {
   @Id private String id;
   private String attributePre;
   private String attributePost;
+
   @JsonSerialize(using = CustomInstantSerializer.class)
   @JsonDeserialize(using = CustomInstantDeserializer.class)
   private final Instant created;
