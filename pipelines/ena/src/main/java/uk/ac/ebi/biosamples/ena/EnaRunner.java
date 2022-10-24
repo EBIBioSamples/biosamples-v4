@@ -39,7 +39,6 @@ import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
 import uk.ac.ebi.biosamples.mongo.repo.MongoPipelineRepository;
 import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
-import uk.ac.ebi.biosamples.service.AmrDataLoaderService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.PipelineUniqueIdentifierGenerator;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
@@ -54,28 +53,24 @@ import uk.ac.ebi.biosamples.utils.ThreadUtils;
 public class EnaRunner implements ApplicationRunner {
   private static final Logger log = LoggerFactory.getLogger(EnaRunner.class);
   private static final String SAMEA = "SAMEA";
-
   private static final int MAX_RETRIES = 5;
-
   @Autowired private PipelinesProperties pipelinesProperties;
   @Autowired private EraProDao eraProDao;
   @Autowired private EnaCallableFactory enaCallableFactory;
   @Autowired private NcbiCallableFactory ncbiCallableFactory;
   @Autowired private MongoPipelineRepository mongoPipelineRepository;
-  @Autowired private AmrDataLoaderService amrDataLoaderService;
 
   @Autowired
   @Qualifier("WEBINCLIENT")
   private BioSamplesClient bioSamplesWebinClient;
 
   @Autowired private BioSamplesClient bioSamplesAapClient;
-  private Map<String, Future<Void>> futures = new LinkedHashMap<>();
-  private Map<String, Set<StructuredDataTable>> sampleToAmrMap = new HashMap<>();
-
+  private final Map<String, Future<Void>> futures = new LinkedHashMap<>();
+  private final Map<String, Set<StructuredDataTable>> sampleToAmrMap = new HashMap<>();
   public static final Map<String, String> failures = new HashMap<>();
 
   @Override
-  public void run(ApplicationArguments args) {
+  public void run(ApplicationArguments args) throws Exception {
     log.info("Processing ENA pipeline...");
 
     boolean includeAmr = true;
@@ -147,6 +142,8 @@ public class EnaRunner implements ApplicationRunner {
       log.error("Pipeline failed to finish successfully", e);
       pipelineFailureCause = e.getMessage();
       isPassed = false;
+
+      throw e;
     } finally {
       final MongoPipeline mongoPipeline;
 
@@ -250,16 +247,18 @@ public class EnaRunner implements ApplicationRunner {
       stream.forEach(
           sampleId -> {
             final SampleDBBean sampleDBBean =
-                eraProDao.getSampleDetailsByEnaSampleId(sampleId.trim());
+                eraProDao.getSampleMetaInfoByBioSampleId(sampleId.trim());
 
             try {
-              if (sampleDBBean != null) {
+              if (sampleDBBean != null
+                  && sampleDBBean.getBiosampleId() != null
+                  && sampleDBBean.getSampleId() != null) {
                 handleSingleSampleBackFill(executorService, sampleDBBean);
               } else {
                 final String errorMessage =
                     "No sample details from ERAPRO for "
                         + sampleId
-                        + " possible BioSample Authority sample";
+                        + " possible BioSample Authority sample, or non-exists in ERAPRO, or has multiple entries in ERAPRO";
                 log.info(errorMessage);
 
                 EnaRunner.failures.put(sampleId, errorMessage);
@@ -470,8 +469,8 @@ public class EnaRunner implements ApplicationRunner {
       TEMPORARY_SUPPRESSED(7),
       TEMPORARY_KILLED(8);
 
-      private int value;
-      private static Map<Integer, ENAStatus> map = new HashMap<>();
+      private final int value;
+      private static final Map<Integer, ENAStatus> map = new HashMap<>();
 
       ENAStatus(int value) {
         this.value = value;
@@ -555,7 +554,7 @@ public class EnaRunner implements ApplicationRunner {
     private final AdaptiveThreadPoolExecutor executorService;
     private final NcbiCallableFactory ncbiCallableFactory;
     private final Map<String, Future<Void>> futures;
-    private Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     public NcbiRowCallbackHandler(
         final AdaptiveThreadPoolExecutor executorService,

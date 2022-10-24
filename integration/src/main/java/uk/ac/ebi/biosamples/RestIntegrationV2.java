@@ -29,9 +29,9 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 @Component
 @Order(2)
 public class RestIntegrationV2 extends AbstractIntegration {
-  private Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(this.getClass());
   private final BioSamplesClient annonymousClient;
-  private BioSamplesClient webinClient;
+  private final BioSamplesClient webinClient;
 
   public RestIntegrationV2(
       BioSamplesClient client,
@@ -69,17 +69,37 @@ public class RestIntegrationV2 extends AbstractIntegration {
   @Override
   protected void phaseSix() throws ExecutionException, InterruptedException {
     Sample webinSampleTest1 = getWebinSampleTest1();
+
+    // Submit with webin client, no jwt passed
     List<Sample> webinSampleResource =
         this.webinClient.persistSampleResourceV2(Collections.singletonList(webinSampleTest1));
     String webinSampleAccession = Objects.requireNonNull(webinSampleResource.get(0)).getAccession();
 
-    Optional<EntityModel<Sample>> webinSamplePostPersistance =
+    Optional<EntityModel<Sample>> webinSamplePostPersistence =
         this.webinClient.fetchSampleResource(webinSampleAccession);
 
-    if (!webinSamplePostPersistance.isPresent()) {
+    if (!webinSamplePostPersistence.isPresent()) {
       throw new IntegrationTestFailException(
           "Private sample submitted using webin auth not retrieved", Phase.SIX);
     }
+
+    // Submit with public client, pass jwt
+    /* List<Sample> webinSampleResource2 =
+        this.publicClient.persistSampleResourceV2(
+            Collections.singletonList(webinSampleTest1),
+            "eyJhbGciOiJSUzI1NiJ9.eyJwcmluY2lwbGUiOiJXZWJpbi01NzE3NiIsInJvbGUiOlsiTUVUQUdFTk9NRV9BTkFMWVNJUyJdLCJleHAiOjE2NjU3NTk0NTQsImlhdCI6MTY2NTc0MTQ1NH0.RB9GWWniGrJcgntBi3HX35PLxx9Z8iw6o4txZv3Hh-WBta4UnYntJxjUbtcEBxC_etuiSzwWLVjp862wAyJV5j2KjaxzOT8aVwrtLc_vayDPwCXSruKmjqU9vWf0FRMoE0zzU3ts6P1J1_8DgbbBqC8H_rdXC_Zz2-MHWReA3FANAPjzrh3tdsiIvjGtB1oECXB-nl6LU68ucqUP_i5BnfQDCUSBWE4CLDv4F_qvvIQJIODxG6bEJ6LbBRVIwapBWTh-J2L639bO7CjXleJmpwzFoxvPBo-IxI3e7J9S5dROd9ylVxVBMDMjLqonpHyrYzPfa15xmsPLJEc0WzupUw");
+    String webinSampleAccession2 =
+        Objects.requireNonNull(webinSampleResource2.get(0)).getAccession();
+
+    Optional<EntityModel<Sample>> webinSamplePostPersistence2 =
+        this.publicClient.fetchSampleResource(
+            webinSampleAccession2,
+            "eyJhbGciOiJSUzI1NiJ9.eyJwcmluY2lwbGUiOiJXZWJpbi01NzE3NiIsInJvbGUiOlsiTUVUQUdFTk9NRV9BTkFMWVNJUyJdLCJleHAiOjE2NjU3NTk0NTQsImlhdCI6MTY2NTc0MTQ1NH0.RB9GWWniGrJcgntBi3HX35PLxx9Z8iw6o4txZv3Hh-WBta4UnYntJxjUbtcEBxC_etuiSzwWLVjp862wAyJV5j2KjaxzOT8aVwrtLc_vayDPwCXSruKmjqU9vWf0FRMoE0zzU3ts6P1J1_8DgbbBqC8H_rdXC_Zz2-MHWReA3FANAPjzrh3tdsiIvjGtB1oECXB-nl6LU68ucqUP_i5BnfQDCUSBWE4CLDv4F_qvvIQJIODxG6bEJ6LbBRVIwapBWTh-J2L639bO7CjXleJmpwzFoxvPBo-IxI3e7J9S5dROd9ylVxVBMDMjLqonpHyrYzPfa15xmsPLJEc0WzupUw");
+
+    if (!webinSamplePostPersistence2.isPresent()) {
+      throw new IntegrationTestFailException(
+          "Private sample submitted using webin auth not retrieved", Phase.SIX);
+    }*/
 
     Sample webinSampleMinimalInfo = getWebinSampleMinimalInfo();
     Map<String, String> sampleAccessionToNameMap =

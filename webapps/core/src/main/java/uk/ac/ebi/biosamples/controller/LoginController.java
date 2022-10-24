@@ -164,10 +164,7 @@ public class LoginController {
       final AuthToken authToken =
           accessControlService
               .extractToken(token)
-              .orElseThrow(
-                  () ->
-                      new GlobalExceptions.AccessControlException(
-                          "Invalid token. Please provide valid token."));
+              .orElseThrow(GlobalExceptions.AccessControlException::new);
       final List<String> userRoles = accessControlService.getUserRoles(authToken);
 
       return fileUploadService.getUserSubmissions(userRoles);

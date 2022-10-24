@@ -336,7 +336,7 @@ public class SampleHtmlController {
       throw new ResourceNotFoundException();
     }
 
-    bioSamplesAapService.checkSampleAccessibility(sample.get());
+    bioSamplesAapService.isSampleAccessible(sample.get());
 
     // response.setHeader(HttpHeaders.LAST_MODIFIED,
     // String.valueOf(sample.getUpdate().toEpochSecond(ZoneOffset.UTC)));

@@ -65,7 +65,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
   private static final String TITLE = "TITLE";
   private static final String COMMON_NAME_JSON = "common name";
   private static final String PUBMED_ID = "pubmed_id";
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   @Autowired private TaxonomyService taxonomyService;
 

@@ -59,7 +59,6 @@ public class CopydownApplicationRunner implements ApplicationRunner {
     Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
     long sampleCount = 0;
-    boolean isPassed = true;
 
     try (final AdaptiveThreadPoolExecutor executorService =
         AdaptiveThreadPoolExecutor.create(
@@ -92,7 +91,6 @@ public class CopydownApplicationRunner implements ApplicationRunner {
       ThreadUtils.checkAndCallbackFutures(futures, 0, pipelineFutureCallback);
     } catch (final Exception e) {
       LOG.error("Pipeline failed to finish successfully", e);
-      isPassed = false;
       throw e;
     } finally {
       Instant endTime = Instant.now();

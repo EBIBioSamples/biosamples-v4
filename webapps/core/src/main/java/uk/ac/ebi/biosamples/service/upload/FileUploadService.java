@@ -289,6 +289,12 @@ public class FileUploadService {
       }
     }
 
+    if (oldSample.isPresent()) {
+      log.info("Old sample is " + oldSample.get());
+    } else {
+      log.info("Old sample not present");
+    }
+
     sample = handleAuthentication(aapDomain, webinId, isWebin, sample, oldSample, validationResult);
 
     if (sample != null) {
@@ -340,6 +346,7 @@ public class FileUploadService {
       final ValidationResult validationResult) {
     try {
       if (isWebin) {
+        sample = Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(webinId).build();
         sample =
             bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
                 sample, webinId, oldSample);
