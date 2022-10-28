@@ -71,17 +71,15 @@ public class SampleRestControllerV2 {
       @PathVariable final String accession,
       @RequestBody Sample sample,
       @RequestHeader(name = "Authorization") final String token) {
-    boolean isWebinSuperUser = false;
-
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
       throw new GlobalExceptions.SampleAccessionMismatchException();
     }
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
     final AuthorizationProvider authProvider =
-        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
+        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
+            ? AuthorizationProvider.WEBIN
+            : AuthorizationProvider.AAP;
     final boolean notExistingAccession = sampleService.isNotExistingAccession(accession);
     Optional<Sample> oldSample = Optional.empty();
 
@@ -91,7 +89,9 @@ public class SampleRestControllerV2 {
 
     log.debug("Received PUT for " + accession);
 
-    if (webinAuth) {
+    boolean isWebinSuperUser = false;
+
+    if (authProvider == AuthorizationProvider.WEBIN) {
       final String webinSubmissionAccountId = authToken.get().getUser();
 
       if (webinSubmissionAccountId == null) {
@@ -130,7 +130,7 @@ public class SampleRestControllerV2 {
             .build();
 
     if (!isWebinSuperUser) {
-      sample = validateSample(sample, webinAuth);
+      sample = validateSample(sample, authProvider == AuthorizationProvider.WEBIN);
     }
 
     sample =
@@ -166,10 +166,12 @@ public class SampleRestControllerV2 {
     Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
 
     if (sample.isPresent()) {
-      final boolean webinAuth =
-          authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
+      final AuthorizationProvider authProvider =
+          authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
+              ? AuthorizationProvider.WEBIN
+              : AuthorizationProvider.AAP;
 
-      if (webinAuth) {
+      if (authProvider == AuthorizationProvider.WEBIN) {
         final String webinSubmissionAccountId = authToken.get().getUser();
 
         bioSamplesWebinAuthenticationService.isSampleAccessible(

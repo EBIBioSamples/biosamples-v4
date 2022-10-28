@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.tsc.aap.client.model.User;
 
 @Service
 @Primary
@@ -31,13 +30,17 @@ public class BioSamplesTokenAuthenticationService extends TokenAuthenticationSer
 
   public Authentication getAuthenticationFromToken(String token) {
     LOGGER.trace("getAuthentication");
+
     try {
-      if (token == null) return null;
-      User user = tokenHandler.parseUserFromToken(token);
-      return new UserAuthentication(user);
-    } catch (Exception e) {
+      if (token == null) {
+        return null;
+      }
+
+      return new UserAuthentication(tokenHandler.parseUserFromToken(token));
+    } catch (final Exception e) {
       LOGGER.error(e.getMessage());
       LOGGER.debug("Cannot extract authentication details from token", e);
+
       return null;
     }
   }

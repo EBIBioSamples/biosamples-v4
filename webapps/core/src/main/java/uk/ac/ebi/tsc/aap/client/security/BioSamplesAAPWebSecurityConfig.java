@@ -27,11 +27,11 @@ import uk.ac.ebi.tsc.aap.client.security.AAPWebSecurityAutoConfiguration.AAPWebS
 @Order(99)
 public class BioSamplesAAPWebSecurityConfig extends AAPWebSecurityConfig {
   private final StatelessAuthenticationEntryPoint unauthorizedHandler;
-  private BioSamplesTokenAuthenticationService tokenAuthenticationService;
+  private final BioSamplesTokenAuthenticationService tokenAuthenticationService;
 
   public BioSamplesAAPWebSecurityConfig(
-      StatelessAuthenticationEntryPoint unauthorizedHandler,
-      BioSamplesTokenAuthenticationService tokenAuthenticationService) {
+      final StatelessAuthenticationEntryPoint unauthorizedHandler,
+      final BioSamplesTokenAuthenticationService tokenAuthenticationService) {
     this.unauthorizedHandler = unauthorizedHandler;
     this.tokenAuthenticationService = tokenAuthenticationService;
   }
@@ -41,7 +41,7 @@ public class BioSamplesAAPWebSecurityConfig extends AAPWebSecurityConfig {
   }
 
   @Override
-  protected void configure(HttpSecurity httpSecurity) throws Exception {
+  protected void configure(final HttpSecurity httpSecurity) throws Exception {
     httpSecurity
         // we don't need CSRF because our token is invulnerable
         .csrf()
@@ -65,18 +65,21 @@ public class BioSamplesAAPWebSecurityConfig extends AAPWebSecurityConfig {
   // CORS support
   @Bean
   CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration configuration = new CorsConfiguration();
+    final CorsConfiguration configuration = new CorsConfiguration();
+
     configuration.setAllowCredentials(true);
     configuration.addAllowedOrigin("*");
     configuration.addAllowedHeader("*");
     configuration.addAllowedMethod("*");
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+
+    final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
+
     return source;
   }
 
   @Autowired
-  public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+  public void configureGlobal(final AuthenticationManagerBuilder auth) throws Exception {
     auth.userDetailsService(userDetailsService());
   }
 }

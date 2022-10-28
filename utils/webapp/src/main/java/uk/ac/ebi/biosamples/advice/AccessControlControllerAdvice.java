@@ -21,10 +21,9 @@ import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 
 @ControllerAdvice
 public class AccessControlControllerAdvice extends ResponseEntityExceptionHandler {
-
   @ExceptionHandler(value = {GlobalExceptions.AccessControlException.class})
   protected ResponseEntity<Object> handleConflict(RuntimeException e, WebRequest request) {
     return handleExceptionInternal(
-        e, e.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+        e, e.getMessage(), new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
   }
 }
