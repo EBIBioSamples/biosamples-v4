@@ -16,8 +16,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.jose4j.jwt.JwtClaims;
-import org.jose4j.jwt.MalformedClaimException;
-import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -26,28 +24,28 @@ import uk.ac.ebi.tsc.aap.client.model.User;
 
 @Component
 public class BioSamplesTokenHandler extends TokenHandler {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   @Override
-  public User parseUserFromToken(String token) {
+  public User parseUserFromToken(final String token) {
     try {
-      Set<Domain> domainsSet = new HashSet<>();
-      JwtClaims jwtClaims = jwtConsumer.processToClaims(token);
-      String userReference = jwtClaims.getSubject();
-      String nickname = jwtClaims.getStringClaimValue("nickname");
-      String email = jwtClaims.getStringClaimValue("email");
-      String fullName = jwtClaims.getStringClaimValue("name");
-      List<String> domains = jwtClaims.getStringListClaimValue("domains");
+      final Set<Domain> domainsSet = new HashSet<>();
+      final JwtClaims jwtClaims = jwtConsumer.processToClaims(token);
+      final String userReference = jwtClaims.getSubject();
+      final String nickname = jwtClaims.getStringClaimValue("nickname");
+      final String email = jwtClaims.getStringClaimValue("email");
+      final String fullName = jwtClaims.getStringClaimValue("name");
+      final List<String> domains = jwtClaims.getStringListClaimValue("domains");
+
       domains.forEach(name -> domainsSet.add(new Domain(name, null, null)));
+
       return new User(nickname, email, userReference, fullName, domainsSet);
-    } catch (InvalidJwtException | MalformedClaimException e) {
-      return tryParsingWebinJwt(token);
-    } catch (Exception e) {
-      return tryParsingWebinJwt(token);
+    } catch (final Exception e) {
+      return tryParsingWebinAuthToken(token);
     }
   }
 
-  private User tryParsingWebinJwt(String token) {
+  private User tryParsingWebinAuthToken(final String token) {
     try {
       final Claims claims = decodeJWT(token);
 
@@ -56,7 +54,7 @@ public class BioSamplesTokenHandler extends TokenHandler {
       } else {
         return new User(null, null, claims.get("principle", String.class), null, null);
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       log.info("Cannot parse token: " + e.getMessage());
     }
 
