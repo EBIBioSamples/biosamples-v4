@@ -237,19 +237,10 @@ public class BulkActionControllerV2 {
   public ResponseEntity<List<Sample>> postSamplesV2(
       @RequestBody final List<Sample> samples,
       @RequestHeader(name = "Authorization") final String token) {
-    log.info("Received POST for " + samples.size() + " samples");
+    log.info("V2-Received POST for " + samples.size() + " samples");
 
     final List<Sample> createdSamples;
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-
-    log.info("Auth token here is " + authToken);
-
-    if (authToken.isPresent()) {
-      log.info("Auth token present");
-    } else {
-      log.info("Auth token not present");
-    }
-
     final AuthorizationProvider authProvider =
         authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
             ? AuthorizationProvider.WEBIN
@@ -330,6 +321,13 @@ public class BulkActionControllerV2 {
                   })
               .collect(Collectors.toList());
     }
+
+    log.info(
+        "V2-Received bulk-submit request for : "
+            + samples.size()
+            + " samples and persisted : "
+            + createdSamples.size()
+            + " samples.");
 
     return ResponseEntity.status(HttpStatus.CREATED).body(createdSamples);
   }
