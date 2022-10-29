@@ -74,14 +74,13 @@ public class GlobalExceptions {
     private static final long serialVersionUID = -6250819256457895445L;
   }
 
-  @ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Invalid authentication token")
   public static class AccessControlException extends RuntimeException {
     public AccessControlException() {
       super();
     }
 
-    public AccessControlException(Throwable e) {
-      super(e);
+    public AccessControlException(final String message) {
+      super(message);
     }
   }
 

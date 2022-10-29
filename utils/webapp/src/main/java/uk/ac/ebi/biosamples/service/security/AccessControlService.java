@@ -17,8 +17,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
+import org.springframework.web.server.ResponseStatusException;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 
@@ -44,7 +45,7 @@ public class AccessControlService {
       String payload = new String(decoder.decode(chunks[1]));
 
       if (!verifySignature()) {
-        throw new GlobalExceptions.AccessControlException();
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
       }
 
       AuthToken authToken;
@@ -71,12 +72,14 @@ public class AccessControlService {
 
         authToken = new AuthToken(algorithm, authority, user, roles);
       } catch (IOException e) {
-        throw new GlobalExceptions.AccessControlException(e);
+        throw new ResponseStatusException(
+            HttpStatus.UNAUTHORIZED, "Invalid authentication details provided", e);
       }
 
       return Optional.of(authToken);
     } catch (final Exception e) {
-      throw new GlobalExceptions.AccessControlException(e);
+      throw new ResponseStatusException(
+          HttpStatus.UNAUTHORIZED, "Invalid authentication details provided", e);
     }
   }
 
@@ -84,7 +87,7 @@ public class AccessControlService {
     final DecodedJWT jwt = JWT.decode(token);
 
     if (jwt.getExpiresAt().before(new Date())) {
-      throw new GlobalExceptions.AccessControlException();
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
     }
   }
 
