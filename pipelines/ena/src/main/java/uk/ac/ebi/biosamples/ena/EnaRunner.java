@@ -35,7 +35,6 @@ import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
 import uk.ac.ebi.biosamples.mongo.repo.MongoPipelineRepository;
 import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
@@ -66,26 +65,16 @@ public class EnaRunner implements ApplicationRunner {
 
   @Autowired private BioSamplesClient bioSamplesAapClient;
   private final Map<String, Future<Void>> futures = new LinkedHashMap<>();
-  private final Map<String, Set<StructuredDataTable>> sampleToAmrMap = new HashMap<>();
   public static final Map<String, String> failures = new HashMap<>();
 
   @Override
   public void run(ApplicationArguments args) throws Exception {
     log.info("Processing ENA pipeline...");
 
-    boolean includeAmr = true;
     boolean processBacklogs = true;
     boolean isPassed = true;
 
     String pipelineFailureCause = null;
-
-    if (args.getOptionNames().contains("includeAmr")) {
-      if (args.getOptionValues("includeAmr").iterator().next().equalsIgnoreCase("false")) {
-        includeAmr = false;
-      }
-    } else {
-      includeAmr = false;
-    }
 
     if (args.getOptionNames().contains("processBacklogs")) {
       if (args.getOptionValues("processBacklogs").iterator().next().equalsIgnoreCase("false")) {
@@ -93,14 +82,6 @@ public class EnaRunner implements ApplicationRunner {
       }
     } else {
       processBacklogs = false;
-    }
-
-    if (includeAmr && isFirstDayOfTheWeek()) {
-      try {
-        // sampleToAmrMap = amrDataLoaderService.loadAmrData();
-      } catch (final Exception e) {
-        log.error("Error in processing AMR data from ENA API - continue with the pipeline");
-      }
     }
 
     try {
@@ -127,7 +108,7 @@ public class EnaRunner implements ApplicationRunner {
       log.info("Running from date range from " + fromDate + " until " + toDate);
 
       // Import ENA samples
-      importEraSamples(fromDate, toDate, sampleToAmrMap);
+      importEraSamples(fromDate, toDate);
 
       if (processBacklogs) {
         backfillEnaBrowserMissingSamples(args);
@@ -315,7 +296,7 @@ public class EnaRunner implements ApplicationRunner {
               log.info("Sample doesn't exists, fetch from ERAPRO " + bioSampleId);
 
               final Callable<Void> callable =
-                  enaCallableFactory.build(sampleDBBean.getBiosampleId(), null, null);
+                  enaCallableFactory.build(sampleDBBean.getBiosampleId(), null);
 
               executorService.submit(callable).get();
             }
@@ -326,8 +307,6 @@ public class EnaRunner implements ApplicationRunner {
               throw new RuntimeException(
                   "Failed to handle the sample with accession " + bioSampleId);
             }
-
-            success = false;
           }
         }
       } else {
@@ -365,8 +344,6 @@ public class EnaRunner implements ApplicationRunner {
               throw new RuntimeException(
                   "Failed to handle the sample with accession " + bioSampleId);
             }
-
-            success = false;
           }
         }
       }
@@ -402,16 +379,12 @@ public class EnaRunner implements ApplicationRunner {
     }
   }
 
-  private void importEraSamples(
-      final LocalDate fromDate,
-      final LocalDate toDate,
-      final Map<String, Set<StructuredDataTable>> sampleToAmrMap)
-      throws Exception {
+  private void importEraSamples(final LocalDate fromDate, final LocalDate toDate) throws Exception {
     log.info("Handling ENA and NCBI Samples");
 
     if (pipelinesProperties.getThreadCount() == 0) {
       final EraRowCallbackHandler eraRowCallbackHandler =
-          new EraRowCallbackHandler(null, enaCallableFactory, futures, sampleToAmrMap);
+          new EraRowCallbackHandler(null, enaCallableFactory, futures);
 
       eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
 
@@ -429,7 +402,7 @@ public class EnaRunner implements ApplicationRunner {
               pipelinesProperties.getThreadCountMax())) {
 
         final EraRowCallbackHandler eraRowCallbackHandler =
-            new EraRowCallbackHandler(executorService, enaCallableFactory, futures, sampleToAmrMap);
+            new EraRowCallbackHandler(executorService, enaCallableFactory, futures);
 
         eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
 
@@ -448,16 +421,13 @@ public class EnaRunner implements ApplicationRunner {
     private final AdaptiveThreadPoolExecutor executorService;
     private final EnaCallableFactory enaCallableFactory;
     private final Map<String, Future<Void>> futures;
-    private final Map<String, Set<StructuredDataTable>> sampleToAmrMap;
 
     public EraRowCallbackHandler(
         final AdaptiveThreadPoolExecutor executorService,
         final EnaCallableFactory enaCallableFactory,
-        final Map<String, Future<Void>> futures,
-        final Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
+        final Map<String, Future<Void>> futures) {
       this.executorService = executorService;
       this.enaCallableFactory = enaCallableFactory;
-      this.sampleToAmrMap = sampleToAmrMap;
       this.futures = futures;
     }
 
@@ -470,7 +440,7 @@ public class EnaRunner implements ApplicationRunner {
       TEMPORARY_KILLED(8);
 
       private final int value;
-      private static final Map<Integer, ENAStatus> map = new HashMap<>();
+      private static final Map<Integer, ENAStatus> enaSampleStatusIdToNameMap = new HashMap<>();
 
       ENAStatus(int value) {
         this.value = value;
@@ -478,12 +448,12 @@ public class EnaRunner implements ApplicationRunner {
 
       static {
         for (final ENAStatus enaStatus : ENAStatus.values()) {
-          map.put(enaStatus.value, enaStatus);
+          enaSampleStatusIdToNameMap.put(enaStatus.value, enaStatus);
         }
       }
 
       public static ENAStatus valueOf(int pageType) {
-        return map.get(pageType);
+        return enaSampleStatusIdToNameMap.get(pageType);
       }
     }
 
@@ -494,11 +464,6 @@ public class EnaRunner implements ApplicationRunner {
       final String egaId = rs.getString("EGA_ID");
       final java.sql.Date lastUpdated = rs.getDate("LAST_UPDATED");
       final ENAStatus enaStatus = ENAStatus.valueOf(statusID);
-      Set<StructuredDataTable> amrData = new HashSet<>();
-
-      if (sampleToAmrMap.containsKey(sampleAccession)) {
-        amrData = sampleToAmrMap.get(sampleAccession);
-      }
 
       switch (enaStatus) {
         case PUBLIC:
@@ -511,14 +476,8 @@ public class EnaRunner implements ApplicationRunner {
               String.format(
                   "%s is being handled as status is %s and last updated is %s",
                   sampleAccession, enaStatus.name(), lastUpdated));
-          Callable<Void> callable;
           // update if sample already exists else import
-
-          if (!amrData.isEmpty()) {
-            callable = enaCallableFactory.build(sampleAccession, egaId, amrData);
-          } else {
-            callable = enaCallableFactory.build(sampleAccession, egaId, null);
-          }
+          final Callable<Void> callable = enaCallableFactory.build(sampleAccession, egaId);
 
           if (executorService == null) {
             try {
@@ -596,12 +555,5 @@ public class EnaRunner implements ApplicationRunner {
         }
       }
     }
-  }
-
-  private boolean isFirstDayOfTheWeek() {
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(new Date());
-
-    return calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY;
   }
 }
