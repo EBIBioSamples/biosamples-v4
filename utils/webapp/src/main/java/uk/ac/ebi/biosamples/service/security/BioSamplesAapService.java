@@ -39,19 +39,19 @@ public class BioSamplesAapService {
   private final AapDomainService domainService;
 
   public BioSamplesAapService(
-      BioSamplesProperties bioSamplesProperties,
-      AapTokenService tokenService,
-      AapDomainService domainService) {
+      final BioSamplesProperties bioSamplesProperties,
+      final AapTokenService tokenService,
+      final AapDomainService domainService) {
     this.tokenService = tokenService;
     this.domainService = domainService;
     this.bioSamplesProperties = bioSamplesProperties;
   }
 
-  public String authenticate(String userName, String password) {
+  public String authenticate(final String userName, final String password) {
     return tokenService.getAAPToken(userName, password);
   }
 
-  public List<String> getDomains(String token) {
+  public List<String> getDomains(final String token) {
     domainService.getMyDomains(token).forEach(domain -> log.info(domain.getDomainName()));
 
     return domainService.getMyDomains(token).stream()
@@ -64,7 +64,7 @@ public class BioSamplesAapService {
    * security) Always returns a set, even if its empty if not logged in
    */
   public Set<String> getDomains() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     log.trace("authentication = " + authentication);
 
     // not sure this can ever happen
@@ -75,7 +75,7 @@ public class BioSamplesAapService {
       return Collections.emptySet();
     } else if (authentication instanceof UserAuthentication) {
 
-      UserAuthentication userAuthentication = (UserAuthentication) authentication;
+      final UserAuthentication userAuthentication = (UserAuthentication) authentication;
 
       log.trace("userAuthentication = " + userAuthentication.getName());
 
@@ -86,16 +86,16 @@ public class BioSamplesAapService {
       log.trace("userAuthentication = " + userAuthentication.getPrincipal());
       log.trace("userAuthentication = " + userAuthentication.getCredentials());
 
-      Set<String> domains = new HashSet<>();
+      final Set<String> domains = new HashSet<>();
 
       if (authorities == null) {
         return Collections.emptySet();
       }
 
-      for (GrantedAuthority authority : authorities) {
+      for (final GrantedAuthority authority : authorities) {
         if (authority instanceof Domain) {
           log.trace("Found domain " + authority);
-          Domain domain = (Domain) authority;
+          final Domain domain = (Domain) authority;
 
           log.trace("domain.getDomainName() = " + domain.getDomainName());
           log.trace("domain.getDomainReference() = " + domain.getDomainReference());
@@ -125,7 +125,7 @@ public class BioSamplesAapService {
    * <p>May return a different version of the sample, so return needs to be stored in future for
    * that sample.
    */
-  public Sample handleSampleDomain(Sample sample, Optional<Sample> oldSample)
+  public Sample handleSampleDomain(final Sample sample, final Optional<Sample> oldSample)
       throws GlobalExceptions.SampleNotAccessibleException,
           GlobalExceptions.DomainMissingException {
     // Get the domains the current user has access to
@@ -152,11 +152,10 @@ public class BioSamplesAapService {
         // if the sample doesn't have a domain, and the user has one domain, then they must be
         // submitting to that domain
         if (usersDomains.size() > 0) {
-          sample =
-              Sample.Builder.fromSample(sample)
-                  .withDomain(usersDomains.iterator().next())
-                  .withNoWebinSubmissionAccountId()
-                  .build();
+          return Sample.Builder.fromSample(sample)
+              .withDomain(usersDomains.iterator().next())
+              .withNoWebinSubmissionAccountId()
+              .build();
         } else {
           throw new GlobalExceptions.DomainMissingException();
         }
@@ -178,7 +177,7 @@ public class BioSamplesAapService {
     }
   }
 
-  public void handleStructuredDataDomain(StructuredData structuredData) {
+  public void handleStructuredDataDomain(final StructuredData structuredData) {
     final Set<String> usersDomains = getDomains();
     if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
       return;
@@ -196,7 +195,7 @@ public class BioSamplesAapService {
             });
   }
 
-  public boolean isStructuredDataSubmittedBySampleSubmitter(Sample sample)
+  public boolean isStructuredDataSubmittedBySampleSubmitter(final Sample sample)
       throws GlobalExceptions.StructuredDataNotAccessibleException,
           GlobalExceptions.StructuredDataDomainMissingException {
     // get the domains the current user has access to
@@ -224,9 +223,13 @@ public class BioSamplesAapService {
               }
             });
 
-    if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) return true;
-    else if (isDomainValid.get()) return true;
-    else throw new GlobalExceptions.StructuredDataNotAccessibleException();
+    if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
+      return true;
+    } else if (isDomainValid.get()) {
+      return true;
+    } else {
+      throw new GlobalExceptions.StructuredDataNotAccessibleException();
+    }
   }
 
   /**
@@ -240,7 +243,7 @@ public class BioSamplesAapService {
       throws GlobalExceptions.CurationLinkDomainMissingException {
 
     // get the domains the current user has access to
-    Set<String> usersDomains = getDomains();
+    final Set<String> usersDomains = getDomains();
 
     if (curationLink.getDomain() == null || curationLink.getDomain().length() == 0) {
       // if the sample doesn't have a domain, and the user has one domain, then they must be
@@ -282,7 +285,7 @@ public class BioSamplesAapService {
     return getDomains().contains("self.BiosampleIntegrationTest");
   }
 
-  public void isSampleAccessible(Sample sample)
+  public void isSampleAccessible(final Sample sample)
       throws GlobalExceptions.SampleNotAccessibleException {
     // TODO throw different exceptions in different situations
     if (sample.getRelease().isBefore(Instant.now())) {

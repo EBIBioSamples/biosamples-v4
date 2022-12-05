@@ -14,7 +14,9 @@ import static org.springframework.data.mongodb.core.FindAndModifyOptions.options
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
-import java.util.*;
+import java.util.Objects;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -28,7 +30,7 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 // this needs to be the spring exception, not the mongo one
 public class MongoAccessionService {
   private static final int MAX_RETRIES = 5;
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final MongoSampleRepository mongoSampleRepository;
   private final SampleToMongoSampleConverter sampleToMongoSampleConverter;
@@ -57,7 +59,7 @@ public class MongoAccessionService {
   }
 
   private MongoSample accessionAndInsert(MongoSample sample) {
-    log.trace("generating an accession");
+    log.trace("Generating a new accession");
 
     final MongoSample originalSample = sample;
     // inspired by Counter collection + Optimistic Loops of
@@ -70,14 +72,14 @@ public class MongoAccessionService {
       // TODO add a timeout here
       try {
         sample = prepare(sample, getAccession());
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       }
 
       try {
         sample = mongoSampleRepository.insertNew(sample);
         success = true;
-      } catch (Exception e) {
+      } catch (final Exception e) {
         if (++numRetry == MAX_RETRIES) {
           throw new RuntimeException(
               "Cannot generate a new BioSample accession. please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
@@ -94,12 +96,12 @@ public class MongoAccessionService {
   }
 
   private String getAccession() {
-    return prefix + generateUniqueAccession(MongoSample.SEQUENCE_NAME);
+    return prefix + generateUniqueAccession();
   }
 
-  private MongoSample prepare(MongoSample sample, String accession) {
-    SortedSet<MongoRelationship> relationships = sample.getRelationships();
-    SortedSet<MongoRelationship> newRelationships = new TreeSet<>();
+  private MongoSample prepare(MongoSample sample, final String accession) {
+    final SortedSet<MongoRelationship> relationships = sample.getRelationships();
+    final SortedSet<MongoRelationship> newRelationships = new TreeSet<>();
     for (final MongoRelationship relationship : relationships) {
       // this relationship could not specify a source because the sample is unaccessioned
       // now we are assigning an accession, set the source to the accession
@@ -135,10 +137,10 @@ public class MongoAccessionService {
     return sample;
   }
 
-  public long generateUniqueAccession(final String seqName) {
+  private long generateUniqueAccession() {
     final MongoSequence counter =
         mongoOperations.findAndModify(
-            query(where("_id").is(seqName)),
+            query(where("_id").is(MongoSample.SEQUENCE_NAME)),
             new Update().inc("seq", 1),
             options().returnNew(true).upsert(true),
             MongoSequence.class);
