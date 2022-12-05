@@ -28,6 +28,7 @@ public class ExternalReferenceUtils {
   public static final String EGA_SAMPLE_BASE_URL_FRAGMENT = "ega-archive.org/metadata";
   public static final String EGA_STUDY_BASE_URL_FRAGMENT = "ega-archive.org/studies";
   public static final String BIOSTUDIES_BASE_URL_FRAGMENT = "ebi.ac.uk/biostudies";
+  public static final String EVA_BASE_URL_FRAGMENT = "ebi.ac.uk/eva";
   public static final String DUO_BASE_URL = "http://purl.obolibrary.org/obo/";
 
   public static String getNickname(ExternalReference externalReference) {
@@ -47,6 +48,8 @@ public class ExternalReferenceUtils {
       return "EGA Study";
     } else if (externalReference.getUrl().contains(BIOSTUDIES_BASE_URL_FRAGMENT)) {
       return "BioStudies";
+    }  else if (externalReference.getUrl().contains(EVA_BASE_URL_FRAGMENT)) {
+      return "EVA";
     } else {
       return "other";
     }
@@ -71,6 +74,11 @@ public class ExternalReferenceUtils {
           UriComponentsBuilder.fromHttpUrl(externalReference.getUrl()).build();
       String studyId = uriComponents.getQueryParams().getFirst("study_id");
       return Optional.of(studyId);
+    } else if ("EVA".equals(nickname)) {
+      UriComponents uriComponents =
+          UriComponentsBuilder.fromHttpUrl(externalReference.getUrl()).build();
+      String evaStudyId = uriComponents.getQueryParams().getFirst("eva-study");
+      return Optional.of(evaStudyId);
     }
     return Optional.empty();
   }

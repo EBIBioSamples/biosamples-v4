@@ -22,6 +22,19 @@
 		<profile>
 			<id>embl-ebi</id>
 		</profile>
+		<profile>
+			<id>nexus</id>
+			<distributionManagement>
+				<repository>
+					<id>ebi.nexus</id>
+					<url>https://www.ebi.ac.uk/Tools/maven/repos/content/repositories/biosamples/</url>
+				</repository>
+				<snapshotRepository>
+					<id>ebi.nexus</id>
+					<url>https://www.ebi.ac.uk/Tools/maven/repos/content/repositories/biosamples-snapshots/</url>
+				</snapshotRepository>
+			</distributionManagement>
+		</profile>
 	</profiles>
 	<modules>
 		<module>models</module>
