@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.2.14-SNAPSHOT</version>
+		<version>5.2.14-RC1</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -16,17 +16,17 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-common</artifactId>
-			<version>5.2.14-SNAPSHOT</version>
+			<version>5.2.14-RC1</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-xml</artifactId>
-			<version>5.2.14-SNAPSHOT</version>
+			<version>5.2.14-RC1</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-core</artifactId>
-			<version>5.2.14-SNAPSHOT</version>
+			<version>5.2.14-RC1</version>
 		</dependency>
 
 		<!-- need this for Jackson2ObjectMapperBuilder -->
