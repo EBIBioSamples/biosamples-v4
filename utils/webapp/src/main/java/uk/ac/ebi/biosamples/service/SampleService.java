@@ -20,7 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
-import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
@@ -56,17 +57,18 @@ public class SampleService {
   @Autowired private SampleToMongoSampleConverter sampleToMongoSampleConverter;
   @Autowired private SampleValidator sampleValidator;
   @Autowired private SampleReadService sampleReadService;
-  @Autowired private MessagingService messagingSerivce;
+  @Autowired private MessagingService messagingService;
 
   /** Throws an IllegalArgumentException of no sample with that accession exists */
-  public Optional<Sample> fetch(String accession, Optional<List<String>> curationDomains) {
+  public Optional<Sample> fetch(
+      final String accession, final Optional<List<String>> curationDomains) {
     return sampleReadService.fetch(accession, curationDomains);
   }
 
   /*
   Checks if the current sample that exists has no metadata, returns true if empty
    */
-  public boolean isExistingSampleEmpty(
+  private boolean isExistingSampleEmpty(
       final Sample sample, final boolean isWebinSuperUser, final Sample oldSample) {
     final String domain = sample.getDomain();
 
@@ -96,7 +98,7 @@ public class SampleService {
     }
   }
 
-  public boolean isAPipelineAapDomain(String domain) {
+  public boolean isAPipelineAapDomain(final String domain) {
     return isPipelineEnaDomain(domain) || isPipelineNcbiDomain(domain);
   }
 
@@ -154,7 +156,7 @@ public class SampleService {
       final AuthorizationProvider authProvider,
       final boolean isWebinSuperUser) {
     boolean isSampleTaxIdUpdated = false;
-    Collection<String> errors = sampleValidator.validate(sample);
+    final Collection<String> errors = sampleValidator.validate(sample);
 
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
@@ -207,10 +209,10 @@ public class SampleService {
       // send a message for storage and further processing, send relationship targets to
       // identify
       // deleted relationships
-      messagingSerivce.fetchThenSendMessage(sample.getAccession(), existingRelationshipTargets);
+      messagingService.fetchThenSendMessage(sample.getAccession(), existingRelationshipTargets);
     } else {
       sample = mongoAccessionService.generateAccession(sample);
-      messagingSerivce.fetchThenSendMessage(sample.getAccession());
+      messagingService.fetchThenSendMessage(sample.getAccession());
     }
 
     // do a fetch to return it with accession, curation objects, inverse relationships
@@ -238,7 +240,7 @@ public class SampleService {
       final Sample oldSample,
       final AuthorizationProvider authProvider,
       final boolean isWebinSuperUser) {
-    Collection<String> errors = sampleValidator.validate(sample);
+    final Collection<String> errors = sampleValidator.validate(sample);
 
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
@@ -281,8 +283,8 @@ public class SampleService {
   /*
   Called by V2 endpoints to build a sample with a newly generated sample accession
    */
-  public Sample accessionSample(Sample sample) {
-    Collection<String> errors = sampleValidator.validate(sample);
+  public Sample accessionSample(final Sample sample) {
+    final Collection<String> errors = sampleValidator.validate(sample);
 
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
@@ -304,9 +306,9 @@ public class SampleService {
   }
 
   private List<String> getExistingRelationshipTargets(
-      String accession, MongoSample mongoOldSample) {
-    List<String> oldRelationshipTargets = new ArrayList<>();
-    for (MongoRelationship relationship : mongoOldSample.getRelationships()) {
+      final String accession, final MongoSample mongoOldSample) {
+    final List<String> oldRelationshipTargets = new ArrayList<>();
+    for (final MongoRelationship relationship : mongoOldSample.getRelationships()) {
       if (relationship.getSource().equals(accession)) {
         oldRelationshipTargets.add(relationship.getTarget());
       }
@@ -316,10 +318,10 @@ public class SampleService {
   }
 
   private Sample compareWithExistingAndUpdateSample(
-      Sample newSample,
-      Sample oldSample,
-      boolean isEmptySample,
-      AuthorizationProvider authProvider) {
+      final Sample newSample,
+      final Sample oldSample,
+      final boolean isEmptySample,
+      final AuthorizationProvider authProvider) {
     Set<AbstractData> structuredData = new HashSet<>();
     boolean applyOldSampleStructuredData = false;
 
@@ -391,21 +393,25 @@ public class SampleService {
     }
   }
 
-  private boolean isPipelineEnaDomain(String domain) {
-    if (domain == null) return false;
+  private boolean isPipelineEnaDomain(final String domain) {
+    if (domain == null) {
+      return false;
+    }
     return domain.equalsIgnoreCase(ENA_IMPORT_DOMAIN);
   }
 
-  private boolean isPipelineNcbiDomain(String domain) {
-    if (domain == null) return false;
+  private boolean isPipelineNcbiDomain(final String domain) {
+    if (domain == null) {
+      return false;
+    }
     return domain.equalsIgnoreCase(NCBI_IMPORT_DOMAIN);
   }
 
   private Instant defineSubmittedDate(
       final Sample newSample,
       final Sample oldSample,
-      boolean isEmptySample,
-      AuthorizationProvider authProvider) {
+      final boolean isEmptySample,
+      final AuthorizationProvider authProvider) {
     if (authProvider == AuthorizationProvider.WEBIN) {
       if (isEmptySample) {
         return newSample.getSubmitted();

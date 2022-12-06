@@ -48,7 +48,7 @@ public class ExternalReferenceUtils {
       return "EGA Study";
     } else if (externalReference.getUrl().contains(BIOSTUDIES_BASE_URL_FRAGMENT)) {
       return "BioStudies";
-    }  else if (externalReference.getUrl().contains(EVA_BASE_URL_FRAGMENT)) {
+    } else if (externalReference.getUrl().contains(EVA_BASE_URL_FRAGMENT)) {
       return "EVA";
     } else {
       return "other";
