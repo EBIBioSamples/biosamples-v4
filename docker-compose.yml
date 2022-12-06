@@ -338,7 +338,7 @@ services:
     - BIOSAMPLES_NEO_URL=bolt://neo4j:7687
 
   json-schema-validator:
-    image: quay.io/ebi-ait/biovalidator:2.0.0
+    image: quay.io/ebi-ait/biovalidator:2.0.1
     ports:
       - 3020:3020
 
