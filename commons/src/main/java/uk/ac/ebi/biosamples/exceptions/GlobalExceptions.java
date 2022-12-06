@@ -43,17 +43,17 @@ public class GlobalExceptions {
   }
 
   public static class SampleValidationException extends RuntimeException {
-    public SampleValidationException(String message) {
+    public SampleValidationException(final String message) {
       super(message);
     }
   }
 
   public static class SchemaValidationException extends RuntimeException {
-    public SchemaValidationException(String message, Exception e) {
+    public SchemaValidationException(final String message, final Exception e) {
       super(message, e);
     }
 
-    public SchemaValidationException(String message) {
+    public SchemaValidationException(final String message) {
       super(message);
     }
   }
@@ -88,7 +88,7 @@ public class GlobalExceptions {
   public static class SampleValidationControllerException extends RuntimeException {
     private static final long serialVersionUID = -7937033504537036300L;
 
-    public SampleValidationControllerException(String message) {
+    public SampleValidationControllerException(final String message) {
       super(message);
     }
   }
@@ -154,13 +154,13 @@ public class GlobalExceptions {
 
   @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR, reason = "Bulk accessioning failure")
   public static class BulkAccessionFailureExceptionV2 extends RuntimeException {
-    public BulkAccessionFailureExceptionV2(String message) {
+    public BulkAccessionFailureExceptionV2(final String message) {
       super(message);
     }
   }
 
   public static class SampleConversionException extends RuntimeException {
-    public SampleConversionException(String message) {
+    public SampleConversionException(final String message) {
       super(message);
     }
   }

@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>biosamples</artifactId>
-	<version>5.2.13-RC1</version>
+	<version>5.2.14-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -21,6 +21,19 @@
 	<profiles>
 		<profile>
 			<id>embl-ebi</id>
+		</profile>
+		<profile>
+			<id>nexus</id>
+			<distributionManagement>
+				<repository>
+					<id>ebi.nexus</id>
+					<url>https://www.ebi.ac.uk/Tools/maven/repos/content/repositories/biosamples/</url>
+				</repository>
+				<snapshotRepository>
+					<id>ebi.nexus</id>
+					<url>https://www.ebi.ac.uk/Tools/maven/repos/content/repositories/biosamples-snapshots/</url>
+				</snapshotRepository>
+			</distributionManagement>
 		</profile>
 	</profiles>
 	<modules>

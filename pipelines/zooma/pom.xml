@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.2.13-RC1</version>
+		<version>5.2.14-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -20,17 +20,17 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-pipeline</artifactId>
-			<version>5.2.13-RC1</version>
+			<version>5.2.14-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-thread</artifactId>
-			<version>5.2.13-RC1</version>
+			<version>5.2.14-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-ols</artifactId>
-			<version>5.2.13-RC1</version>
+			<version>5.2.14-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.ben-manes.caffeine</groupId>
@@ -39,7 +39,7 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>commons</artifactId>
-			<version>5.2.13-RC1</version>
+			<version>5.2.14-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>

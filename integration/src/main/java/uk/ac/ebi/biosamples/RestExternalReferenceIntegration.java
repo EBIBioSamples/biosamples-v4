@@ -141,6 +141,8 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
     externalReferences.add(ExternalReference.build("http://www.test.com/6"));
     externalReferences.add(ExternalReference.build("http://www.ebi.ac.uk/biostudies/7"));
     externalReferences.add(
+        ExternalReference.build("https://www.ebi.ac.uk/eva/?eva-study=PRJEB42148"));
+    externalReferences.add(
         ExternalReference.build(
             "http://ega-archive.org/datasets/EGAD00001001600",
             new TreeSet<>(

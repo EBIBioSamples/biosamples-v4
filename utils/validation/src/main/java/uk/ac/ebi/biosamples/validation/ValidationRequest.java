@@ -14,11 +14,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public class ValidationRequest {
   private JsonNode schema;
-  private JsonNode object;
+  private JsonNode data;
 
-  public ValidationRequest(JsonNode schema, JsonNode object) {
+  public ValidationRequest(JsonNode schema, JsonNode data) {
     this.schema = schema;
-    this.object = object;
+    this.data = data;
   }
 
   public JsonNode getSchema() {
@@ -29,11 +29,11 @@ public class ValidationRequest {
     this.schema = schema;
   }
 
-  public JsonNode getObject() {
-    return object;
+  public JsonNode getData() {
+    return data;
   }
 
-  public void setObject(JsonNode object) {
-    this.object = object;
+  public void setData(JsonNode data) {
+    this.data = data;
   }
 }

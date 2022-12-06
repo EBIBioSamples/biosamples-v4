@@ -76,17 +76,17 @@ public class SamplesRestController {
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   public SamplesRestController(
-      SamplePageService samplePageService,
-      FilterService filterService,
-      BioSamplesAapService bioSamplesAapService,
-      BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-      SampleResourceAssembler sampleResourceAssembler,
-      SampleManipulationService sampleManipulationService,
-      SampleService sampleService,
-      BioSamplesProperties bioSamplesProperties,
-      SchemaValidationService schemaValidationService,
-      TaxonomyClientService taxonomyClientService,
-      AccessControlService accessControlService) {
+      final SamplePageService samplePageService,
+      final FilterService filterService,
+      final BioSamplesAapService bioSamplesAapService,
+      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+      final SampleResourceAssembler sampleResourceAssembler,
+      final SampleManipulationService sampleManipulationService,
+      final SampleService sampleService,
+      final BioSamplesProperties bioSamplesProperties,
+      final SchemaValidationService schemaValidationService,
+      final TaxonomyClientService taxonomyClientService,
+      final AccessControlService accessControlService) {
     this.samplePageService = samplePageService;
     this.filterService = filterService;
     this.bioSamplesAapService = bioSamplesAapService;
@@ -104,26 +104,27 @@ public class SamplesRestController {
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<CollectionModel<EntityModel<Sample>>> searchHal(
-      @RequestParam(name = "text", required = false) String text,
-      @RequestParam(name = "filter", required = false) String[] filter,
+      @RequestParam(name = "text", required = false) final String text,
+      @RequestParam(name = "filter", required = false) final String[] filter,
       @RequestParam(name = "cursor", required = false) String cursor,
       @RequestParam(name = "page", required = false) final Integer page,
       @RequestParam(name = "size", required = false) final Integer size,
       @RequestParam(name = "sort", required = false) final String[] sort,
-      @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
+      @RequestParam(name = "curationdomain", required = false) final String[] curationdomain,
       @RequestHeader(name = "Authorization", required = false) final String token) {
 
-    // Need to decode the %20 and similar from the parameters
-    // this is *not* needed for the html controller
-    String decodedText = LinkUtils.decodeText(text);
-    String[] decodedFilter = LinkUtils.decodeTexts(filter);
+    // Need to decode the %20 and similar from the parameters, this is *not* needed for the html
+    // controller
+    final String decodedText = LinkUtils.decodeText(text);
+    final String[] decodedFilter = LinkUtils.decodeTexts(filter);
     String decodedCursor = LinkUtils.decodeText(cursor);
-    Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
+    final Optional<List<String>> decodedCurationDomains =
+        LinkUtils.decodeTextsToArray(curationdomain);
     String webinSubmissionAccountId = null;
     Collection<String> domains = null;
 
-    int effectivePage = page == null || page < 0 ? 0 : page;
-    int effectiveSize = size == null || size < 1 ? 20 : size;
+    final int effectivePage = page == null || page < 0 ? 0 : page;
+    final int effectiveSize = size == null || size < 1 ? 20 : size;
     if (effectivePage > 500 || effectiveSize > 200) {
       throw new PaginationException(); // solr degrades with high page and size params, use cursor
       // instead
@@ -134,7 +135,7 @@ public class SamplesRestController {
       decodedCursor = "*";
     }
 
-    Optional<AuthToken> authToken = accessControlService.extractToken(token);
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
 
     final boolean webinAuth =
         authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
@@ -145,12 +146,12 @@ public class SamplesRestController {
       domains = bioSamplesAapService.getDomains();
     }
 
-    Collection<Filter> filters = filterService.getFiltersCollection(decodedFilter);
+    final Collection<Filter> filters = filterService.getFiltersCollection(decodedFilter);
 
     // Note - EBI load balancer does cache but doesn't add age header, so clients could cache up
     // to
     // twice this age
-    CacheControl cacheControl =
+    final CacheControl cacheControl =
         CacheControl.maxAge(
             bioSamplesProperties.getBiosamplesCorePageCacheMaxAge(), TimeUnit.SECONDS);
     // if the user has access to any domains, then mark the response as private as must be using
@@ -162,7 +163,7 @@ public class SamplesRestController {
 
     if (cursor != null) {
       log.trace("This cursor = " + decodedCursor);
-      CursorArrayList<Sample> samples =
+      final CursorArrayList<Sample> samples =
           samplePageService.getSamplesByText(
               decodedText,
               filters,
@@ -173,7 +174,7 @@ public class SamplesRestController {
               decodedCurationDomains);
       log.trace("Next cursor = " + samples.getNextCursorMark());
 
-      CollectionModel<EntityModel<Sample>> resources =
+      final CollectionModel<EntityModel<Sample>> resources =
           CollectionModel.of(
               samples.stream()
                   .map(
@@ -191,7 +192,7 @@ public class SamplesRestController {
               decodedCursor,
               effectiveSize,
               IanaLinkRelations.SELF.value(),
-              this.getClass()));
+              getClass()));
       // only display the next link if there is a next cursor to go to
       if (!LinkUtils.decodeText(samples.getNextCursorMark()).equals(decodedCursor)
           && !samples.getNextCursorMark().equals("*")) {
@@ -203,10 +204,10 @@ public class SamplesRestController {
                 samples.getNextCursorMark(),
                 effectiveSize,
                 IanaLinkRelations.NEXT.value(),
-                this.getClass()));
+                getClass()));
       }
 
-      if (cursor == "*") {
+      if (cursor.equals("*")) {
         resources.add(
             getCursorLink(
                 decodedText,
@@ -215,10 +216,10 @@ public class SamplesRestController {
                 "*",
                 effectiveSize,
                 "cursor",
-                this.getClass()));
+                getClass()));
       }
 
-      UriComponentsBuilder uriComponentsBuilder =
+      final UriComponentsBuilder uriComponentsBuilder =
           WebMvcLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
       // This is a bit of a hack, but best we can do for now...
       resources.add(
@@ -236,15 +237,15 @@ public class SamplesRestController {
         effectiveSort[1] = "id,asc";
       }*/
 
-      Sort pageSort =
+      final Sort pageSort =
           sort != null
               ? Sort.by(Arrays.stream(sort).map(this::parseSort).collect(Collectors.toList()))
               : Sort.unsorted();
-      Pageable pageable = PageRequest.of(effectivePage, effectiveSize, pageSort);
-      Page<Sample> pageSample =
+      final Pageable pageable = PageRequest.of(effectivePage, effectiveSize, pageSort);
+      final Page<Sample> pageSample =
           samplePageService.getSamplesByText(
               text, filters, domains, webinSubmissionAccountId, pageable, decodedCurationDomains);
-      CollectionModel<EntityModel<Sample>> resources =
+      final CollectionModel<EntityModel<Sample>> resources =
           populateResources(
               pageSample,
               effectiveSize,
@@ -260,21 +261,21 @@ public class SamplesRestController {
   }
 
   private CollectionModel<EntityModel<Sample>> populateResources(
-      Page<Sample> pageSample,
-      int effectiveSize,
-      int effectivePage,
-      String authProvider,
-      String decodedText,
-      String[] decodedFilter,
-      String[] sort,
-      Optional<List<String>> decodedCurationDomains) {
-    PagedModel.PageMetadata pageMetadata =
+      final Page<Sample> pageSample,
+      final int effectiveSize,
+      final int effectivePage,
+      final String authProvider,
+      final String decodedText,
+      final String[] decodedFilter,
+      final String[] sort,
+      final Optional<List<String>> decodedCurationDomains) {
+    final PagedModel.PageMetadata pageMetadata =
         new PagedModel.PageMetadata(
             effectiveSize,
             pageSample.getNumber(),
             pageSample.getTotalElements(),
             pageSample.getTotalPages());
-    CollectionModel<EntityModel<Sample>> resources =
+    final CollectionModel<EntityModel<Sample>> resources =
         PagedModel.of(
             pageSample.getContent().stream()
                 .map(
@@ -297,7 +298,7 @@ public class SamplesRestController {
               effectiveSize,
               sort,
               IanaLinkRelations.FIRST.value(),
-              this.getClass()));
+              getClass()));
     }
     // if there was a previous page, link to it
     if (effectivePage > 0) {
@@ -311,7 +312,7 @@ public class SamplesRestController {
               effectiveSize,
               sort,
               IanaLinkRelations.PREVIOUS.value(),
-              this.getClass()));
+              getClass()));
     }
 
     resources.add(
@@ -324,7 +325,7 @@ public class SamplesRestController {
             effectiveSize,
             sort,
             IanaLinkRelations.SELF.value(),
-            this.getClass()));
+            getClass()));
 
     // if there is a next page, link to it
     if (effectivePage < pageSample.getTotalPages() - 1) {
@@ -338,7 +339,7 @@ public class SamplesRestController {
               effectiveSize,
               sort,
               IanaLinkRelations.NEXT.value(),
-              this.getClass()));
+              getClass()));
     }
     // if theres more than one page, link to first and last
     if (pageSample.getTotalPages() > 1) {
@@ -352,7 +353,7 @@ public class SamplesRestController {
               effectiveSize,
               sort,
               IanaLinkRelations.LAST.value(),
-              this.getClass()));
+              getClass()));
     }
     // if we are on the first page and not sorting
     if (effectivePage == 0 && (sort == null || sort.length == 0)) {
@@ -364,10 +365,10 @@ public class SamplesRestController {
               "*",
               effectiveSize,
               "cursor",
-              this.getClass()));
+              getClass()));
     }
 
-    UriComponentsBuilder uriComponentsBuilder =
+    final UriComponentsBuilder uriComponentsBuilder =
         WebMvcLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
     // This is a bit of a hack, but best we can do for now...
     resources.add(
@@ -376,7 +377,7 @@ public class SamplesRestController {
     return resources;
   }
 
-  private Order parseSort(String sort) {
+  private Order parseSort(final String sort) {
     if (sort.endsWith(",desc")) {
       return new Order(Sort.Direction.DESC, sort.substring(0, sort.length() - 5));
     } else if (sort.endsWith(",asc")) {
@@ -390,15 +391,15 @@ public class SamplesRestController {
    * ControllerLinkBuilder seems to have problems linking to the same controller? Split out into
    * manual manipulation for greater control
    */
-  public static Link getCursorLink(
-      String text,
-      String[] filter,
-      Optional<List<String>> decodedCurationDomains,
-      String cursor,
-      int size,
-      String rel,
-      Class controllerClass) {
-    UriComponentsBuilder builder =
+  private static Link getCursorLink(
+      final String text,
+      final String[] filter,
+      final Optional<List<String>> decodedCurationDomains,
+      final String cursor,
+      final int size,
+      final String rel,
+      final Class controllerClass) {
+    final UriComponentsBuilder builder =
         getUriComponentsBuilder(text, filter, decodedCurationDomains, controllerClass);
 
     builder.queryParam("cursor", cursor);
@@ -407,11 +408,11 @@ public class SamplesRestController {
   }
 
   private static UriComponentsBuilder getUriComponentsBuilder(
-      String text,
-      String[] filter,
-      Optional<List<String>> decodedCurationDomains,
-      Class controllerClass) {
-    UriComponentsBuilder builder =
+      final String text,
+      final String[] filter,
+      final Optional<List<String>> decodedCurationDomains,
+      final Class controllerClass) {
+    final UriComponentsBuilder builder =
         WebMvcLinkBuilder.linkTo(controllerClass).toUriComponentsBuilder();
 
     if (text != null && text.trim().length() > 0) {
@@ -419,7 +420,7 @@ public class SamplesRestController {
     }
 
     if (filter != null) {
-      for (String filterString : filter) {
+      for (final String filterString : filter) {
         builder.queryParam("filter", filterString);
       }
     }
@@ -428,7 +429,7 @@ public class SamplesRestController {
       if (decodedCurationDomains.get().isEmpty()) {
         builder.queryParam("curationdomain", "");
       } else {
-        for (String d : decodedCurationDomains.get()) {
+        for (final String d : decodedCurationDomains.get()) {
           builder.queryParam("curationdomain", d);
         }
       }
@@ -437,17 +438,17 @@ public class SamplesRestController {
     return builder;
   }
 
-  public static Link getPageLink(
-      String text,
-      String[] filter,
-      String authProvider,
-      Optional<List<String>> decodedCurationDomains,
-      int page,
-      int size,
-      String[] sort,
-      String rel,
-      Class controllerClass) {
-    UriComponentsBuilder builder =
+  static Link getPageLink(
+      final String text,
+      final String[] filter,
+      final String authProvider,
+      final Optional<List<String>> decodedCurationDomains,
+      final int page,
+      final int size,
+      final String[] sort,
+      final String rel,
+      final Class controllerClass) {
+    final UriComponentsBuilder builder =
         getUriComponentsBuilder(text, filter, decodedCurationDomains, controllerClass);
 
     builder.queryParam("page", page);
@@ -455,7 +456,7 @@ public class SamplesRestController {
     builder.queryParam("authProvider", authProvider);
 
     if (sort != null) {
-      for (String sortString : sort) {
+      for (final String sortString : sort) {
         builder.queryParam("sort", sortString);
       }
     }
@@ -466,7 +467,7 @@ public class SamplesRestController {
       consumes = {MediaType.APPLICATION_JSON_VALUE},
       produces = {MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE})
   @RequestMapping("/validate")
-  public ResponseEntity<Sample> validateSample(@RequestBody Sample sample) {
+  public ResponseEntity<Sample> validateSample(@RequestBody final Sample sample) {
     schemaValidationService.validate(sample);
 
     return ResponseEntity.ok(sample);
@@ -521,7 +522,7 @@ public class SamplesRestController {
   public ResponseEntity<EntityModel<Sample>> post(
       @RequestBody Sample sample,
       @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
-          boolean setFullDetails,
+          final boolean setFullDetails,
       @RequestHeader(name = "Authorization") final String token) {
     log.debug("Received POST for " + sample);
 
@@ -610,15 +611,16 @@ public class SamplesRestController {
         sampleService.persistSample(sample, oldSample.orElse(null), authProvider, isWebinSuperUser);
 
     // assemble a resource to return
-    final EntityModel<Sample> sampleResource =
-        sampleResourceAssembler.toModel(sample, this.getClass());
+    final EntityModel<Sample> sampleResource = sampleResourceAssembler.toModel(sample, getClass());
     // create the response object with the appropriate status
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").get().getHref()))
         .body(sampleResource);
   }
 
   private Sample validateSample(
-      Sample sample, AuthorizationProvider authorizationProvider, boolean isWebinSuperUser) {
+      Sample sample,
+      final AuthorizationProvider authorizationProvider,
+      final boolean isWebinSuperUser) {
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
     final boolean isWebinAuth = authorizationProvider == AuthorizationProvider.WEBIN;
 

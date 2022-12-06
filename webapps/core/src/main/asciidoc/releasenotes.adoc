@@ -2,6 +2,27 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+
+[[v5.2.14]]
+== v5.2.14 Release notes
+=== Improvements
+1. Elixir biovalidator upgrade
++
+Elixir biovalidator upgraded to the latest version. This version includes improved performance and error handling.
++
+2. EVA logo in external links
++
+Now EVA links will be identified and shown in the external links section with the logo.
++
+
+=== Bug fixes
+1. At sample submission time if AAP domain is not provided, the first AAP domain of the user is used by default.
+
+=== Note
+Update holiday message - Please note that the BioSamples team will be out of the office from December 19th 2022 to January 2nd 2022.
+Replies to Helpdesk requests will be delayed during this period.
+
+
 [[v5.2.13]]
 == v5.2.13 Release notes
 Internal improvements and critical bug fixes

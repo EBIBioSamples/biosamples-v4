@@ -64,15 +64,15 @@ public class SampleRestController {
   private final AccessControlService accessControlService;
 
   public SampleRestController(
-      SampleService sampleService,
-      BioSamplesAapService bioSamplesAapService,
-      BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-      SampleManipulationService sampleManipulationService,
-      SampleResourceAssembler sampleResourceAssembler,
-      PhenopacketConverter phenopacketConverter,
-      SchemaValidationService schemaValidationService,
-      TaxonomyClientService taxonomyClientService,
-      AccessControlService accessControlService) {
+      final SampleService sampleService,
+      final BioSamplesAapService bioSamplesAapService,
+      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+      final SampleManipulationService sampleManipulationService,
+      final SampleResourceAssembler sampleResourceAssembler,
+      final PhenopacketConverter phenopacketConverter,
+      final SchemaValidationService schemaValidationService,
+      final TaxonomyClientService taxonomyClientService,
+      final AccessControlService accessControlService) {
     this.sampleService = sampleService;
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
@@ -88,12 +88,12 @@ public class SampleRestController {
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public EntityModel<Sample> getSampleHal(
-      @PathVariable String accession,
-      @RequestParam(name = "legacydetails", required = false) String legacydetails,
-      @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
+      @PathVariable final String accession,
+      @RequestParam(name = "legacydetails", required = false) final String legacydetails,
+      @RequestParam(name = "curationdomain", required = false) final String[] curationdomain,
       @RequestHeader(name = "Authorization", required = false) final String token) {
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    // decode percent-encoding from curation domains
+    // decode percent-encodings from curation domains
     final Optional<List<String>> decodedCurationDomains =
         LinkUtils.decodeTextsToArray(curationdomain);
     final Optional<Boolean> decodedLegacyDetails;
@@ -136,13 +136,14 @@ public class SampleRestController {
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping()
   public String getSamplePhenopacket(
-      @PathVariable String accession,
-      @RequestParam(name = "legacydetails", required = false) String legacydetails,
-      @RequestParam(name = "curationdomain", required = false) String[] curationdomain) {
+      @PathVariable final String accession,
+      @RequestParam(name = "legacydetails", required = false) final String legacydetails,
+      @RequestParam(name = "curationdomain", required = false) final String[] curationdomain) {
 
     // decode percent-encoding from curation domains
-    Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
-    Optional<Boolean> decodedLegacyDetails;
+    final Optional<List<String>> decodedCurationDomains =
+        LinkUtils.decodeTextsToArray(curationdomain);
+    final Optional<Boolean> decodedLegacyDetails;
 
     if ("true".equals(legacydetails)) {
       decodedLegacyDetails = Optional.of(Boolean.TRUE);
@@ -171,7 +172,7 @@ public class SampleRestController {
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
   public Sample getSampleXml(
-      @PathVariable String accession,
+      @PathVariable final String accession,
       @RequestHeader(name = "Authorization", required = false) final String token) {
     Sample sample = getSampleHal(accession, "true", null, token).getContent();
 
@@ -192,10 +193,10 @@ public class SampleRestController {
   @PreAuthorize("isAuthenticated()")
   @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public EntityModel<Sample> put(
-      @PathVariable String accession,
+      @PathVariable final String accession,
       @RequestBody Sample sample,
       @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
-          boolean setFullDetails,
+          final boolean setFullDetails,
       @RequestHeader("Authorization") final String token) {
     if (sample == null) {
       throw new RuntimeException("No sample provided");
@@ -297,7 +298,9 @@ public class SampleRestController {
   }
 
   private Sample validateSample(
-      Sample sample, AuthorizationProvider authorizationProvider, boolean isWebinSuperUser) {
+      Sample sample,
+      final AuthorizationProvider authorizationProvider,
+      final boolean isWebinSuperUser) {
     final boolean isWebinAuth = authorizationProvider == AuthorizationProvider.WEBIN;
 
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
