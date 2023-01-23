@@ -105,6 +105,10 @@ public class AmrCleanRunner implements ApplicationRunner {
       int originalSize = dataSet.size();
 
       for (StructuredDataTable data : dataSet) {
+        if (!data.getType().equalsIgnoreCase("AMR")) {
+          continue;
+        }
+
         if ("Webin-40894".equals(data.getWebinSubmissionAccountId())) {
           LOGGER.info("Found ENA imported data: " + structuredData.getAccession());
           enaImportedData.add(data);
@@ -129,7 +133,7 @@ public class AmrCleanRunner implements ApplicationRunner {
       dataSet.removeAll(enaImportedData);
       dataSet.removeAll(emptyDomainAndWebinData);
 
-      LOGGER.info("Accession: " + structuredData.getAccession() + ", original size: " + originalSize + ", now: " + dataSet.size());
+      LOGGER.info(structuredData.getAccession() + ", original size: " + originalSize + ", now: " + dataSet.size());
       mongoStructuredDataRepository.save(structuredData);
 
       return null;
