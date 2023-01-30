@@ -75,20 +75,19 @@ public class StructuredDataTable {
   }
 
   public boolean hasSimilarData(StructuredDataTable other) {
-    if (domain != null
-        && !domain.isEmpty()
-        && other.getDomain() != null
-        && !other.getDomain().isEmpty()) {
+    if (domain != null && !domain.isEmpty()
+        && other.getDomain() != null && !other.getDomain().isEmpty()) {
       if (!domain.equals(other.getDomain())) {
         return false;
       }
-    } else if (webinSubmissionAccountId != null
-        && !webinSubmissionAccountId.isEmpty()
-        && other.getWebinSubmissionAccountId() != null
-        && !other.getWebinSubmissionAccountId().isEmpty()) {
+    } else if (webinSubmissionAccountId != null && !webinSubmissionAccountId.isEmpty()
+        && other.getWebinSubmissionAccountId() != null && !other.getWebinSubmissionAccountId().isEmpty()) {
       if (!webinSubmissionAccountId.equals(other.getWebinSubmissionAccountId())) {
         return false;
       }
+    } else if (webinSubmissionAccountId == null && other.getWebinSubmissionAccountId() == null &&
+        domain == null && other.getDomain() == null) {
+      return type.equalsIgnoreCase(other.type);
     } else {
       return false;
     }
