@@ -37,5 +37,6 @@
 		<module>ncbi</module>
 		<module>ebeye-search-export</module>
 		<module>analytics</module>
+		<module>amr-clean</module>
 	</modules>
 </project>
