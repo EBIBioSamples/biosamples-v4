@@ -17,15 +17,15 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 @Service
 public class NcbiCallableFactory {
   private final BioSamplesClient bioSamplesClient;
-  private final EnaSampleTransformationService enaSampleTransformationService;
+  private final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
   private final String domain;
 
   public NcbiCallableFactory(
       BioSamplesClient bioSamplesClient,
-      EnaSampleTransformationService enaSampleTransformationService,
+      EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService,
       PipelinesProperties pipelinesProperties) {
     this.bioSamplesClient = bioSamplesClient;
-    this.enaSampleTransformationService = enaSampleTransformationService;
+    this.enaSampleToBioSampleConversionService = enaSampleToBioSampleConversionService;
     this.domain = pipelinesProperties.getEnaDomain();
   }
 
@@ -38,6 +38,6 @@ public class NcbiCallableFactory {
   public NcbiCallable build(String accession) {
     return new NcbiCallable(
         accession, bioSamplesClient,
-        domain, enaSampleTransformationService);
+        domain, enaSampleToBioSampleConversionService);
   }
 }

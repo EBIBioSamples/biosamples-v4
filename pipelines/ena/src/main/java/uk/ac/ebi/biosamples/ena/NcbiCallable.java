@@ -28,18 +28,18 @@ public class NcbiCallable implements Callable<Void> {
   private final BioSamplesClient bioSamplesClient;
   private final String domain;
 
-  private final EnaSampleTransformationService enaSampleTransformationService;
+  private final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
 
   /** Construction */
   public NcbiCallable(
       String accession,
       BioSamplesClient bioSamplesClient,
       String domain,
-      EnaSampleTransformationService enaSampleTransformationService) {
+      EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService) {
     this.accession = accession;
     this.bioSamplesClient = bioSamplesClient;
     this.domain = domain;
-    this.enaSampleTransformationService = enaSampleTransformationService;
+    this.enaSampleToBioSampleConversionService = enaSampleToBioSampleConversionService;
   }
 
   @Override
@@ -56,7 +56,8 @@ public class NcbiCallable implements Callable<Void> {
                   + this.accession
                   + " fetching from ERAPRO");
 
-          final Sample sample = enaSampleTransformationService.enrichSample(this.accession, true);
+          final Sample sample =
+              enaSampleToBioSampleConversionService.enrichSample(this.accession, true);
 
           try {
             bioSamplesClient.persistSampleResource(sample);

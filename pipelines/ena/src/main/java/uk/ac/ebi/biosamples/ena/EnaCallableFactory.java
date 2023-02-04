@@ -10,27 +10,24 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import java.util.Set;
 import java.util.concurrent.Callable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 
 @Service
 public class EnaCallableFactory {
   private final BioSamplesClient bioSamplesWebinClient;
-  private final EnaSampleTransformationService enaSampleTransformationService;
+  private final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
   private final EgaSampleExporter egaSampleExporter;
 
   public EnaCallableFactory(
-      @Qualifier("WEBINCLIENT") BioSamplesClient bioSamplesWebinClient,
-      EnaSampleTransformationService enaSampleTransformationService,
-      EgaSampleExporter egaSampleExporter) {
+      @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesWebinClient,
+      final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService,
+      final EgaSampleExporter egaSampleExporter) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
-    this.enaSampleTransformationService = enaSampleTransformationService;
+    this.enaSampleToBioSampleConversionService = enaSampleToBioSampleConversionService;
     this.egaSampleExporter = egaSampleExporter;
   }
 
@@ -38,16 +35,14 @@ public class EnaCallableFactory {
    * Builds callable for dealing most ENA samples
    *
    * @param accession The accession passed
-   * @param amrData The AMR {@link AbstractData} of the sample
    * @return the callable, {@link EnaCallable}
    */
-  public Callable<Void> build(String accession, String egaId, Set<StructuredDataTable> amrData) {
+  public Callable<Void> build(final String accession, final String egaId) {
     return new EnaCallable(
         accession,
         egaId,
         bioSamplesWebinClient,
         egaSampleExporter,
-        enaSampleTransformationService,
-        amrData);
+        enaSampleToBioSampleConversionService);
   }
 }

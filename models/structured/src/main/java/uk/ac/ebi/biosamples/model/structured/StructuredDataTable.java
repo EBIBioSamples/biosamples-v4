@@ -89,6 +89,11 @@ public class StructuredDataTable {
       if (!webinSubmissionAccountId.equals(other.getWebinSubmissionAccountId())) {
         return false;
       }
+    } else if (webinSubmissionAccountId == null
+        && other.getWebinSubmissionAccountId() == null
+        && domain == null
+        && other.getDomain() == null) {
+      return type.equalsIgnoreCase(other.type);
     } else {
       return false;
     }

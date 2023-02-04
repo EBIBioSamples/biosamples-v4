@@ -8,13 +8,18 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.model;
+package uk.ac.ebi.biosamples;
 
-public enum SubmittedViaType {
-  JSON_API,
-  FILE_UPLOADER,
-  PIPELINE_IMPORT,
-  FILE_UPLOADER_PLACEHOLDER,
-  USI,
-  SAMPLETAB
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
+import uk.ac.ebi.biosamples.utils.PipelineUtils;
+
+@SpringBootApplication
+public class Application {
+
+  public static void main(String[] args) {
+    final ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
+    PipelineUtils.exitApplication(ctx);
+  }
 }

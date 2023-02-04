@@ -11,7 +11,6 @@
 package uk.ac.ebi.biosamples.ena;
 
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,50 +19,44 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 
 public class EnaCallable implements Callable<Void> {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private static final int MAX_RETRIES = 5;
-
+  private static final String ENA_CHECKLIST = "ENA-CHECKLIST";
   private final String accession;
   private final String egaId;
   private final BioSamplesClient bioSamplesWebinClient;
   private final EgaSampleExporter egaSampleExporter;
-  private final EnaSampleTransformationService enaSampleTransformationService;
-  private final Set<StructuredDataTable> amrData;
+  private final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
 
   public EnaCallable(
-      String accession,
-      String egaId,
-      BioSamplesClient bioSamplesWebinClient,
-      EgaSampleExporter egaSampleExporter,
-      EnaSampleTransformationService enaSampleTransformationService,
-      Set<StructuredDataTable> amrData) {
+      final String accession,
+      final String egaId,
+      final BioSamplesClient bioSamplesWebinClient,
+      final EgaSampleExporter egaSampleExporter,
+      final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService) {
     this.accession = accession;
     this.egaId = egaId;
     this.bioSamplesWebinClient = bioSamplesWebinClient;
     this.egaSampleExporter = egaSampleExporter;
-    this.enaSampleTransformationService = enaSampleTransformationService;
-    this.amrData = amrData;
+    this.enaSampleToBioSampleConversionService = enaSampleToBioSampleConversionService;
   }
 
   @Override
   public Void call() {
+    Sample sample = null;
+
     if (egaId != null && !egaId.isEmpty()) {
       return egaSampleExporter.populateAndSubmitEgaData(egaId);
     } else {
       try {
-        boolean success = false;
-        int numRetry = 0;
-
-        final Sample sample = enaSampleTransformationService.enrichSample(this.accession, false);
         final Optional<EntityModel<Sample>> sampleOptionalInBioSamples =
             bioSamplesWebinClient.fetchSampleResource(accession);
         final Sample sampleInBioSamples =
             sampleOptionalInBioSamples.map(EntityModel::getContent).orElse(null);
 
-        boolean isEnaSampleUpdatedInBioSamples = false;
+        boolean isSampleImportRequired = true;
 
         if (sampleInBioSamples != null) {
           if (sampleInBioSamples.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
@@ -71,11 +64,25 @@ public class EnaCallable implements Callable<Void> {
                 "ENA sample has been updated in BioSamples using the FILE Uploader, don't re-import "
                     + accession);
 
-            isEnaSampleUpdatedInBioSamples = true;
+            isSampleImportRequired = false;
+          } else if (sampleInBioSamples.getAttributes().stream()
+              .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(ENA_CHECKLIST))) {
+            log.info(
+                "ENA sample already exists with attributes in BioSamples, don't re-import  "
+                    + accession);
+
+            isSampleImportRequired = false;
+          } else {
+            sample = enaSampleToBioSampleConversionService.enrichSample(this.accession, false);
           }
+        } else {
+          sample = enaSampleToBioSampleConversionService.enrichSample(this.accession, false);
         }
 
-        if (!isEnaSampleUpdatedInBioSamples) {
+        boolean success = false;
+        int numRetry = 0;
+
+        if (isSampleImportRequired) {
           while (!success) {
             try {
               bioSamplesWebinClient.persistSampleResource(sample);
@@ -86,8 +93,6 @@ public class EnaCallable implements Callable<Void> {
                 throw new RuntimeException(
                     "Failed to handle the sample with accession " + this.accession);
               }
-
-              success = false;
             }
           }
         }

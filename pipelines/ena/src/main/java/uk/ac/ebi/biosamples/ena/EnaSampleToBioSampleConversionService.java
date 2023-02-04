@@ -10,13 +10,6 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import java.io.StringReader;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -25,67 +18,59 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.PipelinesProperties;
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Publication;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
+import java.io.StringReader;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 @Service
-public class EnaSampleTransformationService {
+public class EnaSampleToBioSampleConversionService {
   private final Logger log = LoggerFactory.getLogger(getClass());
 
-  private final EnaXmlEnhancer enaXmlEnhancer;
+  private final EnaSampleXmlEnhancer enaSampleXmlEnhancer;
   private final EraProDao eraProDao;
-  private final EnaElementConverter enaElementConverter;
+  private final EnaSampleToBioSampleConverter enaSampleToBioSampleConverter;
   private final PipelinesProperties pipelinesProperties;
 
-  public EnaSampleTransformationService(
-      final EnaXmlEnhancer enaXmlEnhancer,
+  public EnaSampleToBioSampleConversionService(
+      final EnaSampleXmlEnhancer enaSampleXmlEnhancer,
       final EraProDao eraProDao,
-      final EnaElementConverter enaElementConverter,
+      final EnaSampleToBioSampleConverter enaSampleToBioSampleConverter,
       final PipelinesProperties pipelinesProperties) {
-    this.enaXmlEnhancer = enaXmlEnhancer;
+    this.enaSampleXmlEnhancer = enaSampleXmlEnhancer;
     this.eraProDao = eraProDao;
-    this.enaElementConverter = enaElementConverter;
+    this.enaSampleToBioSampleConverter = enaSampleToBioSampleConverter;
     this.pipelinesProperties = pipelinesProperties;
   }
 
-  /**
-   * Enrich the ENA sample with specific attributes and persist using {@link BioSamplesClient}
-   *
-   * @return nothing its {@link Void}
-   * @throws DocumentException if it fails in XML transformation
-   */
-  public Sample enrichSample(final String accession, final boolean isNcbi)
+  /** Handles one ENA sample */
+  Sample enrichSample(final String accession, final boolean isNcbi)
       throws DocumentException {
     final SampleDBBean sampleDBBean = eraProDao.getSampleDetailsByBioSampleId(accession);
 
     if (sampleDBBean != null) {
-      return enrichSample(sampleDBBean, accession, isNcbi);
-    }
+      final String xmlString = sampleDBBean.getSampleXml();
+      final SAXReader reader = new SAXReader();
+      final Document xml = reader.read(new StringReader(xmlString));
+      final Element enaSampleRootElement =
+              enaSampleXmlEnhancer.applyAllRules(
+              xml.getRootElement(), enaSampleXmlEnhancer.getEnaDatabaseSample(accession));
 
-    return null;
-  }
-
-  /**
-   * Handles one ENA sample
-   *
-   * @param sampleDBBean {@link SampleDBBean}
-   * @throws DocumentException in case of parse errors
-   */
-  private Sample enrichSample(final SampleDBBean sampleDBBean, String accession, boolean isNcbi)
-      throws DocumentException {
-    final String xmlString = sampleDBBean.getSampleXml();
-    final SAXReader reader = new SAXReader();
-    final Document xml = reader.read(new StringReader(xmlString));
-    final Element root =
-        enaXmlEnhancer.applyAllRules(
-            xml.getRootElement(), enaXmlEnhancer.getEnaDatabaseSample(accession));
-
-    // check that we got some content
-    if (XmlPathBuilder.of(root).path("SAMPLE").exists()) {
-      return enrichSample(sampleDBBean, root, accession, isNcbi);
-    } else {
-      log.warn("Unable to find SAMPLE element for " + accession);
+      // check that we got some content
+      if (XmlPathBuilder.of(enaSampleRootElement).path("SAMPLE").exists()) {
+        return enrichSample(sampleDBBean, enaSampleRootElement, accession, isNcbi);
+      } else {
+        log.warn("Unable to find SAMPLE element for " + accession);
+      }
     }
 
     return null;
@@ -93,20 +78,22 @@ public class EnaSampleTransformationService {
 
   /** Enriches one ENA sample */
   private Sample enrichSample(
-      final SampleDBBean sampleDBBean, final Element root, String accession, boolean isNcbi) {
-    Sample sample = enaElementConverter.convert(root);
+      final SampleDBBean sampleDBBean,
+      final Element enaSampleRootElement,
+      final String accession,
+      final boolean isNcbi) {
+    Sample sample = enaSampleToBioSampleConverter.convert(enaSampleRootElement, accession, isNcbi);
+
     final SortedSet<Attribute> attributes = new TreeSet<>(sample.getCharacteristics());
     final SortedSet<Publication> publications = new TreeSet<>(sample.getPublications());
-    final SortedSet<ExternalReference> externalReferences =
-        new TreeSet<>(sample.getExternalReferences());
     final String lastUpdated = sampleDBBean.getLastUpdate();
     final String firstPublic = sampleDBBean.getFirstPublic();
     final String firstCreated = sampleDBBean.getFirstCreated();
     final String webinId =
-        pipelinesProperties.getProxyWebinId(); // sampleDBBean.getSubmissionAccountId();
+            pipelinesProperties.getProxyWebinId(); // sampleDBBean.getSubmissionAccountId();
     final String status = handleStatus(sampleDBBean.getStatus());
     final Long taxId = sampleDBBean.getTaxId();
-    Instant release;
+    final Instant release;
     Instant update = null;
     Instant create = null;
     Instant submitted = null;
@@ -138,10 +125,6 @@ public class EnaSampleTransformationService {
 
     attributes.add(Attribute.build("INSDC status", status));
 
-    // add external reference
-    externalReferences.add(
-        ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + accession));
-
     // Although update date is passed here, its system generated to time now by
     // webapps-core
     if (!isNcbi) {
@@ -159,13 +142,13 @@ public class EnaSampleTransformationService {
               null,
               attributes,
               sample.getRelationships(),
-              externalReferences);
+              sample.getExternalReferences());
     } else {
       sample =
           Sample.build(
               sample.getName(),
               accession,
-              pipelinesProperties.getEnaDomain(),
+                  pipelinesProperties.getEnaDomain(),
               webinId,
               taxId,
               release,
@@ -175,7 +158,7 @@ public class EnaSampleTransformationService {
               null,
               attributes,
               sample.getRelationships(),
-              externalReferences);
+              sample.getExternalReferences());
     }
 
     return Sample.Builder.fromSample(sample)
@@ -183,14 +166,9 @@ public class EnaSampleTransformationService {
         .withPublications(publications)
         .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
         .build();
-
-    /*  if (amrData != null && !amrData.isEmpty()) {
-      bioSamplesWebinClient.persistStructuredData(
-              StructuredData.build(sampleAccession, update, amrData));
-    }*/
   }
 
-  private String handleStatus(int statusId) {
+  private String handleStatus(final int statusId) {
     if (1 == statusId) {
       return "draft";
     } else if (2 == statusId) {
@@ -209,6 +187,6 @@ public class EnaSampleTransformationService {
       return "temporary_killed";
     }
 
-    throw new RuntimeException("Unrecognised statusid " + statusId);
+    throw new RuntimeException("Unrecognised STATUS_ID " + statusId);
   }
 }

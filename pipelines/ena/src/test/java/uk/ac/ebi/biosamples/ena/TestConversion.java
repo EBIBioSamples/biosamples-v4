@@ -34,9 +34,9 @@ import uk.ac.ebi.biosamples.service.TaxonomyService;
       TestApplication.class,
       EraProDao.class,
       EgaSampleExporter.class,
-      EnaSampleTransformationService.class,
-      EnaXmlEnhancer.class,
-      EnaElementConverter.class,
+      EnaSampleToBioSampleConversionService.class,
+      EnaSampleXmlEnhancer.class,
+      EnaSampleToBioSampleConverter.class,
       TaxonomyService.class,
       PipelinesProperties.class
     },
@@ -50,7 +50,7 @@ public class TestConversion {
 
   @Autowired private EgaSampleExporter egaSampleExporter;
 
-  @Autowired private EnaSampleTransformationService enaSampleTransformationService;
+  @Autowired private EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
 
   @Test
   @Ignore
@@ -64,8 +64,7 @@ public class TestConversion {
                   null,
                   bioSamplesWebinClient,
                   egaSampleExporter,
-                  enaSampleTransformationService,
-                  null);
+                  enaSampleToBioSampleConversionService);
           try {
             enaCallable.call();
           } catch (Exception e) {
@@ -88,8 +87,7 @@ public class TestConversion {
                   null,
                   bioSamplesWebinClient,
                   egaSampleExporter,
-                  enaSampleTransformationService,
-                  null);
+                  enaSampleToBioSampleConversionService);
           try {
             enaCallable.call();
           } catch (Exception e) {
@@ -111,8 +109,7 @@ public class TestConversion {
                   null,
                   bioSamplesWebinClient,
                   egaSampleExporter,
-                  enaSampleTransformationService,
-                  null);
+                  enaSampleToBioSampleConversionService);
           try {
             enaCallable.call();
           } catch (Exception e) {
@@ -134,8 +131,7 @@ public class TestConversion {
                   null,
                   bioSamplesWebinClient,
                   egaSampleExporter,
-                  enaSampleTransformationService,
-                  null);
+                  enaSampleToBioSampleConversionService);
           try {
             enaCallable.call();
           } catch (Exception e) {
@@ -157,8 +153,7 @@ public class TestConversion {
                   null,
                   bioSamplesWebinClient,
                   egaSampleExporter,
-                  enaSampleTransformationService,
-                  null);
+                  enaSampleToBioSampleConversionService);
           try {
             enaCallable.call();
           } catch (Exception e) {

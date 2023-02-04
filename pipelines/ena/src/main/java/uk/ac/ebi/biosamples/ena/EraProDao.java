@@ -28,22 +28,24 @@ public class EraProDao {
   @Qualifier("eraJdbcTemplate")
   protected JdbcTemplate jdbcTemplate;
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private static final String STATUS_CLAUSE = "STATUS_ID IN (3, 4, 5, 6, 7, 8)";
 
   /*private static final String SQL_WWWDEV_MAPPING =
         "SELECT BIOSAMPLE_ID FROM SAMPLE WHERE SUBMISSION_ACCOUNT_ID = 'Webin-161' AND BIOSAMPLE_AUTHORITY= 'N' AND ((LAST_UPDATED BETWEEN TO_DATE('2022-01-01', 'YYYY-MM-DD') AND TO_DATE('2022-07-15', 'YYYY-MM-DD')) OR (FIRST_PUBLIC BETWEEN TO_DATE('2022-01-01', 'YYYY-MM-DD') AND TO_DATE('2022-07-15', 'YYYY-MM-DD'))) ORDER BY BIOSAMPLE_ID DESC";
   */
-  public void doSampleCallback(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
-    String query =
+  public void doSampleCallback(
+      final LocalDate minDate, final LocalDate maxDate, final RowCallbackHandler rch) {
+    final String query =
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID, LAST_UPDATED FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' "
             + "AND "
             + STATUS_CLAUSE
             + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY LAST_UPDATED ASC";
 
-    Date minDateOld = java.sql.Date.valueOf(minDate);
-    Date maxDateOld = java.sql.Date.valueOf(maxDate);
+    final Date minDateOld = java.sql.Date.valueOf(minDate);
+    final Date maxDateOld = java.sql.Date.valueOf(maxDate);
+
     jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
   }
 
@@ -51,29 +53,33 @@ public class EraProDao {
     return jdbcTemplate.queryForList(SQL_WWWDEV_MAPPING, String.class);
   }*/
 
-  public void getSingleSample(String bioSampleId, RowCallbackHandler rch) {
-    String query =
+  public void getSingleSample(final String bioSampleId, final RowCallbackHandler rch) {
+    final String query =
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' "
             + "AND "
             + STATUS_CLAUSE
             + " AND BIOSAMPLE_ID=? ORDER BY BIOSAMPLE_ID ASC";
+
     jdbcTemplate.query(query, rch, bioSampleId);
   }
 
-  public String getBioSampleAccessionByEnaAccession(String enaId) {
-    String query = "SELECT BIOSAMPLE_ID FROM SAMPLE WHERE SAMPLE_ID = ?";
+  public String getBioSampleAccessionByEnaAccession(final String enaId) {
+    final String query = "SELECT BIOSAMPLE_ID FROM SAMPLE WHERE SAMPLE_ID = ?";
+
     return jdbcTemplate.queryForObject(query, String.class, new Object[] {enaId});
   }
 
-  public void getNcbiCallback(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
+  public void getNcbiCallback(
+      final LocalDate minDate, final LocalDate maxDate, final RowCallbackHandler rch) {
     String query =
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, LAST_UPDATED FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND BIOSAMPLE_AUTHORITY= 'N' "
             + "AND "
             + STATUS_CLAUSE
             + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY LAST_UPDATED ASC";
 
-    Date minDateOld = java.sql.Date.valueOf(minDate);
-    Date maxDateOld = java.sql.Date.valueOf(maxDate);
+    final Date minDateOld = java.sql.Date.valueOf(minDate);
+    final Date maxDateOld = java.sql.Date.valueOf(maxDate);
+
     jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
   }
 
@@ -103,7 +109,7 @@ public class EraProDao {
 
   public SampleDBBean getSampleMetaInfoByBioSampleId(final String sampleId) {
     try {
-      String sql =
+      final String sql =
           "SELECT STATUS_ID, SAMPLE_ID, "
               + "BIOSAMPLE_ID, "
               + "BIOSAMPLE_AUTHORITY "
@@ -122,7 +128,7 @@ public class EraProDao {
 
   public SampleDBBean getSampleDetailsByEnaSampleId(final String sampleId) {
     try {
-      String sql =
+      final String sql =
           "SELECT STATUS_ID, SAMPLE_ID, "
               + "BIOSAMPLE_ID, "
               + "BIOSAMPLE_AUTHORITY "
@@ -139,8 +145,8 @@ public class EraProDao {
     return null;
   }
 
-  public void getEnaDatabaseSample(String enaAccession, RowCallbackHandler rch) {
-    String query =
+  public void getEnaDatabaseSample(final String enaAccession, final RowCallbackHandler rch) {
+    final String query =
         "select BIOSAMPLE_ID,\n"
             + "       FIXED_TAX_ID, "
             + "       FIXED_SCIENTIFIC_NAME, "
@@ -160,6 +166,7 @@ public class EraProDao {
             + "               left join cv_center_name on (cv_center_name.center_name = T2.center_name)) as center_name\n"
             + "from SAMPLE\n"
             + "where BIOSAMPLE_ID = ?";
+
     jdbcTemplate.query(query, rch, enaAccession);
   }
 

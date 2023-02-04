@@ -10,32 +10,28 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.stream.Stream;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.biosamples.PipelinesProperties;
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.PipelineName;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
 import uk.ac.ebi.biosamples.mongo.repo.MongoPipelineRepository;
 import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
@@ -52,61 +48,27 @@ import uk.ac.ebi.biosamples.utils.ThreadUtils;
     matchIfMissing = true)
 public class EnaRunner implements ApplicationRunner {
   private static final Logger log = LoggerFactory.getLogger(EnaRunner.class);
-  private static final String SAMEA = "SAMEA";
-  private static final int MAX_RETRIES = 5;
   @Autowired private PipelinesProperties pipelinesProperties;
   @Autowired private EraProDao eraProDao;
   @Autowired private EnaCallableFactory enaCallableFactory;
   @Autowired private NcbiCallableFactory ncbiCallableFactory;
   @Autowired private MongoPipelineRepository mongoPipelineRepository;
 
-  @Autowired
-  @Qualifier("WEBINCLIENT")
-  private BioSamplesClient bioSamplesWebinClient;
-
-  @Autowired private BioSamplesClient bioSamplesAapClient;
   private final Map<String, Future<Void>> futures = new LinkedHashMap<>();
-  private final Map<String, Set<StructuredDataTable>> sampleToAmrMap = new HashMap<>();
-  public static final Map<String, String> failures = new HashMap<>();
+  private static final Map<String, String> failures = new HashMap<>();
 
   @Override
-  public void run(ApplicationArguments args) throws Exception {
+  public void run(final ApplicationArguments args) throws Exception {
     log.info("Processing ENA pipeline...");
 
-    boolean includeAmr = true;
-    boolean processBacklogs = true;
     boolean isPassed = true;
 
     String pipelineFailureCause = null;
 
-    if (args.getOptionNames().contains("includeAmr")) {
-      if (args.getOptionValues("includeAmr").iterator().next().equalsIgnoreCase("false")) {
-        includeAmr = false;
-      }
-    } else {
-      includeAmr = false;
-    }
-
-    if (args.getOptionNames().contains("processBacklogs")) {
-      if (args.getOptionValues("processBacklogs").iterator().next().equalsIgnoreCase("false")) {
-        processBacklogs = false;
-      }
-    } else {
-      processBacklogs = false;
-    }
-
-    if (includeAmr && isFirstDayOfTheWeek()) {
-      try {
-        // sampleToAmrMap = amrDataLoaderService.loadAmrData();
-      } catch (final Exception e) {
-        log.error("Error in processing AMR data from ENA API - continue with the pipeline");
-      }
-    }
-
     try {
       // date format is YYYY-mm-dd
-      LocalDate fromDate;
-      LocalDate toDate;
+      final LocalDate fromDate;
+      final LocalDate toDate;
 
       if (args.getOptionNames().contains("from")) {
         fromDate =
@@ -127,17 +89,7 @@ public class EnaRunner implements ApplicationRunner {
       log.info("Running from date range from " + fromDate + " until " + toDate);
 
       // Import ENA samples
-      importEraSamples(fromDate, toDate, sampleToAmrMap);
-
-      if (processBacklogs) {
-        backfillEnaBrowserMissingSamples(args);
-      }
-
-      // handleSingleSampleBackFill_2();
-
-      /*final List<String> bsdIds = eraProDao.doWWWDEVMapping();
-
-      handleWWWDevMapping(bsdIds);*/
+      importEraSamples(fromDate, toDate);
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);
       pipelineFailureCause = e.getMessage();
@@ -173,245 +125,12 @@ public class EnaRunner implements ApplicationRunner {
     }
   }
 
-  /*private void handleWWWDevMapping(final List<String> bsdIds) {
-    final RestTemplate restTemplate = new RestTemplate();
-    final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-
-    headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
-
-    bsdIds.forEach(
-        bsdId -> {
-          log.info("Handling BSD ID " + bsdId);
-
-          try {
-            final String baseUrl =
-                "https://wwwdev.ebi.ac.uk/biosamples/samples/" + bsdId + ".json?curationdomain=";
-            final RequestEntity<Void> requestEntity =
-                new RequestEntity<>(headers, HttpMethod.GET, URI.create(baseUrl));
-            final ResponseEntity<EntityModel<Sample>> responseEntity =
-                restTemplate.exchange(
-                    requestEntity, new ParameterizedTypeReference<EntityModel<Sample>>() {});
-
-            final EntityModel<Sample> sampleEntityInWWWDev = responseEntity.getBody();
-
-            if (sampleEntityInWWWDev != null) {
-              final Sample sampleInWWWDEV = sampleEntityInWWWDev.getContent();
-
-              if (sampleInWWWDEV.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-                final Optional<EntityModel<Sample>> sampleOptionalInProd =
-                    bioSamplesWebinClient.fetchSampleResource(bsdId);
-
-                if (sampleOptionalInProd.isPresent()) {
-                  final Sample sampleInProd = sampleOptionalInProd.get().getContent();
-
-                  if (sampleInProd.getSubmittedVia() == SubmittedViaType.JSON_API) {
-                    log.info(
-                        "Sample uploaded using the FILE UPLOADER: "
-                            + bsdId
-                            + " and reverted in prod while pipeline re-import, merge WWWDEV sample to WWW");
-
-                    final Sample sampleToPostToWWW =
-                        Sample.Builder.fromSample(sampleInWWWDEV).build();
-
-                    bioSamplesWebinClient.persistSampleResource(sampleToPostToWWW);
-                  } else {
-                    log.info("Sample not updated in WWW: " + bsdId);
-                  }
-                } else {
-                  log.info("Sample not found in WWW: " + bsdId);
-                }
-              } else {
-                log.info("Sample not updated in WWWDEV using FILE UPLOADER: " + bsdId);
-              }
-            } else {
-              log.info("Sample not found in WWWDEV: " + bsdId);
-            }
-          } catch (final Exception e) {
-            log.info("Failed to handle BsdId: " + bsdId, e);
-          }
-        });
-  }*/
-
-  private void backfillEnaBrowserMissingSamples(final ApplicationArguments args)
-      throws InterruptedException {
-    final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    String enaBackFillerFile = null;
-
-    if (args.getOptionNames().contains("ena_failed_file")) {
-      enaBackFillerFile = args.getOptionValues("ena_failed_file").get(0);
-    }
-
-    assert enaBackFillerFile != null;
-
-    try (Stream<String> stream = Files.lines(Paths.get(enaBackFillerFile))) {
-      stream.forEach(
-          sampleId -> {
-            final SampleDBBean sampleDBBean =
-                eraProDao.getSampleMetaInfoByBioSampleId(sampleId.trim());
-
-            try {
-              if (sampleDBBean != null
-                  && sampleDBBean.getBiosampleId() != null
-                  && sampleDBBean.getSampleId() != null) {
-                handleSingleSampleBackFill(executorService, sampleDBBean);
-              } else {
-                final String errorMessage =
-                    "No sample details from ERAPRO for "
-                        + sampleId
-                        + " possible BioSample Authority sample, or non-exists in ERAPRO, or has multiple entries in ERAPRO";
-                log.info(errorMessage);
-
-                EnaRunner.failures.put(sampleId, errorMessage);
-              }
-            } catch (Exception e) {
-              final String errorMessage = sampleDBBean.getBiosampleId();
-              log.info(errorMessage);
-
-              EnaRunner.failures.put(sampleId, errorMessage);
-            }
-          });
-    } catch (final Exception e) {
-      e.printStackTrace();
-      log.info(e.getMessage());
-    } finally {
-      executorService.shutdown();
-      executorService.awaitTermination(1, TimeUnit.MINUTES);
-    }
-  }
-
-  private void handleSingleSampleBackFill(
-      final ExecutorService executorService, final SampleDBBean sampleDBBean) {
-    final String bioSampleAuthority = sampleDBBean.getBiosampleAuthority();
-    final String bioSampleId = sampleDBBean.getBiosampleId();
-    final List<String> curationDomainBlankList = new ArrayList<>();
-    boolean success = false;
-    int numRetry = 0;
-
-    curationDomainBlankList.add("");
-
-    log.info("Handling " + bioSampleId + " / " + sampleDBBean.getSampleId());
-
-    if (bioSampleAuthority.equals("N") && bioSampleId != null) {
-      if (bioSampleId.startsWith(SAMEA)) {
-        while (!success) {
-          try {
-            final Optional<EntityModel<Sample>> sampleOptional =
-                bioSamplesWebinClient.fetchSampleResource(bioSampleId);
-
-            if (sampleOptional.isPresent()) {
-              log.info(
-                  "Sample exists, fetch un-curated view and  reset update date " + bioSampleId);
-
-              final Optional<EntityModel<Sample>> optionalSampleResourceWithoutCurations =
-                  bioSamplesWebinClient.fetchSampleResource(
-                      bioSampleId, Optional.of(curationDomainBlankList));
-
-              final Sample sampleWithoutCurations =
-                  optionalSampleResourceWithoutCurations.get().getContent();
-
-              bioSamplesWebinClient.persistSampleResource(
-                  Sample.Builder.fromSample(sampleWithoutCurations).build());
-            } else {
-              log.info("Sample doesn't exists, fetch from ERAPRO " + bioSampleId);
-
-              final Callable<Void> callable =
-                  enaCallableFactory.build(sampleDBBean.getBiosampleId(), null, null);
-
-              executorService.submit(callable).get();
-            }
-
-            success = true;
-          } catch (Exception e) {
-            if (++numRetry == MAX_RETRIES) {
-              throw new RuntimeException(
-                  "Failed to handle the sample with accession " + bioSampleId);
-            }
-
-            success = false;
-          }
-        }
-      } else {
-        while (!success) {
-          try {
-            final Optional<EntityModel<Sample>> sampleOptional =
-                bioSamplesAapClient.fetchSampleResource(bioSampleId);
-
-            if (sampleOptional.isPresent()) {
-              log.info("Sample exists, fetch un-curated view and reset update date " + bioSampleId);
-
-              final Optional<EntityModel<Sample>> optionalSampleResourceWithoutCurations =
-                  bioSamplesAapClient.fetchSampleResource(
-                      bioSampleId, Optional.of(curationDomainBlankList));
-              final Sample sampleWithoutCurations =
-                  optionalSampleResourceWithoutCurations.get().getContent();
-
-              bioSamplesAapClient.persistSampleResource(
-                  Sample.Builder.fromSample(sampleWithoutCurations)
-                      .withDomain(pipelinesProperties.getNcbiDomain())
-                      .withNoWebinSubmissionAccountId()
-                      .build());
-            } else {
-              log.info("Sample doesn't exists, fetch from ERAPRO " + bioSampleId);
-
-              final Callable<Void> callable =
-                  ncbiCallableFactory.build(sampleDBBean.getBiosampleId());
-
-              executorService.submit(callable).get();
-            }
-
-            success = true;
-          } catch (Exception e) {
-            if (++numRetry == MAX_RETRIES) {
-              throw new RuntimeException(
-                  "Failed to handle the sample with accession " + bioSampleId);
-            }
-
-            success = false;
-          }
-        }
-      }
-    }
-  }
-
-  /*
-  TODO: Very dirty code for one time use, remove once confirmed by user to be working fine.
-   */
-  private void handleSingleSampleBackFill_2() {
-    try {
-      final File file = new File("C:\\Users\\dgupta\\ena_backfill_failures.txt");
-      final BufferedWriter writer =
-          new BufferedWriter(
-              new FileWriter("C:\\Users\\dgupta\\ena_backfill_failures_bsd_acc.txt"));
-
-      try (final BufferedReader br = new BufferedReader(new FileReader(file))) {
-        String line;
-
-        while ((line = br.readLine()) != null) {
-          String enaId = line.substring(0, line.indexOf(":") - 1);
-
-          writer.write(eraProDao.getBioSampleAccessionByEnaAccession(enaId));
-          writer.write("\n");
-        }
-
-        writer.close();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private void importEraSamples(
-      final LocalDate fromDate,
-      final LocalDate toDate,
-      final Map<String, Set<StructuredDataTable>> sampleToAmrMap)
-      throws Exception {
+  private void importEraSamples(final LocalDate fromDate, final LocalDate toDate) throws Exception {
     log.info("Handling ENA and NCBI Samples");
 
     if (pipelinesProperties.getThreadCount() == 0) {
       final EraRowCallbackHandler eraRowCallbackHandler =
-          new EraRowCallbackHandler(null, enaCallableFactory, futures, sampleToAmrMap);
+          new EraRowCallbackHandler(null, enaCallableFactory, futures);
 
       eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
 
@@ -429,7 +148,7 @@ public class EnaRunner implements ApplicationRunner {
               pipelinesProperties.getThreadCountMax())) {
 
         final EraRowCallbackHandler eraRowCallbackHandler =
-            new EraRowCallbackHandler(executorService, enaCallableFactory, futures, sampleToAmrMap);
+            new EraRowCallbackHandler(executorService, enaCallableFactory, futures);
 
         eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
 
@@ -448,16 +167,13 @@ public class EnaRunner implements ApplicationRunner {
     private final AdaptiveThreadPoolExecutor executorService;
     private final EnaCallableFactory enaCallableFactory;
     private final Map<String, Future<Void>> futures;
-    private final Map<String, Set<StructuredDataTable>> sampleToAmrMap;
 
-    public EraRowCallbackHandler(
+    EraRowCallbackHandler(
         final AdaptiveThreadPoolExecutor executorService,
         final EnaCallableFactory enaCallableFactory,
-        final Map<String, Future<Void>> futures,
-        final Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
+        final Map<String, Future<Void>> futures) {
       this.executorService = executorService;
       this.enaCallableFactory = enaCallableFactory;
-      this.sampleToAmrMap = sampleToAmrMap;
       this.futures = futures;
     }
 
@@ -470,35 +186,30 @@ public class EnaRunner implements ApplicationRunner {
       TEMPORARY_KILLED(8);
 
       private final int value;
-      private static final Map<Integer, ENAStatus> map = new HashMap<>();
+      private static final Map<Integer, ENAStatus> enaSampleStatusIdToNameMap = new HashMap<>();
 
-      ENAStatus(int value) {
+      ENAStatus(final int value) {
         this.value = value;
       }
 
       static {
         for (final ENAStatus enaStatus : ENAStatus.values()) {
-          map.put(enaStatus.value, enaStatus);
+          enaSampleStatusIdToNameMap.put(enaStatus.value, enaStatus);
         }
       }
 
-      public static ENAStatus valueOf(int pageType) {
-        return map.get(pageType);
+      public static ENAStatus valueOf(final int pageType) {
+        return enaSampleStatusIdToNameMap.get(pageType);
       }
     }
 
     @Override
-    public void processRow(ResultSet rs) throws SQLException {
+    public void processRow(final ResultSet rs) throws SQLException {
       final String sampleAccession = rs.getString("BIOSAMPLE_ID");
       final int statusID = rs.getInt("STATUS_ID");
       final String egaId = rs.getString("EGA_ID");
       final java.sql.Date lastUpdated = rs.getDate("LAST_UPDATED");
       final ENAStatus enaStatus = ENAStatus.valueOf(statusID);
-      Set<StructuredDataTable> amrData = new HashSet<>();
-
-      if (sampleToAmrMap.containsKey(sampleAccession)) {
-        amrData = sampleToAmrMap.get(sampleAccession);
-      }
 
       switch (enaStatus) {
         case PUBLIC:
@@ -511,21 +222,15 @@ public class EnaRunner implements ApplicationRunner {
               String.format(
                   "%s is being handled as status is %s and last updated is %s",
                   sampleAccession, enaStatus.name(), lastUpdated));
-          Callable<Void> callable;
           // update if sample already exists else import
-
-          if (!amrData.isEmpty()) {
-            callable = enaCallableFactory.build(sampleAccession, egaId, amrData);
-          } else {
-            callable = enaCallableFactory.build(sampleAccession, egaId, null);
-          }
+          final Callable<Void> callable = enaCallableFactory.build(sampleAccession, egaId);
 
           if (executorService == null) {
             try {
               callable.call();
-            } catch (RuntimeException e) {
+            } catch (final RuntimeException e) {
               throw e;
-            } catch (Exception e) {
+            } catch (final Exception e) {
               throw new RuntimeException(e);
             }
           } else {
@@ -533,9 +238,9 @@ public class EnaRunner implements ApplicationRunner {
 
             try {
               ThreadUtils.checkFutures(futures, 100);
-            } catch (ExecutionException e) {
+            } catch (final ExecutionException e) {
               throw new RuntimeException(e.getCause());
-            } catch (InterruptedException e) {
+            } catch (final InterruptedException e) {
               throw new RuntimeException(e);
             }
           }
@@ -556,7 +261,7 @@ public class EnaRunner implements ApplicationRunner {
     private final Map<String, Future<Void>> futures;
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    public NcbiRowCallbackHandler(
+    NcbiRowCallbackHandler(
         final AdaptiveThreadPoolExecutor executorService,
         final NcbiCallableFactory ncbiCallableFactory,
         final Map<String, Future<Void>> futures) {
@@ -566,42 +271,35 @@ public class EnaRunner implements ApplicationRunner {
     }
 
     @Override
-    public void processRow(ResultSet rs) throws SQLException {
-      String sampleAccession = rs.getString("BIOSAMPLE_ID");
-      java.sql.Date lastUpdated = rs.getDate("LAST_UPDATED");
+    public void processRow(final ResultSet rs) throws SQLException {
+      final String sampleAccession = rs.getString("BIOSAMPLE_ID");
+      final java.sql.Date lastUpdated = rs.getDate("LAST_UPDATED");
 
       log.info(
           String.format(
               "%s is being handled and last updated is %s", sampleAccession, lastUpdated));
 
-      Callable<Void> callable = ncbiCallableFactory.build(sampleAccession);
+      final Callable<Void> callable = ncbiCallableFactory.build(sampleAccession);
 
       if (executorService == null) {
         try {
           callable.call();
-        } catch (Exception e) {
+        } catch (final Exception e) {
           throw new RuntimeException(e);
         }
       } else {
         futures.put(sampleAccession, executorService.submit(callable));
         try {
           ThreadUtils.checkFutures(futures, 100);
-        } catch (HttpClientErrorException e) {
+        } catch (final HttpClientErrorException e) {
           log.error("HTTP Client error body : " + e.getResponseBodyAsString());
           throw e;
-        } catch (ExecutionException e) {
+        } catch (final ExecutionException e) {
           throw new RuntimeException(e.getCause());
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
           throw new RuntimeException(e);
         }
       }
     }
-  }
-
-  private boolean isFirstDayOfTheWeek() {
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(new Date());
-
-    return calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY;
   }
 }

@@ -20,15 +20,15 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.ac.ebi.biosamples.ena.EnaXmlEnhancer.*;
+import uk.ac.ebi.biosamples.ena.EnaSampleXmlEnhancer.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
-    classes = {TestApplication.class, EnaXmlEnhancer.class, EraProDao.class},
+    classes = {TestApplication.class, EnaSampleXmlEnhancer.class, EraProDao.class},
     properties = {"job.autorun.enabled=false"})
-public class EnaXmlEnhancerTest {
+public class EnaSampleXmlEnhancerTest {
 
-  @Autowired private EnaXmlEnhancer enaXmlEnhancer;
+  @Autowired private EnaSampleXmlEnhancer enaSampleXmlEnhancer;
 
   private EnaDatabaseSample enaDatabaseSample;
 
@@ -51,7 +51,8 @@ public class EnaXmlEnhancerTest {
   @Test
   public void test_xml_with_all_rules() {
     assertEquals(
-        expectedFullSampleXml, enaXmlEnhancer.applyAllRules(fullSampleXml, enaDatabaseSample));
+        expectedFullSampleXml,
+        enaSampleXmlEnhancer.applyAllRules(fullSampleXml, enaDatabaseSample));
   }
 
   @Test
@@ -59,14 +60,16 @@ public class EnaXmlEnhancerTest {
     enaDatabaseSample.centreName = "expanded center name";
     assertEquals(
         pretty(expectedModifiedCenterNameSampleXml),
-        enaXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, CenterNameRule.INSTANCE));
+        enaSampleXmlEnhancer.applyRules(
+            exampleSampleXml, enaDatabaseSample, CenterNameRule.INSTANCE));
   }
 
   @Test
   public void test_biosamples_rule_fixes_applicable_ebi_xml() {
     assertEquals(
         expectedModifiedEbiBiosamplesSampleXml,
-        enaXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, BioSamplesIdRule.INSTANCE));
+        enaSampleXmlEnhancer.applyRules(
+            exampleSampleXml, enaDatabaseSample, BioSamplesIdRule.INSTANCE));
   }
 
   @Test
@@ -74,21 +77,21 @@ public class EnaXmlEnhancerTest {
     enaDatabaseSample.brokerName = "broker";
     assertEquals(
         pretty(expectedModifiedEbiBrokerSampleXml),
-        enaXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, BrokerRule.INSTANCE));
+        enaSampleXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, BrokerRule.INSTANCE));
   }
 
   @Test
   public void test_broker_rule_fixes_applicable_ncbi_xml() {
     assertEquals(
         pretty(expectedModifiedNcbiBrokerSampleXml),
-        enaXmlEnhancer.applyRules(ncbiSampleXml, enaDatabaseSample, BrokerRule.INSTANCE));
+        enaSampleXmlEnhancer.applyRules(ncbiSampleXml, enaDatabaseSample, BrokerRule.INSTANCE));
   }
 
   @Test
   public void test_broker_rule_fixes_applicable_ddbj_xml() {
     assertEquals(
         pretty(expectedModifiedDdbjBrokerSampleXml),
-        enaXmlEnhancer.applyRules(ddbjSampleXml, enaDatabaseSample, BrokerRule.INSTANCE));
+        enaSampleXmlEnhancer.applyRules(ddbjSampleXml, enaDatabaseSample, BrokerRule.INSTANCE));
   }
 
   @Test
@@ -107,32 +110,33 @@ public class EnaXmlEnhancerTest {
     enaDatabaseSample.fixedScientificName = null;
     assertEquals(
         pretty(exampleSampleXml),
-        enaXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, BrokerRule.INSTANCE));
+        enaSampleXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, BrokerRule.INSTANCE));
   }
 
   @Test
   public void test_alias_rule_fixes_applicable_xml() {
     assertEquals(
         pretty(expectedModifiedMissingAliasSampleXml),
-        enaXmlEnhancer.applyRules(missingAliasSampleXml, enaDatabaseSample, AliasRule.INSTANCE));
+        enaSampleXmlEnhancer.applyRules(
+            missingAliasSampleXml, enaDatabaseSample, AliasRule.INSTANCE));
   }
 
   @Test
   public void test_alias_rule_does_not_change_non_applicable_xml() {
     assertEquals(
         pretty(exampleSampleXml),
-        enaXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, AliasRule.INSTANCE));
+        enaSampleXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, AliasRule.INSTANCE));
   }
 
   @Test
   public void test_namespace_rule_fixes_applicable_xml() {
     assertEquals(
         pretty(exampleSampleXml),
-        enaXmlEnhancer.applyRules(
+        enaSampleXmlEnhancer.applyRules(
             missingNamespaceSampleXml, enaDatabaseSample, NamespaceRule.INSTANCE));
     assertEquals(
         pretty(exampleSampleXml),
-        enaXmlEnhancer.applyRules(
+        enaSampleXmlEnhancer.applyRules(
             emptyNamespaceSampleXml, enaDatabaseSample, NamespaceRule.INSTANCE));
   }
 
@@ -140,14 +144,16 @@ public class EnaXmlEnhancerTest {
   public void test_namespace_rule_does_not_change_non_applicable_xml() {
     assertEquals(
         pretty(exampleSampleXml),
-        enaXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, NamespaceRule.INSTANCE));
+        enaSampleXmlEnhancer.applyRules(
+            exampleSampleXml, enaDatabaseSample, NamespaceRule.INSTANCE));
   }
 
   @Test
   public void test_link_removal_rule_fixes_applicable_xml() {
     assertEquals(
         expectedModifiedNcbiLinksRemoved,
-        enaXmlEnhancer.applyRules(ncbiSampleXml, enaDatabaseSample, LinkRemovalRule.INSTANCE));
+        enaSampleXmlEnhancer.applyRules(
+            ncbiSampleXml, enaDatabaseSample, LinkRemovalRule.INSTANCE));
   }
 
   @Test
@@ -156,7 +162,7 @@ public class EnaXmlEnhancerTest {
     enaDatabaseSample.firstPublic = "2018-01-01";
     assertEquals(
         exampleSampleXmlWithDates,
-        enaXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, DatesRule.INSTANCE));
+        enaSampleXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, DatesRule.INSTANCE));
   }
 
   @Test
@@ -175,7 +181,7 @@ public class EnaXmlEnhancerTest {
     enaDatabaseSample.fixedScientificName = null;
     assertEquals(
         exampleSampleWithTitleAddedXml,
-        enaXmlEnhancer.applyRules(
+        enaSampleXmlEnhancer.applyRules(
             exampleSampleWithoutTitleXml, enaDatabaseSample, TitleRule.INSTANCE));
   }
 
@@ -195,7 +201,7 @@ public class EnaXmlEnhancerTest {
     enaDatabaseSample.fixedScientificName = "Drosophila melanogaster";
     assertEquals(
         exampleSampleThatHasBeenTaxonFixed,
-        enaXmlEnhancer.applyRules(
+        enaSampleXmlEnhancer.applyRules(
             exampleSampleThatCanBeTaxonFixed, enaDatabaseSample, TaxonRule.INSTANCE));
   }
 
@@ -215,7 +221,7 @@ public class EnaXmlEnhancerTest {
         "Acinetobacter lwoffii NCTC 5866 = CIP 64.10 = NIPH 512";
     assertEquals(
         exampleSampleThatHasBeenTaxonFixedSAMN02356578,
-        enaXmlEnhancer.applyRules(
+        enaSampleXmlEnhancer.applyRules(
             exampleSampleThatCanBeTaxonFixedSAMN02356578, enaDatabaseSample, TaxonRule.INSTANCE));
   }
 
