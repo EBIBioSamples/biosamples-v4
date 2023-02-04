@@ -10,10 +10,6 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import java.time.Instant;
-import java.util.Collections;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +19,13 @@ import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.service.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
+import java.time.Instant;
+import java.util.Collections;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 @Service
-public class EnaSampleToBioSampleConverter {
+class EnaSampleToBioSampleConverter {
   private static final String SECONDARY_ID = "SECONDARY_ID";
   private static final String COMMON_NAME = "COMMON_NAME";
   private static final String ORGANISM = "organism";
@@ -67,7 +68,7 @@ public class EnaSampleToBioSampleConverter {
 
   @Autowired private TaxonomyService taxonomyService;
 
-  public Sample convert(final Element enaSampleRootElement, final String accession) {
+  Sample convert(final Element enaSampleRootElement, final String accession, final boolean isNcbi) {
     final SortedSet<Attribute> attributes = new TreeSet<>();
     final SortedSet<Publication> publications = new TreeSet<>();
     final SortedSet<Relationship> relationships = new TreeSet<>();

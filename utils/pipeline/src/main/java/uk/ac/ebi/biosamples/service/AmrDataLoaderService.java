@@ -19,14 +19,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,13 +40,13 @@ public class AmrDataLoaderService {
       "https://www.ebi.ac.uk/ena/portal/api/search?result=analysis&query=analysis_type="
           + antibiogram
           + "&dataPortal=pathogen&dccDataOnly=false&fields=analysis_accession,country,region,scientific_name,location,sample_accession,tax_id,submitted_ftp,first_public,last_updated&sortFields=scientific_name,country&limit=0";
-  public static final String TAB = "\t";
+  private static final String TAB = "\t";
 
-  public Map<String, Set<StructuredDataTable>> loadAmrData() {
+  private Map<String, Set<StructuredDataTable>> loadAmrData() {
     log.info("Loading ENA-AMR data");
 
-    Map<String, Set<StructuredDataTable>> sampleToAmrMap = new HashMap<>();
-    List<AccessionFtpUrlPair> pairList;
+    final Map<String, Set<StructuredDataTable>> sampleToAmrMap = new HashMap<>();
+    final List<AccessionFtpUrlPair> pairList;
 
     try {
       pairList = requestHttpAndGetAccessionFtpUrlPairs();
@@ -64,7 +57,7 @@ public class AmrDataLoaderService {
       } else {
         downloadFtpContent(pairList, sampleToAmrMap);
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       log.info("An exception occured while processing AMR data " + e.getMessage());
     }
 
@@ -91,7 +84,7 @@ public class AmrDataLoaderService {
   }
 
   private static int getResponseFromEnaApi(final HttpURLConnection conn) throws IOException {
-    int response;
+    final int response;
 
     conn.setRequestMethod("GET");
     conn.connect();
@@ -104,10 +97,11 @@ public class AmrDataLoaderService {
     final List<AccessionFtpUrlPair> accessionFtpUrlPairs = new ArrayList<>();
 
     try {
-      BufferedReader bufferedReader = getReader(url);
+      final BufferedReader bufferedReader = getReader(url);
 
       bufferedReader
           .lines()
+          .skip(1)
           .forEach(line -> accessionFtpUrlPairs.add(getAccessionFtpUrlPair(line)));
     } catch (final IOException e) {
       log.info("Failed to get and parse accession and FTP pairs for URL " + url.toString());
@@ -141,30 +135,22 @@ public class AmrDataLoaderService {
 
   private static void dealWithSemicolon(
       final String value, final AccessionFtpUrlPair accessionFtpUrlPair) {
-    final int index = value.indexOf(';');
-    final String option1 = value.substring(index + 1);
-    final String option2 = value.substring(0, index);
-
-    if (!option1.endsWith(MD_5)) {
-      accessionFtpUrlPair.setFtpUrl(HTTP + option1);
-    } else {
-      accessionFtpUrlPair.setFtpUrl(HTTP + option2);
-    }
+    accessionFtpUrlPair.setFtpUrl(HTTP + value);
   }
 
   private Map<String, Set<StructuredDataTable>> downloadFtpContent(
       final List<AccessionFtpUrlPair> pairList,
-      Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
+      final Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
     pairList.forEach(
         pair -> {
           try {
-            String accession = pair.getAccession();
+            final String accession = pair.getAccession();
 
             if (accession != null) {
               sampleToAmrMap.put(
                   accession, fetchSampleAndProcessAmrData(new URL(pair.getFtpUrl()), accession));
             }
-          } catch (MalformedURLException e) {
+          } catch (final MalformedURLException e) {
             log.info("FTP URL not correctly formed " + pair.getFtpUrl());
           }
         });
@@ -189,7 +175,7 @@ public class AmrDataLoaderService {
     return amrData;
   }
 
-  private List<String> processAmrLines(BufferedReader bufferedReader) {
+  private List<String> processAmrLines(final BufferedReader bufferedReader) {
     return bufferedReader
         .lines()
         .skip(1)
@@ -198,9 +184,10 @@ public class AmrDataLoaderService {
         .collect(Collectors.toList());
   }
 
-  private Set<StructuredDataTable> processAmrData(List<String> lines, String accession) {
-    Set<Map<String, StructuredDataEntry>> tableContent = new HashSet<>();
-    StructuredDataTable table =
+  private Set<StructuredDataTable> processAmrData(
+      final List<String> lines, final String accession) {
+    final Set<Map<String, StructuredDataEntry>> tableContent = new HashSet<>();
+    final StructuredDataTable table =
         StructuredDataTable.build("self.BiosampleImportENA", null, "AMR", null, tableContent);
 
     lines.forEach(
@@ -210,13 +197,15 @@ public class AmrDataLoaderService {
           final ObjectReader r = mapper.readerFor(Map.class).with(schema);
           try {
             final Map<String, String> amrEntry = r.readValue(line);
-            Map<String, StructuredDataEntry> entry = new HashMap<>();
-            for (Map.Entry<String, String> e : amrEntry.entrySet()) {
+            final Map<String, StructuredDataEntry> entry = new HashMap<>();
+            for (final Map.Entry<String, String> e : amrEntry.entrySet()) {
               entry.put(e.getKey(), StructuredDataEntry.build(e.getValue(), null));
             }
 
             tableContent.add(entry);
           } catch (final Exception e) {
+            e.printStackTrace();
+
             log.error("Error in parsing AMR data for sample " + accession);
           }
         });
@@ -224,7 +213,7 @@ public class AmrDataLoaderService {
     return Collections.singleton(table);
   }
 
-  private String removeBioSampleId(String line) {
+  private String removeBioSampleId(final String line) {
     return line.substring(line.indexOf(AmrDataLoaderService.TAB) + 1);
   }
 
@@ -234,5 +223,11 @@ public class AmrDataLoaderService {
     }
 
     return line;
+  }
+
+  public static void main(final String[] args) {
+    final AmrDataLoaderService amrDataLoaderService = new AmrDataLoaderService();
+
+    amrDataLoaderService.loadAmrData();
   }
 }

@@ -1,40 +1,30 @@
 /*
- * Copyright 2021 EMBL - European Bioinformatics Institute
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- */
+* Copyright 2021 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples;
 
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.util.CloseableIterator;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.client.service.StructuredDataSubmissionService;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.mongo.model.MongoStructuredData;
 import uk.ac.ebi.biosamples.mongo.repo.MongoStructuredDataRepository;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
-import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
 
 /**
  * This runner will get a list of accessions from mongo directly, query the API to get the latest
@@ -54,7 +44,8 @@ public class AmrCleanRunner implements ApplicationRunner {
 
   @Autowired
   public AmrCleanRunner(
-      MongoStructuredDataRepository mongoStructuredDataRepository, MongoOperations mongoOperations) {
+      MongoStructuredDataRepository mongoStructuredDataRepository,
+      MongoOperations mongoOperations) {
     this.mongoStructuredDataRepository = mongoStructuredDataRepository;
     this.mongoOperations = mongoOperations;
   }
@@ -68,7 +59,8 @@ public class AmrCleanRunner implements ApplicationRunner {
       executor = Executors.newFixedThreadPool(128);
 
       final Query query = new Query();
-      try (CloseableIterator<MongoStructuredData> it = mongoOperations.stream(query, MongoStructuredData.class)) {
+      try (CloseableIterator<MongoStructuredData> it =
+          mongoOperations.stream(query, MongoStructuredData.class)) {
         while (it.hasNext()) {
           MongoStructuredData structuredData = it.next();
           String accession = structuredData.getAccession();
@@ -91,8 +83,9 @@ public class AmrCleanRunner implements ApplicationRunner {
     private final MongoStructuredData structuredData;
     private final MongoStructuredDataRepository mongoStructuredDataRepository;
 
-    public SdCleanCallable(MongoStructuredData structuredData,
-                           MongoStructuredDataRepository mongoStructuredDataRepository) {
+    public SdCleanCallable(
+        MongoStructuredData structuredData,
+        MongoStructuredDataRepository mongoStructuredDataRepository) {
       this.structuredData = structuredData;
       this.mongoStructuredDataRepository = mongoStructuredDataRepository;
     }
@@ -121,11 +114,21 @@ public class AmrCleanRunner implements ApplicationRunner {
       }
 
       for (StructuredDataTable data : emptyDomainAndWebinData) {
-        StructuredDataTable duplicateWithDomain = StructuredDataTable.build("self.BiosampleImportNCBI",
-            null, data.getType(), data.getSchema(), data.getContent());
+        StructuredDataTable duplicateWithDomain =
+            StructuredDataTable.build(
+                "self.BiosampleImportNCBI",
+                null,
+                data.getType(),
+                data.getSchema(),
+                data.getContent());
         if (!dataSet.contains(duplicateWithDomain)) {
-          StructuredDataTable dataWithDomain = StructuredDataTable.build("self.BiosampleImportNCBI",
-              null, data.getType(), data.getSchema(), data.getContent());
+          StructuredDataTable dataWithDomain =
+              StructuredDataTable.build(
+                  "self.BiosampleImportNCBI",
+                  null,
+                  data.getType(),
+                  data.getSchema(),
+                  data.getContent());
           dataSet.add(dataWithDomain);
         }
       }
@@ -133,11 +136,15 @@ public class AmrCleanRunner implements ApplicationRunner {
       dataSet.removeAll(enaImportedData);
       dataSet.removeAll(emptyDomainAndWebinData);
 
-      LOGGER.info(structuredData.getAccession() + ", original size: " + originalSize + ", now: " + dataSet.size());
+      LOGGER.info(
+          structuredData.getAccession()
+              + ", original size: "
+              + originalSize
+              + ", now: "
+              + dataSet.size());
       mongoStructuredDataRepository.save(structuredData);
 
       return null;
     }
-
   }
 }

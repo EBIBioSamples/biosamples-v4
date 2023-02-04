@@ -10,13 +10,6 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import java.io.StringReader;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -25,8 +18,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.PipelinesProperties;
-import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Publication;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
+
+import java.io.StringReader;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 @Service
 public class EnaSampleToBioSampleConversionService {
@@ -49,7 +53,7 @@ public class EnaSampleToBioSampleConversionService {
   }
 
   /** Handles one ENA sample */
-  protected Sample enrichSample(final String accession, final boolean isNcbi)
+  Sample enrichSample(final String accession, final boolean isNcbi)
       throws DocumentException {
     final SampleDBBean sampleDBBean = eraProDao.getSampleDetailsByBioSampleId(accession);
 
@@ -58,7 +62,7 @@ public class EnaSampleToBioSampleConversionService {
       final SAXReader reader = new SAXReader();
       final Document xml = reader.read(new StringReader(xmlString));
       final Element enaSampleRootElement =
-          enaSampleXmlEnhancer.applyAllRules(
+              enaSampleXmlEnhancer.applyAllRules(
               xml.getRootElement(), enaSampleXmlEnhancer.getEnaDatabaseSample(accession));
 
       // check that we got some content
@@ -78,7 +82,7 @@ public class EnaSampleToBioSampleConversionService {
       final Element enaSampleRootElement,
       final String accession,
       final boolean isNcbi) {
-    Sample sample = enaSampleToBioSampleConverter.convert(enaSampleRootElement, accession);
+    Sample sample = enaSampleToBioSampleConverter.convert(enaSampleRootElement, accession, isNcbi);
 
     final SortedSet<Attribute> attributes = new TreeSet<>(sample.getCharacteristics());
     final SortedSet<Publication> publications = new TreeSet<>(sample.getPublications());
@@ -86,10 +90,10 @@ public class EnaSampleToBioSampleConversionService {
     final String firstPublic = sampleDBBean.getFirstPublic();
     final String firstCreated = sampleDBBean.getFirstCreated();
     final String webinId =
-        pipelinesProperties.getProxyWebinId(); // sampleDBBean.getSubmissionAccountId();
+            pipelinesProperties.getProxyWebinId(); // sampleDBBean.getSubmissionAccountId();
     final String status = handleStatus(sampleDBBean.getStatus());
     final Long taxId = sampleDBBean.getTaxId();
-    Instant release;
+    final Instant release;
     Instant update = null;
     Instant create = null;
     Instant submitted = null;
@@ -144,7 +148,7 @@ public class EnaSampleToBioSampleConversionService {
           Sample.build(
               sample.getName(),
               accession,
-              pipelinesProperties.getEnaDomain(),
+                  pipelinesProperties.getEnaDomain(),
               webinId,
               taxId,
               release,
