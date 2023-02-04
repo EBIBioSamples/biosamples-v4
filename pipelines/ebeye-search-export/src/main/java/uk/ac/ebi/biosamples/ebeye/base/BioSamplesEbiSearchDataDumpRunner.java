@@ -15,8 +15,10 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -37,8 +39,9 @@ import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
 @Component
-public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
-  private static Logger log = LoggerFactory.getLogger(EbEyeBioSamplesDataDumpRunner.class);
+public class BioSamplesEbiSearchDataDumpRunner implements ApplicationRunner {
+  private static final Logger log =
+      LoggerFactory.getLogger(BioSamplesEbiSearchDataDumpRunner.class);
   /*private static final String BIOSAMPLES = "biosamples";
   private static final String MONGO_SAMPLE = "mongoSample";*/
   private static final String ENA_LC = "ena";
@@ -52,16 +55,15 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   private String mongoUri;*/
 
   private Set<String> attributeSet;
+  private Set<String> uniqueAccessionsSet;
 
   @Override
   public void run(final ApplicationArguments args) throws Exception {
-    boolean covidRun = true;
-
-    if (args.getOptionValues("COVID").iterator().next().equalsIgnoreCase("false")) {
-      covidRun = false;
-    }
+    final boolean covidRun =
+        !args.getOptionValues("COVID").iterator().next().equalsIgnoreCase("false");
 
     attributeSet = attributeLoader.getAllAttributes();
+    uniqueAccessionsSet = new HashSet<>();
 
     if (covidRun) {
       final AtomicReference<String> startDate = new AtomicReference<>("");
@@ -77,24 +79,59 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
             if (programArgument.equals("startDate")) {
               startDate.set(args.getOptionValues("startDate").get(0));
             }
+
             if (programArgument.equals("endDate")) {
               endDate.set(args.getOptionValues("endDate").get(0));
             }
           });
 
-      final Collection<Filter> covidSamplesDateFilter =
-          getDateFiltersCovid(startDate.get(), endDate.get());
+      log.info(
+          "[COVID] Attempting to run for from date " + startDate.get() + " until " + endDate.get());
+      log.info("[ORGANISM] batch");
+
+      final LocalDate userSuppliedFromDate =
+          LocalDate.parse(startDate.get(), DateTimeFormatter.ISO_LOCAL_DATE);
+      final LocalDate userSuppliedToDate =
+          LocalDate.parse(endDate.get(), DateTimeFormatter.ISO_LOCAL_DATE);
+
+      LocalDate fromDate = LocalDate.parse(startDate.get(), DateTimeFormatter.ISO_LOCAL_DATE);
+      LocalDate toDate = fromDate.plusDays(1);
+
+      while (!fromDate.isEqual(userSuppliedToDate)) {
+        log.info("[ORGANISM] Attempting to run for from date " + fromDate + " until " + toDate);
+
+        final Collection<Filter> covidSamplesDateAndOrganismFilter = new ArrayList<>();
+        covidSamplesDateAndOrganismFilter.add(getDateFilterCovid(fromDate, toDate));
+        covidSamplesDateAndOrganismFilter.add(
+            getAttributeFilter("organism", "Severe acute respiratory syndrome coronavirus 2"));
+
+        createSampleExtracts(
+            covidRun, covidSamplesDateAndOrganismFilter, "ORGANISM", fromDate, toDate);
+
+        fromDate = toDate;
+        toDate = toDate.plusDays(1);
+      }
+
+      log.info("[PROJECT] batch");
+      log.info(
+          "[PROJECT] Attempting to run for from date "
+              + userSuppliedFromDate
+              + " until "
+              + userSuppliedToDate);
+
+      final Collection<Filter> covidSamplesDateAndAttributeFilter = new ArrayList<>();
+
+      covidSamplesDateAndAttributeFilter.add(
+          getAttributeFilter("project name", "ReCoDID COVID-19 pilot study"));
+      covidSamplesDateAndAttributeFilter.add(
+          getDateFilterCovid(userSuppliedFromDate, userSuppliedToDate));
 
       createSampleExtracts(
-          covidRun, startDate, endDate, "NCBITaxon_2697049", covidSamplesDateFilter, "ONTOLOGY");
-
-      final Collection<Filter> covidSamplesDateAndDiseaseTagFilter = new ArrayList<>();
-      covidSamplesDateAndDiseaseTagFilter.add(
-          new AttributeFilter.Builder("disease").withValue("COVID-19").build());
-      covidSamplesDateAndDiseaseTagFilter.addAll(covidSamplesDateFilter);
-
-      createSampleExtracts(
-          covidRun, startDate, endDate, "", covidSamplesDateAndDiseaseTagFilter, "DISEASE_TAG");
+          covidRun,
+          covidSamplesDateAndAttributeFilter,
+          "PROJECT",
+          userSuppliedFromDate,
+          userSuppliedToDate);
     } else {
       /*final DateTimeFormatter dtFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
       final MongoClientURI uri = new MongoClientURI(mongoUri);
@@ -145,70 +182,74 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
 
   private void createSampleExtracts(
       final boolean covidRun,
-      final AtomicReference<String> startDate,
-      final AtomicReference<String> endDate,
-      final String filterText,
       final Collection<Filter> filterCollection,
-      final String fileNameSpec)
-      throws JAXBException {
-    log.info("Running for covid from start date " + startDate.get() + " until " + endDate.get());
-
-    boolean pagesRemaining = true;
-    int pageProcessed = 0;
+      final String fileNameSpec,
+      final LocalDate fromDate,
+      final LocalDate toDate) {
     Iterable<EntityModel<Sample>> filteredCovidSamples = null;
 
-    while (pagesRemaining) {
-      int retryCount = 0;
+    int retryCount = 0;
 
-      while (retryCount <= MAX_RETRY) {
-        try {
-          filteredCovidSamples =
-              bioSamplesClient.fetchPagedSampleResource(
-                  filterText, filterCollection, pageProcessed++, 1000);
+    while (retryCount <= MAX_RETRY) {
+      try {
+        filteredCovidSamples = bioSamplesClient.fetchSampleResourceAll("", filterCollection);
 
-          if (filteredCovidSamples != null) {
-            break;
-          }
-        } catch (final Exception e) {
-          log.info("Failed for page " + pageProcessed + " retrying");
-          retryCount++;
-
-          if (retryCount == MAX_RETRY) {
-            pageProcessed++;
-          }
+        if (filteredCovidSamples != null) {
+          break;
         }
-      }
+      } catch (final Exception e) {
+        log.info("Failed for to get samples from BioSamples API, retrying");
+        retryCount++;
 
-      if (filteredCovidSamples != null) {
-        final long samplesInPage =
-            StreamSupport.stream(filteredCovidSamples.spliterator(), false).count();
+        if (retryCount == MAX_RETRY) {
+          log.info("Dumping failed - failed to get samples from BioSamples API");
 
-        log.info("Samples count for page " + pageProcessed + " is " + samplesInPage);
-
-        if (samplesInPage > 0) {
-          log.info("Samples remaining");
-
-          final File extractFile =
-              new File(
-                  "/mnt/data/biosamples/data/ebeye/"
-                      + "biosd-dump_cv_19_"
-                      + fileNameSpec
-                      + "_"
-                      + pageProcessed
-                      + Math.random()
-                      + ".xml");
-          final List<Sample> samplesList = getSamplesListCovid(filteredCovidSamples, fileNameSpec);
-
-          convertSampleToXml(samplesList, extractFile, covidRun);
-        } else {
-          log.info("No more Samples remaining");
-
-          pagesRemaining = false;
+          break;
         }
       }
     }
 
-    log.info("Dumping finished for this batch");
+    if (filteredCovidSamples != null) {
+      final int chunkSize = 1000;
+      final AtomicInteger counter = new AtomicInteger();
+
+      try {
+        final Stream<EntityModel<Sample>> samplesStream =
+            StreamSupport.stream(filteredCovidSamples.spliterator(), true);
+
+        final Collection<List<EntityModel<Sample>>> splittedSamples =
+            samplesStream
+                .collect(
+                    Collectors.groupingBy(enaSampleId -> counter.getAndIncrement() / chunkSize))
+                .values();
+
+        int iteration = 0;
+
+        for (final List<EntityModel<Sample>> splittedSample : splittedSamples) {
+          log.info("Processing iteration: " + ++iteration);
+
+          final File extractFile =
+              new File(
+                  "C://Users//dgupta//COVID//"
+                      + "biosd-dump_cv_19_"
+                      + fileNameSpec
+                      + fromDate
+                      + toDate
+                      + "_"
+                      + iteration
+                      + Math.random()
+                      + ".xml");
+
+          convertSampleToXml(
+              getSamplesListCovid(splittedSample, fileNameSpec, uniqueAccessionsSet),
+              extractFile,
+              covidRun);
+        }
+      } catch (final Exception e) {
+        e.printStackTrace();
+        log.info("Failed for a batch " + fromDate + " and " + toDate);
+      }
+    }
   }
 
   /* public LocalDate convertToLocalDateViaInstant(Date dateToConvert) {
@@ -257,9 +298,9 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     return sampleResource.map(Resource::getContent).orElse(null);
   }*/
 
-  public void convertSampleToXml(final List<Sample> samples, final File file, boolean covidRun)
-      throws JAXBException {
-    DatabaseType database = new DatabaseType();
+  private void convertSampleToXml(
+      final List<Sample> samples, final File file, final boolean covidRun) throws JAXBException {
+    final DatabaseType database = new DatabaseType();
 
     database.setName("BioSamples");
     database.setDescription("EBI BioSamples Database");
@@ -272,7 +313,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
       database.setRelease("BioSamples full Samples Release");
     }
 
-    AtomicReference<EntriesType> entriesType = new AtomicReference<>(new EntriesType());
+    final AtomicReference<EntriesType> entriesType = new AtomicReference<>(new EntriesType());
 
     samples.forEach(
         sample -> {
@@ -280,16 +321,16 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
           database.setEntries(entriesType.get());
         });
 
-    JAXBContext context = JAXBContext.newInstance(DatabaseType.class);
+    final JAXBContext context = JAXBContext.newInstance(DatabaseType.class);
 
-    Marshaller jaxbMarshaller = context.createMarshaller();
+    final Marshaller jaxbMarshaller = context.createMarshaller();
     jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
     jaxbMarshaller.marshal(database, file);
   }
 
   private EntriesType getEntries(
-      final Sample sample, final EntriesType entriesType, boolean covidRun) {
+      final Sample sample, final EntriesType entriesType, final boolean covidRun) {
     final EntryType entryType = new EntryType();
 
     getEntry(sample, entryType, covidRun);
@@ -298,11 +339,11 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     return entriesType;
   }
 
-  private void getEntry(final Sample sample, final EntryType entryType, boolean covidRun) {
+  private void getEntry(final Sample sample, final EntryType entryType, final boolean covidRun) {
     entryType.setId(sample.getAccession());
     entryType.setName(sample.getName());
 
-    AdditionalFieldsType additionalFieldsType = new AdditionalFieldsType();
+    final AdditionalFieldsType additionalFieldsType = new AdditionalFieldsType();
 
     if (covidRun) {
       getAdditionalFieldsCovid(sample, entryType, additionalFieldsType);
@@ -316,7 +357,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     entryType.setCrossReferences(getCrossReferences(sample, covidRun));
   }
 
-  private void setTaxonomyReferenceType(Sample sample) {
+  private void setTaxonomyReferenceType(final Sample sample) {
     if (sample.getTaxId() != null && sample.getTaxId() != 0) {
       taxonomyRefType.setDbname("TAXONOMY");
       taxonomyRefType.setDbkey(sample.getTaxId().toString());
@@ -330,7 +371,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
         .getExternalReferences()
         .forEach(
             extRef -> {
-              RefType refType = new RefType();
+              final RefType refType = new RefType();
 
               final String url = extRef.getUrl();
 
@@ -369,8 +410,8 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     return crossReferencesType;
   }
 
-  private RefType getTaxonomyCrossReferenceCovid(long taxId) {
-    RefType refType = new RefType();
+  private RefType getTaxonomyCrossReferenceCovid(final long taxId) {
+    final RefType refType = new RefType();
 
     refType.setDbname("TAXONOMY");
     refType.setDbkey(String.valueOf(taxId));
@@ -383,13 +424,13 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   }
 
   private DatesType getDates(final Sample sample) {
-    DatesType datesType = new DatesType();
-    DateType dateTypeRelease = new DateType();
+    final DatesType datesType = new DatesType();
+    final DateType dateTypeRelease = new DateType();
 
     dateTypeRelease.setType("release_date");
     dateTypeRelease.setValue(sample.getReleaseDate());
 
-    DateType dateTypeUpdate = new DateType();
+    final DateType dateTypeUpdate = new DateType();
 
     dateTypeUpdate.setType("update_date");
     dateTypeUpdate.setValue(sample.getUpdateDate());
@@ -408,7 +449,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
         .getAttributes()
         .forEach(
             attribute -> {
-              FieldType fieldType = new FieldType();
+              final FieldType fieldType = new FieldType();
 
               if (attribute.getType().equals("description")) {
                 entryType.setDescription(attribute.getValue());
@@ -425,7 +466,9 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   }
 
   private void getAdditionalFieldsCovid(
-      Sample sample, EntryType entryType, AdditionalFieldsType additionalFieldsType) {
+      final Sample sample,
+      final EntryType entryType,
+      final AdditionalFieldsType additionalFieldsType) {
     sample
         .getAttributes()
         .forEach(
@@ -454,39 +497,42 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
             });
   }
 
-  private String removeSpacesFromAttributeNames(String type) {
+  private String removeSpacesFromAttributeNames(final String type) {
     return type.trim().replaceAll(" ", "_");
   }
 
-  private String removeOtherSpecialCharactersFromAttributeNames(String type) {
+  private String removeOtherSpecialCharactersFromAttributeNames(final String type) {
     return type.trim().replaceAll("[^a-zA-Z0-9\\s+_-]", "");
   }
 
-  public static Collection<Filter> getDateFiltersCovid(final String from, final String to) {
-    final LocalDate fromDate = LocalDate.parse(from, DateTimeFormatter.ISO_LOCAL_DATE);
-    final LocalDate toDate = LocalDate.parse(to, DateTimeFormatter.ISO_LOCAL_DATE);
+  private static Filter getDateFilterCovid(final LocalDate fromDate, final LocalDate toDate) {
+    return new DateRangeFilter.DateRangeFilterBuilder("update")
+        .from(fromDate.atStartOfDay().toInstant(ZoneOffset.UTC))
+        .until(toDate.atStartOfDay().toInstant(ZoneOffset.UTC))
+        .build();
+  }
 
-    final Filter dateFilter =
-        new DateRangeFilter.DateRangeFilterBuilder("update")
-            .from(fromDate.atStartOfDay().toInstant(ZoneOffset.UTC))
-            .until(toDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))
-            .build();
-    final Collection<Filter> filters = new ArrayList<>();
-    filters.add(dateFilter);
-
-    return filters;
+  private static Filter getAttributeFilter(
+      final String attributeName, final String attributeValue) {
+    return new AttributeFilter.Builder(attributeName).withValue(attributeValue).build();
   }
 
   private List<Sample> getSamplesListCovid(
-      final Iterable<EntityModel<Sample>> filteredCovidSamples, final String fileNameSpec) {
+      final Iterable<EntityModel<Sample>> filteredCovidSamples,
+      final String fileNameSpec,
+      final Set<String> uniqueAccessionsSet) {
     final List<Sample> sampleList = new ArrayList<>();
 
     filteredCovidSamples.forEach(
         sampleResource -> {
           final Sample sample = sampleResource.getContent();
+          final String accession = sample.getAccession();
 
-          sampleList.add(sample);
-          log.info("Sample added for " + fileNameSpec + " " + sample.getAccession());
+          if (!uniqueAccessionsSet.contains(accession)) {
+            sampleList.add(sample);
+            uniqueAccessionsSet.add(accession);
+          }
+          log.info("Sample added for " + fileNameSpec + " " + accession);
         });
 
     return sampleList;
