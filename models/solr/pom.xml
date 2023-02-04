@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.2.15-SNAPSHOT</version>
+		<version>5.2.16-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -16,12 +16,12 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-core</artifactId>
-			<version>5.2.15-SNAPSHOT</version>
+			<version>5.2.16-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>properties</artifactId>
-			<version>5.2.15-SNAPSHOT</version>
+			<version>5.2.16-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
