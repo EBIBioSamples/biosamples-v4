@@ -13,7 +13,7 @@ stages:
   - deploy
 
 maven-package:
-  image: maven:3.6-jdk-11
+  image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/maven:3.6.3-jdk-8-openj9
   stage: package
   script:
     - 'mvn -q deploy -P embl-ebi -s ci_settings.xml -Dmaven.source.skip=true'
@@ -37,7 +37,7 @@ maven-package:
 #  when: manual
 
 clone-config-preproduction:
-  image: maven:3.6-jdk-11
+  image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/maven:3.6-jdk-11
   stage: config
   script:
     - git clone https://$BSD_INTERNAL_USER:$BSD_INTERNAL_PASS@gitlab.ebi.ac.uk/biosamples/biosamples-internal.git
@@ -53,7 +53,7 @@ clone-config-preproduction:
   when: manual
 
 clone-config-production:
-  image: maven:3.6-jdk-11
+  image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/maven:3.6-jdk-11
   stage: config
   script:
     - git clone https://$BSD_INTERNAL_USER:$BSD_INTERNAL_PASS@gitlab.ebi.ac.uk/biosamples/biosamples-internal.git
@@ -71,7 +71,7 @@ clone-config-production:
     - master
 
 deploy-preproduction:
-  image: ubuntu
+  image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/ubuntu
   stage: deploy
   script:
     - chmod +x deploy.sh
@@ -84,7 +84,7 @@ deploy-preproduction:
     - master
 
 deploy-production-p2m-servers:
-  image: ubuntu
+  image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/ubuntu
   stage: deploy
   script:
     - chmod +x deploy.sh
@@ -95,7 +95,7 @@ deploy-production-p2m-servers:
     - master
 
 deploy-production-p1m-servers:
-  image: ubuntu
+  image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/ubuntu
   stage: deploy
   script:
     - chmod +x deploy.sh
