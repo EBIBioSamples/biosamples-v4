@@ -10,6 +10,14 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
+import java.io.StringReader;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -22,20 +30,13 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Publication;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
-
-import java.io.StringReader;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 @Service
 public class EnaSampleToBioSampleConversionService {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final EnaSampleXmlEnhancer enaSampleXmlEnhancer;
   private final EraProDao eraProDao;
   private final EnaSampleToBioSampleConverter enaSampleToBioSampleConverter;
@@ -53,21 +54,31 @@ public class EnaSampleToBioSampleConversionService {
   }
 
   /** Handles one ENA sample */
-  Sample enrichSample(final String accession, final boolean isNcbi)
+  Sample enrichSample(
+      final String accession,
+      final boolean isNcbi,
+      final Set<AbstractData> oldStructuredData,
+      final Set<StructuredDataTable> newStructuredData)
       throws DocumentException {
-    final SampleDBBean sampleDBBean = eraProDao.getSampleDetailsByBioSampleId(accession);
+    final EraproSample eraproSample = eraProDao.getSampleDetailsByBioSampleId(accession);
 
-    if (sampleDBBean != null) {
-      final String xmlString = sampleDBBean.getSampleXml();
+    if (eraproSample != null) {
+      final String xmlString = eraproSample.getSampleXml();
       final SAXReader reader = new SAXReader();
       final Document xml = reader.read(new StringReader(xmlString));
       final Element enaSampleRootElement =
-              enaSampleXmlEnhancer.applyAllRules(
+          enaSampleXmlEnhancer.applyAllRules(
               xml.getRootElement(), enaSampleXmlEnhancer.getEnaDatabaseSample(accession));
 
       // check that we got some content
       if (XmlPathBuilder.of(enaSampleRootElement).path("SAMPLE").exists()) {
-        return enrichSample(sampleDBBean, enaSampleRootElement, accession, isNcbi);
+        return enrichSample(
+            eraproSample,
+            enaSampleRootElement,
+            accession,
+            isNcbi,
+            oldStructuredData,
+            newStructuredData);
       } else {
         log.warn("Unable to find SAMPLE element for " + accession);
       }
@@ -78,21 +89,25 @@ public class EnaSampleToBioSampleConversionService {
 
   /** Enriches one ENA sample */
   private Sample enrichSample(
-      final SampleDBBean sampleDBBean,
+      final EraproSample eraproSample,
       final Element enaSampleRootElement,
       final String accession,
-      final boolean isNcbi) {
-    Sample sample = enaSampleToBioSampleConverter.convert(enaSampleRootElement, accession, isNcbi);
+      final boolean isNcbi,
+      final Set<AbstractData> oldStructuredData,
+      final Set<StructuredDataTable> newStructuredData) {
+    Sample sample =
+        enaSampleToBioSampleConverter.convertEnaSampleXmlToBioSample(
+            enaSampleRootElement, accession, isNcbi);
 
     final SortedSet<Attribute> attributes = new TreeSet<>(sample.getCharacteristics());
     final SortedSet<Publication> publications = new TreeSet<>(sample.getPublications());
-    final String lastUpdated = sampleDBBean.getLastUpdate();
-    final String firstPublic = sampleDBBean.getFirstPublic();
-    final String firstCreated = sampleDBBean.getFirstCreated();
+    final String lastUpdated = eraproSample.getLastUpdate();
+    final String firstPublic = eraproSample.getFirstPublic();
+    final String firstCreated = eraproSample.getFirstCreated();
     final String webinId =
-            pipelinesProperties.getProxyWebinId(); // sampleDBBean.getSubmissionAccountId();
-    final String status = handleStatus(sampleDBBean.getStatus());
-    final Long taxId = sampleDBBean.getTaxId();
+        pipelinesProperties.getProxyWebinId(); // sampleDBBean.getSubmissionAccountId();
+    final String status = handleStatus(eraproSample.getStatus());
+    final Long taxId = eraproSample.getTaxId();
     final Instant release;
     Instant update = null;
     Instant create = null;
@@ -148,7 +163,7 @@ public class EnaSampleToBioSampleConversionService {
           Sample.build(
               sample.getName(),
               accession,
-                  pipelinesProperties.getEnaDomain(),
+              pipelinesProperties.getEnaDomain(),
               webinId,
               taxId,
               release,
@@ -161,11 +176,26 @@ public class EnaSampleToBioSampleConversionService {
               sample.getExternalReferences());
     }
 
-    return Sample.Builder.fromSample(sample)
-        .withNoData()
-        .withPublications(publications)
-        .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
-        .build();
+    if (oldStructuredData != null && oldStructuredData.size() > 0) {
+      return Sample.Builder.fromSample(sample)
+          .withData(oldStructuredData)
+          .withPublications(publications)
+          .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
+          .build();
+    } else if (newStructuredData != null && newStructuredData.size() > 0) {
+      return Sample.Builder.fromSample(sample)
+          .withStructuredData(newStructuredData)
+          .withPublications(publications)
+          .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
+          .build();
+    } else {
+      return Sample.Builder.fromSample(sample)
+          .withNoData()
+          .withNoStructuredData()
+          .withPublications(publications)
+          .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
+          .build();
+    }
   }
 
   private String handleStatus(final int statusId) {
