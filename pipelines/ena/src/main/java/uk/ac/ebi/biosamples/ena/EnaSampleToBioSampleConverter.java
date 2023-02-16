@@ -10,332 +10,355 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import org.dom4j.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.service.TaxonomyService;
-import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
+import static uk.ac.ebi.biosamples.ena.EnaSampleToBioSampleConversionConstants.*;
 
 import java.time.Instant;
 import java.util.Collections;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.dom4j.Element;
+import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
 class EnaSampleToBioSampleConverter {
-  private static final String SECONDARY_ID = "SECONDARY_ID";
-  private static final String COMMON_NAME = "COMMON_NAME";
-  private static final String ORGANISM = "organism";
-  private static final String TAG_SAMPLE_ATTRIBUTE = "attribute";
-  // Fields required by ENA content - some are for JSON building and some for
-  // equality checks with ENA XML
-  private static final String UUID_JSON = "uuid";
-  private static final String INDIVIDUAL_NAME_JSON = "individual_name";
-  private static final String ANONYMIZED_NAME_JSON = "anonymized_name";
-  private static final String NAMESPACE = "namespace";
-  private static final String NAMESPACE_TAG = "Namespace:";
-  private static final String SUBMITTER_ID_JSON = "Submitter Id";
-  private static final String EXTERNAL_ID_JSON = "External Id";
-  private static final String SECONDARY_ID_JSON = "Secondary Id";
-  private static final String ALIAS = "alias";
-  private static final String ENA_SRA_ACCESSION = "SRA accession";
-  private static final String ENA_BROKER_NAME = "broker name";
-  private static final String INSDC_CENTER_NAME = "INSDC center name";
-  private static final String INSDC_CENTER_ALIAS = "INSDC center alias";
-  private static final String ENA_TITLE = "title";
-  private static final String ENA_DESCRIPTION = "description";
-  private static final String SAMPLE = "SAMPLE";
-  private static final String IDENTIFIERS = "IDENTIFIERS";
-  private static final String PRIMARY_ID = "PRIMARY_ID";
-  private static final String SUBMITTER_ID = "SUBMITTER_ID";
-  private static final String EXTERNAL_ID = "EXTERNAL_ID";
-  private static final String UUID = "UUID";
-  private static final String SAMPLE_NAME = "SAMPLE_NAME";
-  private static final String ANONYMIZED_NAME = "ANONYMIZED_NAME";
-  private static final String INDIVIDUAL_NAME = "INDIVIDUAL_NAME";
-  private static final String SCIENTIFIC_NAME = "SCIENTIFIC_NAME";
-  private static final String TAXON_ID = "TAXON_ID";
-  private static final String SAMPLE_ATTRIBUTE = "SAMPLE_ATTRIBUTE";
-  private static final String SAMPLE_ATTRIBUTES = "SAMPLE_ATTRIBUTES";
-  private static final String DESCRIPTION = "DESCRIPTION";
-  private static final String TITLE = "TITLE";
-  private static final String COMMON_NAME_JSON = "common name";
-  private static final String PUBMED_ID = "pubmed_id";
-  private final Logger log = LoggerFactory.getLogger(getClass());
+  private static final String ENA_SAMPLE_ACCESSION = "accession";
 
-  @Autowired private TaxonomyService taxonomyService;
+  Sample convertEnaSampleXmlToBioSample(
+      final Element eraSampleXmlRootElement,
+      final String bioSampleAccession,
+      final boolean isNcbi) {
+    final SortedSet<Attribute> bioSampleAttributes = new TreeSet<>();
+    final SortedSet<Publication> bioSamplePublications = new TreeSet<>();
+    final SortedSet<Relationship> bioSampleRelationships = new TreeSet<>();
+    final SortedSet<ExternalReference> bioSampleExternalReferences = new TreeSet<>();
+    final XmlPathBuilder eraSampleXmlRootPath =
+        XmlPathBuilder.of(eraSampleXmlRootElement).path(ENA_SAMPLE_ROOT);
 
-  Sample convert(final Element enaSampleRootElement, final String accession, final boolean isNcbi) {
-    final SortedSet<Attribute> attributes = new TreeSet<>();
-    final SortedSet<Publication> publications = new TreeSet<>();
-    final SortedSet<Relationship> relationships = new TreeSet<>();
-    final Attribute organismAttribute;
-    String enaSampleName;
+    /*Map name (top-attribute) in BioSamples to
+    alias (top-attribute) in ENA XML*/
+    String bioSampleSampleName = null;
+    String bioSampleTaxId = null;
 
-    // ENA Specific fields
-
-    // ENA enaSampleName - BSD-1741 - Requirement#1 Map enaSampleName (top-attribute) in BioSamples
-    // to
-    // alias (top-attribute) in ENA XML
-    final String primaryId =
-        XmlPathBuilder.of(enaSampleRootElement).path(SAMPLE, IDENTIFIERS, PRIMARY_ID).text();
-    final XmlPathBuilder sampleTagPathBuilder =
-        XmlPathBuilder.of(enaSampleRootElement).path(SAMPLE);
-
-    if (sampleTagPathBuilder.attributeExists(ALIAS)) {
-      enaSampleName = sampleTagPathBuilder.attribute(ALIAS).trim();
-    } else {
-      // if and only if alias is not present, then enaSampleName would be equal to primaryId
-      enaSampleName = primaryId;
+    if (eraSampleXmlRootPath.attributeExists(ENA_SAMPLE_ALIAS)) {
+      bioSampleSampleName = eraSampleXmlRootPath.attribute(ENA_SAMPLE_ALIAS).trim();
     }
-
-    log.trace("Converting ENA sample with PRIMARY_ID as " + primaryId);
 
     // ENA SRA accession
-    if (sampleTagPathBuilder.attributeExists("accession")) {
-      attributes.add(
-          Attribute.build(ENA_SRA_ACCESSION, sampleTagPathBuilder.attribute("accession").trim()));
-    }
+    if (eraSampleXmlRootPath.attributeExists(ENA_SAMPLE_ACCESSION)) {
+      final String enaSampleSraAccession =
+          eraSampleXmlRootPath.attribute(ENA_SAMPLE_ACCESSION).trim();
+      bioSampleAttributes.add(Attribute.build(ENA_SAMPLE_SRA_ACCESSION, enaSampleSraAccession));
 
-    // ENA broker enaSampleName
-    if (sampleTagPathBuilder.attributeExists("broker_name")) {
-      attributes.add(
-          Attribute.build(ENA_BROKER_NAME, sampleTagPathBuilder.attribute("broker_name").trim()));
-    }
-
-    // ENA center enaSampleName
-    if (sampleTagPathBuilder.attributeExists("center_name")) {
-      attributes.add(
-          Attribute.build(INSDC_CENTER_NAME, sampleTagPathBuilder.attribute("center_name").trim()));
-    }
-
-    // ENA center alias
-    if (sampleTagPathBuilder.attributeExists("center_alias")) {
-      attributes.add(
-          Attribute.build(
-              INSDC_CENTER_ALIAS, sampleTagPathBuilder.attribute("center_alias").trim()));
-    }
-
-    // ENA title
-    final XmlPathBuilder sampleTitlePathBuilder =
-        XmlPathBuilder.of(enaSampleRootElement).path(SAMPLE, TITLE);
-    final XmlPathBuilder scientificNamePathBuilder =
-        XmlPathBuilder.of(enaSampleRootElement).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME);
-
-    String title = "";
-
-    if (sampleTitlePathBuilder.exists() && sampleTitlePathBuilder.text().trim().length() > 0) {
-      title = sampleTitlePathBuilder.text().trim();
-    } else if (scientificNamePathBuilder.exists()
-        && scientificNamePathBuilder.text().trim().length() > 0) {
-      title = scientificNamePathBuilder.text().trim();
-    }
-
-    if (!title.isEmpty()) {
-      attributes.add(Attribute.build(ENA_TITLE, title));
-
-      enaSampleName = title;
-    }
-
-    // ENA description - BSD-1744 - Deal with multiple descriptions in ENA XML
-    final XmlPathBuilder descriptionPathBuilder =
-        XmlPathBuilder.of(enaSampleRootElement).path(SAMPLE, DESCRIPTION);
-
-    if (descriptionPathBuilder.exists() && descriptionPathBuilder.text().trim().length() > 0) {
-      attributes.add(Attribute.build(ENA_DESCRIPTION, descriptionPathBuilder.text().trim()));
-    }
-
-    // ENA SUBMITTER_ID - BSD-1743 - Un-tag core attributes and sample attributes from synonyms
-    parseEnaIdentifiersWithNamespaces(
-        enaSampleRootElement, attributes, SUBMITTER_ID, SUBMITTER_ID_JSON);
-
-    // ENA EXTERNAL_ID - BSD-1743 - Un-tag core attributes and sample attributes from synonyms
-    parseEnaIdentifiersWithNamespaces(
-        enaSampleRootElement, attributes, EXTERNAL_ID, EXTERNAL_ID_JSON);
-
-    // ENA SECONDARY_ID
-    parseEnaIdentifiersWithNamespaces(
-        enaSampleRootElement, attributes, SECONDARY_ID, SECONDARY_ID_JSON);
-
-    // ENA ANONYMIZED_NAME - BSD-1743 - Un-tag core attributes and sample attributes from synonyms
-    final XmlPathBuilder anonymizedNamePathBuilder =
-        XmlPathBuilder.of(enaSampleRootElement).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME);
-
-    if (anonymizedNamePathBuilder.exists()) {
-      attributes.add(Attribute.build(ANONYMIZED_NAME_JSON, anonymizedNamePathBuilder.text()));
-    }
-
-    // ENA INDIVIDUAL_NAME - BSD-1743 - Un-tag core attributes and sample attributes from synonyms
-    final XmlPathBuilder individualNamePathBuider =
-        XmlPathBuilder.of(enaSampleRootElement).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME);
-
-    if (individualNamePathBuider.exists()) {
-      attributes.add(Attribute.build(INDIVIDUAL_NAME_JSON, individualNamePathBuider.text()));
-    }
-
-    // ENA UUID - BSD-1743 - Un-tag core attributes and sample attributes from synonyms
-    if (XmlPathBuilder.of(enaSampleRootElement).path(SAMPLE, IDENTIFIERS, UUID).exists()) {
-      for (final Element element :
-          XmlPathBuilder.of(enaSampleRootElement).path(SAMPLE, IDENTIFIERS).elements(UUID)) {
-        attributes.add(Attribute.build(UUID_JSON, element.getTextTrim()));
+      /*if and only if alias is not present, then sample name in BioSamples would be equal to
+      ENA sample accession*/
+      if (bioSampleSampleName == null) {
+        bioSampleSampleName = enaSampleSraAccession;
       }
     }
 
-    // Handle the organism attribute
-    final int organismTaxId =
-        Integer.parseInt(
-            XmlPathBuilder.of(enaSampleRootElement).path(SAMPLE, SAMPLE_NAME, TAXON_ID).text());
-    final String organismUri = taxonomyService.getUriForTaxonId(organismTaxId);
-    String organismName = String.valueOf(taxonomyService.getUriForTaxonId(organismTaxId));
+    // ENA broker name
+    if (eraSampleXmlRootPath.attributeExists("broker_name")) {
+      bioSampleAttributes.add(
+          Attribute.build(
+              ENA_SAMPLE_BROKER_NAME, eraSampleXmlRootPath.attribute("broker_name").trim()));
+    }
+
+    // ENA center name
+    if (eraSampleXmlRootPath.attributeExists("center_name")) {
+      bioSampleAttributes.add(
+          Attribute.build(
+              BIOSAMPLE_INSDC_CENTER_NAME_ATTRIBUTE_NAME,
+              eraSampleXmlRootPath.attribute("center_name").trim()));
+    }
+
+    // ENA center alias
+    if (eraSampleXmlRootPath.attributeExists("center_alias")) {
+      bioSampleAttributes.add(
+          Attribute.build(
+              BIOSAMPLE_INSDC_CENTER_ALIAS_ATTRIBUTE_NAME,
+              eraSampleXmlRootPath.attribute("center_alias").trim()));
+    }
+
+    // ENA title
+    final XmlPathBuilder titlePathBuilder =
+        XmlPathBuilder.of(eraSampleXmlRootElement).path(ENA_SAMPLE_ROOT, ENA_SAMPLE_TITLE);
+
+    if (titlePathBuilder.exists()) {
+      bioSampleAttributes.add(
+          Attribute.build(BIOSAMPLE_SAMPLE_TITLE_ATTRIBUTE_NAME, titlePathBuilder.text().trim()));
+    }
+
+    // ENA description
+    final XmlPathBuilder descriptionPathBuilder =
+        XmlPathBuilder.of(eraSampleXmlRootElement).path(ENA_SAMPLE_ROOT, ENA_SAMPLE_DESCRIPTION);
+
+    if (descriptionPathBuilder.exists()) {
+      bioSampleAttributes.add(
+          Attribute.build(
+              BIOSAMPLE_SAMPLE_DESCRIPTION_ATTRIBUTE_NAME, descriptionPathBuilder.text().trim()));
+    }
+
+    // ENA SUBMITTER_ID
+    final XmlPathBuilder submitterIdPathBuilder =
+        XmlPathBuilder.of(eraSampleXmlRootElement)
+            .path(ENA_SAMPLE_ROOT, ENA_SAMPLE_DENTIFIERS, ENA_SAMPLE_SUBMITTER_ID);
+    String namespaceOfSubmitterId = null;
+
+    if (submitterIdPathBuilder != null && submitterIdPathBuilder.exists()) {
+      if (submitterIdPathBuilder.attributeExists(ENA_IDENTIFIERS_NAMESPACE_TAG)) {
+        namespaceOfSubmitterId = submitterIdPathBuilder.attribute(ENA_IDENTIFIERS_NAMESPACE_TAG);
+      }
+
+      bioSampleAttributes.add(
+          Attribute.build(
+              BIOSAMPLE_SUBMITTER_ID_ATTRIBUTE_NAME,
+              submitterIdPathBuilder.text(),
+              namespaceOfSubmitterId != null
+                  ? BIOSAMPLE_ATTRIBUTE_NAMESPACE_TAG + namespaceOfSubmitterId
+                  : null,
+              Collections.emptyList(),
+              null));
+    }
+
+    // ENA EXTERNAL ID
+    final XmlPathBuilder externalIdPathBuilder =
+        XmlPathBuilder.of(eraSampleXmlRootElement)
+            .path(ENA_SAMPLE_ROOT, ENA_SAMPLE_DENTIFIERS, ENA_SAMPLE_EXTERNAL_ID);
+    final List<Element> externalIdPathBuilderElements =
+        XmlPathBuilder.of(eraSampleXmlRootElement)
+            .path(ENA_SAMPLE_ROOT, ENA_SAMPLE_DENTIFIERS)
+            .elements(ENA_SAMPLE_EXTERNAL_ID);
+
+    for (final Element element : externalIdPathBuilderElements) {
+      String namespaceOfExternalId = null;
+      final XmlPathBuilder singleExternalIdPathBuilder = XmlPathBuilder.of(element);
+
+      if (singleExternalIdPathBuilder.exists()) {
+        if (singleExternalIdPathBuilder.attributeExists(ENA_IDENTIFIERS_NAMESPACE_TAG)) {
+          namespaceOfExternalId =
+              singleExternalIdPathBuilder.attribute(ENA_IDENTIFIERS_NAMESPACE_TAG);
+        }
+
+        bioSampleAttributes.add(
+            Attribute.build(
+                BIOSAMPLE_EXTERNAL_ID_ATTRIBUTE_NAME,
+                singleExternalIdPathBuilder.text(),
+                namespaceOfExternalId != null
+                    ? BIOSAMPLE_ATTRIBUTE_NAMESPACE_TAG
+                        + externalIdPathBuilder.attribute(ENA_IDENTIFIERS_NAMESPACE_TAG)
+                    : null,
+                Collections.emptyList(),
+                null));
+      }
+    }
+
+    // ENA SECONDARY ID
+    final XmlPathBuilder secondaryIdPathBuilder =
+        XmlPathBuilder.of(eraSampleXmlRootElement)
+            .path(ENA_SAMPLE_ROOT, ENA_SAMPLE_DENTIFIERS, ENA_SAMPLE_SECONDARY_ID);
+
+    if (secondaryIdPathBuilder.exists()) {
+      final List<Element> secondaryIdPathBuilderElements =
+          XmlPathBuilder.of(eraSampleXmlRootElement)
+              .path(ENA_SAMPLE_ROOT, ENA_SAMPLE_DENTIFIERS)
+              .elements(ENA_SAMPLE_SECONDARY_ID);
+
+      for (final Element element : secondaryIdPathBuilderElements) {
+        final XmlPathBuilder singleSecondaryIdPathBuilder = XmlPathBuilder.of(element);
+
+        if (singleSecondaryIdPathBuilder.exists()) {
+          String namespaceOfExternalId = null;
+
+          if (singleSecondaryIdPathBuilder.attributeExists(ENA_IDENTIFIERS_NAMESPACE_TAG)) {
+            namespaceOfExternalId =
+                singleSecondaryIdPathBuilder.attribute(ENA_IDENTIFIERS_NAMESPACE_TAG);
+          }
+
+          bioSampleAttributes.add(
+              Attribute.build(
+                  BIOSAMPLE_SECONDARY_ID_ATTRIBUTE_NAME,
+                  singleSecondaryIdPathBuilder.text(),
+                  namespaceOfExternalId != null
+                      ? BIOSAMPLE_ATTRIBUTE_NAMESPACE_TAG
+                          + secondaryIdPathBuilder.attribute(ENA_IDENTIFIERS_NAMESPACE_TAG)
+                      : null,
+                  Collections.emptyList(),
+                  null));
+        }
+      }
+    }
+
+    // ENA UUID
+    if (XmlPathBuilder.of(eraSampleXmlRootElement)
+        .path(ENA_SAMPLE_ROOT, ENA_SAMPLE_DENTIFIERS, ENA_SAMPLE_UUID)
+        .exists()) {
+      for (final Element element :
+          XmlPathBuilder.of(eraSampleXmlRootElement)
+              .path(ENA_SAMPLE_ROOT, ENA_SAMPLE_DENTIFIERS)
+              .elements(ENA_SAMPLE_UUID)) {
+        bioSampleAttributes.add(
+            Attribute.build(BIOSAMPLE_UUID_ATTRIBUTE_NAME, element.getTextTrim()));
+      }
+    }
+
+    // ENA ANONYMIZED_NAME
+    final XmlPathBuilder anonymizedNamePathBuilder =
+        XmlPathBuilder.of(eraSampleXmlRootElement)
+            .path(ENA_SAMPLE_ROOT, ENA_SAMPLE_SAMPLE_NAME, ENA_SAMPLE_ANONYMIZED_NAME);
+
+    if (anonymizedNamePathBuilder.exists()) {
+      bioSampleAttributes.add(
+          Attribute.build(
+              BIOSAMPLE_ANONYMIZED_NAME_ATTRIBUTE_NAME, anonymizedNamePathBuilder.text()));
+    }
+
+    // ENA INDIVIDUAL_NAME
+    final XmlPathBuilder individualNamePathBuilder =
+        XmlPathBuilder.of(eraSampleXmlRootElement)
+            .path(ENA_SAMPLE_ROOT, ENA_SAMPLE_SAMPLE_NAME, ENA_SAMPLE_INDIVIDUAL_NAME);
+
+    if (individualNamePathBuilder.exists()) {
+      bioSampleAttributes.add(
+          Attribute.build(
+              BIOSAMPLE_INDIVIDUAL_NAME_ATTRIBUTE_NAME, individualNamePathBuilder.text()));
+    }
+
+    // Handle organism attribute
+    final XmlPathBuilder scientificNamePathBuilder =
+        XmlPathBuilder.of(eraSampleXmlRootElement)
+            .path(ENA_SAMPLE_ROOT, ENA_SAMPLE_SAMPLE_NAME, ENA_SAMPLE_SCIENTIFIC_NAME);
 
     if (scientificNamePathBuilder.exists()) {
-      organismName = scientificNamePathBuilder.text();
+      bioSampleAttributes.add(
+          Attribute.build(
+              BIOSAMPLE_ORGANISM_ATTRIBUTE_NAME, scientificNamePathBuilder.text(), null, null));
+      bioSampleAttributes.add(
+          Attribute.build(
+              BIOSAMPLE_SCIENTIFIC_NAME_ATTRIBUTE_NAME,
+              scientificNamePathBuilder.text(),
+              null,
+              null));
     }
-    // ideally this should be lowercase, but backwards compatibility
-    organismAttribute = Attribute.build(ORGANISM, organismName, organismUri, null);
 
-    attributes.add(organismAttribute);
+    // Handle TAXON_ID
+    final XmlPathBuilder taxonIdPathBuilder =
+        XmlPathBuilder.of(eraSampleXmlRootElement)
+            .path(ENA_SAMPLE_ROOT, ENA_SAMPLE_SAMPLE_NAME, "TAXON_ID");
 
+    if (taxonIdPathBuilder.exists()) {
+      bioSampleTaxId = taxonIdPathBuilder.text();
+    }
+
+    // ENA sample common name
     final XmlPathBuilder commonNamePathBuilder =
-        XmlPathBuilder.of(enaSampleRootElement).path(SAMPLE, SAMPLE_NAME, COMMON_NAME);
+        XmlPathBuilder.of(eraSampleXmlRootElement)
+            .path(ENA_SAMPLE_ROOT, ENA_SAMPLE_SAMPLE_NAME, ENA_SAMPLE_COMMON_NAME);
 
     if (commonNamePathBuilder.exists()) {
-      attributes.add(Attribute.build(COMMON_NAME_JSON, commonNamePathBuilder.text()));
+      bioSampleAttributes.add(
+          Attribute.build(BIOSAMPLE_COMMON_NAME_ATTRIBUTE_NAME, commonNamePathBuilder.text()));
     }
 
     final XmlPathBuilder sampleAttributesPathBuilder =
-        XmlPathBuilder.of(enaSampleRootElement).path(SAMPLE, SAMPLE_ATTRIBUTES);
+        XmlPathBuilder.of(eraSampleXmlRootElement)
+            .path(ENA_SAMPLE_ROOT, ENA_SAMPLE_SAMPLE_ATTRIBUTES);
 
     if (sampleAttributesPathBuilder.exists()) {
-      for (final Element sampleAttributeElement :
-          sampleAttributesPathBuilder.elements(SAMPLE_ATTRIBUTE)) {
-        final XmlPathBuilder enaAttributeTagPathBuilder =
-            XmlPathBuilder.of(sampleAttributeElement).path("TAG");
+      for (final Element attributeElement :
+          sampleAttributesPathBuilder.elements(ENA_SAMPLE_SAMPLE_ATTRIBUTE)) {
         String tag = null;
+        final XmlPathBuilder tagPathBuilder = XmlPathBuilder.of(attributeElement).path("TAG");
 
-        if (enaAttributeTagPathBuilder.exists()
-            && enaAttributeTagPathBuilder.text().trim().length() > 0) {
-          tag = enaAttributeTagPathBuilder.text().trim();
+        if (tagPathBuilder.exists() && tagPathBuilder.text().trim().length() > 0) {
+          tag = tagPathBuilder.text().trim();
         }
 
-        final XmlPathBuilder enaAttributeValuePathBuilder =
-            XmlPathBuilder.of(sampleAttributeElement).path("VALUE");
         String value = null;
+        final XmlPathBuilder valuePathBuilder = XmlPathBuilder.of(attributeElement).path("VALUE");
 
-        if (enaAttributeValuePathBuilder.exists()
-            && enaAttributeValuePathBuilder.text().trim().length() > 0) {
-          value = enaAttributeValuePathBuilder.text().trim();
+        if (valuePathBuilder.exists() && valuePathBuilder.text().trim().length() > 0) {
+          value = valuePathBuilder.text().trim();
         }
 
-        final XmlPathBuilder enaAttributeUnitPathBuilder =
-            XmlPathBuilder.of(sampleAttributeElement).path("UNITS");
         String unit = null;
+        final XmlPathBuilder unitPathBuilder = XmlPathBuilder.of(attributeElement).path("UNITS");
 
-        if (enaAttributeUnitPathBuilder.exists()
-            && enaAttributeUnitPathBuilder.text().trim().length() > 0) {
-          unit = enaAttributeUnitPathBuilder.text().trim();
+        if (unitPathBuilder.exists() && unitPathBuilder.text().trim().length() > 0) {
+          unit = unitPathBuilder.text().trim();
         }
 
-        // BSD-1744 - Deal with multiple descriptions in ENA XML
-        if (tag != null && tag.equalsIgnoreCase(ENA_DESCRIPTION)) {
-          attributes.add(
-              Attribute.build(tag, value, TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+        // Deal with multiple descriptions in ENA XML, one top level description and one in sample
+        // attributes
+        if (tag != null && tag.equalsIgnoreCase(BIOSAMPLE_SAMPLE_DESCRIPTION_ATTRIBUTE_NAME)) {
+          bioSampleAttributes.add(
+              Attribute.build(
+                  tag, value, BIOSAMPLE_SAMPLE_ATTRIBUTE_TAG, Collections.emptyList(), null));
           continue;
         }
 
-        // BSD-1813 - Deal with multiple titles in ENA XML
-        if (tag != null && tag.equalsIgnoreCase(ENA_TITLE)) {
-          attributes.add(
-              Attribute.build(tag, value, TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+        // Deal with multiple titles in ENA XML, one top level title and one in sample attributes
+        if (tag != null && tag.equalsIgnoreCase(BIOSAMPLE_SAMPLE_TITLE_ATTRIBUTE_NAME)) {
+          bioSampleAttributes.add(
+              Attribute.build(
+                  tag, value, BIOSAMPLE_SAMPLE_ATTRIBUTE_TAG, Collections.emptyList(), null));
           continue;
         }
 
-        if (tag != null && tag.equalsIgnoreCase(PUBMED_ID)) {
-          publications.add(new Publication.Builder().pubmed_id(value).build());
+        if (tag != null && tag.equalsIgnoreCase(ENA_SAMPLE_PUBMED_ID)) {
+          bioSamplePublications.add(new Publication.Builder().pubmed_id(value).build());
           continue;
         }
 
         if (tag != null) {
-          attributes.add(
-              Attribute.build(tag, value, TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), unit));
+          bioSampleAttributes.add(
+              Attribute.build(
+                  tag, value, BIOSAMPLE_SAMPLE_ATTRIBUTE_TAG, Collections.emptyList(), unit));
         }
       }
     }
 
-    if (XmlPathBuilder.of(enaSampleRootElement).path(SAMPLE, "SAMPLE_LINKS").exists()) {
-      if (XmlPathBuilder.of(enaSampleRootElement)
-          .path(SAMPLE, "SAMPLE_LINKS", "URI_LINK")
+    if (XmlPathBuilder.of(eraSampleXmlRootElement).path(ENA_SAMPLE_ROOT, "SAMPLE_LINKS").exists()) {
+      if (XmlPathBuilder.of(eraSampleXmlRootElement)
+          .path(ENA_SAMPLE_ROOT, "SAMPLE_LINKS", "URI_LINK")
           .exists()) {
-        for (final Element sampleLinkElement :
-            XmlPathBuilder.of(enaSampleRootElement)
-                .path(SAMPLE, "SAMPLE_LINKS")
+        for (final Element e :
+            XmlPathBuilder.of(eraSampleXmlRootElement)
+                .path(ENA_SAMPLE_ROOT, "SAMPLE_LINKS")
                 .elements("URI_LINK")) {
-          attributes.add(
+          bioSampleAttributes.add(
               Attribute.build(
-                  XmlPathBuilder.of(sampleLinkElement).attribute("LABEL"),
-                  XmlPathBuilder.of(sampleLinkElement).attribute("URL")));
+                  XmlPathBuilder.of(e).attribute("LABEL"), XmlPathBuilder.of(e).attribute("URL")));
         }
       }
 
-      if (XmlPathBuilder.of(enaSampleRootElement)
-          .path(SAMPLE, "SAMPLE_LINKS", "XREF_LINK")
+      if (XmlPathBuilder.of(eraSampleXmlRootElement)
+          .path(ENA_SAMPLE_ROOT, "SAMPLE_LINKS", "XREF_LINK")
           .exists()) {
-        for (final Element sampleLinkElement :
-            XmlPathBuilder.of(enaSampleRootElement)
-                .path(SAMPLE, "SAMPLE_LINKS")
+        for (final Element e :
+            XmlPathBuilder.of(eraSampleXmlRootElement)
+                .path(ENA_SAMPLE_ROOT, "SAMPLE_LINKS")
                 .elements("XREF_LINK")) {
-          final String key = XmlPathBuilder.of(sampleLinkElement).attribute("DB");
+          final String key = XmlPathBuilder.of(e).attribute("DB");
 
-          if (key != null && key.equalsIgnoreCase(PUBMED_ID)) {
-            publications.add(
-                new Publication.Builder()
-                    .pubmed_id(XmlPathBuilder.of(sampleLinkElement).attribute("ID"))
-                    .build());
+          if (key != null && key.equalsIgnoreCase(ENA_SAMPLE_PUBMED_ID)) {
+            bioSamplePublications.add(
+                new Publication.Builder().pubmed_id(XmlPathBuilder.of(e).attribute("ID")).build());
           }
         }
       }
     }
 
-    return new Sample.Builder(enaSampleName, accession)
+    return new Sample.Builder(bioSampleSampleName, bioSampleAccession)
+        .withTaxId(bioSampleTaxId != null ? Long.valueOf(bioSampleTaxId) : null)
         .withRelease(Instant.now())
         .withUpdate(Instant.now())
-        .withAttributes(attributes)
-        .withRelationships(relationships)
-        .withPublications(publications)
-        .withExternalReferences(
-            Collections.singletonList(
-                ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + accession)))
+        .withAttributes(bioSampleAttributes)
+        .withRelationships(bioSampleRelationships)
+        .withPublications(bioSamplePublications)
+        .withExternalReferences(bioSampleExternalReferences)
         .build();
-  }
-
-  private void parseEnaIdentifiersWithNamespaces(
-      final Element enaSampleRootElement,
-      final SortedSet<Attribute> attributes,
-      final String enaIdName,
-      final String bioSampleAttributeType) {
-    try {
-      final XmlPathBuilder idPathBuilder =
-          XmlPathBuilder.of(enaSampleRootElement).path(SAMPLE, IDENTIFIERS, enaIdName);
-
-      if (idPathBuilder.exists()) {
-        for (final Element element :
-            XmlPathBuilder.of(enaSampleRootElement).path(SAMPLE, IDENTIFIERS).elements(enaIdName)) {
-          final String idElement = XmlPathBuilder.of(element).text();
-
-          attributes.add(
-              Attribute.build(
-                  bioSampleAttributeType,
-                  idElement,
-                  NAMESPACE_TAG + idPathBuilder.attribute(NAMESPACE),
-                  Collections.emptyList(),
-                  null));
-        }
-      }
-    } catch (final Exception e) {
-      log.info("Failed to parse PATH for " + enaIdName);
-    }
   }
 }

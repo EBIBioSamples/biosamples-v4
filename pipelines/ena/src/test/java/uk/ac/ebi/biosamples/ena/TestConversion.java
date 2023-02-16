@@ -55,42 +55,42 @@ public class TestConversion {
   @Test
   @Ignore
   public void test_over_all_samples() {
-    RowCallbackHandler rowCallbackHandler =
+    final RowCallbackHandler rowCallbackHandler =
         resultSet -> {
-          String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-          EnaCallable enaCallable =
-              new EnaCallable(
+          final String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
+          final EnaImportCallable enaImportCallable =
+              new EnaImportCallable(
                   sampleAccession,
                   null,
                   bioSamplesWebinClient,
                   egaSampleExporter,
                   enaSampleToBioSampleConversionService);
           try {
-            enaCallable.call();
-          } catch (Exception e) {
+            enaImportCallable.call();
+          } catch (final Exception e) {
             e.printStackTrace();
           }
         };
-    LocalDate fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
-    LocalDate toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
+    final LocalDate fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
+    final LocalDate toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
     eraProDao.doSampleCallback(fromDate, toDate, rowCallbackHandler);
   }
 
   @Test
   public void test_with_single() {
-    RowCallbackHandler rowCallbackHandler =
+    final RowCallbackHandler rowCallbackHandler =
         resultSet -> {
-          String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-          EnaCallable enaCallable =
-              new EnaCallable(
+          final String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
+          final EnaImportCallable enaImportCallable =
+              new EnaImportCallable(
                   sampleAccession,
                   null,
                   bioSamplesWebinClient,
                   egaSampleExporter,
                   enaSampleToBioSampleConversionService);
           try {
-            enaCallable.call();
-          } catch (Exception e) {
+            enaImportCallable.call();
+          } catch (final Exception e) {
             e.printStackTrace();
             fail();
           }
@@ -100,19 +100,19 @@ public class TestConversion {
 
   @Test
   public void test_with_suppressed() {
-    RowCallbackHandler rowCallbackHandler =
+    final RowCallbackHandler rowCallbackHandler =
         resultSet -> {
-          String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-          EnaCallable enaCallable =
-              new EnaCallable(
+          final String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
+          final EnaImportCallable enaImportCallable =
+              new EnaImportCallable(
                   sampleAccession,
                   null,
                   bioSamplesWebinClient,
                   egaSampleExporter,
                   enaSampleToBioSampleConversionService);
           try {
-            enaCallable.call();
-          } catch (Exception e) {
+            enaImportCallable.call();
+          } catch (final Exception e) {
             e.printStackTrace();
             fail();
           }
@@ -122,19 +122,19 @@ public class TestConversion {
 
   @Test
   public void test_with_killed() {
-    RowCallbackHandler rowCallbackHandler =
+    final RowCallbackHandler rowCallbackHandler =
         resultSet -> {
-          String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-          EnaCallable enaCallable =
-              new EnaCallable(
+          final String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
+          final EnaImportCallable enaImportCallable =
+              new EnaImportCallable(
                   sampleAccession,
                   null,
                   bioSamplesWebinClient,
                   egaSampleExporter,
                   enaSampleToBioSampleConversionService);
           try {
-            enaCallable.call();
-          } catch (Exception e) {
+            enaImportCallable.call();
+          } catch (final Exception e) {
             e.printStackTrace();
             fail();
           }
@@ -144,19 +144,19 @@ public class TestConversion {
 
   @Test
   public void test_with_failing() {
-    RowCallbackHandler rowCallbackHandler =
+    final RowCallbackHandler rowCallbackHandler =
         resultSet -> {
-          String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-          EnaCallable enaCallable =
-              new EnaCallable(
+          final String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
+          final EnaImportCallable enaImportCallable =
+              new EnaImportCallable(
                   sampleAccession,
                   null,
                   bioSamplesWebinClient,
                   egaSampleExporter,
                   enaSampleToBioSampleConversionService);
           try {
-            enaCallable.call();
-          } catch (Exception e) {
+            enaImportCallable.call();
+          } catch (final Exception e) {
             e.printStackTrace();
             fail();
           }

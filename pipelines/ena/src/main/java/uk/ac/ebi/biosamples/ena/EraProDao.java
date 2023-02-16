@@ -35,7 +35,7 @@ public class EraProDao {
   /*private static final String SQL_WWWDEV_MAPPING =
         "SELECT BIOSAMPLE_ID FROM SAMPLE WHERE SUBMISSION_ACCOUNT_ID = 'Webin-161' AND BIOSAMPLE_AUTHORITY= 'N' AND ((LAST_UPDATED BETWEEN TO_DATE('2022-01-01', 'YYYY-MM-DD') AND TO_DATE('2022-07-15', 'YYYY-MM-DD')) OR (FIRST_PUBLIC BETWEEN TO_DATE('2022-01-01', 'YYYY-MM-DD') AND TO_DATE('2022-07-15', 'YYYY-MM-DD'))) ORDER BY BIOSAMPLE_ID DESC";
   */
-  public void doSampleCallback(
+  void doSampleCallback(
       final LocalDate minDate, final LocalDate maxDate, final RowCallbackHandler rch) {
     final String query =
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID, LAST_UPDATED FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' "
@@ -53,7 +53,7 @@ public class EraProDao {
     return jdbcTemplate.queryForList(SQL_WWWDEV_MAPPING, String.class);
   }*/
 
-  public void getSingleSample(final String bioSampleId, final RowCallbackHandler rch) {
+  void getSingleSample(final String bioSampleId, final RowCallbackHandler rch) {
     final String query =
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' "
             + "AND "
@@ -69,9 +69,9 @@ public class EraProDao {
     return jdbcTemplate.queryForObject(query, String.class, new Object[] {enaId});
   }
 
-  public void getNcbiCallback(
+  void getNcbiCallback(
       final LocalDate minDate, final LocalDate maxDate, final RowCallbackHandler rch) {
-    String query =
+    final String query =
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, LAST_UPDATED FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND BIOSAMPLE_AUTHORITY= 'N' "
             + "AND "
             + STATUS_CLAUSE
@@ -83,9 +83,9 @@ public class EraProDao {
     jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
   }
 
-  public SampleDBBean getSampleDetailsByBioSampleId(final String biosampleAccession) {
+  EraproSample getSampleDetailsByBioSampleId(final String biosampleId) {
     try {
-      String sql =
+      final String sql =
           "SELECT SAMPLE_XML, TAX_ID, "
               + "to_char(LAST_UPDATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS LAST_UPDATED, "
               + "to_char(FIRST_PUBLIC, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_PUBLIC,  "
@@ -94,20 +94,19 @@ public class EraProDao {
               + "SUBMISSION_ACCOUNT_ID "
               + "FROM SAMPLE "
               + "WHERE BIOSAMPLE_ID = ? fetch first row only ";
-      final SampleDBBean sampleData =
-          jdbcTemplate.queryForObject(sql, sampleRowMapper, biosampleAccession);
+      final EraproSample sampleData =
+          jdbcTemplate.queryForObject(sql, sampleRowMapper, biosampleId);
 
       return sampleData;
     } catch (final IncorrectResultSizeDataAccessException e) {
       log.error(
-          "Result set size expected is 1 and got more/ less that that, skipping "
-              + biosampleAccession);
+          "Result set size expected is 1 and got more/ less that that, skipping " + biosampleId);
     }
 
     return null;
   }
 
-  public SampleDBBean getSampleMetaInfoByBioSampleId(final String sampleId) {
+  public EraproSample getSampleMetaInfoByBioSampleId(final String sampleId) {
     try {
       final String sql =
           "SELECT STATUS_ID, SAMPLE_ID, "
@@ -116,7 +115,7 @@ public class EraProDao {
               + "FROM SAMPLE "
               + "WHERE BIOSAMPLE_ID = ? AND BIOSAMPLE_AUTHORITY= 'N' "
               + "fetch first row only ";
-      final SampleDBBean sampleData = jdbcTemplate.queryForObject(sql, sampleRowMapper2, sampleId);
+      final EraproSample sampleData = jdbcTemplate.queryForObject(sql, sampleRowMapper2, sampleId);
 
       return sampleData;
     } catch (final IncorrectResultSizeDataAccessException e) {
@@ -126,7 +125,7 @@ public class EraProDao {
     return null;
   }
 
-  public SampleDBBean getSampleDetailsByEnaSampleId(final String sampleId) {
+  public EraproSample getSampleDetailsByEnaSampleId(final String sampleId) {
     try {
       final String sql =
           "SELECT STATUS_ID, SAMPLE_ID, "
@@ -135,7 +134,7 @@ public class EraProDao {
               + "FROM SAMPLE "
               + "WHERE SAMPLE_ID = ? AND BIOSAMPLE_AUTHORITY= 'N' "
               + "fetch first row only ";
-      final SampleDBBean sampleData = jdbcTemplate.queryForObject(sql, sampleRowMapper2, sampleId);
+      final EraproSample sampleData = jdbcTemplate.queryForObject(sql, sampleRowMapper2, sampleId);
 
       return sampleData;
     } catch (final IncorrectResultSizeDataAccessException e) {
@@ -145,7 +144,7 @@ public class EraProDao {
     return null;
   }
 
-  public void getEnaDatabaseSample(final String enaAccession, final RowCallbackHandler rch) {
+  void getEnaDatabaseSample(final String enaAccession, final RowCallbackHandler rch) {
     final String query =
         "select BIOSAMPLE_ID,\n"
             + "       FIXED_TAX_ID, "
@@ -170,9 +169,9 @@ public class EraProDao {
     jdbcTemplate.query(query, rch, enaAccession);
   }
 
-  RowMapper<SampleDBBean> sampleRowMapper =
+  private final RowMapper<EraproSample> sampleRowMapper =
       (rs, rowNum) -> {
-        final SampleDBBean sampleBean = new SampleDBBean();
+        final EraproSample sampleBean = new EraproSample();
 
         sampleBean.setSampleXml(rs.getString("SAMPLE_XML"));
         sampleBean.setFirstPublic(rs.getString("FIRST_PUBLIC"));
@@ -185,9 +184,9 @@ public class EraProDao {
         return sampleBean;
       };
 
-  RowMapper<SampleDBBean> sampleRowMapper2 =
+  private final RowMapper<EraproSample> sampleRowMapper2 =
       (rs, rowNum) -> {
-        final SampleDBBean sampleBean = new SampleDBBean();
+        final EraproSample sampleBean = new EraproSample();
 
         sampleBean.setStatus(rs.getInt("STATUS_ID"));
         sampleBean.setSampleId(rs.getString("SAMPLE_ID"));
