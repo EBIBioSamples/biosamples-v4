@@ -11,18 +11,8 @@
 package uk.ac.ebi.biosamples.model;
 
 public enum SampleStatus {
-  PRIVATE(2),
-  PUBLIC(4),
-  SUPPRESSED(5),
-  KILLED(6);
-
-  private final int statusId;
-
-  SampleStatus(final int statusId) {
-    this.statusId = statusId;
-  }
-
-  public int getStatusId() {
-    return statusId;
-  }
+  PRIVATE,
+  PUBLIC,
+  SUPPRESSED,
+  KILLED
 }

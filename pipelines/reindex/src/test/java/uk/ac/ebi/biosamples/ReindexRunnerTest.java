@@ -24,24 +24,25 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.util.CloseableIterator;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SampleStatus;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ReindexRunnerTest {
 
-  @Mock ApplicationArguments applicationArguments;
-  @Mock AmqpTemplate amqpTemplate;
-  @Mock MongoOperations mongoOperations;
-  @Mock SampleReadService sampleReadService;
+  @Mock private ApplicationArguments applicationArguments;
+  @Mock private AmqpTemplate amqpTemplate;
+  @Mock private MongoOperations mongoOperations;
+  @Mock private SampleReadService sampleReadService;
 
-  private List<String> accessions = Arrays.asList("ACCESSION1", "ACCESSION2", "ACCESSION3");
+  private final List<String> accessions = Arrays.asList("ACCESSION1", "ACCESSION2", "ACCESSION3");
 
-  private Map<String, Sample> sampleMap = new HashMap<String, Sample>() {};
+  private final Map<String, Sample> sampleMap = new HashMap<String, Sample>() {};
 
   @Test
   public void test_log_messages_are_generated_when_samples_not_fetchable() throws Exception {
-    CloseableIterator<MongoSample> samples =
+    final CloseableIterator<MongoSample> samples =
         new CloseableIterator<MongoSample>() {
           private int count = 0;
           private final int max = 3;
@@ -56,19 +57,20 @@ public class ReindexRunnerTest {
 
           @Override
           public MongoSample next() {
-            MongoSample sample = mock(MongoSample.class);
+            final MongoSample sample = mock(MongoSample.class);
             when(sample.getAccession()).thenReturn("ACCESSION" + (count + 1));
             count++;
             return sample;
           }
         };
-    Sample sample1 =
+    final Sample sample1 =
         Sample.build(
             "",
             "ACCESSION1",
             "",
             "",
             Long.valueOf(9606),
+            SampleStatus.PUBLIC,
             null,
             null,
             null,
@@ -77,13 +79,14 @@ public class ReindexRunnerTest {
             null,
             Collections.EMPTY_SET,
             Collections.EMPTY_SET);
-    Sample sample3 =
+    final Sample sample3 =
         Sample.build(
             "",
             "ACCESSION3",
             "",
             "",
             Long.valueOf(9606),
+            SampleStatus.PUBLIC,
             null,
             null,
             null,
@@ -98,7 +101,7 @@ public class ReindexRunnerTest {
     when(sampleReadService.fetch("ACCESSION3", Optional.empty()))
         .thenReturn(Optional.empty())
         .thenReturn(Optional.of(sample3));
-    ReindexRunner reindexRunner =
+    final ReindexRunner reindexRunner =
         new ReindexRunner(amqpTemplate, sampleReadService, mongoOperations);
     reindexRunner.run(applicationArguments);
   }

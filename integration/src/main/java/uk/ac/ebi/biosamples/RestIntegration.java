@@ -39,22 +39,22 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 // @Profile({"default", "rest"})
 public class RestIntegration extends AbstractIntegration {
 
-  private Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final RestTemplate restTemplate;
-  private BioSamplesProperties clientProperties;
+  private final BioSamplesProperties clientProperties;
   private final BioSamplesClient annonymousClient;
-  private BioSamplesClient webinClient;
+  private final BioSamplesClient webinClient;
 
   public RestIntegration(
-      BioSamplesClient client,
-      RestTemplateBuilder restTemplateBuilder,
-      BioSamplesProperties clientProperties,
-      @Qualifier("WEBINCLIENT") BioSamplesClient webinClient) {
+      final BioSamplesClient client,
+      final RestTemplateBuilder restTemplateBuilder,
+      final BioSamplesProperties clientProperties,
+      @Qualifier("WEBINCLIENT") final BioSamplesClient webinClient) {
     super(client, webinClient);
-    this.restTemplate = restTemplateBuilder.build();
+    restTemplate = restTemplateBuilder.build();
     this.clientProperties = clientProperties;
     this.webinClient = webinClient;
-    this.annonymousClient =
+    annonymousClient =
         new BioSamplesClient(
             this.clientProperties.getBiosamplesClientUri(),
             this.clientProperties.getBiosamplesClientUriV2(),
@@ -66,26 +66,25 @@ public class RestIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseOne() {
-    Sample testSample = getSampleTest1();
-    Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
+    final Sample testSample = getSampleTest1();
+    final Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
 
     if (optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
           "RestIntegration test sample should not be available during phase 1", Phase.ONE);
     } else {
-      EntityModel<Sample> resource = client.persistSampleResource(testSample);
-      Sample testSampleWithAccession =
+      final EntityModel<Sample> resource = client.persistSampleResource(testSample);
+      final Sample sampleContent = resource.getContent();
+
+      final Sample testSampleWithAccession =
           Sample.Builder.fromSample(testSample)
-              .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
+              .withAccession(Objects.requireNonNull(sampleContent).getAccession())
+              .withStatus(sampleContent.getStatus())
               .build();
 
-      if (!testSampleWithAccession.equals(resource.getContent())) {
+      if (!testSampleWithAccession.equals(sampleContent)) {
         throw new IntegrationTestFailException(
-            "Expected response ("
-                + resource.getContent()
-                + ") to equal submission ("
-                + testSample
-                + ")");
+            "Expected response (" + sampleContent + ") to equal submission (" + testSample + ")");
       }
     }
   }
@@ -94,11 +93,11 @@ public class RestIntegration extends AbstractIntegration {
   protected void phaseTwo() {
     // Test POSTing a sample with an accession to /samples should return 400 BAD REQUEST
     // response
-    this.postSampleWithAccessionShouldReturnABadRequestResponse();
+    postSampleWithAccessionShouldReturnABadRequestResponse();
 
-    Sample sampleTest1 = getSampleTest1();
+    final Sample sampleTest1 = getSampleTest1();
     // get to check it worked
-    Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest1.getName());
+    final Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest1.getName());
     if (!optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
           "Cant find sample " + sampleTest1.getName(), Phase.TWO);
@@ -165,10 +164,10 @@ public class RestIntegration extends AbstractIntegration {
 
     // put the second sample in
     EntityModel<Sample> resource = client.persistSampleResource(sampleTest2, false, true);
-    String sample2Accession = Objects.requireNonNull(resource.getContent()).getAccession();
+    final String sample2Accession = Objects.requireNonNull(resource.getContent()).getAccession();
 
     // put a version that is private and also update relationships
-    SortedSet<Relationship> relationships = new TreeSet<>();
+    final SortedSet<Relationship> relationships = new TreeSet<>();
     relationships.add(
         Relationship.build(sampleTest1.getAccession(), "derived from", sample2Accession));
     sampleTest1 =
@@ -231,14 +230,14 @@ public class RestIntegration extends AbstractIntegration {
     }
 
     // test private sample create and fetch using webin auth
-    Sample webinSampleTest1 = getWebinSampleTest1();
-    EntityModel<Sample> webinSampleResource =
-        this.webinClient.persistSampleResource(webinSampleTest1, false, true);
-    String webinSampleAccession =
+    final Sample webinSampleTest1 = getWebinSampleTest1();
+    final EntityModel<Sample> webinSampleResource =
+        webinClient.persistSampleResource(webinSampleTest1, false, true);
+    final String webinSampleAccession =
         Objects.requireNonNull(webinSampleResource.getContent()).getAccession();
 
-    Optional<EntityModel<Sample>> webinSamplePostPersistance =
-        this.webinClient.fetchSampleResource(webinSampleAccession);
+    final Optional<EntityModel<Sample>> webinSamplePostPersistance =
+        webinClient.fetchSampleResource(webinSampleAccession);
 
     if (!webinSamplePostPersistance.isPresent()) {
       throw new IntegrationTestFailException(
@@ -253,7 +252,7 @@ public class RestIntegration extends AbstractIntegration {
     Sample sampleTest1 = getSampleTest1();
     Sample sampleTest2 = getSampleTest2();
 
-    Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest2.getName());
+    final Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest2.getName());
     if (!optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
           "Cannot access private " + sampleTest2.getName(), Phase.FOUR);
@@ -263,7 +262,7 @@ public class RestIntegration extends AbstractIntegration {
               .withAccession(optionalSample.get().getAccession())
               .build();
 
-      SortedSet<Relationship> relationships = new TreeSet<>();
+      final SortedSet<Relationship> relationships = new TreeSet<>();
       relationships.add(
           Relationship.build(
               optionalSample.get().getRelationships().first().getSource(),
@@ -286,11 +285,12 @@ public class RestIntegration extends AbstractIntegration {
 
     // check that it has the additional relationship added
     // get to check it worked
-    Optional<EntityModel<Sample>> optional = client.fetchSampleResource(sampleTest2.getAccession());
+    final Optional<EntityModel<Sample>> optional =
+        client.fetchSampleResource(sampleTest2.getAccession());
     if (!optional.isPresent()) {
       throw new IntegrationTestFailException("No existing " + sampleTest2.getName(), Phase.FOUR);
     }
-    Sample sampleTest2Rest = optional.get().getContent();
+    final Sample sampleTest2Rest = optional.get().getContent();
     // check other details i.e relationship
     if (!sampleTest2.equals(sampleTest2Rest)) {
       throw new IntegrationTestFailException(
@@ -316,7 +316,7 @@ public class RestIntegration extends AbstractIntegration {
             .withNoPublications()
             .withNoOrganisations()
             .build();
-    EntityModel<Sample> resource = client.persistSampleResource(sampleTest1);
+    final EntityModel<Sample> resource = client.persistSampleResource(sampleTest1);
     if (!sampleTest1.equals(resource.getContent())) {
       throw new IntegrationTestFailException(
           "Expected response ("
@@ -332,7 +332,7 @@ public class RestIntegration extends AbstractIntegration {
   protected void phaseFive() {
     // check that deleting the relationship actually deleted it
     Sample sampleTest2 = getSampleTest2();
-    Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest2.getName());
+    final Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest2.getName());
     if (!optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
           "Cannot access private " + sampleTest2.getName(), Phase.FOUR);
@@ -358,11 +358,11 @@ public class RestIntegration extends AbstractIntegration {
   protected void phaseSix() {}
 
   private Sample getSampleTest1() {
-    String name = "RestIntegration_sample_1";
-    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final String name = "RestIntegration_sample_1";
+    final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
 
     attributes.add(
         Attribute.build(
@@ -380,11 +380,11 @@ public class RestIntegration extends AbstractIntegration {
                 "http://www.ebi.ac.uk/efo/EFO_0001265"),
             null));
 
-    SortedSet<Relationship> relationships = new TreeSet<>();
-    SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+    final SortedSet<Relationship> relationships = new TreeSet<>();
+    final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
     externalReferences.add(ExternalReference.build("http://www.google.com"));
 
-    SortedSet<Organization> organizations = new TreeSet<>();
+    final SortedSet<Organization> organizations = new TreeSet<>();
     organizations.add(
         new Organization.Builder()
             .name("Jo Bloggs Inc")
@@ -393,7 +393,7 @@ public class RestIntegration extends AbstractIntegration {
             .url("http://www.jobloggs.com")
             .build());
 
-    SortedSet<Contact> contacts = new TreeSet<>();
+    final SortedSet<Contact> contacts = new TreeSet<>();
     contacts.add(
         new Contact.Builder()
             .name("Joe Bloggs")
@@ -401,7 +401,7 @@ public class RestIntegration extends AbstractIntegration {
             .email("jobloggs@joblogs.com")
             .build());
 
-    SortedSet<Publication> publications = new TreeSet<>();
+    final SortedSet<Publication> publications = new TreeSet<>();
     publications.add(
         new Publication.Builder().doi("10.1093/nar/gkt1081").pubmed_id("24265224").build());
 
@@ -420,11 +420,11 @@ public class RestIntegration extends AbstractIntegration {
   }
 
   private Sample getWebinSampleTest1() {
-    String name = "RestIntegration_sample_1";
-    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant release = Instant.parse("2116-04-01T11:36:57.00Z");
+    final String name = "RestIntegration_sample_1";
+    final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant release = Instant.parse("2116-04-01T11:36:57.00Z");
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
@@ -441,11 +441,11 @@ public class RestIntegration extends AbstractIntegration {
                 "http://www.ebi.ac.uk/efo/EFO_0001265"),
             null));
 
-    SortedSet<Relationship> relationships = new TreeSet<>();
-    SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+    final SortedSet<Relationship> relationships = new TreeSet<>();
+    final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
     externalReferences.add(ExternalReference.build("http://www.google.com"));
 
-    SortedSet<Organization> organizations = new TreeSet<>();
+    final SortedSet<Organization> organizations = new TreeSet<>();
     organizations.add(
         new Organization.Builder()
             .name("Jo Bloggs Inc")
@@ -454,7 +454,7 @@ public class RestIntegration extends AbstractIntegration {
             .url("http://www.jobloggs.com")
             .build());
 
-    SortedSet<Contact> contacts = new TreeSet<>();
+    final SortedSet<Contact> contacts = new TreeSet<>();
     contacts.add(
         new Contact.Builder()
             .name("Joe Bloggs")
@@ -462,7 +462,7 @@ public class RestIntegration extends AbstractIntegration {
             .email("jobloggs@joblogs.com")
             .build());
 
-    SortedSet<Publication> publications = new TreeSet<>();
+    final SortedSet<Publication> publications = new TreeSet<>();
     publications.add(
         new Publication.Builder().doi("10.1093/nar/gkt1081").pubmed_id("24265224").build());
 
@@ -485,13 +485,14 @@ public class RestIntegration extends AbstractIntegration {
   }
 
   private Sample getSampleTest2() {
-    String name = "RestIntegration_sample_2";
-    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final String name = "RestIntegration_sample_2";
+    final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
-    Publication publication = new Publication.Builder().doi("doi").pubmed_id("pubmed_id").build();
+    final Publication publication =
+        new Publication.Builder().doi("doi").pubmed_id("pubmed_id").build();
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
@@ -508,27 +509,27 @@ public class RestIntegration extends AbstractIntegration {
   }
 
   private void postSampleWithAccessionShouldReturnABadRequestResponse() {
-    Traverson traverson =
-        new Traverson(this.clientProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON);
-    Traverson.TraversalBuilder builder = traverson.follow("samples");
+    final Traverson traverson =
+        new Traverson(clientProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON);
+    final Traverson.TraversalBuilder builder = traverson.follow("samples");
     log.info("POSTing sample with accession from " + builder.asLink().getHref());
 
-    MultiValueMap<String, String> sample = new LinkedMultiValueMap<>();
+    final MultiValueMap<String, String> sample = new LinkedMultiValueMap<>();
     sample.add("name", "RestIntegration_sample_3");
     sample.add("accession", "SAMEA09123842");
     sample.add("domain", "self.BiosampleIntegrationTest");
     sample.add("release", "2016-05-05T11:36:57.00Z");
     sample.add("update", "2016-04-01T11:36:57.00Z");
 
-    HttpHeaders httpHeaders = new HttpHeaders();
+    final HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-    HttpEntity<MultiValueMap> entity = new HttpEntity<>(sample, httpHeaders);
+    final HttpEntity<MultiValueMap> entity = new HttpEntity<>(sample, httpHeaders);
 
     try {
       restTemplate.exchange(builder.asLink().getHref(), HttpMethod.POST, entity, String.class);
-    } catch (HttpStatusCodeException sce) {
+    } catch (final HttpStatusCodeException sce) {
       if (!sce.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
         throw new RuntimeException(
             "POSTing to samples endpoint a sample with an accession should return a 400 Bad Request exception");
