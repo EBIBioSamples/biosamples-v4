@@ -17,15 +17,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.lang.reflect.Method;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import uk.ac.ebi.biosamples.controller.SampleHtmlController;
 import uk.ac.ebi.biosamples.controller.SampleRestController;
 import uk.ac.ebi.biosamples.model.*;
 
-/** This servise is meant for the convertions jobs to/form ld+json */
+/** This servise is meant for the conversions jobs to/form ld+json */
 @Service
 public class JsonLDService {
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final ObjectMapper objectMapper;
   private final SampleToJsonLDSampleRecordConverter jsonLDSampleConverter;
@@ -40,9 +44,8 @@ public class JsonLDService {
   }
 
   private void initUrls() {
-    this.dataCatalogUrl =
-        this.dataCatalogUrl == null ? getDataCatalogUrl() : this.getDataCatalogUrl();
-    this.datasetUrl = this.datasetUrl == null ? getDatasetUrl() : this.datasetUrl;
+    dataCatalogUrl = dataCatalogUrl == null ? getDataCatalogUrl() : dataCatalogUrl;
+    datasetUrl = datasetUrl == null ? getDatasetUrl() : datasetUrl;
   }
   /**
    * Produce the ld+json version of a sample
@@ -61,13 +64,12 @@ public class JsonLDService {
               String.class,
               String.class,
               String[].class,
-              String.class,
               String.class);
       String sampleUrl = linkTo(method, sample.getAccession()).toUri().toString();
       jsonLDSample.setUrl(sampleUrl);
       jsonLDSample.setId(sampleUrl);
     } catch (NoSuchMethodException e) {
-      e.printStackTrace();
+      log.error("Failed to get method with reflections. ", e);
     }
 
     jsonLDDataRecord.mainEntity(jsonLDSample);
@@ -75,7 +77,6 @@ public class JsonLDService {
   }
 
   public JsonLDDataCatalog getBioSamplesDataCatalog() {
-
     initUrls();
     JsonLDDataCatalog dataCatalog = new JsonLDDataCatalog();
     return dataCatalog.url(this.dataCatalogUrl).datasetUrl(this.datasetUrl);
@@ -127,7 +128,6 @@ public class JsonLDService {
               String[].class,
               Integer.class,
               Integer.class,
-              String.class,
               HttpServletRequest.class,
               HttpServletResponse.class);
       datasetUrl = linkTo(method, null, null, null, null, null, null, null).toUri().toString();

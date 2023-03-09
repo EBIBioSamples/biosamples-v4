@@ -55,18 +55,9 @@ public class BioschemasController {
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(value = "/samples/{accession}", produces = "application/ld+json")
   public JsonLDDataRecord getJsonLDSample(@PathVariable String accession) {
-    Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
-    if (!sample.isPresent()) {
-      throw new GlobalExceptions.SampleNotFoundException();
-    }
-    bioSamplesAapService.isSampleAccessible(sample.get());
-
-    // check if the release date is in the future and if so return it as
-    // private
-    if (sample.get().getRelease().isAfter(Instant.now())) {
-      throw new GlobalExceptions.SampleNotAccessibleException();
-    }
-
-    return jsonLDService.sampleToJsonLD(sample.get());
+    Sample sample = sampleService.fetch(accession, Optional.empty())
+        .orElseThrow(() -> new GlobalExceptions.SampleNotFoundException());
+    bioSamplesAapService.isSampleAccessible(sample);
+    return jsonLDService.sampleToJsonLD(sample);
   }
 }

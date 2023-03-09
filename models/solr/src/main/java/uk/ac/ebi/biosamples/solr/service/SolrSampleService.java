@@ -118,6 +118,7 @@ public class SolrSampleService {
 
       query = new SimpleQuery();
       Criteria searchCriteria = new Criteria("keywords_ss").fuzzy(lowerCasedSearchTerm);
+//      Criteria searchCriteria = new Criteria().expression("keywords_ss:" + lowerCasedSearchTerm);
       searchCriteria.setPartIsOr(true);
       query.addCriteria(searchCriteria);
 
