@@ -39,7 +39,6 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 @CrossOrigin
 public class SampleRestControllerV2 {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
@@ -160,10 +159,10 @@ public class SampleRestControllerV2 {
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public Sample getSampleV2(
-      @PathVariable String accession,
+      @PathVariable final String accession,
       @RequestHeader(name = "Authorization", required = false) final String token) {
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
+    final Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
 
     if (sample.isPresent()) {
       final AuthorizationProvider authProvider =

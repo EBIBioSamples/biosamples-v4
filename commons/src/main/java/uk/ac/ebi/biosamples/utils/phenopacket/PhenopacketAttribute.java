@@ -22,8 +22,12 @@ public class PhenopacketAttribute {
   }
 
   public static PhenopacketAttribute build(
-      String type, String value, String ontologyId, String ontologyLabel, boolean negate) {
-    PhenopacketAttribute phenopacketAttribute = new PhenopacketAttribute();
+      final String type,
+      final String value,
+      final String ontologyId,
+      final String ontologyLabel,
+      final boolean negate) {
+    final PhenopacketAttribute phenopacketAttribute = new PhenopacketAttribute();
     phenopacketAttribute.type = type;
     phenopacketAttribute.value = value;
     phenopacketAttribute.ontologyId = ontologyId;
@@ -34,7 +38,7 @@ public class PhenopacketAttribute {
   }
 
   public static PhenopacketAttribute build(
-      String type, String value, String ontologyId, String ontologyLabel) {
+      final String type, final String value, final String ontologyId, final String ontologyLabel) {
     return build(type, value, ontologyId, ontologyLabel, false);
   }
 
@@ -46,15 +50,15 @@ public class PhenopacketAttribute {
     return value;
   }
 
-  public String getOntologyId() {
+  String getOntologyId() {
     return ontologyId;
   }
 
-  public String getOntologyLabel() {
+  String getOntologyLabel() {
     return ontologyLabel;
   }
 
-  public boolean isNegate() {
+  boolean isNegate() {
     return negate;
   }
 }

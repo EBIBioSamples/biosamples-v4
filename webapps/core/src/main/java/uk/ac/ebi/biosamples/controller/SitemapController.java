@@ -37,15 +37,15 @@ import uk.ac.ebi.biosamples.service.SamplePageService;
 @Controller
 @RequestMapping("/sitemap")
 public class SitemapController {
-  private Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   @Value("${model.page.size:10}")
   private int sitemapPageSize;
 
-  private SamplePageService samplePageService;
+  private final SamplePageService samplePageService;
 
-  public SitemapController(SamplePageService pageService) {
-    this.samplePageService = pageService;
+  public SitemapController(final SamplePageService pageService) {
+    samplePageService = pageService;
   }
 
   /**
@@ -56,14 +56,14 @@ public class SitemapController {
    */
   @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
   @ResponseBody
-  public XmlSitemapIndex createSampleSitemapIndex(HttpServletRequest request) {
+  public XmlSitemapIndex createSampleSitemapIndex(final HttpServletRequest request) {
 
-    long sampleCount = getTotalSamples();
-    long pageNumber = (sampleCount / (long) sitemapPageSize) + 1L;
-    XmlSitemapIndex xmlSitemapIndex = new XmlSitemapIndex();
+    final long sampleCount = getTotalSamples();
+    final long pageNumber = (sampleCount / (long) sitemapPageSize) + 1L;
+    final XmlSitemapIndex xmlSitemapIndex = new XmlSitemapIndex();
     for (int i = 0; i < pageNumber; i++) {
-      String location = generateBaseUrl(request) + String.format("/sitemap/%d", i + 1);
-      XmlSitemap xmlSiteMap = new XmlSitemap(location);
+      final String location = generateBaseUrl(request) + String.format("/sitemap/%d", i + 1);
+      final XmlSitemap xmlSiteMap = new XmlSitemap(location);
       xmlSitemapIndex.addSitemap(xmlSiteMap);
     }
     return xmlSitemapIndex;
@@ -83,10 +83,11 @@ public class SitemapController {
       produces = MediaType.APPLICATION_XML_VALUE)
   @ResponseBody
   public XmlUrlSet createSampleSitemapPage(
-      @PathVariable("id") int pageNumber, HttpServletRequest request) throws ParseException {
+      @PathVariable("id") final int pageNumber, final HttpServletRequest request)
+      throws ParseException {
     final long startTime = System.currentTimeMillis();
-    Pageable pageRequest = PageRequest.of(pageNumber - 1, sitemapPageSize);
-    Page<Sample> samplePage =
+    final Pageable pageRequest = PageRequest.of(pageNumber - 1, sitemapPageSize);
+    final Page<Sample> samplePage =
         samplePageService.getSamplesByText(
             "",
             Collections.emptyList(),
@@ -94,15 +95,15 @@ public class SitemapController {
             null,
             pageRequest,
             Optional.empty());
-    XmlUrlSet xmlUrlSet = new XmlUrlSet();
-    for (Sample sample : samplePage.getContent()) {
-      String location =
+    final XmlUrlSet xmlUrlSet = new XmlUrlSet();
+    for (final Sample sample : samplePage.getContent()) {
+      final String location =
           generateBaseUrl(request) + String.format("/samples/%s", sample.getAccession());
 
-      LocalDate lastModifiedDate =
+      final LocalDate lastModifiedDate =
           LocalDateTime.ofInstant(sample.getUpdate(), ZoneOffset.UTC).toLocalDate();
 
-      XmlUrl url =
+      final XmlUrl url =
           new XmlUrl.XmlUrlBuilder(location)
               .lastModified(lastModifiedDate)
               .hasPriority(XmlUrl.Priority.MEDIUM)
@@ -122,9 +123,9 @@ public class SitemapController {
    * @param request
    * @return the base url for the links in the sitemap
    */
-  private String generateBaseUrl(HttpServletRequest request) {
-    String requestURI = request.getRequestURI();
-    String requestURL = request.getRequestURL().toString();
+  private String generateBaseUrl(final HttpServletRequest request) {
+    final String requestURI = request.getRequestURI();
+    final String requestURL = request.getRequestURL().toString();
     return requestURL.replaceFirst(requestURI, "") + request.getContextPath();
   }
 
@@ -134,10 +135,10 @@ public class SitemapController {
    * @return the number of samples
    */
   private long getTotalSamples() {
-    Pageable pageable = PageRequest.of(0, 1);
-    Collection<Filter> filters = Collections.emptyList();
-    Collection<String> domains = Collections.emptyList();
-    Page<Sample> samplePage =
+    final Pageable pageable = PageRequest.of(0, 1);
+    final Collection<Filter> filters = Collections.emptyList();
+    final Collection<String> domains = Collections.emptyList();
+    final Page<Sample> samplePage =
         samplePageService.getSamplesByText("", filters, domains, null, pageable, Optional.empty());
     return samplePage.getTotalElements();
   }

@@ -25,8 +25,6 @@ import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
-import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
 
 @Service
@@ -35,18 +33,12 @@ public class MessagingService {
 
   private final SampleReadService sampleReadService;
   private final AmqpTemplate amqpTemplate;
-  private final MongoSampleRepository mongoSampleRepository;
-  private final SampleToMongoSampleConverter sampleToMongoSampleConverter;
 
   public MessagingService(
       final SampleReadService sampleReadService,
-      final AmqpTemplate amqpTemplate,
-      final MongoSampleRepository mongoSampleRepository,
-      final SampleToMongoSampleConverter sampleToMongoSampleConverter) {
+      final AmqpTemplate amqpTemplate) {
     this.sampleReadService = sampleReadService;
     this.amqpTemplate = amqpTemplate;
-    this.mongoSampleRepository = mongoSampleRepository;
-    this.sampleToMongoSampleConverter = sampleToMongoSampleConverter;
   }
 
   public void sendFileUploadedMessage(final String fileId) {
@@ -69,7 +61,6 @@ public class MessagingService {
     }
 
     final Optional<Sample> sample = sampleReadService.fetch(accession, Optional.empty());
-
     if (sample.isPresent()) {
       // for each sample we have a relationship to, update it to index this sample as an
       // inverse
@@ -127,7 +118,6 @@ public class MessagingService {
   }
 
   private List<Sample> getDerivedFromSamples(final Sample sample, final List<Sample> related) {
-
     for (final Relationship relationship : sample.getRelationships()) {
       if (relationship.getSource().equals(sample.getAccession())) {
         if (relationship.getType().toLowerCase().equals("derived from")) {

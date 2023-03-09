@@ -22,20 +22,22 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MessageContent {
-
   private final Sample sample;
   private final CurationLink curationLink;
   private final List<Sample> related;
-  public final boolean delete;
+  private final boolean delete;
   private final String creationTime;
 
   private MessageContent(
-      Sample sample, CurationLink curationLink, List<Sample> related, boolean delete) {
+      final Sample sample,
+      final CurationLink curationLink,
+      final List<Sample> related,
+      final boolean delete) {
     this.sample = sample;
     this.curationLink = curationLink;
     this.related = related;
     this.delete = delete;
-    this.creationTime = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
+    creationTime = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
   }
 
   public Sample getSample() {
@@ -56,17 +58,17 @@ public class MessageContent {
 
   @Override
   public String toString() {
-    String sb =
+    final String sb =
         "MessageContent(" + sample + "," + curationLink + "," + related + "," + delete + ")";
     return sb;
   }
 
   @JsonCreator
   public static MessageContent build(
-      @JsonProperty("sample") Sample sample,
-      @JsonProperty("curationLink") CurationLink curationLink,
-      @JsonProperty("related") List<Sample> related,
-      @JsonProperty("delete") boolean delete) {
+      @JsonProperty("sample") final Sample sample,
+      @JsonProperty("curationLink") final CurationLink curationLink,
+      @JsonProperty("related") final List<Sample> related,
+      @JsonProperty("delete") final boolean delete) {
     return new MessageContent(sample, curationLink, related, delete);
   }
 }

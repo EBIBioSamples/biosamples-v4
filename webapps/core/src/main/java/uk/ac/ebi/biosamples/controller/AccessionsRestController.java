@@ -36,9 +36,9 @@ public class AccessionsRestController {
   private final AccessControlService accessControlService;
 
   public AccessionsRestController(
-      BioSamplesAapService bioSamplesAapService,
-      AccessionsService accessionsService,
-      AccessControlService accessControlService) {
+      final BioSamplesAapService bioSamplesAapService,
+      final AccessionsService accessionsService,
+      final AccessControlService accessControlService) {
     this.bioSamplesAapService = bioSamplesAapService;
     this.accessionsService = accessionsService;
     this.accessControlService = accessControlService;
@@ -47,8 +47,8 @@ public class AccessionsRestController {
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<CollectionModel<Accession>> getAccessions(
-      @RequestParam(name = "text", required = false) String text,
-      @RequestParam(name = "filter", required = false) String[] filter,
+      @RequestParam(name = "text", required = false) final String text,
+      @RequestParam(name = "filter", required = false) final String[] filter,
       @RequestParam(name = "page", required = false) final Integer page,
       @RequestParam(name = "size", required = false) final Integer size,
       @RequestHeader(name = "Authorization", required = false) final String token) {
@@ -56,7 +56,7 @@ public class AccessionsRestController {
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final boolean webinAuth =
         authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
-    AuthorizationProvider authProvider =
+    final AuthorizationProvider authProvider =
         webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
 
     String webinSubmissionAccountId = null;
@@ -68,21 +68,21 @@ public class AccessionsRestController {
       domains = bioSamplesAapService.getDomains();
     }
 
-    int effectiveSize = size == null ? 100 : size;
-    int effectivePage = page == null ? 0 : page;
+    final int effectiveSize = size == null ? 100 : size;
+    final int effectivePage = page == null ? 0 : page;
 
-    Page<String> pageAccessions =
+    final Page<String> pageAccessions =
         accessionsService.getAccessions(
             text, filter, domains, webinSubmissionAccountId, effectivePage, effectiveSize);
 
-    PagedModel.PageMetadata pageMetadata =
+    final PagedModel.PageMetadata pageMetadata =
         new PagedModel.PageMetadata(
             effectiveSize,
             pageAccessions.getNumber(),
             pageAccessions.getTotalElements(),
             pageAccessions.getTotalPages());
 
-    CollectionModel<Accession> resources =
+    final CollectionModel<Accession> resources =
         PagedModel.of(
             pageAccessions.getContent().stream().map(Accession::build).collect(Collectors.toList()),
             pageMetadata);
@@ -94,13 +94,13 @@ public class AccessionsRestController {
   }
 
   private void addRelLinks(
-      Page<String> pageAccessions,
-      CollectionModel<Accession> resources,
-      String text,
-      String[] filter,
-      Integer effectivePage,
-      Integer effectiveSize,
-      String authProvider) {
+      final Page<String> pageAccessions,
+      final CollectionModel<Accession> resources,
+      final String text,
+      final String[] filter,
+      final Integer effectivePage,
+      final Integer effectiveSize,
+      final String authProvider) {
     resources.add(
         SamplesRestController.getPageLink(
             text,
@@ -111,7 +111,7 @@ public class AccessionsRestController {
             effectiveSize,
             null,
             IanaLinkRelations.SELF.value(),
-            this.getClass()));
+            getClass()));
 
     // if theres more than one page, link to first and last
     if (pageAccessions.getTotalPages() > 1) {
@@ -125,7 +125,7 @@ public class AccessionsRestController {
               effectiveSize,
               null,
               IanaLinkRelations.FIRST.value(),
-              this.getClass()));
+              getClass()));
       resources.add(
           SamplesRestController.getPageLink(
               text,
@@ -136,7 +136,7 @@ public class AccessionsRestController {
               effectiveSize,
               null,
               IanaLinkRelations.LAST.value(),
-              this.getClass()));
+              getClass()));
     }
     // if there was a previous page, link to it
     if (effectivePage > 0) {
@@ -150,7 +150,7 @@ public class AccessionsRestController {
               effectiveSize,
               null,
               IanaLinkRelations.PREVIOUS.value(),
-              this.getClass()));
+              getClass()));
     }
 
     // if there is a next page, link to it
@@ -165,7 +165,7 @@ public class AccessionsRestController {
               effectiveSize,
               null,
               IanaLinkRelations.NEXT.value(),
-              this.getClass()));
+              getClass()));
     }
   }
 }

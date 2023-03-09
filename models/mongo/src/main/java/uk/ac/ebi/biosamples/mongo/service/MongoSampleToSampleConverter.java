@@ -86,8 +86,6 @@ public class MongoSampleToSampleConverter implements Function<MongoSample, Sampl
 
     final Instant submitted = mongoSample.getSubmitted();
 
-    LOGGER.info("SAMPLE STATUS IN CONVERTER IS " + mongoSample.getStatus());
-
     if (submitted == null) {
       convertedSample =
           new Sample.Builder(mongoSample.getName(), mongoSample.getAccession())

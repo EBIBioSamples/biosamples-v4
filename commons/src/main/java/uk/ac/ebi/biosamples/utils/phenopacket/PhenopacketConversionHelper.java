@@ -20,25 +20,25 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.model.Attribute;
 
 @Component
-public class PhenopacketConversionHelper {
+class PhenopacketConversionHelper {
   private static final Logger LOG = LoggerFactory.getLogger(PhenopacketConversionHelper.class);
 
-  public Optional<PhenopacketAttribute> convertAttribute(
-      String type, String value, String ontologyId, String ontologyLabel) {
+  Optional<PhenopacketAttribute> convertAttribute(
+      final String type, final String value, final String ontologyId, final String ontologyLabel) {
     return Optional.of(PhenopacketAttribute.build(type, value, ontologyId, ontologyLabel, false));
   }
 
-  public Optional<PhenopacketAttribute> convertAttributeWithNegation(
-      String type, String value, String ontologyId, String ontologyLabel) {
+  Optional<PhenopacketAttribute> convertAttributeWithNegation(
+      final String type, final String value, final String ontologyId, final String ontologyLabel) {
     return Optional.of(PhenopacketAttribute.build(type, value, ontologyId, ontologyLabel, true));
   }
 
-  public Optional<PhenopacketAttribute> convertAttribute(String type, Attribute attribute) {
+  Optional<PhenopacketAttribute> convertAttribute(final String type, final Attribute attribute) {
     Optional<PhenopacketAttribute> optionalPhenopacketAttribute = Optional.empty();
     if (!attribute.getIri().isEmpty()) {
       try {
-        OLSDataRetriever retriever = new OLSDataRetriever();
-        String firstIri = attribute.getIri().first();
+        final OLSDataRetriever retriever = new OLSDataRetriever();
+        final String firstIri = attribute.getIri().first();
         retriever.readOntologyJsonFromUrl(firstIri);
         optionalPhenopacketAttribute =
             Optional.of(
@@ -47,7 +47,7 @@ public class PhenopacketConversionHelper {
                     attribute.getValue(),
                     retriever.getOntologyTermId(),
                     retriever.getOntologyTermLabel()));
-      } catch (Exception e) {
+      } catch (final Exception e) {
         LOG.warn(
             "Failed to get IRI from OLS, possibly a wrong IRI format: {}",
             attribute.getIri().first(),
@@ -61,14 +61,14 @@ public class PhenopacketConversionHelper {
     return optionalPhenopacketAttribute;
   }
 
-  public OntologyClass getOntology(PhenopacketAttribute attribute) {
+  OntologyClass getOntology(final PhenopacketAttribute attribute) {
     return OntologyClass.newBuilder()
         .setId(attribute.getOntologyId())
         .setLabel(attribute.getOntologyLabel())
         .build();
   }
 
-  public PhenotypicFeature getPhenotype(PhenopacketAttribute attribute) {
+  PhenotypicFeature getPhenotype(final PhenopacketAttribute attribute) {
     return PhenotypicFeature.newBuilder()
         .setType(getOntology(attribute))
         .setNegated(attribute.isNegate())
@@ -76,11 +76,11 @@ public class PhenopacketConversionHelper {
         .build();
   }
 
-  public Optional<Resource> getResource(PhenopacketAttribute attribute) {
+  Optional<Resource> getResource(final PhenopacketAttribute attribute) {
     Optional<Resource> optionalResource = Optional.empty();
     if (attribute.getOntologyId() != null) {
-      String ontology = attribute.getOntologyId().split(":")[0];
-      OLSDataRetriever retriever = new OLSDataRetriever();
+      final String ontology = attribute.getOntologyId().split(":")[0];
+      final OLSDataRetriever retriever = new OLSDataRetriever();
       retriever.readResourceInfoFromUrl(ontology);
 
       optionalResource =

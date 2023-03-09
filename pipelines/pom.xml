@@ -38,5 +38,6 @@
 		<module>ebeye-search-export</module>
 		<module>analytics</module>
 		<module>amr-clean</module>
+		<module>clearinghouse</module>
 	</modules>
 </project>

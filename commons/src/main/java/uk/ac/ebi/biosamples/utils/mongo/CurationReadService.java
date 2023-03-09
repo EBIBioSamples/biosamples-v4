@@ -30,7 +30,6 @@ import uk.ac.ebi.biosamples.mongo.service.MongoCurationToCurationConverter;
 
 @Service
 public class CurationReadService {
-
   private final Logger log = LoggerFactory.getLogger(getClass());
   @Autowired private MongoCurationRepository mongoCurationRepository;
   @Autowired private MongoCurationLinkRepository mongoCurationLinkRepository;

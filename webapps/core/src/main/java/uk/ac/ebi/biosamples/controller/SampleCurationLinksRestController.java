@@ -41,7 +41,6 @@ import uk.ac.ebi.biosamples.utils.mongo.CurationReadService;
 @RequestMapping("/samples/{accession}/curationlinks")
 public class SampleCurationLinksRestController {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final CurationReadService curationReadService;
   private final CurationPersistService curationPersistService;
   private final CurationLinkResourceAssembler curationLinkResourceAssembler;
@@ -50,12 +49,12 @@ public class SampleCurationLinksRestController {
   private final AccessControlService accessControlService;
 
   public SampleCurationLinksRestController(
-      CurationReadService curationReadService,
-      CurationPersistService curationPersistService,
-      CurationLinkResourceAssembler curationLinkResourceAssembler,
-      BioSamplesAapService bioSamplesAapService,
-      BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-      AccessControlService accessControlService) {
+      final CurationReadService curationReadService,
+      final CurationPersistService curationPersistService,
+      final CurationLinkResourceAssembler curationLinkResourceAssembler,
+      final BioSamplesAapService bioSamplesAapService,
+      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+      final AccessControlService accessControlService) {
     this.curationReadService = curationReadService;
     this.curationPersistService = curationPersistService;
     this.curationLinkResourceAssembler = curationLinkResourceAssembler;
@@ -67,15 +66,16 @@ public class SampleCurationLinksRestController {
   @CrossOrigin
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<PagedModel<EntityModel<CurationLink>>> getCurationLinkPageJson(
-      @PathVariable String accession,
-      Pageable pageable,
-      PagedResourcesAssembler<CurationLink> pageAssembler) {
+      @PathVariable final String accession,
+      final Pageable pageable,
+      final PagedResourcesAssembler<CurationLink> pageAssembler) {
 
-    Page<CurationLink> page = curationReadService.getCurationLinksForSample(accession, pageable);
+    final Page<CurationLink> page =
+        curationReadService.getCurationLinksForSample(accession, pageable);
 
     // add the links to each individual sample on the page
     // also adds links to first/last/next/prev at the same time
-    PagedModel<EntityModel<CurationLink>> pagedResources =
+    final PagedModel<EntityModel<CurationLink>> pagedResources =
         pageAssembler.toModel(
             page,
             curationLinkResourceAssembler,
@@ -92,10 +92,10 @@ public class SampleCurationLinksRestController {
       value = "/{hash}",
       produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<EntityModel<CurationLink>> getCurationLinkJson(
-      @PathVariable String accession, @PathVariable String hash) {
+      @PathVariable final String accession, @PathVariable final String hash) {
 
-    CurationLink curationLink = curationReadService.getCurationLink(hash);
-    EntityModel<CurationLink> resource = curationLinkResourceAssembler.toModel(curationLink);
+    final CurationLink curationLink = curationReadService.getCurationLink(hash);
+    final EntityModel<CurationLink> resource = curationLinkResourceAssembler.toModel(curationLink);
 
     return ResponseEntity.ok(resource);
   }
@@ -105,7 +105,7 @@ public class SampleCurationLinksRestController {
       consumes = {MediaType.APPLICATION_JSON_VALUE},
       produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<EntityModel<CurationLink>> createCurationLinkJson(
-      @PathVariable String accession,
+      @PathVariable final String accession,
       @RequestBody CurationLink curationLink,
       @RequestHeader(name = "Authorization") final String token) {
 
@@ -146,7 +146,7 @@ public class SampleCurationLinksRestController {
 
     // now actually persist it
     curationLink = curationPersistService.store(curationLink);
-    EntityModel<CurationLink> resource = curationLinkResourceAssembler.toModel(curationLink);
+    final EntityModel<CurationLink> resource = curationLinkResourceAssembler.toModel(curationLink);
 
     // create the response object with the appropriate status
     return ResponseEntity.created(URI.create(resource.getLink("self").get().getHref()))
@@ -156,9 +156,9 @@ public class SampleCurationLinksRestController {
   @CrossOrigin
   @DeleteMapping(value = "/{hash}")
   public ResponseEntity<?> deleteCurationLinkJson(
-      @PathVariable String accession, @PathVariable String hash) {
+      @PathVariable final String accession, @PathVariable final String hash) {
     log.info("Received DELETE for curation link " + hash);
-    CurationLink curationLink = curationReadService.getCurationLink(hash);
+    final CurationLink curationLink = curationReadService.getCurationLink(hash);
     log.info("Deleting curationLink " + curationLink);
     curationPersistService.delete(curationLink);
     return ResponseEntity.noContent().build();

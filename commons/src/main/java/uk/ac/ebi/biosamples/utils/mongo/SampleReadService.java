@@ -41,7 +41,6 @@ public class SampleReadService {
   private static final Logger LOGGER = LoggerFactory.getLogger(SampleReadService.class);
   private final MongoSampleRepository mongoSampleRepository;
 
-  // TODO use a ConversionService to manage all these
   private final MongoSampleToSampleConverter mongoSampleToSampleConverter;
 
   private final CurationReadService curationReadService;

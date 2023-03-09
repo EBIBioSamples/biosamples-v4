@@ -26,18 +26,18 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 public class SchemaValidationController {
   private final SchemaValidationService schemaValidationService;
 
-  public SchemaValidationController(SchemaValidationService schemaValidationService) {
+  public SchemaValidationController(final SchemaValidationService schemaValidationService) {
     this.schemaValidationService = schemaValidationService;
   }
 
   @PostMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Sample> validate(
-      @RequestBody Sample sample,
-      @RequestParam(name = "checklist", required = false) String checklist) {
+      @RequestBody final Sample sample,
+      @RequestParam(name = "checklist", required = false) final String checklist) {
 
     if (checklist != null && !checklist.isEmpty()) {
-      Attribute checklistAttribute = Attribute.build("checklist", checklist);
-      Optional<Attribute> optionalChecklist =
+      final Attribute checklistAttribute = Attribute.build("checklist", checklist);
+      final Optional<Attribute> optionalChecklist =
           sample.getCharacteristics().stream()
               .filter(c -> c.getType().equalsIgnoreCase("checklist"))
               .findFirst();

@@ -28,11 +28,11 @@ public class PhenopacketConverter {
   private static final Logger LOG = LoggerFactory.getLogger(PhenopacketConverter.class);
   private final PhenopacketConversionHelper phenopacketConversionHelper;
 
-  public PhenopacketConverter(PhenopacketConversionHelper phenopacketConversionHelper) {
+  public PhenopacketConverter(final PhenopacketConversionHelper phenopacketConversionHelper) {
     this.phenopacketConversionHelper = phenopacketConversionHelper;
   }
 
-  public String convertToJsonPhenopacket(Sample sample) {
+  public String convertToJsonPhenopacket(final Sample sample) {
     if (sample.getTaxId() == null || sample.getTaxId() != 9606) {
       LOG.warn(
           "Trying to export invalid sample in phenopacket format: accession = {}, tax_id = {}",
@@ -42,19 +42,19 @@ public class PhenopacketConverter {
           "Non human sample can not be exported into phenopacket.");
     }
 
-    Phenopacket phenopacket = convert(sample);
+    final Phenopacket phenopacket = convert(sample);
     try {
       return JsonFormat.printer().print(phenopacket);
-    } catch (InvalidProtocolBufferException e) {
+    } catch (final InvalidProtocolBufferException e) {
       LOG.error("Failed to serialise phenopacket into JSON", e);
       throw new GlobalExceptions.SampleConversionException(
           "Failed to serialise phenopacket into JSON.");
     }
   }
 
-  public Phenopacket convert(Sample sample) {
-    List<PhenopacketAttribute> diseases = new ArrayList<>();
-    Map<String, PhenopacketAttribute> attributes = new HashMap<>();
+  public Phenopacket convert(final Sample sample) {
+    final List<PhenopacketAttribute> diseases = new ArrayList<>();
+    final Map<String, PhenopacketAttribute> attributes = new HashMap<>();
     normalizeAttributes(sample, attributes, diseases);
 
     return Phenopacket.newBuilder()
@@ -67,12 +67,13 @@ public class PhenopacketConverter {
   }
 
   private MetaData populateMetadata(
-      Map<String, PhenopacketAttribute> attributes, List<PhenopacketAttribute> diseases) {
-    Set<Resource> resources = new HashSet<>();
-    for (PhenopacketAttribute a : attributes.values()) {
+      final Map<String, PhenopacketAttribute> attributes,
+      final List<PhenopacketAttribute> diseases) {
+    final Set<Resource> resources = new HashSet<>();
+    for (final PhenopacketAttribute a : attributes.values()) {
       phenopacketConversionHelper.getResource(a).ifPresent(resources::add);
     }
-    for (PhenopacketAttribute a : diseases) {
+    for (final PhenopacketAttribute a : diseases) {
       phenopacketConversionHelper.getResource(a).ifPresent(resources::add);
     }
 
@@ -83,11 +84,12 @@ public class PhenopacketConverter {
         .build();
   }
 
-  private Individual populateSubject(Sample sample, Map<String, PhenopacketAttribute> attributes) {
-    Individual.Builder builder = Individual.newBuilder();
+  private Individual populateSubject(
+      final Sample sample, final Map<String, PhenopacketAttribute> attributes) {
+    final Individual.Builder builder = Individual.newBuilder();
     builder.setId(sample.getAccession() + "-individual");
     if (attributes.containsKey("sex")) {
-      Sex sex;
+      final Sex sex;
       if ("male".equalsIgnoreCase(attributes.get("sex").getValue())) {
         sex = Sex.MALE;
       } else if ("female".equalsIgnoreCase(attributes.get("sex").getValue())) {
@@ -104,8 +106,9 @@ public class PhenopacketConverter {
     return builder.build();
   }
 
-  private Biosample populateBiosample(Sample sample, Map<String, PhenopacketAttribute> attributes) {
-    Biosample.Builder builder = Biosample.newBuilder();
+  private Biosample populateBiosample(
+      final Sample sample, final Map<String, PhenopacketAttribute> attributes) {
+    final Biosample.Builder builder = Biosample.newBuilder();
     builder.setId(sample.getAccession());
     builder.setIndividualId(getIndividualId(sample));
     if (attributes.containsKey("organism")) {
@@ -159,11 +162,11 @@ public class PhenopacketConverter {
     return builder.build();
   }
 
-  private List<Disease> populateDiseases(List<PhenopacketAttribute> diseases) {
-    List<Disease> diseaseList = new ArrayList<>();
-    for (PhenopacketAttribute disease : diseases) {
+  private List<Disease> populateDiseases(final List<PhenopacketAttribute> diseases) {
+    final List<Disease> diseaseList = new ArrayList<>();
+    for (final PhenopacketAttribute disease : diseases) {
       if (disease.getOntologyId() != null) {
-        Disease.Builder builder = Disease.newBuilder();
+        final Disease.Builder builder = Disease.newBuilder();
         builder.setTerm(phenopacketConversionHelper.getOntology(disease));
         diseaseList.add(builder.build());
       }
@@ -172,10 +175,10 @@ public class PhenopacketConverter {
   }
 
   private void normalizeAttributes(
-      Sample sample,
-      Map<String, PhenopacketAttribute> attributeMap,
-      List<PhenopacketAttribute> diseases) {
-    for (Attribute attribute : sample.getAttributes()) {
+      final Sample sample,
+      final Map<String, PhenopacketAttribute> attributeMap,
+      final List<PhenopacketAttribute> diseases) {
+    for (final Attribute attribute : sample.getAttributes()) {
       getAge(attribute).ifPresent(a -> addToMap(attributeMap, a));
       getDescription(attribute).ifPresent(a -> addToMap(attributeMap, a));
       getSex(attribute).ifPresent(a -> addToMap(attributeMap, a));
@@ -204,12 +207,12 @@ public class PhenopacketConverter {
     }
   }
 
-  private String getIndividualId(Sample sample) {
+  private String getIndividualId(final Sample sample) {
     return sample.getAccession() + "-individual";
   }
 
-  private Optional<PhenopacketAttribute> getSex(Attribute attribute) {
-    Optional<PhenopacketAttribute> normalisedAttribute;
+  private Optional<PhenopacketAttribute> getSex(final Attribute attribute) {
+    final Optional<PhenopacketAttribute> normalisedAttribute;
     if ("sex".equalsIgnoreCase(attribute.getType())
         || "gender".equalsIgnoreCase(attribute.getType())
         || "vioscreen gender".equalsIgnoreCase(attribute.getType())) {
@@ -220,8 +223,8 @@ public class PhenopacketConverter {
     return normalisedAttribute;
   }
 
-  private Optional<PhenopacketAttribute> getOrganism(Attribute attribute) {
-    Optional<PhenopacketAttribute> normalisedAttribute;
+  private Optional<PhenopacketAttribute> getOrganism(final Attribute attribute) {
+    final Optional<PhenopacketAttribute> normalisedAttribute;
     if ("organism".equalsIgnoreCase(attribute.getType())
         || "species".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("organism", attribute);
@@ -231,8 +234,8 @@ public class PhenopacketConverter {
     return normalisedAttribute;
   }
 
-  private Optional<PhenopacketAttribute> getDisease(Attribute attribute) {
-    Optional<PhenopacketAttribute> normalisedAttribute;
+  private Optional<PhenopacketAttribute> getDisease(final Attribute attribute) {
+    final Optional<PhenopacketAttribute> normalisedAttribute;
     if ("disease".equalsIgnoreCase(attribute.getType())
         || "disease state".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", attribute);
@@ -242,8 +245,8 @@ public class PhenopacketConverter {
     return normalisedAttribute;
   }
 
-  private Optional<PhenopacketAttribute> getAge(Attribute attribute) {
-    Optional<PhenopacketAttribute> normalisedAttribute;
+  private Optional<PhenopacketAttribute> getAge(final Attribute attribute) {
+    final Optional<PhenopacketAttribute> normalisedAttribute;
     if ("age".equalsIgnoreCase(attribute.getType())
         || "age_years".equalsIgnoreCase(attribute.getType())
         || "age(years)".equalsIgnoreCase(attribute.getType())
@@ -260,8 +263,8 @@ public class PhenopacketConverter {
     return normalisedAttribute;
   }
 
-  private Optional<PhenopacketAttribute> getDescription(Attribute attribute) {
-    Optional<PhenopacketAttribute> normalisedAttribute;
+  private Optional<PhenopacketAttribute> getDescription(final Attribute attribute) {
+    final Optional<PhenopacketAttribute> normalisedAttribute;
     if ("description".equalsIgnoreCase(attribute.getType())
         || "description title".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("description", attribute);
@@ -271,8 +274,8 @@ public class PhenopacketConverter {
     return normalisedAttribute;
   }
 
-  private Optional<PhenopacketAttribute> getPhenotypicFeatures(Attribute attribute) {
-    Optional<PhenopacketAttribute> normalisedAttribute;
+  private Optional<PhenopacketAttribute> getPhenotypicFeatures(final Attribute attribute) {
+    final Optional<PhenopacketAttribute> normalisedAttribute;
     if ("phenotype".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("phenotype", attribute);
     } else if ("development stage".equalsIgnoreCase(attribute.getType())
@@ -286,8 +289,8 @@ public class PhenopacketConverter {
     return normalisedAttribute;
   }
 
-  private Optional<PhenopacketAttribute> getSampleTissue(Attribute attribute) {
-    Optional<PhenopacketAttribute> normalisedAttribute;
+  private Optional<PhenopacketAttribute> getSampleTissue(final Attribute attribute) {
+    final Optional<PhenopacketAttribute> normalisedAttribute;
     if ("tissue".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("tissue", attribute);
     } else {
@@ -296,8 +299,8 @@ public class PhenopacketConverter {
     return normalisedAttribute;
   }
 
-  private Optional<PhenopacketAttribute> getDiagnosis(Attribute attribute) {
-    Optional<PhenopacketAttribute> normalisedAttribute;
+  private Optional<PhenopacketAttribute> getDiagnosis(final Attribute attribute) {
+    final Optional<PhenopacketAttribute> normalisedAttribute;
     if ("histological diagnosis".equalsIgnoreCase(attribute.getType())
         || "diagnosis".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("diagnosis", attribute);
@@ -307,8 +310,8 @@ public class PhenopacketConverter {
     return normalisedAttribute;
   }
 
-  private Optional<PhenopacketAttribute> getTumorGrade(Attribute attribute) {
-    Optional<PhenopacketAttribute> normalisedAttribute;
+  private Optional<PhenopacketAttribute> getTumorGrade(final Attribute attribute) {
+    final Optional<PhenopacketAttribute> normalisedAttribute;
     if ("tumor grade".equalsIgnoreCase(attribute.getType())
         || "tumor stage".equalsIgnoreCase(attribute.getType())
         || "tumor grading".equalsIgnoreCase(attribute.getType())) {
@@ -319,8 +322,8 @@ public class PhenopacketConverter {
     return normalisedAttribute;
   }
 
-  private Optional<PhenopacketAttribute> getTumorProgression(Attribute attribute) {
-    Optional<PhenopacketAttribute> normalisedAttribute;
+  private Optional<PhenopacketAttribute> getTumorProgression(final Attribute attribute) {
+    final Optional<PhenopacketAttribute> normalisedAttribute;
     if ("tumor progression".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute =
           phenopacketConversionHelper.convertAttribute("tumor progression", attribute);
@@ -330,8 +333,8 @@ public class PhenopacketConverter {
     return normalisedAttribute;
   }
 
-  private Optional<PhenopacketAttribute> getBiomarker(Attribute attribute) {
-    Optional<PhenopacketAttribute> normalisedAttribute;
+  private Optional<PhenopacketAttribute> getBiomarker(final Attribute attribute) {
+    final Optional<PhenopacketAttribute> normalisedAttribute;
     if ("biomarker".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("biomarker", attribute);
     } else {
@@ -340,8 +343,8 @@ public class PhenopacketConverter {
     return normalisedAttribute;
   }
 
-  private Optional<PhenopacketAttribute> getProcedure(Attribute attribute) {
-    Optional<PhenopacketAttribute> normalisedAttribute;
+  private Optional<PhenopacketAttribute> getProcedure(final Attribute attribute) {
+    final Optional<PhenopacketAttribute> normalisedAttribute;
     if ("procedure".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("procedure", attribute);
     } else {
@@ -350,8 +353,8 @@ public class PhenopacketConverter {
     return normalisedAttribute;
   }
 
-  private Optional<PhenopacketAttribute> getVariants(Attribute attribute) {
-    Optional<PhenopacketAttribute> normalisedAttribute;
+  private Optional<PhenopacketAttribute> getVariants(final Attribute attribute) {
+    final Optional<PhenopacketAttribute> normalisedAttribute;
     if ("variants".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("variants", attribute);
     } else {
@@ -360,7 +363,7 @@ public class PhenopacketConverter {
     return normalisedAttribute;
   }
 
-  private Optional<PhenopacketAttribute> getOtherFields(Attribute attribute) {
+  private Optional<PhenopacketAttribute> getOtherFields(final Attribute attribute) {
     Optional<PhenopacketAttribute> normalisedAttribute = Optional.empty();
     if ("tissue".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("tissue", attribute);
@@ -369,7 +372,7 @@ public class PhenopacketConverter {
     return normalisedAttribute;
   }
 
-  private Optional<PhenopacketAttribute> extractDisease(Attribute attribute) {
+  private Optional<PhenopacketAttribute> extractDisease(final Attribute attribute) {
     Optional<PhenopacketAttribute> normalisedAttribute = Optional.empty();
     if ("diabetes".equalsIgnoreCase(attribute.getType())
         || "diabetes type".equalsIgnoreCase(attribute.getType())) {
@@ -475,7 +478,7 @@ public class PhenopacketConverter {
     return normalisedAttribute;
   }
 
-  private Optional<PhenopacketAttribute> extractMentalDisease(Attribute attribute) {
+  private Optional<PhenopacketAttribute> extractMentalDisease(final Attribute attribute) {
     Optional<PhenopacketAttribute> normalisedAttribute = Optional.empty();
     if ("mental illness".equalsIgnoreCase(attribute.getType())) {
       if ("yes".equalsIgnoreCase(attribute.getValue())
@@ -569,7 +572,7 @@ public class PhenopacketConverter {
     return normalisedAttribute;
   }
 
-  private void addToMap(Map<String, PhenopacketAttribute> m, PhenopacketAttribute a) {
+  private void addToMap(final Map<String, PhenopacketAttribute> m, final PhenopacketAttribute a) {
     m.put(a.getType(), a);
   }
 }

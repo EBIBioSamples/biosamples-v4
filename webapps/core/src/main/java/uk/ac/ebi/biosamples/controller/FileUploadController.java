@@ -45,17 +45,16 @@ import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
 @RequestMapping("/upload")
 public class FileUploadController {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final FileUploadService fileUploadService;
   private final FileQueueService fileQueueService;
   private final BioSamplesProperties bioSamplesProperties;
   private final AccessControlService accessControlService;
 
   public FileUploadController(
-      FileUploadService fileUploadService,
-      FileQueueService fileQueueService,
-      BioSamplesProperties bioSamplesProperties,
-      AccessControlService accessControlService) {
+      final FileUploadService fileUploadService,
+      final FileQueueService fileQueueService,
+      final BioSamplesProperties bioSamplesProperties,
+      final AccessControlService accessControlService) {
     this.fileUploadService = fileUploadService;
     this.fileQueueService = fileQueueService;
     this.bioSamplesProperties = bioSamplesProperties;
@@ -163,7 +162,7 @@ public class FileUploadController {
     final File pathFile = tempFile.toFile();
 
     FileUtils.copyInputStreamToFile(
-        this.getClass().getClassLoader().getResourceAsStream("isa-example.tsv"), pathFile);
+        getClass().getClassLoader().getResourceAsStream("isa-example.tsv"), pathFile);
     final byte[] bytes = FileUtils.readFileToByteArray(pathFile);
     final HttpHeaders headers = setResponseHeadersSuccess(pathFile);
 
