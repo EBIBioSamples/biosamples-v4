@@ -158,17 +158,10 @@ public class SampleService {
       final boolean isWebinSuperUser) {
     boolean isSampleTaxIdUpdated = false;
     final Collection<String> errors = sampleValidator.validate(sample);
-    SampleStatus status = SampleStatus.PUBLIC;
 
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
       throw new GlobalExceptions.SampleValidationControllerException(String.join("|", errors));
-    }
-
-    final Instant releaseDate = sample.getRelease();
-
-    if (releaseDate.isAfter(Instant.now())) {
-      status = SampleStatus.PRIVATE;
     }
 
     if (sample.hasAccession()) {
@@ -201,7 +194,6 @@ public class SampleService {
         log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
       }
 
-      sample = Sample.Builder.fromSample(sample).withStatus(status).build();
       MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
 
       assert mongoSample != null;
@@ -219,7 +211,6 @@ public class SampleService {
       // deleted relationships
       messagingService.fetchThenSendMessage(sample.getAccession(), existingRelationshipTargets);
     } else {
-      sample = Sample.Builder.fromSample(sample).withStatus(status).build();
       sample = mongoAccessionService.generateAccession(sample);
       messagingService.fetchThenSendMessage(sample.getAccession());
     }

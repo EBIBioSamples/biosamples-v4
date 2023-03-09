@@ -616,10 +616,6 @@ public class Sample implements Comparable<Sample> {
       sample.taxId = taxId;
     }
 
-    if (status != null) {
-      sample.status = status;
-    }
-
     // Instead of validation failure, if null, set it to now
     sample.update = update == null ? Instant.now() : update;
 
@@ -631,6 +627,13 @@ public class Sample implements Comparable<Sample> {
 
     // Validation moved to a later stage, to capture the error (SampleService.store())
     sample.release = release;
+
+    if (status != null) {
+      sample.status = status;
+    } else {
+      sample.status =
+          sample.release != null && sample.release.isAfter(Instant.now()) ? SampleStatus.PRIVATE : SampleStatus.PUBLIC;
+    }
 
     sample.attributes = new TreeSet<>();
     if (attributes != null) {
