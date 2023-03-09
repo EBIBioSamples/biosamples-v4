@@ -40,8 +40,7 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationServic
 @RequestMapping("/samples")
 @CrossOrigin
 public class CertificationController {
-  private Logger log = LoggerFactory.getLogger(getClass());
-
+  private final Logger log = LoggerFactory.getLogger(getClass());
   @Autowired private CertifyService certifyService;
   @Autowired private SampleService sampleService;
   @Autowired private BioSamplesAapService bioSamplesAapService;
@@ -52,7 +51,7 @@ public class CertificationController {
   @PutMapping("{accession}/certify")
   public EntityModel<Sample> certify(
       @RequestBody Sample sample,
-      @PathVariable String accession,
+      @PathVariable final String accession,
       @RequestHeader(name = "Authorization", required = false) final String token)
       throws JsonProcessingException {
 
@@ -93,13 +92,13 @@ public class CertificationController {
       sample = bioSamplesAapService.handleSampleDomain(sample, Optional.empty());
     }
 
-    List<Certificate> certificates =
+    final List<Certificate> certificates =
         certifyService.certify(jsonMapper.writeValueAsString(sample), true);
 
     // update date is system generated field
-    Instant reviewed = Instant.now();
+    final Instant reviewed = Instant.now();
 
-    SubmittedViaType submittedVia =
+    final SubmittedViaType submittedVia =
         sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
     sample =
         Sample.Builder.fromSample(sample)
@@ -118,7 +117,7 @@ public class CertificationController {
   }
 
   @PostMapping("/checkCompliance")
-  public BioSamplesCertificationComplainceResult recorderResults(@RequestBody Sample sample)
+  public BioSamplesCertificationComplainceResult recorderResults(@RequestBody final Sample sample)
       throws JsonProcessingException {
     final ObjectMapper jsonMapper = new ObjectMapper();
 

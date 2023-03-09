@@ -42,8 +42,7 @@ import uk.ac.ebi.tsc.aap.client.exception.UserNameOrPasswordWrongException;
 @Controller
 @RequestMapping("/login")
 public class LoginController {
-  private Logger log = LoggerFactory.getLogger(getClass());
-
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final JsonSchemaStoreSchemaRetrievalService jsonSchemaStoreSchemaRetrievalService;

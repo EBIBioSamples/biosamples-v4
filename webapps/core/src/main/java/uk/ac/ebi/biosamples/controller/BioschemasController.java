@@ -31,10 +31,10 @@ public class BioschemasController {
   private final BioSamplesAapService bioSamplesAapService;
 
   public BioschemasController(
-      JsonLDService service,
-      SampleService sampleService,
-      BioSamplesAapService bioSamplesAapService) {
-    this.jsonLDService = service;
+      final JsonLDService service,
+      final SampleService sampleService,
+      final BioSamplesAapService bioSamplesAapService) {
+    jsonLDService = service;
     this.sampleService = sampleService;
     this.bioSamplesAapService = bioSamplesAapService;
   }
@@ -54,8 +54,8 @@ public class BioschemasController {
   @PreAuthorize("isAuthenticated()")
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(value = "/samples/{accession}", produces = "application/ld+json")
-  public JsonLDDataRecord getJsonLDSample(@PathVariable String accession) {
-    Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
+  public JsonLDDataRecord getJsonLDSample(@PathVariable final String accession) {
+    final Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
     if (!sample.isPresent()) {
       throw new GlobalExceptions.SampleNotFoundException();
     }

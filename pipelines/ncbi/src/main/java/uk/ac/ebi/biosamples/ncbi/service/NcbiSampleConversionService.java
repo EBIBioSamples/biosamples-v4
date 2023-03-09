@@ -14,14 +14,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Pattern;
 import org.dom4j.Element;
 import org.slf4j.Logger;
@@ -91,23 +84,23 @@ public class NcbiSampleConversionService {
   private static final String TARGET = "target";
   private static final String PUBMED = "pubmed";
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final TaxonomyService taxonomyService;
   private final NcbiAmrConversionService amrConversionService;
 
-  public NcbiSampleConversionService(TaxonomyService taxonomyService) {
+  public NcbiSampleConversionService(final TaxonomyService taxonomyService) {
     this.taxonomyService = taxonomyService;
-    this.amrConversionService = new NcbiAmrConversionService();
+    amrConversionService = new NcbiAmrConversionService();
   }
 
-  public Sample convertNcbiXmlElementToSample(Element sampleElem) {
-    String accession = sampleElem.attributeValue(ACCESSION);
-    SortedSet<Attribute> attrs = new TreeSet<>();
-    SortedSet<Relationship> rels = new TreeSet<>();
-    SortedSet<Publication> publications = new TreeSet<>();
-    Set<ExternalReference> externalReferences = new TreeSet<>();
-    Attribute organismAttribute;
+  public Sample convertNcbiXmlElementToSample(final Element sampleElem) {
+    final String accession = sampleElem.attributeValue(ACCESSION);
+    final SortedSet<Attribute> attrs = new TreeSet<>();
+    final SortedSet<Relationship> rels = new TreeSet<>();
+    final SortedSet<Publication> publications = new TreeSet<>();
+    final Set<ExternalReference> externalReferences = new TreeSet<>();
+    final Attribute organismAttribute;
 
     String alias = null; // this will be the ENA alias of the sample
     String geoAlias = null;
@@ -118,7 +111,7 @@ public class NcbiSampleConversionService {
     String organismValue = null;
     String geoTag = null;
 
-    for (Element idElem : XmlPathBuilder.of(sampleElem).path(IDS).elements(ID)) {
+    for (final Element idElem : XmlPathBuilder.of(sampleElem).path(IDS).elements(ID)) {
       final String attributeValueIdElementDb = idElem.attributeValue(DB);
 
       if (SRA.equals(attributeValueIdElementDb)) {
@@ -185,12 +178,12 @@ public class NcbiSampleConversionService {
     // BSD-1748 - Correction in title mapping. Instead of description title, now
     // mapping to title for sync with ENA
     if (XmlPathBuilder.of(sampleElem).path(DESCRIPTION, TITLE).exists()) {
-      String value = XmlPathBuilder.of(sampleElem).path(DESCRIPTION, TITLE).text();
+      final String value = XmlPathBuilder.of(sampleElem).path(DESCRIPTION, TITLE).text();
       attrs.add(Attribute.build(NCBI_JSON_CORE_TITLE, value));
     }
 
     if (XmlPathBuilder.of(sampleElem).path(DESCRIPTION, COMMENT, PARAGRAPH).exists()) {
-      String value =
+      final String value =
           XmlPathBuilder.of(sampleElem).path(DESCRIPTION, COMMENT, PARAGRAPH).text().trim();
       /*
        * if (value.length() > 255) {
@@ -202,7 +195,7 @@ public class NcbiSampleConversionService {
 
     if (XmlPathBuilder.of(sampleElem).path(DESCRIPTION, ORGANISM).exists()) {
       if (XmlPathBuilder.of(sampleElem).path(DESCRIPTION, ORGANISM).attributeExists(TAXONOMY_ID)) {
-        int taxonId =
+        final int taxonId =
             getTaxId(
                 XmlPathBuilder.of(sampleElem).path(DESCRIPTION, ORGANISM).attribute(TAXONOMY_ID));
         organismIri = taxonomyService.getUriForTaxonId(taxonId);
@@ -223,14 +216,15 @@ public class NcbiSampleConversionService {
     }
 
     // handle attributes
-    for (Element attrElem : XmlPathBuilder.of(sampleElem).path(ATTRIBUTES).elements(ATTRIBUTE)) {
+    for (final Element attrElem :
+        XmlPathBuilder.of(sampleElem).path(ATTRIBUTES).elements(ATTRIBUTE)) {
       String key = attrElem.attributeValue(ATTRIBUTE_NAME);
 
       if (key == null || key.length() == 0) {
         key = attrElem.attributeValue(DISPLAY_NAME);
       }
 
-      String value = attrElem.getTextTrim();
+      final String value = attrElem.getTextTrim();
       /*
        * if (value.length() > 255) {
        * log.warn("Truncating attribute "+key+" for length on "+accession); value =
@@ -268,9 +262,9 @@ public class NcbiSampleConversionService {
     final XmlPathBuilder links = XmlPathBuilder.of(sampleElem).path(LINKS);
 
     if (links != null && links.exists()) {
-      for (Element attrElem : XmlPathBuilder.of(sampleElem).path(LINKS).elements(LINK)) {
-        String key = attrElem.attributeValue(TARGET);
-        String value = attrElem.getTextTrim();
+      for (final Element attrElem : XmlPathBuilder.of(sampleElem).path(LINKS).elements(LINK)) {
+        final String key = attrElem.attributeValue(TARGET);
+        final String value = attrElem.getTextTrim();
 
         if (key != null && key.equalsIgnoreCase(PUBMED)) {
           publications.add(new Publication.Builder().pubmed_id(value).build());
@@ -282,7 +276,7 @@ public class NcbiSampleConversionService {
     // disabled for the moment, do they really add anything? faulcon@2017/01/25
     // yes, ENA want them. But we can name them better. faulcon@2018/02/14
     // TODO safely access these - shouldn't ever be missing but....
-    for (Element modelElem : XmlPathBuilder.of(sampleElem).path(MODELS).elements(MODEL)) {
+    for (final Element modelElem : XmlPathBuilder.of(sampleElem).path(MODELS).elements(MODEL)) {
       attrs.add(Attribute.build(NCBI_SUBMISSION_MODEL, modelElem.getTextTrim()));
     }
 
@@ -347,25 +341,25 @@ public class NcbiSampleConversionService {
   }
 
   public Set<StructuredDataTable> convertNcbiXmlElementToStructuredData(
-      Element sampleElem, Set<StructuredDataTable> amrData) {
-    String accession = sampleElem.attributeValue(ACCESSION);
-    Set<StructuredDataTable> structuredData = new HashSet<>();
-    Set<StructuredDataTable> structuredDataTableSet = new HashSet<>();
+      final Element sampleElem, final Set<StructuredDataTable> amrData) {
+    final String accession = sampleElem.attributeValue(ACCESSION);
+    final Set<StructuredDataTable> structuredData = new HashSet<>();
+    final Set<StructuredDataTable> structuredDataTableSet = new HashSet<>();
 
     // handle AMR data
     if (XmlPathBuilder.of(sampleElem).path(DESCRIPTION, COMMENT).exists()) {
-      for (Element element :
+      for (final Element element :
           XmlPathBuilder.of(sampleElem).path(DESCRIPTION, COMMENT).elements("Table")) {
-        String antibiogramClass = element.attributeValue("class");
+        final String antibiogramClass = element.attributeValue("class");
         if (antibiogramClass != null && ANTIBIOGRAM_PATTERN.matcher(antibiogramClass).matches()) {
           try {
-            Set<Map<String, StructuredDataEntry>> structuredTable =
+            final Set<Map<String, StructuredDataEntry>> structuredTable =
                 amrConversionService.convertStructuredTable(element, null);
-            StructuredDataTable structuredDataTable =
+            final StructuredDataTable structuredDataTable =
                 StructuredDataTable.build(
                     "self.BiosampleImportNCBI", null, "AMR", null, structuredTable);
             structuredDataTableSet.add(structuredDataTable);
-          } catch (AmrParsingException ex) {
+          } catch (final AmrParsingException ex) {
             log.error("An error occurred while parsing AMR table", ex);
           }
         }
@@ -382,11 +376,11 @@ public class NcbiSampleConversionService {
     return structuredDataTableSet;
   }
 
-  private boolean ifSomeOtherIdExists(String idElementValue) {
+  private boolean ifSomeOtherIdExists(final String idElementValue) {
     return idElementValue != null && !idElementValue.isEmpty();
   }
 
-  private int getTaxId(String value) {
+  private int getTaxId(final String value) {
     if (value == null) {
       throw new RuntimeException("Unable to extract tax id from a null value");
     }

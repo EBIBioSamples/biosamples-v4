@@ -37,18 +37,19 @@ public class MongoSampleToSampleConverter implements Function<MongoSample, Sampl
   private MongoRelationshipToRelationshipConverter mongoRelationshipToRelationshipConverter;
 
   @Autowired private MongoCertificateToCertificateConverter mongoCertificateToCertificateConverter;
-  private static Logger LOGGER = LoggerFactory.getLogger(MongoSampleToSampleConverter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MongoSampleToSampleConverter.class);
 
   @Override
-  public Sample apply(MongoSample sample) {
-    Sample convertedSample;
+  public Sample apply(final MongoSample sample) {
+    final Sample convertedSample;
     final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 
     if (sample.getExternalReferences() != null && sample.getExternalReferences().size() > 0) {
       for (final MongoExternalReference mongoExternalReference : sample.getExternalReferences()) {
-        if (mongoExternalReference != null)
+        if (mongoExternalReference != null) {
           externalReferences.add(
               mongoExternalReferenceToExternalReferenceConverter.convert(mongoExternalReference));
+        }
       }
     }
 
@@ -56,15 +57,16 @@ public class MongoSampleToSampleConverter implements Function<MongoSample, Sampl
 
     if (sample.getRelationships() != null && sample.getRelationships().size() > 0) {
       for (final MongoRelationship mongoRelationship : sample.getRelationships()) {
-        if (mongoRelationship != null)
+        if (mongoRelationship != null) {
           relationships.add(mongoRelationshipToRelationshipConverter.convert(mongoRelationship));
+        }
       }
     }
 
-    SortedSet<Certificate> certificates = new TreeSet<>();
+    final SortedSet<Certificate> certificates = new TreeSet<>();
 
     if (sample.getCertificates() != null && sample.getCertificates().size() > 0) {
-      for (MongoCertificate certificate : sample.getCertificates()) {
+      for (final MongoCertificate certificate : sample.getCertificates()) {
         if (certificate != null) {
           certificates.add(mongoCertificateToCertificateConverter.convert(certificate));
         }
@@ -80,7 +82,7 @@ public class MongoSampleToSampleConverter implements Function<MongoSample, Sampl
       throw new RuntimeException("Sample does not have domain or a WEBIN submission account ID");
     }
 
-    Instant submitted = sample.getSubmitted();
+    final Instant submitted = sample.getSubmitted();
 
     if (submitted == null) {
       convertedSample =
@@ -124,7 +126,7 @@ public class MongoSampleToSampleConverter implements Function<MongoSample, Sampl
               .build();
     }
 
-    Instant reviewed = sample.getReviewed();
+    final Instant reviewed = sample.getReviewed();
 
     if (reviewed == null) {
       return Sample.Builder.fromSample(convertedSample).withNoReviewed().build();

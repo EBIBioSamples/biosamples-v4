@@ -33,17 +33,16 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationServic
 @CrossOrigin
 public class StructuredDataRestController {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final StructuredDataService structuredDataService;
   private final AccessControlService accessControlService;
 
   public StructuredDataRestController(
-      BioSamplesAapService bioSamplesAapService,
-      BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-      StructuredDataService structuredDataService,
-      AccessControlService accessControlService) {
+      final BioSamplesAapService bioSamplesAapService,
+      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+      final StructuredDataService structuredDataService,
+      final AccessControlService accessControlService) {
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.structuredDataService = structuredDataService;
@@ -52,7 +51,7 @@ public class StructuredDataRestController {
 
   @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   @GetMapping()
-  public EntityModel<StructuredData> get(@PathVariable String accession) {
+  public EntityModel<StructuredData> get(@PathVariable final String accession) {
     if (accession == null || accession.isEmpty()) {
       throw new GlobalExceptions.SampleAccessionMismatchException();
     }
@@ -66,8 +65,8 @@ public class StructuredDataRestController {
   @PreAuthorize("isAuthenticated()")
   @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public EntityModel<StructuredData> put(
-      @PathVariable String accession,
-      @RequestBody StructuredData structuredData,
+      @PathVariable final String accession,
+      @RequestBody final StructuredData structuredData,
       @RequestHeader("Authorization") final String token) {
     final AuthToken authToken =
         accessControlService
@@ -88,7 +87,7 @@ public class StructuredDataRestController {
       bioSamplesAapService.handleStructuredDataDomain(structuredData);
     }
 
-    StructuredData storedData = structuredDataService.saveStructuredData(structuredData);
+    final StructuredData storedData = structuredDataService.saveStructuredData(structuredData);
 
     return EntityModel.of(storedData);
   }

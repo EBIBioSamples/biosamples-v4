@@ -11,7 +11,7 @@
 package uk.ac.ebi.biosamples.controller;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.server.ExposesResourceFor;
@@ -38,7 +38,6 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 @CrossOrigin
 public class SamplesRestControllerV2 {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
@@ -73,7 +72,7 @@ public class SamplesRestControllerV2 {
         authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
             ? AuthorizationProvider.WEBIN
             : AuthorizationProvider.AAP;
-    boolean isWebinSuperUser;
+    final boolean isWebinSuperUser;
 
     if (authProvider == AuthorizationProvider.WEBIN) {
       final String webinSubmissionAccountId = authToken.get().getUser();
@@ -123,7 +122,7 @@ public class SamplesRestControllerV2 {
         .build();
   }
 
-  private Sample validateSample(Sample sample, boolean isWebinSubmission) {
+  private Sample validateSample(Sample sample, final boolean isWebinSubmission) {
     schemaValidationService.validate(sample);
     sample =
         taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(

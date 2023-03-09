@@ -52,12 +52,12 @@ import org.springframework.web.client.RestTemplate;
 public class Application {
   @Bean
   public RestTemplate restTemplate() {
-    RestTemplate restTemplate = new RestTemplate();
+    final RestTemplate restTemplate = new RestTemplate();
     getRestTemplateCustomizer().customize(restTemplate);
     return restTemplate;
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     System.exit(SpringApplication.exit(SpringApplication.run(Application.class, args)));
   }
 
@@ -67,16 +67,16 @@ public class Application {
 
       // use a keep alive strategy to try to make it easier to maintain connections for
       // reuse
-      ConnectionKeepAliveStrategy keepAliveStrategy =
+      final ConnectionKeepAliveStrategy keepAliveStrategy =
           (response, context) -> {
 
             // check if there is a non-standard keep alive header present
-            HeaderElementIterator it =
+            final HeaderElementIterator it =
                 new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
             while (it.hasNext()) {
-              HeaderElement he = it.nextElement();
-              String param = he.getName();
-              String value = he.getValue();
+              final HeaderElement he = it.nextElement();
+              final String param = he.getName();
+              final String value = he.getValue();
               if (value != null && param.equalsIgnoreCase("timeout")) {
                 return Long.parseLong(value) * 1000;
               }
@@ -86,14 +86,14 @@ public class Application {
           };
 
       // set a number of connections to use at once for multiple threads
-      PoolingHttpClientConnectionManager poolingHttpClientConnectionManager =
+      final PoolingHttpClientConnectionManager poolingHttpClientConnectionManager =
           new PoolingHttpClientConnectionManager();
       poolingHttpClientConnectionManager.setMaxTotal(8);
       poolingHttpClientConnectionManager.setDefaultMaxPerRoute(8);
 
       // set a local cache for cacheable responses
       // TODO application.properties this
-      CacheConfig cacheConfig =
+      final CacheConfig cacheConfig =
           CacheConfig.custom()
               .setMaxCacheEntries(1024)
               .setMaxObjectSize(1024 * 1024) // max size of 1Mb
@@ -102,8 +102,8 @@ public class Application {
               .build();
 
       // set a timeout limit
-      int timeout = 60000;
-      RequestConfig config =
+      final int timeout = 60000;
+      final RequestConfig config =
           RequestConfig.custom()
               .setConnectTimeout(timeout) // time to establish the connection with the remote
               // host
@@ -115,18 +115,20 @@ public class Application {
 
       // set retry strategy to retry on any 5xx error
       // ebi load balancers return a 500 error when a service is unavaliable not a 503
-      ServiceUnavailableRetryStrategy serviceUnavailStrategy =
+      final ServiceUnavailableRetryStrategy serviceUnavailStrategy =
           new ServiceUnavailableRetryStrategy() {
 
+            @Override
             public boolean retryRequest(
-                HttpResponse response, int executionCount, HttpContext context) {
-              int maxRetries = 100;
+                final HttpResponse response, final int executionCount, final HttpContext context) {
+              final int maxRetries = 100;
               return executionCount <= maxRetries
                   && (response.getStatusLine().getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE
                       || response.getStatusLine().getStatusCode()
                           == HttpStatus.SC_INTERNAL_SERVER_ERROR);
             }
 
+            @Override
             public long getRetryInterval() {
               // measured in milliseconds
               return 1000;
@@ -134,7 +136,7 @@ public class Application {
           };
 
       // make the actual client
-      HttpClient httpClient =
+      final HttpClient httpClient =
           CachingHttpClientBuilder.create()
               .setCacheConfig(cacheConfig)
               .useSystemProperties()
@@ -151,11 +153,11 @@ public class Application {
       // traverson will make its own but not if we want to customize the resttemplate in
       // any way
       // (e.g. caching)
-      List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
-      ObjectMapper mapper = new ObjectMapper();
+      final List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
+      final ObjectMapper mapper = new ObjectMapper();
       mapper.registerModule(new Jackson2HalModule());
       mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-      MappingJackson2HttpMessageConverter halConverter =
+      final MappingJackson2HttpMessageConverter halConverter =
           new TypeConstrainedMappingJackson2HttpMessageConverter(RepresentationModel.class);
       halConverter.setObjectMapper(mapper);
       halConverter.setSupportedMediaTypes(Collections.singletonList(MediaTypes.HAL_JSON));
@@ -167,9 +169,9 @@ public class Application {
 
   @Bean("biosamplesAgentSolrContainerFactory")
   public SimpleRabbitListenerContainerFactory containerFactory(
-      SimpleRabbitListenerContainerFactoryConfigurer configurer,
-      ConnectionFactory connectionFactory) {
-    SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+      final SimpleRabbitListenerContainerFactoryConfigurer configurer,
+      final ConnectionFactory connectionFactory) {
+    final SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
     factory.setConcurrentConsumers(32);
     factory.setMaxConcurrentConsumers(64);
     configurer.configure(factory, connectionFactory);

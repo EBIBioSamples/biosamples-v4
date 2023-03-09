@@ -38,10 +38,9 @@ import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
  */
 @Service
 public class SampleReadService {
-  private static Logger LOGGER = LoggerFactory.getLogger(SampleReadService.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SampleReadService.class);
   private final MongoSampleRepository mongoSampleRepository;
 
-  // TODO use a ConversionService to manage all these
   private final MongoSampleToSampleConverter mongoSampleToSampleConverter;
 
   private final CurationReadService curationReadService;
@@ -53,13 +52,14 @@ public class SampleReadService {
   private final ExecutorService executorService;
 
   public SampleReadService(
-      MongoSampleRepository mongoSampleRepository,
-      MongoSampleToSampleConverter mongoSampleToSampleConverter,
-      CurationReadService curationReadService,
-      MongoInverseRelationshipService mongoInverseRelationshipService,
-      MongoStructuredDataRepository mongoStructuredDataRepository,
-      MongoStructuredDataToStructuredDataConverter mongoStructuredDataToStructuredDataConverter,
-      BioSamplesProperties bioSamplesProperties) {
+      final MongoSampleRepository mongoSampleRepository,
+      final MongoSampleToSampleConverter mongoSampleToSampleConverter,
+      final CurationReadService curationReadService,
+      final MongoInverseRelationshipService mongoInverseRelationshipService,
+      final MongoStructuredDataRepository mongoStructuredDataRepository,
+      final MongoStructuredDataToStructuredDataConverter
+          mongoStructuredDataToStructuredDataConverter,
+      final BioSamplesProperties bioSamplesProperties) {
     this.mongoSampleRepository = mongoSampleRepository;
     this.mongoSampleToSampleConverter = mongoSampleToSampleConverter;
     this.curationReadService = curationReadService;
@@ -79,7 +79,8 @@ public class SampleReadService {
   /** Throws an IllegalArgumentException of no sample with that accession exists */
   // can't use a sync cache because we need to use CacheEvict
   // @Cacheable(cacheNames=WebappProperties.fetchUsing, key="#root.args[0]")
-  public Optional<Sample> fetch(String accession, Optional<List<String>> curationDomains)
+  public Optional<Sample> fetch(
+      final String accession, final Optional<List<String>> curationDomains)
       throws IllegalArgumentException {
 
     final Optional<MongoSample> byId = mongoSampleRepository.findById(accession);
@@ -103,7 +104,7 @@ public class SampleReadService {
     final Optional<MongoStructuredData> mongoStructuredData =
         mongoStructuredDataRepository.findById(accession);
     if (mongoStructuredData.isPresent()) {
-      StructuredData structuredData =
+      final StructuredData structuredData =
           mongoStructuredDataToStructuredDataConverter.convert(mongoStructuredData.get());
       sample =
           Sample.Builder.fromSample(sample).withStructuredData(structuredData.getData()).build();
@@ -113,7 +114,7 @@ public class SampleReadService {
   }
 
   public Future<Optional<Sample>> fetchAsync(
-      String accession, Optional<List<String>> curationDomains) {
+      final String accession, final Optional<List<String>> curationDomains) {
     return executorService.submit(new FetchCallable(accession, this, curationDomains));
   }
 
@@ -122,10 +123,10 @@ public class SampleReadService {
     private final String accession;
     private final Optional<List<String>> curationDomains;
 
-    public FetchCallable(
-        String accession,
-        SampleReadService sampleReadService,
-        Optional<List<String>> curationDomains) {
+    FetchCallable(
+        final String accession,
+        final SampleReadService sampleReadService,
+        final Optional<List<String>> curationDomains) {
       this.accession = accession;
       this.sampleReadService = sampleReadService;
       this.curationDomains = curationDomains;
@@ -133,7 +134,7 @@ public class SampleReadService {
 
     @Override
     public Optional<Sample> call() {
-      Optional<Sample> opt = sampleReadService.fetch(accession, curationDomains);
+      final Optional<Sample> opt = sampleReadService.fetch(accession, curationDomains);
       if (!opt.isPresent()) {
         LOGGER.warn(String.format("failed to retrieve sample with accession %s", accession));
       }

@@ -23,21 +23,21 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class JsonFragmenter {
-
   private JsonFragmenter() {}
 
-  public void handleStream(InputStream inputStream, String encoding, JsonCallback callback)
+  public void handleStream(
+      final InputStream inputStream, final String encoding, final JsonCallback callback)
       throws Exception {
 
-    ObjectMapper mapper = new ObjectMapper();
-    JsonParser parser = mapper.getFactory().createParser(inputStream);
+    final ObjectMapper mapper = new ObjectMapper();
+    final JsonParser parser = mapper.getFactory().createParser(inputStream);
     if (parser.nextToken() != JsonToken.START_ARRAY) {
       throw new IllegalStateException("A JSON array was expected");
     }
     while (parser.nextToken() == JsonToken.START_OBJECT) {
-      JsonNode sampleNode = mapper.readTree(parser);
+      final JsonNode sampleNode = mapper.readTree(parser);
       if (sampleNode.has("accession")) {
-        String biosampleSerialization = mapper.writeValueAsString(sampleNode);
+        final String biosampleSerialization = mapper.writeValueAsString(sampleNode);
         callback.handleJson(biosampleSerialization);
       }
     }
