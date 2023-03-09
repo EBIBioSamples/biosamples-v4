@@ -25,28 +25,22 @@ import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
 
 @Service
 public class MessagingService {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final SampleReadService sampleReadService;
   private final AmqpTemplate amqpTemplate;
-  private final MongoSampleRepository mongoSampleRepository;
-  private final SampleToMongoSampleConverter sampleToMongoSampleConverter;
 
   public MessagingService(
-      SampleReadService sampleReadService,
-      AmqpTemplate amqpTemplate,
-      MongoSampleRepository mongoSampleRepository,
-      SampleToMongoSampleConverter sampleToMongoSampleConverter) {
+      final SampleReadService sampleReadService,
+      final AmqpTemplate amqpTemplate,
+      final SampleToMongoSampleConverter sampleToMongoSampleConverter) {
     this.sampleReadService = sampleReadService;
     this.amqpTemplate = amqpTemplate;
-    this.mongoSampleRepository = mongoSampleRepository;
-    this.sampleToMongoSampleConverter = sampleToMongoSampleConverter;
   }
 
   public void sendFileUploadedMessage(final String fileId) {
@@ -55,22 +49,27 @@ public class MessagingService {
     amqpTemplate.convertAndSend(Messaging.fileUploadExchange, "", fileId);
   }
 
-  public void fetchThenSendMessage(String accession) {
+  void fetchThenSendMessage(final String accession) {
     fetchThenSendMessage(accession, Collections.emptyList());
   }
 
-  public void fetchThenSendMessage(String accession, List<String> existingRelationshipTargets) {
-    if (accession == null) throw new IllegalArgumentException("accession cannot be null");
-    if (accession.trim().length() == 0)
+  void fetchThenSendMessage(
+      final String accession, final List<String> existingRelationshipTargets) {
+    if (accession == null) {
+      throw new IllegalArgumentException("accession cannot be null");
+    }
+    if (accession.trim().length() == 0) {
       throw new IllegalArgumentException("accession cannot be empty");
+    }
 
-    Optional<Sample> sample = sampleReadService.fetch(accession, Optional.empty());
+    final Optional<Sample> sample = sampleReadService.fetch(accession, Optional.empty());
     if (sample.isPresent()) {
       // for each sample we have a relationship to, update it to index this sample as an
       // inverse
       // relationship
       // TODO do this async
-      List<Sample> related = updateInverseRelationships(sample.get(), existingRelationshipTargets);
+      final List<Sample> related =
+          updateInverseRelationships(sample.get(), existingRelationshipTargets);
 
       // send the original sample with the extras as related samples
       amqpTemplate.convertAndSend(
@@ -81,15 +80,15 @@ public class MessagingService {
   }
 
   private List<Sample> updateInverseRelationships(
-      Sample sample, List<String> existingRelationshipTargets) {
-    List<Future<Optional<Sample>>> futures = new ArrayList<>();
+      final Sample sample, final List<String> existingRelationshipTargets) {
+    final List<Future<Optional<Sample>>> futures = new ArrayList<>();
 
     // remove deleted relationships
-    for (String accession : existingRelationshipTargets) {
+    for (final String accession : existingRelationshipTargets) {
       futures.add(sampleReadService.fetchAsync(accession, Optional.empty()));
     }
 
-    for (Relationship relationship : sample.getRelationships()) {
+    for (final Relationship relationship : sample.getRelationships()) {
       if (relationship.getSource() != null
           && relationship.getSource().equals(sample.getAccession())
           && !existingRelationshipTargets.contains(sample.getAccession())) {
@@ -97,13 +96,13 @@ public class MessagingService {
       }
     }
 
-    List<Sample> related = new ArrayList<>();
-    for (Future<Optional<Sample>> sampleFuture : futures) {
+    final List<Sample> related = new ArrayList<>();
+    for (final Future<Optional<Sample>> sampleFuture : futures) {
       try {
         sampleFuture.get().ifPresent(related::add);
-      } catch (InterruptedException e) {
+      } catch (final InterruptedException e) {
         log.warn("Interrupted fetching future relationships", e);
-      } catch (ExecutionException e) {
+      } catch (final ExecutionException e) {
         log.error("Problem fetching future relationships", e);
       }
     }
@@ -111,21 +110,20 @@ public class MessagingService {
   }
 
   @Deprecated
-  public void sendMessages(CurationLink curationLink) {
+  public void sendMessages(final CurationLink curationLink) {
     fetchThenSendMessage(curationLink.getSample());
   }
 
   @Deprecated
-  public void sendMessages(Sample sample) {
+  public void sendMessages(final Sample sample) {
     fetchThenSendMessage(sample.getAccession());
   }
 
-  public List<Sample> getDerivedFromSamples(Sample sample, List<Sample> related) {
-
-    for (Relationship relationship : sample.getRelationships()) {
+  private List<Sample> getDerivedFromSamples(final Sample sample, final List<Sample> related) {
+    for (final Relationship relationship : sample.getRelationships()) {
       if (relationship.getSource().equals(sample.getAccession())) {
         if (relationship.getType().toLowerCase().equals("derived from")) {
-          Optional<Sample> target =
+          final Optional<Sample> target =
               sampleReadService.fetch(relationship.getTarget(), Optional.empty());
           if (target.isPresent()) {
             if (!related.contains(target.get())) {

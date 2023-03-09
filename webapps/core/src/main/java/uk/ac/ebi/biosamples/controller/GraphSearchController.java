@@ -24,15 +24,15 @@ import uk.ac.ebi.biosamples.service.GraphSearchService;
 public class GraphSearchController {
   private final GraphSearchService graphSearchService;
 
-  public GraphSearchController(GraphSearchService graphSearchService) {
+  public GraphSearchController(final GraphSearchService graphSearchService) {
     this.graphSearchService = graphSearchService;
   }
 
   @PostMapping(
       path = "/cypher",
       consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public CypherQuery executeCypher(@RequestBody CypherQuery cypherQuery) {
-    CypherQuery cypherQueryResponse = new CypherQuery();
+  public CypherQuery executeCypher(@RequestBody final CypherQuery cypherQuery) {
+    final CypherQuery cypherQueryResponse = new CypherQuery();
     cypherQueryResponse.setQuery(cypherQuery.getQuery());
     cypherQueryResponse.setResponse(graphSearchService.executeCypher(cypherQuery.getQuery()));
 
@@ -42,9 +42,9 @@ public class GraphSearchController {
   @PostMapping(
       path = "",
       consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public GraphSearchQuery graphSearch(@RequestBody GraphSearchQuery query) {
-    int effectiveSize;
-    int effectivePage;
+  public GraphSearchQuery graphSearch(@RequestBody final GraphSearchQuery query) {
+    final int effectiveSize;
+    final int effectivePage;
 
     if (query.getSize() > 100) {
       effectiveSize = 100;

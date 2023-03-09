@@ -33,15 +33,14 @@ import uk.ac.ebi.biosamples.utils.LinkUtils;
 @RequestMapping("/download")
 public class FileDownloadController {
   private static final Logger LOG = LoggerFactory.getLogger(FileDownloadController.class);
-
   private final FileDownloadService fileDownloadService;
   private final FilterService filterService;
   private final BioSamplesAapService bioSamplesAapService;
 
   public FileDownloadController(
-      FileDownloadService fileDownloadService,
-      FilterService filterService,
-      BioSamplesAapService bioSamplesAapService) {
+      final FileDownloadService fileDownloadService,
+      final FilterService filterService,
+      final BioSamplesAapService bioSamplesAapService) {
     this.fileDownloadService = fileDownloadService;
     this.filterService = filterService;
     this.bioSamplesAapService = bioSamplesAapService;
@@ -49,32 +48,34 @@ public class FileDownloadController {
 
   @GetMapping
   public ResponseEntity<StreamingResponseBody> download(
-      @RequestParam(name = "text", required = false) String text,
-      @RequestParam(name = "filter", required = false) String[] filter,
-      @RequestParam(name = "zip", required = false, defaultValue = "true") boolean zip,
+      @RequestParam(name = "text", required = false) final String text,
+      @RequestParam(name = "filter", required = false) final String[] filter,
+      @RequestParam(name = "zip", required = false, defaultValue = "true") final boolean zip,
       @RequestParam(name = "format", required = false)
-          String format, // there is no easy way to set accept header in html for downloading large
+          final String
+              format, // there is no easy way to set accept header in html for downloading large
       // files
-      @RequestParam(name = "count", required = false, defaultValue = "100000") int count,
-      HttpServletResponse response,
-      HttpServletRequest request) {
+      @RequestParam(name = "count", required = false, defaultValue = "100000") final int count,
+      final HttpServletResponse response,
+      final HttpServletRequest request) {
     LOG.info(
         "Sample bulk download request: text = {}, filters = {}", text, Arrays.toString(filter));
-    String decodedText = LinkUtils.decodeText(text);
-    Collection<Filter> filters = filterService.getFiltersCollection(LinkUtils.decodeTexts(filter));
-    Collection<String> domains = bioSamplesAapService.getDomains();
+    final String decodedText = LinkUtils.decodeText(text);
+    final Collection<Filter> filters =
+        filterService.getFiltersCollection(LinkUtils.decodeTexts(filter));
+    final Collection<String> domains = bioSamplesAapService.getDomains();
 
-    String outputFormat = getDownloadFormat(format, request.getHeader("Accept"));
+    final String outputFormat = getDownloadFormat(format, request.getHeader("Accept"));
     setResponseHeaders(response, zip, outputFormat);
-    InputStream in =
+    final InputStream in =
         fileDownloadService.getDownloadStream(decodedText, filters, domains, outputFormat, count);
-    StreamingResponseBody responseBody =
+    final StreamingResponseBody responseBody =
         outputStream -> fileDownloadService.copyAndCompress(in, outputStream, zip, outputFormat);
 
     return ResponseEntity.ok().body(responseBody);
   }
 
-  private String getDownloadFormat(String format, String acceptHeader) {
+  private String getDownloadFormat(String format, final String acceptHeader) {
     if (format == null || format.isEmpty()) {
       format = acceptHeader != null && acceptHeader.contains("xml") ? "xml" : "json";
     }
@@ -82,7 +83,8 @@ public class FileDownloadController {
     return format;
   }
 
-  private void setResponseHeaders(HttpServletResponse response, boolean zip, String format) {
+  private void setResponseHeaders(
+      final HttpServletResponse response, final boolean zip, final String format) {
     if (zip) {
       response.setContentType("application/zip");
       response.setHeader("Content-Disposition", "attachment; filename=\"samples.zip\"");
