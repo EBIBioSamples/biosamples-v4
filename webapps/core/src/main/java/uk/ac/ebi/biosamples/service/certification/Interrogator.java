@@ -25,27 +25,28 @@ import uk.ac.ebi.biosamples.validation.ValidatorI;
 
 @Service
 public class Interrogator {
-  private static Logger LOG = LoggerFactory.getLogger(Interrogator.class);
-  private static Logger EVENTS = LoggerFactory.getLogger("events");
+  private static final Logger LOG = LoggerFactory.getLogger(Interrogator.class);
+  private static final Logger EVENTS = LoggerFactory.getLogger("events");
 
-  private ConfigLoader configLoader;
-  private ValidatorI validator;
+  private final ConfigLoader configLoader;
+  private final ValidatorI validator;
 
-  public Interrogator(ConfigLoader configLoader, @Qualifier("javaValidator") ValidatorI validator) {
+  public Interrogator(
+      final ConfigLoader configLoader, @Qualifier("javaValidator") final ValidatorI validator) {
     this.validator = validator;
     this.configLoader = configLoader;
   }
 
-  public InterrogationResult interrogate(SampleDocument sampleDocument) {
+  public InterrogationResult interrogate(final SampleDocument sampleDocument) {
     if (sampleDocument == null) {
-      String message = "cannot interrogate a null sampleDocument";
+      final String message = "cannot interrogate a null sampleDocument";
       LOG.warn(message);
       throw new IllegalArgumentException(message);
     }
 
-    List<Checklist> checklists = new ArrayList<>();
+    final List<Checklist> checklists = new ArrayList<>();
 
-    for (Checklist checklist : configLoader.config.getChecklists()) {
+    for (final Checklist checklist : configLoader.config.getChecklists()) {
       try {
         validator.validate(checklist.getFileName(), sampleDocument.getDocument());
         EVENTS.info(
@@ -53,9 +54,9 @@ public class Interrogator {
                 "%s interrogation successful against %s",
                 sampleDocument.getAccession(), checklist.getID()));
         checklists.add(checklist);
-      } catch (IOException ioe) {
+      } catch (final IOException ioe) {
         LOG.error(String.format("cannot open schema at %s", checklist.getFileName()), ioe);
-      } catch (ValidationException ve) {
+      } catch (final ValidationException ve) {
         EVENTS.info(
             String.format(
                 "%s interrogation failed against %s",

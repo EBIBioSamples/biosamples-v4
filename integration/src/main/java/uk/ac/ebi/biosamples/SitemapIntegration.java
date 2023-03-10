@@ -31,7 +31,7 @@ import uk.ac.ebi.biosamples.model.XmlUrlSet;
 @Component
 public class SitemapIntegration extends AbstractIntegration {
 
-  private URI biosamplesSubmissionUri;
+  private final URI biosamplesSubmissionUri;
 
   private final RestOperations restTemplate;
 
@@ -39,12 +39,12 @@ public class SitemapIntegration extends AbstractIntegration {
   private int sitemapPageSize;
 
   public SitemapIntegration(
-      BioSamplesClient client,
-      RestTemplateBuilder restTemplateBuilder,
-      BioSamplesProperties bioSamplesProperties) {
+      final BioSamplesClient client,
+      final RestTemplateBuilder restTemplateBuilder,
+      final BioSamplesProperties bioSamplesProperties) {
     super(client);
-    this.biosamplesSubmissionUri = bioSamplesProperties.getBiosamplesClientUri();
-    this.restTemplate = restTemplateBuilder.build();
+    biosamplesSubmissionUri = bioSamplesProperties.getBiosamplesClientUri();
+    restTemplate = restTemplateBuilder.build();
   }
 
   @Override
@@ -52,9 +52,9 @@ public class SitemapIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseTwo() {
-    List<EntityModel<Sample>> samples = new ArrayList<>();
-    Map<String, Boolean> lookupTable = new HashMap<>();
-    for (EntityModel<Sample> sample : publicClient.fetchSampleResourceAll()) {
+    final List<EntityModel<Sample>> samples = new ArrayList<>();
+    final Map<String, Boolean> lookupTable = new HashMap<>();
+    for (final EntityModel<Sample> sample : publicClient.fetchSampleResourceAll()) {
       samples.add(sample);
       lookupTable.put(Objects.requireNonNull(sample.getContent()).getAccession(), Boolean.FALSE);
     }
@@ -63,9 +63,9 @@ public class SitemapIntegration extends AbstractIntegration {
       throw new RuntimeException("No search results found!");
     }
 
-    int expectedSitemapIndexSize = Math.floorDiv(samples.size(), sitemapPageSize) + 1;
+    final int expectedSitemapIndexSize = Math.floorDiv(samples.size(), sitemapPageSize) + 1;
 
-    XmlSitemapIndex index = getSitemapIndex();
+    final XmlSitemapIndex index = getSitemapIndex();
     if (index.getXmlSitemaps().size() != expectedSitemapIndexSize) {
       throw new RuntimeException(
           "The model index size ("
@@ -75,14 +75,15 @@ public class SitemapIntegration extends AbstractIntegration {
               + ")");
     }
 
-    for (XmlSitemap sitemap : index.getXmlSitemaps()) {
-      XmlUrlSet urlSet = getUrlSet(sitemap);
+    for (final XmlSitemap sitemap : index.getXmlSitemaps()) {
+      final XmlUrlSet urlSet = getUrlSet(sitemap);
       urlSet
           .getXmlUrls()
           .forEach(
               xmlUrl -> {
-                UriComponents sampleUri = UriComponentsBuilder.fromPath(xmlUrl.getLoc()).build();
-                String sampleAccession = getAccessionFromUri(sampleUri);
+                final UriComponents sampleUri =
+                    UriComponentsBuilder.fromPath(xmlUrl.getLoc()).build();
+                final String sampleAccession = getAccessionFromUri(sampleUri);
                 lookupTable.replace(sampleAccession, Boolean.TRUE);
               });
     }
@@ -107,15 +108,15 @@ public class SitemapIntegration extends AbstractIntegration {
   @Override
   protected void phaseSix() {}
 
-  private String getAccessionFromUri(UriComponents uri) {
-    List<String> pathSegments = uri.getPathSegments();
+  private String getAccessionFromUri(final UriComponents uri) {
+    final List<String> pathSegments = uri.getPathSegments();
     return pathSegments.get(pathSegments.size() - 1);
   }
 
   private XmlSitemapIndex getSitemapIndex() {
-    UriComponentsBuilder builder = UriComponentsBuilder.fromUri(biosamplesSubmissionUri);
-    UriComponents sitemapUri = builder.pathSegment("sitemap").build();
-    ResponseEntity<XmlSitemapIndex> responseEntity =
+    final UriComponentsBuilder builder = UriComponentsBuilder.fromUri(biosamplesSubmissionUri);
+    final UriComponents sitemapUri = builder.pathSegment("sitemap").build();
+    final ResponseEntity<XmlSitemapIndex> responseEntity =
         restTemplate.getForEntity(sitemapUri.toUri(), XmlSitemapIndex.class);
     if (!responseEntity.getStatusCode().is2xxSuccessful()) {
       throw new RuntimeException("Sitemap not available");
@@ -123,8 +124,8 @@ public class SitemapIntegration extends AbstractIntegration {
     return responseEntity.getBody();
   }
 
-  private XmlUrlSet getUrlSet(XmlSitemap sitemap) {
-    ResponseEntity<XmlUrlSet> urlSetReponseEntity =
+  private XmlUrlSet getUrlSet(final XmlSitemap sitemap) {
+    final ResponseEntity<XmlUrlSet> urlSetReponseEntity =
         restTemplate.getForEntity(sitemap.getLoc(), XmlUrlSet.class);
     if (!urlSetReponseEntity.getStatusCode().is2xxSuccessful()) {
       throw new RuntimeException("Unable to reach a model urlset");

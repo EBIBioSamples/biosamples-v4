@@ -18,7 +18,7 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
 public class NeoSample {
-  private String accession;
+  private final String accession;
   private String name;
   private String organism;
   private String taxId;
@@ -29,13 +29,13 @@ public class NeoSample {
   private String cellLine;
   private String organismPart;
 
-  private List<NeoRelationship> relationships;
-  private List<NeoExternalEntity> externalRefs;
+  private final List<NeoRelationship> relationships;
+  private final List<NeoExternalEntity> externalRefs;
 
-  private NeoSample(String accession) {
+  private NeoSample(final String accession) {
     this.accession = accession;
-    this.relationships = new ArrayList<>();
-    this.externalRefs = new ArrayList<>();
+    relationships = new ArrayList<>();
+    externalRefs = new ArrayList<>();
   }
 
   public String getAccession() {
@@ -86,12 +86,12 @@ public class NeoSample {
     return externalRefs;
   }
 
-  public static NeoSample build(Sample sample) {
-    NeoSample neoSample = new NeoSample(sample.getAccession());
+  public static NeoSample build(final Sample sample) {
+    final NeoSample neoSample = new NeoSample(sample.getAccession());
     neoSample.name = sample.getName();
     neoSample.taxId = String.valueOf(sample.getTaxId());
 
-    for (Attribute attribute : sample.getAttributes()) {
+    for (final Attribute attribute : sample.getAttributes()) {
       if ("organism".equalsIgnoreCase(attribute.getType())) {
         neoSample.organism = attribute.getValue().toLowerCase();
       } else if ("sex".equalsIgnoreCase(attribute.getType())) {
@@ -109,20 +109,20 @@ public class NeoSample {
       }
     }
 
-    for (Relationship relationship : sample.getRelationships()) {
+    for (final Relationship relationship : sample.getRelationships()) {
       if (relationship.getSource().equals(neoSample.accession)) {
         neoSample.relationships.add(NeoRelationship.build(relationship));
       }
     }
 
-    for (ExternalReference ref : sample.getExternalReferences()) {
+    for (final ExternalReference ref : sample.getExternalReferences()) {
       neoSample.externalRefs.add(NeoExternalEntity.build(ref));
     }
 
     return neoSample;
   }
 
-  public static NeoSample build(String accession) {
+  public static NeoSample build(final String accession) {
     return new NeoSample(accession);
   }
 }

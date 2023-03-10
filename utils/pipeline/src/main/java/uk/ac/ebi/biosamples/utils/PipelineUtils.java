@@ -30,10 +30,10 @@ import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
 public class PipelineUtils {
-  private static Logger log = LoggerFactory.getLogger(PipelineUtils.class);
+  private static final Logger log = LoggerFactory.getLogger(PipelineUtils.class);
 
-  public static Collection<Filter> getDateFilters(ApplicationArguments args) {
-    LocalDate fromDate;
+  public static Collection<Filter> getDateFilters(final ApplicationArguments args) {
+    final LocalDate fromDate;
     if (args.getOptionNames().contains("from")) {
       fromDate =
           LocalDate.parse(
@@ -41,7 +41,7 @@ public class PipelineUtils {
     } else {
       fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
     }
-    LocalDate toDate;
+    final LocalDate toDate;
     if (args.getOptionNames().contains("until")) {
       toDate =
           LocalDate.parse(
@@ -53,12 +53,12 @@ public class PipelineUtils {
     log.info("Processing samples from " + DateTimeFormatter.ISO_LOCAL_DATE.format(fromDate));
     log.info("Processing samples to " + DateTimeFormatter.ISO_LOCAL_DATE.format(toDate));
 
-    Filter fromDateFilter =
+    final Filter fromDateFilter =
         new DateRangeFilter.DateRangeFilterBuilder("update")
             .from(fromDate.atStartOfDay().toInstant(ZoneOffset.UTC))
             .until(toDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))
             .build();
-    Collection<Filter> filters = new ArrayList<>();
+    final Collection<Filter> filters = new ArrayList<>();
     filters.add(fromDateFilter);
     return filters;
   }
@@ -89,7 +89,7 @@ public class PipelineUtils {
   }
 
   public static void exitApplication(final ConfigurableApplicationContext ctx) {
-    int exitCode = SpringApplication.exit(ctx, () -> 0);
+    final int exitCode = SpringApplication.exit(ctx, () -> 0);
     log.info("Exit Spring Boot");
 
     System.exit(exitCode);

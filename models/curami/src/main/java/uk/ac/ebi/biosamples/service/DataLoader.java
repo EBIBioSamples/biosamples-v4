@@ -28,11 +28,11 @@ public class DataLoader {
   private static final Set<String> ABBREVIATIONS = new HashSet<>();
   private static final Map<String, String> CURATIONS = new HashMap<>();
 
-  public SortedSet<String> getPopularAttributes() {
+  SortedSet<String> getPopularAttributes() {
     return POPULAR_ATTRIBUTES;
   }
 
-  public Set<String> getAbbreviations() {
+  Set<String> getAbbreviations() {
     return ABBREVIATIONS;
   }
 
@@ -40,54 +40,56 @@ public class DataLoader {
     return CURATIONS;
   }
 
-  public void loadDataFromClassPathResource() {
+  void loadDataFromClassPathResource() {
     loadPopularAttributes("attributes.csv");
     loadAbbreviations("abbreviations.csv");
     loadCurations("curations.csv");
   }
 
-  private void loadPopularAttributes(String filePath) {
+  private void loadPopularAttributes(final String filePath) {
     try {
-      Reader in =
+      final Reader in =
           new BufferedReader(
               new InputStreamReader(new ClassPathResource(filePath).getInputStream()));
-      Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader("ATTRIBUTE", "COUNT").parse(in);
-      for (CSVRecord record : records) {
-        String attribute = record.get("ATTRIBUTE");
+      final Iterable<CSVRecord> records =
+          CSVFormat.DEFAULT.withHeader("ATTRIBUTE", "COUNT").parse(in);
+      for (final CSVRecord record : records) {
+        final String attribute = record.get("ATTRIBUTE");
         POPULAR_ATTRIBUTES.add(attribute);
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       LOG.error("Failed to load CSV file at: " + filePath, e);
     }
   }
 
-  public void loadAbbreviations(String filePath) {
+  private void loadAbbreviations(final String filePath) {
     try {
-      Reader in =
+      final Reader in =
           new BufferedReader(
               new InputStreamReader(new ClassPathResource(filePath).getInputStream()));
-      Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader("ATTRIBUTE").parse(in);
-      for (CSVRecord record : records) {
-        String attribute = record.get("ATTRIBUTE");
+      final Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader("ATTRIBUTE").parse(in);
+      for (final CSVRecord record : records) {
+        final String attribute = record.get("ATTRIBUTE");
         ABBREVIATIONS.add(attribute);
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       LOG.error("Failed to load CSV file at: " + filePath, e);
     }
   }
 
-  public void loadCurations(String filePath) {
+  private void loadCurations(final String filePath) {
     try {
-      Reader in =
+      final Reader in =
           new BufferedReader(
               new InputStreamReader(new ClassPathResource(filePath).getInputStream()));
-      Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader("ATTRIBUTE", "CURATION").parse(in);
-      for (CSVRecord record : records) {
-        String attribute = record.get("ATTRIBUTE");
-        String curation = record.get("CURATION");
+      final Iterable<CSVRecord> records =
+          CSVFormat.DEFAULT.withHeader("ATTRIBUTE", "CURATION").parse(in);
+      for (final CSVRecord record : records) {
+        final String attribute = record.get("ATTRIBUTE");
+        final String curation = record.get("CURATION");
         CURATIONS.put(attribute, curation);
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       LOG.error("Failed to load CSV file at: " + filePath, e);
     }
   }

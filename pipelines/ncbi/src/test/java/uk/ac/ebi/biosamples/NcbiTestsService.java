@@ -23,30 +23,30 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 public class NcbiTestsService {
 
-  public static Element readNcbiBiosampleElementFromFile(String pathToFile) {
+  public static Element readNcbiBiosampleElementFromFile(final String pathToFile) {
     try {
-      InputStream xmlInputStream = NcbiTestsService.class.getResourceAsStream(pathToFile);
-      String xmlDocument =
+      final InputStream xmlInputStream = NcbiTestsService.class.getResourceAsStream(pathToFile);
+      final String xmlDocument =
           new BufferedReader(new InputStreamReader(xmlInputStream))
               .lines()
               .collect(Collectors.joining());
-      Document doc = DocumentHelper.parseText(xmlDocument);
+      final Document doc = DocumentHelper.parseText(xmlDocument);
       return doc.getRootElement().element("BioSample");
-    } catch (DocumentException exp) {
+    } catch (final DocumentException exp) {
       throw new RuntimeException(exp);
     }
   }
 
-  public static List<Element> readNcbiBioSampleElementsFromFile(String pathToFile) {
+  static List<Element> readNcbiBioSampleElementsFromFile(final String pathToFile) {
     try {
-      InputStream xmlInputStream = NcbiTestsService.class.getResourceAsStream(pathToFile);
-      String xmlDocument =
+      final InputStream xmlInputStream = NcbiTestsService.class.getResourceAsStream(pathToFile);
+      final String xmlDocument =
           new BufferedReader(new InputStreamReader(xmlInputStream))
               .lines()
               .collect(Collectors.joining());
-      Document doc = DocumentHelper.parseText(xmlDocument);
+      final Document doc = DocumentHelper.parseText(xmlDocument);
       return XmlPathBuilder.of(doc.getRootElement()).elements("BioSample");
-    } catch (DocumentException exp) {
+    } catch (final DocumentException exp) {
       throw new RuntimeException(exp);
     }
   }

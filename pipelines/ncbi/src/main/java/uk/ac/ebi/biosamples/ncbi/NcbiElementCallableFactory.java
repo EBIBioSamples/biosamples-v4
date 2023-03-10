@@ -28,16 +28,16 @@ public class NcbiElementCallableFactory {
   private final NcbiSampleConversionService conversionService;
 
   public NcbiElementCallableFactory(
-      NcbiSampleConversionService conversionService,
-      BioSamplesClient bioSamplesClient,
-      PipelinesProperties pipelinesProperties) {
+      final NcbiSampleConversionService conversionService,
+      final BioSamplesClient bioSamplesClient,
+      final PipelinesProperties pipelinesProperties) {
     this.conversionService = conversionService;
     this.bioSamplesClient = bioSamplesClient;
-    this.domain = pipelinesProperties.getNcbiDomain();
+    domain = pipelinesProperties.getNcbiDomain();
   }
 
   public NcbiElementCallable build(
-      Element element, Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
+      final Element element, final Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
     return new NcbiElementCallable(
         conversionService, bioSamplesClient, element, domain, sampleToAmrMap);
   }

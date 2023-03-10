@@ -17,7 +17,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
 
 public class SampleCopydownCallable implements Callable<PipelineResult> {
   private static final Logger LOG = LoggerFactory.getLogger(SampleCopydownCallable.class);
@@ -31,12 +34,12 @@ public class SampleCopydownCallable implements Callable<PipelineResult> {
   private int curationCount;
   static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
-  public SampleCopydownCallable(
+  SampleCopydownCallable(
       final BioSamplesClient bioSamplesClient, final Sample sample, final String domain) {
     this.bioSamplesClient = bioSamplesClient;
     this.sample = sample;
     this.domain = domain;
-    this.curationCount = 0;
+    curationCount = 0;
   }
 
   @Override
@@ -103,8 +106,8 @@ public class SampleCopydownCallable implements Callable<PipelineResult> {
   }
 
   private static Set<Attribute> getQualifyingCopyDownAttributes(
-      Set<Attribute> attributesOfAllParentSamples,
-      SortedSet<Attribute> attributesOfTheChildSample) {
+      final Set<Attribute> attributesOfAllParentSamples,
+      final SortedSet<Attribute> attributesOfTheChildSample) {
     final Set<Attribute> qualifyingCopyDownAttributes = new TreeSet<>();
 
     attributesOfAllParentSamples.forEach(
@@ -132,7 +135,7 @@ public class SampleCopydownCallable implements Callable<PipelineResult> {
   private Set<Attribute> getOrganismsForSample(final Sample sample) {
     final Set<Attribute> organisms = new HashSet<>();
 
-    for (Attribute attribute : sample.getAttributes()) {
+    for (final Attribute attribute : sample.getAttributes()) {
       if ("organism".equalsIgnoreCase(attribute.getType())) {
         organisms.add(attribute);
       }

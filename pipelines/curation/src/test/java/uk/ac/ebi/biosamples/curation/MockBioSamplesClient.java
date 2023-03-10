@@ -31,11 +31,11 @@ import uk.ac.ebi.biosamples.service.SampleValidator;
 
 public class MockBioSamplesClient extends BioSamplesClient {
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
-  private Map<String, List<Curation>> curations = new HashMap<>();
+  private final Map<String, List<Curation>> curations = new HashMap<>();
 
-  private boolean logCurations;
+  private final boolean logCurations;
 
   private PrintWriter printWriter;
 
@@ -43,14 +43,14 @@ public class MockBioSamplesClient extends BioSamplesClient {
 
   private int count = 0;
 
-  public MockBioSamplesClient(
-      URI uri,
-      URI uriV2,
-      RestTemplateBuilder restTemplateBuilder,
-      SampleValidator sampleValidator,
-      AapClientService aapClientService,
-      BioSamplesProperties bioSamplesProperties,
-      boolean logCurations) {
+  MockBioSamplesClient(
+      final URI uri,
+      final URI uriV2,
+      final RestTemplateBuilder restTemplateBuilder,
+      final SampleValidator sampleValidator,
+      final AapClientService aapClientService,
+      final BioSamplesProperties bioSamplesProperties,
+      final boolean logCurations) {
     super(uri, uriV2, restTemplateBuilder, sampleValidator, aapClientService, bioSamplesProperties);
     this.logCurations = logCurations;
     if (logCurations) {
@@ -58,7 +58,7 @@ public class MockBioSamplesClient extends BioSamplesClient {
         log.info("Logging curations");
         fileWriter = new FileWriter("curations.csv");
         printWriter = new PrintWriter(fileWriter);
-      } catch (IOException e) {
+      } catch (final IOException e) {
         e.printStackTrace();
       }
     }
@@ -69,14 +69,17 @@ public class MockBioSamplesClient extends BioSamplesClient {
     try {
       fileWriter.close();
       printWriter.close();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       e.printStackTrace();
     }
   }
 
   @Override
   public EntityModel<CurationLink> persistCuration(
-      String accession, Curation curation, String webinIdOrDomain, boolean isWebin) {
+      final String accession,
+      final Curation curation,
+      final String webinIdOrDomain,
+      final boolean isWebin) {
     log.trace(
         "Mocking persisting curation " + curation + " on " + accession + " in " + webinIdOrDomain);
     if (logCurations) {
@@ -91,11 +94,11 @@ public class MockBioSamplesClient extends BioSamplesClient {
     return mock(EntityModel.class);
   }
 
-  private String explainCuration(Curation curation) {
+  private String explainCuration(final Curation curation) {
     return StringEscapeUtils.escapeCsv(curation.toString());
   }
 
-  private void logCuration(String accession, String domain, Curation curation) {
+  private void logCuration(final String accession, final String domain, final Curation curation) {
     count++;
     printWriter.printf("%s,%s,%s\n", accession, domain, explainCuration(curation));
     if (count % 500 == 0) {
@@ -103,7 +106,7 @@ public class MockBioSamplesClient extends BioSamplesClient {
     }
   }
 
-  public Collection<Curation> getCurations(String accession) {
+  Collection<Curation> getCurations(final String accession) {
     return curations.get(accession);
   }
 }

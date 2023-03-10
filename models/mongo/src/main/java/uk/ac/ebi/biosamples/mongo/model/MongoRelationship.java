@@ -28,7 +28,8 @@ public class MongoRelationship implements Comparable<MongoRelationship> {
 
   private final String source;
 
-  private MongoRelationship(String type, String target, String source, String hash) {
+  private MongoRelationship(
+      final String type, final String target, final String source, final String hash) {
     this.type = type;
     this.target = target;
     this.source = source;
@@ -52,16 +53,18 @@ public class MongoRelationship implements Comparable<MongoRelationship> {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
 
-    if (o == this) return true;
+    if (o == this) {
+      return true;
+    }
     if (!(o instanceof MongoRelationship)) {
       return false;
     }
-    MongoRelationship other = (MongoRelationship) o;
-    return Objects.equals(this.type, other.type)
-        && Objects.equals(this.target, other.target)
-        && Objects.equals(this.source, other.source);
+    final MongoRelationship other = (MongoRelationship) o;
+    return Objects.equals(type, other.type)
+        && Objects.equals(target, other.target)
+        && Objects.equals(source, other.source);
   }
 
   @Override
@@ -70,26 +73,26 @@ public class MongoRelationship implements Comparable<MongoRelationship> {
   }
 
   @Override
-  public int compareTo(MongoRelationship other) {
+  public int compareTo(final MongoRelationship other) {
     if (other == null) {
       return 1;
     }
 
-    if (!Objects.equals(this.type, other.type)) {
-      return this.type.compareTo(other.type);
+    if (!Objects.equals(type, other.type)) {
+      return type.compareTo(other.type);
     }
 
-    if (!Objects.equals(this.target, other.target)) {
-      return this.target.compareTo(other.target);
+    if (!Objects.equals(target, other.target)) {
+      return target.compareTo(other.target);
     }
 
-    if (!Objects.equals(this.source, other.source)) {
-      if (this.source == null) {
+    if (!Objects.equals(source, other.source)) {
+      if (source == null) {
         return 1;
       } else if (other.source == null) {
         return -1;
       } else {
-        return this.source.compareTo(other.source);
+        return source.compareTo(other.source);
       }
     }
     return 0;
@@ -97,28 +100,30 @@ public class MongoRelationship implements Comparable<MongoRelationship> {
 
   @Override
   public String toString() {
-    String sb = "Relationships(" + source + "," + type + "," + target + ")";
+    final String sb = "Relationships(" + source + "," + type + "," + target + ")";
     return sb;
   }
 
   @JsonCreator
   public static MongoRelationship build(
-      @JsonProperty("source") String source,
-      @JsonProperty("type") String type,
-      @JsonProperty("target") String target) {
-    if (type == null || type.trim().length() == 0)
+      @JsonProperty("source") final String source,
+      @JsonProperty("type") final String type,
+      @JsonProperty("target") final String target) {
+    if (type == null || type.trim().length() == 0) {
       throw new IllegalArgumentException("type cannot be empty");
-    if (target == null || target.trim().length() == 0)
+    }
+    if (target == null || target.trim().length() == 0) {
       throw new IllegalArgumentException("target cannot be empty");
+    }
 
-    Hasher hasher = Hashing.sha256().newHasher();
+    final Hasher hasher = Hashing.sha256().newHasher();
     hasher.putUnencodedChars(type);
     hasher.putUnencodedChars(target);
     if (source != null) {
       hasher.putUnencodedChars(source);
     }
 
-    String hash = hasher.hash().toString();
+    final String hash = hasher.hash().toString();
 
     return new MongoRelationship(type, target, source, hash);
   }

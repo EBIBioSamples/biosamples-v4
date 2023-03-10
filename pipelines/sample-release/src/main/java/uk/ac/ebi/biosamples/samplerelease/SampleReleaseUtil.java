@@ -14,7 +14,7 @@ import java.nio.charset.Charset;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.http.HttpHeaders;
 
-public class SampleReleaseUtil {
+class SampleReleaseUtil {
   static HttpHeaders createHeaders(final String username, final String password) {
     return new HttpHeaders() {
       {

@@ -21,9 +21,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 public class HttpOlsUrlResolutionService {
-  public static final String OLS_PREFIX = "http://www.ebi.ac.uk/ols/terms?iri=";
-  public static final String OBO = "purl.obolibrary.org/obo";
-  public static final String EBIUK = "www.ebi.ac.uk";
+  private static final String OLS_PREFIX = "http://www.ebi.ac.uk/ols/terms?iri=";
+  private static final String OBO = "purl.obolibrary.org/obo";
+  private static final String EBIUK = "www.ebi.ac.uk";
   public static Logger log = LoggerFactory.getLogger(HttpOlsUrlResolutionService.class);
 
   public HttpOlsUrlResolutionService() {}
@@ -36,9 +36,11 @@ public class HttpOlsUrlResolutionService {
    */
   // @Cacheable(value = "iri")
   public String getIriOls(final SortedSet<String> iri) {
-    if (iri == null || iri.size() == 0) return null;
+    if (iri == null || iri.size() == 0) {
+      return null;
+    }
 
-    String displayIri = iri.first();
+    final String displayIri = iri.first();
 
     // check this is a sane iri
     try {
@@ -68,8 +70,11 @@ public class HttpOlsUrlResolutionService {
     }
   }
 
-  public boolean checkUrlForPattern(final String displayIri) {
-    if (displayIri.contains(OBO) || displayIri.contains(EBIUK)) return true;
-    else return false;
+  private boolean checkUrlForPattern(final String displayIri) {
+    if (displayIri.contains(OBO) || displayIri.contains(EBIUK)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

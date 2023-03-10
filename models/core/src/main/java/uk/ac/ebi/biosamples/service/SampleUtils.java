@@ -31,7 +31,8 @@ public class SampleUtils {
    * @param attributeType the type to use as filter
    * @return an optional list of attributes
    */
-  public Optional<List<Attribute>> getAttributesWithType(Sample sample, String attributeType) {
+  public Optional<List<Attribute>> getAttributesWithType(
+      final Sample sample, final String attributeType) {
     return getAttributesWithType(sample, attributeType, false);
   }
 
@@ -43,8 +44,8 @@ public class SampleUtils {
    * @param useCaseSensitivity if the match should be case sensitive
    * @return an optional list of attributes
    */
-  public Optional<List<Attribute>> getAttributesWithType(
-      Sample sample, String attributeType, boolean useCaseSensitivity) {
+  private Optional<List<Attribute>> getAttributesWithType(
+      final Sample sample, final String attributeType, final boolean useCaseSensitivity) {
     return Optional.ofNullable(
         sample.getCharacteristics().stream()
             .filter(
@@ -62,7 +63,8 @@ public class SampleUtils {
    * @param typeRegex the regular expression to match the type
    * @return an optional list of attributes
    */
-  public Optional<List<Attribute>> getAttributesWithTypeMatching(Sample sample, String typeRegex) {
+  public Optional<List<Attribute>> getAttributesWithTypeMatching(
+      final Sample sample, final String typeRegex) {
     return Optional.ofNullable(
         sample.getCharacteristics().stream()
             .filter(attr -> attr.getType().matches(typeRegex))
@@ -77,8 +79,8 @@ public class SampleUtils {
    * @param useCaseSensitivity if the match should be case sensitive
    * @return an optional list of attributes
    */
-  public Optional<List<Attribute>> getAttributesWithValue(
-      Sample sample, String attributeValue, boolean useCaseSensitivity) {
+  private Optional<List<Attribute>> getAttributesWithValue(
+      final Sample sample, final String attributeValue, final boolean useCaseSensitivity) {
     return Optional.ofNullable(
         sample.getCharacteristics().stream()
             .filter(
@@ -96,7 +98,8 @@ public class SampleUtils {
    * @param attributeValue the attribute to use as filter
    * @return an optional list of attributes
    */
-  public Optional<List<Attribute>> getAttributesWithValue(Sample sample, String attributeValue) {
+  public Optional<List<Attribute>> getAttributesWithValue(
+      final Sample sample, final String attributeValue) {
     return getAttributesWithValue(sample, attributeValue, false);
   }
 
@@ -108,7 +111,7 @@ public class SampleUtils {
    * @return an optional list of attributes
    */
   public Optional<List<Attribute>> getAttributesWithValueMatching(
-      Sample sample, String valueRegex) {
+      final Sample sample, final String valueRegex) {
     return Optional.ofNullable(
         sample.getCharacteristics().stream()
             .filter(attr -> attr.getValue().matches(valueRegex))

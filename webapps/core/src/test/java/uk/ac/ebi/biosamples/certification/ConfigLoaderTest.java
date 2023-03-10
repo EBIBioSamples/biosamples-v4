@@ -30,7 +30,7 @@ public class ConfigLoaderTest {
 
   @Test
   public void return_a_valid_config() {
-    Config config = configLoader.config;
+    final Config config = configLoader.config;
     assertNotNull(config);
     assertFalse(config.getChecklists().isEmpty());
   }

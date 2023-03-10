@@ -22,7 +22,7 @@ public abstract class PipelineSampleCallable implements Callable<PipelineResult>
   protected Sample sample;
   private final BioSamplesClient bioSamplesClient;
 
-  public PipelineSampleCallable(BioSamplesClient bioSamplesClient) {
+  public PipelineSampleCallable(final BioSamplesClient bioSamplesClient) {
     this.bioSamplesClient = bioSamplesClient;
   }
 
@@ -32,17 +32,17 @@ public abstract class PipelineSampleCallable implements Callable<PipelineResult>
     int appliedCurations = 0;
     try {
       appliedCurations = processSample(sample);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       success = false;
       LOG.error("Failed to add curation on sample: " + sample.getAccession(), e);
     }
     return new PipelineResult(sample.getAccession(), appliedCurations, success);
   }
 
-  public PipelineSampleCallable withSample(Sample sample) {
+  PipelineSampleCallable withSample(final Sample sample) {
     this.sample = sample;
     return this;
   }
 
-  public abstract int processSample(Sample sample) throws Exception;
+  abstract int processSample(Sample sample) throws Exception;
 }

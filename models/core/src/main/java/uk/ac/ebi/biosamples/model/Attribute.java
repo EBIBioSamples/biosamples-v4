@@ -56,18 +56,20 @@ public class Attribute implements Comparable<Attribute> {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
 
-    if (o == this) return true;
+    if (o == this) {
+      return true;
+    }
     if (!(o instanceof Attribute)) {
       return false;
     }
-    Attribute other = (Attribute) o;
-    return Objects.equals(this.type, other.type)
-        && Objects.equals(this.value, other.value)
-        && Objects.equals(this.tag, other.tag)
-        && Objects.equals(this.iri, other.iri)
-        && Objects.equals(this.unit, other.unit);
+    final Attribute other = (Attribute) o;
+    return Objects.equals(type, other.type)
+        && Objects.equals(value, other.value)
+        && Objects.equals(tag, other.tag)
+        && Objects.equals(iri, other.iri)
+        && Objects.equals(unit, other.unit);
   }
 
   @Override
@@ -76,7 +78,7 @@ public class Attribute implements Comparable<Attribute> {
   }
 
   @Override
-  public int compareTo(Attribute other) {
+  public int compareTo(final Attribute other) {
     if (other == null) {
       return 1;
     }
@@ -84,7 +86,7 @@ public class Attribute implements Comparable<Attribute> {
     //		if (!this.type.equals(other.type)) {
     //			return this.type.compareTo(other.type);
     //		}
-    int comparison = nullSafeStringComparison(this.type, other.type);
+    int comparison = nullSafeStringComparison(type, other.type);
     if (comparison != 0) {
       return comparison;
     }
@@ -92,33 +94,35 @@ public class Attribute implements Comparable<Attribute> {
     //		if (!this.value.equals(other.value)) {
     //			return this.value.compareTo(other.value);
     //		}
-    comparison = nullSafeStringComparison(this.value, other.value);
+    comparison = nullSafeStringComparison(value, other.value);
     if (comparison != 0) {
       return comparison;
     }
 
-    comparison = nullSafeStringComparison(this.tag, other.tag);
+    comparison = nullSafeStringComparison(tag, other.tag);
     if (comparison != 0) {
       return comparison;
     }
 
-    if (this.iri == null && other.iri != null) {
+    if (iri == null && other.iri != null) {
       return -1;
     }
-    if (this.iri != null && other.iri == null) {
+    if (iri != null && other.iri == null) {
       return 1;
     }
-    if (!this.iri.equals(other.iri)) {
-      if (this.iri.size() < other.iri.size()) {
+    if (!iri.equals(other.iri)) {
+      if (iri.size() < other.iri.size()) {
         return -1;
-      } else if (this.iri.size() > other.iri.size()) {
+      } else if (iri.size() > other.iri.size()) {
         return 1;
       } else {
-        Iterator<String> thisIt = this.iri.iterator();
-        Iterator<String> otherIt = other.iri.iterator();
+        final Iterator<String> thisIt = iri.iterator();
+        final Iterator<String> otherIt = other.iri.iterator();
         while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
         }
       }
     }
@@ -135,10 +139,10 @@ public class Attribute implements Comparable<Attribute> {
     //		}
     //
     //		return 0;
-    return nullSafeStringComparison(this.unit, other.unit);
+    return nullSafeStringComparison(unit, other.unit);
   }
 
-  public int nullSafeStringComparison(String one, String two) {
+  private int nullSafeStringComparison(final String one, final String two) {
 
     if (one == null && two != null) {
       return -1;
@@ -155,7 +159,7 @@ public class Attribute implements Comparable<Attribute> {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     sb.append("Attribute(");
     sb.append(type);
     sb.append(",");
@@ -170,17 +174,23 @@ public class Attribute implements Comparable<Attribute> {
     return sb.toString();
   }
 
-  public static Attribute build(String type, String value) {
+  public static Attribute build(final String type, final String value) {
     return build(type, value, null, Lists.newArrayList(), null);
   }
 
-  public static Attribute build(String type, String value, String iri, String unit) {
-    if (iri == null) iri = "";
+  public static Attribute build(
+      final String type, final String value, String iri, final String unit) {
+    if (iri == null) {
+      iri = "";
+    }
     return build(type, value, null, Lists.newArrayList(iri), unit);
   }
 
-  public static Attribute build(String type, String value, String tag, String iri, String unit) {
-    if (iri == null) iri = "";
+  public static Attribute build(
+      final String type, final String value, final String tag, String iri, final String unit) {
+    if (iri == null) {
+      iri = "";
+    }
     return build(type, value, tag, Lists.newArrayList(iri), unit);
   }
 
@@ -202,18 +212,26 @@ public class Attribute implements Comparable<Attribute> {
       iri = Lists.newArrayList();
     }
     // cleanup inputs
-    if (type != null) type = type.trim();
-    if (value != null) value = value.trim();
-    if (tag != null) tag = tag.trim();
-    if (unit != null) unit = unit.trim();
+    if (type != null) {
+      type = type.trim();
+    }
+    if (value != null) {
+      value = value.trim();
+    }
+    if (tag != null) {
+      tag = tag.trim();
+    }
+    if (unit != null) {
+      unit = unit.trim();
+    }
     // create output
-    Attribute attr = new Attribute();
+    final Attribute attr = new Attribute();
     attr.type = type;
     attr.value = value;
     attr.tag = tag;
     attr.iri = new TreeSet<>();
     if (iri != null) {
-      for (String iriOne : iri) {
+      for (final String iriOne : iri) {
         if (iriOne != null) {
           attr.iri.add(iriOne);
         }
@@ -226,38 +244,38 @@ public class Attribute implements Comparable<Attribute> {
   public static class Builder {
     private final String type;
     private final String value;
-    private List<String> iris = new ArrayList<>();
+    private final List<String> iris = new ArrayList<>();
     private String unit;
     private String tag;
 
-    public Builder(String type, String value, String tag) {
+    public Builder(final String type, final String value, final String tag) {
       this.type = type;
       this.value = value;
       this.tag = tag;
     }
 
-    public Builder(String type, String value) {
+    public Builder(final String type, final String value) {
       this.type = type;
       this.value = value;
     }
 
-    public Builder withIri(String iri) {
+    public Builder withIri(final String iri) {
       iris.add(iri);
       return this;
     }
 
-    public Builder withUnit(String unit) {
+    public Builder withUnit(final String unit) {
       this.unit = unit;
       return this;
     }
 
-    public Builder withTag(String tag) {
+    public Builder withTag(final String tag) {
       this.tag = tag;
       return this;
     }
 
     public Attribute build() {
-      return Attribute.build(this.type, this.value, this.tag, this.iris, this.unit);
+      return Attribute.build(type, value, tag, iris, unit);
     }
   }
 }

@@ -12,29 +12,17 @@ package uk.ac.ebi.biosamples.migration;
 
 import com.google.common.collect.Sets;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Organization;
-import uk.ac.ebi.biosamples.model.Publication;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 
 public class Comparer {
 
   private final Logger log = LoggerFactory.getLogger(getClass());
 
-  public void compare(String accession, Sample oldSample, Sample newSample) {
+  public void compare(final String accession, final Sample oldSample, final Sample newSample) {
 
     if (!oldSample.getAccession().equals(newSample.getAccession())) {
       log.warn(
@@ -81,12 +69,12 @@ public class Comparer {
     compareAttributes(oldSample, newSample);
 
     // relationships
-    for (Relationship relationship :
+    for (final Relationship relationship :
         Sets.difference(oldSample.getRelationships(), newSample.getRelationships())) {
       log.warn(
           "Difference on " + accession + " of relationship '" + relationship + "' in old only");
     }
-    for (Relationship relationship :
+    for (final Relationship relationship :
         Sets.difference(newSample.getRelationships(), oldSample.getRelationships())) {
       log.warn(
           "Difference on " + accession + " of relationship '" + relationship + "' in new only");
@@ -101,38 +89,38 @@ public class Comparer {
     comparePublications(oldSample, newSample);
   }
 
-  private void compareAttributes(Sample oldSample, Sample newSample) {
-    String accession = oldSample.getAccession();
+  private void compareAttributes(final Sample oldSample, final Sample newSample) {
+    final String accession = oldSample.getAccession();
 
-    Set<String> oldAttributeTypes =
+    final Set<String> oldAttributeTypes =
         oldSample.getAttributes().stream().map(a -> a.getType()).collect(Collectors.toSet());
-    Set<String> newAttributeTypes =
+    final Set<String> newAttributeTypes =
         newSample.getAttributes().stream().map(a -> a.getType()).collect(Collectors.toSet());
 
-    for (String attributeType : Sets.difference(oldAttributeTypes, newAttributeTypes)) {
+    for (final String attributeType : Sets.difference(oldAttributeTypes, newAttributeTypes)) {
       log.warn("Difference on " + accession + " of attribute '" + attributeType + "' in old only");
     }
 
-    for (String attributeType : Sets.difference(newAttributeTypes, oldAttributeTypes)) {
+    for (final String attributeType : Sets.difference(newAttributeTypes, oldAttributeTypes)) {
       log.warn("Difference on " + accession + " of attribute '" + attributeType + "' in new only");
     }
 
-    for (String attributeType : Sets.intersection(oldAttributeTypes, newAttributeTypes)) {
-      List<Attribute> oldAttributes =
+    for (final String attributeType : Sets.intersection(oldAttributeTypes, newAttributeTypes)) {
+      final List<Attribute> oldAttributes =
           oldSample.getAttributes().stream()
               .filter(a -> attributeType.equals(a.getType()))
               .collect(Collectors.toList());
       Collections.sort(oldAttributes);
-      List<Attribute> newAttributes =
+      final List<Attribute> newAttributes =
           newSample.getAttributes().stream()
               .filter(a -> attributeType.equals(a.getType()))
               .collect(Collectors.toList());
       Collections.sort(newAttributes);
 
-      SortedMap<String, SortedMap<String, String>> oldUnits = new TreeMap<>();
-      SortedMap<String, SortedMap<String, SortedSet<String>>> oldIris = new TreeMap<>();
-      SortedMap<String, SortedMap<String, String>> newUnits = new TreeMap<>();
-      SortedMap<String, SortedMap<String, SortedSet<String>>> newIris = new TreeMap<>();
+      final SortedMap<String, SortedMap<String, String>> oldUnits = new TreeMap<>();
+      final SortedMap<String, SortedMap<String, SortedSet<String>>> oldIris = new TreeMap<>();
+      final SortedMap<String, SortedMap<String, String>> newUnits = new TreeMap<>();
+      final SortedMap<String, SortedMap<String, SortedSet<String>>> newIris = new TreeMap<>();
 
       if (oldAttributes.size() != newAttributes.size()) {
         log.warn(
@@ -147,8 +135,8 @@ public class Comparer {
                 + " values in new");
       } else {
         for (int i = 0; i < oldAttributes.size(); i++) {
-          Attribute oldAttribute = oldAttributes.get(i);
-          Attribute newAttribute = newAttributes.get(i);
+          final Attribute oldAttribute = oldAttributes.get(i);
+          final Attribute newAttribute = newAttributes.get(i);
 
           // TODO finish me
 
@@ -226,10 +214,10 @@ public class Comparer {
                       + newAttribute.getIri()
                       + "'");
             } else {
-              Iterator<String> thisIt = oldAttribute.getIri().iterator();
-              Iterator<String> otherIt = newAttribute.getIri().iterator();
+              final Iterator<String> thisIt = oldAttribute.getIri().iterator();
+              final Iterator<String> otherIt = newAttribute.getIri().iterator();
               while (thisIt.hasNext() && otherIt.hasNext()) {
-                int val = thisIt.next().compareTo(otherIt.next());
+                final int val = thisIt.next().compareTo(otherIt.next());
                 if (val != 0) {
                   log.warn(
                       "Difference on "
@@ -250,11 +238,11 @@ public class Comparer {
     }
   }
 
-  private void compareOrganizations(Sample oldSample, Sample newSample) {
-    SortedSet<Organization> oldOrganizations = oldSample.getOrganizations();
-    SortedSet<Organization> newOrganizations = newSample.getOrganizations();
+  private void compareOrganizations(final Sample oldSample, final Sample newSample) {
+    final SortedSet<Organization> oldOrganizations = oldSample.getOrganizations();
+    final SortedSet<Organization> newOrganizations = newSample.getOrganizations();
 
-    for (Organization oldOrganization : Sets.difference(oldOrganizations, newOrganizations)) {
+    for (final Organization oldOrganization : Sets.difference(oldOrganizations, newOrganizations)) {
       log.warn(
           "Difference on "
               + oldSample.getAccession()
@@ -262,7 +250,7 @@ public class Comparer {
               + oldOrganization.toString());
     }
 
-    for (Organization newOrganization : Sets.difference(newOrganizations, oldOrganizations)) {
+    for (final Organization newOrganization : Sets.difference(newOrganizations, oldOrganizations)) {
       log.warn(
           "Difference on "
               + oldSample.getAccession()
@@ -271,11 +259,11 @@ public class Comparer {
     }
   }
 
-  private void compareContacts(Sample oldSample, Sample newSample) {
-    SortedSet<Contact> oldContacts = oldSample.getContacts();
-    SortedSet<Contact> newContacts = newSample.getContacts();
+  private void compareContacts(final Sample oldSample, final Sample newSample) {
+    final SortedSet<Contact> oldContacts = oldSample.getContacts();
+    final SortedSet<Contact> newContacts = newSample.getContacts();
 
-    for (Contact oldContact : Sets.difference(oldContacts, newContacts)) {
+    for (final Contact oldContact : Sets.difference(oldContacts, newContacts)) {
       log.warn(
           "Difference on "
               + oldSample.getAccession()
@@ -283,7 +271,7 @@ public class Comparer {
               + oldContact.toString());
     }
 
-    for (Contact newContact : Sets.difference(newContacts, oldContacts)) {
+    for (final Contact newContact : Sets.difference(newContacts, oldContacts)) {
       log.warn(
           "Difference on "
               + oldSample.getAccession()
@@ -292,11 +280,11 @@ public class Comparer {
     }
   }
 
-  private void comparePublications(Sample oldSample, Sample newSample) {
-    SortedSet<Publication> oldPublications = oldSample.getPublications();
-    SortedSet<Publication> newPublications = newSample.getPublications();
+  private void comparePublications(final Sample oldSample, final Sample newSample) {
+    final SortedSet<Publication> oldPublications = oldSample.getPublications();
+    final SortedSet<Publication> newPublications = newSample.getPublications();
 
-    for (Publication oldPublication : Sets.difference(oldPublications, newPublications)) {
+    for (final Publication oldPublication : Sets.difference(oldPublications, newPublications)) {
       log.warn(
           "Difference on "
               + oldSample.getAccession()
@@ -304,7 +292,7 @@ public class Comparer {
               + oldPublication.toString());
     }
 
-    for (Publication newPublication : Sets.difference(newPublications, oldPublications)) {
+    for (final Publication newPublication : Sets.difference(newPublications, oldPublications)) {
       log.warn(
           "Difference on "
               + oldSample.getAccession()
@@ -313,11 +301,11 @@ public class Comparer {
     }
   }
 
-  private void compareExternalReferences(Sample oldSample, Sample newSample) {
-    SortedSet<ExternalReference> oldExternalReferences = oldSample.getExternalReferences();
-    SortedSet<ExternalReference> newExternalReferences = newSample.getExternalReferences();
+  private void compareExternalReferences(final Sample oldSample, final Sample newSample) {
+    final SortedSet<ExternalReference> oldExternalReferences = oldSample.getExternalReferences();
+    final SortedSet<ExternalReference> newExternalReferences = newSample.getExternalReferences();
 
-    for (ExternalReference oldExternalReference :
+    for (final ExternalReference oldExternalReference :
         Sets.difference(oldExternalReferences, newExternalReferences)) {
       log.warn(
           "Difference on "
@@ -326,7 +314,7 @@ public class Comparer {
               + oldExternalReference.toString());
     }
 
-    for (ExternalReference newExternalReference :
+    for (final ExternalReference newExternalReference :
         Sets.difference(newExternalReferences, oldExternalReferences)) {
       log.warn(
           "Difference on "

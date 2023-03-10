@@ -31,24 +31,25 @@ public class StructuredDataSubmissionService {
   private final Traverson traverson;
   private final RestOperations restOperations;
 
-  public StructuredDataSubmissionService(RestOperations restOperations, Traverson traverson) {
+  public StructuredDataSubmissionService(
+      final RestOperations restOperations, final Traverson traverson) {
     this.restOperations = restOperations;
     this.traverson = traverson;
   }
 
-  public EntityModel<StructuredData> submit(StructuredData structuredData)
+  public EntityModel<StructuredData> submit(final StructuredData structuredData)
       throws RestClientException {
     return persistStructuredData(structuredData, null);
   }
 
   public EntityModel<StructuredData> persistStructuredData(
-      StructuredData structuredData, String jwt) throws RestClientException {
-    String addWebinRequestParam = "";
+      final StructuredData structuredData, final String jwt) throws RestClientException {
+    final String addWebinRequestParam = "";
 
     // TODO throw new expetion if data is null or empty, might be easier to reuse existing
     // exceptions after refactoring
 
-    URI target =
+    final URI target =
         URI.create(
             traverson
                 .follow("samples")
@@ -60,14 +61,14 @@ public class StructuredDataSubmissionService {
 
     log.info("PUTing to " + target + " " + structuredData);
 
-    RequestEntity.BodyBuilder bodyBuilder =
+    final RequestEntity.BodyBuilder bodyBuilder =
         RequestEntity.put(target).contentType(MediaType.APPLICATION_JSON);
     if (jwt != null) {
       bodyBuilder.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
     }
-    RequestEntity<StructuredData> requestEntity = bodyBuilder.body(structuredData);
+    final RequestEntity<StructuredData> requestEntity = bodyBuilder.body(structuredData);
 
-    ResponseEntity<EntityModel<StructuredData>> responseEntity =
+    final ResponseEntity<EntityModel<StructuredData>> responseEntity =
         restOperations.exchange(
             requestEntity, new ParameterizedTypeReference<EntityModel<StructuredData>>() {});
 

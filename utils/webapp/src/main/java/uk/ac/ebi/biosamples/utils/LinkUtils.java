@@ -28,7 +28,7 @@ public class LinkUtils {
     return text;
   }
 
-  public static String[] decodeTexts(String[] texts) {
+  public static String[] decodeTexts(final String[] texts) {
     if (texts != null) {
       for (int i = 0; i < texts.length; i++) {
         // URLDecoder doesn't work right...
@@ -39,12 +39,12 @@ public class LinkUtils {
     return texts;
   }
 
-  public static Optional<List<String>> decodeTextsToArray(String[] texts) {
+  public static Optional<List<String>> decodeTextsToArray(final String[] texts) {
     if (texts == null) {
       return Optional.empty();
     } else {
-      List<String> decoded = new ArrayList<>(texts.length);
-      for (String text : texts) {
+      final List<String> decoded = new ArrayList<>(texts.length);
+      for (final String text : texts) {
         // URLDecoder doesn't work right...
         // filter[i] = URLDecoder.decode(filter[i], "UTF-8");
         decoded.add(UriUtils.decode(text, "UTF-8"));

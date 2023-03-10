@@ -26,7 +26,7 @@ public class NeoExportCallable implements Callable<PipelineResult> {
   private final Sample sample;
   private final NeoSampleRepository neoSampleRepository;
 
-  public NeoExportCallable(NeoSampleRepository neoSampleRepository, Sample sample) {
+  NeoExportCallable(final NeoSampleRepository neoSampleRepository, final Sample sample) {
     this.neoSampleRepository = neoSampleRepository;
     this.sample = sample;
   }
@@ -34,9 +34,9 @@ public class NeoExportCallable implements Callable<PipelineResult> {
   @Override
   public PipelineResult call() {
     try {
-      NeoSample neoSample = NeoSample.build(sample);
+      final NeoSample neoSample = NeoSample.build(sample);
       neoSampleRepository.loadSample(neoSample);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       failedQueue.add(sample.getAccession());
       LOG.error("Failed to load sample: " + sample.getAccession(), e);
     }

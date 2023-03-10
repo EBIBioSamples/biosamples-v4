@@ -19,17 +19,17 @@ import uk.ac.ebi.biosamples.model.Relationship;
 @Service
 public class RelationshipValidator {
 
-  public Collection<String> validate(Relationship rel) {
+  public Collection<String> validate(final Relationship rel) {
     return validate(rel, new ArrayList<>());
   }
 
-  public Collection<String> validate(Relationship rel, String accession) {
+  public Collection<String> validate(final Relationship rel, final String accession) {
     // TODO validate that relationships have this sample as the source
-    Collection<String> errors = validate(rel, new ArrayList<>());
+    final Collection<String> errors = validate(rel, new ArrayList<>());
     return validateSourceAccession(accession, rel, errors);
   }
 
-  public Collection<String> validate(Relationship rel, Collection<String> errors) {
+  public Collection<String> validate(final Relationship rel, final Collection<String> errors) {
     if (rel.getSource() == null || rel.getSource().isEmpty()) {
       //            errors.add("Source of a relationship must be non empty");//todo re-enable
       // after
@@ -52,7 +52,7 @@ public class RelationshipValidator {
   }
 
   private Collection<String> validateSourceAccession(
-      String accession, Relationship rel, Collection<String> errors) {
+      final String accession, final Relationship rel, final Collection<String> errors) {
     if (accession != null && !accession.equals(rel.getSource())) {
       //            errors.add("Source of the relationship must equal to the sample
       // accession");//

@@ -10,12 +10,10 @@
 */
 package uk.ac.ebi.biosamples;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.nio.charset.Charset;
 import org.junit.Ignore;
@@ -60,7 +58,7 @@ public class SchemaValidationTests {
   // be tested by an integration test
   public void validates_provided_json_against_test_schema_correctly() throws Exception {
 
-    String jsonContent =
+    final String jsonContent =
         StreamUtils.copyToString(
             new ClassPathResource("json_schema_valid_object.json").getInputStream(),
             Charset.defaultCharset());
@@ -76,7 +74,7 @@ public class SchemaValidationTests {
   @Ignore // Impossible to test as a unit test, need to be tested by an integration test
   public void reject_not_valid_json() throws Exception {
 
-    String invalidJsonContent =
+    final String invalidJsonContent =
         StreamUtils.copyToString(
             new ClassPathResource("json_schema_not_valid_object.json").getInputStream(),
             Charset.defaultCharset());

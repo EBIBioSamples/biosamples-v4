@@ -22,26 +22,26 @@ import uk.ac.ebi.biosamples.model.certification.SampleDocument;
 
 @Service
 public class Applicator {
-  private static Logger LOG = LoggerFactory.getLogger(Applicator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(Applicator.class);
 
-  public SampleDocument apply(HasCuratedSample curationApplicable) {
+  public SampleDocument apply(final HasCuratedSample curationApplicable) {
     if (curationApplicable == null) {
-      String message = "cannot apply a null curation applyable";
+      final String message = "cannot apply a null curation applyable";
       LOG.warn(message);
       throw new IllegalArgumentException(message);
     }
 
-    SampleDocument sampleDocument = curationApplicable.getSampleDocument();
-    String document = makePretty(sampleDocument.getDocument());
+    final SampleDocument sampleDocument = curationApplicable.getSampleDocument();
+    final String document = makePretty(sampleDocument.getDocument());
     String updatedDocument = document;
 
-    for (CurationResult curationResult : curationApplicable.getCurationResults()) {
-      String pattern =
+    for (final CurationResult curationResult : curationApplicable.getCurationResults()) {
+      final String pattern =
           String.format(
               "\\\"%s\\\"\\s?[:]\\s?\\[\\W+?text\\\"\\s?[:]\\s?\\s\\\"(%s)\\\"",
               curationResult.getCharacteristic(), curationResult.getBefore());
-      Pattern p = Pattern.compile(pattern);
-      Matcher m = p.matcher(updatedDocument);
+      final Pattern p = Pattern.compile(pattern);
+      final Matcher m = p.matcher(updatedDocument);
       if (m.find()) {
         updatedDocument = updatedDocument.replace(m.group(1), curationResult.getAfter());
       } else {
@@ -52,14 +52,14 @@ public class Applicator {
       }
     }
 
-    SampleDocument curatedSampleDocument =
+    final SampleDocument curatedSampleDocument =
         new SampleDocument(sampleDocument.getAccession(), updatedDocument);
 
     return curatedSampleDocument;
   }
 
-  private String makePretty(String document) {
-    JSONObject json = new JSONObject(document);
+  private String makePretty(final String document) {
+    final JSONObject json = new JSONObject(document);
     return json.toString(2);
   }
 }

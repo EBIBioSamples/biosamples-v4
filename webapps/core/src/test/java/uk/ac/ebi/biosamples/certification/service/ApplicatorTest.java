@@ -35,15 +35,17 @@ public class ApplicatorTest {
     applyCuration("json/ncbi-SAMN03894263.json", "json/ncbi-SAMN03894263-curated.json");
   }
 
-  private void applyCuration(String source, String expectedResult) throws IOException {
-    String data = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(source), "UTF8");
-    String curatedData =
+  private void applyCuration(final String source, final String expectedResult) throws IOException {
+    final String data =
+        IOUtils.toString(getClass().getClassLoader().getResourceAsStream(source), "UTF8");
+    final String curatedData =
         IOUtils.toString(getClass().getClassLoader().getResourceAsStream(expectedResult), "UTF8");
-    SampleDocument sampleDocument = new SampleDocument("test", data);
-    SampleDocument curatedSampleDocument = new SampleDocument("test", curatedData);
-    Curation curation = new Curation("INSDC status", "public");
-    Plan plan = new Plan("ncbi-0.0.1", "biosamples-0.0.1", Collections.singletonList(curation));
-    PlanResult planResult = new PlanResult(sampleDocument, plan);
+    final SampleDocument sampleDocument = new SampleDocument("test", data);
+    final SampleDocument curatedSampleDocument = new SampleDocument("test", curatedData);
+    final Curation curation = new Curation("INSDC status", "public");
+    final Plan plan =
+        new Plan("ncbi-0.0.1", "biosamples-0.0.1", Collections.singletonList(curation));
+    final PlanResult planResult = new PlanResult(sampleDocument, plan);
     planResult.addCurationResult(
         new CurationResult(curation.getCharacteristic(), "live", curation.getValue()));
     assertEquals(

@@ -24,7 +24,7 @@ public class SolrSampleNameField extends SolrSampleField {
     super();
   }
 
-  public SolrSampleNameField(String readableLabel) {
+  public SolrSampleNameField(final String readableLabel) {
     super(readableLabel);
   }
 
@@ -34,7 +34,7 @@ public class SolrSampleNameField extends SolrSampleField {
    * @param readableLabel
    * @param solrDocumentLabel
    */
-  public SolrSampleNameField(String readableLabel, String solrDocumentLabel) {
+  public SolrSampleNameField(final String readableLabel, final String solrDocumentLabel) {
     super(readableLabel, solrDocumentLabel);
   }
 
@@ -54,7 +54,7 @@ public class SolrSampleNameField extends SolrSampleField {
   }
 
   @Override
-  public boolean isCompatibleWith(Filter filter) {
+  public boolean isCompatibleWith(final Filter filter) {
     return filter instanceof NameFilter;
   }
 
@@ -64,14 +64,14 @@ public class SolrSampleNameField extends SolrSampleField {
   }
 
   @Override
-  public Criteria getFilterCriteria(Filter filter) {
+  public Criteria getFilterCriteria(final Filter filter) {
     Criteria filterCriteria = null;
 
     if (filter instanceof NameFilter) {
 
       filterCriteria = new Criteria(getSolrLabel());
 
-      NameFilter nameFilter = (NameFilter) filter;
+      final NameFilter nameFilter = (NameFilter) filter;
       if (nameFilter.getContent().isPresent()) {
         //                filterCriteria = filterCriteria.expression("/" +
         // nameFilter.getContent().get() + "/");

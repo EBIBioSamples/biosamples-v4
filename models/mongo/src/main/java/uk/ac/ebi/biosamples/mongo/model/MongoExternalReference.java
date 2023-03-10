@@ -27,19 +27,19 @@ public class MongoExternalReference implements Comparable<MongoExternalReference
   private final String hash;
   private final SortedSet<String> duo;
 
-  private MongoExternalReference(String url, String hash, SortedSet<String> duo) {
+  private MongoExternalReference(final String url, final String hash, final SortedSet<String> duo) {
     this.url = url;
     this.hash = hash;
     this.duo = duo;
   }
 
   public String getUrl() {
-    return this.url;
+    return url;
   }
 
   @JsonIgnore
   public String getHash() {
-    return this.hash;
+    return hash;
   }
 
   public SortedSet<String> getDuo() {
@@ -47,13 +47,15 @@ public class MongoExternalReference implements Comparable<MongoExternalReference
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (o == this) return true;
+  public boolean equals(final Object o) {
+    if (o == this) {
+      return true;
+    }
     if (!(o instanceof MongoExternalReference)) {
       return false;
     }
-    MongoExternalReference other = (MongoExternalReference) o;
-    return Objects.equals(this.url, other.url) && Objects.equals(this.duo, other.duo);
+    final MongoExternalReference other = (MongoExternalReference) o;
+    return Objects.equals(url, other.url) && Objects.equals(duo, other.duo);
   }
 
   @Override
@@ -62,34 +64,36 @@ public class MongoExternalReference implements Comparable<MongoExternalReference
   }
 
   @Override
-  public int compareTo(MongoExternalReference other) {
+  public int compareTo(final MongoExternalReference other) {
     if (other == null) {
       return 1;
     }
 
-    if (!this.url.equals(other.url)) {
-      return this.url.compareTo(other.url);
+    if (!url.equals(other.url)) {
+      return url.compareTo(other.url);
     }
 
-    if (this.duo == other.duo) {
+    if (duo == other.duo) {
       return 0;
     } else if (other.duo == null) {
       return 1;
-    } else if (this.duo == null) {
+    } else if (duo == null) {
       return -1;
     }
 
-    if (!this.duo.equals(other.duo)) {
-      if (this.duo.size() < other.duo.size()) {
+    if (!duo.equals(other.duo)) {
+      if (duo.size() < other.duo.size()) {
         return -1;
-      } else if (this.duo.size() > other.duo.size()) {
+      } else if (duo.size() > other.duo.size()) {
         return 1;
       } else {
-        Iterator<String> thisIt = this.duo.iterator();
-        Iterator<String> otherIt = other.duo.iterator();
+        final Iterator<String> thisIt = duo.iterator();
+        final Iterator<String> otherIt = other.duo.iterator();
         while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
         }
       }
     }
@@ -98,18 +102,18 @@ public class MongoExternalReference implements Comparable<MongoExternalReference
 
   @Override
   public String toString() {
-    String sb = "ExternalReference(" + this.url + "," + duo + ")";
+    final String sb = "ExternalReference(" + url + "," + duo + ")";
     return sb;
   }
 
-  public static MongoExternalReference build(String url, SortedSet<String> duo) {
-    UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(url);
-    UriComponents uriComponents = uriComponentsBuilder.build().normalize();
+  public static MongoExternalReference build(String url, final SortedSet<String> duo) {
+    final UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(url);
+    final UriComponents uriComponents = uriComponentsBuilder.build().normalize();
 
     url = uriComponents.toUriString();
 
     uriComponents.getPort();
-    Hasher hasher =
+    final Hasher hasher =
         Hashing.sha256()
             .newHasher()
             .putUnencodedChars(
@@ -131,7 +135,7 @@ public class MongoExternalReference implements Comparable<MongoExternalReference
                 Objects.nonNull(uriComponents.getFragment()) ? uriComponents.getFragment() : "");
 
     if (duo != null) {
-      for (String s : duo) {
+      for (final String s : duo) {
         hasher.putUnencodedChars(s);
       }
     }
@@ -140,7 +144,7 @@ public class MongoExternalReference implements Comparable<MongoExternalReference
   }
 
   @JsonCreator
-  public static MongoExternalReference build(@JsonProperty("url") String url) {
+  public static MongoExternalReference build(@JsonProperty("url") final String url) {
     return build(url, new TreeSet<>());
   }
 }

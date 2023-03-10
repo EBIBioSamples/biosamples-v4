@@ -18,7 +18,7 @@ public class SampleBuilderTest {
 
   @Test
   public void sample_build_even_if_null_data_is_provided() {
-    Sample sample = new Sample.Builder("TestSample").withData(null).build();
+    final Sample sample = new Sample.Builder("TestSample").withData(null).build();
 
     assertThat(sample.getName()).isEqualTo("TestSample");
   }

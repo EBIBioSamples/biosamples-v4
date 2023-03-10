@@ -30,22 +30,23 @@ import uk.ac.ebi.biosamples.model.Sample;
 @RestControllerAdvice(assignableTypes = SampleRestController.class)
 public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<EntityModel<Sample>> {
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   @Override
   public boolean supports(
-      MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
+      final MethodParameter returnType,
+      final Class<? extends HttpMessageConverter<?>> converterType) {
     return returnType.getMethod().getReturnType() == EntityModel.class;
   }
 
   @Override
   public EntityModel<Sample> beforeBodyWrite(
-      EntityModel<Sample> body,
-      MethodParameter returnType,
-      MediaType selectedContentType,
-      Class<? extends HttpMessageConverter<?>> selectedConverterType,
-      ServerHttpRequest request,
-      ServerHttpResponse response) {
+      final EntityModel<Sample> body,
+      final MethodParameter returnType,
+      final MediaType selectedContentType,
+      final Class<? extends HttpMessageConverter<?>> selectedConverterType,
+      final ServerHttpRequest request,
+      final ServerHttpResponse response) {
 
     // TODO application.properties the cache time
 

@@ -16,9 +16,9 @@ import uk.ac.ebi.biosamples.model.facet.FacetType;
 
 public class AccessionFilter implements Filter {
 
-  private String accessionPattern;
+  private final String accessionPattern;
 
-  private AccessionFilter(String accessionPattern) {
+  private AccessionFilter(final String accessionPattern) {
     this.accessionPattern = accessionPattern;
   }
 
@@ -34,7 +34,7 @@ public class AccessionFilter implements Filter {
 
   @Override
   public Optional<String> getContent() {
-    return Optional.of(this.accessionPattern);
+    return Optional.of(accessionPattern);
   }
 
   @Override
@@ -44,41 +44,41 @@ public class AccessionFilter implements Filter {
 
   @Override
   public String getSerialization() {
-    return this.getType().getSerialization() + ":" + this.accessionPattern;
+    return getType().getSerialization() + ":" + accessionPattern;
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (obj == this) {
       return true;
     }
     if (!(obj instanceof AccessionFilter)) {
       return false;
     }
-    AccessionFilter other = (AccessionFilter) obj;
-    return Objects.equals(other.getContent().orElse(null), this.getContent().orElse(null));
+    final AccessionFilter other = (AccessionFilter) obj;
+    return Objects.equals(other.getContent().orElse(null), getContent().orElse(null));
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.getContent().orElse(null));
+    return Objects.hash(getContent().orElse(null));
   }
 
   public static class Builder implements Filter.Builder {
 
-    private String pattern;
+    private final String pattern;
 
-    public Builder(String pattern) {
+    public Builder(final String pattern) {
       this.pattern = pattern;
     }
 
     @Override
     public Filter build() {
-      return new AccessionFilter(this.pattern);
+      return new AccessionFilter(pattern);
     }
 
     @Override
-    public Filter.Builder parseContent(String filterSerialized) {
+    public Filter.Builder parseContent(final String filterSerialized) {
       return new Builder(filterSerialized);
     }
   }

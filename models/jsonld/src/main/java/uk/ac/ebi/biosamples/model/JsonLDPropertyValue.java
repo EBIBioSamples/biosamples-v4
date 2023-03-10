@@ -45,7 +45,7 @@ public class JsonLDPropertyValue implements BioschemasObject {
     return value;
   }
 
-  public void setName(String name) {
+  public void setName(final String name) {
     this.name = name;
   }
 
@@ -53,7 +53,7 @@ public class JsonLDPropertyValue implements BioschemasObject {
     return name;
   }
 
-  public void setValue(String value) {
+  public void setValue(final String value) {
     this.value = value;
   }
 
@@ -61,7 +61,7 @@ public class JsonLDPropertyValue implements BioschemasObject {
     return valueReference;
   }
 
-  public void setValueReference(List<JsonLDDefinedTerm> valueReference) {
+  public void setValueReference(final List<JsonLDDefinedTerm> valueReference) {
     this.valueReference = valueReference;
   }
 
@@ -69,7 +69,7 @@ public class JsonLDPropertyValue implements BioschemasObject {
     return unitCode;
   }
 
-  public JsonLDPropertyValue unitCode(String unitCode) {
+  public JsonLDPropertyValue unitCode(final String unitCode) {
     this.unitCode = unitCode;
     return this;
   }
@@ -78,7 +78,7 @@ public class JsonLDPropertyValue implements BioschemasObject {
     return unitText;
   }
 
-  public JsonLDPropertyValue unitText(String unitText) {
+  public JsonLDPropertyValue unitText(final String unitText) {
     this.unitText = unitText;
     return this;
   }

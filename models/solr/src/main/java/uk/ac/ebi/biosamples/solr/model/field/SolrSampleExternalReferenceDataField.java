@@ -27,7 +27,7 @@ public class SolrSampleExternalReferenceDataField extends SolrSampleField {
     super();
   }
 
-  public SolrSampleExternalReferenceDataField(String readableLabel) {
+  public SolrSampleExternalReferenceDataField(final String readableLabel) {
     super(readableLabel);
   }
 
@@ -37,7 +37,8 @@ public class SolrSampleExternalReferenceDataField extends SolrSampleField {
    * @param readableLabel
    * @param solrDocumentLabel
    */
-  public SolrSampleExternalReferenceDataField(String readableLabel, String solrDocumentLabel) {
+  public SolrSampleExternalReferenceDataField(
+      final String readableLabel, final String solrDocumentLabel) {
     super(readableLabel, solrDocumentLabel);
   }
 
@@ -58,7 +59,7 @@ public class SolrSampleExternalReferenceDataField extends SolrSampleField {
   }
 
   @Override
-  public boolean isCompatibleWith(Filter filter) {
+  public boolean isCompatibleWith(final Filter filter) {
     return filter instanceof ExternalReferenceDataFilter;
   }
 
@@ -68,7 +69,7 @@ public class SolrSampleExternalReferenceDataField extends SolrSampleField {
   }
 
   @Override
-  public Facet.Builder getFacetBuilder(String facetLabel, Long facetCount) {
+  public Facet.Builder getFacetBuilder(final String facetLabel, final Long facetCount) {
     return new ExternalReferenceDataFacet.Builder(facetLabel, facetCount);
   }
 
@@ -78,14 +79,14 @@ public class SolrSampleExternalReferenceDataField extends SolrSampleField {
   }
 
   @Override
-  public Criteria getFilterCriteria(Filter filter) {
+  public Criteria getFilterCriteria(final Filter filter) {
     Criteria filterCriteria = null;
 
     if (filter instanceof ExternalReferenceDataFilter) {
 
       filterCriteria = new Criteria(getSolrLabel());
 
-      ExternalReferenceDataFilter extRefFilter = (ExternalReferenceDataFilter) filter;
+      final ExternalReferenceDataFilter extRefFilter = (ExternalReferenceDataFilter) filter;
       if (extRefFilter.getContent().isPresent()) {
         //                filterCriteria = filterCriteria.expression("/" +
         // extRefFilter.getContent().get() + "/");

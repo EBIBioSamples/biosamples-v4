@@ -35,19 +35,19 @@ import org.springframework.test.context.junit4.SpringRunner;
 @TestPropertySource(properties = {"spring.jackson.serialization.INDENT_OUTPUT=true"})
 public class BioschemasContextTest {
 
-  private Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private JacksonTester<BioSchemasContext> json;
 
   @Test
   public void testDeserialize() throws Exception {
-    String contextJson =
+    final String contextJson =
         "["
             + "\"http://schema.org\","
             + "{\"OBI\":\"http://purl.obolibrary.org/obo/OBI_\",\"biosample\":\"http://identifiers.org/biosample\"}"
             + "]";
 
-    BioSchemasContext context =
+    final BioSchemasContext context =
         new ObjectMapper().readerFor(BioSchemasContext.class).readValue(contextJson);
 
     // Use JSON path based assertions
@@ -56,13 +56,13 @@ public class BioschemasContextTest {
 
   @Test
   public void testSerialize() throws Exception {
-    ObjectMapper mapper = new ObjectMapper();
-    BioSchemasContext context = new BioSchemasContext();
+    final ObjectMapper mapper = new ObjectMapper();
+    final BioSchemasContext context = new BioSchemasContext();
     context.addOtherContexts("OBI", URI.create("http://purl.obolibrary.org/obo/OBI_"));
     context.addOtherContexts("biosample", URI.create("http://identifiers.org/biosample"));
-    String actualJson = mapper.writeValueAsString(context);
+    final String actualJson = mapper.writeValueAsString(context);
 
-    String expectedJson =
+    final String expectedJson =
         "["
             + "\"http://schema.org\","
             + "{\"OBI\":\"http://purl.obolibrary.org/obo/OBI_\",\"biosample\":\"http://identifiers.org/biosample\"}"

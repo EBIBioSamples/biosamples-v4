@@ -54,17 +54,17 @@ public class ReindexRunner implements ApplicationRunner {
 
   @Autowired
   public ReindexRunner(
-      AmqpTemplate amqpTemplate,
-      SampleReadService sampleReadService,
-      MongoOperations mongoOperations) {
+      final AmqpTemplate amqpTemplate,
+      final SampleReadService sampleReadService,
+      final MongoOperations mongoOperations) {
     this.amqpTemplate = amqpTemplate;
     this.sampleReadService = sampleReadService;
     this.mongoOperations = mongoOperations;
   }
 
   @Override
-  public void run(ApplicationArguments args) throws Exception {
-    Map<String, Future<Void>> futures = new HashMap<>();
+  public void run(final ApplicationArguments args) throws Exception {
+    final Map<String, Future<Void>> futures = new HashMap<>();
     boolean periodicRun = false;
     ExecutorService executor = null;
 
@@ -91,10 +91,11 @@ public class ReindexRunner implements ApplicationRunner {
         query.addCriteria(Criteria.where("update").gte(now).lt(then));
       }
 
-      try (CloseableIterator<MongoSample> it = mongoOperations.stream(query, MongoSample.class)) {
+      try (final CloseableIterator<MongoSample> it =
+          mongoOperations.stream(query, MongoSample.class)) {
         while (it.hasNext()) {
-          MongoSample mongoSample = it.next();
-          String accession = mongoSample.getAccession();
+          final MongoSample mongoSample = it.next();
+          final String accession = mongoSample.getAccession();
           LOGGER.info("Handling sample " + accession);
           futures.put(
               accession,
@@ -116,8 +117,10 @@ public class ReindexRunner implements ApplicationRunner {
     private final AmqpTemplate amqpTemplate;
     private static final List<Sample> related = new ArrayList<>();
 
-    public AccessionCallable(
-        String accession, SampleReadService sampleReadService, AmqpTemplate amqpTemplate) {
+    AccessionCallable(
+        final String accession,
+        final SampleReadService sampleReadService,
+        final AmqpTemplate amqpTemplate) {
       this.accession = accession;
       this.sampleReadService = sampleReadService;
       this.amqpTemplate = amqpTemplate;
@@ -132,24 +135,24 @@ public class ReindexRunner implements ApplicationRunner {
       return null;
     }
 
-    private boolean fetchSampleAndSendMessage(boolean isRetry) {
+    private boolean fetchSampleAndSendMessage(final boolean isRetry) {
       if (isRetry) {
         try {
           TimeUnit.SECONDS.sleep(1);
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
           Thread.currentThread().interrupt();
         }
       }
-      Optional<Sample> opt = sampleReadService.fetch(accession, Optional.empty());
+      final Optional<Sample> opt = sampleReadService.fetch(accession, Optional.empty());
 
       if (opt.isPresent()) {
         try {
-          Sample sample = opt.get();
-          MessageContent messageContent = MessageContent.build(sample, null, related, false);
+          final Sample sample = opt.get();
+          final MessageContent messageContent = MessageContent.build(sample, null, related, false);
           amqpTemplate.convertAndSend(
               Messaging.REINDEXING_EXCHANGE, Messaging.REINDEXING_QUEUE, messageContent);
           return true;
-        } catch (Exception e) {
+        } catch (final Exception e) {
           LOGGER.error(
               String.format(
                   "failed to convert sample to message and send to queue for %s", accession));

@@ -14,7 +14,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class EgaDatasetResponse {
+class EgaDatasetResponse {
   private String stableId;
   private List<DataUseCondition> dataUseConditions;
 }

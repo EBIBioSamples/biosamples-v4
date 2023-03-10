@@ -22,14 +22,14 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component
 public class RestPrivateSampleIntegration extends AbstractIntegration {
-  public RestPrivateSampleIntegration(BioSamplesClient client) {
+  public RestPrivateSampleIntegration(final BioSamplesClient client) {
     super(client);
   }
 
   @Override
   protected void phaseOne() {
-    Sample publicSampleToday = getSampleWithReleaseDateToday();
-    Sample privateSample = getSampleWithFutureReleaseDate();
+    final Sample publicSampleToday = getSampleWithReleaseDateToday();
+    final Sample privateSample = getSampleWithFutureReleaseDate();
 
     Optional<Sample> optionalSample = fetchUniqueSampleByName(publicSampleToday.getName());
     if (optionalSample.isPresent()) {
@@ -50,8 +50,8 @@ public class RestPrivateSampleIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseTwo() {
-    Sample publicSampleToday = getSampleWithReleaseDateToday();
-    Sample privateSample = getSampleWithFutureReleaseDate();
+    final Sample publicSampleToday = getSampleWithReleaseDateToday();
+    final Sample privateSample = getSampleWithFutureReleaseDate();
 
     Optional<Sample> optionalSample = fetchUniqueSampleByName(publicSampleToday.getName());
 
@@ -86,10 +86,10 @@ public class RestPrivateSampleIntegration extends AbstractIntegration {
   protected void phaseSix() {}
 
   private Sample getSampleWithReleaseDateToday() {
-    String name = "RestPrivateSampleIntegration_sample_1";
-    Instant release = Instant.now();
+    final String name = "RestPrivateSampleIntegration_sample_1";
+    final Instant release = Instant.now();
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(Attribute.build("description", "Fake sample with today(now) release date"));
     attributes.add(Attribute.build("Organism", "Human"));
 
@@ -101,10 +101,10 @@ public class RestPrivateSampleIntegration extends AbstractIntegration {
   }
 
   private Sample getSampleWithFutureReleaseDate() {
-    String name = "RestPrivateSampleIntegration_sample_2";
-    Instant release = Instant.now().plusSeconds(3600);
+    final String name = "RestPrivateSampleIntegration_sample_2";
+    final Instant release = Instant.now().plusSeconds(3600);
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(Attribute.build("description", "Fake sample with future release date"));
     attributes.add(Attribute.build("Organism", "Human"));
 

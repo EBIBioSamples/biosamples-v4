@@ -34,13 +34,14 @@ import uk.ac.ebi.biosamples.utils.ClientUtils;
 @Service
 public class OlsProcessor {
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final RestTemplate restTemplate;
 
   private final BioSamplesProperties bioSamplesProperties;
 
-  public OlsProcessor(RestTemplate restTemplate, BioSamplesProperties bioSamplesProperties) {
+  public OlsProcessor(
+      final RestTemplate restTemplate, final BioSamplesProperties bioSamplesProperties) {
     this.restTemplate = restTemplate;
     this.bioSamplesProperties = bioSamplesProperties;
   }
@@ -52,7 +53,7 @@ public class OlsProcessor {
    */
   @Cacheable("ols_ancestors_synonyms")
   public Collection<String> ancestorsAndSynonyms(String ontology, String iri) {
-    Set<String> synonyms = new HashSet<>();
+    final Set<String> synonyms = new HashSet<>();
     if (ontology == null || ontology.trim().length() == 0) {
       return synonyms;
     }
@@ -62,7 +63,7 @@ public class OlsProcessor {
 
     // check if the iri is a full iri with all the necessary parts
     // build has to flag this iri as having already been encoded
-    UriComponents iriComponents = UriComponentsBuilder.fromUriString(iri).build();
+    final UriComponents iriComponents = UriComponentsBuilder.fromUriString(iri).build();
     if (iriComponents.getScheme() == null
         || iriComponents.getHost() == null
         || iriComponents.getPath() == null) {
@@ -72,7 +73,7 @@ public class OlsProcessor {
 
     // TODO do more by hal links, needs OLS to support
     // build has to flag this iri as having already been encoded
-    UriComponents uriComponents =
+    final UriComponents uriComponents =
         UriComponentsBuilder.fromUriString(
                 bioSamplesProperties.getOls()
                     + "/api/ontologies/{ontology}/terms/{term}/hierarchicalAncestors?size=1000")
@@ -85,39 +86,39 @@ public class OlsProcessor {
     ontology = UriUtils.encodePathSegment(ontology, "UTF-8");
     iri = UriUtils.encodePathSegment(iri, "UTF-8");
     // expand the template using the variables
-    URI uri = uriComponents.expand(ontology, iri).toUri();
+    final URI uri = uriComponents.expand(ontology, iri).toUri();
 
     log.debug("Contacting " + uri);
 
     // Note: OLS won't accept hal+json on that endpoint
-    RequestEntity<Void> requestEntity =
+    final RequestEntity<Void> requestEntity =
         RequestEntity.get(uri).accept(MediaType.APPLICATION_JSON).build();
     ResponseEntity<JsonNode> responseEntity = null;
     try {
       responseEntity =
           ClientUtils.doRetryQuery(
               requestEntity, restTemplate, 5, new ParameterizedTypeReference<JsonNode>() {});
-    } catch (HttpStatusCodeException e) {
+    } catch (final HttpStatusCodeException e) {
       // if we get a 404, return an empty list
       if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
         return Collections.emptyList();
       }
     }
 
-    JsonNode n = responseEntity.getBody();
+    final JsonNode n = responseEntity.getBody();
     if (n.has("_embedded")) {
       if (n.get("_embedded").has("terms")) {
-        for (JsonNode o : n.get("_embedded").get("terms")) {
+        for (final JsonNode o : n.get("_embedded").get("terms")) {
           if (o.has("label")) {
-            String synonym = o.get("label").asText();
+            final String synonym = o.get("label").asText();
             if (synonym != null && synonym.trim().length() > 0) {
               log.trace("adding synonym " + synonym);
               synonyms.add(synonym);
             }
           }
           if (o.has("synonyms")) {
-            for (JsonNode p : o.get("synonyms")) {
-              String synonym = p.asText();
+            for (final JsonNode p : o.get("synonyms")) {
+              final String synonym = p.asText();
               if (synonym != null && synonym.trim().length() > 0) {
                 log.trace("adding synonym " + synonym);
                 synonyms.add(synonym);
@@ -132,21 +133,21 @@ public class OlsProcessor {
   }
 
   // @Cacheable("ols_short")
-  public Optional<String> queryOlsForShortcode(String shortcode) {
+  public Optional<String> queryOlsForShortcode(final String shortcode) {
     log.trace("OLS getting : " + shortcode);
 
     // TODO do more by hal links, needs OLS to support
-    UriComponents uriComponents =
+    final UriComponents uriComponents =
         UriComponentsBuilder.fromUriString(
                 bioSamplesProperties.getOls() + "/api/terms?id={shortcode}&size=500")
             .build();
-    URI uri = uriComponents.expand(shortcode).encode().toUri();
+    final URI uri = uriComponents.expand(shortcode).encode().toUri();
 
     log.trace("OLS query for shortcode " + shortcode + " against " + uri);
 
-    RequestEntity<Void> requestEntity =
+    final RequestEntity<Void> requestEntity =
         RequestEntity.get(uri).accept(MediaType.APPLICATION_JSON).build();
-    ResponseEntity<ObjectNode> responseEntity =
+    final ResponseEntity<ObjectNode> responseEntity =
         restTemplate.exchange(requestEntity, new ParameterizedTypeReference<ObjectNode>() {});
 
     // non-200 status code
@@ -166,12 +167,12 @@ public class OlsProcessor {
       log.trace("Found empty body for shortcode " + shortcode + " against " + uri);
       return Optional.empty();
     }
-    ObjectNode n = responseEntity.getBody();
+    final ObjectNode n = responseEntity.getBody();
 
     String iri = null;
     if (n.has("_embedded")) {
       if (n.get("_embedded").has("terms")) {
-        for (JsonNode term : n.get("_embedded").get("terms")) {
+        for (final JsonNode term : n.get("_embedded").get("terms")) {
           if (term.has("iri") && term.has("is_defining_ontology")) {
             log.trace(
                 "iri: "
@@ -192,18 +193,18 @@ public class OlsProcessor {
     return Optional.ofNullable(iri);
   }
 
-  public Optional<OlsResult> queryForOlsObject(String shortcode) {
-    UriComponents uriComponents =
+  public Optional<OlsResult> queryForOlsObject(final String shortcode) {
+    final UriComponents uriComponents =
         UriComponentsBuilder.fromUriString(
                 bioSamplesProperties.getOls() + "/api/terms?id={shortcode}&size=500")
             .build();
-    URI uri = uriComponents.expand(shortcode).encode().toUri();
+    final URI uri = uriComponents.expand(shortcode).encode().toUri();
 
     log.trace("OLS query for shortcode {} against {}", shortcode, uri);
 
-    RequestEntity<Void> requestEntity =
+    final RequestEntity<Void> requestEntity =
         RequestEntity.get(uri).accept(MediaType.APPLICATION_JSON).build();
-    ResponseEntity<ObjectNode> responseEntity =
+    final ResponseEntity<ObjectNode> responseEntity =
         restTemplate.exchange(requestEntity, new ParameterizedTypeReference<ObjectNode>() {});
 
     // non-200 status code or empty body
@@ -215,11 +216,11 @@ public class OlsProcessor {
       return Optional.empty();
     }
 
-    ObjectNode node = responseEntity.getBody();
+    final ObjectNode node = responseEntity.getBody();
 
     OlsResult olsResult = null;
     if (node.has("_embedded") && node.get("_embedded").has("terms")) {
-      for (JsonNode term : node.get("_embedded").get("terms")) {
+      for (final JsonNode term : node.get("_embedded").get("terms")) {
         if (term.has("iri") && term.has("is_defining_ontology")) {
           // if we don't have an iri use this but if there is a defining ontoloy use this
           // in
@@ -227,8 +228,8 @@ public class OlsProcessor {
           if (olsResult == null || term.get("is_defining_ontology").booleanValue()) {
             // if this term is obsolete get the most upto-date one
             if (term.get("is_obsolete").booleanValue()) {
-              String[] replaceTermArray = term.get("term_replaced_by").asText().split("/");
-              String replaceTerm = replaceTermArray[replaceTermArray.length - 1];
+              final String[] replaceTermArray = term.get("term_replaced_by").asText().split("/");
+              final String replaceTerm = replaceTermArray[replaceTermArray.length - 1];
               return queryForOlsObject(replaceTerm);
             }
 

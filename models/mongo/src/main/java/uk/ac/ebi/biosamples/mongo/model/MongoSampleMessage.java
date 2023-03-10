@@ -22,13 +22,14 @@ public class MongoSampleMessage {
   private final Instant updateDate;
   private final Long taxId;
 
-  public MongoSampleMessage(final String biosampleAccession, final Instant updateDate, Long taxId) {
+  public MongoSampleMessage(
+      final String biosampleAccession, final Instant updateDate, final Long taxId) {
     this.biosampleAccession = biosampleAccession;
     this.updateDate = updateDate;
     this.taxId = taxId;
   }
 
-  public String getBiosampleAccession() {
+  private String getBiosampleAccession() {
     return biosampleAccession;
   }
 
@@ -41,10 +42,14 @@ public class MongoSampleMessage {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof MongoSampleMessage)) return false;
-    MongoSampleMessage that = (MongoSampleMessage) o;
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof MongoSampleMessage)) {
+      return false;
+    }
+    final MongoSampleMessage that = (MongoSampleMessage) o;
     return Objects.equals(getBiosampleAccession(), that.getBiosampleAccession())
         && Objects.equals(getUpdateDate(), that.getUpdateDate())
         && Objects.equals(getTaxId(), that.getTaxId());

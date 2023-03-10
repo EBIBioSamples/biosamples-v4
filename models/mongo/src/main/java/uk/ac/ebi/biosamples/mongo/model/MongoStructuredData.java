@@ -58,8 +58,11 @@ public class MongoStructuredData {
   }
 
   public static MongoStructuredData build(
-      String accession, Instant update, Instant create, Set<StructuredDataTable> data) {
-    MongoStructuredData mongoStructuredData = new MongoStructuredData();
+      final String accession,
+      final Instant update,
+      final Instant create,
+      final Set<StructuredDataTable> data) {
+    final MongoStructuredData mongoStructuredData = new MongoStructuredData();
     mongoStructuredData.accession = accession;
     mongoStructuredData.update = update;
     mongoStructuredData.create = create;
@@ -67,8 +70,8 @@ public class MongoStructuredData {
     return mongoStructuredData;
   }
 
-  public static MongoStructuredData build(StructuredData structuredData) {
-    MongoStructuredData mongoStructuredData = new MongoStructuredData();
+  public static MongoStructuredData build(final StructuredData structuredData) {
+    final MongoStructuredData mongoStructuredData = new MongoStructuredData();
     mongoStructuredData.accession = structuredData.getAccession();
     mongoStructuredData.update = structuredData.getUpdate();
     mongoStructuredData.create = structuredData.getCreate();

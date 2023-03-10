@@ -25,10 +25,11 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component
 public class SamplesGraphIntegration extends AbstractIntegration {
-  private Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final NeoSampleRepository neoSampleRepository;
 
-  public SamplesGraphIntegration(BioSamplesClient client, NeoSampleRepository neoSampleRepository) {
+  public SamplesGraphIntegration(
+      final BioSamplesClient client, final NeoSampleRepository neoSampleRepository) {
     super(client);
     this.neoSampleRepository = neoSampleRepository;
   }
@@ -50,35 +51,35 @@ public class SamplesGraphIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseFour() {
-    List<Sample> samples = new ArrayList<>();
-    for (EntityModel<Sample> sample : client.fetchSampleResourceAll()) {
+    final List<Sample> samples = new ArrayList<>();
+    for (final EntityModel<Sample> sample : client.fetchSampleResourceAll()) {
       samples.add(sample.getContent());
     }
 
     log.info("Sending {} samples to Neo4j", samples.size());
-    for (Sample sample : samples) {
-      NeoSample neoSample = NeoSample.build(sample);
+    for (final Sample sample : samples) {
+      final NeoSample neoSample = NeoSample.build(sample);
       neoSampleRepository.loadSample(neoSample);
     }
   }
 
   @Override
   protected void phaseFive() {
-    GraphSearchQuery query = new GraphSearchQuery();
-    GraphNode node = new GraphNode();
+    final GraphSearchQuery query = new GraphSearchQuery();
+    final GraphNode node = new GraphNode();
     node.setId("a1");
     node.setType("Sample");
 
-    Map<String, String> attributes = new HashMap<>();
+    final Map<String, String> attributes = new HashMap<>();
     attributes.put("organism", "homo sapiens");
     node.setAttributes(attributes);
 
-    Set<GraphNode> nodes = new HashSet<>();
+    final Set<GraphNode> nodes = new HashSet<>();
     nodes.add(node);
     query.setNodes(nodes);
     query.setLinks(Collections.emptySet());
 
-    GraphSearchQuery response = neoSampleRepository.graphSearch(query, 10, 1);
+    final GraphSearchQuery response = neoSampleRepository.graphSearch(query, 10, 1);
     if (response.getNodes().isEmpty()) {
       throw new IntegrationTestFailException("No samples present in neo4j", Phase.FIVE);
     }

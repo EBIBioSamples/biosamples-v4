@@ -27,8 +27,9 @@ public class ContextDeserializer extends StdDeserializer<BioSchemasContext> {
 
   @Override
   public BioSchemasContext deserialize(
-      JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
-    BioSchemasContext context = new BioSchemasContext();
+      final JsonParser jsonParser, final DeserializationContext deserializationContext)
+      throws IOException {
+    final BioSchemasContext context = new BioSchemasContext();
 
     JsonToken currentToken = jsonParser.getCurrentToken();
     if (currentToken.equals(JsonToken.START_ARRAY)) {

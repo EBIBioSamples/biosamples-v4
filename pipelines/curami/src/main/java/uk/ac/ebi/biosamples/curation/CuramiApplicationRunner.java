@@ -52,31 +52,31 @@ public class CuramiApplicationRunner implements ApplicationRunner {
   private final PipelineFutureCallback pipelineFutureCallback;
 
   public CuramiApplicationRunner(
-      BioSamplesClient bioSamplesClient,
-      PipelinesProperties pipelinesProperties,
-      MongoCurationRuleRepository repository,
-      AnalyticsService analyticsService) {
+      final BioSamplesClient bioSamplesClient,
+      final PipelinesProperties pipelinesProperties,
+      final MongoCurationRuleRepository repository,
+      final AnalyticsService analyticsService) {
     this.bioSamplesClient = bioSamplesClient;
     this.pipelinesProperties = pipelinesProperties;
     this.repository = repository;
     this.analyticsService = analyticsService;
-    this.curationRules = new HashMap<>();
-    this.pipelineFutureCallback = new PipelineFutureCallback();
+    curationRules = new HashMap<>();
+    pipelineFutureCallback = new PipelineFutureCallback();
   }
 
   @Override
-  public void run(ApplicationArguments args) throws Exception {
-    Collection<Filter> filters = PipelineUtils.getDateFilters(args);
-    Instant startTime = Instant.now();
+  public void run(final ApplicationArguments args) throws Exception {
+    final Collection<Filter> filters = PipelineUtils.getDateFilters(args);
+    final Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
     long sampleCount = 0;
-    SampleAnalytics sampleAnalytics = new SampleAnalytics();
+    final SampleAnalytics sampleAnalytics = new SampleAnalytics();
 
     loadCurationRulesFromFileToDb(getFileNameFromArgs(args));
     curationRules.putAll(loadCurationRulesToMemory());
     LOG.info("Found {} curation rules", curationRules.size());
 
-    try (AdaptiveThreadPoolExecutor executorService =
+    try (final AdaptiveThreadPoolExecutor executorService =
         AdaptiveThreadPoolExecutor.create(
             100,
             10000,
@@ -84,15 +84,15 @@ public class CuramiApplicationRunner implements ApplicationRunner {
             pipelinesProperties.getThreadCount(),
             pipelinesProperties.getThreadCountMax())) {
 
-      Map<String, Future<PipelineResult>> futures = new HashMap<>();
-      for (EntityModel<Sample> sampleResource :
+      final Map<String, Future<PipelineResult>> futures = new HashMap<>();
+      for (final EntityModel<Sample> sampleResource :
           bioSamplesClient.fetchSampleResourceAll("", filters)) {
         LOG.trace("Handling {}", sampleResource);
-        Sample sample = sampleResource.getContent();
+        final Sample sample = sampleResource.getContent();
         Objects.requireNonNull(sample);
         collectSampleTypes(sample, sampleAnalytics);
 
-        Callable<PipelineResult> task =
+        final Callable<PipelineResult> task =
             new SampleCuramiCallable(
                 bioSamplesClient, sample, pipelinesProperties.getCurationDomain(), curationRules);
         futures.put(sample.getAccession(), executorService.submit(task));
@@ -108,7 +108,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
       LOG.error("Pipeline failed to finish successfully", e);
       throw e;
     } finally {
-      Instant endTime = Instant.now();
+      final Instant endTime = Instant.now();
       LOG.info("Total samples processed {}", sampleCount);
       LOG.info("Total curation objects added {}", pipelineFutureCallback.getTotalCount());
       LOG.info("Pipeline finished at {}", endTime);
@@ -116,7 +116,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
           "Pipeline total running time {} seconds",
           Duration.between(startTime, endTime).getSeconds());
 
-      PipelineAnalytics pipelineAnalytics =
+      final PipelineAnalytics pipelineAnalytics =
           new PipelineAnalytics(
               "curami", startTime, endTime, sampleCount, pipelineFutureCallback.getTotalCount());
       pipelineAnalytics.setDateRange(filters);
@@ -128,43 +128,43 @@ public class CuramiApplicationRunner implements ApplicationRunner {
   }
 
   private Map<String, String> loadCurationRulesToMemory() {
-    List<MongoCurationRule> mongoCurationRules = repository.findAll();
+    final List<MongoCurationRule> mongoCurationRules = repository.findAll();
     return mongoCurationRules.stream()
         .collect(
             Collectors.toMap(
                 MongoCurationRule::getAttributePre, MongoCurationRule::getAttributePost));
   }
 
-  private void loadCurationRulesFromFileToDb(String filePath) {
-    Reader reader;
+  private void loadCurationRulesFromFileToDb(final String filePath) {
+    final Reader reader;
     // read it from given filepath, else read it from classpath
     try {
       if (filePath == null || filePath.isEmpty()) {
-        ClassPathResource resource = new ClassPathResource("curation_rules.csv");
+        final ClassPathResource resource = new ClassPathResource("curation_rules.csv");
         reader = new InputStreamReader(resource.getInputStream());
       } else {
         reader = new FileReader(filePath);
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       LOG.error("Could not find specified file in {} or classpath", filePath, e);
       return;
     }
 
-    try (BufferedReader bf = new BufferedReader(reader)) {
+    try (final BufferedReader bf = new BufferedReader(reader)) {
       String line = bf.readLine();
       LOG.info("Reading file with headers: {}", line);
       while ((line = bf.readLine()) != null) {
-        String[] curationRule = line.split(",");
-        MongoCurationRule mongoCurationRule =
+        final String[] curationRule = line.split(",");
+        final MongoCurationRule mongoCurationRule =
             MongoCurationRule.build(curationRule[0].trim(), curationRule[1].trim());
         repository.save(mongoCurationRule);
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       LOG.error("Could not find file in {} or classpath", filePath, e);
     }
   }
 
-  private String getFileNameFromArgs(ApplicationArguments args) {
+  private String getFileNameFromArgs(final ApplicationArguments args) {
     String curationRulesFile = null;
     if (args.getOptionNames().contains("file")) {
       curationRulesFile = args.getOptionValues("file").get(0);
@@ -177,7 +177,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
     final ConcurrentLinkedQueue<String> failedQueue = SampleCuramiCallable.failedQueue;
     String failures = null;
     if (!failedQueue.isEmpty()) {
-      List<String> fails = new LinkedList<>();
+      final List<String> fails = new LinkedList<>();
       while (failedQueue.peek() != null) {
         fails.add(failedQueue.poll());
       }
@@ -189,9 +189,9 @@ public class CuramiApplicationRunner implements ApplicationRunner {
     return failures;
   }
 
-  private void collectSampleTypes(Sample sample, SampleAnalytics sampleAnalytics) {
-    String accessionPrefix = sample.getAccession().substring(0, 4);
-    String submittedChannel = sample.getSubmittedVia().name();
+  private void collectSampleTypes(final Sample sample, final SampleAnalytics sampleAnalytics) {
+    final String accessionPrefix = sample.getAccession().substring(0, 4);
+    final String submittedChannel = sample.getSubmittedVia().name();
     sampleAnalytics.addToCenter(accessionPrefix);
     sampleAnalytics.addToChannel(submittedChannel);
   }

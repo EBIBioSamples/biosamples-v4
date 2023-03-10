@@ -19,7 +19,7 @@ public class LabelCountEntry implements Comparable<LabelCountEntry> {
   private final String label;
   private final long count;
 
-  private LabelCountEntry(String label, long count) {
+  private LabelCountEntry(final String label, final long count) {
     this.label = label;
     this.count = count;
   }
@@ -33,13 +33,13 @@ public class LabelCountEntry implements Comparable<LabelCountEntry> {
   }
 
   @Override
-  public int compareTo(LabelCountEntry o) {
-    return Long.compare(this.count, o.count);
+  public int compareTo(final LabelCountEntry o) {
+    return Long.compare(count, o.count);
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     sb.append("LabelCountEntry(");
     sb.append(label);
     sb.append(",");
@@ -50,7 +50,7 @@ public class LabelCountEntry implements Comparable<LabelCountEntry> {
 
   @JsonCreator
   public static LabelCountEntry build(
-      @JsonProperty("label") String label, @JsonProperty("count") long count) {
+      @JsonProperty("label") final String label, @JsonProperty("count") final long count) {
     if (label == null || label.trim().length() == 0) {
       throw new IllegalArgumentException("label must not be blank");
     }
@@ -58,7 +58,7 @@ public class LabelCountEntry implements Comparable<LabelCountEntry> {
   }
 
   @JsonCreator
-  public static LabelCountEntry build(Map<String, String> entryMap) {
+  public static LabelCountEntry build(final Map<String, String> entryMap) {
     if (isValidLabelCount(entryMap)) {
       return new LabelCountEntry(entryMap.get("label"), Long.parseLong(entryMap.get("count")));
     }
@@ -66,7 +66,7 @@ public class LabelCountEntry implements Comparable<LabelCountEntry> {
         "Provided object is not suitable to be converted to LabelCountEntry");
   }
 
-  public static Boolean isValidLabelCount(Map<String, String> content) {
+  private static Boolean isValidLabelCount(final Map<String, String> content) {
     return content.keySet().containsAll(Arrays.asList("label", "count"));
   }
 }

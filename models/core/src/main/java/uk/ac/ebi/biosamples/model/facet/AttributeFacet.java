@@ -22,11 +22,12 @@ import uk.ac.ebi.biosamples.model.filter.FilterType;
 @Relation(collectionRelation = "facets")
 @JsonDeserialize(builder = AttributeFacet.Builder.class)
 public class AttributeFacet implements Facet {
-  private String facetLabel;
-  private Long facetCount;
-  private LabelCountListContent content;
+  private final String facetLabel;
+  private final Long facetCount;
+  private final LabelCountListContent content;
 
-  private AttributeFacet(String facetLabel, Long facetCount, LabelCountListContent content) {
+  private AttributeFacet(
+      final String facetLabel, final Long facetCount, final LabelCountListContent content) {
     this.facetLabel = facetLabel;
     this.facetCount = facetCount;
     this.content = content;
@@ -44,27 +45,27 @@ public class AttributeFacet implements Facet {
 
   @Override
   public String getLabel() {
-    return this.facetLabel;
+    return facetLabel;
   }
 
   @Override
   public Long getCount() {
-    return this.facetCount;
+    return facetCount;
   }
 
   @Override
   public LabelCountListContent getContent() {
-    return this.content;
+    return content;
   }
 
   @Override
-  public String getContentSerializableFilter(String label) {
+  public String getContentSerializableFilter(final String label) {
     return label;
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     sb.append("AttributeFacet(");
     sb.append(facetLabel);
     sb.append(",");
@@ -77,19 +78,20 @@ public class AttributeFacet implements Facet {
 
   public static class Builder implements Facet.Builder {
 
-    private String field;
-    private Long count;
+    private final String field;
+    private final Long count;
     private LabelCountListContent content = null;
 
     @JsonCreator
-    public Builder(@JsonProperty("label") String field, @JsonProperty("count") Long count) {
+    public Builder(
+        @JsonProperty("label") final String field, @JsonProperty("count") final Long count) {
       this.field = field;
       this.count = count;
     }
 
     @JsonProperty
     @Override
-    public Builder withContent(FacetContent content) {
+    public Builder withContent(final FacetContent content) {
 
       if (!(content instanceof LabelCountListContent)) {
         throw new RuntimeException("Content not compatible with an attribute facet");
@@ -101,7 +103,7 @@ public class AttributeFacet implements Facet {
 
     @Override
     public Facet build() {
-      return new AttributeFacet(this.field, this.count, this.content);
+      return new AttributeFacet(field, count, content);
     }
   }
 }

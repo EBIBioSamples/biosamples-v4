@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- BioSamples API XML Schema - version v1.0 -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
-  xmlns:si="http://www.ebi.ac.uk/biosamples/SummaryInfo"
-  targetNamespace="http://www.ebi.ac.uk/biosamples/ResultQuery" 
-  xmlns:tns="http://www.ebi.ac.uk/biosamples/ResultQuery" 
-  elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:si="http://www.ebi.ac.uk/biosamples/SummaryInfo"
+           targetNamespace="http://www.ebi.ac.uk/biosamples/ResultQuery"
+           elementFormDefault="qualified">
   <xs:import schemaLocation="SummaryInfo.xsd" namespace="http://www.ebi.ac.uk/biosamples/SummaryInfo"/>
   <xs:element name="ResultQuery">
     <xs:complexType>

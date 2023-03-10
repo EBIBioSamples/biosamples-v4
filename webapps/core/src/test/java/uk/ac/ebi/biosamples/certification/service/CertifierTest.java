@@ -27,7 +27,6 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.certification.*;
 import uk.ac.ebi.biosamples.service.certification.*;
-import uk.ac.ebi.biosamples.service.certification.Validator;
 import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
 import uk.ac.ebi.biosamples.validation.ValidatorI;
 
@@ -59,27 +58,27 @@ public class CertifierTest {
   public void given_valid_plan_result_issue_certificate() throws Exception {
     Mockito.doNothing().when(validator).validate(Mockito.anyString(), Mockito.anyString());
 
-    String data =
+    final String data =
         IOUtils.toString(
             getClass().getClassLoader().getResourceAsStream("json/ncbi-SAMN03894263-curated.json"),
             "UTF8");
-    SampleDocument sampleDocument = new SampleDocument("test-uuid", data);
-    Plan plan = new Plan("ncbi-0.0.1", "biosamples-0.0.1", Collections.EMPTY_LIST);
-    PlanResult planResult = new PlanResult(sampleDocument, plan);
-    CertificationResult certificationResult = certifier.certify(planResult, true);
+    final SampleDocument sampleDocument = new SampleDocument("test-uuid", data);
+    final Plan plan = new Plan("ncbi-0.0.1", "biosamples-0.0.1", Collections.EMPTY_LIST);
+    final PlanResult planResult = new PlanResult(sampleDocument, plan);
+    final CertificationResult certificationResult = certifier.certify(planResult, true);
     assertNotNull(certificationResult);
   }
 
   @Test
   public void given_valid_plan_result_issue_certificate_curator_test() throws Exception {
-    String data =
+    final String data =
         IOUtils.toString(
             getClass().getClassLoader().getResourceAsStream("json/ncbi-SAMN03894263-curated.json"),
             "UTF8");
-    SampleDocument sampleDocument = new SampleDocument("test-uuid", data);
+    final SampleDocument sampleDocument = new SampleDocument("test-uuid", data);
     final ObjectMapper jsonMapper = new ObjectMapper();
 
-    BioSamplesCertificationComplainceResult result =
+    final BioSamplesCertificationComplainceResult result =
         certifyService.recordResult(sampleDocument, true);
   }
 

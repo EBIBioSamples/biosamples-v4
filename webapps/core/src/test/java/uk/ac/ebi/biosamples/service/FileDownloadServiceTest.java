@@ -13,7 +13,10 @@ package uk.ac.ebi.biosamples.service;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.junit.Before;
@@ -25,8 +28,8 @@ import org.springframework.core.io.ClassPathResource;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FileDownloadServiceTest {
-  @Mock SamplePageService samplePageService;
-  FileDownloadService fileDownloadService;
+  @Mock private SamplePageService samplePageService;
+  private FileDownloadService fileDownloadService;
 
   @Before
   public void init() {
@@ -35,12 +38,12 @@ public class FileDownloadServiceTest {
 
   @Test
   public void copyAndCompress() throws IOException {
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    InputStream in = new ClassPathResource("amr_sample.json").getInputStream();
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    final InputStream in = new ClassPathResource("amr_sample.json").getInputStream();
     fileDownloadService.copyAndCompress(in, out, true, "json");
 
-    ZipInputStream zipIn = new ZipInputStream(new ByteArrayInputStream(out.toByteArray()));
-    ZipEntry entry = zipIn.getNextEntry();
+    final ZipInputStream zipIn = new ZipInputStream(new ByteArrayInputStream(out.toByteArray()));
+    final ZipEntry entry = zipIn.getNextEntry();
     assertNotNull(entry);
     assertEquals("samples.json", entry.getName());
   }

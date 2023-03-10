@@ -31,7 +31,6 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.certification.*;
 import uk.ac.ebi.biosamples.service.certification.*;
-import uk.ac.ebi.biosamples.service.certification.Validator;
 import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
 import uk.ac.ebi.biosamples.validation.ValidatorI;
 
@@ -64,9 +63,10 @@ public class CuratorTest {
                 "0.0.1",
                 "schemas/certification/ncbi-candidate-schema.json",
                 false));
-    InterrogationResult interrogationResult = new InterrogationResult(testSample(), checklistList);
-    List<PlanResult> planResults = curator.runCurationPlans(interrogationResult);
-    for (PlanResult planResult : planResults) {
+    final InterrogationResult interrogationResult =
+        new InterrogationResult(testSample(), checklistList);
+    final List<PlanResult> planResults = curator.runCurationPlans(interrogationResult);
+    for (final PlanResult planResult : planResults) {
       assertNotNull(planResult.getSampleDocument());
       assertFalse(planResult.getCurationResults().isEmpty());
       assertEquals("live", planResult.getCurationResults().get(0).getBefore());
@@ -76,7 +76,7 @@ public class CuratorTest {
 
   @Test
   public void given_ChecklistNotMatches_run_Recommendation() throws Exception {
-    List<Checklist> checklistList;
+    final List<Checklist> checklistList;
     checklistList =
         Collections.singletonList(
             new Checklist(
@@ -84,8 +84,9 @@ public class CuratorTest {
                 "0.0.1",
                 "schemas/certification/biosamples-minimal.json",
                 false));
-    InterrogationResult interrogationResult = new InterrogationResult(testSample(), checklistList);
-    List<Recommendation> recommendations = curator.runRecommendations(interrogationResult);
+    final InterrogationResult interrogationResult =
+        new InterrogationResult(testSample(), checklistList);
+    final List<Recommendation> recommendations = curator.runRecommendations(interrogationResult);
 
     recommendations.forEach(
         recommendation -> {
@@ -100,23 +101,24 @@ public class CuratorTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void given_null_sample_checklistMatches_throw_exception() throws IOException {
-    InterrogationResult interrogationResult = new InterrogationResult(null, Collections.EMPTY_LIST);
+    final InterrogationResult interrogationResult =
+        new InterrogationResult(null, Collections.EMPTY_LIST);
     curator.runCurationPlans(interrogationResult);
   }
 
   @Test
   public void given_sample_and_no_checklists_checklistMatches_return_empty_plan_results()
       throws IOException {
-    InterrogationResult interrogationResult =
+    final InterrogationResult interrogationResult =
         new InterrogationResult(testSample(), Collections.EMPTY_LIST);
     assertTrue(curator.runCurationPlans(interrogationResult).isEmpty());
   }
 
   private SampleDocument testSample() throws IOException {
-    String data =
+    final String data =
         IOUtils.toString(
             getClass().getClassLoader().getResourceAsStream("json/ncbi-SAMN03894263.json"), "UTF8");
-    SampleDocument sampleDocument = new SampleDocument("test", data);
+    final SampleDocument sampleDocument = new SampleDocument("test", data);
     return sampleDocument;
   }
 }

@@ -12,11 +12,7 @@ package uk.ac.ebi.biosamples;
 
 import static org.junit.Assert.*;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import org.dom4j.Element;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,7 +37,7 @@ public class NcbiAmrConvertionTests {
 
   @Test
   public void given_amr_data_it_produces_sample_with_structured_data() {
-    Set<StructuredDataTable> structuredData =
+    final Set<StructuredDataTable> structuredData =
         sampleConversionService.convertNcbiXmlElementToStructuredData(
             getAmrSample(), new HashSet<>());
     assertEquals("Should contain only 1 AMR element", 1, structuredData.size());
@@ -55,11 +51,12 @@ public class NcbiAmrConvertionTests {
 
   @Test
   public void given_amr_xml_it_extracts_proper_content() {
-    Set<StructuredDataTable> structuredData =
+    final Set<StructuredDataTable> structuredData =
         sampleConversionService.convertNcbiXmlElementToStructuredData(
             getAmrSample(), new HashSet<>());
-    StructuredDataTable structuredDataTable = structuredData.iterator().next();
-    Map<String, StructuredDataEntry> dataRow = structuredDataTable.getContent().iterator().next();
+    final StructuredDataTable structuredDataTable = structuredData.iterator().next();
+    final Map<String, StructuredDataEntry> dataRow =
+        structuredDataTable.getContent().iterator().next();
 
     assertEquals(dataRow.get("antibioticName").getValue(), "nalidixic acid");
     assertEquals(dataRow.get("resistancePhenotype").getValue(), "intermediate");
@@ -76,20 +73,20 @@ public class NcbiAmrConvertionTests {
   @Test
   public void it_extract_multiple_entries_from_a_table()
       throws NcbiAmrConversionService.AmrParsingException {
-    Element sampleWithMultipleAmrEntries = getBioSampleFromAmrSampleSet("SAMN09492289");
-    Element amrTableElement =
+    final Element sampleWithMultipleAmrEntries = getBioSampleFromAmrSampleSet("SAMN09492289");
+    final Element amrTableElement =
         XmlPathBuilder.of(sampleWithMultipleAmrEntries)
             .path("Description", "Comment", "Table")
             .element();
-    String organism =
+    final String organism =
         XmlPathBuilder.of(sampleWithMultipleAmrEntries)
             .path("Description", "Organism", "OrganismName")
             .text();
 
-    Set<Map<String, StructuredDataEntry>> structuredTableSet;
+    final Set<Map<String, StructuredDataEntry>> structuredTableSet;
     try {
       structuredTableSet = amrConversionService.convertStructuredTable(amrTableElement, organism);
-    } catch (NcbiAmrConversionService.AmrParsingException e) {
+    } catch (final NcbiAmrConversionService.AmrParsingException e) {
       e.printStackTrace();
       throw e;
     }
@@ -99,8 +96,8 @@ public class NcbiAmrConvertionTests {
 
   @Test
   public void it_can_read_multiple_types_of_antibiograms_table() {
-    for (Element element : getAmrSampleSet()) {
-      Set<StructuredDataTable> structuredData =
+    for (final Element element : getAmrSampleSet()) {
+      final Set<StructuredDataTable> structuredData =
           sampleConversionService.convertNcbiXmlElementToStructuredData(
               getAmrSample(), new HashSet<>());
       assertNotNull(structuredData);
@@ -112,13 +109,13 @@ public class NcbiAmrConvertionTests {
     return NcbiTestsService.readNcbiBiosampleElementFromFile("/examples/ncbi_amr_sample.xml");
   }
 
-  public List<Element> getAmrSampleSet() {
+  private List<Element> getAmrSampleSet() {
     return NcbiTestsService.readNcbiBioSampleElementsFromFile("/examples/ncbi_amr_sample_set.xml");
   }
 
-  public Element getBioSampleFromAmrSampleSet(String accession) {
-    List<Element> biosamples = getAmrSampleSet();
-    Optional<Element> element =
+  private Element getBioSampleFromAmrSampleSet(final String accession) {
+    final List<Element> biosamples = getAmrSampleSet();
+    final Optional<Element> element =
         biosamples.stream()
             .filter(elem -> elem.attributeValue("accession").equals(accession))
             .findFirst();

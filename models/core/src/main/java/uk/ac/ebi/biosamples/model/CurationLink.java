@@ -30,12 +30,12 @@ public class CurationLink implements Comparable<CurationLink> {
   protected final Instant created;
 
   private CurationLink(
-      String sample,
-      String domain,
-      String webinSubmissionAccountId,
-      Curation curation,
-      String hash,
-      Instant created) {
+      final String sample,
+      final String domain,
+      final String webinSubmissionAccountId,
+      final Curation curation,
+      final String hash,
+      final Instant created) {
     this.sample = sample;
     this.domain = domain;
     this.webinSubmissionAccountId = webinSubmissionAccountId;
@@ -70,17 +70,19 @@ public class CurationLink implements Comparable<CurationLink> {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (o == this) return true;
+  public boolean equals(final Object o) {
+    if (o == this) {
+      return true;
+    }
     if (!(o instanceof CurationLink)) {
       return false;
     }
-    CurationLink other = (CurationLink) o;
+    final CurationLink other = (CurationLink) o;
 
-    return Objects.equals(this.curation, other.curation)
-        && Objects.equals(this.sample, other.sample)
-        && Objects.equals(this.domain, other.domain)
-        && Objects.equals(this.webinSubmissionAccountId, other.webinSubmissionAccountId);
+    return Objects.equals(curation, other.curation)
+        && Objects.equals(sample, other.sample)
+        && Objects.equals(domain, other.domain)
+        && Objects.equals(webinSubmissionAccountId, other.webinSubmissionAccountId);
   }
 
   @Override
@@ -89,37 +91,37 @@ public class CurationLink implements Comparable<CurationLink> {
   }
 
   @Override
-  public int compareTo(CurationLink other) {
+  public int compareTo(final CurationLink other) {
     if (other == null) {
       return 1;
     }
 
-    if (!this.domain.equals(other.domain)) {
-      return this.domain.compareTo(other.domain);
+    if (!domain.equals(other.domain)) {
+      return domain.compareTo(other.domain);
     }
-    if (!this.webinSubmissionAccountId.equals(other.webinSubmissionAccountId)) {
-      return this.webinSubmissionAccountId.compareTo(other.webinSubmissionAccountId);
+    if (!webinSubmissionAccountId.equals(other.webinSubmissionAccountId)) {
+      return webinSubmissionAccountId.compareTo(other.webinSubmissionAccountId);
     }
-    if (!this.sample.equals(other.sample)) {
-      return this.sample.compareTo(other.sample);
+    if (!sample.equals(other.sample)) {
+      return sample.compareTo(other.sample);
     }
-    if (!this.curation.equals(other.curation)) {
-      return this.curation.compareTo(other.curation);
+    if (!curation.equals(other.curation)) {
+      return curation.compareTo(other.curation);
     }
     return 0;
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     sb.append("CurationLink(");
-    sb.append(this.sample);
+    sb.append(sample);
     sb.append(",");
-    sb.append(this.domain);
+    sb.append(domain);
     sb.append(",");
-    sb.append(this.webinSubmissionAccountId);
+    sb.append(webinSubmissionAccountId);
     sb.append(",");
-    sb.append(this.curation);
+    sb.append(curation);
     sb.append(")");
     return sb.toString();
   }
@@ -127,14 +129,14 @@ public class CurationLink implements Comparable<CurationLink> {
   // Used for deserializtion (JSON -> Java)
   @JsonCreator
   public static CurationLink build(
-      @JsonProperty("sample") String sample,
-      @JsonProperty("curation") Curation curation,
-      @JsonProperty("domain") String domain,
-      @JsonProperty("webinSubmissionAccountId") String webinSubmissionAccountId,
+      @JsonProperty("sample") final String sample,
+      @JsonProperty("curation") final Curation curation,
+      @JsonProperty("domain") final String domain,
+      @JsonProperty("webinSubmissionAccountId") final String webinSubmissionAccountId,
       @JsonProperty("created") @JsonDeserialize(using = CustomInstantDeserializer.class)
-          Instant created) {
+          final Instant created) {
 
-    String hash =
+    final String hash =
         Hashing.sha256()
             .newHasher()
             .putUnencodedChars(curation.getHash())

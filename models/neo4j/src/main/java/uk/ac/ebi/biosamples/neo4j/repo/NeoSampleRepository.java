@@ -27,7 +27,7 @@ public class NeoSampleRepository implements AutoCloseable {
 
   private final Driver driver;
 
-  public NeoSampleRepository(NeoProperties neoProperties) {
+  public NeoSampleRepository(final NeoProperties neoProperties) {
     driver =
         GraphDatabase.driver(
             neoProperties.getNeoUrl(),
@@ -39,19 +39,19 @@ public class NeoSampleRepository implements AutoCloseable {
     driver.close();
   }
 
-  public List<Map<String, Object>> executeCypher(String cypherQuery) {
+  public List<Map<String, Object>> executeCypher(final String cypherQuery) {
     List<Map<String, Object>> resultList;
-    try (Session session = driver.session()) {
-      Result result = session.run(cypherQuery);
+    try (final Session session = driver.session()) {
+      final Result result = session.run(cypherQuery);
       resultList = result.list(r -> r.asMap(NeoSampleRepository::convert));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       resultList = new ArrayList<>();
     }
 
     return resultList;
   }
 
-  static Object convert(Value value) {
+  private static Object convert(final Value value) {
     switch (value.type().name()) {
       case "PATH":
         return value.asList(NeoSampleRepository::convert);
@@ -62,19 +62,20 @@ public class NeoSampleRepository implements AutoCloseable {
     return value.asObject();
   }
 
-  public GraphSearchQuery graphSearch(GraphSearchQuery searchQuery, int limit, int page) {
-    int skip = (page - 1) * limit;
-    StringBuilder query = new StringBuilder();
-    StringJoiner idJoiner = new StringJoiner(",");
-    for (GraphNode node : searchQuery.getNodes()) {
+  public GraphSearchQuery graphSearch(
+      final GraphSearchQuery searchQuery, final int limit, final int page) {
+    final int skip = (page - 1) * limit;
+    final StringBuilder query = new StringBuilder();
+    final StringJoiner idJoiner = new StringJoiner(",");
+    for (final GraphNode node : searchQuery.getNodes()) {
       query.append("MATCH (").append(node.getId()).append(node.getQueryString()).append(") ");
       idJoiner.add(node.getId());
     }
 
     int relCount = 0;
-    for (GraphLink link : searchQuery.getLinks()) {
+    for (final GraphLink link : searchQuery.getLinks()) {
       relCount++;
-      String relName = "r" + relCount;
+      final String relName = "r" + relCount;
       query.append("MATCH ").append(link.getQueryString(relName));
       idJoiner.add(relName);
     }
@@ -84,7 +85,7 @@ public class NeoSampleRepository implements AutoCloseable {
       idJoiner.add("a1");
     }
 
-    StringBuilder countQuery = new StringBuilder(query.toString()).append(" RETURN COUNT(*)");
+    final StringBuilder countQuery = new StringBuilder(query.toString()).append(" RETURN COUNT(*)");
     query.append(" RETURN ").append(idJoiner.toString());
     query
         .append(" ORDER BY ")
@@ -94,28 +95,28 @@ public class NeoSampleRepository implements AutoCloseable {
         .append(" LIMIT ")
         .append(limit);
 
-    GraphSearchQuery response = new GraphSearchQuery();
+    final GraphSearchQuery response = new GraphSearchQuery();
     response.setPage(page);
     response.setSize(limit);
-    try (Session session = driver.session()) {
+    try (final Session session = driver.session()) {
       LOG.info("Graph query: {}", query);
-      Result countResult = session.run(countQuery.toString());
-      int totalElements = countResult.single().get(0).asInt();
+      final Result countResult = session.run(countQuery.toString());
+      final int totalElements = countResult.single().get(0).asInt();
       response.setTotalElements(totalElements);
 
-      Result result = session.run(query.toString());
-      Set<GraphNode> responseNodes = new HashSet<>();
-      Set<GraphLink> responseLinks = new HashSet<>();
+      final Result result = session.run(query.toString());
+      final Set<GraphNode> responseNodes = new HashSet<>();
+      final Set<GraphLink> responseLinks = new HashSet<>();
       response.setNodes(responseNodes);
       response.setLinks(responseLinks);
 
       while (result.hasNext()) {
-        org.neo4j.driver.Record record = result.next();
-        for (Value value : record.values()) {
+        final org.neo4j.driver.Record record = result.next();
+        for (final Value value : record.values()) {
           addToResponse(value, responseNodes, responseLinks);
         }
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOG.error("Failed to load graph search results", e);
     }
 
@@ -123,23 +124,23 @@ public class NeoSampleRepository implements AutoCloseable {
   }
 
   private void addToResponse(
-      Value value, Set<GraphNode> responseNodes, Set<GraphLink> responseLinks) {
+      final Value value, final Set<GraphNode> responseNodes, final Set<GraphLink> responseLinks) {
     switch (value.type().name()) {
       case "PATH":
         // todo handle PATH type
         LOG.warn("not handled yet");
         break;
       case "NODE":
-        Node internalNode = value.asNode();
-        GraphNode node = new GraphNode();
+        final Node internalNode = value.asNode();
+        final GraphNode node = new GraphNode();
         node.setType(internalNode.labels().iterator().next());
         node.setAttributes((Map) internalNode.asMap());
         node.setId(String.valueOf(internalNode.id()));
         responseNodes.add(node);
         break;
       case "RELATIONSHIP":
-        Relationship internalRel = value.asRelationship();
-        GraphLink link = new GraphLink();
+        final Relationship internalRel = value.asRelationship();
+        final GraphLink link = new GraphLink();
         link.setType(RelationshipType.getType(internalRel.type()));
         link.setStartNode(String.valueOf(internalRel.startNodeId()));
         link.setEndNode(String.valueOf(internalRel.endNodeId()));
@@ -152,29 +153,29 @@ public class NeoSampleRepository implements AutoCloseable {
   }
 
   /** ********************************************************************* */
-  public void loadSample(NeoSample sample) {
-    try (Session session = driver.session()) {
+  public void loadSample(final NeoSample sample) {
+    try (final Session session = driver.session()) {
       createSample(session, sample);
 
-      for (NeoRelationship relationship : sample.getRelationships()) {
+      for (final NeoRelationship relationship : sample.getRelationships()) {
         createSampleRelationship(session, relationship);
       }
 
-      for (NeoExternalEntity ref : sample.getExternalRefs()) {
+      for (final NeoExternalEntity ref : sample.getExternalRefs()) {
         createExternalRelationship(session, sample.getAccession(), ref);
       }
     }
   }
 
-  public void createSample(Session session, NeoSample sample) {
+  private void createSample(final Session session, final NeoSample sample) {
     String query =
         "MERGE (a:Sample{accession:$accession}) " + "SET a.name = $name, a.taxid = $taxid";
-    Map<String, String> sampleBasicInfoMap = new HashMap<>();
+    final Map<String, String> sampleBasicInfoMap = new HashMap<>();
     sampleBasicInfoMap.put("accession", sample.getAccession());
     sampleBasicInfoMap.put("name", sample.getName());
     sampleBasicInfoMap.put("taxid", sample.getTaxId());
 
-    Map<String, Object> params = new HashMap<>(sampleBasicInfoMap);
+    final Map<String, Object> params = new HashMap<>(sampleBasicInfoMap);
 
     if (sample.getOrganism() != null) {
       query = query + ", a.organism = $organism";
@@ -216,28 +217,28 @@ public class NeoSampleRepository implements AutoCloseable {
     session.run(query, params);
   }
 
-  public void createSampleRelationship(Session session, NeoRelationship relationship) {
-    String query =
+  private void createSampleRelationship(final Session session, final NeoRelationship relationship) {
+    final String query =
         "MERGE (a:Sample {accession:$fromAccession}) "
             + "MERGE (b:Sample {accession:$toAccession}) "
             + "MERGE (a)-[r:"
             + relationship.getType()
             + "]->(b)";
-    Map<String, Object> params = new HashMap<>();
+    final Map<String, Object> params = new HashMap<>();
     params.put("fromAccession", relationship.getSource());
     params.put("toAccession", relationship.getTarget());
 
     session.run(query, params);
   }
 
-  public void createExternalRelationship(
-      Session session, String accession, NeoExternalEntity externalEntity) {
-    String query =
+  private void createExternalRelationship(
+      final Session session, final String accession, final NeoExternalEntity externalEntity) {
+    final String query =
         "MERGE (a:Sample {accession:$accession}) "
             + "MERGE (b:ExternalEntity {url:$url}) "
             + "SET b.archive = $archive, b.ref = $ref "
             + "MERGE (a)-[r:EXTERNAL_REFERENCE]->(b)";
-    Map<String, Object> params = new HashMap<>();
+    final Map<String, Object> params = new HashMap<>();
     params.put("accession", accession);
     params.put("url", externalEntity.getUrl());
     params.put("archive", externalEntity.getArchive());
@@ -247,11 +248,11 @@ public class NeoSampleRepository implements AutoCloseable {
   }
 
   public void createExternalEntity(
-      Session session, String archive, String externalRef, String url) {
-    String query =
+      final Session session, final String archive, final String externalRef, final String url) {
+    final String query =
         "MERGE (a:ExternalEntity{url:$url}) "
             + "SET a.archive = $archive, a.externalRef = $externalRef";
-    Map<String, Object> params = new HashMap<>();
+    final Map<String, Object> params = new HashMap<>();
     params.put("url", url);
     params.put("archive", archive);
     params.put("externalRef", externalRef);

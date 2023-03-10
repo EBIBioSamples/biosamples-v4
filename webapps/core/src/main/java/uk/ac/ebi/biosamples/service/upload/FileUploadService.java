@@ -27,7 +27,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
-import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
@@ -80,7 +81,7 @@ public class FileUploadService {
 
       final Path temp = Files.createTempFile("upload", ".tsv");
 
-      File fileToBeUploaded = temp.toFile();
+      final File fileToBeUploaded = temp.toFile();
       file.transferTo(fileToBeUploaded);
 
       log.info("Input file name " + fileToBeUploaded.getName());
@@ -197,7 +198,7 @@ public class FileUploadService {
                       "Failed to create sample in the file",
                       true));
             }
-          } catch (Exception e) {
+          } catch (final Exception e) {
             validationResult.addValidationMessage(
                 new ValidationResult.ValidationMessage(
                     fileUploadUtils.getSampleName(csvRecordMap),
@@ -275,7 +276,7 @@ public class FileUploadService {
       final ValidationResult validationResult,
       final boolean isWebin) {
     final String sampleName = fileUploadUtils.getSampleName(multiMap);
-    boolean isValidatedAgainstChecklist;
+    final boolean isValidatedAgainstChecklist;
     boolean sampleWithAccession = false;
 
     Sample sample = fileUploadUtils.buildSample(multiMap, validationResult);

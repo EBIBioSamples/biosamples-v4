@@ -10,15 +10,8 @@
 */
 package uk.ac.ebi.biosamples.solr.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.solr.core.mapping.Dynamic;
@@ -41,7 +34,7 @@ public class SolrSample {
   protected String domain;
 
   @Indexed(name = "webinId", required = true)
-  protected String webinSubmissionAcccountId;
+  private String webinSubmissionAcccountId;
 
   // TODO
   /**
@@ -58,46 +51,46 @@ public class SolrSample {
   protected String update;
 
   @Indexed(name = "modified_dt", required = true, type = "date") // TODO why type=date ?
-  protected String modified;
+  private String modified;
 
   @Indexed(name = "indexed_dt", required = true, type = "date") // TODO why type=date ?
-  protected String indexed;
+  private String indexed;
 
   @Indexed(name = "*_av_ss")
   @Dynamic
-  protected Map<String, List<String>> attributeValues;
+  private Map<String, List<String>> attributeValues;
 
   @Indexed(
       name = "*_ai_ss",
       copyTo = {"ontologyiri_ss"})
   @Dynamic
-  protected Map<String, List<String>> attributeIris;
+  private Map<String, List<String>> attributeIris;
 
   @Indexed(name = "*_au_ss")
   @Dynamic
-  protected Map<String, List<String>> attributeUnits;
+  private Map<String, List<String>> attributeUnits;
 
   /** Relationships for which this sample is the source */
   @Indexed(name = "*_or_ss", copyTo = "keywords_ss")
   @Dynamic
-  protected Map<String, List<String>> outgoingRelationships;
+  private Map<String, List<String>> outgoingRelationships;
 
   /** Relationships for which this sample is the target */
   @Indexed(name = "*_ir_ss", copyTo = "keywords_ss")
   @Dynamic
-  protected Map<String, List<String>> incomingRelationships;
+  private Map<String, List<String>> incomingRelationships;
 
   /**
    * This field shouldn't be populated directly, instead Solr will copy all the ontology terms from
    * the attributes into it.
    */
   @Indexed(name = "ontologyiri_ss")
-  protected List<String> ontologyIris;
+  private List<String> ontologyIris;
 
   /** This field is used to store external references only */
   @Indexed(name = "*_erd_ss", copyTo = "facetfields_ss")
   @Dynamic
-  protected Map<String, List<String>> externalReferencesData;
+  private Map<String, List<String>> externalReferencesData;
 
   /**
    * This field is required to get a list of attribute to use for faceting. * It includes attributes
@@ -105,14 +98,14 @@ public class SolrSample {
    * save space.
    */
   @Indexed(name = "facetfields_ss")
-  protected List<String> facetFields;
+  private List<String> facetFields;
   // TODO consider renaming as used only for faceting
 
   /** This field is required to store the ontology expansion and attributes from related samples */
   @Indexed(name = "keywords_ss")
   protected List<String> keywords;
 
-  public SolrSample() {}
+  private SolrSample() {}
 
   public String getAccession() {
     return accession;
@@ -180,7 +173,7 @@ public class SolrSample {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     sb.append("Sample(");
     sb.append(name);
     sb.append(",");
@@ -210,21 +203,21 @@ public class SolrSample {
    * instead
    */
   public static SolrSample build(
-      String name,
-      String accession,
-      String domain,
-      String webinSubmissionAcccountId,
-      String release,
-      String update,
-      String modified,
-      String indexed,
+      final String name,
+      final String accession,
+      final String domain,
+      final String webinSubmissionAcccountId,
+      final String release,
+      final String update,
+      final String modified,
+      final String indexed,
       Map<String, List<String>> attributeValues,
       Map<String, List<String>> attributeIris,
       Map<String, List<String>> attributeUnits,
-      Map<String, List<String>> outgoingRelationships,
-      Map<String, List<String>> incomingRelationships,
-      Map<String, List<String>> externalReferencesData,
-      List<String> keywords) {
+      final Map<String, List<String>> outgoingRelationships,
+      final Map<String, List<String>> incomingRelationships,
+      final Map<String, List<String>> externalReferencesData,
+      final List<String> keywords) {
 
     // TODO validate maps
     if (attributeValues == null) {
@@ -237,7 +230,7 @@ public class SolrSample {
       attributeUnits = new HashMap<>();
     }
 
-    SolrSample sample = new SolrSample();
+    final SolrSample sample = new SolrSample();
     sample.accession = accession;
     sample.name = name;
     sample.release = release;
@@ -253,27 +246,27 @@ public class SolrSample {
     sample.outgoingRelationships = outgoingRelationships;
     sample.externalReferencesData = externalReferencesData;
 
-    SortedSet<String> facetFieldSet = new TreeSet<>();
+    final SortedSet<String> facetFieldSet = new TreeSet<>();
     if (attributeValues != null && !attributeValues.keySet().isEmpty()) {
-      for (String attributeValueKey : attributeValues.keySet()) {
+      for (final String attributeValueKey : attributeValues.keySet()) {
         facetFieldSet.add(attributeValueKey + "_av_ss");
       }
     }
 
     if (outgoingRelationships != null && !outgoingRelationships.keySet().isEmpty()) {
-      for (String outgoingRelationshipsKey : outgoingRelationships.keySet()) {
+      for (final String outgoingRelationshipsKey : outgoingRelationships.keySet()) {
         facetFieldSet.add(outgoingRelationshipsKey + "_or_ss");
       }
     }
 
     if (incomingRelationships != null && !incomingRelationships.keySet().isEmpty()) {
-      for (String incomingRelationshipsKey : incomingRelationships.keySet()) {
+      for (final String incomingRelationshipsKey : incomingRelationships.keySet()) {
         facetFieldSet.add(incomingRelationshipsKey + "_ir_ss");
       }
     }
 
     if (externalReferencesData != null && !externalReferencesData.keySet().isEmpty()) {
-      for (String externalReferencesDataKey : externalReferencesData.keySet()) {
+      for (final String externalReferencesDataKey : externalReferencesData.keySet()) {
         facetFieldSet.add(externalReferencesDataKey + "_erd_ss");
       }
     }
@@ -282,10 +275,10 @@ public class SolrSample {
 
     // copy into the other fields
     // this should be done in a copyfield but that doesn't work for some reason?
-    Set<String> searchTerms = new HashSet<>();
+    final Set<String> searchTerms = new HashSet<>();
     searchTerms.add(sample.name.toLowerCase());
     searchTerms.addAll(keywords);
-    for (Entry<String, List<String>> entry : attributeValues.entrySet()) {
+    for (final Entry<String, List<String>> entry : attributeValues.entrySet()) {
       searchTerms.add(SolrFieldService.decodeFieldName(entry.getKey()).toLowerCase());
       searchTerms.addAll(
           entry.getValue().stream().map(String::toLowerCase).collect(Collectors.toSet()));

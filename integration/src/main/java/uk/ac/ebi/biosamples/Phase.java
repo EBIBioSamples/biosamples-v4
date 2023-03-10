@@ -32,12 +32,12 @@ public enum Phase {
   FIVE(5),
   SIX(6);
 
-  private static Logger log = LoggerFactory.getLogger(Phase.class);
+  private static final Logger log = LoggerFactory.getLogger(Phase.class);
 
   private static final Map<Integer, Phase> phaseLookup = new HashMap<>();
 
   static {
-    for (Phase s : EnumSet.allOf(Phase.class))
+    for (final Phase s : EnumSet.allOf(Phase.class)) {
       switch (s) {
         case UNKNOWN:
         case NO_PHASE:
@@ -45,22 +45,23 @@ public enum Phase {
         default:
           phaseLookup.put(s.getCode(), s);
       }
+    }
   }
 
-  private int phaseCode;
+  private final int phaseCode;
 
-  Phase(int phaseRepresentation) {
-    this.phaseCode = phaseRepresentation;
+  Phase(final int phaseRepresentation) {
+    phaseCode = phaseRepresentation;
   }
 
   public int getCode() {
-    return this.phaseCode;
+    return phaseCode;
   }
 
-  public static Phase readPhaseFromArguments(ApplicationArguments args) {
+  public static Phase readPhaseFromArguments(final ApplicationArguments args) {
     if (args.containsOption("phase")) {
-      int phaseCode = Integer.parseInt(args.getOptionValues("phase").get(0));
-      Phase phase = phaseLookup.getOrDefault(phaseCode, Phase.UNKNOWN);
+      final int phaseCode = Integer.parseInt(args.getOptionValues("phase").get(0));
+      final Phase phase = phaseLookup.getOrDefault(phaseCode, Phase.UNKNOWN);
       if (phase.equals(UNKNOWN)) {
         throw new IllegalArgumentException(String.format("Unknown phase %d", phaseCode));
       } else {

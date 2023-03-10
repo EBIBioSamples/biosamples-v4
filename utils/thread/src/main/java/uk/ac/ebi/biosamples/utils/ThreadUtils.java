@@ -23,13 +23,14 @@ import org.slf4j.LoggerFactory;
 
 public class ThreadUtils {
 
-  private static Logger log = LoggerFactory.getLogger(ThreadUtils.class);
+  private static final Logger log = LoggerFactory.getLogger(ThreadUtils.class);
 
-  public static <T> void checkFutures(Map<? extends Object, Future<T>> futures, int maxSize)
+  public static <T> void checkFutures(
+      final Map<? extends Object, Future<T>> futures, final int maxSize)
       throws InterruptedException, ExecutionException {
     while (futures.size() > maxSize) {
-      for (Iterator<? extends Object> i = futures.keySet().iterator(); i.hasNext(); ) {
-        Object key = i.next();
+      for (final Iterator<? extends Object> i = futures.keySet().iterator(); i.hasNext(); ) {
+        final Object key = i.next();
         futures.get(key).get();
         i.remove();
       }
@@ -37,11 +38,11 @@ public class ThreadUtils {
   }
 
   public static <T> void checkAndCallbackFutures(
-      Map<? extends Object, Future<T>> futures, int maxSize, Callback<T> callback)
+      final Map<? extends Object, Future<T>> futures, final int maxSize, final Callback<T> callback)
       throws InterruptedException, ExecutionException {
     while (futures.size() > maxSize) {
-      for (Iterator<? extends Object> i = futures.keySet().iterator(); i.hasNext(); ) {
-        Object key = i.next();
+      for (final Iterator<? extends Object> i = futures.keySet().iterator(); i.hasNext(); ) {
+        final Object key = i.next();
         callback.call(futures.get(key).get());
         i.remove();
       }
@@ -53,23 +54,23 @@ public class ThreadUtils {
   }
 
   public static <T, U> void checkAndRetryFutures(
-      Map<T, Future<U>> futures,
-      Map<T, Callable<U>> callables,
-      int maxSize,
-      ExecutorService executionService)
+      final Map<T, Future<U>> futures,
+      final Map<T, Callable<U>> callables,
+      final int maxSize,
+      final ExecutorService executionService)
       throws InterruptedException {
     while (futures.size() > maxSize) {
-      List<T> toReRun = new ArrayList<>();
-      for (Iterator<T> i = futures.keySet().iterator(); i.hasNext(); ) {
-        T key = i.next();
+      final List<T> toReRun = new ArrayList<>();
+      for (final Iterator<T> i = futures.keySet().iterator(); i.hasNext(); ) {
+        final T key = i.next();
         try {
           futures.get(key).get();
-        } catch (ExecutionException e) {
+        } catch (final ExecutionException e) {
           toReRun.add(key);
         }
         i.remove();
       }
-      for (T key : toReRun) {
+      for (final T key : toReRun) {
         log.info("Re-executing " + key);
         futures.put(key, executionService.submit(callables.get(key)));
       }

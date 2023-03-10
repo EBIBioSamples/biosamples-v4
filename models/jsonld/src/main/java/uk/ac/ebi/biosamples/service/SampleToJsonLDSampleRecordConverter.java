@@ -21,9 +21,9 @@ import uk.ac.ebi.biosamples.model.*;
 public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, JsonLDDataRecord> {
 
   @Override
-  public JsonLDDataRecord convert(Sample sample) {
+  public JsonLDDataRecord convert(final Sample sample) {
 
-    JsonLDDataRecord sampleRecord = new JsonLDDataRecord();
+    final JsonLDDataRecord sampleRecord = new JsonLDDataRecord();
     // TODO Check if we actually want to use release date as date created
     sampleRecord.dateCreated(sample.getCreate().atZone(ZoneId.of("UTC")));
     sampleRecord.dateReleased(sample.getRelease().atZone(ZoneId.of("UTC")));
@@ -33,27 +33,27 @@ public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, Js
       sampleRecord.dateSubmitted(sample.getSubmitted().atZone(ZoneId.of("UTC")));
     }
 
-    JsonLDSample jsonLD = new JsonLDSample();
-    String[] identifiers = {getBioSamplesIdentifierDotOrg(sample.getAccession())};
+    final JsonLDSample jsonLD = new JsonLDSample();
+    final String[] identifiers = {getBioSamplesIdentifierDotOrg(sample.getAccession())};
     jsonLD.setSameAs(getBioSamplesIdentifierDotOrgLink(sample.getAccession()));
     jsonLD.setIdentifiers(identifiers);
     jsonLD.setName(sample.getName());
 
-    List<JsonLDPropertyValue> jsonLDAttributeList = getAttributeList(sample);
+    final List<JsonLDPropertyValue> jsonLDAttributeList = getAttributeList(sample);
     if (!jsonLDAttributeList.isEmpty()) {
-      Optional<JsonLDPropertyValue> optionalDescription =
+      final Optional<JsonLDPropertyValue> optionalDescription =
           jsonLDAttributeList.stream()
               .filter(attr -> attr.getName().equalsIgnoreCase("description"))
               .findFirst();
       if (optionalDescription.isPresent()) {
-        JsonLDPropertyValue description = optionalDescription.get();
+        final JsonLDPropertyValue description = optionalDescription.get();
         jsonLD.setDescription(description.getValue());
         jsonLDAttributeList.remove(description);
       }
       jsonLD.setAdditionalProperties(jsonLDAttributeList);
     }
 
-    List<String> datasets = getDatasets(sample);
+    final List<String> datasets = getDatasets(sample);
     if (!datasets.isEmpty()) {
       jsonLD.setSubjectOf(datasets);
     }
@@ -64,12 +64,12 @@ public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, Js
     return sampleRecord;
   }
 
-  private List<JsonLDPropertyValue> getAttributeList(Sample sample) {
-    Iterator<Attribute> attributesIterator = sample.getAttributes().iterator();
-    List<JsonLDPropertyValue> jsonLDAttributeList = new ArrayList<>();
+  private List<JsonLDPropertyValue> getAttributeList(final Sample sample) {
+    final Iterator<Attribute> attributesIterator = sample.getAttributes().iterator();
+    final List<JsonLDPropertyValue> jsonLDAttributeList = new ArrayList<>();
     while (attributesIterator.hasNext()) {
-      Attribute attr = attributesIterator.next();
-      JsonLDPropertyValue pv = new JsonLDPropertyValue();
+      final Attribute attr = attributesIterator.next();
+      final JsonLDPropertyValue pv = new JsonLDPropertyValue();
       pv.setName(attr.getType());
       pv.setValue(attr.getValue());
       if (attr.getIri().size() > 0) {
@@ -79,9 +79,9 @@ public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, Js
 
         // Assuming that if the iri is not starting with a http[s] is
         // probably a CURIE
-        List<JsonLDDefinedTerm> valueReferences = new ArrayList<>();
-        for (String iri : attr.getIri()) {
-          JsonLDDefinedTerm valueReference = new JsonLDDefinedTerm();
+        final List<JsonLDDefinedTerm> valueReferences = new ArrayList<>();
+        for (final String iri : attr.getIri()) {
+          final JsonLDDefinedTerm valueReference = new JsonLDDefinedTerm();
           if (iri.matches("^https?://.*")) {
             valueReference.setId(iri);
           } else {
@@ -96,22 +96,23 @@ public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, Js
     return jsonLDAttributeList;
   }
 
-  private List<String> getDatasets(Sample sample) {
-    Iterator<ExternalReference> externalRefsIterator = sample.getExternalReferences().iterator();
-    List<String> datasets = new ArrayList<>();
+  private List<String> getDatasets(final Sample sample) {
+    final Iterator<ExternalReference> externalRefsIterator =
+        sample.getExternalReferences().iterator();
+    final List<String> datasets = new ArrayList<>();
     while (externalRefsIterator.hasNext()) {
-      ExternalReference externalReference = externalRefsIterator.next();
+      final ExternalReference externalReference = externalRefsIterator.next();
       datasets.add(externalReference.getUrl());
     }
     return datasets;
   }
 
-  private String getBioSamplesIdentifierDotOrg(String accession) {
+  private String getBioSamplesIdentifierDotOrg(final String accession) {
     return "biosample:" + accession;
   }
 
   // TODO change identifiers
-  private String getBioSamplesIdentifierDotOrgLink(String accession) {
+  private String getBioSamplesIdentifierDotOrgLink(final String accession) {
     return "http://identifiers.org/biosample/" + accession;
   }
 }

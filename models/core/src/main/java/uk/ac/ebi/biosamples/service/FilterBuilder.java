@@ -14,32 +14,23 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.filter.AccessionFilter;
-import uk.ac.ebi.biosamples.model.filter.AttributeFilter;
-import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
-import uk.ac.ebi.biosamples.model.filter.DomainFilter;
-import uk.ac.ebi.biosamples.model.filter.ExternalReferenceDataFilter;
-import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.model.filter.FilterType;
-import uk.ac.ebi.biosamples.model.filter.InverseRelationFilter;
-import uk.ac.ebi.biosamples.model.filter.NameFilter;
-import uk.ac.ebi.biosamples.model.filter.RelationFilter;
+import uk.ac.ebi.biosamples.model.filter.*;
 
 @Service
 public class FilterBuilder {
-  public AttributeFilter.Builder onAttribute(String label) {
+  public AttributeFilter.Builder onAttribute(final String label) {
     return new AttributeFilter.Builder(label);
   }
 
-  public RelationFilter.Builder onRelation(String label) {
+  public RelationFilter.Builder onRelation(final String label) {
     return new RelationFilter.Builder(label);
   }
 
-  public InverseRelationFilter.Builder onInverseRelation(String label) {
+  public InverseRelationFilter.Builder onInverseRelation(final String label) {
     return new InverseRelationFilter.Builder(label);
   }
 
-  public DateRangeFilter.DateRangeFilterBuilder onDate(String fieldLabel) {
+  public DateRangeFilter.DateRangeFilterBuilder onDate(final String fieldLabel) {
     return new DateRangeFilter.DateRangeFilterBuilder(fieldLabel);
   }
 
@@ -51,28 +42,29 @@ public class FilterBuilder {
     return new DateRangeFilter.DateRangeFilterBuilder("update");
   }
 
-  public DomainFilter.Builder onDomain(String domain) {
+  public DomainFilter.Builder onDomain(final String domain) {
     return new DomainFilter.Builder(domain);
   }
 
-  public NameFilter.Builder onName(String name) {
+  public NameFilter.Builder onName(final String name) {
     return new NameFilter.Builder(name);
   }
 
-  public AccessionFilter.Builder onAccession(String accession) {
+  public AccessionFilter.Builder onAccession(final String accession) {
     return new AccessionFilter.Builder(accession);
   }
 
-  public ExternalReferenceDataFilter.Builder onDataFromExternalReference(String extReference) {
+  public ExternalReferenceDataFilter.Builder onDataFromExternalReference(
+      final String extReference) {
     return new ExternalReferenceDataFilter.Builder(extReference);
   }
 
-  public Filter buildFromString(String serializedFilter) {
-    FilterType filterType = FilterType.ofFilterString(serializedFilter);
+  public Filter buildFromString(final String serializedFilter) {
+    final FilterType filterType = FilterType.ofFilterString(serializedFilter);
     /* if (filterType != FilterType.ACCESSION_FILTER) {
       serializedFilter = serializedFilter.toLowerCase();
     }*/
-    List<String> filterParts = filterParts(serializedFilter);
+    final List<String> filterParts = filterParts(serializedFilter);
 
     if (filterParts.size() > 2) {
       return filterType
@@ -84,7 +76,7 @@ public class FilterBuilder {
     }
   }
 
-  private List<String> filterParts(String filterLabelAndValue) {
+  private List<String> filterParts(final String filterLabelAndValue) {
     // TODO hack, need to be improved
     return Arrays.stream(filterLabelAndValue.split("(?<!\\\\):", 3))
         .map(s -> s.replace("\\:", ":"))

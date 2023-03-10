@@ -31,24 +31,27 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component
 @Order(6)
 // @Profile({ "default", "rest" })
 public class RestCurationIntegration extends AbstractIntegration {
-  private Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final BioSamplesProperties bioSamplesProperties;
   private final RestOperations restTemplate;
 
   public RestCurationIntegration(
-      RestTemplateBuilder restTemplateBuilder,
-      BioSamplesProperties bioSamplesProperties,
-      BioSamplesClient client) {
+      final RestTemplateBuilder restTemplateBuilder,
+      final BioSamplesProperties bioSamplesProperties,
+      final BioSamplesClient client) {
     super(client);
-    this.restTemplate = restTemplateBuilder.build();
+    restTemplate = restTemplateBuilder.build();
     this.bioSamplesProperties = bioSamplesProperties;
   }
 
@@ -89,7 +92,7 @@ public class RestCurationIntegration extends AbstractIntegration {
     }
 
     // resubmit sample with relationships
-    SortedSet<Relationship> relationships = new TreeSet<>();
+    final SortedSet<Relationship> relationships = new TreeSet<>();
     relationships.add(
         Relationship.build(sample3.getAccession(), "DERIVED_FROM", sample.getAccession()));
     sample3 = Sample.Builder.fromSample(sample3).withRelationships(relationships).build();
@@ -150,8 +153,8 @@ public class RestCurationIntegration extends AbstractIntegration {
         "self.BiosampleIntegrationTestAlternative",
         false);
 
-    Set<Relationship> relationshipsPre = new HashSet<>();
-    Set<Relationship> relationshipsPost = new HashSet<>();
+    final Set<Relationship> relationshipsPre = new HashSet<>();
+    final Set<Relationship> relationshipsPost = new HashSet<>();
     relationshipsPost.add(
         Relationship.build(sample.getAccession(), "SAME_AS", sample2.getAccession()));
     client.persistCuration(
@@ -164,7 +167,7 @@ public class RestCurationIntegration extends AbstractIntegration {
   @Override
   protected void phaseThree() {
     Sample sample = getSampleTest1();
-    Optional<Sample> optionalSample = fetchUniqueSampleByName(sample.getName());
+    final Optional<Sample> optionalSample = fetchUniqueSampleByName(sample.getName());
     if (optionalSample.isPresent()) {
       sample =
           Sample.Builder.fromSample(sample)
@@ -202,7 +205,7 @@ public class RestCurationIntegration extends AbstractIntegration {
   @Override
   protected void phaseFour() {
     Sample sample3 = getSampleTest3();
-    Optional<Sample> optionalSample = fetchUniqueSampleByName(sample3.getName());
+    final Optional<Sample> optionalSample = fetchUniqueSampleByName(sample3.getName());
     if (optionalSample.isPresent()) {
       sample3 = optionalSample.get();
     } else {
@@ -210,9 +213,9 @@ public class RestCurationIntegration extends AbstractIntegration {
           "Sample does not exist, sample name: " + sample3.getName(), Phase.TWO);
     }
 
-    Set<Relationship> relationshipsPre = new HashSet<>();
+    final Set<Relationship> relationshipsPre = new HashSet<>();
     relationshipsPre.add(sample3.getRelationships().first());
-    Set<Relationship> relationshipsPost = new HashSet<>();
+    final Set<Relationship> relationshipsPost = new HashSet<>();
     client.persistCuration(
         sample3.getAccession(),
         Curation.build(null, null, null, null, relationshipsPre, relationshipsPost),
@@ -223,7 +226,7 @@ public class RestCurationIntegration extends AbstractIntegration {
   @Override
   protected void phaseFive() {
     Sample sample3 = getSampleTest3();
-    Optional<Sample> optionalSample = fetchUniqueSampleByName(sample3.getName());
+    final Optional<Sample> optionalSample = fetchUniqueSampleByName(sample3.getName());
     if (optionalSample.isPresent()) {
       sample3 = optionalSample.get();
     } else {
@@ -259,16 +262,16 @@ public class RestCurationIntegration extends AbstractIntegration {
     	throw new RuntimeException("No curations in list");
     }
     */
-    for (EntityModel<Curation> curationResource : client.fetchCurationResourceAll()) {
-      Link selfLink = curationResource.getLink("self").get();
-      Link samplesLink = curationResource.getLink("samples").get();
+    for (final EntityModel<Curation> curationResource : client.fetchCurationResourceAll()) {
+      final Link selfLink = curationResource.getLink("self").get();
+      final Link samplesLink = curationResource.getLink("samples").get();
 
       {
-        URI uriLink = URI.create(selfLink.getHref());
+        final URI uriLink = URI.create(selfLink.getHref());
         log.info("GETting from " + uriLink);
-        RequestEntity<Void> requestLink =
+        final RequestEntity<Void> requestLink =
             RequestEntity.get(uriLink).accept(MediaTypes.HAL_JSON).build();
-        ResponseEntity<EntityModel<Curation>> responseLink =
+        final ResponseEntity<EntityModel<Curation>> responseLink =
             restTemplate.exchange(
                 requestLink, new ParameterizedTypeReference<EntityModel<Curation>>() {});
         if (!responseLink.getStatusCode().is2xxSuccessful()) {
@@ -277,11 +280,11 @@ public class RestCurationIntegration extends AbstractIntegration {
         log.info("GETted from " + uriLink);
       }
 
-      URI uriLink = URI.create(samplesLink.getHref());
+      final URI uriLink = URI.create(samplesLink.getHref());
       log.info("GETting from " + uriLink);
-      RequestEntity<Void> requestLink =
+      final RequestEntity<Void> requestLink =
           RequestEntity.get(uriLink).accept(MediaTypes.HAL_JSON).build();
-      ResponseEntity<PagedModel<EntityModel<Sample>>> responseLink =
+      final ResponseEntity<PagedModel<EntityModel<Sample>>> responseLink =
           restTemplate.exchange(
               requestLink, new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {});
       if (!responseLink.getStatusCode().is2xxSuccessful()) {
@@ -291,9 +294,9 @@ public class RestCurationIntegration extends AbstractIntegration {
     }
   }
 
-  private void testSampleCurations(Sample sample) {
+  private void testSampleCurations(final Sample sample) {
     // TODO use client
-    URI uri =
+    final URI uri =
         UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri())
             .pathSegment("samples")
             .pathSegment(sample.getAccession())
@@ -302,12 +305,12 @@ public class RestCurationIntegration extends AbstractIntegration {
             .toUri();
 
     log.info("GETting from " + uri);
-    RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-    ResponseEntity<PagedModel<EntityModel<Curation>>> response =
+    final RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
+    final ResponseEntity<PagedModel<EntityModel<Curation>>> response =
         restTemplate.exchange(
             request, new ParameterizedTypeReference<PagedModel<EntityModel<Curation>>>() {});
 
-    PagedModel<EntityModel<Curation>> paged = response.getBody();
+    final PagedModel<EntityModel<Curation>> paged = response.getBody();
 
     if (paged.getMetadata().getTotalElements() != 6) {
       throw new RuntimeException(
@@ -316,9 +319,9 @@ public class RestCurationIntegration extends AbstractIntegration {
   }
 
   private void testSampleCurationDomains(
-      String accession, String expected, MultiValueMap<String, String> params) {
+      final String accession, final String expected, final MultiValueMap<String, String> params) {
     // TODO use client
-    URI uri =
+    final URI uri =
         UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri())
             .pathSegment("samples")
             .pathSegment(accession)
@@ -327,13 +330,13 @@ public class RestCurationIntegration extends AbstractIntegration {
             .toUri();
 
     log.info("GETting from " + uri);
-    RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-    ResponseEntity<EntityModel<Sample>> response =
+    final RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
+    final ResponseEntity<EntityModel<Sample>> response =
         restTemplate.exchange(request, new ParameterizedTypeReference<EntityModel<Sample>>() {});
 
-    EntityModel<Sample> paged = response.getBody();
+    final EntityModel<Sample> paged = response.getBody();
 
-    for (Attribute attribute : paged.getContent().getAttributes()) {
+    for (final Attribute attribute : paged.getContent().getAttributes()) {
       if ("CurationDomain".equals(attribute.getType())) {
         if (!expected.equals(attribute.getValue())) {
           throw new RuntimeException("Expecting " + expected + ", found " + attribute.getValue());
@@ -343,11 +346,11 @@ public class RestCurationIntegration extends AbstractIntegration {
   }
 
   private Sample getSampleTest1() {
-    String name = "RestCurationIntegration_sample_1";
-    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final String name = "RestCurationIntegration_sample_1";
+    final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(Attribute.build("Organism", "9606"));
     attributes.add(Attribute.build("CurationDomain", "original"));
     attributes.add(Attribute.build("Weird", "\"\""));
@@ -361,11 +364,11 @@ public class RestCurationIntegration extends AbstractIntegration {
   }
 
   private Sample getSampleTest2() {
-    String name = "RestCurationIntegration_sample_2";
-    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final String name = "RestCurationIntegration_sample_2";
+    final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(Attribute.build("Organism", "9606"));
     attributes.add(Attribute.build("CurationDomain", "original"));
     attributes.add(Attribute.build("Weird", "\"\""));
@@ -379,11 +382,11 @@ public class RestCurationIntegration extends AbstractIntegration {
   }
 
   private Sample getSampleTest3() {
-    String name = "RestCurationIntegration_sample_3";
-    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final String name = "RestCurationIntegration_sample_3";
+    final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(Attribute.build("Organism", "9606"));
 
     return new Sample.Builder(name)

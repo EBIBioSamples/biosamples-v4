@@ -30,16 +30,16 @@ public class SchemaValidationService {
   private final ValidatorI validator;
 
   public SchemaValidationService(
-      ObjectMapper mapper,
-      BioSamplesProperties bioSamplesProperties,
-      @Qualifier("elixirValidator") ValidatorI validator) {
-    this.objectMapper = mapper;
+      final ObjectMapper mapper,
+      final BioSamplesProperties bioSamplesProperties,
+      @Qualifier("elixirValidator") final ValidatorI validator) {
+    objectMapper = mapper;
     this.bioSamplesProperties = bioSamplesProperties;
     this.validator = validator;
   }
 
-  public String validate(Sample sample) {
-    String schemaId =
+  public String validate(final Sample sample) {
+    final String schemaId =
         sample.getCharacteristics().stream()
             .filter(s -> s.getType().equalsIgnoreCase("checklist"))
             // to search
@@ -48,12 +48,12 @@ public class SchemaValidationService {
             .orElse(bioSamplesProperties.getBiosamplesDefaultSchema());
 
     try {
-      String sampleString = this.objectMapper.writeValueAsString(sample);
+      final String sampleString = objectMapper.writeValueAsString(sample);
       return validator.validateById(schemaId, sampleString);
-    } catch (ValidationException | GlobalExceptions.SampleValidationException e) {
+    } catch (final ValidationException | GlobalExceptions.SampleValidationException e) {
       throw new GlobalExceptions.SchemaValidationException(
           "Checklist validation failed: " + e.getMessage(), e);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       log.error("Schema validation error: " + e.getMessage(), e);
       throw new GlobalExceptions.SchemaValidationException(
           "Checklist validation error: " + e.getMessage(), e);

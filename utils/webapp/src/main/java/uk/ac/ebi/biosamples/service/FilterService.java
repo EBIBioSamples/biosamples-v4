@@ -19,7 +19,7 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 @Service
 public class FilterService {
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   /**
    * Converts an array of serialized filters to the corresponding collection of object
@@ -27,10 +27,14 @@ public class FilterService {
    * @param filterStrings an array of serialized filters
    * @return
    */
-  public Collection<Filter> getFiltersCollection(String[] filterStrings) {
-    List<Filter> outputFilters = new ArrayList<>();
-    if (filterStrings == null) return outputFilters;
-    if (filterStrings.length == 0) return outputFilters;
+  public Collection<Filter> getFiltersCollection(final String[] filterStrings) {
+    final List<Filter> outputFilters = new ArrayList<>();
+    if (filterStrings == null) {
+      return outputFilters;
+    }
+    if (filterStrings.length == 0) {
+      return outputFilters;
+    }
 
     /*
      *	For every filter I need to extract:
@@ -39,8 +43,8 @@ public class FilterService {
      *  3. The value
      */
     Arrays.sort(filterStrings);
-    SortedSet<String> filterStringSet = new TreeSet<>(Arrays.asList(filterStrings));
-    for (String filterString : filterStringSet) {
+    final SortedSet<String> filterStringSet = new TreeSet<>(Arrays.asList(filterStrings));
+    for (final String filterString : filterStringSet) {
       if (!filterString.isEmpty()) {
         outputFilters.add(FilterBuilder.create().buildFromString(filterString));
       }

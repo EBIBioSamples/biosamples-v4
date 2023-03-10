@@ -32,17 +32,16 @@ public class JsonLDService {
   private String dataCatalogUrl;
   private String datasetUrl;
 
-  public JsonLDService(ObjectMapper mapper) {
-    this.jsonLDSampleConverter = new SampleToJsonLDSampleRecordConverter();
-    this.objectMapper = mapper;
-    this.dataCatalogUrl = null;
-    this.datasetUrl = null;
+  public JsonLDService(final ObjectMapper mapper) {
+    jsonLDSampleConverter = new SampleToJsonLDSampleRecordConverter();
+    objectMapper = mapper;
+    dataCatalogUrl = null;
+    datasetUrl = null;
   }
 
   private void initUrls() {
-    this.dataCatalogUrl =
-        this.dataCatalogUrl == null ? getDataCatalogUrl() : this.getDataCatalogUrl();
-    this.datasetUrl = this.datasetUrl == null ? getDatasetUrl() : this.datasetUrl;
+    dataCatalogUrl = dataCatalogUrl == null ? getDataCatalogUrl() : getDataCatalogUrl();
+    datasetUrl = datasetUrl == null ? getDatasetUrl() : datasetUrl;
   }
   /**
    * Produce the ld+json version of a sample
@@ -50,12 +49,12 @@ public class JsonLDService {
    * @param sample the sample to convert
    * @return the ld+json version of the sample
    */
-  public JsonLDDataRecord sampleToJsonLD(Sample sample) {
-    JsonLDDataRecord jsonLDDataRecord = this.jsonLDSampleConverter.convert(sample);
-    JsonLDSample jsonLDSample = jsonLDDataRecord.getMainEntity();
+  public JsonLDDataRecord sampleToJsonLD(final Sample sample) {
+    final JsonLDDataRecord jsonLDDataRecord = jsonLDSampleConverter.convert(sample);
+    final JsonLDSample jsonLDSample = jsonLDDataRecord.getMainEntity();
 
     try {
-      Method method =
+      final Method method =
           SampleRestController.class.getMethod(
               "getSampleHal",
               String.class,
@@ -63,10 +62,10 @@ public class JsonLDService {
               String[].class,
               String.class,
               String.class);
-      String sampleUrl = linkTo(method, sample.getAccession()).toUri().toString();
+      final String sampleUrl = linkTo(method, sample.getAccession()).toUri().toString();
       jsonLDSample.setUrl(sampleUrl);
       jsonLDSample.setId(sampleUrl);
-    } catch (NoSuchMethodException e) {
+    } catch (final NoSuchMethodException e) {
       e.printStackTrace();
     }
 
@@ -77,15 +76,15 @@ public class JsonLDService {
   public JsonLDDataCatalog getBioSamplesDataCatalog() {
 
     initUrls();
-    JsonLDDataCatalog dataCatalog = new JsonLDDataCatalog();
-    return dataCatalog.url(this.dataCatalogUrl).datasetUrl(this.datasetUrl);
+    final JsonLDDataCatalog dataCatalog = new JsonLDDataCatalog();
+    return dataCatalog.url(dataCatalogUrl).datasetUrl(datasetUrl);
   }
 
   public JsonLDDataset getBioSamplesDataset() {
-    JsonLDDataset dataset = new JsonLDDataset();
+    final JsonLDDataset dataset = new JsonLDDataset();
     initUrls();
 
-    return dataset.datasetUrl(this.datasetUrl).dataCatalogUrl(this.dataCatalogUrl);
+    return dataset.datasetUrl(datasetUrl).dataCatalogUrl(dataCatalogUrl);
   }
 
   /**
@@ -94,13 +93,13 @@ public class JsonLDService {
    * @param jsonld the ld+json object
    * @return the formatted string representing the ld+json object
    */
-  public String jsonLDToString(BioschemasObject jsonld) {
+  public String jsonLDToString(final BioschemasObject jsonld) {
 
     try {
-      return this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonld);
-    } catch (JsonProcessingException e) {
+      return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonld);
+    } catch (final JsonProcessingException e) {
       e.printStackTrace();
-      return this.toString();
+      return toString();
     }
   }
 
@@ -108,9 +107,9 @@ public class JsonLDService {
 
     String dataCatalogUrl = null;
     try {
-      Method method = SampleHtmlController.class.getMethod("index", Model.class);
+      final Method method = SampleHtmlController.class.getMethod("index", Model.class);
       dataCatalogUrl = linkTo(method, null, null).toUri().toString();
-    } catch (NoSuchMethodException e) {
+    } catch (final NoSuchMethodException e) {
       e.printStackTrace();
     }
     return dataCatalogUrl;
@@ -119,7 +118,7 @@ public class JsonLDService {
   private String getDatasetUrl() {
     String datasetUrl = null;
     try {
-      Method method =
+      final Method method =
           SampleHtmlController.class.getMethod(
               "samples",
               Model.class,
@@ -131,7 +130,7 @@ public class JsonLDService {
               HttpServletRequest.class,
               HttpServletResponse.class);
       datasetUrl = linkTo(method, null, null, null, null, null, null, null).toUri().toString();
-    } catch (NoSuchMethodException e) {
+    } catch (final NoSuchMethodException e) {
       e.printStackTrace();
     }
 

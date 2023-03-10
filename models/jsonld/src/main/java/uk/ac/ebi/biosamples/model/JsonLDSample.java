@@ -74,7 +74,7 @@ public class JsonLDSample implements BioschemasObject {
     return id;
   }
 
-  public void setId(String id) {
+  public void setId(final String id) {
     this.id = id;
   }
 
@@ -83,7 +83,7 @@ public class JsonLDSample implements BioschemasObject {
     return sameAs;
   }
 
-  public void setSameAs(String sameAs) {
+  public void setSameAs(final String sameAs) {
     this.sameAs = sameAs;
   }
 
@@ -92,7 +92,7 @@ public class JsonLDSample implements BioschemasObject {
     return identifiers;
   }
 
-  public void setIdentifiers(String[] identifiers) {
+  public void setIdentifiers(final String[] identifiers) {
     this.identifiers = identifiers;
   }
 
@@ -100,7 +100,7 @@ public class JsonLDSample implements BioschemasObject {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName(final String name) {
     this.name = name;
   }
 
@@ -108,7 +108,7 @@ public class JsonLDSample implements BioschemasObject {
     return description;
   }
 
-  public void setDescription(String description) {
+  public void setDescription(final String description) {
     this.description = description;
   }
 
@@ -116,7 +116,7 @@ public class JsonLDSample implements BioschemasObject {
     return url;
   }
 
-  public void setUrl(String url) {
+  public void setUrl(final String url) {
     this.url = url;
   }
 
@@ -124,7 +124,7 @@ public class JsonLDSample implements BioschemasObject {
     return subjectOf;
   }
 
-  public void setSubjectOf(List<String> subjectOf) {
+  public void setSubjectOf(final List<String> subjectOf) {
     this.subjectOf = subjectOf;
   }
 
@@ -132,7 +132,7 @@ public class JsonLDSample implements BioschemasObject {
     return additionalProperties;
   }
 
-  public void setAdditionalProperties(List<JsonLDPropertyValue> additionalProperties) {
+  public void setAdditionalProperties(final List<JsonLDPropertyValue> additionalProperties) {
     this.additionalProperties = additionalProperties;
   }
 

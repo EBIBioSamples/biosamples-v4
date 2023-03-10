@@ -16,10 +16,10 @@ import uk.ac.ebi.biosamples.model.facet.FacetType;
 
 public class InverseRelationFilter implements Filter {
 
-  private String label;
-  private String value;
+  private final String label;
+  private final String value;
 
-  private InverseRelationFilter(String label, String value) {
+  private InverseRelationFilter(final String label, final String value) {
     this.label = label;
     this.value = value;
   }
@@ -31,12 +31,12 @@ public class InverseRelationFilter implements Filter {
 
   @Override
   public String getLabel() {
-    return this.label;
+    return label;
   }
 
   @Override
   public Optional<String> getContent() {
-    return Optional.ofNullable(this.value);
+    return Optional.ofNullable(value);
   }
 
   @Override
@@ -46,51 +46,51 @@ public class InverseRelationFilter implements Filter {
 
   @Override
   public String getSerialization() {
-    StringBuilder serializationBuilder =
-        new StringBuilder(this.getType().getSerialization()).append(":").append(this.getLabel());
-    this.getContent().ifPresent(content -> serializationBuilder.append(":").append(content));
+    final StringBuilder serializationBuilder =
+        new StringBuilder(getType().getSerialization()).append(":").append(getLabel());
+    getContent().ifPresent(content -> serializationBuilder.append(":").append(content));
     return serializationBuilder.toString();
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (obj == this) {
       return true;
     }
     if (!(obj instanceof InverseRelationFilter)) {
       return false;
     }
-    InverseRelationFilter other = (InverseRelationFilter) obj;
-    return Objects.equals(other.getLabel(), this.getLabel())
-        && Objects.equals(other.getContent().orElse(null), this.getContent().orElse(null));
+    final InverseRelationFilter other = (InverseRelationFilter) obj;
+    return Objects.equals(other.getLabel(), getLabel())
+        && Objects.equals(other.getContent().orElse(null), getContent().orElse(null));
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.getLabel(), this.getContent().orElse(null));
+    return Objects.hash(getLabel(), getContent().orElse(null));
   }
 
   public static class Builder implements Filter.Builder {
     private String value;
-    private String label;
+    private final String label;
 
-    public Builder(String label) {
+    public Builder(final String label) {
       this.label = label;
     }
 
-    public Builder withValue(String value) {
+    public Builder withValue(final String value) {
       this.value = value;
       return this;
     }
 
     @Override
     public InverseRelationFilter build() {
-      return new InverseRelationFilter(this.label, this.value);
+      return new InverseRelationFilter(label, value);
     }
 
     @Override
-    public Builder parseContent(String filterValue) {
-      return this.withValue(filterValue);
+    public Builder parseContent(final String filterValue) {
+      return withValue(filterValue);
     }
   }
 }

@@ -23,20 +23,20 @@ import uk.ac.ebi.biosamples.model.certification.*;
 
 @Service
 public class CertifyService {
-  private Identifier identifier;
-  private Interrogator interrogator;
-  private Curator curator;
-  private Certifier certifier;
-  private Recorder recorder;
-  private ConfigLoader configLoader;
+  private final Identifier identifier;
+  private final Interrogator interrogator;
+  private final Curator curator;
+  private final Certifier certifier;
+  private final Recorder recorder;
+  private final ConfigLoader configLoader;
 
   public CertifyService(
-      Certifier certifier,
-      Curator curator,
-      Identifier identifier,
-      Interrogator interrogator,
-      @Qualifier("nullRecorder") Recorder recorder,
-      ConfigLoader configLoader) {
+      final Certifier certifier,
+      final Curator curator,
+      final Identifier identifier,
+      final Interrogator interrogator,
+      @Qualifier("nullRecorder") final Recorder recorder,
+      final ConfigLoader configLoader) {
     this.certifier = certifier;
     this.curator = curator;
     this.identifier = identifier;
@@ -45,25 +45,25 @@ public class CertifyService {
     this.configLoader = configLoader;
   }
 
-  public List<Certificate> certify(String data, boolean isJustCertification) {
-    Set<CertificationResult> certificationResults = new LinkedHashSet<>();
-    SampleDocument rawSampleDocument = identifier.identify(data);
+  public List<Certificate> certify(final String data, final boolean isJustCertification) {
+    final Set<CertificationResult> certificationResults = new LinkedHashSet<>();
+    final SampleDocument rawSampleDocument = identifier.identify(data);
     certificationResults.add(certifier.certify(rawSampleDocument, isJustCertification));
     return getCertificatesFromCertificationResults(certificationResults);
   }
 
   public List<Certificate> certify(
-      String data, boolean isJustCertification, String inputChecklist) {
-    Set<CertificationResult> certificationResults = new LinkedHashSet<>();
-    SampleDocument rawSampleDocument = identifier.identify(data);
+      final String data, final boolean isJustCertification, final String inputChecklist) {
+    final Set<CertificationResult> certificationResults = new LinkedHashSet<>();
+    final SampleDocument rawSampleDocument = identifier.identify(data);
     certificationResults.add(
         certifier.certify(rawSampleDocument, isJustCertification, inputChecklist));
     return getCertificatesFromCertificationResults(certificationResults);
   }
 
   private List<Certificate> getCertificatesFromCertificationResults(
-      Set<CertificationResult> certificationResults) {
-    List<Certificate> certificates = new ArrayList<>();
+      final Set<CertificationResult> certificationResults) {
+    final List<Certificate> certificates = new ArrayList<>();
 
     certificationResults.forEach(
         certificationResult ->
@@ -82,40 +82,40 @@ public class CertifyService {
   }
 
   public BioSamplesCertificationComplainceResult recordResult(
-      String data, boolean isJustCertification) {
-    Set<CertificationResult> certificationResults = new LinkedHashSet<>();
-    SampleDocument rawSampleDocument = identifier.identify(data);
+      final String data, final boolean isJustCertification) {
+    final Set<CertificationResult> certificationResults = new LinkedHashSet<>();
+    final SampleDocument rawSampleDocument = identifier.identify(data);
     return doRecordResult(isJustCertification, certificationResults, rawSampleDocument);
   }
 
   public BioSamplesCertificationComplainceResult recordResult(
-      SampleDocument rawSampleDocument, boolean isJustCertification) {
-    Set<CertificationResult> certificationResults = new LinkedHashSet<>();
+      final SampleDocument rawSampleDocument, final boolean isJustCertification) {
+    final Set<CertificationResult> certificationResults = new LinkedHashSet<>();
     return doRecordResult(isJustCertification, certificationResults, rawSampleDocument);
   }
 
   private BioSamplesCertificationComplainceResult doRecordResult(
-      boolean isJustCertification,
-      Set<CertificationResult> certificationResults,
-      SampleDocument rawSampleDocument) {
+      final boolean isJustCertification,
+      final Set<CertificationResult> certificationResults,
+      final SampleDocument rawSampleDocument) {
     certificationResults.add(certifier.certify(rawSampleDocument, isJustCertification));
 
-    InterrogationResult interrogationResult = interrogator.interrogate(rawSampleDocument);
+    final InterrogationResult interrogationResult = interrogator.interrogate(rawSampleDocument);
 
-    List<PlanResult> planResults = curator.runCurationPlans(interrogationResult);
+    final List<PlanResult> planResults = curator.runCurationPlans(interrogationResult);
 
-    for (PlanResult planResult : planResults) {
+    for (final PlanResult planResult : planResults) {
       if (planResult.curationsMade()) {
         certificationResults.add(certifier.certify(planResult, isJustCertification));
       }
     }
 
-    List<Recommendation> recommendations = curator.runRecommendations(interrogationResult);
+    final List<Recommendation> recommendations = curator.runRecommendations(interrogationResult);
 
     return recorder.record(certificationResults, recommendations);
   }
 
-  public String getCertificateByCertificateName(String certificateName) throws IOException {
+  public String getCertificateByCertificateName(final String certificateName) throws IOException {
     final Optional<Checklist> matchedChecklist = getChecklistByCertificateName(certificateName);
     String fileName = null;
 
@@ -124,8 +124,9 @@ public class CertifyService {
     }
 
     if (fileName != null && !fileName.isEmpty()) {
-      try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileName)) {
-        String jsonData = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
+      try (final InputStream inputStream =
+          getClass().getClassLoader().getResourceAsStream(fileName)) {
+        final String jsonData = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
 
         return jsonData;
       }
@@ -134,7 +135,7 @@ public class CertifyService {
     return "";
   }
 
-  public String getCertificateFileNameByCertificateName(String certificateName) {
+  public String getCertificateFileNameByCertificateName(final String certificateName) {
     final Optional<Checklist> matchedChecklist = getChecklistByCertificateName(certificateName);
     String fileName = null;
 
@@ -149,7 +150,7 @@ public class CertifyService {
     return "";
   }
 
-  private Optional<Checklist> getChecklistByCertificateName(String certificateName) {
+  private Optional<Checklist> getChecklistByCertificateName(final String certificateName) {
     return configLoader.config.getChecklists().stream()
         .filter(checklist -> checklist.getName().equals(certificateName))
         .findFirst();
@@ -163,7 +164,7 @@ public class CertifyService {
                 return IOUtils.toString(
                     getClass().getClassLoader().getResourceAsStream(checklist.getFileName()),
                     StandardCharsets.UTF_8.name());
-              } catch (IOException e) {
+              } catch (final IOException e) {
                 e.printStackTrace();
               }
 

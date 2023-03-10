@@ -28,7 +28,7 @@ import uk.ac.ebi.biosamples.client.model.auth.AuthRealm;
 import uk.ac.ebi.biosamples.client.model.auth.AuthRequestWebin;
 
 public class WebinAuthClientService implements ClientService {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final RestOperations restOperations;
 
@@ -44,18 +44,19 @@ public class WebinAuthClientService implements ClientService {
   @Autowired ObjectMapper objectMapper;
 
   public WebinAuthClientService(
-      RestTemplateBuilder restTemplateBuilder,
-      URI webinAuthUri,
-      String username,
-      String password,
-      List<AuthRealm> authRealms) {
-    this.restOperations = restTemplateBuilder.build();
+      final RestTemplateBuilder restTemplateBuilder,
+      final URI webinAuthUri,
+      final String username,
+      final String password,
+      final List<AuthRealm> authRealms) {
+    restOperations = restTemplateBuilder.build();
     this.webinAuthUri = webinAuthUri;
     this.username = username;
     this.password = password;
     this.authRealms = authRealms;
   }
 
+  @Override
   public synchronized String getJwt() {
     if (objectMapper == null) {
       objectMapper = new ObjectMapper();
@@ -72,9 +73,9 @@ public class WebinAuthClientService implements ClientService {
     if (!jwt.isPresent() || (expiry.isPresent() && expiryMinusAnHour.get().before(new Date()))) {
       final AuthRequestWebin authRequestWebin =
           new AuthRequestWebin(username, password, authRealms);
-      HttpHeaders headers = new HttpHeaders();
+      final HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_JSON);
-      HttpEntity<String> entity;
+      final HttpEntity<String> entity;
 
       try {
         entity = new HttpEntity<>(objectMapper.writeValueAsString(authRequestWebin), headers);
@@ -94,7 +95,7 @@ public class WebinAuthClientService implements ClientService {
           expiryMinusAnHour = Optional.of(DateUtils.addHours(expiry.get(), -1));
           log.info("Refresh set to : " + (expiryMinusAnHour.orElse(null)));
         }
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       }
 

@@ -10,10 +10,7 @@
 */
 package uk.ac.ebi.biosamples;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -45,23 +42,21 @@ public class NcbiBaseConverterTests {
 
   @Before
   public void setup() {
-    this.conversionService = new NcbiSampleConversionService(new TaxonomyService());
-    this.testNcbiBioSamples =
+    conversionService = new NcbiSampleConversionService(new TaxonomyService());
+    testNcbiBioSamples =
         NcbiTestsService.readNcbiBiosampleElementFromFile("/examples/ncbi_sample_5246317.xml");
   }
 
   @Test
   public void given_ncbi_biosample_extract_accession_name_synonym() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
     assertEquals(sampleToTest.getAccession(), "SAMN05246317");
     assertEquals(sampleToTest.getName(), "GF.26.AL.R");
   }
 
   @Test
   public void given_ncbi_biosample_extract_pubmeds() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
     assertEquals(1, sampleToTest.getPublications().size());
     assertTrue(
         sampleToTest.getPublications().stream()
@@ -72,10 +67,9 @@ public class NcbiBaseConverterTests {
 
   @Test
   public void it_extracts_external_Ids() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
 
-    List<Attribute> expectedAttribute =
+    final List<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()
             .filter(attr -> attr.getType().equals("External Id"))
             .collect(Collectors.toList());
@@ -84,89 +78,82 @@ public class NcbiBaseConverterTests {
 
   @Test
   public void given_ncbi_biosamples_it_generates_and_insdc_secondary_accession_attribute() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
-    Optional<Attribute> expectedAttribute =
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
+    final Optional<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()
             .filter(attr -> attr.getType().equals("INSDC secondary accession"))
             .findFirst();
 
-    Attribute secondaryAccession = expectedAttribute.get();
+    final Attribute secondaryAccession = expectedAttribute.get();
     assertEquals(secondaryAccession.getValue(), "SRS1524325");
   }
 
   @Test
   public void given_ncbi_biosamples_it_generates_and_insdc_first_public_attribute() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
-    Optional<Attribute> expectedAttribute =
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
+    final Optional<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()
             .filter(attr -> attr.getType().equals("INSDC first public"))
             .findFirst();
 
-    Attribute secondaryAccession = expectedAttribute.get();
+    final Attribute secondaryAccession = expectedAttribute.get();
     assertEquals(secondaryAccession.getValue(), "2018-07-01T00:50:05.513Z");
   }
 
   @Test
   public void given_ncbi_biosamples_it_generates_and_sra_accession_attribute() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
-    Optional<Attribute> expectedAttribute =
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
+    final Optional<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()
             .filter(attr -> attr.getType().equals("SRA accession"))
             .findFirst();
 
-    Attribute secondaryAccession = expectedAttribute.get();
+    final Attribute secondaryAccession = expectedAttribute.get();
     assertEquals(secondaryAccession.getValue(), "SRS1524325");
   }
 
   @Test
   public void it_extracts_insdc_center_name() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
-    Optional<Attribute> expectedAttribute =
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
+    final Optional<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()
             .filter(attr -> attr.getType().equals("INSDC center name"))
             .findFirst();
     assertTrue(expectedAttribute.isPresent());
 
-    Attribute centerName = expectedAttribute.get();
+    final Attribute centerName = expectedAttribute.get();
     assertEquals(centerName.getValue(), "Lund University");
   }
 
   @Test
   public void it_extracts_description_text_and_tag() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
-    Optional<Attribute> expectedAttributeType =
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
+    final Optional<Attribute> expectedAttributeType =
         sampleToTest.getAttributes().stream()
             .filter(attr -> attr.getType().equals("description"))
             .findFirst();
     assertTrue(expectedAttributeType.isPresent());
 
-    Attribute description = expectedAttributeType.get();
+    final Attribute description = expectedAttributeType.get();
     assertEquals(description.getValue(), "Human HapMap individual Coriell catalog ID NA18582");
   }
 
   @Test
   public void it_extracts_common_name() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
-    Optional<Attribute> expectedAttribute =
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
+    final Optional<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()
             .filter(attr -> attr.getType().equals("common name"))
             .findFirst();
     assertTrue(expectedAttribute.isPresent());
 
-    Attribute commonName = expectedAttribute.get();
+    final Attribute commonName = expectedAttribute.get();
     assertEquals(commonName.getValue(), "gb|AMGQ00000000.1");
   }
 
   @Test
   public void it_extracts_create() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
 
     assertTrue(sampleToTest.getCreate() != null);
     assertEquals(sampleToTest.getCreate().toString(), "2010-06-14T13:47:08.137Z");
@@ -174,8 +161,7 @@ public class NcbiBaseConverterTests {
 
   @Test
   public void it_extracts_submitted() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
 
     assertTrue(sampleToTest.getSubmitted() != null);
     assertEquals(sampleToTest.getSubmitted().toString(), "2010-06-14T13:47:08.137Z");
@@ -183,42 +169,39 @@ public class NcbiBaseConverterTests {
 
   @Test
   public void it_extracts_organism_attribute() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
-    Optional<Attribute> expectedAttribute =
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
+    final Optional<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()
             .filter(attr -> attr.getType().equals("organism"))
             .findFirst();
 
     assertTrue(expectedAttribute.isPresent());
 
-    Attribute organism = expectedAttribute.get();
+    final Attribute organism = expectedAttribute.get();
     assertEquals(organism.getValue(), "soil metagenome");
     assertEquals(organism.getIri().first(), "http://purl.obolibrary.org/obo/NCBITaxon_410658");
   }
 
   @Test
   public void it_extracts_description_title() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
-    Optional<Attribute> expectedAttribute =
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
+    final Optional<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()
             .filter(attr -> attr.getType().equals("title"))
             .findFirst();
 
     assertTrue(expectedAttribute.isPresent());
 
-    Attribute description = expectedAttribute.get();
+    final Attribute description = expectedAttribute.get();
     assertEquals(description.getValue(), "Metagenome or environmental sample from soil metagenome");
   }
 
   @Test
   public void it_extracts_attributes() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
-    SortedSet<Attribute> sampleAttributes = sampleToTest.getAttributes();
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
+    final SortedSet<Attribute> sampleAttributes = sampleToTest.getAttributes();
 
-    List<Attribute> attrWithTag =
+    final List<Attribute> attrWithTag =
         sampleAttributes.stream()
             .filter(
                 attribute -> attribute.getTag() != null && attribute.getTag().equals("attribute"))
@@ -227,7 +210,7 @@ public class NcbiBaseConverterTests {
     // 6 user provided attributes at this moment so its hardcoded in the test
     assertTrue(attrWithTag.size() == 6);
 
-    List<Attribute> expectedAttributes =
+    final List<Attribute> expectedAttributes =
         Stream.of(
                 Attribute.build(
                     "isolation_source",
@@ -249,7 +232,7 @@ public class NcbiBaseConverterTests {
                     "Fert_treat", "unfertilized", "attribute", Collections.emptyList(), null),
                 Attribute.build("plot", "GF_26", "attribute", Collections.emptyList(), null))
             .collect(Collectors.toList());
-    Optional<Attribute> attributesNotMatching =
+    final Optional<Attribute> attributesNotMatching =
         expectedAttributes.stream().filter(attr -> !sampleAttributes.contains(attr)).findAny();
 
     assertTrue(!attributesNotMatching.isPresent());
@@ -257,38 +240,35 @@ public class NcbiBaseConverterTests {
 
   @Test
   public void it_extracts_ncbi_submission_model() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
-    Optional<Attribute> expectedAttribute =
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
+    final Optional<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()
             .filter(attr -> attr.getType().equals("NCBI submission model"))
             .findFirst();
 
     assertTrue(expectedAttribute.isPresent());
 
-    Attribute ncbiSubmissionModel = expectedAttribute.get();
+    final Attribute ncbiSubmissionModel = expectedAttribute.get();
     assertEquals(ncbiSubmissionModel.getValue(), "Metagenome or environmental");
   }
 
   @Test
   public void it_extracts_ncbi_submission_package() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
-    Optional<Attribute> expectedAttribute =
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
+    final Optional<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()
             .filter(attr -> attr.getType().equals("NCBI submission package"))
             .findFirst();
 
     assertTrue(expectedAttribute.isPresent());
 
-    Attribute ncbiSubmissionPackage = expectedAttribute.get();
+    final Attribute ncbiSubmissionPackage = expectedAttribute.get();
     assertEquals(ncbiSubmissionPackage.getValue(), "Metagenome.environmental.2.0");
   }
 
   @Test
   public void it_extracts_insdc_dates() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
     Optional<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()
             .filter(attr -> attr.getType().equals("INSDC first public"))
@@ -296,7 +276,7 @@ public class NcbiBaseConverterTests {
 
     assertTrue(expectedAttribute.isPresent());
 
-    Attribute insdcFirstPublic = expectedAttribute.get();
+    final Attribute insdcFirstPublic = expectedAttribute.get();
     assertEquals(insdcFirstPublic.getValue(), "2018-07-01T00:50:05.513Z");
 
     expectedAttribute =
@@ -306,32 +286,31 @@ public class NcbiBaseConverterTests {
 
     assertTrue(expectedAttribute.isPresent());
 
-    Attribute insdcLastUpdate = expectedAttribute.get();
+    final Attribute insdcLastUpdate = expectedAttribute.get();
     assertEquals(insdcLastUpdate.getValue(), "2018-07-01T00:50:05.513Z");
   }
 
   @Test
   public void it_extracts_insdc_status() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
-    Optional<Attribute> expectedAttribute =
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
+    final Optional<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()
             .filter(attr -> attr.getType().equals("INSDC status"))
             .findFirst();
 
     assertTrue(expectedAttribute.isPresent());
 
-    Attribute insdcStatus = expectedAttribute.get();
+    final Attribute insdcStatus = expectedAttribute.get();
     assertEquals(insdcStatus.getValue(), "live");
   }
 
   @Test
   public void given_ncbi_status_not_live_it_set_release_date_in_the_future()
       throws DocumentException {
-    Element ncbiSampleNotLive =
+    final Element ncbiSampleNotLive =
         readBioSampleElementFromXml("/examples/ncbi_test_sample_not_live.xml");
-    Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(ncbiSampleNotLive);
-    Optional<Attribute> expectedAttribute =
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(ncbiSampleNotLive);
+    final Optional<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()
             .filter(attr -> attr.getType().equals("INSDC status"))
             .findFirst();
@@ -347,9 +326,9 @@ public class NcbiBaseConverterTests {
   public void
       given_ncbi_sample_with_multiple_amr_tables_there_can_be_only_one_table_with_same_type_and_submitter()
           throws DocumentException {
-    Element ncbiSampleWithMultipleAMR =
+    final Element ncbiSampleWithMultipleAMR =
         readBioSampleElementFromXml("/examples/ncbi_amr_sample_with_multiple_amr_entries.xml");
-    Set<StructuredDataTable> amrDataSet =
+    final Set<StructuredDataTable> amrDataSet =
         conversionService.convertNcbiXmlElementToStructuredData(
             ncbiSampleWithMultipleAMR, Collections.emptySet());
 
@@ -357,13 +336,13 @@ public class NcbiBaseConverterTests {
     assertEquals(1, amrDataSet.size());
   }
 
-  public Element readBioSampleElementFromXml(String pathToFile) throws DocumentException {
-    InputStream xmlInputStream = this.getClass().getResourceAsStream(pathToFile);
-    String xmlDocument =
+  public Element readBioSampleElementFromXml(final String pathToFile) throws DocumentException {
+    final InputStream xmlInputStream = getClass().getResourceAsStream(pathToFile);
+    final String xmlDocument =
         new BufferedReader(new InputStreamReader(xmlInputStream))
             .lines()
             .collect(Collectors.joining());
-    Document doc = DocumentHelper.parseText(xmlDocument);
+    final Document doc = DocumentHelper.parseText(xmlDocument);
     return doc.getRootElement().element("BioSample");
   }
 }

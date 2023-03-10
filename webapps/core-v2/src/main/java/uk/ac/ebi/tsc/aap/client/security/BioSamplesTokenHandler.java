@@ -61,7 +61,7 @@ public class BioSamplesTokenHandler extends TokenHandler {
     return new User(null, null, null, null, null);
   }
 
-  public Claims decodeJWT(String jwt) {
+  private Claims decodeJWT(final String jwt) {
     final int i = jwt.lastIndexOf('.');
     final String withoutSignature = jwt.substring(0, i + 1);
 

@@ -21,30 +21,30 @@ import org.dom4j.io.XMLWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EnaXmlUtil {
+class EnaXmlUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EnaXmlUtil.class);
 
-  public static String pretty(String xmlString) {
-    SAXReader reader = new SAXReader();
+  static String pretty(final String xmlString) {
+    final SAXReader reader = new SAXReader();
     Document document = null;
     try {
       document = reader.read(new StringReader(xmlString));
-    } catch (DocumentException e) {
+    } catch (final DocumentException e) {
       LOGGER.error("Error reading XML", e);
     }
     return pretty(document);
   }
 
-  public static String pretty(Document document) {
-    OutputFormat format = OutputFormat.createPrettyPrint();
-    StringWriter outputWriter = new StringWriter();
-    XMLWriter writer = new XMLWriter(outputWriter, format);
+  static String pretty(final Document document) {
+    final OutputFormat format = OutputFormat.createPrettyPrint();
+    final StringWriter outputWriter = new StringWriter();
+    final XMLWriter writer = new XMLWriter(outputWriter, format);
     try {
       writer.write(document);
       outputWriter.close();
       writer.close();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       LOGGER.error("Error writing XML", e);
     }
     return outputWriter.toString();

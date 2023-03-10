@@ -22,10 +22,11 @@ import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 @Service
 public class AccessionsService {
-  private SolrSampleService solrSampleService;
-  private FilterService filterService;
+  private final SolrSampleService solrSampleService;
+  private final FilterService filterService;
 
-  public AccessionsService(SolrSampleService solrSampleService, FilterService filterService) {
+  public AccessionsService(
+      final SolrSampleService solrSampleService, final FilterService filterService) {
     this.solrSampleService = solrSampleService;
     this.filterService = filterService;
   }

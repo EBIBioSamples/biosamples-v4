@@ -25,27 +25,27 @@ public class ExternalReferenceService {
     populateOntologies(ontologyMap);
   }
 
-  public String getNickname(ExternalReference externalReference) {
+  public String getNickname(final ExternalReference externalReference) {
     return ExternalReferenceUtils.getNickname(externalReference);
   }
 
-  public Optional<String> getDataId(ExternalReference externalReference) {
+  public Optional<String> getDataId(final ExternalReference externalReference) {
     return ExternalReferenceUtils.getDataId(externalReference);
   }
 
-  public String getDuoUrl(String duoCode) {
+  public String getDuoUrl(final String duoCode) {
     return ExternalReferenceUtils.getDuoUrl(duoCode);
   }
 
-  public String getOntologyTitle(String ontologyId) {
+  public String getOntologyTitle(final String ontologyId) {
     return ontologyMap.containsKey(ontologyId) ? ontologyMap.get(ontologyId).get("title") : "";
   }
 
-  public String getOntologyDescription(String ontologyId) {
+  public String getOntologyDescription(final String ontologyId) {
     return ontologyMap.containsKey(ontologyId) ? ontologyMap.get(ontologyId).get("body") : "";
   }
 
-  private void populateOntologies(Map<String, Map<String, String>> ontologyMap) {
+  private void populateOntologies(final Map<String, Map<String, String>> ontologyMap) {
     Map<String, String> ontology = new HashMap<>();
     ontology.put("title", "Data use permission");
     ontology.put(

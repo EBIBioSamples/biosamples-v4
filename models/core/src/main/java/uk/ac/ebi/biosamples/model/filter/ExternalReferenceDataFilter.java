@@ -15,10 +15,10 @@ import java.util.Optional;
 import uk.ac.ebi.biosamples.model.facet.FacetType;
 
 public class ExternalReferenceDataFilter implements Filter {
-  private String label;
-  private String value;
+  private final String label;
+  private final String value;
 
-  private ExternalReferenceDataFilter(String label, String value) {
+  private ExternalReferenceDataFilter(final String label, final String value) {
     this.label = label;
     this.value = value;
   }
@@ -30,12 +30,12 @@ public class ExternalReferenceDataFilter implements Filter {
 
   @Override
   public String getLabel() {
-    return this.label;
+    return label;
   }
 
   @Override
   public Optional<String> getContent() {
-    return Optional.ofNullable(this.value);
+    return Optional.ofNullable(value);
   }
 
   @Override
@@ -45,51 +45,51 @@ public class ExternalReferenceDataFilter implements Filter {
 
   @Override
   public String getSerialization() {
-    StringBuilder serialization =
-        new StringBuilder(this.getType().getSerialization()).append(":").append(this.label);
-    this.getContent().ifPresent(value -> serialization.append(":").append(value));
+    final StringBuilder serialization =
+        new StringBuilder(getType().getSerialization()).append(":").append(label);
+    getContent().ifPresent(value -> serialization.append(":").append(value));
     return serialization.toString();
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (obj == this) {
       return true;
     }
     if (!(obj instanceof ExternalReferenceDataFilter)) {
       return false;
     }
-    ExternalReferenceDataFilter other = (ExternalReferenceDataFilter) obj;
-    return Objects.equals(other.label, this.label)
-        && Objects.equals(other.getContent().orElse(null), this.getContent().orElse(null));
+    final ExternalReferenceDataFilter other = (ExternalReferenceDataFilter) obj;
+    return Objects.equals(other.label, label)
+        && Objects.equals(other.getContent().orElse(null), getContent().orElse(null));
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.label, this.getContent().orElse(null));
+    return Objects.hash(label, getContent().orElse(null));
   }
 
   public static class Builder implements Filter.Builder {
     private String value;
-    private String label;
+    private final String label;
 
-    public Builder(String label) {
+    public Builder(final String label) {
       this.label = label;
     }
 
-    public Builder withValue(String value) {
+    public Builder withValue(final String value) {
       this.value = value;
       return this;
     }
 
     @Override
     public ExternalReferenceDataFilter build() {
-      return new ExternalReferenceDataFilter(this.label, this.value);
+      return new ExternalReferenceDataFilter(label, value);
     }
 
     @Override
-    public Builder parseContent(String filterValue) {
-      return this.withValue(filterValue);
+    public Builder parseContent(final String filterValue) {
+      return withValue(filterValue);
     }
   }
 }

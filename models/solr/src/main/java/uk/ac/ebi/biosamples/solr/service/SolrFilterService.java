@@ -36,7 +36,7 @@ public class SolrFilterService {
       DateTimeFormatter.ofPattern("yyyy-MM-dd'T'23:59:59'Z'");
 
   public SolrFilterService(
-      SolrFieldService solrFieldService, BioSamplesProperties bioSamplesProperties) {
+      final SolrFieldService solrFieldService, final BioSamplesProperties bioSamplesProperties) {
     this.solrFieldService = solrFieldService;
     this.bioSamplesProperties = bioSamplesProperties;
   }
@@ -47,11 +47,11 @@ public class SolrFilterService {
    * @param filter
    * @return an optional solr criteria for filtering purpose
    */
-  public Optional<Criteria> getFilterCriteria(Filter filter) {
+  public Optional<Criteria> getFilterCriteria(final Filter filter) {
 
     // TODO rename to getFilterTargetField
-    SolrSampleField solrField = solrFieldService.getCompatibleField(filter);
-    Criteria filterCriteria = solrField.getFilterCriteria(filter);
+    final SolrSampleField solrField = solrFieldService.getCompatibleField(filter);
+    final Criteria filterCriteria = solrField.getFilterCriteria(filter);
     return Optional.ofNullable(filterCriteria);
   }
 
@@ -64,9 +64,9 @@ public class SolrFilterService {
    * @return Optional List of criteria
    */
   public Optional<List<Filter>> getCompatibleFilters(
-      List<Filter> availableFilters, Filter referenceFilter) {
-    List<Filter> compatibleFilterList = new ArrayList<>();
-    for (Filter nextFilter : availableFilters) {
+      final List<Filter> availableFilters, final Filter referenceFilter) {
+    final List<Filter> compatibleFilterList = new ArrayList<>();
+    for (final Filter nextFilter : availableFilters) {
       if (nextFilter.getLabel().equals(referenceFilter.getLabel())
           && nextFilter.getType().equals(referenceFilter.getType())) {
         compatibleFilterList.add(nextFilter);
@@ -84,24 +84,24 @@ public class SolrFilterService {
    * @param filters a collection of filters
    * @return the corresponding filter query
    */
-  public Optional<FilterQuery> getFilterQuery(Collection<Filter> filters) {
+  Optional<FilterQuery> getFilterQuery(final Collection<Filter> filters) {
     if (filters == null || filters.size() == 0) {
       return Optional.empty();
     }
 
     boolean filterActive = false;
-    FilterQuery filterQuery = new SimpleFilterQuery();
-    Collection<List<Filter>> filterGroups =
+    final FilterQuery filterQuery = new SimpleFilterQuery();
+    final Collection<List<Filter>> filterGroups =
         filters.stream()
             .collect(
                 Collectors.groupingBy(
                     filter -> new SimpleEntry(filter.getLabel(), filter.getType())))
             .values();
-    for (List<Filter> group : filterGroups) {
+    for (final List<Filter> group : filterGroups) {
       // Compose all the or criteria available for the filters, if any available
       // Reduce will go through all criteria
-      boolean isAccessionFilter = group.stream().findFirst().get() instanceof AccessionFilter;
-      Optional<Criteria> filterCriteria =
+      final boolean isAccessionFilter = group.stream().findFirst().get() instanceof AccessionFilter;
+      final Optional<Criteria> filterCriteria =
           group.stream()
               .map(this::getFilterCriteria)
               .reduce(
@@ -141,8 +141,8 @@ public class SolrFilterService {
    * @param domains a collection of domains
    * @return a filter query for public and domain relevant samples
    */
-  public Optional<FilterQuery> getPublicFilterQuery(
-      Collection<String> domains, String webinSubmissionAccountId) {
+  Optional<FilterQuery> getPublicFilterQuery(
+      final Collection<String> domains, final String webinSubmissionAccountId) {
     // check if this is a read superuser
     if ((domains != null && domains.contains(bioSamplesProperties.getBiosamplesAapSuperRead()))
         || (webinSubmissionAccountId != null
@@ -152,7 +152,7 @@ public class SolrFilterService {
     }
 
     // filter out non-public
-    FilterQuery filterQuery = new SimpleFilterQuery();
+    final FilterQuery filterQuery = new SimpleFilterQuery();
     Criteria publicSampleCriteria = new Criteria("release_dt").lessThan("NOW");
     // can use .and("release_dt").isNotNull(); to filter out non-null
     // but nothing should be null and this slows search

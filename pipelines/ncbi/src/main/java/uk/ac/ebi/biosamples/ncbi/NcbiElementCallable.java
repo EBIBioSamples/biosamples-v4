@@ -34,12 +34,12 @@ public class NcbiElementCallable implements Callable<Void> {
   private final NcbiSampleConversionService ncbiSampleConversionService;
   private final Map<String, Set<StructuredDataTable>> sampleToAmrMap;
 
-  public NcbiElementCallable(
-      NcbiSampleConversionService ncbiSampleConversionService,
-      BioSamplesClient bioSamplesClient,
-      Element sampleElem,
-      String domain,
-      Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
+  NcbiElementCallable(
+      final NcbiSampleConversionService ncbiSampleConversionService,
+      final BioSamplesClient bioSamplesClient,
+      final Element sampleElem,
+      final String domain,
+      final Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
     this.ncbiSampleConversionService = ncbiSampleConversionService;
     this.bioSamplesClient = bioSamplesClient;
     this.sampleElem = sampleElem;
@@ -90,7 +90,7 @@ public class NcbiElementCallable implements Callable<Void> {
           ncbiSampleConversionService.convertNcbiXmlElementToStructuredData(sampleElem, amrData);
 
       if (!structuredDataTableSet.isEmpty()) {
-        StructuredData structuredData =
+        final StructuredData structuredData =
             StructuredData.build(accession, sample.getCreate(), structuredDataTableSet);
         bioSamplesClient.persistStructuredData(structuredData);
       }
@@ -104,8 +104,7 @@ public class NcbiElementCallable implements Callable<Void> {
   }
 
   /** Safe way to extract the taxonomy id from the string */
-  @SuppressWarnings("unused")
-  private int getTaxId(String value) {
+  private int getTaxId(final String value) {
     if (value == null) {
       throw new RuntimeException("Unable to extract tax id from a null value");
     }

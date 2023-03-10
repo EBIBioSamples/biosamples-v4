@@ -27,23 +27,24 @@ public class EnaSampleXmlEnhancer {
   private static final Logger LOGGER = LoggerFactory.getLogger(EnaSampleXmlEnhancer.class);
   private final EraProDao eraProDao;
 
-  public EnaSampleXmlEnhancer(EraProDao eraProDao) {
+  public EnaSampleXmlEnhancer(final EraProDao eraProDao) {
     this.eraProDao = eraProDao;
   }
 
-  String applyRules(String inputXml, EnaDatabaseSample enaDatabaseSample, Rule... rules) {
-    Element element = getSampleElement(inputXml);
-    Element modifiedElement = applyRules(element.createCopy(), enaDatabaseSample, rules);
-    Document document = DocumentHelper.createDocument();
+  String applyRules(
+      final String inputXml, final EnaDatabaseSample enaDatabaseSample, final Rule... rules) {
+    final Element element = getSampleElement(inputXml);
+    final Element modifiedElement = applyRules(element.createCopy(), enaDatabaseSample, rules);
+    final Document document = DocumentHelper.createDocument();
 
     document.setRootElement(modifiedElement);
 
     return pretty(document);
   }
 
-  EnaDatabaseSample getEnaDatabaseSample(String accession) {
-    EnaDatabaseSample enaDatabaseSample = new EnaDatabaseSample();
-    RowCallbackHandler rch =
+  EnaDatabaseSample getEnaDatabaseSample(final String accession) {
+    final EnaDatabaseSample enaDatabaseSample = new EnaDatabaseSample();
+    final RowCallbackHandler rch =
         resultSet -> {
           try {
             enaDatabaseSample.bioSamplesId = resultSet.getString("BIOSAMPLE_ID");
@@ -57,7 +58,7 @@ public class EnaSampleXmlEnhancer {
             enaDatabaseSample.fixedTaxId = resultSet.getString("FIXED_TAX_ID");
             enaDatabaseSample.fixedCommonName = resultSet.getString("FIXED_COMMON_NAME");
             enaDatabaseSample.fixedScientificName = resultSet.getString("FIXED_SCIENTIFIC_NAME");
-          } catch (SQLException e) {
+          } catch (final SQLException e) {
             LOGGER.error("Error processing database result", e);
           }
         };
@@ -68,13 +69,15 @@ public class EnaSampleXmlEnhancer {
   }
 
   private Element applyRules(
-      Element sampleElement, EnaDatabaseSample enaDatabaseSample, Rule... rules) {
-    for (Rule rule : rules) sampleElement = rule.apply(sampleElement, enaDatabaseSample);
+      Element sampleElement, final EnaDatabaseSample enaDatabaseSample, final Rule... rules) {
+    for (final Rule rule : rules) {
+      sampleElement = rule.apply(sampleElement, enaDatabaseSample);
+    }
 
     return sampleElement;
   }
 
-  String applyAllRules(String inputXml, EnaDatabaseSample enaDatabaseSample) {
+  String applyAllRules(final String inputXml, final EnaDatabaseSample enaDatabaseSample) {
     return applyRules(
         inputXml,
         enaDatabaseSample,
@@ -87,7 +90,7 @@ public class EnaSampleXmlEnhancer {
         BioSamplesIdRule.INSTANCE);
   }
 
-  Element applyAllRules(Element element, EnaDatabaseSample enaDatabaseSample) {
+  Element applyAllRules(final Element element, final EnaDatabaseSample enaDatabaseSample) {
     return applyRules(
         element,
         enaDatabaseSample,
@@ -108,13 +111,13 @@ public class EnaSampleXmlEnhancer {
     INSTANCE;
 
     @Override
-    public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
+    public Element apply(final Element sampleXml, final EnaDatabaseSample enaDatabaseSample) {
       if (!XmlPathBuilder.of(sampleXml).path("SAMPLE").attributeExists("alias")) {
-        XmlPathBuilder xmlPathBuilder =
+        final XmlPathBuilder xmlPathBuilder =
             XmlPathBuilder.of(sampleXml).path("SAMPLE", "IDENTIFIERS", "SUBMITTER_ID");
 
         if (xmlPathBuilder.exists()) {
-          Node node = sampleXml.selectSingleNode("SAMPLE/IDENTIFIERS/SUBMITTER_ID");
+          final Node node = sampleXml.selectSingleNode("SAMPLE/IDENTIFIERS/SUBMITTER_ID");
 
           node.detach();
         }
@@ -128,17 +131,19 @@ public class EnaSampleXmlEnhancer {
     INSTANCE;
 
     @Override
-    public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
-      if (!XmlPathBuilder.of(sampleXml).path("SAMPLE").attributeExists("center_name"))
+    public Element apply(final Element sampleXml, final EnaDatabaseSample enaDatabaseSample) {
+      if (!XmlPathBuilder.of(sampleXml).path("SAMPLE").attributeExists("center_name")) {
         return sampleXml;
+      }
 
-      XmlPathBuilder xmlPathBuilder =
+      final XmlPathBuilder xmlPathBuilder =
           XmlPathBuilder.of(sampleXml).path("SAMPLE", "IDENTIFIERS", "SUBMITTER_ID");
 
       if (xmlPathBuilder.exists()) {
         if (!xmlPathBuilder.attributeExists("namespace")
             || xmlPathBuilder.attribute("namespace").isEmpty()) {
-          String centerName = XmlPathBuilder.of(sampleXml).path("SAMPLE").attribute("center_name");
+          final String centerName =
+              XmlPathBuilder.of(sampleXml).path("SAMPLE").attribute("center_name");
           xmlPathBuilder.element().addAttribute("namespace", centerName);
         }
 
@@ -153,15 +158,16 @@ public class EnaSampleXmlEnhancer {
     INSTANCE;
 
     @Override
-    public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
-      XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE");
+    public Element apply(final Element sampleXml, final EnaDatabaseSample enaDatabaseSample) {
+      final XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE");
 
       if (xmlPathBuilder.attributeExists("accession")) {
-        String accession = xmlPathBuilder.attribute("accession");
+        final String accession = xmlPathBuilder.attribute("accession");
 
         if (accession.startsWith("ERS")) {
-          if (enaDatabaseSample.brokerName != null)
+          if (enaDatabaseSample.brokerName != null) {
             xmlPathBuilder.element().addAttribute("broker_name", enaDatabaseSample.brokerName);
+          }
 
           return sampleXml;
         }
@@ -187,11 +193,16 @@ public class EnaSampleXmlEnhancer {
     INSTANCE;
 
     @Override
-    public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
-      XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_LINKS");
-      if (xmlPathBuilder.exists())
-        for (Element sampleLinkElement : xmlPathBuilder.elements("SAMPLE_LINK"))
-          if (sampleLinkElement.element("URL_LINK") != null) sampleLinkElement.detach();
+    public Element apply(final Element sampleXml, final EnaDatabaseSample enaDatabaseSample) {
+      final XmlPathBuilder xmlPathBuilder =
+          XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_LINKS");
+      if (xmlPathBuilder.exists()) {
+        for (final Element sampleLinkElement : xmlPathBuilder.elements("SAMPLE_LINK")) {
+          if (sampleLinkElement.element("URL_LINK") != null) {
+            sampleLinkElement.detach();
+          }
+        }
+      }
 
       return sampleXml;
     }
@@ -201,9 +212,9 @@ public class EnaSampleXmlEnhancer {
     INSTANCE;
 
     @Override
-    public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
+    public Element apply(final Element sampleXml, final EnaDatabaseSample enaDatabaseSample) {
       if (enaDatabaseSample.centreName != null) {
-        XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE");
+        final XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE");
 
         if (xmlPathBuilder.attributeExists("center_name")) {
           xmlPathBuilder
@@ -221,11 +232,12 @@ public class EnaSampleXmlEnhancer {
     INSTANCE;
 
     @Override
-    public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
-      if (enaDatabaseSample.firstPublic == null || enaDatabaseSample.lastUpdated == null)
+    public Element apply(final Element sampleXml, final EnaDatabaseSample enaDatabaseSample) {
+      if (enaDatabaseSample.firstPublic == null || enaDatabaseSample.lastUpdated == null) {
         return sampleXml;
+      }
 
-      XmlPathBuilder xmlPathBuilder =
+      final XmlPathBuilder xmlPathBuilder =
           XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_ATTRIBUTES");
 
       if (xmlPathBuilder.exists()) {
@@ -245,20 +257,26 @@ public class EnaSampleXmlEnhancer {
     INSTANCE;
 
     @Override
-    public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
-      if (enaDatabaseSample.bioSamplesId == null) return sampleXml;
+    public Element apply(final Element sampleXml, final EnaDatabaseSample enaDatabaseSample) {
+      if (enaDatabaseSample.bioSamplesId == null) {
+        return sampleXml;
+      }
 
-      XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE", "IDENTIFIERS");
+      final XmlPathBuilder xmlPathBuilder =
+          XmlPathBuilder.of(sampleXml).path("SAMPLE", "IDENTIFIERS");
 
       if (xmlPathBuilder.exists()) {
         boolean bioSamplesExternalIdExists = false;
 
-        for (Element element : xmlPathBuilder.elements("EXTERNAL_ID"))
-          if (element.attribute("namespace").getText().equals("BioSample"))
+        for (final Element element : xmlPathBuilder.elements("EXTERNAL_ID")) {
+          if (element.attribute("namespace").getText().equals("BioSample")) {
             bioSamplesExternalIdExists = true;
+          }
+        }
 
-        if (!bioSamplesExternalIdExists)
+        if (!bioSamplesExternalIdExists) {
           xmlPathBuilder.element().add(createExternalRef(enaDatabaseSample.bioSamplesId));
+        }
       }
 
       return sampleXml;
@@ -269,22 +287,26 @@ public class EnaSampleXmlEnhancer {
     INSTANCE;
 
     @Override
-    public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
-      if (enaDatabaseSample.bioSamplesId == null) return sampleXml;
+    public Element apply(final Element sampleXml, final EnaDatabaseSample enaDatabaseSample) {
+      if (enaDatabaseSample.bioSamplesId == null) {
+        return sampleXml;
+      }
 
       XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE", "TITLE");
 
       if (!xmlPathBuilder.exists()) {
         String newTitle = null;
         if (enaDatabaseSample.fixed.equals("Y")) {
-          if (enaDatabaseSample.fixedScientificName != null)
+          if (enaDatabaseSample.fixedScientificName != null) {
             newTitle = enaDatabaseSample.fixedScientificName;
-        } else if (enaDatabaseSample.scientificName != null)
+          }
+        } else if (enaDatabaseSample.scientificName != null) {
           newTitle = enaDatabaseSample.scientificName;
+        }
         if (newTitle != null) {
           xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE");
 
-          Element titleElement = DocumentHelper.createElement("TITLE");
+          final Element titleElement = DocumentHelper.createElement("TITLE");
 
           titleElement.setText(newTitle);
           xmlPathBuilder.element().add(titleElement);
@@ -299,54 +321,62 @@ public class EnaSampleXmlEnhancer {
     INSTANCE;
 
     @Override
-    public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
+    public Element apply(final Element sampleXml, final EnaDatabaseSample enaDatabaseSample) {
       if (enaDatabaseSample.fixed.equals("Y")) {
-        XmlPathBuilder parentXmlPathBuilderName =
+        final XmlPathBuilder parentXmlPathBuilderName =
             XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_NAME");
 
-        if (!parentXmlPathBuilderName.exists())
+        if (!parentXmlPathBuilderName.exists()) {
           XmlPathBuilder.of(sampleXml).path("SAMPLE").element().addElement("SAMPLE_NAME");
+        }
 
-        XmlPathBuilder taxIdXmlPathBuilderTaxonId =
+        final XmlPathBuilder taxIdXmlPathBuilderTaxonId =
             XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_NAME", "TAXON_ID");
-        String taxId = enaDatabaseSample.fixedTaxId == null ? "" : enaDatabaseSample.fixedTaxId;
+        final String taxId =
+            enaDatabaseSample.fixedTaxId == null ? "" : enaDatabaseSample.fixedTaxId;
 
-        if (taxIdXmlPathBuilderTaxonId.exists())
+        if (taxIdXmlPathBuilderTaxonId.exists()) {
           taxIdXmlPathBuilderTaxonId.element().setText(taxId);
-        else parentXmlPathBuilderName.element().addElement("TAXON_ID", taxId);
+        } else {
+          parentXmlPathBuilderName.element().addElement("TAXON_ID", taxId);
+        }
 
-        XmlPathBuilder taxIdXmlPathBuilderScientificName =
+        final XmlPathBuilder taxIdXmlPathBuilderScientificName =
             XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_NAME", "SCIENTIFIC_NAME");
-        String scientificName =
+        final String scientificName =
             enaDatabaseSample.fixedScientificName == null
                 ? ""
                 : enaDatabaseSample.fixedScientificName;
 
-        if (taxIdXmlPathBuilderScientificName.exists())
+        if (taxIdXmlPathBuilderScientificName.exists()) {
           taxIdXmlPathBuilderScientificName.element().setText(scientificName);
-        else parentXmlPathBuilderName.element().addElement("SCIENTIFIC_NAME", scientificName);
+        } else {
+          parentXmlPathBuilderName.element().addElement("SCIENTIFIC_NAME", scientificName);
+        }
 
-        XmlPathBuilder taxIdXmlPathBuilderCommonName =
+        final XmlPathBuilder taxIdXmlPathBuilderCommonName =
             XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_NAME", "COMMON_NAME");
-        String commonName =
+        final String commonName =
             enaDatabaseSample.fixedCommonName == null ? "" : enaDatabaseSample.fixedCommonName;
 
-        if (taxIdXmlPathBuilderCommonName.exists())
+        if (taxIdXmlPathBuilderCommonName.exists()) {
           taxIdXmlPathBuilderCommonName.element().setText(commonName);
-        else parentXmlPathBuilderName.element().addElement("COMMON_NAME", commonName);
+        } else {
+          parentXmlPathBuilderName.element().addElement("COMMON_NAME", commonName);
+        }
       }
 
       return sampleXml;
     }
   }
 
-  private Element getSampleElement(String xmlString) {
-    SAXReader reader = new SAXReader();
+  private Element getSampleElement(final String xmlString) {
+    final SAXReader reader = new SAXReader();
     Document xml = null;
 
     try {
       xml = reader.read(new StringReader(xmlString));
-    } catch (DocumentException e) {
+    } catch (final DocumentException e) {
       LOGGER.error("Error reading XML", e);
     }
 
@@ -355,8 +385,8 @@ public class EnaSampleXmlEnhancer {
     return xml.getRootElement();
   }
 
-  private static Element createExternalRef(String bioSamplesId) {
-    Element externalIdElement = DocumentHelper.createElement("EXTERNAL_ID");
+  private static Element createExternalRef(final String bioSamplesId) {
+    final Element externalIdElement = DocumentHelper.createElement("EXTERNAL_ID");
 
     externalIdElement.addAttribute("namespace", "BioSample");
     externalIdElement.setText(bioSamplesId);
@@ -364,14 +394,14 @@ public class EnaSampleXmlEnhancer {
     return externalIdElement;
   }
 
-  private static Element createSampleAttribute(String tag, String value) {
-    Element sampleAttributeElement = DocumentHelper.createElement("SAMPLE_ATTRIBUTE");
-    Element tagElement = DocumentHelper.createElement("TAG");
+  private static Element createSampleAttribute(final String tag, final String value) {
+    final Element sampleAttributeElement = DocumentHelper.createElement("SAMPLE_ATTRIBUTE");
+    final Element tagElement = DocumentHelper.createElement("TAG");
 
     tagElement.setText(tag);
     sampleAttributeElement.add(tagElement);
 
-    Element valueElement = DocumentHelper.createElement("VALUE");
+    final Element valueElement = DocumentHelper.createElement("VALUE");
     valueElement.setText(value);
     sampleAttributeElement.add(valueElement);
 

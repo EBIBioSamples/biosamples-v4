@@ -11,22 +11,8 @@
 package uk.ac.ebi.biosamples.docs;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.CurationLink;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import java.util.*;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
@@ -38,24 +24,24 @@ public class DocumentationHelper {
 
   private final Random randomGenerator = new Random(new Date().toInstant().toEpochMilli());
 
-  public List<Sample> generateRandomSamples(int numberOfSamples) {
+  private List<Sample> generateRandomSamples(final int numberOfSamples) {
 
-    List<Sample> samples = new ArrayList<>();
-    Set<String> usedAccession = new HashSet<>();
+    final List<Sample> samples = new ArrayList<>();
+    final Set<String> usedAccession = new HashSet<>();
     String sampleAccession = null;
 
     for (int i = 0; i < numberOfSamples; i++) {
 
       while (sampleAccession == null || usedAccession.contains(sampleAccession)) {
 
-        int randomInt = randomGenerator.nextInt(maxRandomNumber);
+        final int randomInt = randomGenerator.nextInt(maxRandomNumber);
         sampleAccession = String.format("%s%06d", "SAMFAKE", randomInt);
         //                String randomPrefix = sampleAccessionPrefix[randomInt %
         // sampleAccessionPrefix.length];
       }
 
       usedAccession.add(sampleAccession);
-      Sample sample = new Sample.Builder("FakeSample", sampleAccession).build();
+      final Sample sample = new Sample.Builder("FakeSample", sampleAccession).build();
 
       samples.add(sample);
     }
@@ -64,11 +50,11 @@ public class DocumentationHelper {
   }
 
   public Sample generateRandomSample() {
-    return this.generateRandomSamples(1).get(0);
+    return generateRandomSamples(1).get(0);
   }
 
   public String generateRandomDomain() {
-    List<String> domainNames =
+    final List<String> domainNames =
         Arrays.asList(
             "self.BioSamples",
             "self.USI",
@@ -82,11 +68,11 @@ public class DocumentationHelper {
     return domainNames.get(randomGenerator.nextInt(domainNames.size()));
   }
 
-  public String getExampleDomain() {
+  String getExampleDomain() {
     return "self.ExampleDomain";
   }
 
-  public Sample.Builder getExampleSampleBuilder() {
+  Sample.Builder getExampleSampleBuilder() {
     return new Sample.Builder("FakeSample", "SAMEA12345");
   }
 
@@ -94,11 +80,11 @@ public class DocumentationHelper {
     return getExampleSampleBuilder().build();
   }
 
-  public Sample getExampleSampleWithDomain() {
+  Sample getExampleSampleWithDomain() {
     return getExampleSampleBuilder().withDomain(getExampleDomain()).build();
   }
 
-  public Sample getExampleSampleWithWebinId() {
+  Sample getExampleSampleWithWebinId() {
     return getExampleSampleBuilder().withWebinSubmissionAccountId("WEBIN-12345").build();
   }
 
@@ -106,7 +92,7 @@ public class DocumentationHelper {
     return getExampleSampleBuilder().build();
   }
 
-  public Sample getExampleSampleWithExternalReferences() {
+  Sample getExampleSampleWithExternalReferences() {
     return getExampleSampleBuilder()
         .addExternalReference(
             ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/SAMEA00001"))
@@ -114,15 +100,15 @@ public class DocumentationHelper {
         .build();
   }
 
-  public Sample getExampleSampleWithRelationships() {
+  Sample getExampleSampleWithRelationships() {
     return getExampleSampleBuilder()
         .addRelationship(Relationship.build("SAMFAKE123456", "derived from", "SAMFAKE654321"))
         .withDomain(getExampleDomain())
         .build();
   }
 
-  public Curation getExampleCuration() {
-    Curation curationObject =
+  private Curation getExampleCuration() {
+    final Curation curationObject =
         Curation.build(
             Collections.singletonList(Attribute.build("Organism", "Human", "9606", null)),
             Collections.singletonList(
@@ -140,25 +126,25 @@ public class DocumentationHelper {
     return curationObject;
   }
 
-  public CurationLink getExampleCurationLink() {
-    Curation curationObject = getExampleCuration();
-    Sample sampleObject = getExampleSampleBuilder().build();
-    String domain = getExampleDomain();
+  CurationLink getExampleCurationLink() {
+    final Curation curationObject = getExampleCuration();
+    final Sample sampleObject = getExampleSampleBuilder().build();
+    final String domain = getExampleDomain();
 
     return CurationLink.build(
         sampleObject.getAccession(), curationObject, domain, null, Instant.now());
   }
 
-  public CurationLink getExampleCurationLinkWithWebinId() {
-    Curation curationObject = getExampleCuration();
-    Sample sampleObject = getExampleSampleBuilder().build();
+  CurationLink getExampleCurationLinkWithWebinId() {
+    final Curation curationObject = getExampleCuration();
+    final Sample sampleObject = getExampleSampleBuilder().build();
 
     return CurationLink.build(
         sampleObject.getAccession(), curationObject, null, "WEBIN-12345", Instant.now());
   }
 
-  public StructuredData getExampleStructuredData() {
-    Set<StructuredDataTable> structuredDataTableSet = new HashSet<>();
+  StructuredData getExampleStructuredData() {
+    final Set<StructuredDataTable> structuredDataTableSet = new HashSet<>();
     Set<Map<String, StructuredDataEntry>> dataContent = new HashSet<>();
     Map<String, StructuredDataEntry> dataMap = new HashMap<>();
     dataMap.put(

@@ -23,17 +23,16 @@ public abstract class SolrSampleField implements FilterCriteriaBuilder {
 
   /** Constructor meant to be used only for reflection purposes */
   protected SolrSampleField() {
-    this.readableLabel = null;
-    this.solrDocumentLabel = null;
+    readableLabel = null;
+    solrDocumentLabel = null;
   }
 
-  protected SolrSampleField(String readableLabel) {
+  protected SolrSampleField(final String readableLabel) {
     this.readableLabel = readableLabel;
     if (isEncodedField()) {
-      this.solrDocumentLabel =
-          SolrFieldService.encodeFieldName(readableLabel) + getSolrFieldSuffix();
+      solrDocumentLabel = SolrFieldService.encodeFieldName(readableLabel) + getSolrFieldSuffix();
     } else {
-      this.solrDocumentLabel = readableLabel + getSolrFieldSuffix();
+      solrDocumentLabel = readableLabel + getSolrFieldSuffix();
     }
   }
 
@@ -43,7 +42,7 @@ public abstract class SolrSampleField implements FilterCriteriaBuilder {
    * @param readableLabel
    * @param solrDocumentLabel
    */
-  protected SolrSampleField(String readableLabel, String solrDocumentLabel) {
+  protected SolrSampleField(final String readableLabel, final String solrDocumentLabel) {
     this.readableLabel = readableLabel;
     this.solrDocumentLabel = solrDocumentLabel;
   }
@@ -54,7 +53,7 @@ public abstract class SolrSampleField implements FilterCriteriaBuilder {
    * @param fieldName string to check against the field pattern
    * @return
    */
-  public boolean matches(String fieldName) {
+  public boolean matches(final String fieldName) {
     return getSolrFieldPattern().matcher(fieldName).find();
   }
 
@@ -107,7 +106,7 @@ public abstract class SolrSampleField implements FilterCriteriaBuilder {
    * @param facetCount
    * @return
    */
-  public Facet.Builder getFacetBuilder(String facetLabel, Long facetCount) {
+  public Facet.Builder getFacetBuilder(final String facetLabel, final Long facetCount) {
     return null;
   }
 
@@ -121,7 +120,7 @@ public abstract class SolrSampleField implements FilterCriteriaBuilder {
 
   /** @return the readable label of the field */
   public String getReadableLabel() {
-    return this.readableLabel;
+    return readableLabel;
   }
 
   /**
@@ -131,12 +130,12 @@ public abstract class SolrSampleField implements FilterCriteriaBuilder {
     return solrDocumentLabel;
   }
 
-  public SolrSampleField setReadableLabel(String readableLabel) {
+  public SolrSampleField setReadableLabel(final String readableLabel) {
     this.readableLabel = readableLabel;
     return this;
   }
 
-  public SolrSampleField setSolrLabel(String solrDocumentLabel) {
+  public SolrSampleField setSolrLabel(final String solrDocumentLabel) {
     this.solrDocumentLabel = solrDocumentLabel;
     return this;
   }

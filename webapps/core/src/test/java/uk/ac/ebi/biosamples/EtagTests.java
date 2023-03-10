@@ -10,7 +10,8 @@
 */
 package uk.ac.ebi.biosamples;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -51,8 +52,8 @@ public class EtagTests {
 
   @Test
   public void get_validation_endpoint_return_not_allowed_response() throws Exception {
-    String sampleAccession = "SAMEA123456789";
-    Sample testSample =
+    final String sampleAccession = "SAMEA123456789";
+    final Sample testSample =
         new Sample.Builder("TestSample", sampleAccession)
             .withDomain("TestDomain")
             .addAttribute(new Attribute.Builder("Organism", "Homo sapiens").build())
@@ -73,12 +74,12 @@ public class EtagTests {
         .perform(get("/samples/{accession}", sampleAccession).accept(MediaTypes.HAL_JSON))
         .andExpect(status().is2xxSuccessful());
 
-    MvcResult sampleRequestResult =
+    final MvcResult sampleRequestResult =
         mockMvc
             .perform(get("/samples/{accession}", sampleAccession).accept(MediaTypes.HAL_JSON))
             .andReturn();
 
-    String etag = sampleRequestResult.getResponse().getHeader("Etag");
+    final String etag = sampleRequestResult.getResponse().getHeader("Etag");
 
     mockMvc
         .perform(

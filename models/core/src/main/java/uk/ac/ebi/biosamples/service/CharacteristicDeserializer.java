@@ -41,24 +41,25 @@ import uk.ac.ebi.biosamples.model.Attribute;
     ],
  */
 public class CharacteristicDeserializer extends StdDeserializer<SortedSet> {
-  private Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   public CharacteristicDeserializer() {
     this(SortedSet.class);
   }
 
-  public CharacteristicDeserializer(Class<SortedSet> t) {
+  private CharacteristicDeserializer(final Class<SortedSet> t) {
     super(t);
   }
 
   @Override
-  public SortedSet deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-    SortedSet<Attribute> attributes = new TreeSet<>();
-    Map<String, List<LegacyAttribute>> characteristics =
+  public SortedSet deserialize(final JsonParser p, final DeserializationContext ctxt)
+      throws IOException {
+    final SortedSet<Attribute> attributes = new TreeSet<>();
+    final Map<String, List<LegacyAttribute>> characteristics =
         p.readValueAs(new TypeReference<Map<String, List<LegacyAttribute>>>() {});
 
-    for (String type : characteristics.keySet()) {
-      for (LegacyAttribute legacy : characteristics.get(type)) {
+    for (final String type : characteristics.keySet()) {
+      for (final LegacyAttribute legacy : characteristics.get(type)) {
         attributes.add(
             Attribute.build(type, legacy.text, legacy.tag, legacy.ontologyTerms, legacy.unit));
       }

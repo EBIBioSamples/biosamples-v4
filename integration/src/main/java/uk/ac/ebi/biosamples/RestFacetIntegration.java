@@ -30,15 +30,15 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 // @Profile({"default","rest"})
 public class RestFacetIntegration extends AbstractIntegration {
 
-  private Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final IntegrationProperties integrationProperties;
   private final BioSamplesProperties bioSamplesProperties;
 
   public RestFacetIntegration(
-      BioSamplesClient client,
-      IntegrationProperties integrationProperties,
-      BioSamplesProperties bioSamplesProperties) {
+      final BioSamplesClient client,
+      final IntegrationProperties integrationProperties,
+      final BioSamplesProperties bioSamplesProperties) {
     super(client);
     this.integrationProperties = integrationProperties;
     this.bioSamplesProperties = bioSamplesProperties;
@@ -171,11 +171,11 @@ public class RestFacetIntegration extends AbstractIntegration {
   protected void phaseSix() {}
 
   private Sample getSampleTest1() {
-    String name = "RestFacetIntegration_testRestFacet";
-    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final String name = "RestFacetIntegration_testRestFacet";
+    final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
@@ -191,18 +191,18 @@ public class RestFacetIntegration extends AbstractIntegration {
   }
 
   private Sample getEnaSampleTest() {
-    String name = "RestFacetIntegration_testEnaRestFacet";
-    Instant update = Instant.parse("2015-03-22T08:30:23.00Z");
-    Instant release = Instant.parse("2015-03-22T08:30:23.00Z");
+    final String name = "RestFacetIntegration_testEnaRestFacet";
+    final Instant update = Instant.parse("2015-03-22T08:30:23.00Z");
+    final Instant release = Instant.parse("2015-03-22T08:30:23.00Z");
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
     // use non alphanumeric characters in type
     attributes.add(Attribute.build("geographic location (country and/or sea)", "Land of Oz"));
 
-    SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+    final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
     externalReferences.add(
         ExternalReference.build(
             "https://www.ebi.ac.uk/ena/ERA123123",
@@ -220,18 +220,18 @@ public class RestFacetIntegration extends AbstractIntegration {
   }
 
   private Sample getArrayExpressSampleTest() {
-    String name = "RestFacetIntegration_testArrayExpressRestFacet";
-    Instant update = Instant.parse("2015-03-22T08:30:23.00Z");
-    Instant release = Instant.parse("2015-03-22T08:30:23.00Z");
+    final String name = "RestFacetIntegration_testArrayExpressRestFacet";
+    final Instant update = Instant.parse("2015-03-22T08:30:23.00Z");
+    final Instant release = Instant.parse("2015-03-22T08:30:23.00Z");
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
     // use non alphanumeric characters in type
     attributes.add(Attribute.build("geographic location (country and/or sea)", "Land of Oz"));
 
-    SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+    final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
     externalReferences.add(
         ExternalReference.build("http://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-5277"));
 

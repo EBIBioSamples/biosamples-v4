@@ -20,7 +20,7 @@ public class MongoCurationLinkToCurationLinkConverter
     implements Function<MongoCurationLink, CurationLink> {
 
   @Override
-  public CurationLink apply(MongoCurationLink mongoCurationLink) {
+  public CurationLink apply(final MongoCurationLink mongoCurationLink) {
     return CurationLink.build(
         mongoCurationLink.getSample(),
         mongoCurationLink.getCuration(),

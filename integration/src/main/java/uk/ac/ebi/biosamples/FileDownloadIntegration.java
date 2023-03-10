@@ -27,10 +27,11 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component
 public class FileDownloadIntegration extends AbstractIntegration {
-  private Logger log = LoggerFactory.getLogger(this.getClass());
-  private BioSamplesProperties clientProperties;
+  private final Logger log = LoggerFactory.getLogger(getClass());
+  private final BioSamplesProperties clientProperties;
 
-  public FileDownloadIntegration(BioSamplesClient client, BioSamplesProperties clientProperties) {
+  public FileDownloadIntegration(
+      final BioSamplesClient client, final BioSamplesProperties clientProperties) {
     super(client);
     this.clientProperties = clientProperties;
   }
@@ -47,21 +48,22 @@ public class FileDownloadIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseThree() {
-    String sampleDownloadUrl = this.clientProperties.getBiosamplesClientUri() + "/download";
-    try (ZipInputStream inputStream = new ZipInputStream(new URL(sampleDownloadUrl).openStream())) {
-      ZipEntry entry = inputStream.getNextEntry();
+    final String sampleDownloadUrl = clientProperties.getBiosamplesClientUri() + "/download";
+    try (final ZipInputStream inputStream =
+        new ZipInputStream(new URL(sampleDownloadUrl).openStream())) {
+      final ZipEntry entry = inputStream.getNextEntry();
       if (entry == null || !"samples.json".equals(entry.getName())) {
         throw new IntegrationTestFailException(
             "Could not download zipped samples.json", Phase.THREE);
       }
 
-      StringWriter writer = new StringWriter();
+      final StringWriter writer = new StringWriter();
       IOUtils.copy(inputStream, writer, Charset.defaultCharset());
-      JsonNode samples = new ObjectMapper().readTree(writer.toString());
+      final JsonNode samples = new ObjectMapper().readTree(writer.toString());
       if (!samples.isArray()) {
         throw new IntegrationTestFailException("Invalid format in samples.json", Phase.THREE);
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       // TODO: @Isuru to check please!
       /*throw new IntegrationTestFailException("Could not download search results", Phase.THREE);*/
     }

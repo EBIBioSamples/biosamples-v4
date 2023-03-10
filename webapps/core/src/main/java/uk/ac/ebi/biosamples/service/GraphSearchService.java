@@ -22,19 +22,21 @@ import uk.ac.ebi.biosamples.neo4j.repo.NeoSampleRepository;
 public class GraphSearchService {
   private static final Logger LOG = LoggerFactory.getLogger(GraphSearchService.class);
 
-  private NeoSampleRepository neoSampleRepository;
-  private SampleService sampleService;
+  private final NeoSampleRepository neoSampleRepository;
+  private final SampleService sampleService;
 
-  public GraphSearchService(NeoSampleRepository neoSampleRepository, SampleService sampleService) {
+  public GraphSearchService(
+      final NeoSampleRepository neoSampleRepository, final SampleService sampleService) {
     this.neoSampleRepository = neoSampleRepository;
     this.sampleService = sampleService;
   }
 
-  public List<Map<String, Object>> executeCypher(String query) {
+  public List<Map<String, Object>> executeCypher(final String query) {
     return neoSampleRepository.executeCypher(query);
   }
 
-  public GraphSearchQuery graphSearch(GraphSearchQuery searchQuery, int size, int page) {
+  public GraphSearchQuery graphSearch(
+      final GraphSearchQuery searchQuery, final int size, final int page) {
     return neoSampleRepository.graphSearch(searchQuery, size, page);
   }
 }

@@ -26,10 +26,10 @@ public class SampleToJsonLDSampleRecordConverterTest {
 
   @Test
   public void testConvert() {
-    Sample sample = getSample();
+    final Sample sample = getSample();
 
-    SampleToJsonLDSampleRecordConverter converter = new SampleToJsonLDSampleRecordConverter();
-    JsonLDDataRecord record = converter.convert(sample);
+    final SampleToJsonLDSampleRecordConverter converter = new SampleToJsonLDSampleRecordConverter();
+    final JsonLDDataRecord record = converter.convert(sample);
 
     Assert.assertEquals(
         sample.getAttributes().first().getIri().first(),
@@ -38,16 +38,17 @@ public class SampleToJsonLDSampleRecordConverterTest {
 
   @Test
   public void testSerializeDeserialize() {
-    Sample sample = getSample();
-    SampleToJsonLDSampleRecordConverter converter = new SampleToJsonLDSampleRecordConverter();
-    JsonLDDataRecord record = converter.convert(sample);
+    final Sample sample = getSample();
+    final SampleToJsonLDSampleRecordConverter converter = new SampleToJsonLDSampleRecordConverter();
+    final JsonLDDataRecord record = converter.convert(sample);
 
     JsonLDDataRecord deserializedRecord = null;
-    ObjectMapper mapper = new ObjectMapper();
+    final ObjectMapper mapper = new ObjectMapper();
     try {
-      String serializedRecord = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(record);
+      final String serializedRecord =
+          mapper.writerWithDefaultPrettyPrinter().writeValueAsString(record);
       deserializedRecord = mapper.readValue(serializedRecord, JsonLDDataRecord.class);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       log.error("Failed to serialize JsonLD record");
       e.printStackTrace();
       Assert.fail();

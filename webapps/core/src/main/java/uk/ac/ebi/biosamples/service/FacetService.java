@@ -24,42 +24,42 @@ import uk.ac.ebi.biosamples.solr.service.SolrFacetService;
 
 @Service
 public class FacetService {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final SolrFacetService solrFacetService;
 
-  public FacetService(SolrFacetService solrFacetService) {
+  public FacetService(final SolrFacetService solrFacetService) {
     this.solrFacetService = solrFacetService;
   }
 
   public List<Facet> getFacets(
-      String text,
-      Collection<Filter> filters,
-      Collection<String> domains,
-      int noOfFacets,
-      int noOfFacetValues) {
+      final String text,
+      final Collection<Filter> filters,
+      final Collection<String> domains,
+      final int noOfFacets,
+      final int noOfFacetValues) {
     return getFacets(text, filters, domains, noOfFacets, noOfFacetValues, null);
   }
 
   public List<Facet> getFacets(
-      String text,
-      Collection<Filter> filters,
-      Collection<String> domains,
-      int noOfFacets,
-      int noOfFacetValues,
-      String facetField) {
-    Pageable facetPageable = PageRequest.of(0, noOfFacets);
-    Pageable facetValuePageable = PageRequest.of(0, noOfFacetValues);
+      final String text,
+      final Collection<Filter> filters,
+      final Collection<String> domains,
+      final int noOfFacets,
+      final int noOfFacetValues,
+      final String facetField) {
+    final Pageable facetPageable = PageRequest.of(0, noOfFacets);
+    final Pageable facetValuePageable = PageRequest.of(0, noOfFacetValues);
     // TODO if a facet is enabled as a filter, then that value will be the only filter displayed
     // TODO allow update date range
 
     // TODO if (text == null && filters.isEmpty()) cache results for the search landing page
-    long startTime = System.nanoTime();
-    String escapedText = text == null ? null : ClientUtils.escapeQueryChars(text);
-    List<Facet> facets =
+    final long startTime = System.nanoTime();
+    final String escapedText = text == null ? null : ClientUtils.escapeQueryChars(text);
+    final List<Facet> facets =
         solrFacetService.getFacets(
             escapedText, filters, domains, facetPageable, facetValuePageable, facetField);
-    long endTime = System.nanoTime();
+    final long endTime = System.nanoTime();
     log.trace("Got solr facets in " + ((endTime - startTime) / 1000000) + "ms");
 
     return facets;

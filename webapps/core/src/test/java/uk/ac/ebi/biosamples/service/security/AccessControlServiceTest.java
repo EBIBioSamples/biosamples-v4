@@ -33,18 +33,18 @@ public class AccessControlServiceTest extends TestCase {
           + "J4tNgaihj7OmZmCpIKTOecxEhh3anNfjQQ1O9vQhtCeiFz9g2Tj8pTdv-6FBZ5t5gidz5W4GDsJ_8hDnXPge7Gk5ug3_GddDAWHv"
           + "wJhuK_OR5oIIAf6SBeWNr9HKLpOQYcywYsrmKAFjTgA-wrGWtcR3qvFVDiQCpW2UzB8kzFVKdegIdrI2PgQnP5e0f5BoQ5V-qo7W"
           + "Bwn81bW7NkWHBXVecMab_UsKUyTMqNbsFY5TGJNj715a1Z_N6npkynGCpB3VbR5X6L3JVEnlhkBoCTE9zKUbfa3KLglYA";
-  AccessControlService accessControlService = new AccessControlService(new ObjectMapper());
+  private AccessControlService accessControlService = new AccessControlService(new ObjectMapper());
 
   public void testExtractToken() {
-    AuthToken aapToken = accessControlService.extractToken(AAP_TOKEN).orElse(null);
+    final AuthToken aapToken = accessControlService.extractToken(AAP_TOKEN).orElse(null);
     // AuthToken webinToken = accessControlService.extractToken(WEBIN_TOKEN).orElse(null);
     Assert.assertEquals(aapToken.getAuthority(), AuthorizationProvider.AAP);
     // Assert.assertEquals(webinToken.getAuthority(), AuthorizationProvider.WEBIN);
   }
 
   public void testGetUserRoles() {
-    AuthToken aapToken = accessControlService.extractToken(AAP_TOKEN).orElse(null);
-    List<String> userRoles = accessControlService.getUserRoles(aapToken);
+    final AuthToken aapToken = accessControlService.extractToken(AAP_TOKEN).orElse(null);
+    final List<String> userRoles = accessControlService.getUserRoles(aapToken);
     System.out.println(userRoles);
     Assert.assertTrue(userRoles.contains("subs.test-team-23"));
   }

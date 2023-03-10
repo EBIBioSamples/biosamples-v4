@@ -10,7 +10,8 @@
 */
 package uk.ac.ebi.biosamples.ncbi;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -40,28 +41,26 @@ public class NcbiDatesTests {
 
   @Before
   public void setup() {
-    this.conversionService = new NcbiSampleConversionService(new TaxonomyService());
-    this.testNcbiBioSamples =
+    conversionService = new NcbiSampleConversionService(new TaxonomyService());
+    testNcbiBioSamples =
         NcbiTestsService.readNcbiBiosampleElementFromFile("/examples/biosample_result_test.xml");
   }
 
   @Test
   public void given_ncbi_biosamples_it_generates_and_insdc_first_public_attribute() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
-    Optional<Attribute> expectedAttribute =
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
+    final Optional<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()
             .filter(attr -> attr.getType().equals("INSDC first public"))
             .findFirst();
-    Attribute secondaryAccession = expectedAttribute.get();
+    final Attribute secondaryAccession = expectedAttribute.get();
 
     assertEquals(secondaryAccession.getValue(), "2019-05-30T00:00:00Z");
   }
 
   @Test
   public void it_extracts_create() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
 
     assertTrue(sampleToTest.getCreate() != null);
     assertEquals(sampleToTest.getCreate().toString(), "2019-05-30T14:12:04.443Z");
@@ -70,8 +69,7 @@ public class NcbiDatesTests {
 
   @Test
   public void it_extracts_insdc_dates() {
-    Sample sampleToTest =
-        this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
+    final Sample sampleToTest = conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
     Optional<Attribute> expectedAttribute =
         sampleToTest.getAttributes().stream()
             .filter(attr -> attr.getType().equals("INSDC first public"))
@@ -79,7 +77,7 @@ public class NcbiDatesTests {
 
     assertTrue(expectedAttribute.isPresent());
 
-    Attribute insdcFirstPublic = expectedAttribute.get();
+    final Attribute insdcFirstPublic = expectedAttribute.get();
 
     assertEquals(insdcFirstPublic.getValue(), "2019-05-30T00:00:00Z");
 
@@ -90,18 +88,18 @@ public class NcbiDatesTests {
 
     assertTrue(expectedAttribute.isPresent());
 
-    Attribute insdcLastUpdate = expectedAttribute.get();
+    final Attribute insdcLastUpdate = expectedAttribute.get();
 
     assertEquals(insdcLastUpdate.getValue(), "2019-11-29T13:12:34.104Z");
   }
 
-  public Element readBioSampleElementFromXml(String pathToFile) throws DocumentException {
-    InputStream xmlInputStream = this.getClass().getResourceAsStream(pathToFile);
-    String xmlDocument =
+  public Element readBioSampleElementFromXml(final String pathToFile) throws DocumentException {
+    final InputStream xmlInputStream = getClass().getResourceAsStream(pathToFile);
+    final String xmlDocument =
         new BufferedReader(new InputStreamReader(xmlInputStream))
             .lines()
             .collect(Collectors.joining());
-    Document doc = DocumentHelper.parseText(xmlDocument);
+    final Document doc = DocumentHelper.parseText(xmlDocument);
 
     return doc.getRootElement().element("BioSample");
   }

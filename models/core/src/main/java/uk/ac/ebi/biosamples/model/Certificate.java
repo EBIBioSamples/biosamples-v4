@@ -19,7 +19,7 @@ public class Certificate implements Comparable<Certificate> {
   private String version;
   private String fileName;
 
-  public Certificate(String name, String version, String fileName) {
+  public Certificate(final String name, final String version, final String fileName) {
     this.name = name;
     this.version = version;
     this.fileName = fileName;
@@ -32,7 +32,7 @@ public class Certificate implements Comparable<Certificate> {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName(final String name) {
     this.name = name;
   }
 
@@ -41,7 +41,7 @@ public class Certificate implements Comparable<Certificate> {
     return version;
   }
 
-  public void setVersion(String version) {
+  public void setVersion(final String version) {
     this.version = version;
   }
 
@@ -50,7 +50,7 @@ public class Certificate implements Comparable<Certificate> {
     return fileName;
   }
 
-  public void setFileName(String fileName) {
+  public void setFileName(final String fileName) {
     this.fileName = fileName;
   }
 
@@ -70,10 +70,14 @@ public class Certificate implements Comparable<Certificate> {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof Certificate)) return false;
-    Certificate that = (Certificate) o;
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Certificate)) {
+      return false;
+    }
+    final Certificate that = (Certificate) o;
     return Objects.equals(getName(), that.getName())
         && Objects.equals(getVersion(), that.getVersion())
         && Objects.equals(getFileName(), that.getFileName());
@@ -85,18 +89,18 @@ public class Certificate implements Comparable<Certificate> {
   }
 
   @Override
-  public int compareTo(Certificate cert) {
+  public int compareTo(final Certificate cert) {
     if (cert == null) {
       return 1;
     }
 
-    int comparison = nullSafeStringComparison(this.name, cert.name);
+    int comparison = nullSafeStringComparison(name, cert.name);
 
     if (comparison != 0) {
       return comparison;
     }
 
-    comparison = nullSafeStringComparison(this.version, cert.version);
+    comparison = nullSafeStringComparison(version, cert.version);
     if (comparison != 0) {
       return comparison;
     }
@@ -104,7 +108,7 @@ public class Certificate implements Comparable<Certificate> {
     return 0;
   }
 
-  public int nullSafeStringComparison(String one, String two) {
+  private int nullSafeStringComparison(final String one, final String two) {
 
     if (one == null && two != null) {
       return -1;
@@ -123,7 +127,7 @@ public class Certificate implements Comparable<Certificate> {
   public static Certificate build(
       @JsonProperty("name") String name,
       @JsonProperty("version") String version,
-      @JsonProperty("fileName") String fileName) {
+      @JsonProperty("fileName") final String fileName) {
     // check for nulls
     if (name == null) {
       throw new IllegalArgumentException("Certificate name must not be null");
@@ -137,10 +141,14 @@ public class Certificate implements Comparable<Certificate> {
       throw new IllegalArgumentException("Certificate file name must not be null");
     }
 
-    if (name != null) name = name.trim();
-    if (version != null) version = version.trim();
+    if (name != null) {
+      name = name.trim();
+    }
+    if (version != null) {
+      version = version.trim();
+    }
 
-    Certificate cert = new Certificate();
+    final Certificate cert = new Certificate();
     cert.name = name;
     cert.fileName = fileName;
     cert.version = version;

@@ -36,22 +36,22 @@ public class FileDownloadInputStreamTest {
 
   private FileDownloadInputStream fileDownloadInputStream;
 
-  int pageSize = 1000;
-  int sampleCount = 100;
-  String cursor = "*";
-  String sampleSearchText = "";
-  String emptySamplesText = "no samples search";
-  Collection<Filter> filters = Collections.emptyList();
-  Collection<String> domains = Collections.emptyList();
+  private int pageSize = 1000;
+  private int sampleCount = 100;
+  private String cursor = "*";
+  private String sampleSearchText = "";
+  private String emptySamplesText = "no samples search";
+  private Collection<Filter> filters = Collections.emptyList();
+  private Collection<String> domains = Collections.emptyList();
 
   @Before
   public void init() {
-    CursorArrayList<Sample> samplePage = new CursorArrayList<>(cursor);
+    final CursorArrayList<Sample> samplePage = new CursorArrayList<>(cursor);
     when(samplePageService.getSamplesByText(
             emptySamplesText, filters, domains, null, cursor, pageSize, Optional.empty()))
         .thenReturn(samplePage);
 
-    CursorArrayList<Sample> samplePageWithSample = new CursorArrayList<>(cursor);
+    final CursorArrayList<Sample> samplePageWithSample = new CursorArrayList<>(cursor);
     samplePageWithSample.add(getTestSample());
     when(samplePageService.getSamplesByText(
             sampleSearchText, filters, domains, null, cursor, pageSize, Optional.empty()))
@@ -60,60 +60,60 @@ public class FileDownloadInputStreamTest {
 
   @Test
   public void read() throws IOException {
-    FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor("json");
+    final FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor("json");
     fileDownloadInputStream =
         new FileDownloadInputStream(
             samplePageService, emptySamplesText, filters, sampleCount, domains, serializer);
 
-    int startByte = fileDownloadInputStream.read();
+    final int startByte = fileDownloadInputStream.read();
     assertTrue(startByte > 0);
   }
 
   @Test
   public void read_empty_json() throws IOException {
-    FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor("json");
+    final FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor("json");
     fileDownloadInputStream =
         new FileDownloadInputStream(
             samplePageService, emptySamplesText, filters, sampleCount, domains, serializer);
 
-    StringWriter writer = new StringWriter();
+    final StringWriter writer = new StringWriter();
     IOUtils.copy(fileDownloadInputStream, writer, Charset.defaultCharset());
-    String emptyJson = writer.toString();
+    final String emptyJson = writer.toString();
     assertEquals("[]", emptyJson);
   }
 
   @Test
   @Ignore
   public void read_empty_xml() throws IOException {
-    FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor("xml");
+    final FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor("xml");
     fileDownloadInputStream =
         new FileDownloadInputStream(
             samplePageService, emptySamplesText, filters, sampleCount, domains, serializer);
 
-    StringWriter writer = new StringWriter();
+    final StringWriter writer = new StringWriter();
     IOUtils.copy(fileDownloadInputStream, writer, Charset.defaultCharset());
-    String emptyJson = writer.toString();
+    final String emptyJson = writer.toString();
     assertEquals("<BioSamples>\n</BioSamples>", emptyJson);
   }
 
   @Test
   public void read_json_with_samples() throws IOException {
-    FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor("json");
+    final FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor("json");
     fileDownloadInputStream =
         new FileDownloadInputStream(
             samplePageService, sampleSearchText, filters, sampleCount, domains, serializer);
 
-    StringWriter writer = new StringWriter();
+    final StringWriter writer = new StringWriter();
     IOUtils.copy(fileDownloadInputStream, writer, Charset.defaultCharset());
-    String sampleJson = writer.toString();
+    final String sampleJson = writer.toString();
     assertNotEquals("[]", sampleJson);
   }
 
   private Sample getTestSample() {
-    String name = "FileDownloadInputStreamTest_sample";
-    String accession = "fileDownloadTestAccession";
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final String name = "FileDownloadInputStreamTest_sample";
+    final String accession = "fileDownloadTestAccession";
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(Attribute.build("organism", "Homo sapiens"));
     attributes.add(Attribute.build("organism_part", "liver"));
 

@@ -46,31 +46,31 @@ public class NeoExportRunner implements ApplicationRunner {
   private final NeoCsvExporter neoCsvExporter;
 
   public NeoExportRunner(
-      BioSamplesClient bioSamplesClient,
-      PipelinesProperties pipelinesProperties,
-      NeoSampleRepository neoSampleRepository,
-      NeoCsvExporter neoCsvExporter) {
+      final BioSamplesClient bioSamplesClient,
+      final PipelinesProperties pipelinesProperties,
+      final NeoSampleRepository neoSampleRepository,
+      final NeoCsvExporter neoCsvExporter) {
     this.bioSamplesClient = bioSamplesClient;
     this.pipelinesProperties = pipelinesProperties;
     this.neoSampleRepository = neoSampleRepository;
     this.neoCsvExporter = neoCsvExporter;
-    this.pipelineFutureCallback = new PipelineFutureCallback();
+    pipelineFutureCallback = new PipelineFutureCallback();
   }
 
   @Override
-  public void run(ApplicationArguments args) throws Exception {
-    Collection<Filter> filters = PipelineUtils.getDateFilters(args);
+  public void run(final ApplicationArguments args) throws Exception {
+    final Collection<Filter> filters = PipelineUtils.getDateFilters(args);
     //    RelationFilter relationFilter = new RelationFilter.Builder("has member").build();
     //    filters.add(relationFilter);
     //    ExternalReferenceDataFilter externalFilter = new ExternalReferenceDataFilter.Builder("EGA
     // Dataset").build();
     //    filters.add(externalFilter);
 
-    Instant startTime = Instant.now();
+    final Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
     long sampleCount = 0;
     boolean isPassed = true;
-    SampleAnalytics sampleAnalytics = new SampleAnalytics();
+    final SampleAnalytics sampleAnalytics = new SampleAnalytics();
 
     String format = "";
     if (args.getOptionNames().contains("format")) {
@@ -82,7 +82,7 @@ public class NeoExportRunner implements ApplicationRunner {
       LOG.info("Directly exporting to neo4j instance");
     }
 
-    try (AdaptiveThreadPoolExecutor executorService =
+    try (final AdaptiveThreadPoolExecutor executorService =
         AdaptiveThreadPoolExecutor.create(
             100,
             10000,
@@ -90,11 +90,11 @@ public class NeoExportRunner implements ApplicationRunner {
             pipelinesProperties.getThreadCount(),
             pipelinesProperties.getThreadCountMax())) {
 
-      Map<String, Future<PipelineResult>> futures = new HashMap<>();
-      for (EntityModel<Sample> sampleResource :
+      final Map<String, Future<PipelineResult>> futures = new HashMap<>();
+      for (final EntityModel<Sample> sampleResource :
           bioSamplesClient.fetchSampleResourceAll("", filters)) {
         LOG.trace("Handling {}", sampleResource);
-        Sample sample = sampleResource.getContent();
+        final Sample sample = sampleResource.getContent();
         Objects.requireNonNull(sample);
         collectSampleTypes(sample, sampleAnalytics);
 
@@ -103,7 +103,8 @@ public class NeoExportRunner implements ApplicationRunner {
           if ("CSV".equalsIgnoreCase(format)) {
             neoCsvExporter.addToCSVFile(sample);
           } else {
-            Callable<PipelineResult> task = new NeoExportCallable(neoSampleRepository, sample);
+            final Callable<PipelineResult> task =
+                new NeoExportCallable(neoSampleRepository, sample);
             futures.put(sample.getAccession(), executorService.submit(task));
           }
         }
@@ -120,12 +121,12 @@ public class NeoExportRunner implements ApplicationRunner {
         ThreadUtils.checkAndCallbackFutures(futures, 0, pipelineFutureCallback);
       }
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOG.error("Pipeline failed to finish successfully", e);
       isPassed = false;
       throw e;
     } finally {
-      Instant endTime = Instant.now();
+      final Instant endTime = Instant.now();
       LOG.info("Total samples processed {}", sampleCount);
       LOG.info("Total curation objects added {}", pipelineFutureCallback.getTotalCount());
       LOG.info("Pipeline finished at {}", endTime);
@@ -133,7 +134,7 @@ public class NeoExportRunner implements ApplicationRunner {
           "Pipeline total running time {} seconds",
           Duration.between(startTime, endTime).getSeconds());
 
-      PipelineAnalytics pipelineAnalytics =
+      final PipelineAnalytics pipelineAnalytics =
           new PipelineAnalytics(
               "curami", startTime, endTime, sampleCount, pipelineFutureCallback.getTotalCount());
       pipelineAnalytics.setDateRange(filters);
@@ -146,7 +147,7 @@ public class NeoExportRunner implements ApplicationRunner {
     final ConcurrentLinkedQueue<String> failedQueue = NeoExportCallable.failedQueue;
     String failures = null;
     if (!failedQueue.isEmpty()) {
-      List<String> fails = new LinkedList<>();
+      final List<String> fails = new LinkedList<>();
       while (failedQueue.peek() != null) {
         fails.add(failedQueue.poll());
       }
@@ -158,9 +159,9 @@ public class NeoExportRunner implements ApplicationRunner {
     return failures;
   }
 
-  private void collectSampleTypes(Sample sample, SampleAnalytics sampleAnalytics) {
-    String accessionPrefix = sample.getAccession().substring(0, 4);
-    String submittedChannel = sample.getSubmittedVia().name();
+  private void collectSampleTypes(final Sample sample, final SampleAnalytics sampleAnalytics) {
+    final String accessionPrefix = sample.getAccession().substring(0, 4);
+    final String submittedChannel = sample.getSubmittedVia().name();
     sampleAnalytics.addToCenter(accessionPrefix);
     sampleAnalytics.addToChannel(submittedChannel);
   }

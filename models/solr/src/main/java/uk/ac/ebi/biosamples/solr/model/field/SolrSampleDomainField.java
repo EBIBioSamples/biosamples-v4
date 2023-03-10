@@ -24,7 +24,7 @@ public class SolrSampleDomainField extends SolrSampleField {
     super();
   }
 
-  public SolrSampleDomainField(String readableLabel) {
+  public SolrSampleDomainField(final String readableLabel) {
     super(readableLabel);
   }
 
@@ -34,7 +34,7 @@ public class SolrSampleDomainField extends SolrSampleField {
    * @param readableLabel
    * @param solrDocumentLabel
    */
-  public SolrSampleDomainField(String readableLabel, String solrDocumentLabel) {
+  public SolrSampleDomainField(final String readableLabel, final String solrDocumentLabel) {
     super(readableLabel, solrDocumentLabel);
   }
 
@@ -54,7 +54,7 @@ public class SolrSampleDomainField extends SolrSampleField {
   }
 
   @Override
-  public boolean isCompatibleWith(Filter filter) {
+  public boolean isCompatibleWith(final Filter filter) {
     return filter instanceof DomainFilter;
   }
 
@@ -64,7 +64,7 @@ public class SolrSampleDomainField extends SolrSampleField {
   }
 
   @Override
-  public Criteria getFilterCriteria(Filter filter) {
+  public Criteria getFilterCriteria(final Filter filter) {
 
     Criteria filterCriteria = null;
 
@@ -72,13 +72,16 @@ public class SolrSampleDomainField extends SolrSampleField {
 
       filterCriteria = new Criteria(getSolrLabel());
 
-      DomainFilter domainFilter = (DomainFilter) filter;
+      final DomainFilter domainFilter = (DomainFilter) filter;
       if (domainFilter.getContent().isPresent())
-        //                filterCriteria = filterCriteria.expression("/" +
-        // domainFilter.getContent().get() + "/");
+      //                filterCriteria = filterCriteria.expression("/" +
+      // domainFilter.getContent().get() + "/");
+      {
         filterCriteria =
             filterCriteria.expression(String.format("\"%s\"", domainFilter.getContent().get()));
-      else filterCriteria = filterCriteria.isNotNull();
+      } else {
+        filterCriteria = filterCriteria.isNotNull();
+      }
     }
 
     return filterCriteria;

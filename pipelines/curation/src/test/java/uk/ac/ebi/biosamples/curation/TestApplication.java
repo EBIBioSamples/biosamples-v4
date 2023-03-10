@@ -41,10 +41,10 @@ public class TestApplication {
 
   @Bean
   public ObjectMapper objectMapper() {
-    ObjectMapper mapper = new ObjectMapper();
+    final ObjectMapper mapper = new ObjectMapper();
     mapper.registerModule(new Jackson2HalModule());
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    MappingJackson2HttpMessageConverter halConverter =
+    final MappingJackson2HttpMessageConverter halConverter =
         new TypeConstrainedMappingJackson2HttpMessageConverter(RepresentationModel.class);
     halConverter.setObjectMapper(mapper);
     halConverter.setSupportedMediaTypes(Collections.singletonList(MediaTypes.HAL_JSON));

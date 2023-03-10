@@ -37,56 +37,56 @@ public class SolrFacetService {
   private final SolrFilterService solrFilterService;
 
   public SolrFacetService(
-      SolrSampleRepository solrSampleRepository,
-      SolrFieldService solrFieldService,
-      SolrFilterService solrFilterService) {
+      final SolrSampleRepository solrSampleRepository,
+      final SolrFieldService solrFieldService,
+      final SolrFilterService solrFilterService) {
     this.solrSampleRepository = solrSampleRepository;
     this.solrFieldService = solrFieldService;
     this.solrFilterService = solrFilterService;
   }
 
   public List<Facet> getFacets(
-      String searchTerm,
-      Collection<Filter> filters,
-      Collection<String> domains,
-      Pageable facetFieldPageInfo,
-      Pageable facetValuesPageInfo,
-      String facetField) {
+      final String searchTerm,
+      final Collection<Filter> filters,
+      final Collection<String> domains,
+      final Pageable facetFieldPageInfo,
+      final Pageable facetValuesPageInfo,
+      final String facetField) {
     boolean isLandingPage = false;
 
-    List<Facet> facets = new ArrayList<>();
-    FacetQuery query;
+    final List<Facet> facets = new ArrayList<>();
+    final FacetQuery query;
     if (StringUtils.isBlank(searchTerm) || "*:*".equals(searchTerm.trim())) {
       query = new SimpleFacetQuery(new Criteria().expression("*:*")); // default to search all
       isLandingPage = filters.isEmpty();
     } else {
-      String lowerCasedSearchTerm = searchTerm.toLowerCase();
+      final String lowerCasedSearchTerm = searchTerm.toLowerCase();
       // search for copied fields keywords_ss
       query =
           new SimpleFacetQuery(new Criteria().expression("keywords_ss:" + lowerCasedSearchTerm));
 
       // boosting accession to bring accession matches to the top
-      Criteria boostId = new Criteria("id").is(searchTerm).boost(5);
+      final Criteria boostId = new Criteria("id").is(searchTerm).boost(5);
       boostId.setPartIsOr(true);
       query.addCriteria(boostId);
 
       // boosting name to bring accession matches to the top
-      Criteria boostName = new Criteria("name_s").is(searchTerm).boost(3);
+      final Criteria boostName = new Criteria("name_s").is(searchTerm).boost(3);
       boostName.setPartIsOr(true);
       query.addCriteria(boostName);
     }
     query.setTimeAllowed(TIMEALLOWED * 1000); // some facet queries could take longer to return
 
     // Add domains and release date filters
-    Optional<FilterQuery> domainAndPublicFilterQuery =
+    final Optional<FilterQuery> domainAndPublicFilterQuery =
         solrFilterService.getPublicFilterQuery(domains, null);
     domainAndPublicFilterQuery.ifPresent(query::addFilterQuery);
 
     // Add all the provided filters
-    Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
+    final Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
     optionalFilter.ifPresent(query::addFilterQuery);
 
-    List<Entry<SolrSampleField, Long>> allFacetFields =
+    final List<Entry<SolrSampleField, Long>> allFacetFields =
         getFacetFields(facetFieldPageInfo, query, isLandingPage, facetField);
 
     List<Entry<SolrSampleField, Long>> rangeFacetFields = Collections.emptyList();
@@ -96,8 +96,7 @@ public class SolrFacetService {
               .map(
                   s ->
                       new SimpleEntry<>(
-                          this.solrFieldService.decodeField(s + FacetHelper.get_encoding_suffix(s)),
-                          0L))
+                          solrFieldService.decodeField(s + FacetHelper.get_encoding_suffix(s)), 0L))
               .collect(Collectors.toList());
     }
 
@@ -119,19 +118,22 @@ public class SolrFacetService {
   }
 
   public List<Facet> getFacets(
-      String searchTerm,
-      Collection<Filter> filters,
-      Collection<String> domains,
-      Pageable facetFieldPageInfo,
-      Pageable facetValuesPageInfo) {
+      final String searchTerm,
+      final Collection<Filter> filters,
+      final Collection<String> domains,
+      final Pageable facetFieldPageInfo,
+      final Pageable facetValuesPageInfo) {
 
     return getFacets(searchTerm, filters, domains, facetFieldPageInfo, facetValuesPageInfo, null);
   }
 
   private List<Entry<SolrSampleField, Long>> getFacetFields(
-      Pageable facetFieldPageInfo, FacetQuery query, boolean isLandingPage, String facetField) {
-    int facetLimit = 10;
-    List<Entry<SolrSampleField, Long>> allFacetFields;
+      final Pageable facetFieldPageInfo,
+      final FacetQuery query,
+      final boolean isLandingPage,
+      final String facetField) {
+    final int facetLimit = 10;
+    final List<Entry<SolrSampleField, Long>> allFacetFields;
 
     // short-circuit for landing search page
     if (facetField != null) {
@@ -149,7 +151,7 @@ public class SolrFacetService {
               .map(
                   s ->
                       new SimpleEntry<>(
-                          this.solrFieldService.decodeField(
+                          solrFieldService.decodeField(
                               SolrFieldService.encodeFieldName(s)
                                   + FacetHelper.get_encoding_suffix(s)),
                           0L))
@@ -162,15 +164,15 @@ public class SolrFacetService {
   }
 
   private List<Entry<SolrSampleField, Long>> getDynamicFacetFields(
-      Pageable facetFieldPageInfo, FacetQuery query, int facetLimit) {
-    List<Entry<SolrSampleField, Long>> allFacetFields = new ArrayList<>();
-    Page<FacetFieldEntry> facetFields =
+      final Pageable facetFieldPageInfo, final FacetQuery query, final int facetLimit) {
+    final List<Entry<SolrSampleField, Long>> allFacetFields = new ArrayList<>();
+    final Page<FacetFieldEntry> facetFields =
         solrSampleRepository.getFacetFields(query, facetFieldPageInfo);
     int facetCount = 0;
-    for (FacetFieldEntry ffe : facetFields) {
-      SolrSampleField solrSampleField = this.solrFieldService.decodeField(ffe.getValue());
+    for (final FacetFieldEntry ffe : facetFields) {
+      final SolrSampleField solrSampleField = solrFieldService.decodeField(ffe.getValue());
       if (FacetHelper.FACETING_FIELDS.contains(solrSampleField.getReadableLabel())) {
-        Long facetFieldCount = ffe.getValueCount();
+        final Long facetFieldCount = ffe.getValueCount();
         allFacetFields.add(new SimpleEntry<>(solrSampleField, facetFieldCount));
         if (++facetCount >= facetLimit) {
           break;
@@ -178,14 +180,14 @@ public class SolrFacetService {
       }
     }
 
-    for (FacetFieldEntry ffe : facetFields) {
+    for (final FacetFieldEntry ffe : facetFields) {
       if (facetCount++ >= facetLimit) {
         break;
       }
-      SolrSampleField solrSampleField = this.solrFieldService.decodeField(ffe.getValue());
+      final SolrSampleField solrSampleField = solrFieldService.decodeField(ffe.getValue());
       if (!FacetHelper.FACETING_FIELDS.contains(solrSampleField.getReadableLabel())
           && !FacetHelper.IGNORE_FACETING_FIELDS.contains(solrSampleField.getReadableLabel())) {
-        Long facetFieldCount = ffe.getValueCount();
+        final Long facetFieldCount = ffe.getValueCount();
         allFacetFields.add(new SimpleEntry<>(solrSampleField, facetFieldCount));
       }
     }

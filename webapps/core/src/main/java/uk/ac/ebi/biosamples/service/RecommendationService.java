@@ -34,16 +34,16 @@ public class RecommendationService {
     dataLoader.loadDataFromClassPathResource();
   }
 
-  public CuramiRecommendation getRecommendations(Sample sample) {
-    SortedSet<String> attributes =
+  public CuramiRecommendation getRecommendations(final Sample sample) {
+    final SortedSet<String> attributes =
         new TreeSet<>(
             sample.getAttributes().stream().map(Attribute::getType).collect(Collectors.toList()));
 
-    SortedSet<String> goodAttributes = new TreeSet<>();
-    SortedSet<AttributeRecommendation> badAttributes = new TreeSet<>();
-    SortedSet<String> missingAttributes = new TreeSet<>();
+    final SortedSet<String> goodAttributes = new TreeSet<>();
+    final SortedSet<AttributeRecommendation> badAttributes = new TreeSet<>();
+    final SortedSet<String> missingAttributes = new TreeSet<>();
 
-    for (String attribute : attributes) {
+    for (final String attribute : attributes) {
       if (dataLoader.getPopularAttributes().contains(attribute)) {
         goodAttributes.add(attribute);
         continue;
@@ -56,7 +56,7 @@ public class RecommendationService {
         continue;
       }
 
-      String normalisedAttribute =
+      final String normalisedAttribute =
           CuramiUtils.normaliseAttribute(attribute, dataLoader.getAbbreviations());
       if (dataLoader.getCurations().containsKey(normalisedAttribute)) {
         badAttributes.add(
@@ -74,7 +74,7 @@ public class RecommendationService {
         continue;
       }
 
-      Optional<String> similarAttribute =
+      final Optional<String> similarAttribute =
           CuramiUtils.getMostSimilarAttribute(attribute, dataLoader.getPopularAttributes());
       if (similarAttribute.isPresent()) {
         badAttributes.add(
@@ -88,9 +88,9 @@ public class RecommendationService {
     }
 
     // have at least 5 known attributes to score 50 (4 similar attributes to score 20)
-    int attributeQuality =
+    final int attributeQuality =
         Math.min(50 * goodAttributes.size() / 5 + Math.min(5 * badAttributes.size(), 20), 50);
-    int quality = getSampleQualityScore(sample, attributeQuality);
+    final int quality = getSampleQualityScore(sample, attributeQuality);
 
     return new CuramiRecommendation.Builder()
         .withQuality(quality)
@@ -100,13 +100,14 @@ public class RecommendationService {
         .build();
   }
 
-  public Sample getRecommendedSample(Sample sample, CuramiRecommendation recommendation) {
+  public Sample getRecommendedSample(
+      final Sample sample, final CuramiRecommendation recommendation) {
     Sample recommendedSample = sample;
     if (!recommendation.getAttributeRecommendations().isEmpty()) {
-      SortedSet<Attribute> recommendedAttributes = new TreeSet<>();
-      for (Attribute a : sample.getAttributes()) {
+      final SortedSet<Attribute> recommendedAttributes = new TreeSet<>();
+      for (final Attribute a : sample.getAttributes()) {
         boolean replaced = false;
-        for (AttributeRecommendation rec : recommendation.getAttributeRecommendations()) {
+        for (final AttributeRecommendation rec : recommendation.getAttributeRecommendations()) {
           if (a.getType().equals(rec.getAttribute())) {
             recommendedAttributes.add(
                 Attribute.build(
@@ -124,7 +125,7 @@ public class RecommendationService {
     return recommendedSample;
   }
 
-  private int getSampleQualityScore(Sample sample, int attributeQuality) {
+  private int getSampleQualityScore(final Sample sample, final int attributeQuality) {
     int quality = attributeQuality;
     if (sample.getExternalReferences() != null && !sample.getExternalReferences().isEmpty()) {
       quality += 15;

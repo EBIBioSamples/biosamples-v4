@@ -21,7 +21,7 @@ import uk.ac.ebi.biosamples.mongo.model.MongoCuration;
 public class MongoCurationToCurationConverter implements Function<MongoCuration, Curation> {
 
   @Override
-  public Curation apply(MongoCuration mongoCuration) {
+  public Curation apply(final MongoCuration mongoCuration) {
     return Curation.build(
         mongoCuration.getAttributesPre(),
         mongoCuration.getAttributesPost(),

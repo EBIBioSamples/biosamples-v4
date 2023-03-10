@@ -27,7 +27,7 @@ public class SolrSampleInverseRelationField extends SolrSampleField {
     super();
   }
 
-  public SolrSampleInverseRelationField(String readableLabel) {
+  public SolrSampleInverseRelationField(final String readableLabel) {
     super(readableLabel);
   }
 
@@ -37,7 +37,8 @@ public class SolrSampleInverseRelationField extends SolrSampleField {
    * @param readableLabel
    * @param solrDocumentLabel
    */
-  public SolrSampleInverseRelationField(String readableLabel, String solrDocumentLabel) {
+  public SolrSampleInverseRelationField(
+      final String readableLabel, final String solrDocumentLabel) {
     super(readableLabel, solrDocumentLabel);
   }
 
@@ -58,7 +59,7 @@ public class SolrSampleInverseRelationField extends SolrSampleField {
   }
 
   @Override
-  public boolean isCompatibleWith(Filter filter) {
+  public boolean isCompatibleWith(final Filter filter) {
     return filter instanceof InverseRelationFilter;
   }
 
@@ -68,7 +69,7 @@ public class SolrSampleInverseRelationField extends SolrSampleField {
   }
 
   @Override
-  public Facet.Builder getFacetBuilder(String facetLabel, Long facetCount) {
+  public Facet.Builder getFacetBuilder(final String facetLabel, final Long facetCount) {
     return new InverseRelationFacet.Builder(facetLabel, facetCount);
   }
 
@@ -78,14 +79,14 @@ public class SolrSampleInverseRelationField extends SolrSampleField {
   }
 
   @Override
-  public Criteria getFilterCriteria(Filter filter) {
+  public Criteria getFilterCriteria(final Filter filter) {
     Criteria filterCriteria = null;
 
     if (filter instanceof InverseRelationFilter) {
 
       filterCriteria = new Criteria(getSolrLabel());
 
-      InverseRelationFilter inverseRelationFilter = (InverseRelationFilter) filter;
+      final InverseRelationFilter inverseRelationFilter = (InverseRelationFilter) filter;
       if (inverseRelationFilter.getContent().isPresent()) {
         //                filterCriteria = filterCriteria.expression("/" +
         // inverseRelationFilter.getContent().get() + "/");

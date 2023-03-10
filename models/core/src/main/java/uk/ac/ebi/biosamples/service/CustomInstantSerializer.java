@@ -23,12 +23,12 @@ public class CustomInstantSerializer extends StdSerializer<Instant> {
     this(null);
   }
 
-  public CustomInstantSerializer(Class<Instant> t) {
+  private CustomInstantSerializer(final Class<Instant> t) {
     super(t);
   }
 
   @Override
-  public void serialize(Instant value, JsonGenerator gen, SerializerProvider arg2)
+  public void serialize(final Instant value, final JsonGenerator gen, final SerializerProvider arg2)
       throws IOException {
     gen.writeString(DateTimeFormatter.ISO_INSTANT.format(value));
   }

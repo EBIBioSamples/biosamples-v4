@@ -31,10 +31,10 @@ public class AapDomainRepositoryRest {
   private final RestTemplate template;
 
   public AapDomainRepositoryRest(
-      @Value("${aap.domains.url}") String domainsApiUrl,
-      @Value("${aap.timeout:180000}") int timeout,
-      RestTemplateBuilder clientBuilder) {
-    this.template =
+      @Value("${aap.domains.url}") final String domainsApiUrl,
+      @Value("${aap.timeout:180000}") final int timeout,
+      final RestTemplateBuilder clientBuilder) {
+    template =
         clientBuilder
             .rootUri(domainsApiUrl)
             .setConnectTimeout(Duration.ofSeconds(timeout))
@@ -48,9 +48,9 @@ public class AapDomainRepositoryRest {
    * @param token - user token
    * @return list of membership domains
    */
-  public Collection<Domain> getMyDomains(String token) {
-    HttpEntity<String> entity = new HttpEntity<>("parameters", createHeaders(token));
-    ResponseEntity<List<Domain>> response =
+  Collection<Domain> getMyDomains(final String token) {
+    final HttpEntity<String> entity = new HttpEntity<>("parameters", createHeaders(token));
+    final ResponseEntity<List<Domain>> response =
         template.exchange(
             "/my/domains",
             HttpMethod.GET,
@@ -59,10 +59,10 @@ public class AapDomainRepositoryRest {
     return response.getBody();
   }
 
-  private HttpHeaders createHeaders(String token) {
+  private HttpHeaders createHeaders(final String token) {
     return new HttpHeaders() {
       {
-        String authHeader = "Bearer " + token;
+        final String authHeader = "Bearer " + token;
         set("Authorization", authHeader);
       }
     };
