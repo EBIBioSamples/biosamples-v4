@@ -25,7 +25,6 @@ import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
 
 @Service
@@ -37,8 +36,7 @@ public class MessagingService {
 
   public MessagingService(
       final SampleReadService sampleReadService,
-      final AmqpTemplate amqpTemplate,
-      final SampleToMongoSampleConverter sampleToMongoSampleConverter) {
+      final AmqpTemplate amqpTemplate) {
     this.sampleReadService = sampleReadService;
     this.amqpTemplate = amqpTemplate;
   }

@@ -38,10 +38,10 @@ public class MongoSample {
   @Id protected String accession;
 
   @Indexed(background = true)
-  protected String accessionPrefix;
+  private String accessionPrefix;
 
   @Indexed(background = true)
-  protected Integer accessionNumber;
+  private Integer accessionNumber;
 
   protected String name;
 
@@ -54,6 +54,8 @@ public class MongoSample {
 
   @Indexed(background = true)
   protected Long taxId;
+
+  protected SampleStatus status;
 
   @JsonSerialize(using = CustomInstantSerializer.class)
   @JsonDeserialize(using = CustomInstantDeserializer.class)
@@ -82,13 +84,13 @@ public class MongoSample {
   protected SortedSet<MongoRelationship> relationships;
   protected SortedSet<MongoExternalReference> externalReferences;
 
-  protected SortedSet<Organization> organizations;
+  private SortedSet<Organization> organizations;
   protected SortedSet<Contact> contacts;
   protected SortedSet<Publication> publications;
   protected SortedSet<MongoCertificate> certificates;
 
   @Transient protected Set<AbstractData> data;
-  protected SubmittedViaType submittedVia;
+  private SubmittedViaType submittedVia;
 
   @JsonIgnore
   public boolean hasAccession() {
@@ -125,6 +127,10 @@ public class MongoSample {
 
   public Long getTaxId() {
     return taxId;
+  }
+
+  public SampleStatus getStatus() {
+    return status;
   }
 
   public Instant getRelease() {
@@ -184,29 +190,32 @@ public class MongoSample {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
 
-    if (o == this) return true;
+    if (o == this) {
+      return true;
+    }
     if (!(o instanceof MongoSample)) {
       return false;
     }
-    MongoSample other = (MongoSample) o;
-    return Objects.equals(this.name, other.name)
-        && Objects.equals(this.accession, other.accession)
-        && Objects.equals(this.domain, other.domain)
-        && Objects.equals(this.webinSubmissionAccountId, other.webinSubmissionAccountId)
-        && Objects.equals(this.taxId, other.taxId)
-        && Objects.equals(this.release, other.release)
-        && Objects.equals(this.update, other.update)
-        && Objects.equals(this.create, other.create)
-        && Objects.equals(this.submitted, other.submitted)
-        && Objects.equals(this.attributes, other.attributes)
-        && Objects.equals(this.relationships, other.relationships)
-        && Objects.equals(this.externalReferences, other.externalReferences)
-        && Objects.equals(this.organizations, other.organizations)
-        && Objects.equals(this.contacts, other.contacts)
-        && Objects.equals(this.publications, other.publications)
-        && Objects.equals(this.submittedVia, other.submittedVia);
+    final MongoSample other = (MongoSample) o;
+    return Objects.equals(name, other.name)
+        && Objects.equals(accession, other.accession)
+        && Objects.equals(domain, other.domain)
+        && Objects.equals(webinSubmissionAccountId, other.webinSubmissionAccountId)
+        && Objects.equals(taxId, other.taxId)
+        && Objects.equals(status, other.status)
+        && Objects.equals(release, other.release)
+        && Objects.equals(update, other.update)
+        && Objects.equals(create, other.create)
+        && Objects.equals(submitted, other.submitted)
+        && Objects.equals(attributes, other.attributes)
+        && Objects.equals(relationships, other.relationships)
+        && Objects.equals(externalReferences, other.externalReferences)
+        && Objects.equals(organizations, other.organizations)
+        && Objects.equals(contacts, other.contacts)
+        && Objects.equals(publications, other.publications)
+        && Objects.equals(submittedVia, other.submittedVia);
   }
 
   @Override
@@ -217,6 +226,7 @@ public class MongoSample {
         domain,
         webinSubmissionAccountId,
         taxId,
+        status,
         release,
         update,
         create,
@@ -231,7 +241,7 @@ public class MongoSample {
 
   @Override
   public String toString() {
-    String sb =
+    final String sb =
         "MongoSample("
             + name
             + ","
@@ -242,6 +252,8 @@ public class MongoSample {
             + webinSubmissionAccountId
             + ","
             + taxId
+            + ","
+            + status
             + ","
             + release
             + ","
@@ -274,91 +286,101 @@ public class MongoSample {
 
   @JsonCreator
   public static MongoSample build(
-      @JsonProperty("name") String name,
-      @JsonProperty("accession") String accession,
-      @JsonProperty("domain") String domain,
-      @JsonProperty("webinSubmissionAccountId") String webinSubmissionAccountId,
-      @JsonProperty("taxId") Long taxId,
-      @JsonProperty("release") Instant release,
-      @JsonProperty("update") Instant update,
-      @JsonProperty("create") Instant create,
-      @JsonProperty("submitted") Instant submitted,
-      @JsonProperty("reviewed") Instant reviewed,
-      @JsonProperty("attributes") Set<Attribute> attributes,
-      @JsonProperty("data") Set<AbstractData> structuredData,
-      @JsonProperty("relationships") Set<MongoRelationship> relationships,
-      @JsonProperty("externalReferences") SortedSet<MongoExternalReference> externalReferences,
-      @JsonProperty("organizations") SortedSet<Organization> organizations,
-      @JsonProperty("contacts") SortedSet<Contact> contacts,
-      @JsonProperty("publications") SortedSet<Publication> publications,
-      @JsonProperty("certificates") SortedSet<MongoCertificate> certificates,
-      @JsonProperty("submittedVia") SubmittedViaType submittedVia) {
+      @JsonProperty("name") final String name,
+      @JsonProperty("accession") final String accession,
+      @JsonProperty("domain") final String domain,
+      @JsonProperty("webinSubmissionAccountId") final String webinSubmissionAccountId,
+      @JsonProperty("taxId") final Long taxId,
+      @JsonProperty("status") final SampleStatus status,
+      @JsonProperty("release") final Instant release,
+      @JsonProperty("update") final Instant update,
+      @JsonProperty("create") final Instant create,
+      @JsonProperty("submitted") final Instant submitted,
+      @JsonProperty("reviewed") final Instant reviewed,
+      @JsonProperty("attributes") final Set<Attribute> attributes,
+      @JsonProperty("data") final Set<AbstractData> structuredData,
+      @JsonProperty("relationships") final Set<MongoRelationship> relationships,
+      @JsonProperty("externalReferences")
+          final SortedSet<MongoExternalReference> externalReferences,
+      @JsonProperty("organizations") final SortedSet<Organization> organizations,
+      @JsonProperty("contacts") final SortedSet<Contact> contacts,
+      @JsonProperty("publications") final SortedSet<Publication> publications,
+      @JsonProperty("certificates") final SortedSet<MongoCertificate> certificates,
+      @JsonProperty("submittedVia") final SubmittedViaType submittedVia) {
 
-    MongoSample sample = new MongoSample();
+    final MongoSample mongoSample = new MongoSample();
 
-    sample.accession = accession;
-    sample.name = name;
-    sample.domain = domain;
-    sample.webinSubmissionAccountId = webinSubmissionAccountId;
-    sample.taxId = taxId;
-    sample.release = release;
-    sample.update = update;
-    sample.create = create;
-    sample.submitted = submitted;
-    sample.reviewed = reviewed;
+    mongoSample.accession = accession;
+    mongoSample.name = name;
+    mongoSample.domain = domain;
+    mongoSample.webinSubmissionAccountId = webinSubmissionAccountId;
+    mongoSample.taxId = taxId;
+    mongoSample.status = status;
+    mongoSample.release = release;
+    mongoSample.update = update;
+    mongoSample.create = create;
+    mongoSample.submitted = submitted;
+    mongoSample.reviewed = reviewed;
+    mongoSample.attributes = new TreeSet<>();
 
-    sample.attributes = new TreeSet<>();
     if (attributes != null && attributes.size() > 0) {
-      sample.attributes.addAll(attributes);
+      mongoSample.attributes.addAll(attributes);
     }
 
-    sample.data = new HashSet<>();
+    mongoSample.data = new HashSet<>();
+
     if (structuredData != null && structuredData.size() > 0) {
-      sample.data.addAll(structuredData);
+      mongoSample.data.addAll(structuredData);
     }
 
-    sample.relationships = new TreeSet<>();
+    mongoSample.relationships = new TreeSet<>();
+
     if (relationships != null && relationships.size() > 0) {
-      sample.relationships.addAll(relationships);
+      mongoSample.relationships.addAll(relationships);
     }
 
-    sample.externalReferences = new TreeSet<>();
+    mongoSample.externalReferences = new TreeSet<>();
+
     if (externalReferences != null && externalReferences.size() > 0) {
-      sample.externalReferences.addAll(externalReferences);
+      mongoSample.externalReferences.addAll(externalReferences);
     }
 
-    sample.organizations = new TreeSet<>();
+    mongoSample.organizations = new TreeSet<>();
+
     if (organizations != null && organizations.size() > 0) {
-      sample.organizations.addAll(organizations);
+      mongoSample.organizations.addAll(organizations);
     }
 
-    sample.contacts = new TreeSet<>();
+    mongoSample.contacts = new TreeSet<>();
+
     if (contacts != null && contacts.size() > 0) {
-      sample.contacts.addAll(contacts);
+      mongoSample.contacts.addAll(contacts);
     }
 
-    sample.publications = new TreeSet<>();
+    mongoSample.publications = new TreeSet<>();
+
     if (publications != null && publications.size() > 0) {
-      sample.publications.addAll(publications);
+      mongoSample.publications.addAll(publications);
     }
 
-    sample.certificates = new TreeSet<>();
+    mongoSample.certificates = new TreeSet<>();
+
     if (certificates != null && certificates.size() > 0) {
-      sample.certificates.addAll(certificates);
+      mongoSample.certificates.addAll(certificates);
     }
 
-    sample.submittedVia = submittedVia;
+    mongoSample.submittedVia = submittedVia;
 
     // split accession into prefix & number, if possible
-    Pattern r = Pattern.compile("^(\\D+)(\\d+)$");
+    final Pattern r = Pattern.compile("^(\\D+)(\\d+)$");
     if (accession != null) {
-      Matcher m = r.matcher(accession);
+      final Matcher m = r.matcher(accession);
       if (m.matches() && m.groupCount() == 2) {
-        sample.accessionPrefix = m.group(1);
-        sample.accessionNumber = Integer.parseInt(m.group(2));
+        mongoSample.accessionPrefix = m.group(1);
+        mongoSample.accessionNumber = Integer.parseInt(m.group(2));
       }
     }
 
-    return sample;
+    return mongoSample;
   }
 }

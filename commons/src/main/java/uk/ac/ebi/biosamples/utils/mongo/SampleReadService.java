@@ -82,9 +82,7 @@ public class SampleReadService {
   public Optional<Sample> fetch(
       final String accession, final Optional<List<String>> curationDomains)
       throws IllegalArgumentException {
-
-    final Optional<MongoSample> byId = mongoSampleRepository.findById(accession);
-    MongoSample mongoSample = byId.orElse(null);
+    MongoSample mongoSample = mongoSampleRepository.findById(accession).orElse(null);
 
     if (mongoSample == null) {
       LOGGER.warn(String.format("failed to retrieve sample with accession %s", accession));

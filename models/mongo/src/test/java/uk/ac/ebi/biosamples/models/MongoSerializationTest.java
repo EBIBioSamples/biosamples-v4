@@ -10,19 +10,11 @@
 */
 package uk.ac.ebi.biosamples.models;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.net.URISyntaxException;
 import java.time.Instant;
-import java.util.AbstractMap;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,11 +25,7 @@ import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.Organization;
-import uk.ac.ebi.biosamples.model.Publication;
-import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
@@ -56,20 +44,20 @@ public class MongoSerializationTest {
 
   @Before
   public void setup() {
-    ObjectMapper objectMapper = new ObjectMapper();
+    final ObjectMapper objectMapper = new ObjectMapper();
     JacksonTester.initFields(this, objectMapper);
   }
 
-  private static MongoSample getMongoSample() throws URISyntaxException {
-    String name = "Test Sample";
-    String accession = "TEST1";
-    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant create = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant submitted = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-    SubmittedViaType submittedVia = SubmittedViaType.JSON_API;
+  private static MongoSample getMongoSample() {
+    final String name = "Test Sample";
+    final String accession = "TEST1";
+    final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant create = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant submitted = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final SubmittedViaType submittedVia = SubmittedViaType.JSON_API;
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
         Attribute.build(
             "organism",
@@ -81,15 +69,15 @@ public class MongoSerializationTest {
     attributes.add(Attribute.build("organism part", "lung"));
     attributes.add(Attribute.build("organism part", "heart"));
 
-    Set<AbstractData> structuredData = new HashSet<>();
+    final Set<AbstractData> structuredData = new HashSet<>();
 
-    SortedSet<MongoRelationship> relationships = new TreeSet<>();
+    final SortedSet<MongoRelationship> relationships = new TreeSet<>();
     relationships.add(MongoRelationship.build("TEST1", "derived from", "TEST2"));
 
-    SortedSet<MongoExternalReference> externalReferences = new TreeSet<>();
+    final SortedSet<MongoExternalReference> externalReferences = new TreeSet<>();
     externalReferences.add(MongoExternalReference.build("http://www.google.com"));
 
-    SortedSet<Organization> organizations = new TreeSet<>();
+    final SortedSet<Organization> organizations = new TreeSet<>();
     organizations.add(
         new Organization.Builder()
             .name("Jo Bloggs Inc")
@@ -98,7 +86,7 @@ public class MongoSerializationTest {
             .url("http://www.jobloggs.com")
             .build());
 
-    SortedSet<Contact> contacts = new TreeSet<>();
+    final SortedSet<Contact> contacts = new TreeSet<>();
     contacts.add(
         new Contact.Builder()
             .firstName("Joe")
@@ -108,7 +96,7 @@ public class MongoSerializationTest {
             .email("jobloggs@joblogs.com")
             .build());
 
-    SortedSet<Publication> publications = new TreeSet<>();
+    final SortedSet<Publication> publications = new TreeSet<>();
     //		publications.add(Publication.build("10.1093/nar/gkt1081", "24265224"));
     publications.add(
         new Publication.Builder().doi("10.1093/nar/gkt1081").pubmed_id("24265224").build());
@@ -119,6 +107,7 @@ public class MongoSerializationTest {
         "foozit",
         "",
         Long.valueOf(9606),
+        SampleStatus.PUBLIC,
         release,
         update,
         create,
@@ -136,16 +125,16 @@ public class MongoSerializationTest {
   }
 
   private static MongoStructuredData getMongoStructuredData() {
-    String accession = "SAMEA000001";
-    String domain = "self.test";
-    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant create = Instant.parse("2016-05-05T11:36:57.00Z");
-    Set<Map<String, StructuredDataEntry>> content = new HashSet<>();
-    StructuredDataTable table = StructuredDataTable.build(domain, null, "AMR", null, content);
-    Set<StructuredDataTable> data = new HashSet<>();
+    final String accession = "SAMEA000001";
+    final String domain = "self.test";
+    final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant create = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Set<Map<String, StructuredDataEntry>> content = new HashSet<>();
+    final StructuredDataTable table = StructuredDataTable.build(domain, null, "AMR", null, content);
+    final Set<StructuredDataTable> data = new HashSet<>();
     data.add(table);
 
-    Map<String, StructuredDataEntry> row = new HashMap<>();
+    final Map<String, StructuredDataEntry> row = new HashMap<>();
     row.put("antibioticName", StructuredDataEntry.build("ampicillin", "www.test.org"));
     row.put("resistancePhenotype", StructuredDataEntry.build("susceptible", null));
     row.put("vendor", StructuredDataEntry.build("in-house", null));
@@ -161,33 +150,33 @@ public class MongoSerializationTest {
 
   @Test
   public void testSerialize() throws Exception {
-    MongoSample mongoSample = getMongoSample();
+    final MongoSample mongoSample = getMongoSample();
 
     // Use JSON path based assertions
-    assertThat(this.json.write(mongoSample)).hasJsonPathStringValue("@.accession");
-    assertThat(this.json.write(mongoSample))
+    assertThat(json.write(mongoSample)).hasJsonPathStringValue("@.accession");
+    assertThat(json.write(mongoSample))
         .extractingJsonPathStringValue("@.accession")
         .isEqualTo("TEST1");
 
     // Assert against a `.json` file in the same package as the test
-    log.info("testSerialize() " + this.json.write(mongoSample).getJson());
-    MongoSample mongoSampleFromFile = this.json.readObject("/TEST1.json");
-    log.info("testSerialize()-from file " + this.json.write(mongoSampleFromFile));
+    log.info("testSerialize() " + json.write(mongoSample).getJson());
+    final MongoSample mongoSampleFromFile = json.readObject("/TEST1.json");
+    log.info("testSerialize()-from file " + json.write(mongoSampleFromFile));
     assertThat(mongoSample.equals(mongoSampleFromFile));
   }
 
   @Test
   public void testDeserialize() throws Exception {
     // Use JSON path based assertions
-    assertThat(this.json.readObject("/TEST1.json").getName()).isEqualTo("Test Sample");
-    assertThat(this.json.readObject("/TEST1.json").getAccession()).isEqualTo("TEST1");
+    assertThat(json.readObject("/TEST1.json").getName()).isEqualTo("Test Sample");
+    assertThat(json.readObject("/TEST1.json").getAccession()).isEqualTo("TEST1");
     // Assert against a `.json` file
-    assertThat(this.json.readObject("/TEST1.json")).isEqualTo(getMongoSample());
+    assertThat(json.readObject("/TEST1.json")).isEqualTo(getMongoSample());
   }
 
   @Test
   public void testSerialize_structured_data() throws Exception {
-    MongoStructuredData structuredData = getMongoStructuredData();
+    final MongoStructuredData structuredData = getMongoStructuredData();
 
     assertThat(structuredDataJacksonTester.write(structuredData))
         .hasJsonPathStringValue("@.accession");

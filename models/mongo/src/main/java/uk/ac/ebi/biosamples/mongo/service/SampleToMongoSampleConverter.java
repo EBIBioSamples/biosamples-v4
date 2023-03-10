@@ -38,7 +38,6 @@ public class SampleToMongoSampleConverter implements Converter<Sample, MongoSamp
   @Override
   public MongoSample convert(final Sample sample) {
     final SortedSet<MongoExternalReference> externalReferences = new TreeSet<>();
-
     for (final ExternalReference mongoExternalReference : sample.getExternalReferences()) {
       externalReferences.add(
           externalReferenceToMongoExternalReferenceConverter.convert(mongoExternalReference));
@@ -66,6 +65,7 @@ public class SampleToMongoSampleConverter implements Converter<Sample, MongoSamp
         sample.getDomain(),
         sample.getWebinSubmissionAccountId(),
         sample.getTaxId(),
+        sample.getStatus(),
         sample.getRelease(),
         sample.getUpdate(),
         sample.getCreate(),

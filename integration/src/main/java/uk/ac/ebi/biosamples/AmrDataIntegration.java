@@ -34,29 +34,35 @@ import uk.ac.ebi.biosamples.utils.TestUtilities;
 @Component
 public class AmrDataIntegration extends AbstractIntegration {
 
-  private Logger log = LoggerFactory.getLogger(this.getClass());
-  private ObjectMapper mapper;
+  private final Logger log = LoggerFactory.getLogger(getClass());
+  private final ObjectMapper mapper;
 
-  public AmrDataIntegration(BioSamplesClient client, RestTemplateBuilder restTemplateBuilder) {
+  public AmrDataIntegration(
+      final BioSamplesClient client, final RestTemplateBuilder restTemplateBuilder) {
     super(client);
     restTemplateBuilder.build();
-    this.mapper = new ObjectMapper();
+    mapper = new ObjectMapper();
   }
 
   @Override
   protected void phaseOne() {
-    Sample testSample = getTestSample();
-    Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
+    final Sample testSample = getTestSample();
+    final Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
 
     if (optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
           "AMRDataIntegration test sample should not be available during phase 1", Phase.ONE);
     }
 
-    EntityModel<Sample> resource = client.persistSampleResource(testSample);
+    final EntityModel<Sample> resource = client.persistSampleResource(testSample);
     Sample testSampleWithAccession =
         Sample.Builder.fromSample(testSample)
             .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
+            .build();
+
+    testSampleWithAccession =
+        Sample.Builder.fromSample(testSampleWithAccession)
+            .withStatus(resource.getContent().getStatus())
             .build();
 
     if (!testSampleWithAccession.equals(resource.getContent())) {
@@ -71,23 +77,23 @@ public class AmrDataIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseTwo() {
-    Sample testSample = getTestSample();
-    Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
+    final Sample testSample = getTestSample();
+    final Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
     if (!optionalSample.isPresent()) {
       throw new IntegrationTestFailException("Cant find sample " + testSample.getName(), Phase.TWO);
     }
 
-    String json = TestUtilities.readFileAsString("structured_data_amr.json");
+    final String json = TestUtilities.readFileAsString("structured_data_amr.json");
     StructuredData sd;
     try {
       sd = mapper.readValue(json, StructuredData.class);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(
           "An error occurred while converting json to structured data class", e);
     }
 
     sd = StructuredData.build(optionalSample.get().getAccession(), sd.getCreate(), sd.getData());
-    EntityModel<StructuredData> structuredDataResource = client.persistStructuredData(sd);
+    final EntityModel<StructuredData> structuredDataResource = client.persistStructuredData(sd);
 
     if (structuredDataResource.getContent() == null) {
       throw new RuntimeException("Should return submitted structured data");
@@ -96,22 +102,22 @@ public class AmrDataIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseThree() throws InterruptedException {
-    Sample testSample = getTestSample();
+    final Sample testSample = getTestSample();
 
     TimeUnit.SECONDS.sleep(2);
-    Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
+    final Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
     if (!optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
           "Cant find sample " + testSample.getName(), Phase.THREE);
     }
 
-    Sample amrSample = optionalSample.get();
+    final Sample amrSample = optionalSample.get();
     log.info("Checking sample has amr data");
     assertEquals(amrSample.getStructuredData().size(), 1);
     assertEquals(
         amrSample.getStructuredData().iterator().next().getType(), StructuredDataType.AMR.name());
 
-    StructuredDataTable table = amrSample.getStructuredData().iterator().next();
+    final StructuredDataTable table = amrSample.getStructuredData().iterator().next();
     assertEquals(table.getContent().size(), 15);
 
     // Assert there are only 2 entries with missing testing standard
@@ -124,7 +130,7 @@ public class AmrDataIntegration extends AbstractIntegration {
         2);
 
     // Verifying AMREntry for ciprofloxacin is found and has certain values
-    Optional<Map<String, StructuredDataEntry>> optionalAmrEntry =
+    final Optional<Map<String, StructuredDataEntry>> optionalAmrEntry =
         table
             .getContent()
             .parallelStream()
@@ -162,20 +168,20 @@ public class AmrDataIntegration extends AbstractIntegration {
   protected void phaseSix() {}
 
   private Sample getTestSample() {
-    String name = "AMR_Data_Integration_sample_1";
-    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final String name = "AMR_Data_Integration_sample_1";
+    final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(Attribute.build("organism", "Chicken", null, null));
     attributes.add(Attribute.build("age", "3", null, Collections.emptyList(), "year"));
     attributes.add(Attribute.build("organism part", "heart"));
 
-    SortedSet<Relationship> relationships = new TreeSet<>();
-    SortedSet<ExternalReference> externalReferences = new TreeSet<>();
-    SortedSet<Organization> organizations = new TreeSet<>();
-    SortedSet<Contact> contacts = new TreeSet<>();
-    SortedSet<Publication> publications = new TreeSet<>();
+    final SortedSet<Relationship> relationships = new TreeSet<>();
+    final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+    final SortedSet<Organization> organizations = new TreeSet<>();
+    final SortedSet<Contact> contacts = new TreeSet<>();
+    final SortedSet<Publication> publications = new TreeSet<>();
 
     return new Sample.Builder(name)
         .withUpdate(update)

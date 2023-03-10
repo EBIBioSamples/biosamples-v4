@@ -35,19 +35,18 @@ import uk.ac.ebi.biosamples.model.Sample;
 @Service
 public class SampleResourceAssembler
     implements RepresentationModelAssembler<Sample, EntityModel<Sample>> {
-
-  public static final String REL_CURATIONDOMAIN = "curationDomain";
+  private static final String REL_CURATIONDOMAIN = "curationDomain";
   public static final String REL_CURATIONLINKS = "curationLinks";
   public static final String REL_CURATIONLINK = "curationLink";
 
   public SampleResourceAssembler() {}
 
   private Link getSelfLink(
-      String accession,
-      Optional<Boolean> legacydetails,
-      Optional<List<String>> curationDomains,
-      Class controllerClass) {
-    UriComponentsBuilder uriComponentsBuilder =
+      final String accession,
+      final Optional<Boolean> legacydetails,
+      final Optional<List<String>> curationDomains,
+      final Class controllerClass) {
+    final UriComponentsBuilder uriComponentsBuilder =
         linkTo(controllerClass, accession).toUriComponentsBuilder();
     if (legacydetails.isPresent() && legacydetails.get()) {
       uriComponentsBuilder.queryParam("legacydetails", legacydetails);
@@ -56,7 +55,7 @@ public class SampleResourceAssembler
       if (curationDomains.get().size() == 0) {
         uriComponentsBuilder.queryParam("curationdomain", (Object[]) null);
       } else {
-        for (String curationDomain : curationDomains.get()) {
+        for (final String curationDomain : curationDomains.get()) {
           uriComponentsBuilder.queryParam("curationdomain", curationDomain);
         }
       }
@@ -64,8 +63,8 @@ public class SampleResourceAssembler
     return Link.of(uriComponentsBuilder.build().toUriString(), IanaLinkRelations.SELF);
   }
 
-  private Link getCurationDomainLink(Link selfLink) {
-    UriComponents selfUriComponents =
+  private Link getCurationDomainLink(final Link selfLink) {
+    final UriComponents selfUriComponents =
         UriComponentsBuilder.fromUriString(selfLink.getHref()).build();
     if (selfUriComponents.getQueryParams().size() == 0) {
       return Link.of(selfLink.getHref() + "{?curationdomain}", REL_CURATIONDOMAIN);
@@ -74,30 +73,31 @@ public class SampleResourceAssembler
     }
   }
 
-  private Link getCurationLinksLink(String accession) {
+  private Link getCurationLinksLink(final String accession) {
     return linkTo(
             methodOn(SampleCurationLinksRestController.class)
                 .getCurationLinkPageJson(accession, null, null))
         .withRel("curationLinks");
   }
 
-  private Link getCurationLinkLink(String accession) {
+  private Link getCurationLinkLink(final String accession) {
     return linkTo(
             methodOn(SampleCurationLinksRestController.class).getCurationLinkJson(accession, null))
         .withRel("curationLink");
   }
 
-  private Link getStructuredDataLink(String accession) {
+  private Link getStructuredDataLink(final String accession) {
     return linkTo(methodOn(StructuredDataRestController.class).get(accession))
         .withRel("structuredData");
   }
 
-  public EntityModel<Sample> toModel(
-      Sample sample,
-      Optional<Boolean> legacydetails,
-      Optional<List<String>> curationDomains,
-      Class controllerClass) {
-    EntityModel<Sample> sampleResource = EntityModel.of(sample);
+  private EntityModel<Sample> toModel(
+      final Sample sample,
+      final Optional<Boolean> legacydetails,
+      final Optional<List<String>> curationDomains,
+      final Class controllerClass) {
+    final EntityModel<Sample> sampleResource = EntityModel.of(sample);
+
     sampleResource.add(
         getSelfLink(sample.getAccession(), legacydetails, curationDomains, controllerClass));
     // add link to select curation domain
@@ -106,22 +106,25 @@ public class SampleResourceAssembler
     sampleResource.add(getCurationLinksLink(sample.getAccession()));
     sampleResource.add(getCurationLinkLink(sample.getAccession()));
     sampleResource.add(getStructuredDataLink(sample.getAccession()));
+
     return sampleResource;
   }
 
   public EntityModel<Sample> toModel(
-      Sample sample, Optional<Boolean> legacydetails, Optional<List<String>> curationDomains) {
-    Class controllerClass = SampleRestController.class;
+      final Sample sample,
+      final Optional<Boolean> legacydetails,
+      final Optional<List<String>> curationDomains) {
+    final Class controllerClass = SampleRestController.class;
     return toModel(sample, legacydetails, curationDomains, controllerClass);
   }
 
-  public EntityModel<Sample> toModel(Sample sample, Class controllerClass) {
+  public EntityModel<Sample> toModel(final Sample sample, final Class controllerClass) {
     return toModel(sample, Optional.empty(), Optional.empty(), controllerClass);
   }
 
   @Override
-  public EntityModel<Sample> toModel(Sample sample) {
-    Class controllerClass = SampleRestController.class;
+  public EntityModel<Sample> toModel(final Sample sample) {
+    final Class controllerClass = SampleRestController.class;
     return toModel(sample, controllerClass);
   }
 }

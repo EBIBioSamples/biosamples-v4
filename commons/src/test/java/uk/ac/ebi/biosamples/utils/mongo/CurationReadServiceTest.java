@@ -54,7 +54,7 @@ public class CurationReadServiceTest {
 
   @Before
   public void setup() {
-    List<MongoCurationLink> mongoCurationLinks =
+    final List<MongoCurationLink> mongoCurationLinks =
         convertToMongoCurationList(getCurationLinksForTest());
     Mockito.when(mongoCurationLinkRepository.findBySample(Mockito.anyString(), Mockito.any()))
         .thenReturn(new PageImpl<>(mongoCurationLinks, PageRequest.of(0, 10), 1));
@@ -62,18 +62,18 @@ public class CurationReadServiceTest {
 
   @Test
   public void test_apply_curation_link() {
-    Sample originalSample = getSampleForTest();
+    final Sample originalSample = getSampleForTest();
 
-    Attribute attributePre = Attribute.build("Organism", "9606");
-    Attribute attributePost = Attribute.build("Organism", "Homo sapiens", "iri", "unit");
-    Curation curation = Curation.build(attributePre, attributePost);
-    CurationLink curationLink =
+    final Attribute attributePre = Attribute.build("Organism", "9606");
+    final Attribute attributePost = Attribute.build("Organism", "Homo sapiens", "iri", "unit");
+    final Curation curation = Curation.build(attributePre, attributePost);
+    final CurationLink curationLink =
         CurationLink.build("SAMN001", curation, "self.domain1", null, Instant.now());
 
-    Sample curatedSample =
+    final Sample curatedSample =
         new CurationReadService().applyCurationLinkToSample(originalSample, curationLink);
 
-    for (Attribute attribute : curatedSample.getAttributes()) {
+    for (final Attribute attribute : curatedSample.getAttributes()) {
       if ("Organism".equalsIgnoreCase(attribute.getType())) {
         Assert.assertEquals(attributePost.getValue(), attribute.getValue());
       }
@@ -82,8 +82,8 @@ public class CurationReadServiceTest {
 
   @Test
   public void applyAllCurationToSample_test_add_new_curation_attribute() {
-    Sample originalSample = getSampleForTest();
-    Sample curatedSample =
+    final Sample originalSample = getSampleForTest();
+    final Sample curatedSample =
         curationReadService.applyAllCurationToSample(originalSample, Optional.empty());
 
     if (!curatedSample
@@ -101,8 +101,8 @@ public class CurationReadServiceTest {
 
   @Test
   public void applyAllCurationToSample_test_delete_curation_attribute() {
-    Sample originalSample = getSampleForTest();
-    Sample curatedSample =
+    final Sample originalSample = getSampleForTest();
+    final Sample curatedSample =
         curationReadService.applyAllCurationToSample(originalSample, Optional.empty());
 
     if (curatedSample.getAttributes().contains(Attribute.build("Weird", "weired value"))) {
@@ -118,11 +118,11 @@ public class CurationReadServiceTest {
 
   @Test
   public void applyAllCurationToSample_test_correct_curation_attribute_order() {
-    Sample originalSample = getSampleForTest();
-    Sample curatedSample =
+    final Sample originalSample = getSampleForTest();
+    final Sample curatedSample =
         curationReadService.applyAllCurationToSample(originalSample, Optional.empty());
 
-    for (Attribute attribute : curatedSample.getAttributes()) {
+    for (final Attribute attribute : curatedSample.getAttributes()) {
       if ("Organism".equalsIgnoreCase(attribute.getType())) {
         Assert.assertEquals("Bos taurus", attribute.getValue());
       } else if ("CurationDomain".equalsIgnoreCase(attribute.getType())) {
@@ -138,7 +138,7 @@ public class CurationReadServiceTest {
   }
 
   private List<CurationLink> getCurationLinksForTest() {
-    List<CurationLink> curationLinks = new ArrayList<>();
+    final List<CurationLink> curationLinks = new ArrayList<>();
 
     Attribute attributePre = Attribute.build("Organism", "9606");
     Attribute attributePost = Attribute.build("Organism", "Homo sapiens", "iri", "unit");
@@ -241,9 +241,9 @@ public class CurationReadServiceTest {
   }
 
   private Sample getSampleForTest() {
-    Set<Attribute> attributes = new HashSet<>();
-    Set<Relationship> relationships = new HashSet<>();
-    Set<ExternalReference> externalReferences = new HashSet<>();
+    final Set<Attribute> attributes = new HashSet<>();
+    final Set<Relationship> relationships = new HashSet<>();
+    final Set<ExternalReference> externalReferences = new HashSet<>();
 
     attributes.add(Attribute.build("Organism", "9606"));
     attributes.add(Attribute.build("Weird", "weired value"));
@@ -258,6 +258,7 @@ public class CurationReadServiceTest {
         "self.TestDomain",
         "",
         Long.valueOf(9606),
+        SampleStatus.PUBLIC,
         Instant.now(),
         Instant.now(),
         Instant.now(),
@@ -269,7 +270,7 @@ public class CurationReadServiceTest {
         SubmittedViaType.JSON_API);
   }
 
-  private List<MongoCurationLink> convertToMongoCurationList(List<CurationLink> curations) {
+  private List<MongoCurationLink> convertToMongoCurationList(final List<CurationLink> curations) {
     return curations.stream()
         .map(c -> new CurationLinkToMongoCurationLinkConverter().convert(c))
         .collect(Collectors.toList());
