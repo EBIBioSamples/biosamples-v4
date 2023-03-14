@@ -25,19 +25,19 @@ public class SampleValidator {
   private final AttributeValidator attributeValidator;
   private final RelationshipValidator relationshipValidator;
 
-  public SampleValidator(AttributeValidator attributeValidator) {
+  public SampleValidator(final AttributeValidator attributeValidator) {
     this.attributeValidator = attributeValidator;
-    this.relationshipValidator = new RelationshipValidator();
+    relationshipValidator = new RelationshipValidator();
   }
 
-  public Collection<String> validate(Sample sample) {
-    Collection<String> errors = new ArrayList<>();
+  public Collection<String> validate(final Sample sample) {
+    final Collection<String> errors = new ArrayList<>();
     validate(sample, errors);
     return errors;
   }
 
-  public List<String> validate(Map sampleAsMap) {
-    List<String> errors = new ArrayList<>();
+  public List<String> validate(final Map sampleAsMap) {
+    final List<String> errors = new ArrayList<>();
     if (sampleAsMap.get("release") == null) {
       errors.add("Must provide release date in format YYYY-MM-DDTHH:MM:SS");
     }
@@ -46,18 +46,18 @@ public class SampleValidator {
       errors.add("Must provide name");
     }
 
-    ObjectMapper mapper = new ObjectMapper();
+    final ObjectMapper mapper = new ObjectMapper();
     try {
-      Sample sample = mapper.convertValue(sampleAsMap, Sample.class);
+      final Sample sample = mapper.convertValue(sampleAsMap, Sample.class);
       validate(sample, errors);
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       errors.add(e.getMessage());
     }
 
     return errors;
   }
 
-  public void validate(Sample sample, Collection<String> errors) {
+  public void validate(final Sample sample, final Collection<String> errors) {
 
     if (sample.getRelease() == null) {
       errors.add("Must provide release date in format YYYY-MM-DDTHH:MM:SS");
@@ -68,11 +68,11 @@ public class SampleValidator {
     }
 
     // TODO more validation
-    for (Attribute attribute : sample.getAttributes()) {
+    for (final Attribute attribute : sample.getAttributes()) {
       attributeValidator.validate(attribute, errors);
     }
 
-    for (Relationship rel : sample.getRelationships()) {
+    for (final Relationship rel : sample.getRelationships()) {
       errors.addAll(relationshipValidator.validate(rel, sample.getAccession()));
     }
   }

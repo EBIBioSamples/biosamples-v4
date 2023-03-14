@@ -27,12 +27,13 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SampleStatus;
 
 public class MessageHandlerSolrTest {
 
   @Test
   public void should_index_public_sample() {
-    Attribute attribute = Attribute.build("INSDC status", "public");
+    final Attribute attribute = Attribute.build("INSDC status", "public");
     assertTrue(
         MessageHandlerSolr.isIndexingCandidate(
             generateTestSample("public-example", Collections.singletonList(attribute))));
@@ -40,7 +41,7 @@ public class MessageHandlerSolrTest {
 
   @Test
   public void should_index_live_sample() {
-    Attribute attribute = Attribute.build("INSDC status", "live");
+    final Attribute attribute = Attribute.build("INSDC status", "live");
     assertTrue(
         MessageHandlerSolr.isIndexingCandidate(
             (generateTestSample("live-example", Collections.singletonList(attribute)))));
@@ -55,21 +56,21 @@ public class MessageHandlerSolrTest {
 
   @Test
   public void should_index_SAMEA5397449_sample_with_no_INSDC_status() throws Exception {
-    String filePath = "/examples/samples/SAMEA5397449.json";
-    ObjectMapper objectMapper = getObjectMapper();
-    Sample sample =
+    final String filePath = "/examples/samples/SAMEA5397449.json";
+    final ObjectMapper objectMapper = getObjectMapper();
+    final Sample sample =
         objectMapper.readValue(
             MessageHandlerSolrTest.class.getResourceAsStream(filePath), Sample.class);
     assertTrue(MessageHandlerSolr.isIndexingCandidate(sample));
   }
 
-  public ObjectMapper getObjectMapper() {
-    RestTemplate restTemplate = new RestTemplate();
-    List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
-    ObjectMapper mapper = new ObjectMapper();
+  private ObjectMapper getObjectMapper() {
+    final RestTemplate restTemplate = new RestTemplate();
+    final List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
+    final ObjectMapper mapper = new ObjectMapper();
     mapper.registerModule(new Jackson2HalModule());
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    MappingJackson2HttpMessageConverter halConverter =
+    final MappingJackson2HttpMessageConverter halConverter =
         new TypeConstrainedMappingJackson2HttpMessageConverter(RepresentationModel.class);
     halConverter.setObjectMapper(mapper);
     halConverter.setSupportedMediaTypes(Arrays.asList(MediaTypes.HAL_JSON));
@@ -81,7 +82,7 @@ public class MessageHandlerSolrTest {
 
   @Test
   public void should_not_index_suppressed_sample() {
-    Attribute attribute = Attribute.build("INSDC status", "suppressed");
+    final Attribute attribute = Attribute.build("INSDC status", "suppressed");
     assertTrue(
         MessageHandlerSolr.isIndexingCandidate(
             (generateTestSample("suppressed-example", Collections.singletonList(attribute)))));
@@ -89,15 +90,15 @@ public class MessageHandlerSolrTest {
 
   @Test
   public void should_not_index_sample_with_unexpected_INSDC_status() {
-    Attribute attribute = Attribute.build("INSDC status", "gertgerge");
+    final Attribute attribute = Attribute.build("INSDC status", "gertgerge");
     assertFalse(
         MessageHandlerSolr.isIndexingCandidate(
             (generateTestSample("unexpected-example", Collections.singletonList(attribute)))));
   }
 
-  private Sample generateTestSample(String accession, List<Attribute> attributes) {
-    Set<Attribute> attributeSet = new HashSet<>();
-    for (Attribute attribute : attributes) {
+  private Sample generateTestSample(final String accession, final List<Attribute> attributes) {
+    final Set<Attribute> attributeSet = new HashSet<>();
+    for (final Attribute attribute : attributes) {
       attributeSet.add(attribute);
     }
     return Sample.build(
@@ -106,6 +107,7 @@ public class MessageHandlerSolrTest {
         "",
         "",
         Long.valueOf(9606),
+        SampleStatus.PUBLIC,
         Instant.now(),
         Instant.now(),
         Instant.now(),

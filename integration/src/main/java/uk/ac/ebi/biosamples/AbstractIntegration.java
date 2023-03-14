@@ -28,14 +28,14 @@ import uk.ac.ebi.biosamples.service.FilterBuilder;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 public abstract class AbstractIntegration implements ApplicationRunner, ExitCodeGenerator {
-  private Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   protected final String defaultIntegrationSubmissionDomain = "self.BiosampleIntegrationTest";
-  protected int exitCode = 1;
+  private int exitCode = 1;
   protected final BioSamplesClient client;
-  protected final BioSamplesClient publicClient;
+  final BioSamplesClient publicClient;
 
-  protected BioSamplesClient webinClient;
+  private BioSamplesClient webinClient;
 
   protected abstract void phaseOne();
 
@@ -49,18 +49,18 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
 
   protected abstract void phaseSix() throws ExecutionException, InterruptedException;
 
-  public AbstractIntegration(BioSamplesClient client, BioSamplesClient webinClient) {
+  public AbstractIntegration(final BioSamplesClient client, final BioSamplesClient webinClient) {
     this.client = client;
-    this.publicClient =
+    publicClient =
         client
             .getPublicClient()
             .orElseThrow(() -> new IntegrationTestFailException("Could not create public client"));
     this.webinClient = webinClient;
   }
 
-  public AbstractIntegration(BioSamplesClient client) {
+  public AbstractIntegration(final BioSamplesClient client) {
     this.client = client;
-    this.publicClient =
+    publicClient =
         client
             .getPublicClient()
             .orElseThrow(() -> new IntegrationTestFailException("Could not create public client"));
@@ -72,8 +72,8 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
   }
 
   @Override
-  public void run(ApplicationArguments args) throws Exception {
-    Phase phase = Phase.readPhaseFromArguments(args);
+  public void run(final ApplicationArguments args) throws Exception {
+    final Phase phase = Phase.readPhaseFromArguments(args);
     switch (phase) {
       case ONE:
         phaseOne();
@@ -108,20 +108,20 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
     exitCode = 0;
   }
 
-  public void close() {
+  private void close() {
     // do nothing
   }
 
   // For the purpose of unit testing we will consider name is unique, so we can fetch sample
   // uniquely from name
-  Optional<Sample> fetchUniqueSampleByName(String name) {
-    Optional<Sample> optionalSample;
-    Filter nameFilter = FilterBuilder.create().onName(name).build();
-    Iterator<EntityModel<Sample>> resourceIterator =
+  Optional<Sample> fetchUniqueSampleByName(final String name) {
+    final Optional<Sample> optionalSample;
+    final Filter nameFilter = FilterBuilder.create().onName(name).build();
+    final Iterator<EntityModel<Sample>> resourceIterator =
         publicClient.fetchSampleResourceAll(Collections.singletonList(nameFilter)).iterator();
 
     if (resourceIterator.hasNext()) {
-      optionalSample = Optional.of(resourceIterator.next().getContent());
+      optionalSample = Optional.ofNullable(resourceIterator.next().getContent());
     } else {
       optionalSample = Optional.empty();
     }
@@ -133,7 +133,7 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
     return optionalSample;
   }
 
-  Sample fetchByNameOrElseThrow(String name, Phase phase) {
+  Sample fetchByNameOrElseThrow(final String name, final Phase phase) {
     return fetchUniqueSampleByName(name)
         .orElseThrow(
             () ->

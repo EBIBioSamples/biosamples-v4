@@ -37,99 +37,107 @@ public class MongoSampleToSampleConverter implements Function<MongoSample, Sampl
   private MongoRelationshipToRelationshipConverter mongoRelationshipToRelationshipConverter;
 
   @Autowired private MongoCertificateToCertificateConverter mongoCertificateToCertificateConverter;
-  private static Logger LOGGER = LoggerFactory.getLogger(MongoSampleToSampleConverter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MongoSampleToSampleConverter.class);
 
   @Override
-  public Sample apply(MongoSample sample) {
-    Sample convertedSample;
+  public Sample apply(final MongoSample mongoSample) {
+    final Sample convertedSample;
     final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 
-    if (sample.getExternalReferences() != null && sample.getExternalReferences().size() > 0) {
-      for (final MongoExternalReference mongoExternalReference : sample.getExternalReferences()) {
-        if (mongoExternalReference != null)
+    if (mongoSample.getExternalReferences() != null
+        && mongoSample.getExternalReferences().size() > 0) {
+      for (final MongoExternalReference mongoExternalReference :
+          mongoSample.getExternalReferences()) {
+        if (mongoExternalReference != null) {
           externalReferences.add(
               mongoExternalReferenceToExternalReferenceConverter.convert(mongoExternalReference));
+        }
       }
     }
 
     final SortedSet<Relationship> relationships = new TreeSet<>();
 
-    if (sample.getRelationships() != null && sample.getRelationships().size() > 0) {
-      for (final MongoRelationship mongoRelationship : sample.getRelationships()) {
-        if (mongoRelationship != null)
+    if (mongoSample.getRelationships() != null && mongoSample.getRelationships().size() > 0) {
+      for (final MongoRelationship mongoRelationship : mongoSample.getRelationships()) {
+        if (mongoRelationship != null) {
           relationships.add(mongoRelationshipToRelationshipConverter.convert(mongoRelationship));
+        }
       }
     }
 
-    SortedSet<Certificate> certificates = new TreeSet<>();
+    final SortedSet<Certificate> certificates = new TreeSet<>();
 
-    if (sample.getCertificates() != null && sample.getCertificates().size() > 0) {
-      for (MongoCertificate certificate : sample.getCertificates()) {
+    if (mongoSample.getCertificates() != null && mongoSample.getCertificates().size() > 0) {
+      for (final MongoCertificate certificate : mongoSample.getCertificates()) {
         if (certificate != null) {
           certificates.add(mongoCertificateToCertificateConverter.convert(certificate));
         }
       }
     }
 
-    // when we convert to a MongoSample then the Sample *must* have a domain or a Webin ID
-    if (sample.getDomain() == null && sample.getWebinSubmissionAccountId() == null) {
+    // when we convert to a Sample then the MongoSample *must* have a domain or a Webin ID
+    if (mongoSample.getDomain() == null && mongoSample.getWebinSubmissionAccountId() == null) {
       LOGGER.warn(
           String.format(
               "Sample %s does not have a domain or a WEBIN submission account ID",
-              sample.getAccession()));
+              mongoSample.getAccession()));
       throw new RuntimeException("Sample does not have domain or a WEBIN submission account ID");
     }
 
-    Instant submitted = sample.getSubmitted();
+    final Instant submitted = mongoSample.getSubmitted();
 
     if (submitted == null) {
       convertedSample =
-          new Sample.Builder(sample.getName(), sample.getAccession())
-              .withDomain(sample.getDomain())
-              .withTaxId(sample.getTaxId())
-              .withWebinSubmissionAccountId(sample.getWebinSubmissionAccountId())
-              .withRelease(sample.getRelease())
-              .withUpdate(sample.getUpdate())
-              .withCreate(sample.getCreate())
+          new Sample.Builder(mongoSample.getName(), mongoSample.getAccession())
+              .withDomain(mongoSample.getDomain())
+              .withTaxId(mongoSample.getTaxId())
+              .withStatus(mongoSample.getStatus())
+              .withWebinSubmissionAccountId(mongoSample.getWebinSubmissionAccountId())
+              .withRelease(mongoSample.getRelease())
+              .withUpdate(mongoSample.getUpdate())
+              .withCreate(mongoSample.getCreate())
               .withNoSubmitted()
-              .withAttributes(sample.getAttributes())
+              .withAttributes(mongoSample.getAttributes())
               .withRelationships(relationships)
-              .withData(sample.getData())
+              .withData(mongoSample.getData())
               .withExternalReferences(externalReferences)
-              .withOrganizations(sample.getOrganizations())
-              .withContacts(sample.getContacts())
-              .withPublications(sample.getPublications())
+              .withOrganizations(mongoSample.getOrganizations())
+              .withContacts(mongoSample.getContacts())
+              .withPublications(mongoSample.getPublications())
               .withCertificates(certificates)
-              .withSubmittedVia(sample.getSubmittedVia())
+              .withSubmittedVia(mongoSample.getSubmittedVia())
               .build();
     } else {
       convertedSample =
-          new Sample.Builder(sample.getName(), sample.getAccession())
-              .withDomain(sample.getDomain())
-              .withTaxId(sample.getTaxId())
-              .withWebinSubmissionAccountId(sample.getWebinSubmissionAccountId())
-              .withRelease(sample.getRelease())
-              .withUpdate(sample.getUpdate())
-              .withCreate(sample.getCreate())
-              .withSubmitted(sample.getSubmitted())
-              .withAttributes(sample.getAttributes())
+          new Sample.Builder(mongoSample.getName(), mongoSample.getAccession())
+              .withDomain(mongoSample.getDomain())
+              .withTaxId(mongoSample.getTaxId())
+              .withStatus(mongoSample.getStatus())
+              .withWebinSubmissionAccountId(mongoSample.getWebinSubmissionAccountId())
+              .withRelease(mongoSample.getRelease())
+              .withUpdate(mongoSample.getUpdate())
+              .withCreate(mongoSample.getCreate())
+              .withSubmitted(mongoSample.getSubmitted())
+              .withAttributes(mongoSample.getAttributes())
               .withRelationships(relationships)
-              .withData(sample.getData())
+              .withData(mongoSample.getData())
               .withExternalReferences(externalReferences)
-              .withOrganizations(sample.getOrganizations())
-              .withContacts(sample.getContacts())
-              .withPublications(sample.getPublications())
+              .withOrganizations(mongoSample.getOrganizations())
+              .withContacts(mongoSample.getContacts())
+              .withPublications(mongoSample.getPublications())
               .withCertificates(certificates)
-              .withSubmittedVia(sample.getSubmittedVia())
+              .withSubmittedVia(mongoSample.getSubmittedVia())
               .build();
     }
 
-    Instant reviewed = sample.getReviewed();
+    final Instant reviewed = mongoSample.getReviewed();
 
     if (reviewed == null) {
       return Sample.Builder.fromSample(convertedSample).withNoReviewed().build();
     } else {
-      return Sample.Builder.fromSample(convertedSample).withReviewed(sample.getReviewed()).build();
+      return Sample.Builder.fromSample(convertedSample)
+          .withReviewed(mongoSample.getReviewed())
+          .build();
     }
   }
 }

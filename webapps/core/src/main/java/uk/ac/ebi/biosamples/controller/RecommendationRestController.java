@@ -25,25 +25,26 @@ import uk.ac.ebi.biosamples.service.RecommendationService;
 public class RecommendationRestController {
   private final RecommendationService recommendationService;
 
-  public RecommendationRestController(RecommendationService recommendationService) {
+  public RecommendationRestController(final RecommendationService recommendationService) {
     this.recommendationService = recommendationService;
   }
 
   @PostMapping()
-  public SampleRecommendation getRecommendations(@RequestBody Sample sample) {
-    CuramiRecommendation recommendation = recommendationService.getRecommendations(sample);
-    Sample recommendedSample = recommendationService.getRecommendedSample(sample, recommendation);
+  public SampleRecommendation getRecommendations(@RequestBody final Sample sample) {
+    final CuramiRecommendation recommendation = recommendationService.getRecommendations(sample);
+    final Sample recommendedSample =
+        recommendationService.getRecommendedSample(sample, recommendation);
     return new SampleRecommendation(recommendation, recommendedSample);
   }
 
   @PostMapping(value = "/attributes")
-  public CuramiRecommendation getRecommendedAttributes(@RequestBody Sample sample) {
+  public CuramiRecommendation getRecommendedAttributes(@RequestBody final Sample sample) {
     return recommendationService.getRecommendations(sample);
   }
 
   @PostMapping(value = "/sample")
-  public Sample getRecommendedSample(@RequestBody Sample sample) {
-    CuramiRecommendation recommendation = recommendationService.getRecommendations(sample);
+  public Sample getRecommendedSample(@RequestBody final Sample sample) {
+    final CuramiRecommendation recommendation = recommendationService.getRecommendations(sample);
     return recommendationService.getRecommendedSample(sample, recommendation);
   }
 }

@@ -31,10 +31,10 @@ public class BioschemasController {
   private final BioSamplesAapService bioSamplesAapService;
 
   public BioschemasController(
-      JsonLDService service,
-      SampleService sampleService,
-      BioSamplesAapService bioSamplesAapService) {
-    this.jsonLDService = service;
+      final JsonLDService service,
+      final SampleService sampleService,
+      final BioSamplesAapService bioSamplesAapService) {
+    jsonLDService = service;
     this.sampleService = sampleService;
     this.bioSamplesAapService = bioSamplesAapService;
   }

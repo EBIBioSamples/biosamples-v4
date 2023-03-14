@@ -26,44 +26,40 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
 
 @Controller
 @RequestMapping("/docs")
 public class DocumentationController {
-
-  private BioSamplesProperties bioSamplesProperties;
   private Resource[] cookbookResources;
   private HashMap<String, String> cookbookRecipiesMap;
 
-  Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
-  public DocumentationController(BioSamplesProperties properties) {
-    ClassLoader cl = this.getClass().getClassLoader();
-    ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(cl);
-    this.cookbookResources = new Resource[] {};
+  public DocumentationController() {
+    final ClassLoader cl = getClass().getClassLoader();
+    final ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(cl);
+    cookbookResources = new Resource[] {};
     try {
-      this.cookbookResources =
+      cookbookResources =
           resolver.getResources("classpath*:/templates/asciidoc/cookbook_recipes/*");
       cookbookRecipiesMap = new HashMap<>();
-      for (Resource res : cookbookResources) {
-        Document doc = Jsoup.parse(res.getInputStream(), "UTF-8", "");
-        Element title = doc.getElementsByTag("title").first();
-        String linkText = title.text();
-        String linkUrl = res.getFilename().replaceFirst("cb_", "");
+      for (final Resource res : cookbookResources) {
+        final Document doc = Jsoup.parse(res.getInputStream(), "UTF-8", "");
+        final Element title = doc.getElementsByTag("title").first();
+        final String linkText = title.text();
+        final String linkUrl = res.getFilename().replaceFirst("cb_", "");
         cookbookRecipiesMap.put(linkText, linkUrl);
       }
 
-    } catch (IOException e) {
+    } catch (final IOException e) {
       log.error("Unable to load cookbook resources", e);
     }
-    this.bioSamplesProperties = properties;
   }
 
   // TODO: Convert this to use ControllerAdvice
   @ModelAttribute
-  public void addCoreLink(Model model) {
-    model.addAttribute("recipes", this.cookbookRecipiesMap);
+  public void addCoreLink(final Model model) {
+    model.addAttribute("recipes", cookbookRecipiesMap);
   }
 
   @GetMapping
@@ -72,7 +68,7 @@ public class DocumentationController {
   }
 
   @GetMapping(value = "/{page}")
-  public String helpBasePage(@PathVariable String page) {
+  public String helpBasePage(@PathVariable final String page) {
     return "docs/" + page;
   }
 
@@ -82,7 +78,7 @@ public class DocumentationController {
   }
 
   @GetMapping(value = "/guides/{page}")
-  public String helpGuidePage(@PathVariable String page) {
+  public String helpGuidePage(@PathVariable final String page) {
     return "docs/guides/" + page;
   }
 
@@ -92,7 +88,7 @@ public class DocumentationController {
   }
 
   @GetMapping(value = "/references/{page}")
-  public String helpReferencePage(@PathVariable String page) {
+  public String helpReferencePage(@PathVariable final String page) {
     return "docs/references/" + page;
   }
 
@@ -102,7 +98,7 @@ public class DocumentationController {
   }
 
   @GetMapping(value = "/references/api/{page}")
-  public String helpApiReferencePage(@PathVariable String page) {
+  public String helpApiReferencePage(@PathVariable final String page) {
     return "docs/references/api/" + page;
   }
 
@@ -112,7 +108,7 @@ public class DocumentationController {
   }
 
   @GetMapping(value = "/cookbook/{page}")
-  public String cookbookPage(Model model, @PathVariable String page) {
+  public String cookbookPage(final Model model, @PathVariable final String page) {
     model.addAttribute("page", page);
     return "docs/cookbook/cookbook_template";
   }

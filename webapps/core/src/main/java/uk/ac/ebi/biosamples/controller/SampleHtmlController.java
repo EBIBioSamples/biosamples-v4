@@ -53,8 +53,7 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 @Controller
 @RequestMapping(value = "/", produces = MediaType.TEXT_HTML_VALUE)
 public class SampleHtmlController {
-  private Logger log = LoggerFactory.getLogger(getClass());
-
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final SampleService sampleService;
   private final SamplePageService samplePageService;
   private final JsonLDService jsonLDService;
@@ -64,13 +63,13 @@ public class SampleHtmlController {
   private final BioSamplesProperties bioSamplesProperties;
 
   public SampleHtmlController(
-      SampleService sampleService,
-      SamplePageService samplePageService,
-      JsonLDService jsonLDService,
-      FacetService facetService,
-      FilterService filterService,
-      BioSamplesAapService bioSamplesAapService,
-      BioSamplesProperties bioSamplesProperties) {
+      final SampleService sampleService,
+      final SamplePageService samplePageService,
+      final JsonLDService jsonLDService,
+      final FacetService facetService,
+      final FilterService filterService,
+      final BioSamplesAapService bioSamplesAapService,
+      final BioSamplesProperties bioSamplesProperties) {
     this.sampleService = sampleService;
     this.samplePageService = samplePageService;
     this.jsonLDService = jsonLDService;
@@ -81,7 +80,7 @@ public class SampleHtmlController {
   }
 
   @GetMapping(value = "/")
-  public String index(Model model) {
+  public String index(final Model model) {
 
     //    String jsonStats;
     //    String jsonYearlyGrowth;
@@ -94,7 +93,7 @@ public class SampleHtmlController {
     //      jsonYearlyGrowth = "{}";
     //    }
 
-    JsonLDDataCatalog dataCatalog = jsonLDService.getBioSamplesDataCatalog();
+    final JsonLDDataCatalog dataCatalog = jsonLDService.getBioSamplesDataCatalog();
     model.addAttribute("jsonLD", jsonLDService.jsonLDToString(dataCatalog));
     //    model.addAttribute("stats", jsonStats);
     //    model.addAttribute("yearlyGrowth", jsonYearlyGrowth);
@@ -113,13 +112,13 @@ public class SampleHtmlController {
 
   @GetMapping(value = "/samples")
   public String samples(
-      Model model,
-      @RequestParam(name = "text", required = false) String text,
-      @RequestParam(name = "filter", required = false) String[] filtersArray,
+      final Model model,
+      @RequestParam(name = "text", required = false) final String text,
+      @RequestParam(name = "filter", required = false) final String[] filtersArray,
       @RequestParam(name = "page", defaultValue = "1") Integer page,
       @RequestParam(name = "size", defaultValue = "10") Integer size,
-      HttpServletRequest request,
-      HttpServletResponse response) {
+      final HttpServletRequest request,
+      final HttpServletResponse response) {
 
     page = page == null || page < 1 ? 1 : page;
     size = size == null || size < 1 ? 10 : size;
@@ -128,28 +127,28 @@ public class SampleHtmlController {
       // instead
     }
 
-    Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);
-    Collection<String> domains = bioSamplesAapService.getDomains();
+    final Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);
+    final Collection<String> domains = bioSamplesAapService.getDomains();
 
-    Pageable pageable = PageRequest.of(page - 1, size);
-    Page<Sample> pageSample =
+    final Pageable pageable = PageRequest.of(page - 1, size);
+    final Page<Sample> pageSample =
         samplePageService.getSamplesByText(
             text, filterCollection, domains, null, pageable, Optional.empty());
 
     // build URLs for the facets depending on if they are enabled or not
-    UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);
-    List<String> filtersList = new ArrayList<>();
+    final UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);
+    final List<String> filtersList = new ArrayList<>();
     if (filtersArray != null) {
       filtersList.addAll(Arrays.asList(filtersArray));
     }
     Collections.sort(filtersList);
-    String downloadURL =
+    final String downloadURL =
         "?text="
             + (text != null ? text : "")
             + "&filter="
             + StringUtils.join(filtersList, "&filter=");
 
-    JsonLDDataset jsonLDDataset = jsonLDService.getBioSamplesDataset();
+    final JsonLDDataset jsonLDDataset = jsonLDService.getBioSamplesDataset();
 
     model.addAttribute("text", text);
     model.addAttribute("start", (page - 1) * size);
@@ -170,11 +169,11 @@ public class SampleHtmlController {
   }
 
   @GetMapping(value = "/uploadLogin")
-  public String login(Model model) {
-    AuthorizationProvider[] loginWays = AuthorizationProvider.values();
-    List<String> logins = new ArrayList<>();
+  public String login(final Model model) {
+    final AuthorizationProvider[] loginWays = AuthorizationProvider.values();
+    final List<String> logins = new ArrayList<>();
 
-    for (AuthorizationProvider loginWay : loginWays) {
+    for (final AuthorizationProvider loginWay : loginWays) {
       logins.add(loginWay.toString());
     }
 
@@ -185,7 +184,7 @@ public class SampleHtmlController {
 
   @GetMapping(value = "/facets")
   public String facets(
-      Model model,
+      final Model model,
       @RequestParam(name = "text", required = false) final String text,
       @RequestParam(name = "filter", required = false) final String[] filtersArray,
       final HttpServletResponse response) {
@@ -206,10 +205,11 @@ public class SampleHtmlController {
     return "fragments/facets";
   }
 
-  private Paginations getPaginations(Page<Sample> pageSample, UriComponentsBuilder uriBuilder) {
+  private Paginations getPaginations(
+      final Page<Sample> pageSample, final UriComponentsBuilder uriBuilder) {
 
-    int pageTotal = pageSample.getTotalPages();
-    int pageCurrent = pageSample.getNumber() + 1;
+    final int pageTotal = pageSample.getTotalPages();
+    final int pageCurrent = pageSample.getNumber() + 1;
 
     Pagination previous = null;
     if (pageCurrent > 1) {
@@ -221,7 +221,7 @@ public class SampleHtmlController {
       next = new Pagination(pageCurrent + 1, false, pageCurrent, uriBuilder);
     }
 
-    Paginations paginations = new Paginations(pageCurrent, pageTotal, previous, next);
+    final Paginations paginations = new Paginations(pageCurrent, pageTotal, previous, next);
 
     if (pageTotal <= 6) {
       // few enough pages to fit onto a single bar
@@ -266,14 +266,15 @@ public class SampleHtmlController {
     public final int current;
     public final int total;
 
-    public Paginations(int current, int total, Pagination previous, Pagination next) {
+    Paginations(
+        final int current, final int total, final Pagination previous, final Pagination next) {
       this.current = current;
       this.total = total;
       this.previous = previous;
       this.next = next;
     }
 
-    public void add(Pagination pagination) {
+    public void add(final Pagination pagination) {
       paginations.add(pagination);
     }
 
@@ -289,22 +290,26 @@ public class SampleHtmlController {
     public final boolean skip;
     public final boolean current;
 
-    public Pagination(int pageNo, boolean skip, int currentNo, UriComponentsBuilder uriBuilder) {
-      this.page = pageNo;
+    Pagination(
+        final int pageNo,
+        final boolean skip,
+        final int currentNo,
+        final UriComponentsBuilder uriBuilder) {
+      page = pageNo;
       this.skip = skip;
-      this.current = (currentNo == pageNo);
-      this.url = uriBuilder.cloneBuilder().replaceQueryParam("page", pageNo).build().toUriString();
+      current = (currentNo == pageNo);
+      url = uriBuilder.cloneBuilder().replaceQueryParam("page", pageNo).build().toUriString();
     }
   }
 
   @GetMapping(value = "/samples/{accession}")
   public String samplesAccession(
-      Model model,
-      @PathVariable String accession,
-      HttpServletRequest request,
-      HttpServletResponse response) {
+      final Model model,
+      @PathVariable final String accession,
+      final HttpServletRequest request,
+      final HttpServletResponse response) {
     // TODO allow curation domain specification
-    Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
+    final Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
     if (!sample.isPresent()) {
       log.info("Returning a 404 for " + request.getRequestURL());
       throw new ResourceNotFoundException();
@@ -316,7 +321,8 @@ public class SampleHtmlController {
     // String.valueOf(sample.getUpdate().toEpochSecond(ZoneOffset.UTC)));
     // response.setHeader(HttpHeaders.ETAG, String.valueOf(sample.hashCode()));
 
-    String jsonLDString = jsonLDService.jsonLDToString(jsonLDService.sampleToJsonLD(sample.get()));
+    final String jsonLDString =
+        jsonLDService.jsonLDToString(jsonLDService.sampleToJsonLD(sample.get()));
     model.addAttribute("sample", sample.get());
     model.addAttribute("schemaStoreUrl", bioSamplesProperties.getSchemaStore());
     model.addAttribute("jsonLD", jsonLDString);
@@ -335,7 +341,7 @@ public class SampleHtmlController {
   }
 
   @GetMapping("/sample/{accession}")
-  public String sampleAccession(@PathVariable String accession) {
+  public String sampleAccession(@PathVariable final String accession) {
     return "redirect:/samples/" + accession;
   }
 
@@ -345,7 +351,7 @@ public class SampleHtmlController {
   }
 
   @GetMapping("/group/{accession}")
-  public String groupAccession(@PathVariable String accession) {
+  public String groupAccession(@PathVariable final String accession) {
     return "redirect:/samples/" + accession;
   }
 
@@ -355,7 +361,7 @@ public class SampleHtmlController {
   }
 
   @GetMapping("/groups/{accession}")
-  public String groupsAccession(@PathVariable String accession) {
+  public String groupsAccession(@PathVariable final String accession) {
     return "redirect:/samples/" + accession;
   }
 

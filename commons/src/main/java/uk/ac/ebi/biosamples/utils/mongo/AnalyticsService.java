@@ -10,11 +10,7 @@
 */
 package uk.ac.ebi.biosamples.utils.mongo;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -29,25 +25,24 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoAnalyticsRepository;
 @Service
 public class AnalyticsService {
   private static final Logger LOG = LoggerFactory.getLogger(AnalyticsService.class);
-
   private final MongoAnalyticsRepository analyticsRepository;
   private final DateTimeFormatter dateTimeFormatter;
 
-  public AnalyticsService(MongoAnalyticsRepository analyticsRepository) {
+  public AnalyticsService(final MongoAnalyticsRepository analyticsRepository) {
     this.analyticsRepository = analyticsRepository;
-    this.dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+    dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
   }
 
-  public MongoAnalytics getAnalytics(LocalDate date) {
+  public MongoAnalytics getAnalytics(final LocalDate date) {
     final String dateString = dateTimeFormatter.format(date);
     final Optional<MongoAnalytics> byId = analyticsRepository.findById(dateString);
 
     return byId.isPresent() ? byId.get() : null;
   }
 
-  public List<MongoAnalytics> getAnalytics(LocalDate start, LocalDate end) {
-    String startString = dateTimeFormatter.format(start);
-    String endString = dateTimeFormatter.format(end);
+  public List<MongoAnalytics> getAnalytics(final LocalDate start, final LocalDate end) {
+    final String startString = dateTimeFormatter.format(start);
+    final String endString = dateTimeFormatter.format(end);
 
     return analyticsRepository.findMongoAnalyticsByIdBetween(startString, endString);
   }
@@ -56,7 +51,7 @@ public class AnalyticsService {
     return analyticsRepository.findFirstByOrderByCollectionDateDesc();
   }
 
-  public void mergeSampleAnalytics(Instant runTime, SampleAnalytics sampleAnalytics) {
+  public void mergeSampleAnalytics(final Instant runTime, final SampleAnalytics sampleAnalytics) {
     final String pipelineRunDate = getApproximateRunDateAsString(runTime);
     LOG.info("Saving sample types for date: {}", pipelineRunDate);
 
@@ -73,7 +68,7 @@ public class AnalyticsService {
               localDate.getMonthValue(),
               localDate.getDayOfMonth());
     } else {
-      SampleAnalytics oldSampleAnalytics = analyticsRecord.getSampleAnalytics();
+      final SampleAnalytics oldSampleAnalytics = analyticsRecord.getSampleAnalytics();
       if (oldSampleAnalytics != null) {
         sampleAnalytics.getCenter().putAll(oldSampleAnalytics.getCenter());
         sampleAnalytics.getChannel().putAll(oldSampleAnalytics.getChannel());
@@ -86,7 +81,7 @@ public class AnalyticsService {
     analyticsRepository.save(analyticsRecord);
   }
 
-  public void persistSampleAnalytics(Instant runTime, SampleAnalytics sampleAnalytics) {
+  public void persistSampleAnalytics(final Instant runTime, final SampleAnalytics sampleAnalytics) {
     final String pipelineRunDate = getApproximateRunDateAsString(runTime);
     LOG.info("Saving sample types for date: {}", pipelineRunDate);
 
@@ -106,7 +101,7 @@ public class AnalyticsService {
     analyticsRepository.save(analyticsRecord);
   }
 
-  public void persistPipelineAnalytics(PipelineAnalytics pipelineAnalytics) {
+  public void persistPipelineAnalytics(final PipelineAnalytics pipelineAnalytics) {
     final String pipelineRunDate = getApproximateRunDateAsString(pipelineAnalytics.getStartTime());
     LOG.info("Saving {} analytics for date: {}", pipelineAnalytics.getName(), pipelineRunDate);
 
@@ -127,8 +122,8 @@ public class AnalyticsService {
     analyticsRepository.save(analyticsRecord);
   }
 
-  public String getApproximateRunDateAsString(Instant date) {
-    LocalDateTime adjustedDate = LocalDateTime.ofInstant(date, ZoneOffset.UTC).plusHours(3);
+  private String getApproximateRunDateAsString(final Instant date) {
+    final LocalDateTime adjustedDate = LocalDateTime.ofInstant(date, ZoneOffset.UTC).plusHours(3);
 
     return adjustedDate.format(dateTimeFormatter);
   }

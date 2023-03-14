@@ -150,6 +150,7 @@ public class EnaSampleToBioSampleConversionService {
               null,
               webinId,
               taxId,
+              null, // TODO: status update
               release,
               update,
               create,
@@ -166,6 +167,7 @@ public class EnaSampleToBioSampleConversionService {
               pipelinesProperties.getEnaDomain(),
               webinId,
               taxId,
+              null, // TODO: status update
               release,
               update,
               create,

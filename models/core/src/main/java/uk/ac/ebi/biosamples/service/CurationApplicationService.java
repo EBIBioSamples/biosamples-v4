@@ -25,23 +25,23 @@ import uk.ac.ebi.biosamples.model.Sample;
 @Service
 public class CurationApplicationService {
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
-  public Sample applyCurationToSample(Sample sample, Curation curation) {
+  public Sample applyCurationToSample(final Sample sample, final Curation curation) {
     log.trace("Applying curation " + curation + " to sample " + sample);
 
-    SortedSet<Attribute> attributes = new TreeSet<Attribute>(sample.getAttributes());
-    SortedSet<ExternalReference> externalReferences =
-        new TreeSet<ExternalReference>(sample.getExternalReferences());
+    final SortedSet<Attribute> attributes = new TreeSet<>(sample.getAttributes());
+    final SortedSet<ExternalReference> externalReferences =
+        new TreeSet<>(sample.getExternalReferences());
     // remove pre-curation things
-    for (Attribute attribute : curation.getAttributesPre()) {
+    for (final Attribute attribute : curation.getAttributesPre()) {
       if (!attributes.contains(attribute)) {
         throw new IllegalArgumentException(
             "Attempting to apply curation " + curation + " to sample " + sample);
       }
       attributes.remove(attribute);
     }
-    for (ExternalReference externalReference : curation.getExternalReferencesPre()) {
+    for (final ExternalReference externalReference : curation.getExternalReferencesPre()) {
       if (!externalReferences.contains(externalReference)) {
         throw new IllegalArgumentException(
             "Attempting to apply curation " + curation + " to sample " + sample);
@@ -49,14 +49,14 @@ public class CurationApplicationService {
       externalReferences.remove(externalReference);
     }
     // add post-curation things
-    for (Attribute attribute : curation.getAttributesPost()) {
+    for (final Attribute attribute : curation.getAttributesPost()) {
       if (attributes.contains(attribute)) {
         throw new IllegalArgumentException(
             "Attempting to apply curation " + curation + " to sample " + sample);
       }
       attributes.add(attribute);
     }
-    for (ExternalReference externalReference : curation.getExternalReferencesPost()) {
+    for (final ExternalReference externalReference : curation.getExternalReferencesPost()) {
       if (externalReferences.contains(externalReference)) {
         throw new IllegalArgumentException(
             "Attempting to apply curation " + curation + " to sample " + sample);
@@ -70,6 +70,7 @@ public class CurationApplicationService {
         sample.getDomain(),
         sample.getWebinSubmissionAccountId(),
         sample.getTaxId(),
+        sample.getStatus(),
         sample.getRelease(),
         sample.getUpdate(),
         sample.getCreate(),
@@ -87,19 +88,19 @@ public class CurationApplicationService {
         sample.getSubmittedVia());
   }
 
-  public Sample applyAllCurationToSample(Sample sample, Collection<Curation> curations) {
+  public Sample applyAllCurationToSample(Sample sample, final Collection<Curation> curations) {
     boolean curationApplied = true;
 
     while (curationApplied && curations.size() > 0) {
-      Iterator<Curation> it = curations.iterator();
+      final Iterator<Curation> it = curations.iterator();
       curationApplied = false;
       while (it.hasNext()) {
-        Curation curation = it.next();
+        final Curation curation = it.next();
         try {
           sample = applyCurationToSample(sample, curation);
           it.remove();
           curationApplied = true;
-        } catch (IllegalArgumentException e) {
+        } catch (final IllegalArgumentException e) {
           // do nothing, will try again next loop
         }
       }

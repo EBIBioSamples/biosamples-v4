@@ -31,7 +31,6 @@ import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 @Component
@@ -54,20 +53,19 @@ public class ClearinghouseRunner implements ApplicationRunner {
       this.bioSamplesClient = bioSamplesClient;
     }
 
-    this.pipelineFutureCallback = new PipelineFutureCallback();
+    pipelineFutureCallback = new PipelineFutureCallback();
 
     // TODO add correct domain for clearinghouse
     domain = "self.bioSamplesClearinghouse";
   }
 
   @Override
-  public void run(ApplicationArguments args) {
+  public void run(final ApplicationArguments args) {
     doGetClearingHouseCurations();
   }
 
   private void doGetClearingHouseCurations() {
-    boolean isPassed = true;
-    long startTime = System.nanoTime();
+    final long startTime = System.nanoTime();
     int sampleCount = 0;
 
     final Map<String, Future<PipelineResult>> futures = new HashMap<>();
@@ -117,9 +115,8 @@ public class ClearinghouseRunner implements ApplicationRunner {
 
     } catch (final Exception e) {
       LOGGER.error("Clearinghouse pipeline failed to finish successfully", e);
-      isPassed = false;
     } finally {
-      long elapsed = System.nanoTime() - startTime;
+      final long elapsed = System.nanoTime() - startTime;
       final String logMessage =
           "Completed Clearinghouse pipeline:  "
               + sampleCount

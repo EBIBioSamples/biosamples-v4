@@ -24,34 +24,35 @@ public class MongoInverseRelationshipService {
 
   private final MongoTemplate mongoTemplate;
 
-  public MongoInverseRelationshipService(MongoTemplate mongoTemplate) {
+  public MongoInverseRelationshipService(final MongoTemplate mongoTemplate) {
     this.mongoTemplate = mongoTemplate;
   }
 
-  public MongoSample addInverseRelationships(MongoSample mongoSample) {
-    String accession = mongoSample.getAccession();
+  public MongoSample addInverseRelationships(final MongoSample mongoSample) {
+    final String accession = mongoSample.getAccession();
     if (accession == null) {
       return mongoSample;
     }
 
-    Query query =
+    final Query query =
         new BasicQuery("{'relationships.target':'" + accession + "'}", "{'relationships.$':1}");
-    for (MongoSample other : mongoTemplate.find(query, MongoSample.class)) {
-      for (MongoRelationship relationship : other.getRelationships()) {
+    for (final MongoSample other : mongoTemplate.find(query, MongoSample.class)) {
+      for (final MongoRelationship relationship : other.getRelationships()) {
         if (relationship.getTarget().equals(accession)) {
           mongoSample.getRelationships().add(relationship);
         }
       }
     }
+
     return mongoSample;
   }
 
-  public List<String> getInverseRelationshipsTargets(String accession) {
-    List<String> relTargetAccessionList = new ArrayList<>();
-    Query query =
+  public List<String> getInverseRelationshipsTargets(final String accession) {
+    final List<String> relTargetAccessionList = new ArrayList<>();
+    final Query query =
         new BasicQuery("{'relationships.target':'" + accession + "'}", "{'relationships.$':1}");
-    for (MongoSample other : mongoTemplate.find(query, MongoSample.class)) {
-      for (MongoRelationship relationship : other.getRelationships()) {
+    for (final MongoSample other : mongoTemplate.find(query, MongoSample.class)) {
+      for (final MongoRelationship relationship : other.getRelationships()) {
         if (relationship.getTarget().equals(accession)) {
           relTargetAccessionList.add(relationship.getSource());
         }

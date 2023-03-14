@@ -28,7 +28,7 @@ public class RootHalController {
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE})
   public ResponseEntity<RepresentationModel> rootHal() {
-    RepresentationModel resource = new RepresentationModel();
+    final RepresentationModel resource = new RepresentationModel();
 
     resource.add(WebMvcLinkBuilder.linkTo(SamplesRestController.class).withRel("samples"));
     resource.add(WebMvcLinkBuilder.linkTo(CurationRestController.class).withRel("curations"));

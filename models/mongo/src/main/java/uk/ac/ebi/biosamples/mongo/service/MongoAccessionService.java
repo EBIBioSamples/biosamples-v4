@@ -119,6 +119,7 @@ public class MongoAccessionService {
             sample.getDomain(),
             sample.getWebinSubmissionAccountId(),
             sample.getTaxId(),
+            sample.getStatus(),
             sample.getRelease(),
             sample.getUpdate(),
             sample.getCreate(),

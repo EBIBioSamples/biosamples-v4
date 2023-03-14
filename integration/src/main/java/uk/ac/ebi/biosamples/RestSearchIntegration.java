@@ -25,7 +25,7 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 @Order(1)
 // @Profile({"default", "rest"})
 public class RestSearchIntegration extends AbstractIntegration {
-  public RestSearchIntegration(BioSamplesClient client) {
+  public RestSearchIntegration(final BioSamplesClient client) {
     super(client);
   }
 
@@ -38,10 +38,14 @@ public class RestSearchIntegration extends AbstractIntegration {
 
     // put a private sample
     EntityModel<Sample> resource = client.persistSampleResource(test1);
+
     test1 =
         Sample.Builder.fromSample(test1)
             .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
             .build();
+
+    test1 = Sample.Builder.fromSample(test1).withStatus(resource.getContent().getStatus()).build();
+
     if (!test1.equals(resource.getContent())) {
       throw new IntegrationTestFailException(
           "Expected response (" + resource.getContent() + ") to equal submission (" + test1 + ")",
@@ -50,10 +54,14 @@ public class RestSearchIntegration extends AbstractIntegration {
 
     // put a sample that refers to a non-existing sample, Should this fail???
     resource = client.persistSampleResource(test2);
+
     test2 =
         Sample.Builder.fromSample(test2)
             .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
             .build();
+
+    test2 = Sample.Builder.fromSample(test2).withStatus(resource.getContent().getStatus()).build();
+
     if (!test2.equals(resource.getContent())) {
       throw new IntegrationTestFailException(
           "Expected response (" + resource.getContent() + ") to equal submission (" + test2 + ")",
@@ -61,10 +69,13 @@ public class RestSearchIntegration extends AbstractIntegration {
     }
 
     resource = client.persistSampleResource(test4);
+
     test4 =
         Sample.Builder.fromSample(test4)
             .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
             .build();
+    test4 = Sample.Builder.fromSample(test4).withStatus(resource.getContent().getStatus()).build();
+
     if (!test4.equals(resource.getContent())) {
       throw new IntegrationTestFailException(
           "Expected response (" + resource.getContent() + ") to equal submission (" + test4 + ")",
@@ -72,10 +83,14 @@ public class RestSearchIntegration extends AbstractIntegration {
     }
 
     resource = client.persistSampleResource(test5);
+
     test5 =
         Sample.Builder.fromSample(test5)
             .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
             .build();
+
+    test5 = Sample.Builder.fromSample(test5).withStatus(resource.getContent().getStatus()).build();
+
     if (!test5.equals(resource.getContent())) {
       throw new IntegrationTestFailException(
           "Expected response (" + resource.getContent() + ") to equal submission (" + test5 + ")",
@@ -87,6 +102,7 @@ public class RestSearchIntegration extends AbstractIntegration {
   protected void phaseTwo() {
     Sample test2 = getSampleTest2();
     Optional<Sample> optionalSample = fetchUniqueSampleByName(test2.getName());
+
     if (optionalSample.isPresent()) {
       test2 = optionalSample.get();
     } else {
@@ -95,7 +111,9 @@ public class RestSearchIntegration extends AbstractIntegration {
     }
 
     Sample test4 = getSampleTest4();
+
     optionalSample = fetchUniqueSampleByName(test4.getName());
+
     if (optionalSample.isPresent()) {
       test4 = optionalSample.get();
     } else {
@@ -104,7 +122,9 @@ public class RestSearchIntegration extends AbstractIntegration {
     }
 
     Sample test5 = getSampleTest5();
+
     optionalSample = fetchUniqueSampleByName(test5.getName());
+
     if (optionalSample.isPresent()) {
       test5 = optionalSample.get();
     } else {
@@ -129,7 +149,7 @@ public class RestSearchIntegration extends AbstractIntegration {
     relationships = test5.getRelationships();
     relationships.add(Relationship.build(test4.getAccession(), "derive to", test5.getAccession()));
     test5 = Sample.Builder.fromSample(test5).withRelationships(relationships).build();
-    Optional<EntityModel<Sample>> optionalResource =
+    final Optional<EntityModel<Sample>> optionalResource =
         client.fetchSampleResource(test5.getAccession());
     if (optionalResource.isPresent()) {
       resource = optionalResource.get();
@@ -146,7 +166,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseThree() {
-    Sample test1 = getSampleTest1();
+    final Sample test1 = getSampleTest1();
     Optional<Sample> optionalSample = fetchUniqueSampleByName(test1.getName());
     if (optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
@@ -162,8 +182,8 @@ public class RestSearchIntegration extends AbstractIntegration {
           "Sample does not exist, sample name: " + test2.getName(), Phase.TWO);
     }
 
-    List<EntityModel<Sample>> samples = new ArrayList<>();
-    for (EntityModel<Sample> sample : publicClient.fetchSampleResourceAll()) {
+    final List<EntityModel<Sample>> samples = new ArrayList<>();
+    for (final EntityModel<Sample> sample : publicClient.fetchSampleResourceAll()) {
       samples.add(sample);
     }
 
@@ -173,7 +193,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 
     // check that the private sample is not in search results
     // check that the referenced non-existing sample not in search result
-    for (EntityModel<Sample> resource : publicClient.fetchSampleResourceAll()) {
+    for (final EntityModel<Sample> resource : publicClient.fetchSampleResourceAll()) {
       if (Objects.requireNonNull(resource.getContent()).getName().equals(test1.getName())) {
         throw new IntegrationTestFailException(
             "Found non-public sample " + test1.getAccession() + " in search samples", Phase.TWO);
@@ -182,8 +202,8 @@ public class RestSearchIntegration extends AbstractIntegration {
 
     // TODO check OLS expansion by making sure we can find the submitted samples in results for
     // Eukaryota
-    Set<String> accessions = new HashSet<>();
-    for (EntityModel<Sample> sample : publicClient.fetchSampleResourceAll("Homo Sapiens")) {
+    final Set<String> accessions = new HashSet<>();
+    for (final EntityModel<Sample> sample : publicClient.fetchSampleResourceAll("Homo Sapiens")) {
       accessions.add(Objects.requireNonNull(sample.getContent()).getAccession());
     }
     if (!accessions.contains(test2.getAccession())) {
@@ -201,14 +221,15 @@ public class RestSearchIntegration extends AbstractIntegration {
     Sample sample5 = getSampleTest5();
     sample5 = fetchByNameOrElseThrow(sample5.getName(), Phase.FOUR);
 
-    List<String> sample2ExpectedSearchResults =
+    final List<String> sample2ExpectedSearchResults =
         Arrays.asList(sample2.getAccession(), sample4.getAccession());
-    List<String> sample4ExpectedSearchResults =
+    final List<String> sample4ExpectedSearchResults =
         Arrays.asList(sample2.getAccession(), sample4.getAccession(), sample5.getAccession());
 
     // Get results for sample2
-    List<String> sample2EffectiveSearchResults = new ArrayList<>();
-    for (EntityModel<Sample> sample : publicClient.fetchSampleResourceAll(sample2.getAccession())) {
+    final List<String> sample2EffectiveSearchResults = new ArrayList<>();
+    for (final EntityModel<Sample> sample :
+        publicClient.fetchSampleResourceAll(sample2.getAccession())) {
       sample2EffectiveSearchResults.add(Objects.requireNonNull(sample.getContent()).getAccession());
     }
 
@@ -225,8 +246,9 @@ public class RestSearchIntegration extends AbstractIntegration {
     }
 
     // Get results for sample4
-    List<String> sample4EffectiveSearchResults = new ArrayList<>();
-    for (EntityModel<Sample> sample : publicClient.fetchSampleResourceAll(sample4.getAccession())) {
+    final List<String> sample4EffectiveSearchResults = new ArrayList<>();
+    for (final EntityModel<Sample> sample :
+        publicClient.fetchSampleResourceAll(sample4.getAccession())) {
       sample4EffectiveSearchResults.add(Objects.requireNonNull(sample.getContent()).getAccession());
     }
 
@@ -234,7 +256,7 @@ public class RestSearchIntegration extends AbstractIntegration {
       throw new IntegrationTestFailException("No search results found!", Phase.FOUR);
     }
 
-    for (String expectedAccession : sample4ExpectedSearchResults) {
+    for (final String expectedAccession : sample4ExpectedSearchResults) {
       if (!sample4EffectiveSearchResults.contains(expectedAccession)) {
         throw new RuntimeException(
             "Search results for "
@@ -254,10 +276,10 @@ public class RestSearchIntegration extends AbstractIntegration {
   protected void phaseSix() {}
 
   private Sample getSampleTest1() {
-    String name = "RestSearchIntegration_sample_1";
-    Instant release = Instant.parse("2116-04-01T11:36:57.00Z");
+    final String name = "RestSearchIntegration_sample_1";
+    final Instant release = Instant.parse("2116-04-01T11:36:57.00Z");
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
@@ -270,15 +292,15 @@ public class RestSearchIntegration extends AbstractIntegration {
   }
 
   private Sample getSampleTest2() {
-    String name = "RestSearchIntegration_sample_2_with_invalid_relationships";
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final String name = "RestSearchIntegration_sample_2_with_invalid_relationships";
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
-    SortedSet<Relationship> relationships = new TreeSet<>();
+    final SortedSet<Relationship> relationships = new TreeSet<>();
     relationships.add(Relationship.build("SAMEA2", "derived from", "SAMEA3"));
 
     return new Sample.Builder(name)
@@ -290,10 +312,10 @@ public class RestSearchIntegration extends AbstractIntegration {
   }
 
   private Sample getSampleTest4() {
-    String name = "RestSearchIntegration_sample_4";
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final String name = "RestSearchIntegration_sample_4";
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
@@ -306,10 +328,10 @@ public class RestSearchIntegration extends AbstractIntegration {
   }
 
   private Sample getSampleTest5() {
-    String name = "RestSearchIntegration_sample_5";
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final String name = "RestSearchIntegration_sample_5";
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
