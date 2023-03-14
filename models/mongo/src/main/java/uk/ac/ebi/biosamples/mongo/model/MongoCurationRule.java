@@ -30,7 +30,7 @@ public class MongoCurationRule implements Comparable<MongoCurationRule> {
 
   @JsonSerialize(using = CustomInstantSerializer.class)
   @JsonDeserialize(using = CustomInstantDeserializer.class)
-  private final Instant created;
+  private Instant created;
 
   private MongoCurationRule(String attributePre, String attributePost) {
     this.attributePre = attributePre;
@@ -39,22 +39,18 @@ public class MongoCurationRule implements Comparable<MongoCurationRule> {
     created = Instant.now();
   }
 
-  @JsonProperty("id")
   public String getId() {
     return id;
   }
 
-  @JsonProperty("attributePre")
   public String getAttributePre() {
     return attributePre;
   }
 
-  @JsonProperty("attributePost")
   public String getAttributePost() {
     return attributePost;
   }
 
-  @JsonProperty("created")
   public Instant getCreated() {
     return created;
   }

@@ -15,6 +15,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.*;
+
+import org.apache.commons.lang.IncompleteArgumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -27,7 +29,10 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.util.CloseableIterator;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
+import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+import uk.ac.ebi.biosamples.utils.PipelineUtils;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
 
@@ -64,31 +69,24 @@ public class ReindexRunner implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) throws Exception {
+    Collection<Filter> filters = PipelineUtils.getDateFilters(args);
     Map<String, Future<Void>> futures = new HashMap<>();
-    boolean periodicRun = false;
+
     ExecutorService executor = null;
-
-    if (args.getOptionNames().contains("periodicRun")) {
-      if (args.getOptionValues("periodicRun").iterator().next().equalsIgnoreCase("true")) {
-        periodicRun = true;
-      }
-    }
-
     try {
       executor = Executors.newFixedThreadPool(128);
 
       final Query query = new Query();
-
-      if (periodicRun) {
-        final Instant current = Instant.now();
-        final Instant now =
-            Instant.parse(
-                DateTimeFormatter.ISO_INSTANT.format(current.minus(24, ChronoUnit.HOURS)));
-        final Instant then = Instant.parse(DateTimeFormatter.ISO_INSTANT.format(current));
-
-        LOGGER.info("From " + now + " to " + then);
-
-        query.addCriteria(Criteria.where("update").gte(now).lt(then));
+      try {
+        DateRangeFilter filter = (DateRangeFilter) filters.stream()
+            .findFirst()
+            .orElseThrow(() -> new IncompleteArgumentException("Filters not found"));
+        DateRangeFilter.DateRange dateRange = filter.getContent()
+            .orElseThrow(() -> new IncompleteArgumentException("Filters not found"));
+        query.addCriteria(Criteria.where("update").gte(dateRange.getFrom()).lt(dateRange.getUntil()));
+        LOGGER.info("Found date filters. Starting reindex from " + dateRange.getFrom() + " to " + dateRange.getUntil());
+      } catch (IncompleteArgumentException e) {
+        LOGGER.warn("Date filters are not present. Starting reindex from the beginning of time.");
       }
 
       try (CloseableIterator<MongoSample> it = mongoOperations.stream(query, MongoSample.class)) {
