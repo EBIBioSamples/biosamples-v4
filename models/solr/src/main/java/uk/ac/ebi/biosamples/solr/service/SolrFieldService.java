@@ -28,7 +28,6 @@ import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 @Service
 public class SolrFieldService {
 
-  //    private Logger log = LoggerFactory.getLogger(getClass());
   private List<SolrSampleField> solrFieldList;
 
   @Autowired

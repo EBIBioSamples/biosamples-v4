@@ -33,18 +33,21 @@ public class StructuredDataService {
       mongoStructuredDataToStructuredDataConverter;
   private final StructuredDataToMongoStructuredDataConverter
       structuredDataToMongoStructuredDataConverter;
+  private final MessagingService messagingService;
 
   public StructuredDataService(
       MongoSampleRepository mongoSampleRepository,
       MongoStructuredDataRepository mongoStructuredDataRepository,
       MongoStructuredDataToStructuredDataConverter mongoStructuredDataToStructuredDataConverter,
-      StructuredDataToMongoStructuredDataConverter structuredDataToMongoStructuredDataConverter) {
+      StructuredDataToMongoStructuredDataConverter structuredDataToMongoStructuredDataConverter,
+      MessagingService messagingService) {
     this.mongoSampleRepository = mongoSampleRepository;
     this.mongoStructuredDataRepository = mongoStructuredDataRepository;
     this.mongoStructuredDataToStructuredDataConverter =
         mongoStructuredDataToStructuredDataConverter;
     this.structuredDataToMongoStructuredDataConverter =
         structuredDataToMongoStructuredDataConverter;
+    this.messagingService = messagingService;
   }
 
   public Optional<StructuredData> getStructuredData(String accession) {
@@ -79,6 +82,7 @@ public class StructuredDataService {
         structuredDataToMongoStructuredDataConverter.convert(structuredData);
     mongoStructuredData = mongoStructuredDataRepository.save(mongoStructuredData);
 
+    messagingService.fetchThenSendMessage(structuredData.getAccession());
     return mongoStructuredDataToStructuredDataConverter.convert(mongoStructuredData);
   }
 

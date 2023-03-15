@@ -99,6 +99,7 @@ public class MessageHandlerSolr {
               solrSample.getOutgoingRelationships(),
               solrSample.getIncomingRelationships(),
               solrSample.getExternalReferencesData(),
+              solrSample.getStructuredData(),
               solrSample.getKeywords());
 
       // expand ontology terms from OLS // todo move this expansion somewhere else

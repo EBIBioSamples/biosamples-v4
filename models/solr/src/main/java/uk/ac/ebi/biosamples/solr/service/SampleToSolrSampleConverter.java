@@ -11,20 +11,17 @@
 package uk.ac.ebi.biosamples.solr.service;
 
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.service.ExternalReferenceService;
 import uk.ac.ebi.biosamples.service.SampleRelationshipUtils;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
@@ -46,6 +43,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
     Map<String, List<String>> outgoingRelationships = new HashMap<>();
     Map<String, List<String>> incomingRelationships = new HashMap<>();
     Map<String, List<String>> externalReferencesData = new HashMap<>();
+    Set<String> structuredData = new HashSet<>();
     List<String> keywords = new ArrayList<>();
 
     /* attributeValues.put(SolrFieldService.encodeFieldName("name"), Collections.singletonList(sample.getName().toLowerCase()));
@@ -192,6 +190,27 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
       }
     }
 
+    // Add structured data
+    Set<StructuredDataTable> structuredDataSet = sample.getStructuredData();
+    if (!CollectionUtils.isEmpty(structuredDataSet)) {
+      String key = "structured_data";
+      for (StructuredDataTable sd : structuredDataSet) {
+        keywords.add(sd.getType().toLowerCase());
+        structuredData.add(sd.getType());
+
+        if (!attributeValues.containsKey(key)) {
+          attributeValues.put(key, new ArrayList<>());
+        }
+        attributeValues.get(key).add(sd.getType());
+
+        for (Map<String, StructuredDataEntry> sdMap : sd.getContent()) {
+          for (Map.Entry<String, StructuredDataEntry> sdMapEntry : sdMap.entrySet()) {
+            keywords.addAll(Arrays.asList(sdMapEntry.getKey(), sdMapEntry.getValue().getValue()));
+          }
+        }
+      }
+    }
+
     String releaseSolr = DateTimeFormatter.ISO_INSTANT.format(sample.getRelease());
     String updateSolr = DateTimeFormatter.ISO_INSTANT.format(sample.getUpdate());
 
@@ -233,6 +252,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
         outgoingRelationships,
         incomingRelationships,
         externalReferencesData,
+        structuredData,
         keywords);
   }
 
