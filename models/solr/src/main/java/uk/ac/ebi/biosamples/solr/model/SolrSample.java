@@ -108,9 +108,6 @@ public class SolrSample {
   @Indexed(name = "facetfields_ss")
   protected List<String> facetFields;
 
-  @Indexed(name = "structured_ss")
-  protected Set<String> structuredData;
-
   /** This field is required to store the ontology expansion and attributes from related samples */
   @Indexed(name = "keywords_ss")
   protected List<String> keywords;
@@ -176,11 +173,6 @@ public class SolrSample {
   public Map<String, List<String>> getOutgoingRelationships() {
     return outgoingRelationships;
   }
-
-  public Set<String> getStructuredData() {
-    return structuredData;
-  }
-
   public List<String> getKeywords() {
     return keywords;
   }
@@ -231,7 +223,6 @@ public class SolrSample {
       Map<String, List<String>> outgoingRelationships,
       Map<String, List<String>> incomingRelationships,
       Map<String, List<String>> externalReferencesData,
-      Set<String> structuredData,
       List<String> keywords) {
 
     // TODO validate maps
@@ -260,7 +251,6 @@ public class SolrSample {
     sample.incomingRelationships = incomingRelationships;
     sample.outgoingRelationships = outgoingRelationships;
     sample.externalReferencesData = externalReferencesData;
-    sample.structuredData = structuredData;
 
     SortedSet<String> facetFieldSet = new TreeSet<>();
     if (attributeValues != null && !attributeValues.keySet().isEmpty()) {
@@ -286,11 +276,6 @@ public class SolrSample {
         facetFieldSet.add(externalReferencesDataKey + "_erd_ss");
       }
     }
-
-    if (!CollectionUtils.isEmpty(structuredData)) {
-      facetFieldSet.add("structured_ss");
-    }
-
 
     sample.facetFields = new ArrayList<>(facetFieldSet);
 

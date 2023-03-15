@@ -25,8 +25,7 @@ public enum FilterType {
   DOMAIN_FILTER("dom", DomainFilter.Builder.class),
   DATE_FILTER("dt", DateRangeFilter.DateRangeFilterBuilder.class),
   EXTERNAL_REFERENCE_DATA_FILTER("extd", ExternalReferenceDataFilter.Builder.class),
-  ACCESSION_FILTER("acc", AccessionFilter.Builder.class),
-  STRUCTURED_DATA_FILTER("structured", StructuredDataFilter.Builder.class);
+  ACCESSION_FILTER("acc", AccessionFilter.Builder.class);
 
   private static List<FilterType> filterTypesByLength = new ArrayList<>();
 
