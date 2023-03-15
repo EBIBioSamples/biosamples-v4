@@ -69,9 +69,6 @@ public class FilterBuilder {
 
   public Filter buildFromString(String serializedFilter) {
     FilterType filterType = FilterType.ofFilterString(serializedFilter);
-    /* if (filterType != FilterType.ACCESSION_FILTER) {
-      serializedFilter = serializedFilter.toLowerCase();
-    }*/
     List<String> filterParts = filterParts(serializedFilter);
 
     if (filterParts.size() > 2) {

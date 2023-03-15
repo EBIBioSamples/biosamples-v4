@@ -10,9 +10,15 @@
 */
 package uk.ac.ebi.biosamples;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +32,7 @@ import org.springframework.data.util.CloseableIterator;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleStatus;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+import uk.ac.ebi.biosamples.utils.PipelineUtils;
 import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -95,7 +102,8 @@ public class ReindexRunnerTest {
             null,
             Collections.EMPTY_SET,
             Collections.EMPTY_SET);
-    when(mongoOperations.stream(new Query(), MongoSample.class)).thenReturn(samples);
+
+    when(mongoOperations.stream(any(), eq(MongoSample.class))).thenReturn(samples);
     when(sampleReadService.fetch("ACCESSION1", Optional.empty())).thenReturn(Optional.of(sample1));
     when(sampleReadService.fetch("ACCESSION2", Optional.empty())).thenReturn(Optional.empty());
     when(sampleReadService.fetch("ACCESSION3", Optional.empty()))

@@ -31,7 +31,7 @@ import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 @Service
 public class SolrFacetService {
-  private static final int TIMEALLOWED = 55;
+  private static final int TIME_ALLOWED = 55;
   private final SolrSampleRepository solrSampleRepository;
   private final SolrFieldService solrFieldService;
   private final SolrFilterService solrFilterService;
@@ -60,22 +60,25 @@ public class SolrFacetService {
       query = new SimpleFacetQuery(new Criteria().expression("*:*")); // default to search all
       isLandingPage = filters.isEmpty();
     } else {
-      String lowerCasedSearchTerm = searchTerm.toLowerCase();
+      String lowerCasedSearchTerm = searchTerm.toLowerCase().replace("\\", "");
+
       // search for copied fields keywords_ss
-      query =
-          new SimpleFacetQuery(new Criteria().expression("keywords_ss:" + lowerCasedSearchTerm));
+      query = new SimpleFacetQuery();
+      Criteria searchCriteria = new Criteria("keywords_ss").fuzzy(lowerCasedSearchTerm);
+      searchCriteria.setPartIsOr(true);
+      query.addCriteria(searchCriteria);
 
       // boosting accession to bring accession matches to the top
       Criteria boostId = new Criteria("id").is(searchTerm).boost(5);
       boostId.setPartIsOr(true);
       query.addCriteria(boostId);
 
-      // boosting name to bring accession matches to the top
+      // boosting name to bring name matches to the top
       Criteria boostName = new Criteria("name_s").is(searchTerm).boost(3);
       boostName.setPartIsOr(true);
       query.addCriteria(boostName);
     }
-    query.setTimeAllowed(TIMEALLOWED * 1000); // some facet queries could take longer to return
+    query.setTimeAllowed(TIME_ALLOWED * 1000); // some facet queries could take longer to return
 
     // Add domains and release date filters
     Optional<FilterQuery> domainAndPublicFilterQuery =

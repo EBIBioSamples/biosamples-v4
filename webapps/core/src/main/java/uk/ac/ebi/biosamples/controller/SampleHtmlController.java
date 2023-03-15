@@ -158,19 +158,7 @@ public class SampleHtmlController {
     model.addAttribute("jsonLD", jsonLDService.jsonLDToString(jsonLDDataset));
     model.addAttribute("downloadURL", downloadURL);
 
-    // Note - EBI load balancer does cache but doesn't add age header, so clients could cache up
-    // to
-    // twice this age
-    final CacheControl cacheControl =
-        CacheControl.maxAge(
-            bioSamplesProperties.getBiosamplesCorePageCacheMaxAge(), TimeUnit.SECONDS);
-    // if the user has access to any domains, then mark the response as private as must be using
-    // AAP
-    // and responses will be different
-    if (!domains.isEmpty()) {
-      cacheControl.cachePrivate();
-    }
-    response.setHeader("Cache-Control", cacheControl.getHeaderValue());
+    addCacheControlHeadersToResponse(domains, response, bioSamplesProperties.getBiosamplesCorePageCacheMaxAge());
     return "samples";
   }
 
@@ -211,23 +199,9 @@ public class SampleHtmlController {
     Collections.sort(filtersList);
 
     model.addAttribute("filters", filtersList);
-    // default to getting 10 values from 10 facets
     model.addAttribute("facets", facetService.getFacets(text, filterCollection, domains, 20, 10));
 
-    // Note - EBI load balancer does cache but doesn't add age header, so clients could cache up
-    // to
-    // twice this age
-    final CacheControl cacheControl =
-        CacheControl.maxAge(
-            bioSamplesProperties.getBiosamplesCoreFacetCacheMaxAge(), TimeUnit.SECONDS);
-    // if the user has access to any domains, then mark the response as private as must be using
-    // AAP
-    // and responses will be different
-    if (!domains.isEmpty()) {
-      cacheControl.cachePrivate();
-    }
-
-    response.setHeader("Cache-Control", cacheControl.getHeaderValue());
+    addCacheControlHeadersToResponse(domains, response, bioSamplesProperties.getBiosamplesCoreFacetCacheMaxAge());
     return "fragments/facets";
   }
 
@@ -313,7 +287,7 @@ public class SampleHtmlController {
   private static class Pagination {
     public final int page;
     public final String url;
-    final boolean skip;
+    public final boolean skip;
     public final boolean current;
 
     Pagination(
@@ -352,35 +326,17 @@ public class SampleHtmlController {
     model.addAttribute("sample", sample.get());
     model.addAttribute("schemaStoreUrl", bioSamplesProperties.getSchemaStore());
     model.addAttribute("jsonLD", jsonLDString);
-    // becuase thymleaf can only work with timezoned temporals, not instant
-    // we need to do the conversion
+
     model.addAttribute("update", sample.get().getUpdate().atOffset(ZoneOffset.UTC));
     model.addAttribute("release", sample.get().getRelease().atOffset(ZoneOffset.UTC));
     model.addAttribute("create", sample.get().getCreate().atOffset(ZoneOffset.UTC));
 
-    final Instant submitted = sample.get().getSubmitted();
+    Instant submitted = sample.get().getSubmitted();
+    model.addAttribute("submitted", submitted != null ? submitted.atOffset(ZoneOffset.UTC) : null);
+    Instant reviewed = sample.get().getReviewed();
+    model.addAttribute("reviewed", reviewed != null ? reviewed.atOffset(ZoneOffset.UTC) : null);
 
-    if (submitted != null) {
-      model.addAttribute("submitted", submitted.atOffset(ZoneOffset.UTC));
-    } else {
-      model.addAttribute("submitted", null);
-    }
-
-    final Instant reviewed = sample.get().getReviewed();
-
-    if (reviewed != null) {
-      model.addAttribute("reviewed", reviewed.atOffset(ZoneOffset.UTC));
-    } else {
-      model.addAttribute("reviewed", null);
-    }
-
-    // Note - EBI load balancer does cache but doesn't add age header, so clients could cache up
-    // to
-    // twice this age
-    final CacheControl cacheControl = CacheControl.maxAge(10, TimeUnit.SECONDS);
-
-    response.setHeader("Cache-Control", cacheControl.getHeaderValue());
-
+    addCacheControlHeadersToResponse(new ArrayList<>(), response, 10);
     return "sample";
   }
 
@@ -412,5 +368,17 @@ public class SampleHtmlController {
   @GetMapping("/groups")
   public String groups() {
     return "redirect:/samples";
+  }
+
+  private void addCacheControlHeadersToResponse(final Collection<String> domains,
+                                                final HttpServletResponse response, long maxAge) {
+    // EBI load balancer does cache but doesn't add age header, so clients could cache up to twice this age
+    CacheControl cacheControl = CacheControl.maxAge(maxAge, TimeUnit.SECONDS);
+    // if the user has access to any domains, then mark the response as
+    // private as must be using AAP and responses will be different
+    if (domains != null && !domains.isEmpty()) {
+      cacheControl.cachePrivate();
+    }
+    response.setHeader("Cache-Control", cacheControl.getHeaderValue());
   }
 }

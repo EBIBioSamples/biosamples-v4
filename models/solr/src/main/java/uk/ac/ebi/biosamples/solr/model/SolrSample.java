@@ -24,6 +24,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.solr.core.mapping.Dynamic;
 import org.springframework.data.solr.core.mapping.Indexed;
 import org.springframework.data.solr.core.mapping.SolrDocument;
+import org.springframework.util.CollectionUtils;
 import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
 
 @SolrDocument(solrCoreName = "samples")
@@ -106,7 +107,6 @@ public class SolrSample {
    */
   @Indexed(name = "facetfields_ss")
   protected List<String> facetFields;
-  // TODO consider renaming as used only for faceting
 
   /** This field is required to store the ontology expansion and attributes from related samples */
   @Indexed(name = "keywords_ss")
@@ -173,7 +173,6 @@ public class SolrSample {
   public Map<String, List<String>> getOutgoingRelationships() {
     return outgoingRelationships;
   }
-
   public List<String> getKeywords() {
     return keywords;
   }

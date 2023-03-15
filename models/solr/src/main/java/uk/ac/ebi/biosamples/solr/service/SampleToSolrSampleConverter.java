@@ -11,20 +11,17 @@
 package uk.ac.ebi.biosamples.solr.service;
 
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.service.ExternalReferenceService;
 import uk.ac.ebi.biosamples.service.SampleRelationshipUtils;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
@@ -48,15 +45,10 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
     Map<String, List<String>> externalReferencesData = new HashMap<>();
     List<String> keywords = new ArrayList<>();
 
-    /* attributeValues.put(SolrFieldService.encodeFieldName("name"), Collections.singletonList(sample.getName().toLowerCase()));
-    attributeValues.put(SolrFieldService.encodeFieldName("accession"), Collections.singletonList(sample.getAccession().toLowerCase()));*/
-
     if (sample.getCharacteristics() != null && sample.getCharacteristics().size() > 0) {
 
       for (Attribute attr : sample.getCharacteristics()) {
-
         final String key = SolrFieldService.encodeFieldName(attr.getType());
-        // key = SolrSampleService.attributeTypeToField(key);
 
         String value = attr.getValue();
         // if its longer than 255 characters, don't add it to solr
@@ -74,9 +66,6 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
           value = value + " (" + attr.getUnit() + ")";
         }
         attributeValues.get(key).add(value);
-        //        if (!value.equals(value.toLowerCase())) {
-        //          attributeValues.get(key).add(value.toLowerCase());
-        //        }
 
         // TODO this can't differentiate which iris go with which attribute if there
         // are multiple attributes with the same type
@@ -104,21 +93,6 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
         }
       }
     }
-
-    //  Extract the abstract data type and add them as characteristics in solr
-    sample
-        .getData()
-        .parallelStream()
-        .forEach(
-            abstractData -> {
-              String key = SolrFieldService.encodeFieldName("structured data");
-
-              if (!attributeValues.containsKey(key)) {
-                attributeValues.put(key, new ArrayList<>());
-              }
-
-              attributeValues.get(key).add(abstractData.getDataType().name());
-            });
 
     // turn external reference into additional attributes for facet & filter
     for (ExternalReference externalReference : sample.getExternalReferences()) {
@@ -189,6 +163,25 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
         }
         incomingRelationships.get(key).add(rel.getSource());
         attributeValues.get(attributeValueKey).add(rel.getSource());
+      }
+    }
+
+    // Add structured data
+    Set<StructuredDataTable> structuredDataSet = sample.getStructuredData();
+    if (!CollectionUtils.isEmpty(structuredDataSet)) {
+      String key = SolrFieldService.encodeFieldName("structured data");
+      for (StructuredDataTable sd : structuredDataSet) {
+        keywords.add(sd.getType().toLowerCase());
+        if (!attributeValues.containsKey(key)) {
+          attributeValues.put(key, new ArrayList<>());
+        }
+        attributeValues.get(key).add(sd.getType());
+
+        for (Map<String, StructuredDataEntry> sdMap : sd.getContent()) {
+          for (Map.Entry<String, StructuredDataEntry> sdMapEntry : sdMap.entrySet()) {
+            keywords.addAll(Arrays.asList(sdMapEntry.getKey(), sdMapEntry.getValue().getValue().toLowerCase()));
+          }
+        }
       }
     }
 
