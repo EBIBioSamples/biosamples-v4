@@ -48,7 +48,7 @@ public class EnaImportCallable implements Callable<Void> {
 
   @Override
   public Void call() {
-    Sample sample = null;
+    Sample sample;
 
     if (egaId != null && !egaId.isEmpty()) {
       return egaSampleExporter.populateAndSubmitEgaData(egaId);

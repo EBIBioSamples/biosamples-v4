@@ -132,7 +132,7 @@ public class EnaImportRunner implements ApplicationRunner {
       final EraRowCallbackHandler eraRowCallbackHandler =
           new EraRowCallbackHandler(null, enaImportCallableFactory, futures);
 
-      eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
+      getEnaSamplesFromEraDatabase(fromDate, toDate, eraRowCallbackHandler);
 
       final NcbiRowCallbackHandler ncbiRowCallbackHandler =
           new NcbiRowCallbackHandler(null, ncbiCallableFactory, futures);
@@ -150,7 +150,7 @@ public class EnaImportRunner implements ApplicationRunner {
         final EraRowCallbackHandler eraRowCallbackHandler =
             new EraRowCallbackHandler(executorService, enaImportCallableFactory, futures);
 
-        eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
+        getEnaSamplesFromEraDatabase(fromDate, toDate, eraRowCallbackHandler);
 
         final NcbiRowCallbackHandler ncbiRowCallbackHandler =
             new NcbiRowCallbackHandler(executorService, ncbiCallableFactory, futures);
@@ -159,6 +159,29 @@ public class EnaImportRunner implements ApplicationRunner {
 
         log.info("waiting for futures"); // wait for anything to finish
         ThreadUtils.checkFutures(futures, 0);
+      }
+    }
+  }
+
+  private void getEnaSamplesFromEraDatabase(
+      final LocalDate fromDate,
+      final LocalDate toDate,
+      final EraRowCallbackHandler eraRowCallbackHandler) {
+    final int MAX_RETRIES = 5;
+    boolean success = false;
+    int numRetry = 0;
+
+    while (!success) {
+      try {
+        eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
+
+        success = true;
+      } catch (final Exception e) {
+        log.error("Fetching from ERAPRO failed with exception - retry ", e);
+
+        if (++numRetry == MAX_RETRIES) {
+          throw new RuntimeException("Permanent failure in fetching samples from ERAPRO");
+        }
       }
     }
   }

@@ -313,7 +313,7 @@ public class SampleHtmlController {
   private static class Pagination {
     public final int page;
     public final String url;
-    final boolean skip;
+    public final boolean skip;
     public final boolean current;
 
     Pagination(
