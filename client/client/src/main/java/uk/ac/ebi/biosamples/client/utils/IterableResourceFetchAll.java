@@ -46,13 +46,13 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
   private final String jwt;
 
   public IterableResourceFetchAll(
-      ExecutorService executor,
-      Traverson traverson,
-      RestOperations restOperations,
-      ParameterizedTypeReference<PagedModel<EntityModel<T>>> parameterizedTypeReference,
-      String jwt,
-      MultiValueMap<String, String> params,
-      String... rels) {
+      final ExecutorService executor,
+      final Traverson traverson,
+      final RestOperations restOperations,
+      final ParameterizedTypeReference<PagedModel<EntityModel<T>>> parameterizedTypeReference,
+      final String jwt,
+      final MultiValueMap<String, String> params,
+      final String... rels) {
     this(
         executor,
         traverson,
@@ -64,13 +64,13 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
   }
 
   public IterableResourceFetchAll(
-      ExecutorService executor,
-      Traverson traverson,
-      RestOperations restOperations,
-      ParameterizedTypeReference<PagedModel<EntityModel<T>>> parameterizedTypeReference,
-      String jwt,
-      MultiValueMap<String, String> params,
-      Hop... hops) {
+      final ExecutorService executor,
+      final Traverson traverson,
+      final RestOperations restOperations,
+      final ParameterizedTypeReference<PagedModel<EntityModel<T>>> parameterizedTypeReference,
+      final String jwt,
+      final MultiValueMap<String, String> params,
+      final Hop... hops) {
     this.executor = executor;
     this.traverson = traverson;
     this.restOperations = restOperations;
@@ -80,10 +80,11 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
     this.jwt = jwt;
   }
 
+  @Override
   public Iterator<EntityModel<T>> iterator() {
 
     TraversalBuilder traversonBuilder = null;
-    for (Hop hop : hops) {
+    for (final Hop hop : hops) {
       if (traversonBuilder == null) {
         traversonBuilder = traverson.follow(hop);
       } else {
@@ -92,16 +93,16 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
     }
 
     // get the first page
-    URI uri =
+    final URI uri =
         UriComponentsBuilder.fromHttpUrl(traversonBuilder.asLink().getHref())
             .queryParams(params)
             .build()
             .toUri();
 
-    RequestEntity<Void> requestEntity =
+    final RequestEntity<Void> requestEntity =
         IteratorResourceFetchAll.NextPageCallable.buildRequestEntity(jwt, uri);
 
-    ResponseEntity<PagedModel<EntityModel<T>>> responseEntity =
+    final ResponseEntity<PagedModel<EntityModel<T>>> responseEntity =
         restOperations.exchange(requestEntity, parameterizedTypeReference);
     return new IteratorResourceFetchAll<>(
         Objects.requireNonNull(responseEntity.getBody()),
@@ -112,7 +113,7 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
   }
 
   private static class IteratorResourceFetchAll<U> implements Iterator<EntityModel<U>> {
-    private Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final RestOperations restOperations;
     private final ExecutorService executor;
@@ -122,15 +123,15 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
     private Future<PagedModel<EntityModel<U>>> nextPageFuture;
     private final String jwt;
 
-    public IteratorResourceFetchAll(
-        PagedModel<EntityModel<U>> page,
-        RestOperations restOperations,
-        ParameterizedTypeReference<PagedModel<EntityModel<U>>> parameterizedTypeReference,
-        ExecutorService executor,
-        String jwt) {
+    IteratorResourceFetchAll(
+        final PagedModel<EntityModel<U>> page,
+        final RestOperations restOperations,
+        final ParameterizedTypeReference<PagedModel<EntityModel<U>>> parameterizedTypeReference,
+        final ExecutorService executor,
+        final String jwt) {
 
       this.page = page;
-      this.pageIterator = page.iterator();
+      pageIterator = page.iterator();
       this.restOperations = restOperations;
       this.executor = executor;
       this.parameterizedTypeReference = parameterizedTypeReference;
@@ -142,11 +143,11 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
       // pre-emptively grab the next page as a future
       if (nextPageFuture == null && page.hasLink(IanaLinkRelations.NEXT)) {
 
-        Link nextLink = page.getLink(IanaLinkRelations.NEXT).get();
+        final Link nextLink = page.getLink(IanaLinkRelations.NEXT).get();
 
-        URI uri;
+        final URI uri;
         if (nextLink.isTemplated()) {
-          UriTemplate uriTemplate = new UriTemplate(nextLink.getHref());
+          final UriTemplate uriTemplate = new UriTemplate(nextLink.getHref());
           uri = uriTemplate.expand();
         } else {
           uri = URI.create(nextLink.getHref());
@@ -166,7 +167,7 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
         try {
           page = nextPageFuture.get();
           nextPageFuture = null;
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (final InterruptedException | ExecutionException e) {
           throw new RuntimeException(e);
         }
         pageIterator = page.iterator();
@@ -187,7 +188,7 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
           page = nextPageFuture.get();
           pageIterator = page.iterator();
           nextPageFuture = null;
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (final InterruptedException | ExecutionException e) {
           throw new RuntimeException(e);
         }
         if (pageIterator.hasNext()) {
@@ -205,11 +206,11 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
           parameterizedTypeReference;
       private final String jwt;
 
-      public NextPageCallable(
-          RestOperations restOperations,
-          ParameterizedTypeReference<PagedModel<EntityModel<V>>> parameterizedTypeReference,
-          URI uri,
-          String jwt) {
+      NextPageCallable(
+          final RestOperations restOperations,
+          final ParameterizedTypeReference<PagedModel<EntityModel<V>>> parameterizedTypeReference,
+          final URI uri,
+          final String jwt) {
         this.restOperations = restOperations;
         this.uri = uri;
         this.parameterizedTypeReference = parameterizedTypeReference;
@@ -218,15 +219,15 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
 
       @Override
       public PagedModel<EntityModel<V>> call() {
-        RequestEntity<Void> requestEntity = buildRequestEntity(jwt, uri);
-        ResponseEntity<PagedModel<EntityModel<V>>> responseEntity =
+        final RequestEntity<Void> requestEntity = buildRequestEntity(jwt, uri);
+        final ResponseEntity<PagedModel<EntityModel<V>>> responseEntity =
             restOperations.exchange(requestEntity, parameterizedTypeReference);
 
         return responseEntity.getBody();
       }
 
-      private static RequestEntity<Void> buildRequestEntity(String jwt, URI uri) {
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+      private static RequestEntity<Void> buildRequestEntity(final String jwt, final URI uri) {
+        final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
 
         if (jwt != null) {

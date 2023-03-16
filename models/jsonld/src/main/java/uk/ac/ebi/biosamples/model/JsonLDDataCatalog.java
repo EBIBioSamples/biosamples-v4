@@ -63,22 +63,22 @@ public class JsonLDDataCatalog implements BioschemasObject {
   private final Map<String, String> sourceOrganization;
 
   public JsonLDDataCatalog() {
-    this.description =
+    description =
         "BioSamples stores and supplies descriptions and metadata about biological samples "
             + "used in research and development by academia and industry. "
             + "Samples are either 'reference' samples (e.g. from 1000 Genomes, HipSci, FAANG) "
             + "or have been used in an assay database such as the European Nucleotide Archive (ENA) or ArrayExpress.";
-    this.keywords = "samples, sample metadata";
-    this.provider = getBiosamplesProvider();
-    this.name = "BioSamples database";
-    this.url = "https://www.ebi.ac.uk/biosamples";
-    this.dataset = getDefaultBioSamplesDataset();
-    this.publication = getBioSamplesPublication();
-    this.sourceOrganization = getBioSamplesSourceOrganization();
+    keywords = "samples, sample metadata";
+    provider = getBiosamplesProvider();
+    name = "BioSamples database";
+    url = "https://www.ebi.ac.uk/biosamples";
+    dataset = getDefaultBioSamplesDataset();
+    publication = getBioSamplesPublication();
+    sourceOrganization = getBioSamplesSourceOrganization();
   }
 
   private Map<String, String> getBioSamplesSourceOrganization() {
-    Map<String, String> sourceOrganization = new HashMap<>();
+    final Map<String, String> sourceOrganization = new HashMap<>();
     sourceOrganization.put("@type", "Organization");
     sourceOrganization.put("name", "The European Bioinformatics Institute (EMBL-EBI)");
     sourceOrganization.put("url", "https://www.ebi.ac.uk/");
@@ -86,8 +86,8 @@ public class JsonLDDataCatalog implements BioschemasObject {
   }
 
   private List<Map<String, String>> getBioSamplesPublication() {
-    List<Map<String, String>> publication = new ArrayList<>();
-    Map<String, String> publicationEntry = new HashMap<>();
+    final List<Map<String, String>> publication = new ArrayList<>();
+    final Map<String, String> publicationEntry = new HashMap<>();
     publicationEntry.put("@type", "PublicationEvent");
     publicationEntry.put(
         "name", "Updates to BioSamples database at European Bioinformatics Institute");
@@ -97,8 +97,8 @@ public class JsonLDDataCatalog implements BioschemasObject {
   }
 
   private List<Map<String, String>> getDefaultBioSamplesDataset() {
-    List<Map<String, String>> dataset = new ArrayList<Map<String, String>>();
-    Map<String, String> datasetEntry = new HashMap<String, String>();
+    final List<Map<String, String>> dataset = new ArrayList<>();
+    final Map<String, String> datasetEntry = new HashMap<>();
     datasetEntry.put("@type", "Dataset");
     datasetEntry.put("@id", "https://www.ebi.ac.uk/biosamples/samples");
     dataset.add(datasetEntry);
@@ -106,7 +106,7 @@ public class JsonLDDataCatalog implements BioschemasObject {
   }
 
   private Map<String, String> getBiosamplesProvider() {
-    Map<String, String> provider = new HashMap<>();
+    final Map<String, String> provider = new HashMap<>();
     provider.put("@type", "Organization");
     provider.put("name", "BioSamples");
     provider.put("email", "biosamples@ebi.ac.uk");
@@ -114,8 +114,8 @@ public class JsonLDDataCatalog implements BioschemasObject {
   }
 
   @JsonProperty("provider")
-  private final Map<String, String> getProvider() {
-    return this.provider;
+  private Map<String, String> getProvider() {
+    return provider;
   }
 
   public List<Map<String, String>> getDataset() {
@@ -123,9 +123,9 @@ public class JsonLDDataCatalog implements BioschemasObject {
   }
 
   @JsonProperty("dataset")
-  public JsonLDDataCatalog datasetUrl(String datasetUrl) {
+  public JsonLDDataCatalog datasetUrl(final String datasetUrl) {
     List<Map<String, String>> allDatasets = getDefaultBioSamplesDataset();
-    Map dataset = allDatasets.get(0);
+    final Map dataset = allDatasets.get(0);
     dataset.put("@id", datasetUrl);
     allDatasets = new ArrayList<>();
     allDatasets.add(dataset);
@@ -138,7 +138,7 @@ public class JsonLDDataCatalog implements BioschemasObject {
     return url;
   }
 
-  public JsonLDDataCatalog url(String url) {
+  public JsonLDDataCatalog url(final String url) {
     this.url = url;
     return this;
   }

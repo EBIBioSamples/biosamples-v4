@@ -28,7 +28,7 @@ public class Recommendation {
   private List<Suggestion> suggestions;
 
   @JsonPropertyOrder({"certification_checklist_id", "suggestions"})
-  public Recommendation(String certificationChecklistID, List<Suggestion> suggestions) {
+  public Recommendation(final String certificationChecklistID, final List<Suggestion> suggestions) {
     this.certificationChecklistID = certificationChecklistID;
     this.suggestions = suggestions;
   }
@@ -39,7 +39,7 @@ public class Recommendation {
     return certificationChecklistID;
   }
 
-  public void setCertificationChecklistID(String certificationChecklistID) {
+  public void setCertificationChecklistID(final String certificationChecklistID) {
     this.certificationChecklistID = certificationChecklistID;
   }
 
@@ -47,15 +47,15 @@ public class Recommendation {
     return suggestions;
   }
 
-  public void setSuggestions(List<Suggestion> suggestions) {
+  public void setSuggestions(final List<Suggestion> suggestions) {
     this.suggestions = suggestions;
   }
 
-  public String applySuggestion(SampleDocument sampleDocument, Suggestion suggestion) {
-    JSONObject jsonObject = new JSONObject(sampleDocument.getDocument());
-    JSONObject sampleCharacteristics = jsonObject.getJSONObject("characteristics");
-    String[] targetCharateristic = suggestion.getCharacteristic();
-    AtomicBoolean mandatoryPresent = new AtomicBoolean(false);
+  public String applySuggestion(final SampleDocument sampleDocument, final Suggestion suggestion) {
+    final JSONObject jsonObject = new JSONObject(sampleDocument.getDocument());
+    final JSONObject sampleCharacteristics = jsonObject.getJSONObject("characteristics");
+    final String[] targetCharateristic = suggestion.getCharacteristic();
+    final AtomicBoolean mandatoryPresent = new AtomicBoolean(false);
 
     Arrays.asList(targetCharateristic)
         .forEach(
@@ -87,10 +87,14 @@ public class Recommendation {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof Recommendation)) return false;
-    Recommendation that = (Recommendation) o;
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Recommendation)) {
+      return false;
+    }
+    final Recommendation that = (Recommendation) o;
     return Objects.equals(getCertificationChecklistID(), that.getCertificationChecklistID())
         && Objects.equals(getSuggestions(), that.getSuggestions());
   }

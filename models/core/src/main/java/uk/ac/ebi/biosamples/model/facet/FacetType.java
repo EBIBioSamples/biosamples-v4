@@ -22,20 +22,20 @@ public enum FacetType {
       "external reference data", ExternalReferenceDataFacet.Builder.class),
   NO_TYPE("", null);
 
-  private String name;
-  private Class<? extends Facet.Builder> associatedClass;
+  private final String name;
+  private final Class<? extends Facet.Builder> associatedClass;
 
-  FacetType(String name, Class<? extends Facet.Builder> associatedClass) {
+  FacetType(final String name, final Class<? extends Facet.Builder> associatedClass) {
     this.name = name;
     this.associatedClass = associatedClass;
   }
 
-  public Facet.Builder getBuilderForLabelAndCount(String facetLabel, Long facetCount) {
+  public Facet.Builder getBuilderForLabelAndCount(final String facetLabel, final Long facetCount) {
     try {
-      return this.associatedClass
+      return associatedClass
           .getConstructor(String.class, Long.class)
           .newInstance(facetLabel, facetCount);
-    } catch (NoSuchMethodException
+    } catch (final NoSuchMethodException
         | IllegalAccessException
         | InstantiationException
         | InvocationTargetException e) {
@@ -45,6 +45,6 @@ public enum FacetType {
 
   @JsonValue
   public String getFacetName() {
-    return this.name.toLowerCase();
+    return name.toLowerCase();
   }
 }

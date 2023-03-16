@@ -12,11 +12,7 @@ package uk.ac.ebi.biosamples.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 
 /** @author mrelac */
 @XmlAccessorType(value = XmlAccessType.NONE)
@@ -25,7 +21,7 @@ public class XmlSitemapSet {
   @XmlElements({@XmlElement(name = "model", type = XmlSitemap.class)})
   private final Collection<XmlSitemap> xmlSitemaps = new ArrayList();
 
-  public void addSitemap(XmlSitemap xmlSitemap) {
+  public void addSitemap(final XmlSitemap xmlSitemap) {
     xmlSitemaps.add(xmlSitemap);
   }
 

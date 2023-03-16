@@ -28,10 +28,10 @@ public class CuramiRecommendation {
   private SortedSet<String> unknownAttributes;
 
   private CuramiRecommendation(
-      int quality,
-      SortedSet<String> knownAttributes,
-      SortedSet<AttributeRecommendation> attributeRecommendations,
-      SortedSet<String> unknownAttributes) {
+      final int quality,
+      final SortedSet<String> knownAttributes,
+      final SortedSet<AttributeRecommendation> attributeRecommendations,
+      final SortedSet<String> unknownAttributes) {
     this.quality = quality;
     this.knownAttributes = knownAttributes;
     this.attributeRecommendations = attributeRecommendations;
@@ -61,27 +61,27 @@ public class CuramiRecommendation {
     private SortedSet<String> missingAttributes;
 
     public Builder() {
-      this.goodAttributes = new TreeSet<>();
-      this.badAttributes = new TreeSet<>();
-      this.missingAttributes = new TreeSet<>();
+      goodAttributes = new TreeSet<>();
+      badAttributes = new TreeSet<>();
+      missingAttributes = new TreeSet<>();
     }
 
-    public Builder withQuality(int quality) {
+    public Builder withQuality(final int quality) {
       this.quality = Math.min(Math.max(quality, 0), 100);
       return this;
     }
 
-    public Builder withGoodAttributes(SortedSet<String> goodAttributes) {
+    public Builder withGoodAttributes(final SortedSet<String> goodAttributes) {
       this.goodAttributes = goodAttributes;
       return this;
     }
 
-    public Builder withBadAttributes(SortedSet<AttributeRecommendation> badAttributes) {
+    public Builder withBadAttributes(final SortedSet<AttributeRecommendation> badAttributes) {
       this.badAttributes = badAttributes;
       return this;
     }
 
-    public Builder withMissingAttributes(SortedSet<String> missingAttributes) {
+    public Builder withMissingAttributes(final SortedSet<String> missingAttributes) {
       this.missingAttributes = missingAttributes;
       return this;
     }

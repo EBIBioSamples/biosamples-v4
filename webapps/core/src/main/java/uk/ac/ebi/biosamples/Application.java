@@ -53,7 +53,7 @@ import uk.ac.ebi.tsc.aap.client.repo.*;
 @EnableCaching
 public class Application extends SpringBootServletInitializer {
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     SpringApplication.run(Application.class, args);
   }
 
@@ -64,13 +64,13 @@ public class Application extends SpringBootServletInitializer {
 
   @Bean
   public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter(
-      SampleToXmlConverter sampleToXmlConverter) {
+      final SampleToXmlConverter sampleToXmlConverter) {
     return new SampleAsXMLHttpMessageConverter(sampleToXmlConverter);
   }
 
   @Bean(name = "threadPoolTaskExecutor")
   public Executor threadPoolTaskExecutor() {
-    ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
+    final ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
     ex.setMaxPoolSize(128);
     ex.setQueueCapacity(2056);
     return ex;
@@ -99,11 +99,11 @@ public class Application extends SpringBootServletInitializer {
 
   @Bean(name = "SampleAccessionService")
   public MongoAccessionService mongoSampleAccessionService(
-      MongoSampleRepository mongoSampleRepository,
-      SampleToMongoSampleConverter sampleToMongoSampleConverter,
-      MongoSampleToSampleConverter mongoSampleToSampleConverter,
-      MongoProperties mongoProperties,
-      MongoOperations mongoOperations) {
+      final MongoSampleRepository mongoSampleRepository,
+      final SampleToMongoSampleConverter sampleToMongoSampleConverter,
+      final MongoSampleToSampleConverter mongoSampleToSampleConverter,
+      final MongoProperties mongoProperties,
+      final MongoOperations mongoOperations) {
     return new MongoAccessionService(
         mongoSampleRepository,
         sampleToMongoSampleConverter,

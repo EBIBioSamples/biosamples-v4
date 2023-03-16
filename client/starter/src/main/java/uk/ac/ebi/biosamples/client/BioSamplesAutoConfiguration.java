@@ -65,7 +65,7 @@ public class BioSamplesAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean(SampleValidator.class)
-  public SampleValidator sampleValidator(AttributeValidator attributeValidator) {
+  public SampleValidator sampleValidator(final AttributeValidator attributeValidator) {
     return new SampleValidator(attributeValidator);
   }
 
@@ -78,7 +78,8 @@ public class BioSamplesAutoConfiguration {
   @Bean("AAP")
   @ConditionalOnMissingBean(AapClientService.class)
   public AapClientService aapClientService(
-      RestTemplateBuilder restTemplateBuilder, BioSamplesProperties bioSamplesProperties) {
+      final RestTemplateBuilder restTemplateBuilder,
+      final BioSamplesProperties bioSamplesProperties) {
     if (bioSamplesProperties.getBiosamplesClientAapUsername() != null
         && bioSamplesProperties.getBiosamplesClientAapPassword() != null) {
       return new AapClientService(
@@ -94,7 +95,8 @@ public class BioSamplesAutoConfiguration {
   @Bean("WEBIN")
   @ConditionalOnMissingBean(WebinAuthClientService.class)
   public WebinAuthClientService webinAuthClientService(
-      RestTemplateBuilder restTemplateBuilder, BioSamplesProperties bioSamplesProperties) {
+      final RestTemplateBuilder restTemplateBuilder,
+      final BioSamplesProperties bioSamplesProperties) {
     if (bioSamplesProperties.getBiosamplesClientWebinUsername() != null
         && bioSamplesProperties.getBiosamplesClientWebinPassword() != null) {
       return new WebinAuthClientService(
@@ -110,13 +112,14 @@ public class BioSamplesAutoConfiguration {
 
   @Bean("WEBINCLIENT")
   public BioSamplesClient bioSamplesWebinClient(
-      BioSamplesProperties bioSamplesProperties,
+      final BioSamplesProperties bioSamplesProperties,
       RestTemplateBuilder restTemplateBuilder,
-      SampleValidator sampleValidator) {
+      final SampleValidator sampleValidator) {
     restTemplateBuilder =
         restTemplateBuilder.additionalCustomizers(
             new BioSampleClientRestTemplateCustomizer(bioSamplesProperties));
-    ClientService clientService = webinAuthClientService(restTemplateBuilder, bioSamplesProperties);
+    final ClientService clientService =
+        webinAuthClientService(restTemplateBuilder, bioSamplesProperties);
 
     return new BioSamplesClient(
         bioSamplesProperties.getBiosamplesClientUri(),
@@ -130,13 +133,13 @@ public class BioSamplesAutoConfiguration {
   @Bean("AAPCLIENT")
   @Primary
   public BioSamplesClient bioSamplesAapClient(
-      BioSamplesProperties bioSamplesProperties,
+      final BioSamplesProperties bioSamplesProperties,
       RestTemplateBuilder restTemplateBuilder,
-      SampleValidator sampleValidator) {
+      final SampleValidator sampleValidator) {
     restTemplateBuilder =
         restTemplateBuilder.additionalCustomizers(
             new BioSampleClientRestTemplateCustomizer(bioSamplesProperties));
-    ClientService clientService = aapClientService(restTemplateBuilder, bioSamplesProperties);
+    final ClientService clientService = aapClientService(restTemplateBuilder, bioSamplesProperties);
 
     return new BioSamplesClient(
         bioSamplesProperties.getBiosamplesClientUri(),
@@ -151,23 +154,26 @@ public class BioSamplesAutoConfiguration {
 
     private final BioSamplesProperties bioSamplesProperties;
 
-    public BioSampleClientRestTemplateCustomizer(BioSamplesProperties bioSamplesProperties) {
+    BioSampleClientRestTemplateCustomizer(final BioSamplesProperties bioSamplesProperties) {
       this.bioSamplesProperties = bioSamplesProperties;
     }
 
-    public void customize(RestTemplate restTemplate) {
+    @Override
+    public void customize(final RestTemplate restTemplate) {
       // use a keep alive strategy to try to make it easier to maintain connections for reuse
-      ConnectionKeepAliveStrategy keepAliveStrategy =
+      final ConnectionKeepAliveStrategy keepAliveStrategy =
           new ConnectionKeepAliveStrategy() {
-            public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
+            @Override
+            public long getKeepAliveDuration(
+                final HttpResponse response, final HttpContext context) {
 
               // check if there is a non-standard keep alive header present
-              HeaderElementIterator it =
+              final HeaderElementIterator it =
                   new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
               while (it.hasNext()) {
-                HeaderElement he = it.nextElement();
-                String param = he.getName();
-                String value = he.getValue();
+                final HeaderElement he = it.nextElement();
+                final String param = he.getName();
+                final String value = he.getValue();
                 if (value != null && param.equalsIgnoreCase("timeout")) {
                   return Long.parseLong(value) * 1000;
                 }
@@ -178,7 +184,7 @@ public class BioSamplesAutoConfiguration {
           };
 
       // set a number of connections to use at once for multiple threads
-      PoolingHttpClientConnectionManager poolingHttpClientConnectionManager =
+      final PoolingHttpClientConnectionManager poolingHttpClientConnectionManager =
           new PoolingHttpClientConnectionManager();
       poolingHttpClientConnectionManager.setMaxTotal(
           bioSamplesProperties.getBiosamplesClientConnectionCountMax());
@@ -186,7 +192,7 @@ public class BioSamplesAutoConfiguration {
           bioSamplesProperties.getBiosamplesClientConnectionCountDefault());
 
       // set a local cache for cacheable responses
-      CacheConfig cacheConfig =
+      final CacheConfig cacheConfig =
           CacheConfig.custom()
               .setMaxCacheEntries(bioSamplesProperties.getBiosamplesClientCacheMaxEntries())
               .setMaxObjectSize(
@@ -197,8 +203,8 @@ public class BioSamplesAutoConfiguration {
               .build();
 
       // set a timeout limit
-      int timeout = bioSamplesProperties.getBiosamplesClientTimeout();
-      RequestConfig config =
+      final int timeout = bioSamplesProperties.getBiosamplesClientTimeout();
+      final RequestConfig config =
           RequestConfig.custom()
               .setConnectTimeout(timeout) // time to establish the connection with the remote
               // host
@@ -210,18 +216,20 @@ public class BioSamplesAutoConfiguration {
 
       // set retry strategy to retry on any 5xx error
       // ebi load balancers return a 500 error when a service is unavaliable not a 503
-      ServiceUnavailableRetryStrategy serviceUnavailStrategy =
+      final ServiceUnavailableRetryStrategy serviceUnavailStrategy =
           new ServiceUnavailableRetryStrategy() {
 
+            @Override
             public boolean retryRequest(
-                HttpResponse response, int executionCount, HttpContext context) {
-              int maxRetries = 100;
+                final HttpResponse response, final int executionCount, final HttpContext context) {
+              final int maxRetries = 100;
               return executionCount <= maxRetries
                   && (response.getStatusLine().getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE
                       || response.getStatusLine().getStatusCode()
                           == HttpStatus.SC_INTERNAL_SERVER_ERROR);
             }
 
+            @Override
             public long getRetryInterval() {
               // measured in milliseconds
               return 1000;
@@ -229,7 +237,7 @@ public class BioSamplesAutoConfiguration {
           };
 
       // make the actual client
-      HttpClient httpClient =
+      final HttpClient httpClient =
           CachingHttpClientBuilder.create()
               .setCacheConfig(cacheConfig)
               .useSystemProperties()
@@ -246,11 +254,11 @@ public class BioSamplesAutoConfiguration {
       // traverson will make its own but not if we want to customize the resttemplate in any
       // way
       // (e.g. caching)
-      List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
-      ObjectMapper mapper = new ObjectMapper();
+      final List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
+      final ObjectMapper mapper = new ObjectMapper();
       mapper.registerModule(new Jackson2HalModule());
       mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-      MappingJackson2HttpMessageConverter halConverter =
+      final MappingJackson2HttpMessageConverter halConverter =
           new TypeConstrainedMappingJackson2HttpMessageConverter(RepresentationModel.class);
       halConverter.setObjectMapper(mapper);
       halConverter.setSupportedMediaTypes(Collections.singletonList(MediaTypes.HAL_JSON));

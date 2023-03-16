@@ -14,14 +14,17 @@ import java.util.List;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 
 public class AuthToken {
-  private String algorithm;
-  private AuthorizationProvider authority;
-  private String user;
+  private final String algorithm;
+  private final AuthorizationProvider authority;
+  private final String user;
   private String email;
-  private List<String> roles;
+  private final List<String> roles;
 
   public AuthToken(
-      String algorithm, AuthorizationProvider authority, String user, List<String> roles) {
+      final String algorithm,
+      final AuthorizationProvider authority,
+      final String user,
+      final List<String> roles) {
     this.algorithm = algorithm;
     this.authority = authority;
     this.user = user;

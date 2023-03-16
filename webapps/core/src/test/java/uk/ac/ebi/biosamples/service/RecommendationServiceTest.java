@@ -35,8 +35,8 @@ public class RecommendationServiceTest {
 
   @Test
   public void should_return_recommendation() {
-    Sample sample = getTestSample();
-    CuramiRecommendation recommendation = recommendationService.getRecommendations(sample);
+    final Sample sample = getTestSample();
+    final CuramiRecommendation recommendation = recommendationService.getRecommendations(sample);
 
     Assert.assertEquals(1, recommendation.getKnownAttributes().size());
     Assert.assertEquals(1, recommendation.getAttributeRecommendations().size());
@@ -45,8 +45,8 @@ public class RecommendationServiceTest {
 
   @Test
   public void should_find_recommendations_from_curations() {
-    Sample sample = getTestSample2();
-    CuramiRecommendation recommendation = recommendationService.getRecommendations(sample);
+    final Sample sample = getTestSample2();
+    final CuramiRecommendation recommendation = recommendationService.getRecommendations(sample);
 
     Assert.assertTrue(
         recommendation
@@ -60,19 +60,20 @@ public class RecommendationServiceTest {
 
   @Test
   public void should_exist_unidentified_attribute() {
-    Sample sample = getTestSample2();
-    CuramiRecommendation recommendation = recommendationService.getRecommendations(sample);
+    final Sample sample = getTestSample2();
+    final CuramiRecommendation recommendation = recommendationService.getRecommendations(sample);
 
     Assert.assertEquals(1, recommendation.getUnknownAttributes().size());
   }
 
   @Test
   public void should_return_recommended_sample() {
-    Sample sample = getTestSample2();
-    CuramiRecommendation recommendation = recommendationService.getRecommendations(sample);
-    Sample recommendedSample = recommendationService.getRecommendedSample(sample, recommendation);
+    final Sample sample = getTestSample2();
+    final CuramiRecommendation recommendation = recommendationService.getRecommendations(sample);
+    final Sample recommendedSample =
+        recommendationService.getRecommendedSample(sample, recommendation);
 
-    Optional<Attribute> recAttr =
+    final Optional<Attribute> recAttr =
         recommendedSample.getAttributes().stream()
             .filter(a -> a.getType().equals("sex"))
             .findFirst();
@@ -80,9 +81,9 @@ public class RecommendationServiceTest {
   }
 
   private Sample getTestSample() {
-    String name = "RecommendationServiceUnitTest_sample";
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final String name = "RecommendationServiceUnitTest_sample";
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(Attribute.build("organism", "Homo sapiens"));
     attributes.add(Attribute.build("organism_part", "liver"));
 
@@ -94,9 +95,9 @@ public class RecommendationServiceTest {
   }
 
   private Sample getTestSample2() {
-    String name = "RecommendationServiceUnitTest_sample_2";
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final String name = "RecommendationServiceUnitTest_sample_2";
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(Attribute.build("organism", "Homo sapiens"));
     attributes.add(Attribute.build("organism_part", "liver"));
     attributes.add(Attribute.build("INSDC_status", "x"));

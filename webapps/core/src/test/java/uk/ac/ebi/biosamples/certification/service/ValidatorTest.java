@@ -22,7 +22,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.service.certification.*;
-import uk.ac.ebi.biosamples.service.certification.Validator;
 import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
 import uk.ac.ebi.biosamples.validation.ValidatorI;
 
@@ -49,7 +48,7 @@ public class ValidatorTest {
 
   @Test
   public void given_valid_data_dont_throw_exception() throws Exception {
-    String data =
+    final String data =
         IOUtils.toString(
             getClass().getClassLoader().getResourceAsStream("json/ncbi-SAMN03894263.json"), "UTF8");
     validator.validate("schemas/certification/ncbi-candidate-schema.json", data);
@@ -57,7 +56,7 @@ public class ValidatorTest {
 
   @Test(expected = ValidationException.class)
   public void given_invalid_data_throw_exception() throws Exception {
-    String data =
+    final String data =
         IOUtils.toString(
             getClass().getClassLoader().getResourceAsStream("json/SAMEA3774859.json"), "UTF8");
     validator.validate("schemas/certification/ncbi-candidate-schema.json", data);

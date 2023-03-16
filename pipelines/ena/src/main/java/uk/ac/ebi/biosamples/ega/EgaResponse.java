@@ -14,7 +14,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class EgaResponse {
+class EgaResponse {
   private Response response;
 }
 

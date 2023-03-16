@@ -27,7 +27,6 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.certification.InterrogationResult;
 import uk.ac.ebi.biosamples.model.certification.SampleDocument;
 import uk.ac.ebi.biosamples.service.certification.*;
-import uk.ac.ebi.biosamples.service.certification.Validator;
 import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
 import uk.ac.ebi.biosamples.validation.ValidatorI;
 
@@ -54,19 +53,19 @@ public class InterrogatorTest {
 
   @Test
   public void given_ncbi_sample_return_ncbi_checklist_as_a_match() throws IOException {
-    String data =
+    final String data =
         IOUtils.toString(
             getClass().getClassLoader().getResourceAsStream("json/ncbi-SAMN03894263.json"), "UTF8");
-    SampleDocument sampleDocument = new SampleDocument("test-uuid", data);
-    InterrogationResult interrogationResult = interrogator.interrogate(sampleDocument);
+    final SampleDocument sampleDocument = new SampleDocument("test-uuid", data);
+    final InterrogationResult interrogationResult = interrogator.interrogate(sampleDocument);
     // assertTrue(interrogationResult.getChecklists().size()==2);
     // assertEquals("ncbi-0.0.1", interrogationResult.getChecklists().get(1).getID());
   }
 
   @Test
   public void given_empty_sample_return_empty_matches() {
-    SampleDocument sampleDocument = new SampleDocument("test-uuid", "{}");
-    InterrogationResult interrogationResult = interrogator.interrogate(sampleDocument);
+    final SampleDocument sampleDocument = new SampleDocument("test-uuid", "{}");
+    final InterrogationResult interrogationResult = interrogator.interrogate(sampleDocument);
     assertEquals(Collections.EMPTY_LIST, interrogationResult.getChecklists());
   }
 

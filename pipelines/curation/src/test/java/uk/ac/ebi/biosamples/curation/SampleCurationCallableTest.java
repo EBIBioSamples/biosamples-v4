@@ -68,17 +68,17 @@ public class SampleCurationCallableTest {
 
   @Test
   public void given_known_incorrect_sample_ensure_curated_correctly() throws Exception {
-    String filePath = "/examples/samples/SAMEA103887543.json";
-    Sample sample =
+    final String filePath = "/examples/samples/SAMEA103887543.json";
+    final Sample sample =
         objectMapper.readValue(
             SampleCurationCallableTest.class.getResourceAsStream(filePath), Sample.class);
-    String shortcode = "PATO_0000384";
-    String expectedResponse = readFile("/examples/ols-responses/" + shortcode + ".json");
+    final String shortcode = "PATO_0000384";
+    final String expectedResponse = readFile("/examples/ols-responses/" + shortcode + ".json");
     mockServer
         .expect(requestTo("https://www.ebi.ac.uk/ols/api/terms?id=" + shortcode + "&size=500"))
         .andExpect(method(HttpMethod.GET))
         .andRespond(withSuccess(expectedResponse, MediaType.APPLICATION_JSON));
-    SampleCurationCallable sampleCurationCallable =
+    final SampleCurationCallable sampleCurationCallable =
         new SampleCurationCallable(
             mockBioSamplesClient,
             sample,
@@ -87,11 +87,11 @@ public class SampleCurationCallableTest {
             null,
             new IriUrlValidatorService());
     sampleCurationCallable.call();
-    Sample curatedSample =
+    final Sample curatedSample =
         curationApplicationService.applyAllCurationToSample(
             sample, mockBioSamplesClient.getCurations(sample.getAccession()));
-    String curatedFilePath = "/examples/samples/SAMEA103887543-curated.json";
-    Sample expectedCuratedSample =
+    final String curatedFilePath = "/examples/samples/SAMEA103887543-curated.json";
+    final Sample expectedCuratedSample =
         objectMapper.readValue(
             SampleCurationCallableTest.class.getResourceAsStream(curatedFilePath), Sample.class);
     assertEquals(expectedCuratedSample, curatedSample);
@@ -99,13 +99,13 @@ public class SampleCurationCallableTest {
 
   @Test
   public void given_sample_ensure_Ancestory_is_removed() throws Exception {
-    String filePath = "/examples/samples/SAMEA5327217.json";
-    String attributeName = "Ancestory";
-    Sample sample =
+    final String filePath = "/examples/samples/SAMEA5327217.json";
+    final String attributeName = "Ancestory";
+    final Sample sample =
         objectMapper.readValue(
             SampleCurationCallableTest.class.getResourceAsStream(filePath), Sample.class);
     assertTrue(hasAttribute(sample.getAttributes(), attributeName));
-    SampleCurationCallable sampleCurationCallable =
+    final SampleCurationCallable sampleCurationCallable =
         new SampleCurationCallable(
             mockBioSamplesClient,
             sample,
@@ -114,7 +114,7 @@ public class SampleCurationCallableTest {
             null,
             new IriUrlValidatorService());
     sampleCurationCallable.call();
-    Sample curatedSample =
+    final Sample curatedSample =
         curationApplicationService.applyAllCurationToSample(
             sample, mockBioSamplesClient.getCurations(sample.getAccession()));
     assertFalse(hasAttribute(curatedSample.getAttributes(), attributeName));
@@ -122,13 +122,13 @@ public class SampleCurationCallableTest {
 
   @Test
   public void given_sample_ensure_organism_is_not_removed() throws Exception {
-    String filePath = "/examples/samples/SAMEA5327217.json";
-    String attributeName = "Organism";
-    Sample sample =
+    final String filePath = "/examples/samples/SAMEA5327217.json";
+    final String attributeName = "Organism";
+    final Sample sample =
         objectMapper.readValue(
             SampleCurationCallableTest.class.getResourceAsStream(filePath), Sample.class);
     assertTrue(hasAttribute(sample.getAttributes(), attributeName));
-    SampleCurationCallable sampleCurationCallable =
+    final SampleCurationCallable sampleCurationCallable =
         new SampleCurationCallable(
             mockBioSamplesClient,
             sample,
@@ -137,15 +137,15 @@ public class SampleCurationCallableTest {
             null,
             new IriUrlValidatorService());
     sampleCurationCallable.call();
-    Sample curatedSample =
+    final Sample curatedSample =
         curationApplicationService.applyAllCurationToSample(
             sample, mockBioSamplesClient.getCurations(sample.getAccession()));
     assertTrue(hasAttribute(curatedSample.getAttributes(), attributeName));
   }
 
-  private boolean hasAttribute(Set<Attribute> attributes, String name) {
+  private boolean hasAttribute(final Set<Attribute> attributes, final String name) {
     boolean found = false;
-    for (Attribute attribute : attributes) {
+    for (final Attribute attribute : attributes) {
       if (attribute.getType() == name) {
         found = true;
         break;
@@ -154,10 +154,10 @@ public class SampleCurationCallableTest {
     return found;
   }
 
-  private String readFile(String filePath) throws IOException {
-    InputStream inputStream = SampleCurationCallableTest.class.getResourceAsStream(filePath);
-    StringBuilder resultStringBuilder = new StringBuilder();
-    try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+  private String readFile(final String filePath) throws IOException {
+    final InputStream inputStream = SampleCurationCallableTest.class.getResourceAsStream(filePath);
+    final StringBuilder resultStringBuilder = new StringBuilder();
+    try (final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
       String line;
       while ((line = br.readLine()) != null) {
         resultStringBuilder.append(line).append("\n");
@@ -168,7 +168,7 @@ public class SampleCurationCallableTest {
 
   @Test
   public void test_non_applicable_synonyms() {
-    for (String nonApplicableSynonyms : NON_APPLICABLE_SYNONYMS) {
+    for (final String nonApplicableSynonyms : NON_APPLICABLE_SYNONYMS) {
       assertTrue(isNotApplicableSynonym(nonApplicableSynonyms));
     }
     assertTrue(isNotApplicableSynonym("not_applicable"));

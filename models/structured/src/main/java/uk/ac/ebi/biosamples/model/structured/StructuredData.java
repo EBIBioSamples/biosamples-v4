@@ -50,8 +50,8 @@ public class StructuredData {
   }
 
   public static StructuredData build(
-      String accession, Instant create, Set<StructuredDataTable> data) {
-    StructuredData structuredData = new StructuredData();
+      final String accession, final Instant create, final Set<StructuredDataTable> data) {
+    final StructuredData structuredData = new StructuredData();
     structuredData.accession = accession;
     structuredData.create = create;
     structuredData.update = Instant.now();
@@ -60,8 +60,11 @@ public class StructuredData {
   }
 
   public static StructuredData build(
-      String accession, Instant create, Instant update, Set<StructuredDataTable> data) {
-    StructuredData structuredData = new StructuredData();
+      final String accession,
+      final Instant create,
+      final Instant update,
+      final Set<StructuredDataTable> data) {
+    final StructuredData structuredData = new StructuredData();
     structuredData.accession = accession;
     structuredData.create = create;
     structuredData.update = update;
@@ -70,9 +73,9 @@ public class StructuredData {
   }
 
   @Override
-  public boolean equals(Object object) {
+  public boolean equals(final Object object) {
     if (object instanceof StructuredData) {
-      StructuredData o = (StructuredData) object;
+      final StructuredData o = (StructuredData) object;
       if (accession.equals(o.getAccession())) {
         return data.equals(o.getData());
       }

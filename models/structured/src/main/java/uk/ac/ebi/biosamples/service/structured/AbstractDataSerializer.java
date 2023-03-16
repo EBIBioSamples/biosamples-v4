@@ -25,13 +25,15 @@ public class AbstractDataSerializer extends StdSerializer<Set> {
 
   @Override
   public void serialize(
-      Set rawData, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
+      final Set rawData,
+      final JsonGenerator jsonGenerator,
+      final SerializerProvider serializerProvider)
       throws IOException {
-    Set<AbstractData> abstractDataSet = (Set<AbstractData>) rawData;
+    final Set<AbstractData> abstractDataSet = (Set<AbstractData>) rawData;
 
     jsonGenerator.writeStartObject();
 
-    for (AbstractData data : abstractDataSet) {
+    for (final AbstractData data : abstractDataSet) {
       jsonGenerator.writeFieldName(data.getDataType().toString());
       jsonGenerator.writeStartObject();
       jsonGenerator.writeStringField("schema", data.getSchema().toString());

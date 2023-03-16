@@ -37,26 +37,29 @@ public class ElixirSchemaValidator implements ValidatorI {
   private final ObjectMapper objectMapper;
 
   public ElixirSchemaValidator(
-      RestTemplate restTemplate,
-      BioSamplesProperties bioSamplesProperties,
-      ObjectMapper objectMapper) {
+      final RestTemplate restTemplate,
+      final BioSamplesProperties bioSamplesProperties,
+      final ObjectMapper objectMapper) {
     this.restTemplate = restTemplate;
     this.bioSamplesProperties = bioSamplesProperties;
     this.objectMapper = objectMapper;
   }
 
-  public void validate(String schemaId, String sample) throws IOException {
-    JsonNode sampleJson = objectMapper.readTree(sample);
-    JsonSchema schema = getSchema(schemaId);
+  @Override
+  public void validate(final String schemaId, final String sample) throws IOException {
+    final JsonNode sampleJson = objectMapper.readTree(sample);
+    final JsonSchema schema = getSchema(schemaId);
 
-    ValidationRequest validationRequest = new ValidationRequest(schema.getSchema(), sampleJson);
-    URI validatorUri = URI.create(bioSamplesProperties.getSchemaValidator());
-    RequestEntity<ValidationRequest> requestEntity =
+    final ValidationRequest validationRequest =
+        new ValidationRequest(schema.getSchema(), sampleJson);
+    final URI validatorUri = URI.create(bioSamplesProperties.getSchemaValidator());
+    final RequestEntity<ValidationRequest> requestEntity =
         RequestEntity.post(validatorUri)
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
             .body(validationRequest);
-    JsonNode validationResponse = restTemplate.exchange(requestEntity, JsonNode.class).getBody();
+    final JsonNode validationResponse =
+        restTemplate.exchange(requestEntity, JsonNode.class).getBody();
 
     if (validationResponse.get("validationState").asText().equalsIgnoreCase("INVALID")) {
       throw new GlobalExceptions.SampleValidationException(
@@ -64,19 +67,21 @@ public class ElixirSchemaValidator implements ValidatorI {
     }
   }
 
-  public String validateById(String schemaAccession, String sample)
+  @Override
+  public String validateById(final String schemaAccession, final String sample)
       throws IOException, GlobalExceptions.SchemaValidationException {
-    JsonNode sampleJson = objectMapper.readTree(sample);
-    JsonNode schema = getSchemaByAccession(schemaAccession);
+    final JsonNode sampleJson = objectMapper.readTree(sample);
+    final JsonNode schema = getSchemaByAccession(schemaAccession);
 
-    ValidationRequest validationRequest = new ValidationRequest(schema, sampleJson);
-    URI validatorUri = URI.create(bioSamplesProperties.getSchemaValidator());
-    RequestEntity<ValidationRequest> requestEntity =
+    final ValidationRequest validationRequest = new ValidationRequest(schema, sampleJson);
+    final URI validatorUri = URI.create(bioSamplesProperties.getSchemaValidator());
+    final RequestEntity<ValidationRequest> requestEntity =
         RequestEntity.post(validatorUri)
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
             .body(validationRequest);
-    JsonNode validationResponse = restTemplate.exchange(requestEntity, JsonNode.class).getBody();
+    final JsonNode validationResponse =
+        restTemplate.exchange(requestEntity, JsonNode.class).getBody();
 
     if (validationResponse.size() > 0) {
       throw new GlobalExceptions.SampleValidationException(
@@ -86,8 +91,8 @@ public class ElixirSchemaValidator implements ValidatorI {
     return schemaAccession;
   }
 
-  public JsonSchema getSchema(String schemaId) {
-    URI schemaStoreUri =
+  private JsonSchema getSchema(final String schemaId) {
+    final URI schemaStoreUri =
         UriComponentsBuilder.fromUriString(
                 bioSamplesProperties.getSchemaStore() + "/api/v2/schemas?id={schemaId}")
             .build()
@@ -95,9 +100,9 @@ public class ElixirSchemaValidator implements ValidatorI {
             .encode()
             .toUri();
 
-    RequestEntity<Void> requestEntity =
+    final RequestEntity<Void> requestEntity =
         RequestEntity.get(schemaStoreUri).accept(MediaType.APPLICATION_JSON).build();
-    ResponseEntity<JsonSchema> schemaResponse =
+    final ResponseEntity<JsonSchema> schemaResponse =
         restTemplate.exchange(requestEntity, JsonSchema.class);
     if (schemaResponse.getStatusCode() != HttpStatus.OK) {
       log.error(
@@ -109,8 +114,8 @@ public class ElixirSchemaValidator implements ValidatorI {
     return schemaResponse.getBody();
   }
 
-  public JsonNode getSchemaByAccession(String schemaAccession) {
-    URI schemaStoreUri =
+  private JsonNode getSchemaByAccession(final String schemaAccession) {
+    final URI schemaStoreUri =
         UriComponentsBuilder.fromUriString(
                 bioSamplesProperties.getSchemaStore() + "/registry/schemas/{accession}")
             .build()
@@ -118,9 +123,10 @@ public class ElixirSchemaValidator implements ValidatorI {
             .encode()
             .toUri();
 
-    RequestEntity<Void> requestEntity =
+    final RequestEntity<Void> requestEntity =
         RequestEntity.get(schemaStoreUri).accept(MediaType.APPLICATION_JSON).build();
-    ResponseEntity<JsonNode> schemaResponse = restTemplate.exchange(requestEntity, JsonNode.class);
+    final ResponseEntity<JsonNode> schemaResponse =
+        restTemplate.exchange(requestEntity, JsonNode.class);
     if (schemaResponse.getStatusCode() != HttpStatus.OK) {
       log.error(
           "Failed to retrieve schema from JSON Schema Store: {} {}",

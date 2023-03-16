@@ -31,55 +31,59 @@ import uk.ac.ebi.biosamples.validation.ValidatorI;
 @Service
 @Qualifier("javaValidator")
 public class Validator implements ValidatorI {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
-  private ConfigLoader configLoader;
+  private final ConfigLoader configLoader;
   private Map<String, Checklist> checklists;
 
-  public Validator(ConfigLoader configLoader) {
+  public Validator(final ConfigLoader configLoader) {
     this.configLoader = configLoader;
   }
 
   private void init() {
-    List<Checklist> checklistList = configLoader.config.getChecklists();
+    final List<Checklist> checklistList = configLoader.config.getChecklists();
     checklists = checklistList.stream().collect(Collectors.toMap(Checklist::getID, c -> c));
 
     // to validate schemas without the version
-    for (Checklist c : checklistList) {
-      if (this.checklists.containsKey(c.getName())) {
-        if (this.checklists.get(c.getName()).getVersion().compareTo(c.getVersion()) < 0) {
-          this.checklists.put(c.getName(), c);
+    for (final Checklist c : checklistList) {
+      if (checklists.containsKey(c.getName())) {
+        if (checklists.get(c.getName()).getVersion().compareTo(c.getVersion()) < 0) {
+          checklists.put(c.getName(), c);
         }
       } else {
-        this.checklists.put(c.getName(), c);
+        checklists.put(c.getName(), c);
       }
     }
   }
 
-  public void validate(String schemaPath, String document) throws IOException, ValidationException {
-    try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(schemaPath)) {
-      JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
-      Schema schema = SchemaLoader.load(rawSchema);
+  @Override
+  public void validate(final String schemaPath, final String document)
+      throws IOException, ValidationException {
+    try (final InputStream inputStream =
+        getClass().getClassLoader().getResourceAsStream(schemaPath)) {
+      final JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
+      final Schema schema = SchemaLoader.load(rawSchema);
       schema.validate(new JSONObject(document));
     }
   }
 
-  public String validateById(String schemaId, String document)
+  @Override
+  public String validateById(final String schemaId, final String document)
       throws IOException, GlobalExceptions.SchemaValidationException {
-    Checklist checklist = getChecklist(schemaId);
-    try (InputStream inputStream =
+    final Checklist checklist = getChecklist(schemaId);
+    try (final InputStream inputStream =
         getClass().getClassLoader().getResourceAsStream(checklist.getFileName())) {
-      JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
-      Schema schema = SchemaLoader.load(rawSchema);
+      final JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
+      final Schema schema = SchemaLoader.load(rawSchema);
       schema.validate(new JSONObject(document));
-    } catch (ValidationException e) {
+    } catch (final ValidationException e) {
       throw new GlobalExceptions.SchemaValidationException(e.getMessage());
     }
 
     return checklist.getID();
   }
 
-  private Checklist getChecklist(String checklistId) {
+  private Checklist getChecklist(final String checklistId) {
     if (checklists == null) {
       init();
     }

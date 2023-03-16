@@ -42,7 +42,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 @Profile({"big"})
 public class BigIntegration extends AbstractIntegration {
 
-  private Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final RestOperations restOperations;
   private final BioSamplesProperties bioSamplesProperties;
 
@@ -53,21 +53,21 @@ public class BigIntegration extends AbstractIntegration {
   private static final int timeout = 100000;
 
   public BigIntegration(
-      BioSamplesClient client,
-      RestTemplateBuilder restTemplateBuilder,
-      BioSamplesProperties bioSamplesProperties) {
+      final BioSamplesClient client,
+      final RestTemplateBuilder restTemplateBuilder,
+      final BioSamplesProperties bioSamplesProperties) {
     super(client);
-    RestTemplate restTemplate = restTemplateBuilder.build();
+    final RestTemplate restTemplate = restTemplateBuilder.build();
 
     // make sure there is a application/hal+json converter
     // traverson will make its own but not if we want to customize the resttemplate in any way
     // (e.g.
     // caching)
-    List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
-    ObjectMapper mapper = new ObjectMapper();
+    final List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
+    final ObjectMapper mapper = new ObjectMapper();
     mapper.registerModule(new Jackson2HalModule());
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    MappingJackson2HttpMessageConverter halConverter =
+    final MappingJackson2HttpMessageConverter halConverter =
         new TypeConstrainedMappingJackson2HttpMessageConverter(RepresentationModel.class);
     halConverter.setObjectMapper(mapper);
     halConverter.setSupportedMediaTypes(Collections.singletonList(MediaTypes.HAL_JSON));
@@ -75,22 +75,22 @@ public class BigIntegration extends AbstractIntegration {
     converters.add(0, halConverter);
     restTemplate.setMessageConverters(converters);
 
-    this.restOperations = restTemplate;
+    restOperations = restTemplate;
 
     this.bioSamplesProperties = bioSamplesProperties;
   }
 
   @Override
   protected void phaseOne() {
-    List<Sample> samples = new ArrayList<>();
+    final List<Sample> samples = new ArrayList<>();
 
     // generate a root sample
-    Sample root = generateSample(firstInteger, Collections.emptyList(), null);
+    final Sample root = generateSample(firstInteger, Collections.emptyList(), null);
     samples.add(root);
     // generate a large number of samples
     for (int i = 1; i < noSamples; i++) {
 
-      Sample sample = generateSample(firstInteger + i, Collections.emptyList(), root);
+      final Sample sample = generateSample(firstInteger + i, Collections.emptyList(), root);
       samples.add(sample);
     }
     // generate one sample to rule them all
@@ -98,12 +98,12 @@ public class BigIntegration extends AbstractIntegration {
 
     // time how long it takes to post them
 
-    long startTime = System.nanoTime();
+    final long startTime = System.nanoTime();
     client.persistSamples(samples);
-    long endTime = System.nanoTime();
+    final long endTime = System.nanoTime();
 
-    double elapsedMs = (int) ((endTime - startTime) / 1000000L);
-    double msPerSample = elapsedMs / noSamples;
+    final double elapsedMs = (int) ((endTime - startTime) / 1000000L);
+    final double msPerSample = elapsedMs / noSamples;
     log.info(
         "Submitted " + noSamples + " samples in " + elapsedMs + "ms (" + msPerSample + "ms each)");
     if (msPerSample > 100) {
@@ -162,7 +162,7 @@ public class BigIntegration extends AbstractIntegration {
 
     // TODO check HAL links for search term and facets are persistent over paging etc
 
-    URI uri =
+    final URI uri =
         UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri())
             .pathSegment("samples")
             .queryParam("text", "Sample")
@@ -171,28 +171,28 @@ public class BigIntegration extends AbstractIntegration {
             .encode()
             .toUri();
     log.info("checking HAL links on " + uri);
-    ResponseEntity<PagedModel<EntityModel<Sample>>> responseEntity =
+    final ResponseEntity<PagedModel<EntityModel<Sample>>> responseEntity =
         restOperations.exchange(
             RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build(),
             new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {});
 
-    PagedModel<EntityModel<Sample>> page = responseEntity.getBody();
+    final PagedModel<EntityModel<Sample>> page = responseEntity.getBody();
     log.info("looking for links in " + page);
-    for (Link link : page.getLinks()) {
+    for (final Link link : page.getLinks()) {
       log.info("Found link " + link);
     }
-    Link firstLink = page.getLink(IanaLinkRelations.FIRST).get();
-    UriComponents firstLinkUriComponents =
+    final Link firstLink = page.getLink(IanaLinkRelations.FIRST).get();
+    final UriComponents firstLinkUriComponents =
         UriComponentsBuilder.fromUriString(firstLink.getHref()).build();
 
-    String firstFilter = firstLinkUriComponents.getQueryParams().get("filter").get(0);
+    final String firstFilter = firstLinkUriComponents.getQueryParams().get("filter").get(0);
     if (!"attr:organism:Homo%20sapiens".equals(firstFilter)) {
       throw new RuntimeException(
           "Expected first relationship URL to include parameter filter with value 'attr:organism:Homo sapiens' but got '"
               + firstFilter
               + "'");
     }
-    String firstText = firstLinkUriComponents.getQueryParams().get("text").get(0);
+    final String firstText = firstLinkUriComponents.getQueryParams().get("text").get(0);
     if (!"Sample".equals(firstText)) {
       throw new RuntimeException(
           "Expected first relationship URL to include parameter text with value 'Sample' but got '"
@@ -222,13 +222,13 @@ public class BigIntegration extends AbstractIntegration {
   @Override
   protected void phaseSix() {}
 
-  public Sample generateSample(int i, List<Sample> samples, Sample root) {
+  private Sample generateSample(final int i, final List<Sample> samples, final Sample root) {
 
-    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-    String domain = "self.BiosampleIntegrationTest";
+    final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final String domain = "self.BiosampleIntegrationTest";
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
         Attribute.build(
             "organism",
@@ -237,15 +237,15 @@ public class BigIntegration extends AbstractIntegration {
             Lists.newArrayList("http://purl.obolibrary.org/obo/NCBITaxon_9606"),
             null));
 
-    SortedSet<Relationship> relationships = new TreeSet<>();
-    for (Sample other : samples) {
+    final SortedSet<Relationship> relationships = new TreeSet<>();
+    for (final Sample other : samples) {
       relationships.add(Relationship.build("SAMEA" + i, "derived from", other.getAccession()));
     }
     if (root != null) {
       relationships.add(Relationship.build("SAMEA" + i, "derived from", root.getAccession()));
     }
 
-    Sample sample =
+    final Sample sample =
         new Sample.Builder("big sample " + i, "SAMEA" + i)
             .withDomain(domain)
             .withRelease(release)

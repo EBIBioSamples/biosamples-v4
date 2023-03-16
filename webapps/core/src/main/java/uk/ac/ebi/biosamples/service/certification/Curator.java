@@ -23,32 +23,34 @@ import uk.ac.ebi.biosamples.model.certification.*;
 
 @Service
 public class Curator {
-  private static Logger LOG = LoggerFactory.getLogger(Curator.class);
-  private static Logger EVENTS = LoggerFactory.getLogger("events");
-  private ConfigLoader configLoader;
-  private Map<String, Plan> plansByCandidateChecklistID = new HashMap<>();
-  private Map<String, Recommendation> recommendationsByCertificationChecklistID = new HashMap<>();
+  private static final Logger LOG = LoggerFactory.getLogger(Curator.class);
+  private static final Logger EVENTS = LoggerFactory.getLogger("events");
+  private final ConfigLoader configLoader;
+  private final Map<String, Plan> plansByCandidateChecklistID = new HashMap<>();
+  private final Map<String, Recommendation> recommendationsByCertificationChecklistID =
+      new HashMap<>();
 
-  public Curator(ConfigLoader configLoader) {
+  public Curator(final ConfigLoader configLoader) {
     this.configLoader = configLoader;
   }
 
-  public List<PlanResult> runCurationPlans(InterrogationResult interrogationResult) {
-    List<PlanResult> planResults = new ArrayList<>();
+  public List<PlanResult> runCurationPlans(final InterrogationResult interrogationResult) {
+    final List<PlanResult> planResults = new ArrayList<>();
     if (interrogationResult == null) {
-      String message = "cannot run curation plans on null interrogation result";
+      final String message = "cannot run curation plans on null interrogation result";
       LOG.warn(message);
       throw new IllegalArgumentException(message);
     }
 
     if (interrogationResult.getSampleDocument() == null) {
-      String message = "cannot run curation plans on null sample";
+      final String message = "cannot run curation plans on null sample";
       LOG.warn(message);
       throw new IllegalArgumentException(message);
     }
 
-    for (Checklist checklist : interrogationResult.getChecklists()) {
-      PlanResult planResult = runCurationPlan(checklist, interrogationResult.getSampleDocument());
+    for (final Checklist checklist : interrogationResult.getChecklists()) {
+      final PlanResult planResult =
+          runCurationPlan(checklist, interrogationResult.getSampleDocument());
 
       if (planResult != null) {
         LOG.info("Plan result added for checklist " + checklist.getID());
@@ -59,9 +61,10 @@ public class Curator {
     return planResults;
   }
 
-  private PlanResult runCurationPlan(Checklist checklist, SampleDocument sampleDocument) {
-    Plan plan = plansByCandidateChecklistID.get(checklist.getID());
-    PlanResult planResult = new PlanResult(sampleDocument, plan);
+  private PlanResult runCurationPlan(
+      final Checklist checklist, final SampleDocument sampleDocument) {
+    final Plan plan = plansByCandidateChecklistID.get(checklist.getID());
+    final PlanResult planResult = new PlanResult(sampleDocument, plan);
     if (plan == null) {
       EVENTS.info(
           String.format(
@@ -69,8 +72,8 @@ public class Curator {
       return null;
     }
     if (plansByCandidateChecklistID.containsKey(checklist.getID())) {
-      for (Curation curation : plan.getCurations()) {
-        CurationResult curationResult = plan.applyCuration(sampleDocument, curation);
+      for (final Curation curation : plan.getCurations()) {
+        final CurationResult curationResult = plan.applyCuration(sampleDocument, curation);
         if (curationResult != null) {
           planResult.addCurationResult(curationResult);
         }
@@ -84,25 +87,25 @@ public class Curator {
 
   @PostConstruct
   public void init() {
-    for (Plan plan : configLoader.config.getPlans()) {
+    for (final Plan plan : configLoader.config.getPlans()) {
       plansByCandidateChecklistID.put(plan.getCandidateChecklistID(), plan);
     }
 
-    for (Recommendation recommendation : configLoader.config.getRecommendations()) {
+    for (final Recommendation recommendation : configLoader.config.getRecommendations()) {
       recommendationsByCertificationChecklistID.put(
           recommendation.getCertificationChecklistID(), recommendation);
     }
   }
 
-  public List<Recommendation> runRecommendations(InterrogationResult interrogationResult) {
+  public List<Recommendation> runRecommendations(final InterrogationResult interrogationResult) {
     if (interrogationResult == null) {
-      String message = "cannot run curation plans on null interrogation result";
+      final String message = "cannot run curation plans on null interrogation result";
       LOG.warn(message);
       throw new IllegalArgumentException(message);
     }
 
     if (interrogationResult.getSampleDocument() == null) {
-      String message = "cannot run suggestion plans on null sample";
+      final String message = "cannot run suggestion plans on null sample";
       LOG.warn(message);
       throw new IllegalArgumentException(message);
     }

@@ -25,14 +25,14 @@ import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 public class MongoCurationRule implements Comparable<MongoCurationRule> {
 
   @Id private String id;
-  private String attributePre;
-  private String attributePost;
+  private final String attributePre;
+  private final String attributePost;
 
   @JsonSerialize(using = CustomInstantSerializer.class)
   @JsonDeserialize(using = CustomInstantDeserializer.class)
   private Instant created;
 
-  private MongoCurationRule(String attributePre, String attributePost) {
+  private MongoCurationRule(final String attributePre, final String attributePost) {
     this.attributePre = attributePre;
     this.attributePost = attributePost;
     id = attributePre;
@@ -61,29 +61,31 @@ public class MongoCurationRule implements Comparable<MongoCurationRule> {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (o == this) return true;
+  public boolean equals(final Object o) {
+    if (o == this) {
+      return true;
+    }
     if (!(o instanceof MongoCurationRule)) {
       return false;
     }
-    MongoCurationRule other = (MongoCurationRule) o;
-    return Objects.equals(this.attributePre, other.attributePre)
-        && Objects.equals(this.attributePost, other.attributePost)
-        && Objects.equals(this.created, other.created);
+    final MongoCurationRule other = (MongoCurationRule) o;
+    return Objects.equals(attributePre, other.attributePre)
+        && Objects.equals(attributePost, other.attributePost)
+        && Objects.equals(created, other.created);
   }
 
   @Override
-  public int compareTo(MongoCurationRule other) {
+  public int compareTo(final MongoCurationRule other) {
     if (other == null) {
       return 1;
     }
 
-    if (!this.attributePre.equals(other.attributePre)) {
-      return this.attributePre.compareTo(other.attributePre);
-    } else if (!this.attributePost.equals(other.attributePost)) {
-      return this.attributePost.compareTo(other.attributePost);
-    } else if (!this.created.equals(other.created)) {
-      return this.created.compareTo(other.created);
+    if (!attributePre.equals(other.attributePre)) {
+      return attributePre.compareTo(other.attributePre);
+    } else if (!attributePost.equals(other.attributePost)) {
+      return attributePost.compareTo(other.attributePost);
+    } else if (!created.equals(other.created)) {
+      return created.compareTo(other.created);
     }
 
     return 0;
@@ -91,14 +93,15 @@ public class MongoCurationRule implements Comparable<MongoCurationRule> {
 
   @Override
   public String toString() {
-    String sb = "MongoCurationRule(" + attributePre + "," + attributePost + "," + created + ")";
+    final String sb =
+        "MongoCurationRule(" + attributePre + "," + attributePost + "," + created + ")";
     return sb;
   }
 
   @JsonCreator
   public static MongoCurationRule build(
-      @JsonProperty("attributePre") String attributePre,
-      @JsonProperty("attributePost") String attributePost) {
+      @JsonProperty("attributePre") final String attributePre,
+      @JsonProperty("attributePost") final String attributePost) {
     return new MongoCurationRule(attributePre, attributePost);
   }
 }

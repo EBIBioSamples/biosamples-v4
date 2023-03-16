@@ -22,7 +22,7 @@ public class StructuredCell implements Comparable<StructuredCell> {
     // emtpy constructor for jackson
   }
 
-  public StructuredCell(String value, String iri) {
+  public StructuredCell(final String value, final String iri) {
     this.value = value;
     this.iri = iri;
   }
@@ -32,7 +32,7 @@ public class StructuredCell implements Comparable<StructuredCell> {
     return value;
   }
 
-  public void setValue(String value) {
+  public void setValue(final String value) {
     this.value = value;
   }
 
@@ -41,7 +41,7 @@ public class StructuredCell implements Comparable<StructuredCell> {
     return iri;
   }
 
-  public void setIri(String iri) {
+  public void setIri(final String iri) {
     this.iri = iri;
   }
 
@@ -51,12 +51,14 @@ public class StructuredCell implements Comparable<StructuredCell> {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
     if (o instanceof StructuredCell) {
-      StructuredCell other = (StructuredCell) o;
-      return Objects.equals(this.getValue(), other.getValue())
-          && Objects.equals(this.getIri(), other.getIri());
+      final StructuredCell other = (StructuredCell) o;
+      return Objects.equals(getValue(), other.getValue())
+          && Objects.equals(getIri(), other.getIri());
     }
     return false;
   }
@@ -67,11 +69,11 @@ public class StructuredCell implements Comparable<StructuredCell> {
   }
 
   @Override
-  public int compareTo(StructuredCell other) {
-    int cmp = StringUtils.nullSafeStringComparison(this.getValue(), other.getValue());
+  public int compareTo(final StructuredCell other) {
+    final int cmp = StringUtils.nullSafeStringComparison(getValue(), other.getValue());
     if (cmp != 0) {
       return cmp;
     }
-    return StringUtils.nullSafeStringComparison(this.getIri(), other.getIri());
+    return StringUtils.nullSafeStringComparison(getIri(), other.getIri());
   }
 }

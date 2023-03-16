@@ -10,10 +10,11 @@
 */
 package uk.ac.ebi.biosamples.utils.upload;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ValidationResult {
-  private List<ValidationMessage> validationMessagesList = new ArrayList<>();
+  private final List<ValidationMessage> validationMessagesList = new ArrayList<>();
 
   public void addValidationMessage(final ValidationMessage message) {
     validationMessagesList.add(message);

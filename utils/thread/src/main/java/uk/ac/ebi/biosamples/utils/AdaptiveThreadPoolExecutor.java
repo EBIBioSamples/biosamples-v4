@@ -13,32 +13,31 @@ package uk.ac.ebi.biosamples.utils;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements AutoCloseable {
-  private Logger log = LoggerFactory.getLogger(this.getClass());
-  private AtomicInteger completedJobs = new AtomicInteger(0);
+  private final Logger log = LoggerFactory.getLogger(getClass());
+  private final AtomicInteger completedJobs = new AtomicInteger(0);
 
   private AdaptiveThreadPoolExecutor(
-      int corePoolSize,
-      int maximumPoolSize,
-      long keepAliveTime,
-      TimeUnit unit,
-      BlockingQueue<Runnable> workQueue,
-      RejectedExecutionHandler rejectedExecutionHandler) {
+      final int corePoolSize,
+      final int maximumPoolSize,
+      final long keepAliveTime,
+      final TimeUnit unit,
+      final BlockingQueue<Runnable> workQueue,
+      final RejectedExecutionHandler rejectedExecutionHandler) {
 
     super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, rejectedExecutionHandler);
   }
 
-  protected void afterExecute(Runnable r, Throwable t) {
-    if (t != null) return;
+  @Override
+  protected void afterExecute(final Runnable r, final Throwable t) {
+    if (t != null) {
+      return;
+    }
 
     completedJobs.incrementAndGet();
   }
@@ -64,7 +63,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
   }
 
   public static AdaptiveThreadPoolExecutor create(
-      int maxQueueSize, int pollInterval, boolean fairness) {
+      final int maxQueueSize, final int pollInterval, final boolean fairness) {
     return create(
         maxQueueSize,
         pollInterval,
@@ -74,24 +73,29 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
   }
 
   public static AdaptiveThreadPoolExecutor create(
-      int maxQueueSize, int pollInterval, boolean fairness, int initialPoolSize, int maxThreads) {
+      final int maxQueueSize,
+      final int pollInterval,
+      final boolean fairness,
+      final int initialPoolSize,
+      final int maxThreads) {
     // default to the number of processors
-    int corePoolSize = initialPoolSize;
-    int maximumPoolSize = corePoolSize;
+    final int corePoolSize = initialPoolSize;
+    final int maximumPoolSize = corePoolSize;
     // keep alive is not relevant, since core == maximum
-    long keepAliveTime = 1;
-    TimeUnit unit = TimeUnit.DAYS;
+    final long keepAliveTime = 1;
+    final TimeUnit unit = TimeUnit.DAYS;
     // a queue constructed with fairness set to true grants threads access
     // in FIFO order.
     // Fairness generally decreases throughput but reduces variability and
     // avoids starvation.
-    BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(maxQueueSize, fairness);
+    final BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(maxQueueSize, fairness);
     // A handler for rejected tasks that runs the rejected task directly in
     // the calling thread of the execute method,
     // unless the executor has been shut down, in which case the task is
     // discarded.
-    RejectedExecutionHandler rejectedExecutionHandler = new ThreadPoolExecutor.CallerRunsPolicy();
-    AdaptiveThreadPoolExecutor threadPool =
+    final RejectedExecutionHandler rejectedExecutionHandler =
+        new ThreadPoolExecutor.CallerRunsPolicy();
+    final AdaptiveThreadPoolExecutor threadPool =
         new AdaptiveThreadPoolExecutor(
             corePoolSize,
             maximumPoolSize,
@@ -99,7 +103,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
             unit,
             workQueue,
             rejectedExecutionHandler);
-    Thread monitorThread = new Thread(new PoolMonitor(threadPool, pollInterval, maxThreads));
+    final Thread monitorThread = new Thread(new PoolMonitor(threadPool, pollInterval, maxThreads));
 
     monitorThread.setDaemon(true);
     monitorThread.start();
@@ -114,7 +118,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
    * @author faulcon
    */
   private static class PoolMonitor implements Runnable {
-    private Logger log = LoggerFactory.getLogger(this.getClass());
+    private final Logger log = LoggerFactory.getLogger(getClass());
     private final AdaptiveThreadPoolExecutor pool;
     private final int pollInterval;
     private final Map<Integer, Double> threadsScores = new HashMap<>();
@@ -122,7 +126,8 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
     private final double margin = 1.0;
     private final int maxThreads;
 
-    public PoolMonitor(AdaptiveThreadPoolExecutor pool, int pollInterval, int maxThreads) {
+    PoolMonitor(
+        final AdaptiveThreadPoolExecutor pool, final int pollInterval, final int maxThreads) {
       this.pool = pool;
       this.pollInterval = pollInterval;
       this.maxThreads = maxThreads;
@@ -136,7 +141,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
         // wait for it to do stuff
         try {
           Thread.sleep(pollInterval);
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
           if (Thread.interrupted()) { // Clears interrupted status!
             throw new RuntimeException(e);
           }
@@ -145,14 +150,14 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
         // test the number of jobs done
         // get number of threads they were done with
 
-        long now = System.nanoTime();
-        long interval = now - lastStep;
+        final long now = System.nanoTime();
+        final long interval = now - lastStep;
         lastStep = now;
 
-        int currentThreads = pool.getMaximumPoolSize();
-        int doneJobs = pool.completedJobs.getAndSet(0);
+        final int currentThreads = pool.getMaximumPoolSize();
+        final int doneJobs = pool.completedJobs.getAndSet(0);
         // number of jobs per sec
-        double score = (((double) doneJobs) * 1000000000.0d) / (interval);
+        final double score = (((double) doneJobs) * 1000000000.0d) / (interval);
 
         log.trace(
             "Completed "
@@ -167,11 +172,11 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
         threadsScores.put(currentThreads, score);
         threadsTime.put(currentThreads, now);
         // remove any scores that are too old
-        Iterator<Integer> iterator = threadsTime.keySet().iterator();
+        final Iterator<Integer> iterator = threadsTime.keySet().iterator();
 
         while (iterator.hasNext()) {
-          int testThreads = iterator.next();
-          long testTime = threadsTime.get(testThreads);
+          final int testThreads = iterator.next();
+          final long testTime = threadsTime.get(testThreads);
           // more than 25 pollings ago?
           if (testTime + (pollInterval * 1000000l * 25) < now) {
             // too old score, remove it
@@ -189,8 +194,8 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
         double bestScore = score;
         int bestThreads = currentThreads;
 
-        for (int testThreads : threadsScores.keySet()) {
-          double testScore = threadsScores.get(testThreads);
+        for (final int testThreads : threadsScores.keySet()) {
+          final double testScore = threadsScores.get(testThreads);
 
           if (testScore > bestScore) {
             bestScore = testScore;
@@ -223,7 +228,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
       }
     }
 
-    private void setPoolSizesCoreFirst(int bestThreads) {
+    private void setPoolSizesCoreFirst(final int bestThreads) {
       try {
         pool.setCorePoolSize(bestThreads);
         pool.setMaximumPoolSize(bestThreads);
@@ -232,7 +237,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
       }
     }
 
-    private void setPoolSizesMaxFirst(int bestThreads) {
+    private void setPoolSizesMaxFirst(final int bestThreads) {
       try {
         pool.setMaximumPoolSize(bestThreads);
         pool.setCorePoolSize(bestThreads);

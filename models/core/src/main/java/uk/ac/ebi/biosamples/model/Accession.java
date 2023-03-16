@@ -27,28 +27,30 @@ public class Accession implements Comparable<Accession> {
     return id;
   }
 
-  private Accession(String id) {
+  private Accession(final String id) {
     this.id = id;
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (o == this) return true;
+  public boolean equals(final Object o) {
+    if (o == this) {
+      return true;
+    }
     if (!(o instanceof Accession)) {
       return false;
     }
-    Accession other = (Accession) o;
-    return this.id.equalsIgnoreCase(other.id);
+    final Accession other = (Accession) o;
+    return id.equalsIgnoreCase(other.id);
   }
 
   @Override
-  public int compareTo(Accession other) {
+  public int compareTo(final Accession other) {
     if (other == null) {
       return 1;
     }
 
-    if (!this.id.equals(other.id)) {
-      return this.id.compareTo(other.id);
+    if (!id.equals(other.id)) {
+      return id.compareTo(other.id);
     }
 
     return 0;
@@ -65,7 +67,7 @@ public class Accession implements Comparable<Accession> {
   }
 
   @JsonCreator
-  public static Accession build(@JsonProperty("id") String accession) {
+  public static Accession build(@JsonProperty("id") final String accession) {
     return new Accession(accession);
   }
 }

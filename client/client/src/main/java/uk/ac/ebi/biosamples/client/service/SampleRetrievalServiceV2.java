@@ -11,7 +11,8 @@
 package uk.ac.ebi.biosamples.client.service;
 
 import java.net.URI;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -35,7 +36,7 @@ public class SampleRetrievalServiceV2 {
   private final URI uriV2;
 
   public SampleRetrievalServiceV2(
-      RestOperations restOperations, URI uriV2, ExecutorService executor) {
+      final RestOperations restOperations, final URI uriV2, final ExecutorService executor) {
     this.restOperations = restOperations;
     this.executor = executor;
     this.uriV2 = uriV2;
@@ -77,14 +78,13 @@ public class SampleRetrievalServiceV2 {
     private final String jwt;
     private final URI uriV2;
 
-    public FetchAccessionsCallable(final List<String> accessions, final URI uriV2) {
+    FetchAccessionsCallable(final List<String> accessions, final URI uriV2) {
       this.accessions = accessions;
-      this.jwt = null;
+      jwt = null;
       this.uriV2 = uriV2;
     }
 
-    public FetchAccessionsCallable(
-        final List<String> accessions, final URI uriV2, final String jwt) {
+    FetchAccessionsCallable(final List<String> accessions, final URI uriV2, final String jwt) {
       this.accessions = accessions;
       this.jwt = jwt;
       this.uriV2 = uriV2;
@@ -92,7 +92,7 @@ public class SampleRetrievalServiceV2 {
 
     @Override
     public Map<String, Sample> call() {
-      URI bulkFetchSamplesUri =
+      final URI bulkFetchSamplesUri =
           UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples" + "/bulk-fetch"))
               .queryParam("accessions", String.join(",", accessions))
               .build(true)
@@ -116,7 +116,7 @@ public class SampleRetrievalServiceV2 {
         responseEntity =
             restOperations.exchange(
                 requestEntity, new ParameterizedTypeReference<Map<String, Sample>>() {});
-      } catch (HttpStatusCodeException e) {
+      } catch (final HttpStatusCodeException e) {
         if (e.getStatusCode().equals(HttpStatus.FORBIDDEN)
             || e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
           return null;
@@ -136,21 +136,21 @@ public class SampleRetrievalServiceV2 {
     private final String jwt;
     private final URI uriV2;
 
-    public FetchAccessionCallable(final String accession, final String jwt, final URI uriV2) {
+    FetchAccessionCallable(final String accession, final String jwt, final URI uriV2) {
       this.accession = accession;
       this.jwt = jwt;
       this.uriV2 = uriV2;
     }
 
-    public FetchAccessionCallable(final String accession, final URI uriV2) {
+    FetchAccessionCallable(final String accession, final URI uriV2) {
       this.accession = accession;
-      this.jwt = null;
+      jwt = null;
       this.uriV2 = uriV2;
     }
 
     @Override
     public Sample call() {
-      URI sampleGetUri =
+      final URI sampleGetUri =
           UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples" + "/" + accession))
               .build(true)
               .toUri();
@@ -170,7 +170,7 @@ public class SampleRetrievalServiceV2 {
 
       try {
         responseEntity = restOperations.exchange(requestEntity, Sample.class);
-      } catch (HttpStatusCodeException e) {
+      } catch (final HttpStatusCodeException e) {
         if (e.getStatusCode().equals(HttpStatus.FORBIDDEN)
             || e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
           return null;

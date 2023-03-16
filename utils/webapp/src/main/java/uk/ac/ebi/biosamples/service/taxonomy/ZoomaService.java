@@ -41,7 +41,7 @@ public class ZoomaService {
   private static final Logger log = LoggerFactory.getLogger(ZoomaService.class);
 
   public ZoomaService() {
-    this.restOperations =
+    restOperations =
         new RestTemplateBuilder(
                 restTemplate -> {
                   // no cusomizations are required for us here - simple RestTemplate should work
@@ -56,27 +56,28 @@ public class ZoomaService {
             .build();
   }
 
-  public Optional<String> queryZooma(String type, String value) {
+  public Optional<String> queryZooma(final String type, final String value) {
     log.trace("Zooma getting : " + type + " : " + value);
 
-    URI uri = uriBuilder.expand(value, type).encode().toUri();
+    final URI uri = uriBuilder.expand(value, type).encode().toUri();
 
-    RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-    long startTime = System.nanoTime();
+    final RequestEntity<Void> requestEntity =
+        RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
+    final long startTime = System.nanoTime();
 
-    ResponseEntity<List<JsonNode>> responseEntity =
+    final ResponseEntity<List<JsonNode>> responseEntity =
         restOperations.exchange(requestEntity, new ParameterizedTypeReference<List<JsonNode>>() {});
 
-    long endTime = System.nanoTime();
+    final long endTime = System.nanoTime();
 
     log.trace("Got zooma response in " + ((endTime - startTime) / 1000000) + "ms");
 
-    List<JsonNode> jsonNodes = responseEntity.getBody();
+    final List<JsonNode> jsonNodes = responseEntity.getBody();
 
     return jsonNodes.stream()
         .map(
             jsonNode -> {
-              AtomicReference<String> ncbiSemanticTag = new AtomicReference<>(null);
+              final AtomicReference<String> ncbiSemanticTag = new AtomicReference<>(null);
 
               jsonNode
                   .get(SEMANTIC_TAGS)

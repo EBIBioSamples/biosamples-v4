@@ -12,12 +12,7 @@ package uk.ac.ebi.biosamples.ebeye.gen;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlValue;
+import javax.xml.bind.annotation.*;
 
 /**
  * Java class for hierarchicalValueType complex type.
@@ -61,9 +56,9 @@ import javax.xml.bind.annotation.XmlValue;
 public class HierarchicalValueType {
 
   @XmlElement(required = true)
-  protected HierarchicalValueType.Root root;
+  private HierarchicalValueType.Root root;
 
-  protected List<HierarchicalValueType.Child> child;
+  private List<HierarchicalValueType.Child> child;
 
   @XmlAttribute(name = "name", required = true)
   protected String name;
@@ -82,8 +77,8 @@ public class HierarchicalValueType {
    *
    * @param value allowed object is {@link HierarchicalValueType.Root }
    */
-  public void setRoot(HierarchicalValueType.Root value) {
-    this.root = value;
+  public void setRoot(final HierarchicalValueType.Root value) {
+    root = value;
   }
 
   /**
@@ -104,9 +99,9 @@ public class HierarchicalValueType {
    */
   public List<HierarchicalValueType.Child> getChild() {
     if (child == null) {
-      child = new ArrayList<HierarchicalValueType.Child>();
+      child = new ArrayList<>();
     }
-    return this.child;
+    return child;
   }
 
   /**
@@ -123,8 +118,8 @@ public class HierarchicalValueType {
    *
    * @param value allowed object is {@link String }
    */
-  public void setName(String value) {
-    this.name = value;
+  public void setName(final String value) {
+    name = value;
   }
 
   /**
@@ -167,7 +162,7 @@ public class HierarchicalValueType {
      *
      * @param value allowed object is {@link String }
      */
-    public void setValue(String value) {
+    public void setValue(final String value) {
       this.value = value;
     }
 
@@ -185,8 +180,8 @@ public class HierarchicalValueType {
      *
      * @param value allowed object is {@link String }
      */
-    public void setLabel(String value) {
-      this.label = value;
+    public void setLabel(final String value) {
+      label = value;
     }
   }
 
@@ -230,7 +225,7 @@ public class HierarchicalValueType {
      *
      * @param value allowed object is {@link String }
      */
-    public void setValue(String value) {
+    public void setValue(final String value) {
       this.value = value;
     }
 
@@ -248,8 +243,8 @@ public class HierarchicalValueType {
      *
      * @param value allowed object is {@link String }
      */
-    public void setLabel(String value) {
-      this.label = value;
+    public void setLabel(final String value) {
+      label = value;
     }
   }
 }

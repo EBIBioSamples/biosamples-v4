@@ -18,8 +18,8 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 public interface FileDownloadSerializer {
 
-  static FileDownloadSerializer getSerializerFor(String format) {
-    FileDownloadSerializer serializer;
+  static FileDownloadSerializer getSerializerFor(final String format) {
+    final FileDownloadSerializer serializer;
     if ("txt".equalsIgnoreCase(format)) {
       serializer = new FileDownloadAccessionsSerializer();
     } else if ("xml".equalsIgnoreCase(format)) {
@@ -42,18 +42,22 @@ public interface FileDownloadSerializer {
     private final ObjectMapper objectMapper =
         new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
-    public String asString(Sample sample) throws IOException {
+    @Override
+    public String asString(final Sample sample) throws IOException {
       return objectMapper.writeValueAsString(sample);
     }
 
+    @Override
     public String startOfFile() {
       return "[";
     }
 
+    @Override
     public String endOfFile() {
       return "]";
     }
 
+    @Override
     public String delimiter() {
       return "," + System.lineSeparator();
     }
@@ -63,36 +67,44 @@ public interface FileDownloadSerializer {
     private final SampleToXmlConverter converter =
         new SampleToXmlConverter(new ExternalReferenceService());
 
-    public String asString(Sample sample) {
+    @Override
+    public String asString(final Sample sample) {
       return Objects.requireNonNull(converter.convert(sample)).getRootElement().asXML();
     }
 
+    @Override
     public String startOfFile() {
       return "<BioSamples>" + System.lineSeparator();
     }
 
+    @Override
     public String endOfFile() {
       return "</BioSamples>";
     }
 
+    @Override
     public String delimiter() {
       return System.lineSeparator();
     }
   }
 
   class FileDownloadAccessionsSerializer implements FileDownloadSerializer {
-    public String asString(Sample sample) {
+    @Override
+    public String asString(final Sample sample) {
       return sample.getAccession();
     }
 
+    @Override
     public String startOfFile() {
       return "";
     }
 
+    @Override
     public String endOfFile() {
       return "";
     }
 
+    @Override
     public String delimiter() {
       return System.lineSeparator();
     }

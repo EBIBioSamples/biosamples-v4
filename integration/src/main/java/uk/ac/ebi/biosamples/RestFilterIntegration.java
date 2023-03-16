@@ -32,9 +32,9 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 @Component
 // @Profile({"default", "rest"})
 public class RestFilterIntegration extends AbstractIntegration {
-  private Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
-  public RestFilterIntegration(BioSamplesClient client) {
+  public RestFilterIntegration(final BioSamplesClient client) {
     super(client);
   }
 
@@ -44,7 +44,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     Sample testSample2 = getTestSample2();
     Sample testSample3 = getTestSample3();
 
-    Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample1.getName());
+    final Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample1.getName());
     if (optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
           "RestFilterIntegration test sample should not be available during phase 1", Phase.ONE);
@@ -121,7 +121,7 @@ public class RestFilterIntegration extends AbstractIntegration {
           "Sample does not exist, sample name: " + testSample2.getName(), Phase.TWO);
     }
 
-    SortedSet<Relationship> relations = new TreeSet<>();
+    final SortedSet<Relationship> relations = new TreeSet<>();
     relations.add(
         Relationship.build(testSample3.getAccession(), "parent of", testSample2.getAccession()));
     testSample3 = Sample.Builder.fromSample(testSample3).withRelationships(relations).build();
@@ -269,7 +269,7 @@ public class RestFilterIntegration extends AbstractIntegration {
 
     log.info("Getting sample 2 using filter on name");
 
-    Filter nameFilter = FilterBuilder.create().onName(testSample2.getName()).build();
+    final Filter nameFilter = FilterBuilder.create().onName(testSample2.getName()).build();
 
     samplePage = client.fetchPagedSampleResource("", Collections.singletonList(nameFilter), 0, 10);
 
@@ -291,7 +291,8 @@ public class RestFilterIntegration extends AbstractIntegration {
 
     log.info("Getting sample 1 and 2 using filter on accession");
 
-    Filter accessionFilter = FilterBuilder.create().onAccession(testSample2.getAccession()).build();
+    final Filter accessionFilter =
+        FilterBuilder.create().onAccession(testSample2.getAccession()).build();
 
     samplePage =
         client.fetchPagedSampleResource("", Collections.singletonList(accessionFilter), 0, 10);
@@ -303,8 +304,8 @@ public class RestFilterIntegration extends AbstractIntegration {
           Phase.THREE);
     }
 
-    String accession1 = testSample1.getAccession();
-    String accession2 = testSample2.getAccession();
+    final String accession1 = testSample1.getAccession();
+    final String accession2 = testSample2.getAccession();
 
     if (!samplePage.getContent().stream()
         .allMatch(
@@ -348,12 +349,12 @@ public class RestFilterIntegration extends AbstractIntegration {
           "Sample does not exist, sample name: " + testSample3.getName(), Phase.FOUR);
     }
 
-    String accession1 = testSample1.getAccession();
-    String accession2 = testSample2.getAccession();
-    String accession3 = testSample3.getAccession();
+    final String accession1 = testSample1.getAccession();
+    final String accession2 = testSample2.getAccession();
+    final String accession3 = testSample3.getAccession();
 
     log.info("Getting sample 1 using filter on date range");
-    Filter dateFilter =
+    final Filter dateFilter =
         FilterBuilder.create()
             .onReleaseDate()
             .from(testSample1.getRelease().minusSeconds(2))
@@ -376,7 +377,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
 
     log.info("Getting sample 3 using filter on relation");
-    Filter relFilter =
+    final Filter relFilter =
         FilterBuilder.create()
             .onRelation("parent of")
             .withValue(testSample2.getAccession())
@@ -399,7 +400,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
 
     log.info("Getting sample 2 using filter on inverse relation");
-    Filter invRelFilter =
+    final Filter invRelFilter =
         FilterBuilder.create()
             .onInverseRelation("parent of")
             .withValue(testSample3.getAccession())
@@ -425,9 +426,9 @@ public class RestFilterIntegration extends AbstractIntegration {
   @Override
   protected void phaseFive() {
     log.info("Getting results filtered by domains");
-    Filter domainFilter =
+    final Filter domainFilter =
         FilterBuilder.create().onDomain(defaultIntegrationSubmissionDomain).build();
-    PagedModel<EntityModel<Sample>> samplePage =
+    final PagedModel<EntityModel<Sample>> samplePage =
         client.fetchPagedSampleResource("", Collections.singletonList(domainFilter), 0, 10);
     if (samplePage.getMetadata().getTotalElements() < 1) {
       throw new IntegrationTestFailException(
@@ -441,11 +442,11 @@ public class RestFilterIntegration extends AbstractIntegration {
   protected void phaseSix() {}
 
   private Sample getTestSample1() {
-    String name = "RestFilterIntegration_sample_1";
-    Instant update = Instant.parse("1999-12-25T11:36:57.00Z");
-    Instant release = Instant.parse("1999-12-25T11:36:57.00Z");
+    final String name = "RestFilterIntegration_sample_1";
+    final Instant update = Instant.parse("1999-12-25T11:36:57.00Z");
+    final Instant release = Instant.parse("1999-12-25T11:36:57.00Z");
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(Attribute.build("TestAttribute", "FilterMe"));
     attributes.add(
         Attribute.build(
@@ -465,11 +466,11 @@ public class RestFilterIntegration extends AbstractIntegration {
   }
 
   private Sample getTestSample2() {
-    String name = "RestFilterIntegration_sample_2";
-    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final String name = "RestFilterIntegration_sample_2";
+    final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
         Attribute.build(
             "testAttribute", "filterMe_1", "http://www.ebi.ac.uk/efo/EFO_0001071", null));
@@ -484,9 +485,9 @@ public class RestFilterIntegration extends AbstractIntegration {
   }
 
   private Sample getTestSample3() {
-    String name = "RestFilterIntegration_sample_3";
-    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final String name = "RestFilterIntegration_sample_3";
+    final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
     return new Sample.Builder(name)
         .withDomain(defaultIntegrationSubmissionDomain)

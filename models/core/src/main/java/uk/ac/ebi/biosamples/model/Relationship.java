@@ -20,7 +20,7 @@ public class Relationship implements Comparable<Relationship> {
   private final String target;
   private final String source;
 
-  private Relationship(String type, String target, String source) {
+  private Relationship(final String type, final String target, final String source) {
 
     this.type = type;
     this.target = target;
@@ -40,16 +40,18 @@ public class Relationship implements Comparable<Relationship> {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
 
-    if (o == this) return true;
+    if (o == this) {
+      return true;
+    }
     if (!(o instanceof Relationship)) {
       return false;
     }
-    Relationship other = (Relationship) o;
-    return Objects.equals(this.type, other.type)
-        && Objects.equals(this.target, other.target)
-        && Objects.equals(this.source, other.source);
+    final Relationship other = (Relationship) o;
+    return Objects.equals(type, other.type)
+        && Objects.equals(target, other.target)
+        && Objects.equals(source, other.source);
   }
 
   @Override
@@ -58,25 +60,25 @@ public class Relationship implements Comparable<Relationship> {
   }
 
   @Override
-  public int compareTo(Relationship other) {
+  public int compareTo(final Relationship other) {
     if (other == null) {
       return 1;
     }
-    if (!Objects.equals(this.type, other.type)) {
-      return this.type.compareTo(other.type);
+    if (!Objects.equals(type, other.type)) {
+      return type.compareTo(other.type);
     }
 
-    if (!Objects.equals(this.target, other.target)) {
-      return this.target.compareTo(other.target);
+    if (!Objects.equals(target, other.target)) {
+      return target.compareTo(other.target);
     }
 
-    if (!Objects.equals(this.source, other.source)) {
-      if (this.source == null && other.source != null) {
+    if (!Objects.equals(source, other.source)) {
+      if (source == null && other.source != null) {
         return 1;
-      } else if (this.source != null && other.source == null) {
+      } else if (source != null && other.source == null) {
         return -1;
       } else {
-        return this.source.compareTo(other.source);
+        return source.compareTo(other.source);
       }
     }
     return 0;
@@ -84,7 +86,7 @@ public class Relationship implements Comparable<Relationship> {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     sb.append("Relationships(");
     sb.append(source);
     sb.append(",");
@@ -97,13 +99,15 @@ public class Relationship implements Comparable<Relationship> {
 
   @JsonCreator
   public static Relationship build(
-      @JsonProperty("source") String source,
-      @JsonProperty("type") String type,
-      @JsonProperty("target") String target) {
-    if (type == null || type.trim().length() == 0)
+      @JsonProperty("source") final String source,
+      @JsonProperty("type") final String type,
+      @JsonProperty("target") final String target) {
+    if (type == null || type.trim().length() == 0) {
       throw new IllegalArgumentException("type cannot be empty");
-    if (target == null || target.trim().length() == 0)
+    }
+    if (target == null || target.trim().length() == 0) {
       throw new IllegalArgumentException("target cannot be empty");
+    }
     return new Relationship(type, target, source);
   }
 
@@ -114,17 +118,17 @@ public class Relationship implements Comparable<Relationship> {
 
     public Builder() {}
 
-    public Builder withSource(String source) {
+    public Builder withSource(final String source) {
       this.source = source;
       return this;
     }
 
-    public Builder withTarget(String target) {
+    public Builder withTarget(final String target) {
       this.target = target;
       return this;
     }
 
-    public Builder withType(String type) {
+    public Builder withType(final String type) {
       this.type = type;
       return this;
     }

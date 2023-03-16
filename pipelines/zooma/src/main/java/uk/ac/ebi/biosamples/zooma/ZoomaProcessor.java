@@ -32,7 +32,7 @@ import uk.ac.ebi.biosamples.utils.ClientUtils;
 @Service
 public class ZoomaProcessor {
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final RestOperations restOperations;
 
@@ -40,8 +40,9 @@ public class ZoomaProcessor {
   private final UriComponents uriBuilder;
 
   public ZoomaProcessor(
-      RestTemplateBuilder restTemplateBuilder, PipelinesProperties pipelinesProperties) {
-    this.restOperations = restTemplateBuilder.build();
+      final RestTemplateBuilder restTemplateBuilder,
+      final PipelinesProperties pipelinesProperties) {
+    restOperations = restTemplateBuilder.build();
     uriBuilder =
         UriComponentsBuilder.fromUriString(
                 pipelinesProperties.getZooma()
@@ -50,17 +51,18 @@ public class ZoomaProcessor {
   }
 
   @Cacheable(value = "zooma", sync = true)
-  public Optional<String> queryZooma(String type, String value) {
+  Optional<String> queryZooma(final String type, final String value) {
     log.trace("Zooma getting : " + type + " : " + value);
-    URI uri = uriBuilder.expand(value, type).encode().toUri();
+    final URI uri = uriBuilder.expand(value, type).encode().toUri();
     // log.info("Zooma uri : "+url);
 
-    RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-    long startTime = System.nanoTime();
-    ResponseEntity<List<JsonNode>> responseEntity =
+    final RequestEntity<Void> requestEntity =
+        RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
+    final long startTime = System.nanoTime();
+    final ResponseEntity<List<JsonNode>> responseEntity =
         ClientUtils.doRetryQuery(
             requestEntity, restOperations, 5, new ParameterizedTypeReference<List<JsonNode>>() {});
-    long endTime = System.nanoTime();
+    final long endTime = System.nanoTime();
     log.trace("Got zooma response in " + ((endTime - startTime) / 1000000) + "ms");
 
     // if zero or more than one result found, abort
@@ -75,7 +77,7 @@ public class ZoomaProcessor {
               + "ms");
       return Optional.empty();
     }
-    JsonNode n = responseEntity.getBody().get(0);
+    final JsonNode n = responseEntity.getBody().get(0);
 
     // if result is anything other than "high" confidence, abort
     /* if (!n.has("confidence") || !n.get("confidence").asText().equals("HIGH")) {
@@ -102,7 +104,7 @@ public class ZoomaProcessor {
               + "ms");
       return Optional.empty();
     }
-    String iri = n.get("semanticTags").get(0).asText();
+    final String iri = n.get("semanticTags").get(0).asText();
     log.info(
         "Zooma mapped "
             + value

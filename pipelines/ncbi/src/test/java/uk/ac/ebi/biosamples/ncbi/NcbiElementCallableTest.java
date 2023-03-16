@@ -42,14 +42,15 @@ public class NcbiElementCallableTest {
 
   @MockBean BioSamplesClient bioSamplesClient;
 
-  TestUtilities testUtils = new TestUtilities();
-  TaxonomyService taxonService = new TaxonomyService();
+  private TestUtilities testUtils = new TestUtilities();
+  private TaxonomyService taxonService = new TaxonomyService();
 
-  Element sample;
+  private Element sample;
 
   @Before
   public void setup() throws Exception {
-    Element sampleSet = testUtils.readNcbiBiosampleSetFromFile("two_organism_ncbi_sample.xml");
+    final Element sampleSet =
+        testUtils.readNcbiBiosampleSetFromFile("two_organism_ncbi_sample.xml");
     sample = XmlPathBuilder.of(sampleSet).path("BioSample").element();
   }
 
@@ -60,18 +61,18 @@ public class NcbiElementCallableTest {
 
   @Test
   public void should_extract_double_organism_if_organism_is_in_description() {
-    ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
+    final ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
     when(bioSamplesClient.persistSampleResource(generatedSample.capture())).thenReturn(null);
 
-    NcbiSampleConversionService ncbiSampleConversionService =
+    final NcbiSampleConversionService ncbiSampleConversionService =
         new NcbiSampleConversionService(taxonService);
-    NcbiElementCallable callable =
+    final NcbiElementCallable callable =
         new NcbiElementCallable(
             ncbiSampleConversionService, bioSamplesClient, sample, "test", new HashMap<>());
     callable.call();
 
-    Sample sample = generatedSample.getValue();
-    List<Attribute> organisms =
+    final Sample sample = generatedSample.getValue();
+    final List<Attribute> organisms =
         sample.getAttributes().stream()
             .filter(attr -> attr.getType().equalsIgnoreCase("organism"))
             .collect(Collectors.toList());
@@ -85,18 +86,18 @@ public class NcbiElementCallableTest {
 
   @Test
   public void should_extract_double_organism_if_organism_is_in_description_with_null_amr_map() {
-    ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
+    final ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
     when(bioSamplesClient.persistSampleResource(generatedSample.capture())).thenReturn(null);
 
-    NcbiSampleConversionService ncbiSampleConversionService =
+    final NcbiSampleConversionService ncbiSampleConversionService =
         new NcbiSampleConversionService(taxonService);
-    NcbiElementCallable callable =
+    final NcbiElementCallable callable =
         new NcbiElementCallable(
             ncbiSampleConversionService, bioSamplesClient, sample, "test", null);
     callable.call();
 
-    Sample sample = generatedSample.getValue();
-    List<Attribute> organisms =
+    final Sample sample = generatedSample.getValue();
+    final List<Attribute> organisms =
         sample.getAttributes().stream()
             .filter(attr -> attr.getType().equalsIgnoreCase("organism"))
             .collect(Collectors.toList());

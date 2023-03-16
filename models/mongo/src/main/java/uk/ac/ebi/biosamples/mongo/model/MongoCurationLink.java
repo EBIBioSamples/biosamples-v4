@@ -43,12 +43,12 @@ public class MongoCurationLink implements Comparable<MongoCurationLink> {
   private final Curation curation;
 
   private MongoCurationLink(
-      String sample,
-      String domain,
-      String webinSubmissionAccountId,
-      Curation curation,
-      String hash,
-      Instant created) {
+      final String sample,
+      final String domain,
+      final String webinSubmissionAccountId,
+      final Curation curation,
+      final String hash,
+      final Instant created) {
     this.sample = sample;
     this.domain = domain;
     this.webinSubmissionAccountId = webinSubmissionAccountId;
@@ -83,14 +83,15 @@ public class MongoCurationLink implements Comparable<MongoCurationLink> {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (o == this) return true;
+  public boolean equals(final Object o) {
+    if (o == this) {
+      return true;
+    }
     if (!(o instanceof CurationLink)) {
       return false;
     }
-    MongoCurationLink other = (MongoCurationLink) o;
-    return Objects.equals(this.curation, other.curation)
-        && Objects.equals(this.sample, other.sample);
+    final MongoCurationLink other = (MongoCurationLink) o;
+    return Objects.equals(curation, other.curation) && Objects.equals(sample, other.sample);
   }
 
   @Override
@@ -99,37 +100,37 @@ public class MongoCurationLink implements Comparable<MongoCurationLink> {
   }
 
   @Override
-  public int compareTo(MongoCurationLink other) {
+  public int compareTo(final MongoCurationLink other) {
     if (other == null) {
       return 1;
     }
 
-    if (!this.sample.equals(other.sample)) {
-      return this.sample.compareTo(other.sample);
+    if (!sample.equals(other.sample)) {
+      return sample.compareTo(other.sample);
     }
-    if (!this.curation.equals(other.curation)) {
-      return this.curation.compareTo(other.curation);
+    if (!curation.equals(other.curation)) {
+      return curation.compareTo(other.curation);
     }
     return 0;
   }
 
   @Override
   public String toString() {
-    String sb = "MongoCurationLink(" + this.sample + "," + this.curation + ")";
+    final String sb = "MongoCurationLink(" + sample + "," + curation + ")";
     return sb;
   }
 
   // Used for deserializtion (JSON -> Java)
   @JsonCreator
   public static MongoCurationLink build(
-      @JsonProperty("sample") String sample,
-      @JsonProperty("curation") Curation curation,
-      @JsonProperty("domain") String domain,
-      @JsonProperty("webinSubmissionAccountId") String webinSubmissionAccountId,
+      @JsonProperty("sample") final String sample,
+      @JsonProperty("curation") final Curation curation,
+      @JsonProperty("domain") final String domain,
+      @JsonProperty("webinSubmissionAccountId") final String webinSubmissionAccountId,
       @JsonProperty("created") @JsonDeserialize(using = CustomInstantDeserializer.class)
-          Instant created) {
+          final Instant created) {
 
-    String hash =
+    final String hash =
         Hashing.sha256()
             .newHasher()
             .putUnencodedChars(curation.getHash())

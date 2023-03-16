@@ -36,32 +36,32 @@ public class EgaSampleExporter {
   private final BioSamplesClient bioSamplesClient;
 
   public EgaSampleExporter(
-      RestTemplateBuilder restTemplateBuilder, BioSamplesClient bioSamplesClient) {
+      final RestTemplateBuilder restTemplateBuilder, final BioSamplesClient bioSamplesClient) {
     restTemplate = restTemplateBuilder.build();
     this.bioSamplesClient = bioSamplesClient;
   }
 
-  public Void populateAndSubmitEgaData(String egaId) {
+  public Void populateAndSubmitEgaData(final String egaId) {
     try {
-      EgaSample egaSample = getEgaSample(egaId);
-      Sample bioSample = getBioSample(egaSample.getBiosampleId());
-      List<String> egaDatasetIds = getEgaDatasets(egaSample.getEgaId());
-      Sample.Builder sampleBuilder = populateSample(bioSample, egaSample);
+      final EgaSample egaSample = getEgaSample(egaId);
+      final Sample bioSample = getBioSample(egaSample.getBiosampleId());
+      final List<String> egaDatasetIds = getEgaDatasets(egaSample.getEgaId());
+      final Sample.Builder sampleBuilder = populateSample(bioSample, egaSample);
       populateReferences(sampleBuilder, egaId, egaDatasetIds);
-      Sample sample = sampleBuilder.build();
+      final Sample sample = sampleBuilder.build();
       updateSample(sample);
       log.info("EGA sample imported: {}", sample.getAccession());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       log.warn("Failed to import EGA sample egaId: {}", egaId, e);
     }
 
     return null;
   }
 
-  public EgaSample getEgaSample(String egaId) {
-    HttpHeaders headers = new HttpHeaders();
+  private EgaSample getEgaSample(final String egaId) {
+    final HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
-    ResponseEntity<EgaResponse> response =
+    final ResponseEntity<EgaResponse> response =
         restTemplate.exchange(
             EGA_SAMPLE_URL + egaId,
             HttpMethod.GET,
@@ -72,9 +72,9 @@ public class EgaSampleExporter {
       throw new RuntimeException("Could not retrieve EGA sample");
     }
 
-    EgaSample egaSample = new EgaSample();
+    final EgaSample egaSample = new EgaSample();
     if (Objects.requireNonNull(response.getBody()).getResponse().getNumTotalResults() == 1) {
-      Result result = response.getBody().getResponse().getResult().get(0);
+      final Result result = response.getBody().getResponse().getResult().get(0);
       egaSample.setEgaId(result.getEgaStableId());
       egaSample.setBiosampleId(result.getBioSampleId());
       egaSample.setSubjectId(result.getSubjectId());
@@ -87,18 +87,18 @@ public class EgaSampleExporter {
     return egaSample;
   }
 
-  public Sample getBioSample(String biosampleId) {
-    Optional<EntityModel<Sample>> sample =
+  private Sample getBioSample(final String biosampleId) {
+    final Optional<EntityModel<Sample>> sample =
         bioSamplesClient.fetchSampleResource(biosampleId, Optional.of(Collections.emptyList()));
     return sample
         .map(EntityModel::getContent)
         .orElseThrow(() -> new RuntimeException("Could not retrieve BioSamples"));
   }
 
-  public List<String> getEgaDatasets(String egaId) {
-    HttpHeaders headers = new HttpHeaders();
+  private List<String> getEgaDatasets(final String egaId) {
+    final HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
-    ResponseEntity<EgaResponse> response =
+    final ResponseEntity<EgaResponse> response =
         restTemplate.exchange(
             EGA_DATASET_URL + egaId,
             HttpMethod.GET,
@@ -108,7 +108,7 @@ public class EgaSampleExporter {
       throw new RuntimeException("Could not retrieve EGA sample");
     }
 
-    List<String> datasetIds;
+    final List<String> datasetIds;
     if (Objects.requireNonNull(response.getBody()).getResponse().getNumTotalResults() >= 1) {
       datasetIds =
           response.getBody().getResponse().getResult().stream()
@@ -121,10 +121,10 @@ public class EgaSampleExporter {
     return datasetIds;
   }
 
-  public List<String> getDuoCodes(String egaDatasetId) {
-    HttpHeaders headers = new HttpHeaders();
+  private List<String> getDuoCodes(final String egaDatasetId) {
+    final HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
-    ResponseEntity<EgaDatasetResponse> response =
+    final ResponseEntity<EgaDatasetResponse> response =
         restTemplate.exchange(
             EGA_DUO_URL + egaDatasetId,
             HttpMethod.GET,
@@ -134,7 +134,7 @@ public class EgaSampleExporter {
       throw new RuntimeException("Could not retrieve EGA dataset");
     }
 
-    List<DataUseCondition> duoCodes;
+    final List<DataUseCondition> duoCodes;
     if (Objects.requireNonNull(response.getBody()).getDataUseConditions() != null
         && !response.getBody().getDataUseConditions().isEmpty()) {
       duoCodes = response.getBody().getDataUseConditions();
@@ -147,8 +147,8 @@ public class EgaSampleExporter {
         .collect(Collectors.toList());
   }
 
-  public Sample.Builder populateSample(Sample sample, EgaSample egaSample) {
-    Set<Attribute> attributes = sample.getAttributes();
+  private Sample.Builder populateSample(final Sample sample, final EgaSample egaSample) {
+    final Set<Attribute> attributes = sample.getAttributes();
     attributes.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
@@ -162,23 +162,23 @@ public class EgaSampleExporter {
     return Sample.Builder.fromSample(sample).withAttributes(attributes).withRelease(Instant.now());
   }
 
-  public void populateReferences(
-      Sample.Builder sampleBuilder, String egaId, List<String> egaDatasetIds) {
+  private void populateReferences(
+      final Sample.Builder sampleBuilder, final String egaId, final List<String> egaDatasetIds) {
     sampleBuilder.addExternalReference(ExternalReference.build(EGA_SAMPLE_URL + egaId));
 
-    for (String egaDatasetId : egaDatasetIds) {
-      List<String> duoCodes = getDuoCodes(egaDatasetId);
+    for (final String egaDatasetId : egaDatasetIds) {
+      final List<String> duoCodes = getDuoCodes(egaDatasetId);
       sampleBuilder.addExternalReference(
           ExternalReference.build(
               "https://ega-archive.org/datasets/" + egaDatasetId, new TreeSet<>(duoCodes)));
     }
   }
 
-  public void updateSample(Sample sample) {
+  private void updateSample(final Sample sample) {
     bioSamplesClient.persistSampleResource(sample);
   }
 
-  public static String getGenderIri(String gender) {
+  private static String getGenderIri(final String gender) {
     String genderIri = null;
     if ("female".equalsIgnoreCase(gender)) {
       genderIri = "http://purl.obolibrary.org/obo/PATO_0000383";

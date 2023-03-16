@@ -18,13 +18,13 @@ import javax.xml.bind.annotation.XmlElement;
 /** Class representing the sitemap entry */
 public class XmlSitemap {
 
-  private W3CDateFormat dateFormat;
+  private final W3CDateFormat dateFormat;
 
   public XmlSitemap() {
     this("");
   }
 
-  public XmlSitemap(String loc) {
+  public XmlSitemap(final String loc) {
     dateFormat = new W3CDateFormat(W3CDateFormat.Pattern.DAY);
     dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     lastmod = dateFormat.format(new Date());

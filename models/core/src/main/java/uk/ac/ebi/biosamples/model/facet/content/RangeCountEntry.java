@@ -20,7 +20,7 @@ public class RangeCountEntry implements Comparable<RangeCountEntry> {
   private final String endLabel;
   private final long count;
 
-  private RangeCountEntry(String startLabel, String endLabel, long count) {
+  private RangeCountEntry(final String startLabel, final String endLabel, final long count) {
     this.startLabel = startLabel;
     this.endLabel = endLabel;
     this.count = count;
@@ -43,13 +43,13 @@ public class RangeCountEntry implements Comparable<RangeCountEntry> {
   }
 
   @Override
-  public int compareTo(RangeCountEntry o) {
-    return Long.compare(this.count, o.count);
+  public int compareTo(final RangeCountEntry o) {
+    return Long.compare(count, o.count);
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     sb.append("LabelCountEntry(");
     sb.append(getLabel());
     sb.append(",");
@@ -60,9 +60,9 @@ public class RangeCountEntry implements Comparable<RangeCountEntry> {
 
   @JsonCreator
   public static RangeCountEntry build(
-      @JsonProperty("label") String startLabel,
-      @JsonProperty("label") String endLabel,
-      @JsonProperty("count") long count) {
+      @JsonProperty("label") final String startLabel,
+      @JsonProperty("label") final String endLabel,
+      @JsonProperty("count") final long count) {
     if (startLabel == null
         || startLabel.trim().length() == 0
         || endLabel == null
@@ -73,7 +73,7 @@ public class RangeCountEntry implements Comparable<RangeCountEntry> {
   }
 
   @JsonCreator
-  public static RangeCountEntry build(Map<String, String> entryMap) {
+  public static RangeCountEntry build(final Map<String, String> entryMap) {
     if (isValidLabelCount(entryMap)) {
       return new RangeCountEntry(
           entryMap.get("startLabel"),
@@ -84,7 +84,7 @@ public class RangeCountEntry implements Comparable<RangeCountEntry> {
         "Provided object is not suitable to be converted to RangeCountEntry");
   }
 
-  public static boolean isValidLabelCount(Map<String, String> content) {
+  private static boolean isValidLabelCount(final Map<String, String> content) {
     return content.keySet().containsAll(Arrays.asList("startLabel", "endLabel", "count"));
   }
 }

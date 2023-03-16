@@ -12,11 +12,7 @@ package uk.ac.ebi.biosamples.zooma;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
@@ -50,26 +46,26 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
   private final PipelineFutureCallback pipelineFutureCallback;
 
   public ZoomaApplicationRunner(
-      BioSamplesClient bioSamplesClient,
-      PipelinesProperties pipelinesProperties,
-      ZoomaProcessor zoomaProcessor,
-      CurationApplicationService curationApplicationService,
-      AnalyticsService analyticsService) {
+      final BioSamplesClient bioSamplesClient,
+      final PipelinesProperties pipelinesProperties,
+      final ZoomaProcessor zoomaProcessor,
+      final CurationApplicationService curationApplicationService,
+      final AnalyticsService analyticsService) {
     this.bioSamplesClient = bioSamplesClient;
     this.pipelinesProperties = pipelinesProperties;
     this.zoomaProcessor = zoomaProcessor;
     this.curationApplicationService = curationApplicationService;
     this.analyticsService = analyticsService;
-    this.pipelineFutureCallback = new PipelineFutureCallback();
+    pipelineFutureCallback = new PipelineFutureCallback();
   }
 
   @Override
-  public void run(ApplicationArguments args) {
-    Instant startTime = Instant.now();
-    Collection<Filter> filters = PipelineUtils.getDateFilters(args);
+  public void run(final ApplicationArguments args) {
+    final Instant startTime = Instant.now();
+    final Collection<Filter> filters = PipelineUtils.getDateFilters(args);
     long sampleCount = 0;
 
-    try (AdaptiveThreadPoolExecutor executorService =
+    try (final AdaptiveThreadPoolExecutor executorService =
         AdaptiveThreadPoolExecutor.create(
             100,
             10000,
@@ -77,17 +73,17 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
             pipelinesProperties.getThreadCount(),
             pipelinesProperties.getThreadCountMax())) {
 
-      Map<String, Future<PipelineResult>> futures = new HashMap<>();
+      final Map<String, Future<PipelineResult>> futures = new HashMap<>();
 
-      for (EntityModel<Sample> sampleResource :
+      for (final EntityModel<Sample> sampleResource :
           bioSamplesClient.fetchSampleResourceAll("", filters)) {
         LOG.trace("Handling " + sampleResource);
-        Sample sample = sampleResource.getContent();
+        final Sample sample = sampleResource.getContent();
         if (sample == null) {
           throw new RuntimeException("Sample should not be null");
         }
 
-        Callable<PipelineResult> task =
+        final Callable<PipelineResult> task =
             new SampleZoomaCallable(
                 bioSamplesClient,
                 sample,
@@ -105,7 +101,7 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
     } catch (final Exception e) {
       LOG.error("Pipeline failed to finish successfully", e);
     } finally {
-      Instant endTime = Instant.now();
+      final Instant endTime = Instant.now();
       LOG.info("Total samples processed {}", sampleCount);
       LOG.info("Total curation objects added {}", pipelineFutureCallback.getTotalCount());
       LOG.info("Pipeline finished at {}", endTime);
@@ -113,7 +109,7 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
           "Pipeline total running time {} seconds",
           Duration.between(startTime, endTime).getSeconds());
 
-      PipelineAnalytics pipelineAnalytics =
+      final PipelineAnalytics pipelineAnalytics =
           new PipelineAnalytics(
               "zooma", startTime, endTime, sampleCount, pipelineFutureCallback.getTotalCount());
       pipelineAnalytics.setDateRange(filters);
@@ -123,7 +119,7 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
       if (SampleZoomaCallable.failedQueue.size() > 0) {
         // put the first ones on the queue into a list
         // limit the size of list to avoid overload
-        List<String> fails = new LinkedList<>();
+        final List<String> fails = new LinkedList<>();
         while (fails.size() < 100 && SampleZoomaCallable.failedQueue.peek() != null) {
           fails.add(SampleZoomaCallable.failedQueue.poll());
         }

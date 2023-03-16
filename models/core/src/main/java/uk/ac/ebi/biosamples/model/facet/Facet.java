@@ -10,11 +10,7 @@
 */
 package uk.ac.ebi.biosamples.model.facet;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.*;
 import java.util.Optional;
 import uk.ac.ebi.biosamples.model.facet.content.FacetContent;
 import uk.ac.ebi.biosamples.model.filter.FilterType;
@@ -62,8 +58,9 @@ public interface Facet extends Comparable<Facet> {
     Builder withContent(FacetContent content);
   }
 
-  default int compareTo(Facet otherFacet) {
-    return FacetHelper.compareFacets(this.getLabel(), otherFacet.getLabel());
+  @Override
+  default int compareTo(final Facet otherFacet) {
+    return FacetHelper.compareFacets(getLabel(), otherFacet.getLabel());
     //    return Long.compare(this.getCount(), otherFacet.getCount());
   }
 }

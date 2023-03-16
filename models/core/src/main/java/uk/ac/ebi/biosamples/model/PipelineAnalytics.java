@@ -26,11 +26,11 @@ public class PipelineAnalytics {
   private long modifiedRecords;
 
   public PipelineAnalytics(
-      String name,
-      Instant startTime,
-      Instant endTime,
-      long processedRecords,
-      long modifiedRecords) {
+      final String name,
+      final Instant startTime,
+      final Instant endTime,
+      final long processedRecords,
+      final long modifiedRecords) {
     this.name = name;
     this.startTime = startTime;
     this.endTime = endTime;
@@ -42,7 +42,7 @@ public class PipelineAnalytics {
     return startTime;
   }
 
-  public void setStartTime(Instant startTime) {
+  public void setStartTime(final Instant startTime) {
     this.startTime = startTime;
   }
 
@@ -50,7 +50,7 @@ public class PipelineAnalytics {
     return endTime;
   }
 
-  public void setEndTime(Instant endTime) {
+  public void setEndTime(final Instant endTime) {
     this.endTime = endTime;
   }
 
@@ -58,21 +58,21 @@ public class PipelineAnalytics {
     return dateRange;
   }
 
-  public void setDateRange(String dateRange) {
+  public void setDateRange(final String dateRange) {
     this.dateRange = dateRange;
   }
 
-  public void setDateRange(Collection<Filter> filters) {
-    DateRangeFilter dateRangeFilter =
+  public void setDateRange(final Collection<Filter> filters) {
+    final DateRangeFilter dateRangeFilter =
         filters.stream()
             .filter(f -> f instanceof DateRangeFilter)
             .map(DateRangeFilter.class::cast)
             .findFirst()
             .orElse(null);
     if (dateRangeFilter != null && dateRangeFilter.getContent().isPresent()) {
-      DateTimeFormatter dateTimeFormatter =
+      final DateTimeFormatter dateTimeFormatter =
           DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault());
-      this.dateRange =
+      dateRange =
           dateTimeFormatter.format(dateRangeFilter.getContent().get().getFrom())
               + " : "
               + dateTimeFormatter.format(dateRangeFilter.getContent().get().getUntil());
@@ -83,7 +83,7 @@ public class PipelineAnalytics {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName(final String name) {
     this.name = name;
   }
 
@@ -91,7 +91,7 @@ public class PipelineAnalytics {
     return processedRecords;
   }
 
-  public void setProcessedRecords(long processedRecords) {
+  public void setProcessedRecords(final long processedRecords) {
     this.processedRecords = processedRecords;
   }
 
@@ -99,7 +99,7 @@ public class PipelineAnalytics {
     return modifiedRecords;
   }
 
-  public void setModifiedRecords(long modifiedRecords) {
+  public void setModifiedRecords(final long modifiedRecords) {
     this.modifiedRecords = modifiedRecords;
   }
 }

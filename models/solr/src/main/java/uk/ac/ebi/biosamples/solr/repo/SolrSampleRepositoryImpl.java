@@ -35,7 +35,7 @@ import uk.ac.ebi.biosamples.solr.model.SolrSample;
 @Component
 public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
   // this must be SolrTemplate not SolrOperations because we use some of the details
-  private SolrTemplate solrTemplate;
+  private final SolrTemplate solrTemplate;
   private final QueryParsers queryParsers = new QueryParsers(new SimpleSolrMappingContext());
 
   /**
@@ -44,8 +44,8 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
    *
    * @param solrClient
    */
-  public SolrSampleRepositoryImpl(SolrClient solrClient) {
-    this.solrTemplate = createTemplate(solrClient);
+  public SolrSampleRepositoryImpl(final SolrClient solrClient) {
+    solrTemplate = createTemplate(solrClient);
   }
 
   /**
@@ -54,30 +54,32 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
    * @param solrClient
    * @return
    */
-  private SolrTemplate createTemplate(SolrClient solrClient) {
-    SolrTemplate template = new SolrTemplate(solrClient);
+  private SolrTemplate createTemplate(final SolrClient solrClient) {
+    final SolrTemplate template = new SolrTemplate(solrClient);
     template.afterPropertiesSet();
     return template;
   }
 
   @Override
   // TODO cacheing
-  public Page<FacetFieldEntry> getFacetFields(FacetQuery query, Pageable facetPageable) {
+  public Page<FacetFieldEntry> getFacetFields(
+      final FacetQuery query, final Pageable facetPageable) {
     // configure the facet options to use the attribute types fields
     // and to have the appropriate paging
-    FacetOptions facetOptions = new FacetOptions();
+    final FacetOptions facetOptions = new FacetOptions();
     facetOptions.addFacetOnField("facetfields_ss");
     facetOptions.setPageable(facetPageable);
 
     query.setFacetOptions(facetOptions);
     // execute the query against the solr server
-    FacetPage<SolrSample> page = solrTemplate.queryForFacetPage("samples", query, SolrSample.class);
+    final FacetPage<SolrSample> page =
+        solrTemplate.queryForFacetPage("samples", query, SolrSample.class);
     return page.getFacetResultPage("facetfields_ss");
   }
 
   @Override
   public FacetPage<?> getFacets(
-      FacetQuery query, List<String> facetFields, Pageable facetPageable) {
+      final FacetQuery query, final List<String> facetFields, final Pageable facetPageable) {
 
     if (facetFields == null || facetFields.size() == 0) {
       throw new IllegalArgumentException("Must provide fields to facet on");
@@ -85,8 +87,8 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
 
     // configure the facet options to use the provided fields
     // and to have the appropriate paging
-    FacetOptions facetOptions = new FacetOptions();
-    for (String field : facetFields) {
+    final FacetOptions facetOptions = new FacetOptions();
+    for (final String field : facetFields) {
       facetOptions.addFacetOnField(field);
     }
     facetOptions.setPageable(facetPageable);
@@ -98,10 +100,10 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
 
   @Override
   public FacetPage<?> getFacets(
-      FacetQuery query,
-      List<String> facetFields,
-      List<String> rangeFacetFields,
-      Pageable facetPageable) {
+      final FacetQuery query,
+      final List<String> facetFields,
+      final List<String> rangeFacetFields,
+      final Pageable facetPageable) {
 
     if (facetFields == null || facetFields.isEmpty()) {
       throw new IllegalArgumentException("Must provide fields to facet on");
@@ -118,18 +120,19 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
 
     // configure the facet options to use the provided fields
     // and to have the appropriate paging
-    FacetOptions facetOptions = new FacetOptions();
-    for (String field : facetFields) {
+    final FacetOptions facetOptions = new FacetOptions();
+    for (final String field : facetFields) {
       facetOptions.addFacetOnField(field);
       facetOptions.addFacetQuery(new SimpleFacetQuery(new Criteria(field)));
     }
     facetOptions.setPageable(facetPageable);
 
     // todo generalise range facets apart from dates and remove hardcoded date boundaries
-    for (String field : rangeFacetFields) {
-      LocalDateTime dateTime = LocalDateTime.now();
-      Date end = Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
-      Date start = Date.from(dateTime.minusYears(5).atZone(ZoneId.systemDefault()).toInstant());
+    for (final String field : rangeFacetFields) {
+      final LocalDateTime dateTime = LocalDateTime.now();
+      final Date end = Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
+      final Date start =
+          Date.from(dateTime.minusYears(5).atZone(ZoneId.systemDefault()).toInstant());
       facetOptions.addFacetByRange(
           new FacetOptions.FieldWithDateRangeParameters(field, start, end, "+1YEAR")
               .setInclude(FacetParams.FacetRangeInclude.ALL)
@@ -144,45 +147,45 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
 
   @Override
   public FacetPage<?> getRangeFacets(
-      FacetQuery query, List<String> facetFields, Pageable facetPageable) {
+      final FacetQuery query, final List<String> facetFields, final Pageable facetPageable) {
     // TODO Implement the method
     return null;
   }
 
   @Override
-  public Page<SolrSample> findByQuery(Query query) {
+  public Page<SolrSample> findByQuery(final Query query) {
     return solrTemplate.query("samples", query, SolrSample.class);
   }
 
   @Override
   public CursorArrayList<SolrSample> findByQueryCursorMark(
-      Query query, String cursorMark, int size) {
+      final Query query, final String cursorMark, final int size) {
 
     // TODO this is a different set of query parsers than the solrOperation has itself
-    SolrQuery solrQuery =
+    final SolrQuery solrQuery =
         queryParsers.getForClass(query.getClass()).constructSolrQuery(query, SolrSample.class);
 
     solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
     solrQuery.set(CommonParams.ROWS, size);
 
-    QueryResponse response =
+    final QueryResponse response =
         solrTemplate.execute(solrClient -> solrClient.query("samples", solrQuery));
     response.getNextCursorMark();
-    List<SolrSample> solrSampleList =
+    final List<SolrSample> solrSampleList =
         solrTemplate.convertQueryResponseToBeans(response, SolrSample.class);
 
     return new CursorArrayList<>(solrSampleList, response.getNextCursorMark());
   }
 
   @Override
-  public FacetPage<SolrSample> findByFacetQuery(FacetQuery query) {
+  public FacetPage<SolrSample> findByFacetQuery(final FacetQuery query) {
     return solrTemplate.queryForFacetPage("samples", query, SolrSample.class);
   }
 
   @Override
-  public SolrSample saveWithoutCommit(SolrSample entity) {
+  public SolrSample saveWithoutCommit(final SolrSample entity) {
     Assert.notNull(entity, "Cannot save 'null' entity.");
-    this.solrTemplate.saveBean("samples", entity);
+    solrTemplate.saveBean("samples", entity);
     return entity;
   }
 }

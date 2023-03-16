@@ -36,18 +36,20 @@ public class SampleCertificationService {
   private final Traverson traverson;
   private final RestOperations restOperations;
 
-  public SampleCertificationService(RestOperations restOperations, Traverson traverson) {
+  public SampleCertificationService(
+      final RestOperations restOperations, final Traverson traverson) {
     this.restOperations = restOperations;
     this.traverson = traverson;
   }
 
   /** @param jwt json web token authorizing access to the domain the sample is assigned to */
-  public EntityModel<Sample> submit(Sample sample, String jwt) throws RestClientException {
+  public EntityModel<Sample> submit(final Sample sample, final String jwt)
+      throws RestClientException {
     try {
       return new CertifyCallable(sample, jwt).call();
-    } catch (RestClientException e) {
+    } catch (final RestClientException e) {
       throw e;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -56,14 +58,14 @@ public class SampleCertificationService {
     private final Sample sample;
     private final String jwt;
 
-    public CertifyCallable(Sample sample, String jwt) {
+    CertifyCallable(final Sample sample, final String jwt) {
       this.sample = sample;
       this.jwt = jwt;
     }
 
     @Override
     public EntityModel<Sample> call() {
-      PagedModel<EntityModel<Sample>> pagedSamples =
+      final PagedModel<EntityModel<Sample>> pagedSamples =
           traverson
               .follow("samples")
               .toObject(new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {});
@@ -71,11 +73,11 @@ public class SampleCertificationService {
 
       sampleLink = sampleLink.expand(sample.getAccession());
 
-      URI uri = getSampleCertificationURI(sampleLink);
+      final URI uri = getSampleCertificationURI(sampleLink);
 
       log.info("PUTing to " + uri + " " + sample);
 
-      RequestEntity.BodyBuilder bodyBuilder =
+      final RequestEntity.BodyBuilder bodyBuilder =
           RequestEntity.put(uri)
               .contentType(MediaType.APPLICATION_JSON)
               .accept(MediaTypes.HAL_JSON);
@@ -83,15 +85,15 @@ public class SampleCertificationService {
         bodyBuilder.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
       }
 
-      RequestEntity<Sample> requestEntity = bodyBuilder.body(sample);
+      final RequestEntity<Sample> requestEntity = bodyBuilder.body(sample);
 
-      ResponseEntity<EntityModel<Sample>> responseEntity;
+      final ResponseEntity<EntityModel<Sample>> responseEntity;
 
       try {
         responseEntity =
             restOperations.exchange(
                 requestEntity, new ParameterizedTypeReference<EntityModel<Sample>>() {});
-      } catch (RestClientResponseException e) {
+      } catch (final RestClientResponseException e) {
         log.error(
             "Unable to PUT to "
                 + uri
@@ -106,8 +108,8 @@ public class SampleCertificationService {
     }
   }
 
-  private URI getSampleCertificationURI(Link sampleLink) {
-    UriComponentsBuilder uriComponentsBuilder =
+  private URI getSampleCertificationURI(final Link sampleLink) {
+    final UriComponentsBuilder uriComponentsBuilder =
         UriComponentsBuilder.fromUriString(sampleLink.getHref() + "/certify");
 
     return uriComponentsBuilder.build(true).toUri();

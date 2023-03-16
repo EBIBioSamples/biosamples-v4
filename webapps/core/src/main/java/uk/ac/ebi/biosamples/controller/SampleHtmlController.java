@@ -158,7 +158,8 @@ public class SampleHtmlController {
     model.addAttribute("jsonLD", jsonLDService.jsonLDToString(jsonLDDataset));
     model.addAttribute("downloadURL", downloadURL);
 
-    addCacheControlHeadersToResponse(domains, response, bioSamplesProperties.getBiosamplesCorePageCacheMaxAge());
+    addCacheControlHeadersToResponse(
+        domains, response, bioSamplesProperties.getBiosamplesCorePageCacheMaxAge());
     return "samples";
   }
 
@@ -201,7 +202,8 @@ public class SampleHtmlController {
     model.addAttribute("filters", filtersList);
     model.addAttribute("facets", facetService.getFacets(text, filterCollection, domains, 20, 10));
 
-    addCacheControlHeadersToResponse(domains, response, bioSamplesProperties.getBiosamplesCoreFacetCacheMaxAge());
+    addCacheControlHeadersToResponse(
+        domains, response, bioSamplesProperties.getBiosamplesCoreFacetCacheMaxAge());
     return "fragments/facets";
   }
 
@@ -370,9 +372,10 @@ public class SampleHtmlController {
     return "redirect:/samples";
   }
 
-  private void addCacheControlHeadersToResponse(final Collection<String> domains,
-                                                final HttpServletResponse response, long maxAge) {
-    // EBI load balancer does cache but doesn't add age header, so clients could cache up to twice this age
+  private void addCacheControlHeadersToResponse(
+      final Collection<String> domains, final HttpServletResponse response, long maxAge) {
+    // EBI load balancer does cache but doesn't add age header, so clients could cache up to twice
+    // this age
     CacheControl cacheControl = CacheControl.maxAge(maxAge, TimeUnit.SECONDS);
     // if the user has access to any domains, then mark the response as
     // private as must be using AAP and responses will be different

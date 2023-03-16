@@ -28,25 +28,26 @@ import uk.ac.ebi.biosamples.validation.ValidatorI;
 
 @Service
 public class Certifier {
-  private static Logger LOG = LoggerFactory.getLogger(Certifier.class);
-  private static Logger EVENTS = LoggerFactory.getLogger("events");
+  private static final Logger LOG = LoggerFactory.getLogger(Certifier.class);
+  private static final Logger EVENTS = LoggerFactory.getLogger("events");
 
-  private ConfigLoader configLoader;
-  private ValidatorI validator;
-  private Applicator applicator;
+  private final ConfigLoader configLoader;
+  private final ValidatorI validator;
+  private final Applicator applicator;
 
   public Certifier(
-      ConfigLoader configLoader,
-      @Qualifier("javaValidator") ValidatorI validator,
-      Applicator applicator) {
+      final ConfigLoader configLoader,
+      @Qualifier("javaValidator") final ValidatorI validator,
+      final Applicator applicator) {
     this.validator = validator;
     this.configLoader = configLoader;
     this.applicator = applicator;
   }
 
-  public CertificationResult certify(SampleDocument sampleDocument, boolean isJustCertification) {
+  public CertificationResult certify(
+      final SampleDocument sampleDocument, final boolean isJustCertification) {
     if (sampleDocument == null) {
-      String message = "cannot certify a null sampleDocument";
+      final String message = "cannot certify a null sampleDocument";
       LOG.warn(message);
       throw new IllegalArgumentException(message);
     }
@@ -55,9 +56,11 @@ public class Certifier {
   }
 
   public CertificationResult certify(
-      SampleDocument sampleDocument, boolean isJustCertification, String inputChecklist) {
+      final SampleDocument sampleDocument,
+      final boolean isJustCertification,
+      final String inputChecklist) {
     if (sampleDocument == null) {
-      String message = "cannot certify a null sampleDocument";
+      final String message = "cannot certify a null sampleDocument";
       LOG.warn(message);
       throw new IllegalArgumentException(message);
     }
@@ -66,21 +69,24 @@ public class Certifier {
   }
 
   private CertificationResult certify(
-      SampleDocument sampleDocument,
-      List<CurationResult> curationResults,
-      boolean isJustCertification) {
-    String accession = getAccession(sampleDocument);
-    CertificationResult certificationResult = new CertificationResult(accession);
+      final SampleDocument sampleDocument,
+      final List<CurationResult> curationResults,
+      final boolean isJustCertification) {
+    final String accession = getAccession(sampleDocument);
+    final CertificationResult certificationResult = new CertificationResult(accession);
 
-    String message;
+    final String message;
 
-    if (accession != null && !accession.isEmpty()) message = accession;
-    else message = "New sample";
+    if (accession != null && !accession.isEmpty()) {
+      message = accession;
+    } else {
+      message = "New sample";
+    }
 
     boolean certified = false;
     String suggestionMessage = "";
 
-    for (Checklist checklist : configLoader.config.getChecklists()) {
+    for (final Checklist checklist : configLoader.config.getChecklists()) {
       try {
         validator.validate(checklist.getFileName(), sampleDocument.getDocument());
         EVENTS.info(
@@ -88,13 +94,13 @@ public class Certifier {
         certified = true;
         certificationResult.add(new Certificate(sampleDocument, curationResults, checklist));
         EVENTS.info(String.format("%s issued certificate %s", message, checklist.getID()));
-      } catch (IOException ioe) {
+      } catch (final IOException ioe) {
         LOG.error(String.format("cannot open schema at %s", checklist.getFileName()), ioe);
-      } catch (ValidationException ve) {
+      } catch (final ValidationException ve) {
         EVENTS.info(String.format("%s validation failed against %s", message, checklist.getID()));
 
         if (!isJustCertification && checklist.isBlock()) {
-          List<Recommendation> recommendations = configLoader.config.getRecommendations();
+          final List<Recommendation> recommendations = configLoader.config.getRecommendations();
           List<Recommendation> matchedRecommendations = new ArrayList<>();
           List<Suggestion> matchedSuggestions = new ArrayList<>();
 
@@ -135,33 +141,36 @@ public class Certifier {
     return certificationResult;
   }
 
-  private String getAccession(SampleDocument sampleDocument) {
+  private String getAccession(final SampleDocument sampleDocument) {
     return sampleDocument.getAccession();
   }
 
   private CertificationResult certify(
-      SampleDocument sampleDocument,
-      List<CurationResult> curationResults,
-      boolean isJustCertification,
-      String inputChecklist) {
-    String accession = getAccession(sampleDocument);
-    CertificationResult certificationResult = new CertificationResult(accession);
+      final SampleDocument sampleDocument,
+      final List<CurationResult> curationResults,
+      final boolean isJustCertification,
+      final String inputChecklist) {
+    final String accession = getAccession(sampleDocument);
+    final CertificationResult certificationResult = new CertificationResult(accession);
 
-    String message;
+    final String message;
 
-    if (accession != null && !accession.isEmpty()) message = accession;
-    else message = "New sample";
+    if (accession != null && !accession.isEmpty()) {
+      message = accession;
+    } else {
+      message = "New sample";
+    }
 
     boolean certified = false;
     String suggestionMessage = "";
 
-    Optional<Checklist> filteredChecklist =
+    final Optional<Checklist> filteredChecklist =
         configLoader.config.getChecklists().stream()
             .filter(checklist -> checklist.getName().equalsIgnoreCase(inputChecklist))
             .findAny();
 
     if (filteredChecklist.isPresent()) {
-      Checklist checklist = filteredChecklist.get();
+      final Checklist checklist = filteredChecklist.get();
 
       try {
         validator.validate(checklist.getFileName(), sampleDocument.getDocument());
@@ -170,13 +179,13 @@ public class Certifier {
         certified = true;
         certificationResult.add(new Certificate(sampleDocument, curationResults, checklist));
         EVENTS.info(String.format("%s issued certificate %s", message, checklist.getID()));
-      } catch (IOException ioe) {
+      } catch (final IOException ioe) {
         LOG.error(String.format("cannot open schema at %s", checklist.getFileName()), ioe);
-      } catch (ValidationException ve) {
+      } catch (final ValidationException ve) {
         EVENTS.info(String.format("%s validation failed against %s", message, checklist.getID()));
 
         if (!isJustCertification && checklist.isBlock()) {
-          List<Recommendation> recommendations = configLoader.config.getRecommendations();
+          final List<Recommendation> recommendations = configLoader.config.getRecommendations();
           List<Recommendation> matchedRecommendations = new ArrayList<>();
           List<Suggestion> matchedSuggestions = new ArrayList<>();
 
@@ -220,9 +229,9 @@ public class Certifier {
   }
 
   public CertificationResult certify(
-      HasCuratedSample hasCuratedSample, boolean isJustCertification) {
+      final HasCuratedSample hasCuratedSample, final boolean isJustCertification) {
     if (hasCuratedSample == null) {
-      String message = "cannot certify a null plan result";
+      final String message = "cannot certify a null plan result";
       LOG.warn(message);
       throw new IllegalArgumentException(message);
     }
@@ -235,8 +244,10 @@ public class Certifier {
 
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public static class SampleChecklistValidationFailureException extends RuntimeException {
-    public SampleChecklistValidationFailureException(
-        String checklistDetails, String matchedSuggestionMessages, ValidationException ve) {
+    SampleChecklistValidationFailureException(
+        final String checklistDetails,
+        final String matchedSuggestionMessages,
+        final ValidationException ve) {
       super(
           "Sample failed validation against BioSamples minimal checklist "
               + checklistDetails
@@ -249,7 +260,7 @@ public class Certifier {
 
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public static class SampleChecklistMissingException extends RuntimeException {
-    public SampleChecklistMissingException(String inputChecklist) {
+    SampleChecklistMissingException(final String inputChecklist) {
       super("Checklist by name " + inputChecklist + " doesn't exist");
     }
   }

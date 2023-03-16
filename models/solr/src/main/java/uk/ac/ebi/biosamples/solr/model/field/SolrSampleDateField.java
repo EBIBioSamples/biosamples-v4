@@ -30,7 +30,7 @@ public class SolrSampleDateField extends SolrSampleField {
     super();
   }
 
-  public SolrSampleDateField(String readableLabel) {
+  public SolrSampleDateField(final String readableLabel) {
     super(readableLabel);
   }
 
@@ -40,7 +40,7 @@ public class SolrSampleDateField extends SolrSampleField {
    * @param readableLabel
    * @param solrDocumentLabel
    */
-  public SolrSampleDateField(String readableLabel, String solrDocumentLabel) {
+  public SolrSampleDateField(final String readableLabel, final String solrDocumentLabel) {
     super(readableLabel, solrDocumentLabel);
   }
 
@@ -61,7 +61,7 @@ public class SolrSampleDateField extends SolrSampleField {
   }
 
   @Override
-  public Facet.Builder getFacetBuilder(String facetLabel, Long facetCount) {
+  public Facet.Builder getFacetBuilder(final String facetLabel, final Long facetCount) {
     return new DateRangeFacet.Builder(facetLabel, facetCount);
   }
 
@@ -71,7 +71,7 @@ public class SolrSampleDateField extends SolrSampleField {
   }
 
   @Override
-  public boolean isCompatibleWith(Filter filter) {
+  public boolean isCompatibleWith(final Filter filter) {
     return filter instanceof DateRangeFilter;
   }
 
@@ -81,16 +81,16 @@ public class SolrSampleDateField extends SolrSampleField {
   }
 
   @Override
-  public Criteria getFilterCriteria(Filter filter) {
+  public Criteria getFilterCriteria(final Filter filter) {
     Criteria filterCriteria = null;
 
     if (filter instanceof DateRangeFilter) {
 
-      DateRangeFilter dateRangeFilter = (DateRangeFilter) filter;
-      filterCriteria = new Criteria(this.getSolrLabel());
+      final DateRangeFilter dateRangeFilter = (DateRangeFilter) filter;
+      filterCriteria = new Criteria(getSolrLabel());
 
       if (dateRangeFilter.getContent().isPresent()) {
-        DateRangeFilter.DateRange dateRange = dateRangeFilter.getContent().get();
+        final DateRangeFilter.DateRange dateRange = dateRangeFilter.getContent().get();
         if (dateRange.isFromMinDate() && dateRange.isUntilMaxDate()) {
           filterCriteria = filterCriteria.isNotNull();
         } else if (dateRange.isFromMinDate()) {
@@ -114,7 +114,7 @@ public class SolrSampleDateField extends SolrSampleField {
     return filterCriteria;
   }
 
-  private String toSolrDateString(TemporalAccessor temporal) {
+  private String toSolrDateString(final TemporalAccessor temporal) {
     return DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.of("UTC")).format(temporal);
   }
 }

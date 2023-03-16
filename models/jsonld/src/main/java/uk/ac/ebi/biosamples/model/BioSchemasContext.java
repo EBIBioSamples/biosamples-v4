@@ -40,7 +40,7 @@ public class BioSchemasContext {
     return otherContexts;
   }
 
-  public void addOtherContexts(String name, URI id) {
-    this.otherContexts.put(name, id);
+  public void addOtherContexts(final String name, final URI id) {
+    otherContexts.put(name, id);
   }
 }

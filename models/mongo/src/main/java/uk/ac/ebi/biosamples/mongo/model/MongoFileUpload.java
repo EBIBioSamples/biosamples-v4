@@ -73,14 +73,18 @@ public class MongoFileUpload {
     return sampleNameAccessionPairs;
   }
 
-  public String getValidationMessage() {
+  private String getValidationMessage() {
     return validationMessage;
   }
 
   @Override
   public boolean equals(final Object o) {
-    if (this == o) return true;
-    if (!(o instanceof MongoFileUpload)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof MongoFileUpload)) {
+      return false;
+    }
     final MongoFileUpload that = (MongoFileUpload) o;
 
     return isWebin() == that.isWebin()

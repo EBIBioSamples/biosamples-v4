@@ -24,12 +24,12 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
   private final StructuredDataType type;
   private final Set<T> entries;
 
-  public StructuredTable(
-      URI schema,
-      String domain,
-      String webinSubmissionAccountId,
-      StructuredDataType type,
-      Set<T> entries) {
+  StructuredTable(
+      final URI schema,
+      final String domain,
+      final String webinSubmissionAccountId,
+      final StructuredDataType type,
+      final Set<T> entries) {
     this.schema = schema;
     this.domain = domain;
     this.webinSubmissionAccountId = webinSubmissionAccountId;
@@ -76,7 +76,7 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
   }
 
   @Override
-  public int compareTo(AbstractData o) {
+  public int compareTo(final AbstractData o) {
     if (o == null) {
       return 1;
     }
@@ -85,7 +85,7 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
       return 1;
     }
 
-    StructuredTable other = (StructuredTable) o;
+    final StructuredTable other = (StructuredTable) o;
     int cmp = type.compareTo(other.type);
     if (cmp != 0) {
       return cmp;
@@ -108,14 +108,16 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
     if (o instanceof StructuredTable) {
-      StructuredTable<T> other = (StructuredTable<T>) o;
-      return this.getDataType().equals(other.getDataType())
-          && this.getSchema().equals(other.getSchema())
-          && this.getDomain().equals(other.getDomain())
-          && this.getWebinSubmissionAccountId().equals(other.getWebinSubmissionAccountId());
+      final StructuredTable<T> other = (StructuredTable<T>) o;
+      return getDataType().equals(other.getDataType())
+          && getSchema().equals(other.getSchema())
+          && getDomain().equals(other.getDomain())
+          && getWebinSubmissionAccountId().equals(other.getWebinSubmissionAccountId());
     }
 
     return false;
@@ -127,43 +129,48 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData
   }
 
   public static class Builder<T extends StructuredEntry> {
-    private URI schema;
-    private Set<T> entries;
-    private String domain;
-    private String webinSubmissionAccountId;
-    private StructuredDataType type;
+    private final URI schema;
+    private final Set<T> entries;
+    private final String domain;
+    private final String webinSubmissionAccountId;
+    private final StructuredDataType type;
 
     @JsonCreator
     public Builder(
-        URI schema, String domain, String webinSubmissionAccountId, StructuredDataType type) {
+        final URI schema,
+        final String domain,
+        final String webinSubmissionAccountId,
+        final StructuredDataType type) {
       this.schema = schema;
       this.domain = domain;
       this.webinSubmissionAccountId = webinSubmissionAccountId;
       this.type = type;
-      this.entries = new HashSet<>();
+      entries = new HashSet<>();
     }
 
     @JsonCreator
     public Builder(
-        String schema, String domain, String webinSubmissionAccountId, StructuredDataType type) {
+        final String schema,
+        final String domain,
+        final String webinSubmissionAccountId,
+        final StructuredDataType type) {
       this(URI.create(schema), domain, webinSubmissionAccountId, type);
     }
 
     @JsonProperty
-    public Builder<T> addEntry(T entry) {
-      this.entries.add(entry);
+    public Builder<T> addEntry(final T entry) {
+      entries.add(entry);
       return this;
     }
 
     @JsonProperty
-    public Builder<T> withEntries(Collection<T> entries) {
+    public Builder<T> withEntries(final Collection<T> entries) {
       this.entries.addAll(entries);
       return this;
     }
 
     public StructuredTable<T> build() {
-      return new StructuredTable<>(
-          this.schema, this.domain, this.webinSubmissionAccountId, this.type, this.entries);
+      return new StructuredTable<>(schema, domain, webinSubmissionAccountId, type, entries);
     }
   }
 }

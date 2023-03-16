@@ -28,28 +28,29 @@ public class ExceptionAsTextHttpMessageConverter extends AbstractHttpMessageConv
 
   private final List<MediaType> DEFAULT_SUPPORTED_MEDIA_TYPES = Arrays.asList(MediaType.TEXT_PLAIN);
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   public ExceptionAsTextHttpMessageConverter() {
-    this.setSupportedMediaTypes(this.DEFAULT_SUPPORTED_MEDIA_TYPES);
+    setSupportedMediaTypes(DEFAULT_SUPPORTED_MEDIA_TYPES);
   }
 
   @Override
-  protected boolean supports(Class<?> clazz) {
+  protected boolean supports(final Class<?> clazz) {
     return Sample.class.isAssignableFrom(clazz);
   }
 
   @Override
-  protected Exception readInternal(Class<? extends Exception> clazz, HttpInputMessage inputMessage)
+  protected Exception readInternal(
+      final Class<? extends Exception> clazz, final HttpInputMessage inputMessage)
       throws IOException, HttpMessageNotReadableException {
     throw new HttpMessageNotReadableException("Cannot read exceptions");
   }
 
   @Override
-  protected void writeInternal(Exception exception, HttpOutputMessage outputMessage)
+  protected void writeInternal(final Exception exception, final HttpOutputMessage outputMessage)
       throws IOException, HttpMessageNotWritableException {
     log.trace("Writing message");
-    PrintWriter printWritter = new PrintWriter(outputMessage.getBody());
+    final PrintWriter printWritter = new PrintWriter(outputMessage.getBody());
     exception.printStackTrace(printWritter);
     // don't close the writer, underlying outputstream will be closed elsewhere
   }

@@ -12,11 +12,7 @@ package uk.ac.ebi.biosamples.ebeye.gen;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 
 /**
  * Java class for additional_fieldsType complex type.
@@ -46,7 +42,7 @@ public class AdditionalFieldsType {
     @XmlElement(name = "field", type = FieldType.class),
     @XmlElement(name = "hierarchical_field", type = HierarchicalValueType.class)
   })
-  protected List<Object> fieldOrHierarchicalField;
+  private List<Object> fieldOrHierarchicalField;
 
   /**
    * Gets the value of the fieldOrHierarchicalField property.
@@ -66,8 +62,8 @@ public class AdditionalFieldsType {
    */
   public List<Object> getFieldOrHierarchicalField() {
     if (fieldOrHierarchicalField == null) {
-      fieldOrHierarchicalField = new ArrayList<Object>();
+      fieldOrHierarchicalField = new ArrayList<>();
     }
-    return this.fieldOrHierarchicalField;
+    return fieldOrHierarchicalField;
   }
 }

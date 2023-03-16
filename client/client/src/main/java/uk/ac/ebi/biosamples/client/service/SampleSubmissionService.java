@@ -40,7 +40,9 @@ public class SampleSubmissionService {
   private final RestOperations restOperations;
 
   public SampleSubmissionService(
-      RestOperations restOperations, Traverson traverson, ExecutorService executor) {
+      final RestOperations restOperations,
+      final Traverson traverson,
+      final ExecutorService executor) {
     this.restOperations = restOperations;
     this.traverson = traverson;
     this.executor = executor;
@@ -55,25 +57,26 @@ public class SampleSubmissionService {
    * @param sample sample to be submitted
    * @return sample wrapped in resource
    */
-  public EntityModel<Sample> submit(Sample sample, Boolean setFullDetails)
+  public EntityModel<Sample> submit(final Sample sample, final Boolean setFullDetails)
       throws RestClientException {
     try {
       return new SubmitCallable(sample, setFullDetails).call();
-    } catch (RestClientException e) {
+    } catch (final RestClientException e) {
       throw e;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
   /** @param jwt json web token authorizing access to the domain the sample is assigned to */
-  public EntityModel<Sample> submit(Sample sample, String jwt, Boolean setFullDetails)
+  public EntityModel<Sample> submit(
+      final Sample sample, final String jwt, final Boolean setFullDetails)
       throws RestClientException {
     try {
       return new SubmitCallable(sample, jwt, setFullDetails).call();
-    } catch (RestClientException e) {
+    } catch (final RestClientException e) {
       throw e;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -87,13 +90,14 @@ public class SampleSubmissionService {
    * @param sample sample to be submitted
    * @return sample wrapped in resource
    */
-  public Future<EntityModel<Sample>> submitAsync(Sample sample, Boolean setFullDetails)
+  public Future<EntityModel<Sample>> submitAsync(final Sample sample, final Boolean setFullDetails)
       throws RestClientException {
     return executor.submit(new SubmitCallable(sample, setFullDetails));
   }
 
   /** @param jwt json web token authorizing access to the domain the sample is assigned to */
-  public Future<EntityModel<Sample>> submitAsync(Sample sample, String jwt, Boolean setFullDetails)
+  public Future<EntityModel<Sample>> submitAsync(
+      final Sample sample, final String jwt, final Boolean setFullDetails)
       throws RestClientException {
     return executor.submit(new SubmitCallable(sample, jwt, setFullDetails));
   }
@@ -103,13 +107,13 @@ public class SampleSubmissionService {
     private final Boolean setFullDetails;
     private final String jwt;
 
-    public SubmitCallable(Sample sample, Boolean setFullDetails) {
+    SubmitCallable(final Sample sample, final Boolean setFullDetails) {
       this.sample = sample;
       this.setFullDetails = setFullDetails;
-      this.jwt = null;
+      jwt = null;
     }
 
-    public SubmitCallable(Sample sample, String jwt, boolean setFullDetails) {
+    SubmitCallable(final Sample sample, final String jwt, final boolean setFullDetails) {
       this.sample = sample;
       this.setFullDetails = setFullDetails;
       this.jwt = jwt;
@@ -126,31 +130,31 @@ public class SampleSubmissionService {
         // because we might PUT to something that doesn't exist (e.g. migration of data)
         // this will cause an error. So instead manually de-template the link without
         // getting it.
-        PagedModel<EntityModel<Sample>> pagedSamples =
+        final PagedModel<EntityModel<Sample>> pagedSamples =
             traverson
                 .follow("samples")
                 .toObject(new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {});
         Link sampleLink = pagedSamples.getLink("sample").get();
 
         sampleLink = sampleLink.expand(sample.getAccession());
-        URI uri = getSamplePersistURI(sampleLink);
+        final URI uri = getSamplePersistURI(sampleLink);
         log.trace("PUTing to " + uri + " " + sample);
 
-        RequestEntity.BodyBuilder bodyBuilder =
+        final RequestEntity.BodyBuilder bodyBuilder =
             RequestEntity.put(uri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaTypes.HAL_JSON);
         if (jwt != null) {
           bodyBuilder.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
         }
-        RequestEntity<Sample> requestEntity = bodyBuilder.body(sample);
+        final RequestEntity<Sample> requestEntity = bodyBuilder.body(sample);
 
-        ResponseEntity<EntityModel<Sample>> responseEntity;
+        final ResponseEntity<EntityModel<Sample>> responseEntity;
         try {
           responseEntity =
               restOperations.exchange(
                   requestEntity, new ParameterizedTypeReference<EntityModel<Sample>>() {});
-        } catch (RestClientResponseException e) {
+        } catch (final RestClientResponseException e) {
           log.error(
               "Unable to PUT to "
                   + uri
@@ -164,25 +168,25 @@ public class SampleSubmissionService {
 
       } else {
         // samples without an existing accession should be POST
-        Link sampleLink = traverson.follow("samples").asLink();
-        URI uri = getSamplePersistURI(sampleLink);
+        final Link sampleLink = traverson.follow("samples").asLink();
+        final URI uri = getSamplePersistURI(sampleLink);
         log.trace("POSTing to " + uri + " " + sample);
 
-        RequestEntity.BodyBuilder bodyBuilder =
+        final RequestEntity.BodyBuilder bodyBuilder =
             RequestEntity.post(uri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaTypes.HAL_JSON);
         if (jwt != null) {
           bodyBuilder.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
         }
-        RequestEntity<Sample> requestEntity = bodyBuilder.body(sample);
+        final RequestEntity<Sample> requestEntity = bodyBuilder.body(sample);
 
-        ResponseEntity<EntityModel<Sample>> responseEntity;
+        final ResponseEntity<EntityModel<Sample>> responseEntity;
         try {
           responseEntity =
               restOperations.exchange(
                   requestEntity, new ParameterizedTypeReference<EntityModel<Sample>>() {});
-        } catch (RestClientResponseException e) {
+        } catch (final RestClientResponseException e) {
           log.error(
               "Unable to POST to "
                   + uri
@@ -197,8 +201,8 @@ public class SampleSubmissionService {
       }
     }
 
-    private URI getSamplePersistURI(Link sampleLink) {
-      UriComponentsBuilder uriComponentsBuilder =
+    private URI getSamplePersistURI(final Link sampleLink) {
+      final UriComponentsBuilder uriComponentsBuilder =
           UriComponentsBuilder.fromUriString(sampleLink.getHref());
       if (setFullDetails != null) {
         uriComponentsBuilder.queryParam("setfulldetails", setFullDetails);

@@ -39,27 +39,31 @@ public class XmlUrl {
   //        this.changefreq = ChangeFrequency.WEEKLY.getValue();
   //    }
 
-  private XmlUrl(String loc, LocalDate lastModifiedDate, ChangeFrequency freq, Priority priority) {
-    this.lastmod =
+  private XmlUrl(
+      final String loc,
+      final LocalDate lastModifiedDate,
+      final ChangeFrequency freq,
+      final Priority priority) {
+    lastmod =
         dateFormat.format(Date.from(lastModifiedDate.atStartOfDay(ZoneId.of("GMT")).toInstant()));
     this.loc = loc;
     this.priority = priority.getValue();
-    this.changefreq = freq.getValue();
+    changefreq = freq.getValue();
   }
 
   private W3CDateFormat getDateFormat() {
-    W3CDateFormat dateFormat = new W3CDateFormat(W3CDateFormat.Pattern.DAY);
+    final W3CDateFormat dateFormat = new W3CDateFormat(W3CDateFormat.Pattern.DAY);
     dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     return dateFormat;
   }
 
-  @XmlElement private String loc;
+  @XmlElement private final String loc;
 
-  @XmlElement private String lastmod;
+  @XmlElement private final String lastmod;
 
-  @XmlElement private String changefreq;
+  @XmlElement private final String changefreq;
 
-  @XmlElement private String priority;
+  @XmlElement private final String priority;
 
   public String getLoc() {
     return loc;
@@ -83,7 +87,7 @@ public class XmlUrl {
 
     private final String value;
 
-    Priority(String value) {
+    Priority(final String value) {
       this.value = value;
     }
 
@@ -93,35 +97,35 @@ public class XmlUrl {
   }
 
   public static class XmlUrlBuilder {
-    private String loc;
+    private final String loc;
     private LocalDate lastModification;
     private ChangeFrequency frequency;
     private Priority priority;
 
-    public XmlUrlBuilder(String loc) {
+    public XmlUrlBuilder(final String loc) {
       this.loc = loc;
       lastModification = LocalDate.now();
       frequency = ChangeFrequency.WEEKLY;
       priority = Priority.MEDIUM;
     }
 
-    public XmlUrlBuilder lastModified(LocalDate date) {
-      this.lastModification = date;
+    public XmlUrlBuilder lastModified(final LocalDate date) {
+      lastModification = date;
       return this;
     }
 
-    public XmlUrlBuilder changeWithFrequency(ChangeFrequency freq) {
-      this.frequency = freq;
+    public XmlUrlBuilder changeWithFrequency(final ChangeFrequency freq) {
+      frequency = freq;
       return this;
     }
 
-    public XmlUrlBuilder hasPriority(Priority p) {
-      this.priority = p;
+    public XmlUrlBuilder hasPriority(final Priority p) {
+      priority = p;
       return this;
     }
 
     public XmlUrl build() {
-      return new XmlUrl(this.loc, this.lastModification, this.frequency, this.priority);
+      return new XmlUrl(loc, lastModification, frequency, priority);
     }
   }
 
@@ -131,14 +135,14 @@ public class XmlUrl {
     MONTHLY("monthly"),
     YEARLY("yearly");
 
-    private String freq;
+    private final String freq;
 
-    ChangeFrequency(String freq) {
+    ChangeFrequency(final String freq) {
       this.freq = freq;
     }
 
     public String getValue() {
-      return this.freq;
+      return freq;
     }
   }
 }

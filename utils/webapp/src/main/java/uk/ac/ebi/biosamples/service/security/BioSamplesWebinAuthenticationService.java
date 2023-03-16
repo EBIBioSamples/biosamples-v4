@@ -38,19 +38,19 @@ public class BioSamplesWebinAuthenticationService {
 
   public BioSamplesWebinAuthenticationService(
       final SampleService sampleService, final BioSamplesProperties bioSamplesProperties) {
-    this.restTemplate = new RestTemplate();
+    restTemplate = new RestTemplate();
     this.sampleService = sampleService;
     this.bioSamplesProperties = bioSamplesProperties;
   }
 
   public ResponseEntity<SubmissionAccount> getWebinSubmissionAccount(final String webinAuthToken) {
-    HttpHeaders headers = new HttpHeaders();
+    final HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
     headers.set("Authorization", "Bearer " + webinAuthToken);
-    HttpEntity<String> entity = new HttpEntity<>(headers);
+    final HttpEntity<String> entity = new HttpEntity<>(headers);
 
     try {
-      ResponseEntity<SubmissionAccount> responseEntity =
+      final ResponseEntity<SubmissionAccount> responseEntity =
           restTemplate.exchange(
               bioSamplesProperties.getBiosamplesWebinAuthFetchSubmissionAccountUri(),
               HttpMethod.GET,
@@ -67,12 +67,12 @@ public class BioSamplesWebinAuthenticationService {
   }
 
   public ResponseEntity<String> getWebinAuthenticationToken(final String authRequest) {
-    HttpHeaders headers = new HttpHeaders();
+    final HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
-    HttpEntity<String> entity = new HttpEntity<>(authRequest, headers);
+    final HttpEntity<String> entity = new HttpEntity<>(authRequest, headers);
 
     try {
-      ResponseEntity<String> responseEntity =
+      final ResponseEntity<String> responseEntity =
           restTemplate.exchange(
               bioSamplesProperties.getBiosamplesWebinAuthTokenUri(),
               HttpMethod.POST,
@@ -255,8 +255,9 @@ public class BioSamplesWebinAuthenticationService {
               if (data.getDataType() != null) {
                 final String structuredDataWebinId = data.getWebinSubmissionAccountId();
 
-                if (structuredDataWebinId == null)
+                if (structuredDataWebinId == null) {
                   throw new GlobalExceptions.StructuredDataWebinIdMissingException();
+                }
               }
             });
 
@@ -264,8 +265,11 @@ public class BioSamplesWebinAuthenticationService {
       isWebinIdValid.set(isStructuredDataAccessible(sample, id));
     }
 
-    if (isWebinIdValid.get()) return true;
-    else throw new GlobalExceptions.StructuredDataNotAccessibleException();
+    if (isWebinIdValid.get()) {
+      return true;
+    } else {
+      throw new GlobalExceptions.StructuredDataNotAccessibleException();
+    }
   }
 
   private boolean isStructuredDataAccessible(final Sample sample, final String webinId) {
@@ -273,7 +277,7 @@ public class BioSamplesWebinAuthenticationService {
     final Optional<Sample> oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
 
     if (oldSample.isPresent()) {
-      Sample oldSampleRetrieved = oldSample.get();
+      final Sample oldSampleRetrieved = oldSample.get();
 
       sample
           .getData()
@@ -282,7 +286,7 @@ public class BioSamplesWebinAuthenticationService {
                 final StructuredDataType dataType = data.getDataType();
 
                 if (dataType != null) {
-                  Optional<AbstractData> filteredData =
+                  final Optional<AbstractData> filteredData =
                       oldSampleRetrieved.getData().stream()
                           .filter(oldSampledata -> oldSampledata.getDataType().equals(dataType))
                           .findFirst();
@@ -290,7 +294,7 @@ public class BioSamplesWebinAuthenticationService {
                   final String webinSubmissionAccountId = data.getWebinSubmissionAccountId();
 
                   if (filteredData.isPresent()) {
-                    AbstractData fData = filteredData.get();
+                    final AbstractData fData = filteredData.get();
 
                     if (!webinSubmissionAccountId.equalsIgnoreCase(
                         fData.getWebinSubmissionAccountId())) {

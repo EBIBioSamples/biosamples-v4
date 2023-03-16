@@ -34,30 +34,31 @@ public class SampleAsXMLHttpMessageConverter extends AbstractHttpMessageConverte
   private final List<MediaType> DEFAULT_SUPPORTED_MEDIA_TYPES =
       Arrays.asList(MediaType.APPLICATION_XML, MediaType.TEXT_XML);
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
-  public SampleAsXMLHttpMessageConverter(SampleToXmlConverter sampleToXmlConverter) {
-    this.setSupportedMediaTypes(this.DEFAULT_SUPPORTED_MEDIA_TYPES);
+  public SampleAsXMLHttpMessageConverter(final SampleToXmlConverter sampleToXmlConverter) {
+    setSupportedMediaTypes(DEFAULT_SUPPORTED_MEDIA_TYPES);
     this.sampleToXmlConverter = sampleToXmlConverter;
   }
 
   @Override
-  protected boolean supports(Class<?> clazz) {
+  protected boolean supports(final Class<?> clazz) {
     return Sample.class.isAssignableFrom(clazz);
   }
 
   @Override
-  protected Sample readInternal(Class<? extends Sample> clazz, HttpInputMessage inputMessage)
+  protected Sample readInternal(
+      final Class<? extends Sample> clazz, final HttpInputMessage inputMessage)
       throws HttpMessageNotReadableException {
     throw new HttpMessageNotReadableException("Cannot read xml");
   }
 
   @Override
-  protected void writeInternal(Sample sample, HttpOutputMessage outputMessage)
+  protected void writeInternal(final Sample sample, final HttpOutputMessage outputMessage)
       throws IOException, HttpMessageNotWritableException {
     log.trace("Writing message");
-    Document doc = sampleToXmlConverter.convert(sample);
-    XMLWriter writer = new XMLWriter(outputMessage.getBody(), format);
+    final Document doc = sampleToXmlConverter.convert(sample);
+    final XMLWriter writer = new XMLWriter(outputMessage.getBody(), format);
     writer.write(doc);
     // don't close the writer, underlying outputstream will be closed elsewhere
     // writer.close();

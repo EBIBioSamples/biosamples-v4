@@ -18,14 +18,14 @@ import org.dom4j.io.SAXReader;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
-public class TestUtilities {
+class TestUtilities {
 
-  public Element readNcbiBiosampleSetFromFile(String filePath)
+  Element readNcbiBiosampleSetFromFile(final String filePath)
       throws DocumentException, IOException {
-    Resource resource = new ClassPathResource(filePath);
-    InputStream resourceStream = resource.getInputStream();
+    final Resource resource = new ClassPathResource(filePath);
+    final InputStream resourceStream = resource.getInputStream();
 
-    SAXReader reader = new SAXReader();
+    final SAXReader reader = new SAXReader();
     return reader.read(resourceStream).getRootElement();
   }
 }

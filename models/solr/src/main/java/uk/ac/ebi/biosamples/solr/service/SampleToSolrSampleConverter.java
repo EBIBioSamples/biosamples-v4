@@ -31,23 +31,23 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 
   private final ExternalReferenceService externalReferenceService;
 
-  public SampleToSolrSampleConverter(ExternalReferenceService externalReferenceService) {
+  public SampleToSolrSampleConverter(final ExternalReferenceService externalReferenceService) {
     this.externalReferenceService = externalReferenceService;
   }
 
   @Override
-  public SolrSample convert(Sample sample) {
-    Map<String, List<String>> attributeValues = new HashMap<>();
-    Map<String, List<String>> attributeIris = new HashMap<>();
-    Map<String, List<String>> attributeUnits = new HashMap<>();
+  public SolrSample convert(final Sample sample) {
+    final Map<String, List<String>> attributeValues = new HashMap<>();
+    final Map<String, List<String>> attributeIris = new HashMap<>();
+    final Map<String, List<String>> attributeUnits = new HashMap<>();
     Map<String, List<String>> outgoingRelationships = new HashMap<>();
     Map<String, List<String>> incomingRelationships = new HashMap<>();
     Map<String, List<String>> externalReferencesData = new HashMap<>();
-    List<String> keywords = new ArrayList<>();
+    final List<String> keywords = new ArrayList<>();
 
     if (sample.getCharacteristics() != null && sample.getCharacteristics().size() > 0) {
 
-      for (Attribute attr : sample.getCharacteristics()) {
+      for (final Attribute attr : sample.getCharacteristics()) {
         final String key = SolrFieldService.encodeFieldName(attr.getType());
 
         String value = attr.getValue();
@@ -75,7 +75,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
         if (attr.getIri().isEmpty()) {
           attributeIris.get(key).add("");
         } else {
-          List<String> iris =
+          final List<String> iris =
               attr.getIri().stream()
                   .map(iri -> getOntologyFromIri(iri))
                   .collect(Collectors.toList());
@@ -95,12 +95,13 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
     }
 
     // turn external reference into additional attributes for facet & filter
-    for (ExternalReference externalReference : sample.getExternalReferences()) {
-      String externalReferenceNickname = externalReferenceService.getNickname(externalReference);
-      String externalReferenceNicknameKey =
+    for (final ExternalReference externalReference : sample.getExternalReferences()) {
+      final String externalReferenceNickname =
+          externalReferenceService.getNickname(externalReference);
+      final String externalReferenceNicknameKey =
           SolrFieldService.encodeFieldName(externalReferenceNickname);
-      String key = SolrFieldService.encodeFieldName("external reference");
-      String keyDuo = SolrFieldService.encodeFieldName("data use conditions");
+      final String key = SolrFieldService.encodeFieldName("external reference");
+      final String keyDuo = SolrFieldService.encodeFieldName("data use conditions");
 
       if (!attributeValues.containsKey(key)) {
         attributeValues.put(key, new ArrayList<>());
@@ -115,7 +116,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
       }
 
       // Add the external reference data id
-      Optional<String> externalReferenceDataId =
+      final Optional<String> externalReferenceDataId =
           externalReferenceService.getDataId(externalReference);
       if (externalReferenceDataId.isPresent()) {
         if (externalReferencesData == null) {
@@ -129,16 +130,16 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
     }
 
     // Add relationships owned by sample
-    SortedSet<Relationship> sampleOutgoingRelationships =
+    final SortedSet<Relationship> sampleOutgoingRelationships =
         SampleRelationshipUtils.getOutgoingRelationships(sample);
     if (sampleOutgoingRelationships != null && !sampleOutgoingRelationships.isEmpty()) {
-      String attributeValueKey = SolrFieldService.encodeFieldName("outgoing relationships");
+      final String attributeValueKey = SolrFieldService.encodeFieldName("outgoing relationships");
       if (!attributeValues.containsKey(attributeValueKey)) {
         attributeValues.put(attributeValueKey, new ArrayList<>());
       }
       outgoingRelationships = new HashMap<>();
-      for (Relationship rel : sampleOutgoingRelationships) {
-        String key = SolrFieldService.encodeFieldName(rel.getType());
+      for (final Relationship rel : sampleOutgoingRelationships) {
+        final String key = SolrFieldService.encodeFieldName(rel.getType());
         if (!outgoingRelationships.containsKey(key)) {
           outgoingRelationships.put(key, new ArrayList<>());
         }
@@ -148,16 +149,16 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
     }
 
     // Add relationships for which sample is the target
-    SortedSet<Relationship> sampleIngoingRelationships =
+    final SortedSet<Relationship> sampleIngoingRelationships =
         SampleRelationshipUtils.getIncomingRelationships(sample);
     if (sampleIngoingRelationships != null && !sampleIngoingRelationships.isEmpty()) {
-      String attributeValueKey = SolrFieldService.encodeFieldName("incoming relationships");
+      final String attributeValueKey = SolrFieldService.encodeFieldName("incoming relationships");
       if (!attributeValues.containsKey(attributeValueKey)) {
         attributeValues.put(attributeValueKey, new ArrayList<>());
       }
       incomingRelationships = new HashMap<>();
-      for (Relationship rel : sampleIngoingRelationships) {
-        String key = SolrFieldService.encodeFieldName(rel.getType());
+      for (final Relationship rel : sampleIngoingRelationships) {
+        final String key = SolrFieldService.encodeFieldName(rel.getType());
         if (!incomingRelationships.containsKey(key)) {
           incomingRelationships.put(key, new ArrayList<>());
         }
@@ -167,26 +168,27 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
     }
 
     // Add structured data
-    Set<StructuredDataTable> structuredDataSet = sample.getStructuredData();
+    final Set<StructuredDataTable> structuredDataSet = sample.getStructuredData();
     if (!CollectionUtils.isEmpty(structuredDataSet)) {
-      String key = SolrFieldService.encodeFieldName("structured data");
-      for (StructuredDataTable sd : structuredDataSet) {
+      final String key = SolrFieldService.encodeFieldName("structured data");
+      for (final StructuredDataTable sd : structuredDataSet) {
         keywords.add(sd.getType().toLowerCase());
         if (!attributeValues.containsKey(key)) {
           attributeValues.put(key, new ArrayList<>());
         }
         attributeValues.get(key).add(sd.getType());
 
-        for (Map<String, StructuredDataEntry> sdMap : sd.getContent()) {
-          for (Map.Entry<String, StructuredDataEntry> sdMapEntry : sdMap.entrySet()) {
-            keywords.addAll(Arrays.asList(sdMapEntry.getKey(), sdMapEntry.getValue().getValue().toLowerCase()));
+        for (final Map<String, StructuredDataEntry> sdMap : sd.getContent()) {
+          for (final Map.Entry<String, StructuredDataEntry> sdMapEntry : sdMap.entrySet()) {
+            keywords.addAll(
+                Arrays.asList(sdMapEntry.getKey(), sdMapEntry.getValue().getValue().toLowerCase()));
           }
         }
       }
     }
 
-    String releaseSolr = DateTimeFormatter.ISO_INSTANT.format(sample.getRelease());
-    String updateSolr = DateTimeFormatter.ISO_INSTANT.format(sample.getUpdate());
+    final String releaseSolr = DateTimeFormatter.ISO_INSTANT.format(sample.getRelease());
+    final String updateSolr = DateTimeFormatter.ISO_INSTANT.format(sample.getUpdate());
 
     sample
         .getOrganizations()
@@ -229,8 +231,8 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
         keywords);
   }
 
-  private String getOntologyFromIri(String iri) {
-    String[] iriParts = iri.split("/");
+  private String getOntologyFromIri(final String iri) {
+    final String[] iriParts = iri.split("/");
     return iriParts[iriParts.length - 1];
   }
 }

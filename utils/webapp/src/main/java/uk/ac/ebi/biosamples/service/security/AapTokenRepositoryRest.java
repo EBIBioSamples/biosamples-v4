@@ -30,10 +30,10 @@ public class AapTokenRepositoryRest implements TokenRepository {
   private final RestTemplate template;
 
   public AapTokenRepositoryRest(
-      @Value("${aap.domains.url}") String domainsApiUrl,
-      @Value("${aap.timeout:180000}") int timeout,
-      RestTemplateBuilder clientBuilder) {
-    this.template =
+      @Value("${aap.domains.url}") final String domainsApiUrl,
+      @Value("${aap.timeout:180000}") final int timeout,
+      final RestTemplateBuilder clientBuilder) {
+    template =
         clientBuilder
             .rootUri(domainsApiUrl)
             .setConnectTimeout(Duration.ofSeconds(timeout))
@@ -42,28 +42,29 @@ public class AapTokenRepositoryRest implements TokenRepository {
     this.domainsApiUrl = domainsApiUrl;
   }
 
-  public String getAAPToken(String username, String password)
+  @Override
+  public String getAAPToken(final String username, final String password)
       throws UserNameOrPasswordWrongException {
-    ResponseEntity response;
+    final ResponseEntity response;
 
     try {
-      HttpEntity<String> entity = new HttpEntity(createHttpHeaders(username, password));
+      final HttpEntity<String> entity = new HttpEntity(createHttpHeaders(username, password));
       response =
-          this.template.exchange(
-              this.domainsApiUrl + "/auth", HttpMethod.GET, entity, String.class, new Object[0]);
-    } catch (HttpClientErrorException var5) {
+          template.exchange(
+              domainsApiUrl + "/auth", HttpMethod.GET, entity, String.class, new Object[0]);
+    } catch (final HttpClientErrorException var5) {
       throw new UserNameOrPasswordWrongException(
           String.format("username/password wrong. Please check username or password to get token"),
           var5);
-    } catch (Exception var6) {
+    } catch (final Exception var6) {
       throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     return (String) response.getBody();
   }
 
-  private static HttpHeaders createHttpHeaders(String username, String password) {
-    HttpHeaders headers = new HttpHeaders();
+  private static HttpHeaders createHttpHeaders(final String username, final String password) {
+    final HttpHeaders headers = new HttpHeaders();
     headers.add("Authorization", "Basic " + Base64Coder.encodeString(username + ":" + password));
     return headers;
   }

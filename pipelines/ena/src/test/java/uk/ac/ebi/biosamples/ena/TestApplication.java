@@ -46,10 +46,10 @@ public class TestApplication {
 
   @Bean
   public ObjectMapper objectMapper() {
-    ObjectMapper mapper = new ObjectMapper();
+    final ObjectMapper mapper = new ObjectMapper();
     mapper.registerModule(new Jackson2HalModule());
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    MappingJackson2HttpMessageConverter halConverter =
+    final MappingJackson2HttpMessageConverter halConverter =
         new TypeConstrainedMappingJackson2HttpMessageConverter(RepresentationModel.class);
     halConverter.setObjectMapper(mapper);
     halConverter.setSupportedMediaTypes(Collections.singletonList(MediaTypes.HAL_JSON));
@@ -95,7 +95,7 @@ public class TestApplication {
 
   @Bean
   public DataSource getDataSource() {
-    DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
+    final DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
     dataSourceBuilder.driverClassName("oracle.jdbc.OracleDriver");
     dataSourceBuilder.url("jdbc:oracle:thin:@//ora-era-pro-hl.ebi.ac.uk:1531/ERAPRO");
     dataSourceBuilder.username("era_reader");

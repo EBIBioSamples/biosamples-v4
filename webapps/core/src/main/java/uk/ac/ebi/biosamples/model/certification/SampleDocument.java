@@ -21,7 +21,7 @@ public class SampleDocument {
   private String document;
   private String hash;
 
-  public SampleDocument(String accession, String document) {
+  public SampleDocument(final String accession, final String document) {
     this.accession = accession;
     this.document = document;
   }
@@ -37,11 +37,11 @@ public class SampleDocument {
     return document;
   }
 
-  public void setAccession(String accession) {
+  public void setAccession(final String accession) {
     this.accession = accession;
   }
 
-  public void setDocument(String document) {
+  public void setDocument(final String document) {
     this.document = document;
   }
 
@@ -62,16 +62,20 @@ public class SampleDocument {
 
   public String getHash() {
     if (hash == null) {
-      this.hash = DigestUtils.md5DigestAsHex(this.document.getBytes()).toUpperCase();
+      hash = DigestUtils.md5DigestAsHex(document.getBytes()).toUpperCase();
     }
     return hash;
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    SampleDocument sampleDocument = (SampleDocument) o;
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    final SampleDocument sampleDocument = (SampleDocument) o;
     return accession.equals(sampleDocument.accession)
         && document.equals(sampleDocument.document)
         && hash.equals(sampleDocument.hash);

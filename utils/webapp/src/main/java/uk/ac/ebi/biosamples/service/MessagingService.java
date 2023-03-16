@@ -35,8 +35,7 @@ public class MessagingService {
   private final AmqpTemplate amqpTemplate;
 
   public MessagingService(
-      final SampleReadService sampleReadService,
-      final AmqpTemplate amqpTemplate) {
+      final SampleReadService sampleReadService, final AmqpTemplate amqpTemplate) {
     this.sampleReadService = sampleReadService;
     this.amqpTemplate = amqpTemplate;
   }

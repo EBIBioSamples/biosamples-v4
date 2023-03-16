@@ -22,13 +22,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 public class CurationTest {
 
-  private Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private Curation getCuration() {
-    Collection<Attribute> attributePre = new ArrayList<>();
+    final Collection<Attribute> attributePre = new ArrayList<>();
     attributePre.add(Attribute.build("organism", "human"));
     attributePre.add(Attribute.build("taxid", "9606"));
-    Collection<Attribute> attributePost = new ArrayList<>();
+    final Collection<Attribute> attributePost = new ArrayList<>();
     attributePost.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
@@ -37,8 +37,8 @@ public class CurationTest {
 
   @Test
   public void testEquality() {
-    Curation curation1 = getCuration();
-    Curation curation2 = getCuration();
+    final Curation curation1 = getCuration();
+    final Curation curation2 = getCuration();
 
     log.info("curation1 = " + curation1);
     log.info("curation2 = " + curation2);

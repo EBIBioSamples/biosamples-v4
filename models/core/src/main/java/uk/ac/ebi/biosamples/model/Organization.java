@@ -20,13 +20,18 @@ import java.util.Objects;
 @JsonDeserialize(builder = Organization.Builder.class)
 public class Organization implements Comparable<Organization> {
 
-  private String name;
-  private String role;
-  private String address;
-  private String email;
-  private String url;
+  private final String name;
+  private final String role;
+  private final String address;
+  private final String email;
+  private final String url;
 
-  private Organization(String name, String role, String email, String url, String address) {
+  private Organization(
+      final String name,
+      final String role,
+      final String email,
+      final String url,
+      final String address) {
     this.name = name;
     this.role = role;
     this.email = email;
@@ -36,42 +41,44 @@ public class Organization implements Comparable<Organization> {
 
   @JsonProperty("Name")
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @JsonProperty("Role")
   public String getRole() {
-    return this.role;
+    return role;
   }
 
   @JsonProperty("E-mail")
   public String getEmail() {
-    return this.email;
+    return email;
   }
 
   @JsonProperty("URL")
   public String getUrl() {
-    return this.url;
+    return url;
   }
 
   @JsonProperty("Address")
   public String getAddress() {
-    return this.address;
+    return address;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
 
-    if (o == this) return true;
+    if (o == this) {
+      return true;
+    }
     if (!(o instanceof Organization)) {
       return false;
     }
-    Organization other = (Organization) o;
-    return Objects.equals(this.name, other.name)
-        && Objects.equals(this.role, other.role)
-        && Objects.equals(this.email, other.email)
-        && Objects.equals(this.url, other.url)
-        && Objects.equals(this.address, other.address);
+    final Organization other = (Organization) o;
+    return Objects.equals(name, other.name)
+        && Objects.equals(role, other.role)
+        && Objects.equals(email, other.email)
+        && Objects.equals(url, other.url)
+        && Objects.equals(address, other.address);
   }
 
   @Override
@@ -80,32 +87,32 @@ public class Organization implements Comparable<Organization> {
   }
 
   @Override
-  public int compareTo(Organization other) {
+  public int compareTo(final Organization other) {
     if (other == null) {
       return 1;
     }
 
-    int comparisonResult = nullSafeStringComparison(this.name, other.name);
+    int comparisonResult = nullSafeStringComparison(name, other.name);
     if (comparisonResult != 0) {
       return comparisonResult;
     }
 
-    comparisonResult = nullSafeStringComparison(this.address, other.address);
+    comparisonResult = nullSafeStringComparison(address, other.address);
     if (comparisonResult != 0) {
       return comparisonResult;
     }
 
-    comparisonResult = nullSafeStringComparison(this.role, other.role);
+    comparisonResult = nullSafeStringComparison(role, other.role);
     if (comparisonResult != 0) {
       return comparisonResult;
     }
 
-    comparisonResult = nullSafeStringComparison(this.email, other.email);
+    comparisonResult = nullSafeStringComparison(email, other.email);
     if (comparisonResult != 0) {
       return comparisonResult;
     }
 
-    return nullSafeStringComparison(this.url, other.url);
+    return nullSafeStringComparison(url, other.url);
   }
 
   @Override
@@ -129,10 +136,16 @@ public class Organization implements Comparable<Organization> {
         + '}';
   }
 
-  private int nullSafeStringComparison(String first, String other) {
-    if (first == null && other == null) return 0;
-    if (first == null) return -1;
-    if (other == null) return 1;
+  private int nullSafeStringComparison(final String first, final String other) {
+    if (first == null && other == null) {
+      return 0;
+    }
+    if (first == null) {
+      return -1;
+    }
+    if (other == null) {
+      return 1;
+    }
     return first.compareTo(other);
   }
 
@@ -154,31 +167,31 @@ public class Organization implements Comparable<Organization> {
     public Builder() {}
 
     @JsonProperty("Name")
-    public Builder name(String name) {
+    public Builder name(final String name) {
       this.name = name;
       return this;
     }
 
     @JsonProperty("URL")
-    public Builder url(String url) {
+    public Builder url(final String url) {
       this.url = url;
       return this;
     }
 
     @JsonProperty("E-mail")
-    public Builder email(String email) {
+    public Builder email(final String email) {
       this.email = email;
       return this;
     }
 
     @JsonProperty("Address")
-    public Builder address(String address) {
+    public Builder address(final String address) {
       this.address = address;
       return this;
     }
 
     @JsonProperty("Role")
-    public Builder role(String role) {
+    public Builder role(final String role) {
       this.role = role;
       return this;
     }

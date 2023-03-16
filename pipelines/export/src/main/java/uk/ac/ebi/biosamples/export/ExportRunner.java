@@ -32,7 +32,7 @@ public class ExportRunner implements ApplicationRunner {
   private final BioSamplesClient bioSamplesClient;
   private final ObjectMapper objectMapper;
 
-  public ExportRunner(BioSamplesClient bioSamplesClient, ObjectMapper objectMapper) {
+  public ExportRunner(final BioSamplesClient bioSamplesClient, final ObjectMapper objectMapper) {
     // ensure the client is public
     if (bioSamplesClient.getPublicClient().isPresent()) {
       this.bioSamplesClient = bioSamplesClient.getPublicClient().get();
@@ -43,15 +43,15 @@ public class ExportRunner implements ApplicationRunner {
   }
 
   @Override
-  public void run(ApplicationArguments args) {
-    String jsonSampleFilename = args.getNonOptionArgs().get(0);
-    boolean removeCurations = args.getOptionValues("curationdomain") != null;
-    long oldTime = System.nanoTime();
+  public void run(final ApplicationArguments args) {
+    final String jsonSampleFilename = args.getNonOptionArgs().get(0);
+    final boolean removeCurations = args.getOptionValues("curationdomain") != null;
+    final long oldTime = System.nanoTime();
     int sampleCount = 0;
     boolean isPassed = true;
     try {
       boolean first = true;
-      try (Writer jsonSampleWriter =
+      try (final Writer jsonSampleWriter =
           args.getOptionValues("gzip") == null
               ? new OutputStreamWriter(
                   new FileOutputStream(jsonSampleFilename), StandardCharsets.UTF_8)
@@ -59,10 +59,10 @@ public class ExportRunner implements ApplicationRunner {
                   new GZIPOutputStream(new FileOutputStream(jsonSampleFilename)),
                   StandardCharsets.UTF_8)) {
         jsonSampleWriter.write("[\n");
-        for (EntityModel<Sample> sampleResource :
+        for (final EntityModel<Sample> sampleResource :
             bioSamplesClient.fetchSampleResourceAll(!removeCurations)) {
           log.trace("Handling " + sampleResource);
-          Sample sample = sampleResource.getContent();
+          final Sample sample = sampleResource.getContent();
           if (sample == null) {
             throw new RuntimeException("Sample should not be null");
           }
@@ -78,7 +78,7 @@ public class ExportRunner implements ApplicationRunner {
     } catch (final Exception e) {
       isPassed = false;
     } finally {
-      long elapsed = System.nanoTime() - oldTime;
+      final long elapsed = System.nanoTime() - oldTime;
       log.info("Exported " + sampleCount + " samples in " + (elapsed / 1000000000L) + "s");
     }
   }

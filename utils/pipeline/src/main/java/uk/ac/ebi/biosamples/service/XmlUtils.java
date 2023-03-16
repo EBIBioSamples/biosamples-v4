@@ -10,16 +10,7 @@
 */
 package uk.ac.ebi.biosamples.service;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.*;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -37,20 +28,20 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class XmlUtils {
-  private Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
-  private TransformerFactory tf = TransformerFactory.newInstance();
+  private final TransformerFactory tf = TransformerFactory.newInstance();
 
   static {
     XMLUnit.setIgnoreAttributeOrder(true);
     XMLUnit.setIgnoreWhitespace(true);
   }
 
-  public Document getDocument(File xmlFile) throws FileNotFoundException, DocumentException {
+  public Document getDocument(final File xmlFile) throws FileNotFoundException, DocumentException {
     return getDocument(new BufferedReader(new FileReader(xmlFile)));
   }
 
-  public Document getDocument(String xmlString) throws DocumentException {
+  public Document getDocument(final String xmlString) throws DocumentException {
 
     Reader r = null;
     Document doc = null;
@@ -61,7 +52,7 @@ public class XmlUtils {
       if (r != null) {
         try {
           r.close();
-        } catch (IOException e) {
+        } catch (final IOException e) {
           // do nothing
         }
       }
@@ -69,7 +60,7 @@ public class XmlUtils {
     return doc;
   }
 
-  public Document getDocument(Reader r) throws DocumentException {
+  private Document getDocument(final Reader r) throws DocumentException {
     SAXReader reader = null; // readerQueue.poll();
     if (reader == null) {
       reader = new SAXReader();
@@ -86,7 +77,7 @@ public class XmlUtils {
     return xml;
   }
 
-  public String stripNonValidXMLCharacters(String in) {
+  public String stripNonValidXMLCharacters(final String in) {
     // from
     // http://blog.mark-mclaren.info/2007/02/invalid-xml-characters-when-valid-utf8_5873.html
 
@@ -94,7 +85,7 @@ public class XmlUtils {
       return null;
     }
 
-    StringBuffer out = new StringBuffer(); // Used to hold the output.
+    final StringBuffer out = new StringBuffer(); // Used to hold the output.
     char current; // Used to reference the current character.
 
     for (int i = 0; i < in.length(); i++) {
@@ -112,14 +103,14 @@ public class XmlUtils {
     return out.toString();
   }
 
-  public org.w3c.dom.Document convertDocument(Document orig) throws TransformerException {
-    Transformer t = tf.newTransformer();
-    DOMResult result = new DOMResult();
+  private org.w3c.dom.Document convertDocument(final Document orig) throws TransformerException {
+    final Transformer t = tf.newTransformer();
+    final DOMResult result = new DOMResult();
     t.transform(new DocumentSource(orig), result);
     return (org.w3c.dom.Document) result.getNode();
   }
 
-  public boolean isSameXML(Document docA, Document docB) throws TransformerException {
+  public boolean isSameXML(final Document docA, final Document docB) throws TransformerException {
 
     // some XMLUnit config is done statically at creation
     org.w3c.dom.Document docw3cA = null;
@@ -127,11 +118,11 @@ public class XmlUtils {
     docw3cA = convertDocument(docA);
     docw3cB = convertDocument(docB);
 
-    Diff diff = new Diff(docw3cA, docw3cB);
+    final Diff diff = new Diff(docw3cA, docw3cB);
     return !diff.similar();
   }
 
-  public void writeDocumentToFile(Document document, File outFile) throws IOException {
+  public void writeDocumentToFile(final Document document, final File outFile) throws IOException {
 
     OutputStream os = null;
     XMLWriter writer = null;
@@ -148,7 +139,7 @@ public class XmlUtils {
       if (os != null) {
         try {
           os.close();
-        } catch (IOException e) {
+        } catch (final IOException e) {
           // do nothing
         }
       }
@@ -156,7 +147,7 @@ public class XmlUtils {
       if (writer != null) {
         try {
           writer.close();
-        } catch (IOException e) {
+        } catch (final IOException e) {
           // do nothing
         }
       }

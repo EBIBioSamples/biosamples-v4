@@ -48,7 +48,7 @@ public class SampleReleaseRunner implements ApplicationRunner {
   }
 
   @Override
-  public void run(ApplicationArguments args) throws Exception {
+  public void run(final ApplicationArguments args) throws Exception {
     releaseSamples();
   }
 

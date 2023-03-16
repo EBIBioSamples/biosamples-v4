@@ -38,31 +38,36 @@ public class SamplePageRetrievalService {
   private final Traverson traverson;
   private final RestOperations restOperations;
 
-  public SamplePageRetrievalService(RestOperations restOperations, Traverson traverson) {
+  public SamplePageRetrievalService(
+      final RestOperations restOperations, final Traverson traverson) {
     this.restOperations = restOperations;
     this.traverson = traverson;
   }
 
   public PagedModel<EntityModel<Sample>> search(
-      String text, Collection<Filter> filters, int page, int size) {
+      final String text, final Collection<Filter> filters, final int page, final int size) {
     return search(text, filters, page, size, null);
   }
 
   public PagedModel<EntityModel<Sample>> search(
-      String text, Collection<Filter> filters, int page, int size, String jwt) {
+      final String text,
+      final Collection<Filter> filters,
+      final int page,
+      final int size,
+      final String jwt) {
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
     // TODO use shared constants here
     params.add("page", Integer.toString(page));
     params.add("size", Integer.toString(size));
     params.add("text", !text.isEmpty() ? text : "*:*");
 
-    for (Filter filter : filters) {
+    for (final Filter filter : filters) {
       params.add("filter", filter.getSerialization());
     }
 
     params = encodePlusInQueryParameters(params);
 
-    URI uri =
+    final URI uri =
         UriComponentsBuilder.fromUriString(traverson.follow("samples").asLink().getHref())
             .queryParams(params)
             .build()
@@ -70,16 +75,16 @@ public class SamplePageRetrievalService {
 
     log.trace("GETing " + uri);
 
-    MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+    final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
 
     headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
 
     if (jwt != null) {
       headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
     }
-    RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
+    final RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
 
-    ResponseEntity<PagedModel<EntityModel<Sample>>> responseEntity =
+    final ResponseEntity<PagedModel<EntityModel<Sample>>> responseEntity =
         restOperations.exchange(
             requestEntity, new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {});
 
@@ -94,10 +99,10 @@ public class SamplePageRetrievalService {
 
   // TODO to keep the + in a (not encoded) query parameter is to force encoding
   private MultiValueMap<String, String> encodePlusInQueryParameters(
-      MultiValueMap<String, String> queryParameters) {
-    MultiValueMap<String, String> encodedQueryParameters = new LinkedMultiValueMap<>();
-    for (Map.Entry<String, List<String>> param : queryParameters.entrySet()) {
-      String key = param.getKey();
+      final MultiValueMap<String, String> queryParameters) {
+    final MultiValueMap<String, String> encodedQueryParameters = new LinkedMultiValueMap<>();
+    for (final Map.Entry<String, List<String>> param : queryParameters.entrySet()) {
+      final String key = param.getKey();
       param
           .getValue()
           .forEach(

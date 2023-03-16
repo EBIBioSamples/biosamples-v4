@@ -46,11 +46,11 @@ public class CurationPersistService {
     // TODO do this as a trigger on the curation link repo
     // if it already exists, no need to save
     if (!mongoCurationRepository.findById(curationLink.getCuration().getHash()).isPresent()) {
-      MongoCuration mongoCuration =
+      final MongoCuration mongoCuration =
           curationToMongoCurationConverter.convert(curationLink.getCuration());
       try {
         mongoCurationRepository.save(mongoCuration);
-      } catch (DuplicateKeyException e) {
+      } catch (final DuplicateKeyException e) {
         // sometimes, if there are multiple threads there may be a collision
         // check if its a true duplicate and not an accidental hash collision
         final Optional<MongoCuration> byId =
@@ -80,27 +80,31 @@ public class CurationPersistService {
     return curationLink;
   }
 
-  public void delete(CurationLink curationLink) {
-    if (curationLink == null) throw new IllegalArgumentException("curationLink must not be null");
-    MongoCurationLink mongoCurationLink =
+  public void delete(final CurationLink curationLink) {
+    if (curationLink == null) {
+      throw new IllegalArgumentException("curationLink must not be null");
+    }
+    final MongoCurationLink mongoCurationLink =
         curationLinkToMongoCurationLinkConverter.convert(curationLink);
     mongoCurationLinkRepository.deleteById(mongoCurationLink.getHash());
     messagingSerivce.fetchThenSendMessage(curationLink.getSample());
   }
 
   // sample reverse relationships are dynamically generated, therefore should create for curations
-  private void createReverseRelationshipCurations(CurationLink curationLink) {
-    SortedSet<Relationship> relationshipsPre = curationLink.getCuration().getRelationshipsPre();
-    SortedSet<Relationship> relationshipsPost = curationLink.getCuration().getRelationshipsPost();
+  private void createReverseRelationshipCurations(final CurationLink curationLink) {
+    final SortedSet<Relationship> relationshipsPre =
+        curationLink.getCuration().getRelationshipsPre();
+    final SortedSet<Relationship> relationshipsPost =
+        curationLink.getCuration().getRelationshipsPost();
 
     if (!relationshipsPre.isEmpty()) {
-      for (Relationship rel : relationshipsPre) {
-        SortedSet<Relationship> reverseRelationships = new TreeSet<>();
+      for (final Relationship rel : relationshipsPre) {
+        final SortedSet<Relationship> reverseRelationships = new TreeSet<>();
         reverseRelationships.add(
             rel); // to keep original direction, instead of adding reverse relationship
-        Curation reverseCuration =
+        final Curation reverseCuration =
             Curation.build(null, null, null, null, reverseRelationships, null);
-        CurationLink reverseCurationLink =
+        final CurationLink reverseCurationLink =
             CurationLink.build(
                 rel.getTarget(),
                 reverseCuration,
@@ -117,13 +121,13 @@ public class CurationPersistService {
     }
 
     if (!relationshipsPost.isEmpty()) {
-      for (Relationship rel : relationshipsPost) {
-        SortedSet<Relationship> reverseRelationships = new TreeSet<>();
+      for (final Relationship rel : relationshipsPost) {
+        final SortedSet<Relationship> reverseRelationships = new TreeSet<>();
         reverseRelationships.add(
             rel); // to keep original direction, instead of adding reverse relationship
-        Curation reverseCuration =
+        final Curation reverseCuration =
             Curation.build(null, null, null, null, null, reverseRelationships);
-        CurationLink reverseCurationLink =
+        final CurationLink reverseCurationLink =
             CurationLink.build(
                 rel.getTarget(),
                 reverseCuration,

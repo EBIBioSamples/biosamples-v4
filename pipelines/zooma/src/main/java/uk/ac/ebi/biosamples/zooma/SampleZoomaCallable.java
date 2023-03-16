@@ -24,27 +24,27 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 
 public class SampleZoomaCallable implements Callable<PipelineResult> {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final Sample sample;
   private final BioSamplesClient bioSamplesClient;
   private final ZoomaProcessor zoomaProcessor;
   private final CurationApplicationService curationApplicationService;
   private final String domain;
   private int curationCount;
-  public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
+  static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
-  public SampleZoomaCallable(
-      BioSamplesClient bioSamplesClient,
-      Sample sample,
-      ZoomaProcessor zoomaProcessor,
-      CurationApplicationService curationApplicationService,
-      String domain) {
+  SampleZoomaCallable(
+      final BioSamplesClient bioSamplesClient,
+      final Sample sample,
+      final ZoomaProcessor zoomaProcessor,
+      final CurationApplicationService curationApplicationService,
+      final String domain) {
     this.bioSamplesClient = bioSamplesClient;
     this.sample = sample;
     this.zoomaProcessor = zoomaProcessor;
     this.curationApplicationService = curationApplicationService;
     this.domain = domain;
-    this.curationCount = 0;
+    curationCount = 0;
   }
 
   @Override
@@ -58,7 +58,7 @@ public class SampleZoomaCallable implements Callable<PipelineResult> {
         last = curated;
         curated = zooma(last);
       } while (!last.equals(curated));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       log.warn("Encountered exception with " + sample.getAccession(), e);
       failedQueue.add(sample.getAccession());
       success = false;
@@ -68,7 +68,7 @@ public class SampleZoomaCallable implements Callable<PipelineResult> {
   }
 
   private Sample zooma(Sample sample) {
-    for (Attribute attribute : sample.getAttributes()) {
+    for (final Attribute attribute : sample.getAttributes()) {
       // if there are any iris already, skip zoomafying it and curate elsewhere
       if (attribute.getIri().size() > 0) {
         continue;
@@ -145,14 +145,15 @@ public class SampleZoomaCallable implements Callable<PipelineResult> {
       }
 
       if (attribute.getType().length() < 64 && attribute.getValue().length() < 128) {
-        Optional<String> iri = zoomaProcessor.queryZooma(attribute.getType(), attribute.getValue());
+        final Optional<String> iri =
+            zoomaProcessor.queryZooma(attribute.getType(), attribute.getValue());
 
         if (iri.isPresent()) {
           log.trace("Mapped " + attribute + " to " + iri.get());
-          Attribute mapped =
+          final Attribute mapped =
               Attribute.build(
                   attribute.getType(), attribute.getValue(), attribute.getTag(), iri.get(), null);
-          Curation curation =
+          final Curation curation =
               Curation.build(
                   Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 

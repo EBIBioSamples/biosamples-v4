@@ -10,11 +10,7 @@
 */
 package uk.ac.ebi.biosamples.ebeye.gen;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlValue;
+import javax.xml.bind.annotation.*;
 
 /**
  * Java class for fieldType complex type.
@@ -56,7 +52,7 @@ public class FieldType {
    *
    * @param value allowed object is {@link String }
    */
-  public void setValue(String value) {
+  public void setValue(final String value) {
     this.value = value;
   }
 
@@ -74,7 +70,7 @@ public class FieldType {
    *
    * @param value allowed object is {@link String }
    */
-  public void setName(String value) {
-    this.name = value;
+  public void setName(final String value) {
+    name = value;
   }
 }

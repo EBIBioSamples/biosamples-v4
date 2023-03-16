@@ -11,11 +11,7 @@
 package uk.ac.ebi.biosamples.model.structured;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 public class StructuredDataTable {
   private String domain;
@@ -45,12 +41,12 @@ public class StructuredDataTable {
   }
 
   public static StructuredDataTable build(
-      String domain,
-      String webinSubmissionAccountId,
-      String type,
-      String schema,
-      Set<Map<String, StructuredDataEntry>> content) {
-    StructuredDataTable structuredDataTable = new StructuredDataTable();
+      final String domain,
+      final String webinSubmissionAccountId,
+      final String type,
+      final String schema,
+      final Set<Map<String, StructuredDataEntry>> content) {
+    final StructuredDataTable structuredDataTable = new StructuredDataTable();
     structuredDataTable.schema = schema;
     structuredDataTable.domain = domain;
     structuredDataTable.webinSubmissionAccountId = webinSubmissionAccountId;
@@ -61,7 +57,7 @@ public class StructuredDataTable {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (o instanceof StructuredDataTable) {
       return hasSimilarData((StructuredDataTable) o);
     }
@@ -74,7 +70,7 @@ public class StructuredDataTable {
     return Objects.hash(domain, webinSubmissionAccountId, type);
   }
 
-  public boolean hasSimilarData(StructuredDataTable other) {
+  private boolean hasSimilarData(final StructuredDataTable other) {
     if (domain != null
         && !domain.isEmpty()
         && other.getDomain() != null
@@ -103,7 +99,7 @@ public class StructuredDataTable {
 
   @JsonIgnore
   public SortedSet<String> getHeaders() {
-    SortedSet<String> headers = new TreeSet<>();
+    final SortedSet<String> headers = new TreeSet<>();
     content.forEach(row -> headers.addAll(row.keySet()));
     return headers;
   }

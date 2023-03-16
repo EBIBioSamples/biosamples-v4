@@ -10,7 +10,10 @@
 */
 package uk.ac.ebi.biosamples;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,26 +47,26 @@ public class AmrCleanRunner implements ApplicationRunner {
 
   @Autowired
   public AmrCleanRunner(
-      MongoStructuredDataRepository mongoStructuredDataRepository,
-      MongoOperations mongoOperations) {
+      final MongoStructuredDataRepository mongoStructuredDataRepository,
+      final MongoOperations mongoOperations) {
     this.mongoStructuredDataRepository = mongoStructuredDataRepository;
     this.mongoOperations = mongoOperations;
   }
 
   @Override
-  public void run(ApplicationArguments args) throws Exception {
-    Map<String, Future<Void>> futures = new HashMap<>();
+  public void run(final ApplicationArguments args) throws Exception {
+    final Map<String, Future<Void>> futures = new HashMap<>();
     ExecutorService executor = null;
 
     try {
       executor = Executors.newFixedThreadPool(128);
 
       final Query query = new Query();
-      try (CloseableIterator<MongoStructuredData> it =
+      try (final CloseableIterator<MongoStructuredData> it =
           mongoOperations.stream(query, MongoStructuredData.class)) {
         while (it.hasNext()) {
-          MongoStructuredData structuredData = it.next();
-          String accession = structuredData.getAccession();
+          final MongoStructuredData structuredData = it.next();
+          final String accession = structuredData.getAccession();
           LOGGER.info("Handling structured data " + accession);
           futures.put(
               accession,
@@ -83,21 +86,21 @@ public class AmrCleanRunner implements ApplicationRunner {
     private final MongoStructuredData structuredData;
     private final MongoStructuredDataRepository mongoStructuredDataRepository;
 
-    public SdCleanCallable(
-        MongoStructuredData structuredData,
-        MongoStructuredDataRepository mongoStructuredDataRepository) {
+    SdCleanCallable(
+        final MongoStructuredData structuredData,
+        final MongoStructuredDataRepository mongoStructuredDataRepository) {
       this.structuredData = structuredData;
       this.mongoStructuredDataRepository = mongoStructuredDataRepository;
     }
 
     @Override
     public Void call() {
-      Set<StructuredDataTable> dataSet = structuredData.getData();
-      Set<StructuredDataTable> enaImportedData = new HashSet<>();
-      Set<StructuredDataTable> emptyDomainAndWebinData = new HashSet<>();
-      int originalSize = dataSet.size();
+      final Set<StructuredDataTable> dataSet = structuredData.getData();
+      final Set<StructuredDataTable> enaImportedData = new HashSet<>();
+      final Set<StructuredDataTable> emptyDomainAndWebinData = new HashSet<>();
+      final int originalSize = dataSet.size();
 
-      for (StructuredDataTable data : dataSet) {
+      for (final StructuredDataTable data : dataSet) {
         if (!data.getType().equalsIgnoreCase("AMR")) {
           continue;
         }
@@ -113,8 +116,8 @@ public class AmrCleanRunner implements ApplicationRunner {
         }
       }
 
-      for (StructuredDataTable data : emptyDomainAndWebinData) {
-        StructuredDataTable duplicateWithDomain =
+      for (final StructuredDataTable data : emptyDomainAndWebinData) {
+        final StructuredDataTable duplicateWithDomain =
             StructuredDataTable.build(
                 "self.BiosampleImportNCBI",
                 null,
@@ -122,7 +125,7 @@ public class AmrCleanRunner implements ApplicationRunner {
                 data.getSchema(),
                 data.getContent());
         if (!dataSet.contains(duplicateWithDomain)) {
-          StructuredDataTable dataWithDomain =
+          final StructuredDataTable dataWithDomain =
               StructuredDataTable.build(
                   "self.BiosampleImportNCBI",
                   null,

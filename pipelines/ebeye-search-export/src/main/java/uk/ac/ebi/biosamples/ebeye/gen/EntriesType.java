@@ -41,7 +41,7 @@ import javax.xml.bind.annotation.XmlType;
 public class EntriesType {
 
   @XmlElement(required = true)
-  protected List<EntryType> entry;
+  private List<EntryType> entry;
 
   /**
    * Gets the value of the entry property.
@@ -60,8 +60,8 @@ public class EntriesType {
    */
   public List<EntryType> getEntry() {
     if (entry == null) {
-      entry = new ArrayList<EntryType>();
+      entry = new ArrayList<>();
     }
-    return this.entry;
+    return entry;
   }
 }

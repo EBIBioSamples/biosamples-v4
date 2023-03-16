@@ -36,11 +36,13 @@ public class StructuredDataService {
   private final MessagingService messagingService;
 
   public StructuredDataService(
-      MongoSampleRepository mongoSampleRepository,
-      MongoStructuredDataRepository mongoStructuredDataRepository,
-      MongoStructuredDataToStructuredDataConverter mongoStructuredDataToStructuredDataConverter,
-      StructuredDataToMongoStructuredDataConverter structuredDataToMongoStructuredDataConverter,
-      MessagingService messagingService) {
+      final MongoSampleRepository mongoSampleRepository,
+      final MongoStructuredDataRepository mongoStructuredDataRepository,
+      final MongoStructuredDataToStructuredDataConverter
+          mongoStructuredDataToStructuredDataConverter,
+      final StructuredDataToMongoStructuredDataConverter
+          structuredDataToMongoStructuredDataConverter,
+      final MessagingService messagingService) {
     this.mongoSampleRepository = mongoSampleRepository;
     this.mongoStructuredDataRepository = mongoStructuredDataRepository;
     this.mongoStructuredDataToStructuredDataConverter =
@@ -50,7 +52,7 @@ public class StructuredDataService {
     this.messagingService = messagingService;
   }
 
-  public Optional<StructuredData> getStructuredData(String accession) {
+  public Optional<StructuredData> getStructuredData(final String accession) {
     final Optional<MongoStructuredData> byId = mongoStructuredDataRepository.findById(accession);
     final MongoStructuredData mongoData = byId.orElse(null);
 
@@ -69,7 +71,8 @@ public class StructuredDataService {
     final MongoStructuredData oldMongoData = byId.orElse(null);
 
     if (oldMongoData != null) {
-      StructuredData oldData = mongoStructuredDataToStructuredDataConverter.convert(oldMongoData);
+      final StructuredData oldData =
+          mongoStructuredDataToStructuredDataConverter.convert(oldMongoData);
       // we consider if domain and types are equal StructuredDataTable
       // holds the same data and changed equals method accordingly
       structuredData.getData().addAll(oldData.getData());
@@ -86,7 +89,7 @@ public class StructuredDataService {
     return mongoStructuredDataToStructuredDataConverter.convert(mongoStructuredData);
   }
 
-  private void validate(StructuredData structuredData) {
+  private void validate(final StructuredData structuredData) {
     if (structuredData.getAccession() == null
         || !isExistingAccession(structuredData.getAccession())) {
       log.info(
@@ -113,7 +116,7 @@ public class StructuredDataService {
             });
   }
 
-  private boolean isExistingAccession(String accession) {
+  private boolean isExistingAccession(final String accession) {
     return mongoSampleRepository.findById(accession).isPresent();
   }
 }

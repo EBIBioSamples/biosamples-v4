@@ -27,11 +27,12 @@ import uk.ac.ebi.biosamples.model.filter.FilterType;
 @Relation(collectionRelation = "facets")
 @JsonDeserialize(builder = DateRangeFacet.Builder.class)
 public class DateRangeFacet implements Facet {
-  private String facetLabel;
-  private Long facetCount;
-  private LabelCountListContent content;
+  private final String facetLabel;
+  private final Long facetCount;
+  private final LabelCountListContent content;
 
-  private DateRangeFacet(String facetLabel, Long facetCount, LabelCountListContent content) {
+  private DateRangeFacet(
+      final String facetLabel, final Long facetCount, final LabelCountListContent content) {
     this.facetLabel = facetLabel;
     this.facetCount = facetCount;
     this.content = content;
@@ -49,28 +50,28 @@ public class DateRangeFacet implements Facet {
 
   @Override
   public String getLabel() {
-    return this.facetLabel;
+    return facetLabel;
   }
 
   @Override
   public Long getCount() {
-    return this.facetCount;
+    return facetCount;
   }
 
   @Override
   public LabelCountListContent getContent() {
-    return this.content;
+    return content;
   }
 
   @Override
-  public String getContentSerializableFilter(String label) {
-    String[] range = label.split(" to ");
+  public String getContentSerializableFilter(final String label) {
+    final String[] range = label.split(" to ");
     return "from=" + range[0] + "until=" + range[1];
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     sb.append("DateRangeFacet(");
     sb.append(facetLabel);
     sb.append(",");
@@ -83,28 +84,29 @@ public class DateRangeFacet implements Facet {
 
   public static class Builder implements Facet.Builder {
 
-    private String field;
-    private Long count;
+    private final String field;
+    private final Long count;
     private LabelCountListContent content = null;
 
     @JsonCreator
-    public Builder(@JsonProperty("label") String field, @JsonProperty("count") Long count) {
+    public Builder(
+        @JsonProperty("label") final String field, @JsonProperty("count") final Long count) {
       this.field = field;
       this.count = count;
     }
 
     @JsonProperty
     @Override
-    public Builder withContent(FacetContent content) {
+    public Builder withContent(final FacetContent content) {
 
       if (!(content instanceof LabelCountListContent)) {
         throw new RuntimeException("Content not compatible with an attribute facet");
       }
 
-      LabelCountListContent tempContent = (LabelCountListContent) content;
-      List<LabelCountEntry> contentList = new ArrayList<>();
+      final LabelCountListContent tempContent = (LabelCountListContent) content;
+      final List<LabelCountEntry> contentList = new ArrayList<>();
       for (int i = 0; i < tempContent.size(); i++) {
-        LabelCountEntry entry = tempContent.get(i);
+        final LabelCountEntry entry = tempContent.get(i);
         contentList.add(
             LabelCountEntry.build(parseLabelToDateRange(entry.getLabel()), entry.getCount()));
       }
@@ -113,11 +115,11 @@ public class DateRangeFacet implements Facet {
       return this;
     }
 
-    private String parseLabelToDateRange(String label) {
-      String dateLabel = label.substring(0, 10);
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-      LocalDate start = LocalDate.parse(dateLabel, formatter);
-      LocalDate end = start.plusYears(1);
+    private String parseLabelToDateRange(final String label) {
+      final String dateLabel = label.substring(0, 10);
+      final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+      final LocalDate start = LocalDate.parse(dateLabel, formatter);
+      final LocalDate end = start.plusYears(1);
       // LocalDateTime dateTime = LocalDateTime.parse(dateLabel, formatter);
 
       return start + " to " + end;
@@ -125,7 +127,7 @@ public class DateRangeFacet implements Facet {
 
     @Override
     public Facet build() {
-      return new DateRangeFacet(this.field, this.count, this.content);
+      return new DateRangeFacet(field, count, content);
     }
   }
 }

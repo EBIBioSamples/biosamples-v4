@@ -23,20 +23,21 @@ import uk.ac.ebi.biosamples.model.certification.Recommendation;
 
 @Service
 public class NullRecorder implements Recorder {
-  private static Logger LOG = LoggerFactory.getLogger(NullRecorder.class);
-  private static Logger EVENTS = LoggerFactory.getLogger("events");
+  private static final Logger LOG = LoggerFactory.getLogger(NullRecorder.class);
+  private static final Logger EVENTS = LoggerFactory.getLogger("events");
 
   @Override
   public BioSamplesCertificationComplainceResult record(
-      Set<CertificationResult> certificationResults, List<Recommendation> recommendations) {
-    BioSamplesCertificationComplainceResult bioSamplesCertificationComplainceResult =
+      final Set<CertificationResult> certificationResults,
+      final List<Recommendation> recommendations) {
+    final BioSamplesCertificationComplainceResult bioSamplesCertificationComplainceResult =
         new BioSamplesCertificationComplainceResult();
     if (certificationResults == null) {
       throw new IllegalArgumentException("cannot record a null certification result");
     }
 
-    for (CertificationResult certificationResult : certificationResults) {
-      for (Certificate certificate : certificationResult.getCertificates()) {
+    for (final CertificationResult certificationResult : certificationResults) {
+      for (final Certificate certificate : certificationResult.getCertificates()) {
         if (!bioSamplesCertificationComplainceResult.getCertificates().stream()
             .map(cert -> cert.getChecklist().getID())
             .collect(Collectors.toList())
@@ -52,7 +53,7 @@ public class NullRecorder implements Recorder {
     }
 
     if (recommendations != null) {
-      for (Recommendation recommendation : recommendations) {
+      for (final Recommendation recommendation : recommendations) {
         bioSamplesCertificationComplainceResult.add(recommendation);
       }
     }

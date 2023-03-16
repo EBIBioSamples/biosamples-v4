@@ -227,8 +227,8 @@ public class EnaSampleXmlEnhancerTest {
 
   @Test
   public void test_pretty() {
-    String pretty1 = pretty(expectedModifiedNcbiLinksRemoved);
-    String pretty2 = pretty(pretty1);
+    final String pretty1 = pretty(expectedModifiedNcbiLinksRemoved);
+    final String pretty2 = pretty(pretty1);
     assertEquals(pretty1, pretty2);
   }
 }

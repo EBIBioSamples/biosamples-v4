@@ -632,7 +632,9 @@ public class Sample implements Comparable<Sample> {
       sample.status = status;
     } else {
       sample.status =
-          sample.release != null && sample.release.isAfter(Instant.now()) ? SampleStatus.PRIVATE : SampleStatus.PUBLIC;
+          sample.release != null && sample.release.isAfter(Instant.now())
+              ? SampleStatus.PRIVATE
+              : SampleStatus.PUBLIC;
     }
 
     sample.attributes = new TreeSet<>();

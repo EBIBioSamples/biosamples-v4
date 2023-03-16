@@ -31,8 +31,8 @@ public class TransformationCallable implements Callable<PipelineResult> {
   private final Sample sample;
   private final BioSamplesClient bioSamplesClient;
 
-  public TransformationCallable(
-      @Qualifier("WEBINCLIENT") BioSamplesClient bioSamplesClient, Sample sample) {
+  TransformationCallable(
+      @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesClient, final Sample sample) {
     this.bioSamplesClient = bioSamplesClient;
     this.sample = sample;
   }
@@ -41,17 +41,17 @@ public class TransformationCallable implements Callable<PipelineResult> {
   public PipelineResult call() {
     int modifiedRecords = 0;
 
-    Optional<EntityModel<Sample>> optionalSampleResource =
+    final Optional<EntityModel<Sample>> optionalSampleResource =
         bioSamplesClient.fetchSampleResource(sample.getAccession(), Optional.of(new ArrayList<>()));
     if (optionalSampleResource.isPresent()) {
-      Sample uncuratedSample = optionalSampleResource.get().getContent();
-      Optional<Attribute> optionalRelAttribute =
+      final Sample uncuratedSample = optionalSampleResource.get().getContent();
+      final Optional<Attribute> optionalRelAttribute =
           uncuratedSample.getAttributes().stream()
               .filter(a -> a.getType().equalsIgnoreCase("sample derived from"))
               .findFirst();
 
       if (optionalRelAttribute.isPresent()) {
-        Attribute attribute = optionalRelAttribute.get();
+        final Attribute attribute = optionalRelAttribute.get();
         if (uncuratedSample.getRelationships().size() == 2) {
           Relationship wrongRel = uncuratedSample.getRelationships().first();
           uncuratedSample.getRelationships().remove(wrongRel);
@@ -80,7 +80,7 @@ public class TransformationCallable implements Callable<PipelineResult> {
     return new PipelineResult(sample.getAccession(), modifiedRecords, true);
   }
 
-  private Relationship createDerivedRelationship(String source, String target) {
+  private Relationship createDerivedRelationship(final String source, final String target) {
     return Relationship.build(source, "derived from", target);
   }
 }

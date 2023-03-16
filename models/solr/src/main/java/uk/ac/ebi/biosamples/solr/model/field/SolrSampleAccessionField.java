@@ -24,7 +24,7 @@ public class SolrSampleAccessionField extends SolrSampleField {
     super();
   }
 
-  public SolrSampleAccessionField(String readableLabel) {
+  public SolrSampleAccessionField(final String readableLabel) {
     super(readableLabel);
   }
 
@@ -34,7 +34,7 @@ public class SolrSampleAccessionField extends SolrSampleField {
    * @param readableLabel
    * @param solrDocumentLabel
    */
-  public SolrSampleAccessionField(String readableLabel, String solrDocumentLabel) {
+  public SolrSampleAccessionField(final String readableLabel, final String solrDocumentLabel) {
     super(readableLabel, solrDocumentLabel);
   }
 
@@ -54,7 +54,7 @@ public class SolrSampleAccessionField extends SolrSampleField {
   }
 
   @Override
-  public boolean isCompatibleWith(Filter filter) {
+  public boolean isCompatibleWith(final Filter filter) {
     return filter instanceof AccessionFilter;
   }
 
@@ -64,7 +64,7 @@ public class SolrSampleAccessionField extends SolrSampleField {
   }
 
   @Override
-  public Criteria getFilterCriteria(Filter filter) {
+  public Criteria getFilterCriteria(final Filter filter) {
 
     Criteria filterCriteria = null;
 
@@ -72,11 +72,13 @@ public class SolrSampleAccessionField extends SolrSampleField {
 
       filterCriteria = new Criteria(getSolrLabel());
 
-      AccessionFilter accessionFilter = (AccessionFilter) filter;
-      if (accessionFilter.getContent().isPresent())
+      final AccessionFilter accessionFilter = (AccessionFilter) filter;
+      if (accessionFilter.getContent().isPresent()) {
         filterCriteria =
             filterCriteria.expression(String.format("/%s/", accessionFilter.getContent().get()));
-      else filterCriteria = filterCriteria.isNotNull();
+      } else {
+        filterCriteria = filterCriteria.isNotNull();
+      }
     }
 
     return filterCriteria;

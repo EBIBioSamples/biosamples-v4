@@ -63,21 +63,21 @@ public class Ncbi implements ApplicationRunner {
   private final Map<String, Set<StructuredDataTable>> sampleToAmrMap;
 
   public Ncbi(
-      PipelinesProperties pipelinesProperties,
-      XmlFragmenter xmlFragmenter,
-      NcbiFragmentCallback sampleCallback,
-      BioSamplesClient bioSamplesClient,
-      MongoPipelineRepository mongoPipelineRepository) {
+      final PipelinesProperties pipelinesProperties,
+      final XmlFragmenter xmlFragmenter,
+      final NcbiFragmentCallback sampleCallback,
+      final BioSamplesClient bioSamplesClient,
+      final MongoPipelineRepository mongoPipelineRepository) {
     this.pipelinesProperties = pipelinesProperties;
     this.xmlFragmenter = xmlFragmenter;
     this.sampleCallback = sampleCallback;
     this.bioSamplesClient = bioSamplesClient;
     this.mongoPipelineRepository = mongoPipelineRepository;
-    this.sampleToAmrMap = new HashMap<>();
+    sampleToAmrMap = new HashMap<>();
   }
 
   @Override
-  public void run(ApplicationArguments args)
+  public void run(final ApplicationArguments args)
       throws IOException, ParserConfigurationException, ExecutionException, InterruptedException,
           SAXException {
     String pipelineFailureCause = null;
@@ -101,7 +101,7 @@ public class Ncbi implements ApplicationRunner {
     try {
       log.info("Processing NCBI pipeline...");
 
-      LocalDate fromDate;
+      final LocalDate fromDate;
       if (args.getOptionNames().contains("from")) {
         fromDate =
             LocalDate.parse(
@@ -109,7 +109,7 @@ public class Ncbi implements ApplicationRunner {
       } else {
         fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
       }
-      LocalDate toDate;
+      final LocalDate toDate;
       if (args.getOptionNames().contains("until")) {
         toDate =
             LocalDate.parse(
@@ -123,7 +123,7 @@ public class Ncbi implements ApplicationRunner {
       sampleCallback.setFromDate(fromDate);
       sampleCallback.setToDate(toDate);
 
-      String ncbiFile;
+      final String ncbiFile;
       if (args.getOptionNames().contains("ncbi_file")) {
         ncbiFile = args.getOptionValues("ncbi_file").get(0);
       } else {
@@ -133,7 +133,7 @@ public class Ncbi implements ApplicationRunner {
       Path inputPath = Paths.get(ncbiFile);
       inputPath = inputPath.toAbsolutePath();
 
-      try (InputStream is =
+      try (final InputStream is =
           new GZIPInputStream(new BufferedInputStream(Files.newInputStream(inputPath)))) {
         if (pipelinesProperties.getThreadCount() > 0) {
           ExecutorService executorService = null;
@@ -145,7 +145,7 @@ public class Ncbi implements ApplicationRunner {
                     true,
                     pipelinesProperties.getThreadCount(),
                     pipelinesProperties.getThreadCountMax());
-            Map<Element, Future<Void>> futures = new LinkedHashMap<>();
+            final Map<Element, Future<Void>> futures = new LinkedHashMap<>();
 
             sampleCallback.setExecutorService(executorService);
             sampleCallback.setFutures(futures);
@@ -212,7 +212,7 @@ public class Ncbi implements ApplicationRunner {
   private void makingNcbiSamplesPrivate() {
     // Run every Monday as this scans through all samples, not required to run each day
     if (isFirstDayOfTheWeek()) {
-      Set<String> toRemoveAccessions = getExistingPublicNcbiAccessions();
+      final Set<String> toRemoveAccessions = getExistingPublicNcbiAccessions();
       // remove those that still exist
       toRemoveAccessions.removeAll(sampleCallback.getAccessions());
       // remove those samples that are left
@@ -222,7 +222,7 @@ public class Ncbi implements ApplicationRunner {
   }
 
   private boolean isFirstDayOfTheWeek() {
-    Calendar calendar = Calendar.getInstance();
+    final Calendar calendar = Calendar.getInstance();
     calendar.setTime(new Date());
 
     return calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY;
@@ -231,10 +231,10 @@ public class Ncbi implements ApplicationRunner {
   private Set<String> getExistingPublicNcbiAccessions() {
     try {
       log.info("getting existing public ncbi accessions");
-      long startTime = System.nanoTime();
+      final long startTime = System.nanoTime();
       // make sure to only get the public samples
-      Set<String> existingAccessions = new TreeSet<>();
-      for (EntityModel<Sample> sample :
+      final Set<String> existingAccessions = new TreeSet<>();
+      for (final EntityModel<Sample> sample :
           bioSamplesClient
               .getPublicClient()
               .get()
@@ -242,8 +242,8 @@ public class Ncbi implements ApplicationRunner {
                   Collections.singleton(FilterBuilder.create().onAccession("SAM[^E].*").build()))) {
         existingAccessions.add(sample.getContent().getAccession());
       }
-      long endTime = System.nanoTime();
-      double intervalSec = ((double) (endTime - startTime)) / 1000000000.0;
+      final long endTime = System.nanoTime();
+      final double intervalSec = ((double) (endTime - startTime)) / 1000000000.0;
       log.debug(
           "Took "
               + intervalSec
@@ -256,21 +256,21 @@ public class Ncbi implements ApplicationRunner {
     }
   }
 
-  private void makePrivate(Set<String> toRemoveAccessions) {
+  private void makePrivate(final Set<String> toRemoveAccessions) {
     // TODO make this multithreaded for performance
     final List<String> curationDomainBlankList = new ArrayList<>();
     curationDomainBlankList.add("");
 
     try {
-      for (String accession : toRemoveAccessions) {
+      for (final String accession : toRemoveAccessions) {
         // this must get the ORIGINAL sample without curation
-        Optional<EntityModel<Sample>> sampleOptional =
+        final Optional<EntityModel<Sample>> sampleOptional =
             bioSamplesClient.fetchSampleResource(accession, Optional.of(curationDomainBlankList));
         if (sampleOptional.isPresent()) {
-          Sample sample = sampleOptional.get().getContent();
+          final Sample sample = sampleOptional.get().getContent();
           // set the release date to 1000 years in the future to make it private again
           // remove structured data if any
-          Sample newSample =
+          final Sample newSample =
               Sample.Builder.fromSample(sample)
                   .withNoData()
                   .withRelease(

@@ -37,11 +37,11 @@ public class SampleReleaseCallable implements Callable<Void> {
 
   static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
-  public SampleReleaseCallable(
+  SampleReleaseCallable(
       final BioSamplesClient bioSamplesWebinClient,
       final BioSamplesClient bioSamplesAapClient,
-      PipelinesProperties pipelinesProperties,
-      RestTemplate restTemplate,
+      final PipelinesProperties pipelinesProperties,
+      final RestTemplate restTemplate,
       final String accession) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
     this.bioSamplesAapClient = bioSamplesAapClient;

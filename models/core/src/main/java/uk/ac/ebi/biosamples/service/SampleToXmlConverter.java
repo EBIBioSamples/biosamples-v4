@@ -12,28 +12,14 @@ package uk.ac.ebi.biosamples.service;
 
 import com.google.common.base.Strings;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.dom4j.Namespace;
-import org.dom4j.QName;
+import java.util.*;
+import org.dom4j.*;
 import org.dom4j.tree.BaseElement;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Organization;
-import uk.ac.ebi.biosamples.model.Publication;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 
@@ -44,12 +30,12 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
   private final Namespace xsi = Namespace.get("xsi", "http://www.w3.org/2001/XMLSchema-instance");
   private final ExternalReferenceService externalReferenceService;
 
-  public SampleToXmlConverter(ExternalReferenceService externalReferenceService) {
+  public SampleToXmlConverter(final ExternalReferenceService externalReferenceService) {
     this.externalReferenceService = externalReferenceService;
   }
 
   @Override
-  public Document convert(Sample source) {
+  public Document convert(final Sample source) {
     if (source.getAccession() != null) {
       if (source.getAccession().startsWith("SAMEG")) {
         // its a group
@@ -62,9 +48,9 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
     }
   }
 
-  private Document sampleToBioSampleXml(Sample source) {
-    Document doc = DocumentHelper.createDocument();
-    Element bioSample = doc.addElement("BioSample");
+  private Document sampleToBioSampleXml(final Sample source) {
+    final Document doc = DocumentHelper.createDocument();
+    final Element bioSample = doc.addElement("BioSample");
 
     bioSample.add(xmlns);
     bioSample.addAttribute(
@@ -97,9 +83,9 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
     addName(source, "Sample Name", bioSample);
 
     // first create a temporary collections of information to allow sorting
-    SortedMap<String, SortedSet<String>> attributeTypesAndValuesMap = new TreeMap<>();
-    SortedMap<String, SortedMap<String, String>> attributeIris = new TreeMap<>();
-    SortedMap<String, SortedMap<String, String>> attributeUnits = new TreeMap<>();
+    final SortedMap<String, SortedSet<String>> attributeTypesAndValuesMap = new TreeMap<>();
+    final SortedMap<String, SortedMap<String, String>> attributeIris = new TreeMap<>();
+    final SortedMap<String, SortedMap<String, String>> attributeUnits = new TreeMap<>();
 
     /*
     <Property class="Sample Name" characteristic="false" comment="false"
@@ -118,7 +104,7 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 
     // relationships other than derived from
 
-    for (Relationship relationship : source.getRelationships()) {
+    for (final Relationship relationship : source.getRelationships()) {
       if (!"derived from".equals(relationship.getType().toLowerCase())
           && source.getAccession().equals(relationship.getSource())) {
 
@@ -135,10 +121,10 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
         bioSample, attributeTypesAndValuesMap, attributeIris, attributeUnits);
 
     // derivedFrom element
-    for (Relationship relationship : source.getRelationships()) {
+    for (final Relationship relationship : source.getRelationships()) {
       if ("derived from".equals(relationship.getType().toLowerCase())
           && source.getAccession().equals(relationship.getSource())) {
-        Element derived = bioSample.addElement(QName.get("derivedFrom", xmlns));
+        final Element derived = bioSample.addElement(QName.get("derivedFrom", xmlns));
         derived.setText(relationship.getTarget());
       }
     }
@@ -152,19 +138,19 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
     */
     handleExternalReferencesConversion(source, bioSample);
 
-    for (StructuredDataTable data : source.getStructuredData()) {
-      Element dataParent =
+    for (final StructuredDataTable data : source.getStructuredData()) {
+      final Element dataParent =
           bioSample.addElement(QName.get("Table", xmlns)).addAttribute("name", data.getType());
 
-      Element dataHeader = dataParent.addElement(QName.get("Header", xmlns));
-      for (String key : data.getHeaders()) {
+      final Element dataHeader = dataParent.addElement(QName.get("Header", xmlns));
+      for (final String key : data.getHeaders()) {
         dataHeader.addElement(QName.get("Cell", xmlns)).setText(key);
       }
 
-      Element dataBody = dataParent.addElement(QName.get("Body", xmlns));
-      for (Map<String, StructuredDataEntry> row : data.getContent()) {
-        Element dataRow = dataBody.addElement(QName.get("Row", xmlns));
-        for (String key : data.getHeaders()) {
+      final Element dataBody = dataParent.addElement(QName.get("Body", xmlns));
+      for (final Map<String, StructuredDataEntry> row : data.getContent()) {
+        final Element dataRow = dataBody.addElement(QName.get("Row", xmlns));
+        for (final String key : data.getHeaders()) {
           dataRow
               .addElement(QName.get("Cell", xmlns))
               .setText(row.containsKey(key) ? row.get(key).getValue() : "");
@@ -176,11 +162,11 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
   }
 
   private void handleAttributeConversion(
-      Sample source,
-      SortedMap<String, SortedSet<String>> attrTypeValue,
-      SortedMap<String, SortedMap<String, String>> attrIri,
-      SortedMap<String, SortedMap<String, String>> attrUnit) {
-    for (Attribute attribute : source.getCharacteristics()) {
+      final Sample source,
+      final SortedMap<String, SortedSet<String>> attrTypeValue,
+      final SortedMap<String, SortedMap<String, String>> attrIri,
+      final SortedMap<String, SortedMap<String, String>> attrUnit) {
+    for (final Attribute attribute : source.getCharacteristics()) {
       String attributeType = attribute.getType();
 
       if ("description".equals(attributeType)) {
@@ -205,39 +191,39 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
     }
   }
 
-  private void handleExternalReferencesConversion(Sample source, Element bioSample) {
-    for (ExternalReference externalReference : source.getExternalReferences()) {
-      Element database = bioSample.addElement(QName.get("Database", xmlns));
-      Element databaseName = database.addElement(QName.get("Name", xmlns));
+  private void handleExternalReferencesConversion(final Sample source, final Element bioSample) {
+    for (final ExternalReference externalReference : source.getExternalReferences()) {
+      final Element database = bioSample.addElement(QName.get("Database", xmlns));
+      final Element databaseName = database.addElement(QName.get("Name", xmlns));
       databaseName.setText(externalReferenceService.getNickname(externalReference));
-      Element databaseUri = database.addElement(QName.get("URI", xmlns));
+      final Element databaseUri = database.addElement(QName.get("URI", xmlns));
       databaseUri.setText(externalReference.getUrl());
       // use the last segment of the URI as the ID
       // not perfect, but good enough?
-      List<String> pathSegments =
+      final List<String> pathSegments =
           UriComponentsBuilder.fromUriString(externalReference.getUrl()).build().getPathSegments();
 
       if (pathSegments.size() > 0) {
-        Element databaseId = database.addElement(QName.get("ID", xmlns));
+        final Element databaseId = database.addElement(QName.get("ID", xmlns));
         databaseId.setText(pathSegments.get(pathSegments.size() - 1));
       }
     }
   }
 
-  private void addName(Sample source, String fieldname, Element bioSample) {
-    Element e = bioSample.addElement(QName.get("Property", xmlns));
+  private void addName(final Sample source, final String fieldname, final Element bioSample) {
+    final Element e = bioSample.addElement(QName.get("Property", xmlns));
     e.addAttribute("class", fieldname);
     e.addAttribute("characteristic", "false");
     e.addAttribute("comment", "false");
     e.addAttribute("type", "STRING");
-    Element qv = e.addElement("QualifiedValue");
-    Element v = qv.addElement("Value");
+    final Element qv = e.addElement("QualifiedValue");
+    final Element v = qv.addElement("Value");
     v.addText(source.getName());
   }
 
-  private Document sampleToBioSampleGroupXml(Sample source) {
-    Document doc = DocumentHelper.createDocument();
-    Element bioSample = doc.addElement("BioSampleGroup");
+  private Document sampleToBioSampleGroupXml(final Sample source) {
+    final Document doc = DocumentHelper.createDocument();
+    final Element bioSample = doc.addElement("BioSampleGroup");
 
     bioSample.add(xmlns);
     bioSample.addAttribute(
@@ -253,9 +239,9 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
     addName(source, "Group Name", bioSample);
 
     // first create a temporary collections of information to allow sorting
-    SortedMap<String, SortedSet<String>> attributeTypesAndValuesMap = new TreeMap<>();
-    SortedMap<String, SortedMap<String, String>> attributeIris = new TreeMap<>();
-    SortedMap<String, SortedMap<String, String>> attributeUnits = new TreeMap<>();
+    final SortedMap<String, SortedSet<String>> attributeTypesAndValuesMap = new TreeMap<>();
+    final SortedMap<String, SortedMap<String, String>> attributeIris = new TreeMap<>();
+    final SortedMap<String, SortedMap<String, String>> attributeUnits = new TreeMap<>();
 
     // release and update date
     attributeTypesAndValuesMap.put("Submission Release Date", new TreeSet<>());
@@ -290,31 +276,31 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
     handleAttributesConversion(
         bioSample, attributeTypesAndValuesMap, attributeIris, attributeUnits);
 
-    for (Contact contact : source.getContacts()) {
-      Element person = new BaseElement(QName.get("Person", xmlns));
+    for (final Contact contact : source.getContacts()) {
+      final Element person = new BaseElement(QName.get("Person", xmlns));
 
       if (!Strings.isNullOrEmpty(contact.getFirstName())) {
-        Element personFirstName = person.addElement(QName.get("FirstName", xmlns));
+        final Element personFirstName = person.addElement(QName.get("FirstName", xmlns));
         personFirstName.setText(contact.getFirstName());
       }
 
       if (!Strings.isNullOrEmpty(contact.getLastName())) {
-        Element personLastName = person.addElement(QName.get("LastName", xmlns));
+        final Element personLastName = person.addElement(QName.get("LastName", xmlns));
         personLastName.setText(contact.getLastName());
       }
 
       if (!Strings.isNullOrEmpty(contact.getMidInitials())) {
-        Element personMidInitials = person.addElement(QName.get("MidInitials", xmlns));
+        final Element personMidInitials = person.addElement(QName.get("MidInitials", xmlns));
         personMidInitials.setText(contact.getMidInitials());
       }
 
       if (!Strings.isNullOrEmpty(contact.getRole())) {
-        Element personRole = person.addElement(QName.get("Role", xmlns));
+        final Element personRole = person.addElement(QName.get("Role", xmlns));
         personRole.setText(contact.getRole());
       }
 
       if (!Strings.isNullOrEmpty(contact.getEmail())) {
-        Element personEmail = person.addElement(QName.get("Email", xmlns));
+        final Element personEmail = person.addElement(QName.get("Email", xmlns));
         personEmail.setText(contact.getEmail());
       }
 
@@ -323,31 +309,33 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
       }
     }
 
-    for (Organization organization : source.getOrganizations()) {
-      Element organizationElement = new BaseElement(QName.get("Organization", xmlns));
+    for (final Organization organization : source.getOrganizations()) {
+      final Element organizationElement = new BaseElement(QName.get("Organization", xmlns));
 
       if (!Strings.isNullOrEmpty(organization.getName())) {
-        Element organizationName = organizationElement.addElement(QName.get("Name", xmlns));
+        final Element organizationName = organizationElement.addElement(QName.get("Name", xmlns));
         organizationName.setText(organization.getName());
       }
 
       if (!Strings.isNullOrEmpty(organization.getAddress())) {
-        Element organizationAddress = organizationElement.addElement(QName.get("Address", xmlns));
+        final Element organizationAddress =
+            organizationElement.addElement(QName.get("Address", xmlns));
         organizationAddress.setText(organization.getAddress());
       }
 
       if (!Strings.isNullOrEmpty(organization.getUrl())) {
-        Element organizationURI = organizationElement.addElement(QName.get("URI", xmlns));
+        final Element organizationURI = organizationElement.addElement(QName.get("URI", xmlns));
         organizationURI.setText(organization.getUrl());
       }
 
       if (!Strings.isNullOrEmpty(organization.getRole())) {
-        Element organizationRole = organizationElement.addElement(QName.get("Role", xmlns));
+        final Element organizationRole = organizationElement.addElement(QName.get("Role", xmlns));
         organizationRole.setText(organization.getRole());
       }
 
       if (!Strings.isNullOrEmpty(organization.getEmail())) {
-        Element organizationEmail = organizationElement.addElement(QName.get("E-mail", xmlns));
+        final Element organizationEmail =
+            organizationElement.addElement(QName.get("E-mail", xmlns));
         organizationEmail.setText(organization.getEmail());
       }
 
@@ -356,16 +344,17 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
       }
     }
 
-    for (Publication publication : source.getPublications()) {
-      Element publicationElement = new BaseElement(QName.get("Publication", xmlns));
+    for (final Publication publication : source.getPublications()) {
+      final Element publicationElement = new BaseElement(QName.get("Publication", xmlns));
 
       if (!Strings.isNullOrEmpty(publication.getDoi())) {
-        Element publicationDOI = publicationElement.addElement(QName.get("DOI", xmlns));
+        final Element publicationDOI = publicationElement.addElement(QName.get("DOI", xmlns));
         publicationDOI.setText(publication.getDoi());
       }
 
       if (!Strings.isNullOrEmpty(publication.getPubMedId())) {
-        Element publicationPubMedID = publicationElement.addElement(QName.get("PubMedID", xmlns));
+        final Element publicationPubMedID =
+            publicationElement.addElement(QName.get("PubMedID", xmlns));
         publicationPubMedID.setText(publication.getPubMedId());
       }
 
@@ -380,32 +369,32 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
   }
 
   private void handleAttributesConversion(
-      Element bioSample,
-      SortedMap<String, SortedSet<String>> attrTypeValue,
-      SortedMap<String, SortedMap<String, String>> attrIri,
-      SortedMap<String, SortedMap<String, String>> attrUnit) {
-    for (String attributeType : attrTypeValue.keySet()) {
-      Element property = bioSample.addElement(QName.get("Property", xmlns));
+      final Element bioSample,
+      final SortedMap<String, SortedSet<String>> attrTypeValue,
+      final SortedMap<String, SortedMap<String, String>> attrIri,
+      final SortedMap<String, SortedMap<String, String>> attrUnit) {
+    for (final String attributeType : attrTypeValue.keySet()) {
+      final Element property = bioSample.addElement(QName.get("Property", xmlns));
       // Element e = parent.addElement("Property");
       property.addAttribute("class", attributeType);
       property.addAttribute("characteristic", "false");
       property.addAttribute("comment", "false");
       property.addAttribute("type", "STRING");
 
-      for (String attributeValue : attrTypeValue.get(attributeType)) {
-        Element qualifiedValue = property.addElement("QualifiedValue");
-        Element value = qualifiedValue.addElement("Value");
+      for (final String attributeValue : attrTypeValue.get(attributeType)) {
+        final Element qualifiedValue = property.addElement("QualifiedValue");
+        final Element value = qualifiedValue.addElement("Value");
         value.addText(attributeValue);
 
         if (attrIri.get(attributeType).containsKey(attributeValue)) {
-          Element termSourceRef = qualifiedValue.addElement("TermSourceREF");
+          final Element termSourceRef = qualifiedValue.addElement("TermSourceREF");
           termSourceRef.addElement("Name");
-          Element termSourceId = termSourceRef.addElement("TermSourceID");
+          final Element termSourceId = termSourceRef.addElement("TermSourceID");
           termSourceId.setText(attrIri.get(attributeType).get(attributeValue));
         }
 
         if (attrUnit.get(attributeType).containsKey(attributeValue)) {
-          Element unitE = qualifiedValue.addElement("Unit");
+          final Element unitE = qualifiedValue.addElement("Unit");
           unitE.setText(attrUnit.get(attributeType).get(attributeValue));
         }
       }

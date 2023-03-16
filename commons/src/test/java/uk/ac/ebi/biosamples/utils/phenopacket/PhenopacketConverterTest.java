@@ -22,17 +22,17 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 
 public class PhenopacketConverterTest {
-  PhenopacketConverter phenopacketConverter =
+  private PhenopacketConverter phenopacketConverter =
       new PhenopacketConverter(new PhenopacketConversionHelper());
-  ObjectMapper jsonMapper = new ObjectMapper();
+  private ObjectMapper jsonMapper = new ObjectMapper();
 
   @Test
   @Ignore
   public void testPhenopacketConversion() throws Exception {
-    Sample sample = getTestSample();
-    Phenopacket phenopacket = phenopacketConverter.convert(sample);
+    final Sample sample = getTestSample();
+    final Phenopacket phenopacket = phenopacketConverter.convert(sample);
 
-    JsonNode phenopacketExpected =
+    final JsonNode phenopacketExpected =
         jsonMapper.readValue(
             new ClassPathResource("phenopacket/phenopacket_1.json").getInputStream(),
             JsonNode.class);
@@ -43,16 +43,16 @@ public class PhenopacketConverterTest {
 
   @Test
   public void testPhenopacketConversion_withoutOrganismOntology() {
-    Sample sample = getTestSampleWithoutOrganismOntology();
-    Phenopacket phenopacket = phenopacketConverter.convert(sample);
+    final Sample sample = getTestSampleWithoutOrganismOntology();
+    final Phenopacket phenopacket = phenopacketConverter.convert(sample);
     Assert.assertSame("", phenopacket.getBiosamples(0).getTaxonomy().getId());
   }
 
   @Test
   @Ignore
   public void testPhenopacketConversion_resources() throws Exception {
-    Sample sample = getTestSample_2();
-    Phenopacket phenopacket = phenopacketConverter.convert(sample);
+    final Sample sample = getTestSample_2();
+    final Phenopacket phenopacket = phenopacketConverter.convert(sample);
     Assert.assertTrue(phenopacket.getMetaData().getResourcesList().size() > 0);
   }
 
@@ -98,7 +98,7 @@ public class PhenopacketConverterTest {
   }
 
   private Sample getTestSample_2() {
-    Sample.Builder sampleBuilder =
+    final Sample.Builder sampleBuilder =
         new Sample.Builder("Phenopacket_ERS1790018", "Phenopacket_ERS1790018");
     sampleBuilder
         .withDomain("self.BiosampleIntegrationTest")

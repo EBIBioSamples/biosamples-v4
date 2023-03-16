@@ -19,11 +19,11 @@ import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
 public class SampleAnalytics {
-  protected long totalRecords;
+  private long totalRecords;
   private String dateRange;
   private long processedRecords;
   protected Map<String, Long> center;
-  protected Map<String, Long> channel;
+  private Map<String, Long> channel;
   protected Map<String, Map<String, Long>> facets;
 
   public SampleAnalytics() {
@@ -36,7 +36,7 @@ public class SampleAnalytics {
     return totalRecords;
   }
 
-  public void setTotalRecords(long totalRecords) {
+  public void setTotalRecords(final long totalRecords) {
     this.totalRecords = totalRecords;
   }
 
@@ -44,21 +44,21 @@ public class SampleAnalytics {
     return dateRange;
   }
 
-  public void setDateRange(String dateRange) {
+  public void setDateRange(final String dateRange) {
     this.dateRange = dateRange;
   }
 
-  public void setDateRange(Collection<Filter> filters) {
-    DateRangeFilter dateRangeFilter =
+  public void setDateRange(final Collection<Filter> filters) {
+    final DateRangeFilter dateRangeFilter =
         filters.stream()
             .filter(f -> f instanceof DateRangeFilter)
             .map(DateRangeFilter.class::cast)
             .findFirst()
             .orElse(null);
     if (dateRangeFilter != null && dateRangeFilter.getContent().isPresent()) {
-      DateTimeFormatter dateTimeFormatter =
+      final DateTimeFormatter dateTimeFormatter =
           DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault());
-      this.dateRange =
+      dateRange =
           dateTimeFormatter.format(dateRangeFilter.getContent().get().getFrom())
               + " : "
               + dateTimeFormatter.format(dateRangeFilter.getContent().get().getUntil());
@@ -69,7 +69,7 @@ public class SampleAnalytics {
     return processedRecords;
   }
 
-  public void setProcessedRecords(long processedRecords) {
+  public void setProcessedRecords(final long processedRecords) {
     this.processedRecords = processedRecords;
   }
 
@@ -77,7 +77,7 @@ public class SampleAnalytics {
     return center;
   }
 
-  public void addToCenter(String centerName) {
+  public void addToCenter(final String centerName) {
     if (center.containsKey(centerName)) {
       center.put(centerName, center.get(centerName) + 1);
     } else {
@@ -89,7 +89,7 @@ public class SampleAnalytics {
     return channel;
   }
 
-  public void addToChannel(String accessionPrefix) {
+  public void addToChannel(final String accessionPrefix) {
     if (channel.containsKey(accessionPrefix)) {
       channel.put(accessionPrefix, channel.get(accessionPrefix) + 1);
     } else {

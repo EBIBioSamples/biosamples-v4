@@ -60,7 +60,7 @@ public class JsonLDDataRecord implements BioschemasObject {
   @JsonProperty("dateModified")
   private ZonedDateTime dateModified;
 
-  private Map partOf = getDatasetPartOf();
+  private final Map partOf = getDatasetPartOf();
 
   public String getId() {
     return id;
@@ -74,9 +74,9 @@ public class JsonLDDataRecord implements BioschemasObject {
     return identifier;
   }
 
-  public JsonLDDataRecord identifier(String identifier) {
+  public JsonLDDataRecord identifier(final String identifier) {
     this.identifier = identifier;
-    this.id = identifier;
+    id = identifier;
     return this;
   }
 
@@ -84,7 +84,7 @@ public class JsonLDDataRecord implements BioschemasObject {
     return mainEntity;
   }
 
-  public JsonLDDataRecord mainEntity(JsonLDSample mainEntity) {
+  public JsonLDDataRecord mainEntity(final JsonLDSample mainEntity) {
     this.mainEntity = mainEntity;
     return this;
   }
@@ -118,56 +118,56 @@ public class JsonLDDataRecord implements BioschemasObject {
   }
 
   @JsonSetter("dateCreated")
-  public JsonLDDataRecord dateCreated(String dateCreated) {
+  public JsonLDDataRecord dateCreated(final String dateCreated) {
     this.dateCreated =
         LocalDateTime.parse(dateCreated, dateTimeFormatter).atZone(ZoneId.systemDefault());
     return this;
   }
 
   @JsonSetter("dateModified")
-  public JsonLDDataRecord dateModified(String dateModified) {
+  public JsonLDDataRecord dateModified(final String dateModified) {
     this.dateModified =
         LocalDateTime.parse(dateModified, dateTimeFormatter).atZone(ZoneId.systemDefault());
     return this;
   }
 
   @JsonSetter("dateSubmitted")
-  public JsonLDDataRecord dateSubmitted(String dateSubmitted) {
+  public JsonLDDataRecord dateSubmitted(final String dateSubmitted) {
     this.dateSubmitted =
         LocalDateTime.parse(dateSubmitted, dateTimeFormatter).atZone(ZoneId.systemDefault());
     return this;
   }
 
   @JsonSetter("dateReleased")
-  public JsonLDDataRecord dateReleased(String dateReleased) {
+  public JsonLDDataRecord dateReleased(final String dateReleased) {
     this.dateReleased =
         LocalDateTime.parse(dateReleased, dateTimeFormatter).atZone(ZoneId.systemDefault());
     return this;
   }
 
-  public JsonLDDataRecord dateModified(ZonedDateTime dateModified) {
+  public JsonLDDataRecord dateModified(final ZonedDateTime dateModified) {
     this.dateModified = dateModified;
     return this;
   }
 
-  public JsonLDDataRecord dateCreated(ZonedDateTime dateCreated) {
+  public JsonLDDataRecord dateCreated(final ZonedDateTime dateCreated) {
     this.dateCreated = dateCreated;
     return this;
   }
 
-  public JsonLDDataRecord dateSubmitted(ZonedDateTime dateSubmitted) {
+  public JsonLDDataRecord dateSubmitted(final ZonedDateTime dateSubmitted) {
     this.dateSubmitted = dateSubmitted;
     return this;
   }
 
-  public JsonLDDataRecord dateReleased(ZonedDateTime dateReleased) {
+  public JsonLDDataRecord dateReleased(final ZonedDateTime dateReleased) {
     this.dateReleased = dateReleased;
     return this;
   }
 
   @JsonProperty("isPartOf")
   public Map getDatasetPartOf() {
-    Map<String, String> datasetPartOf = new HashMap<>();
+    final Map<String, String> datasetPartOf = new HashMap<>();
     datasetPartOf.put("@type", "Dataset");
     // TODO Use relative application url and not hard-coded one
     datasetPartOf.put("@id", "https://www.ebi.ac.uk/biosamples/samples");
