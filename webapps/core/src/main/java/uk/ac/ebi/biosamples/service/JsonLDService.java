@@ -17,15 +17,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.lang.reflect.Method;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import uk.ac.ebi.biosamples.controller.SampleHtmlController;
 import uk.ac.ebi.biosamples.controller.SampleRestController;
 import uk.ac.ebi.biosamples.model.*;
 
-/** This servise is meant for the convertions jobs to/form ld+json */
+/** This servise is meant for the conversions jobs to/form ld+json */
 @Service
 public class JsonLDService {
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final ObjectMapper objectMapper;
   private final SampleToJsonLDSampleRecordConverter jsonLDSampleConverter;
@@ -40,7 +43,7 @@ public class JsonLDService {
   }
 
   private void initUrls() {
-    dataCatalogUrl = dataCatalogUrl == null ? getDataCatalogUrl() : getDataCatalogUrl();
+    dataCatalogUrl = dataCatalogUrl == null ? getDataCatalogUrl() : dataCatalogUrl;
     datasetUrl = datasetUrl == null ? getDatasetUrl() : datasetUrl;
   }
   /**
@@ -56,17 +59,12 @@ public class JsonLDService {
     try {
       final Method method =
           SampleRestController.class.getMethod(
-              "getSampleHal",
-              String.class,
-              String.class,
-              String[].class,
-              String.class,
-              String.class);
+              "getSampleHal", String.class, String.class, String[].class, String.class);
       final String sampleUrl = linkTo(method, sample.getAccession()).toUri().toString();
       jsonLDSample.setUrl(sampleUrl);
       jsonLDSample.setId(sampleUrl);
     } catch (final NoSuchMethodException e) {
-      e.printStackTrace();
+      log.error("Failed to get method with reflections. ", e);
     }
 
     jsonLDDataRecord.mainEntity(jsonLDSample);
@@ -74,7 +72,6 @@ public class JsonLDService {
   }
 
   public JsonLDDataCatalog getBioSamplesDataCatalog() {
-
     initUrls();
     final JsonLDDataCatalog dataCatalog = new JsonLDDataCatalog();
     return dataCatalog.url(dataCatalogUrl).datasetUrl(datasetUrl);
@@ -126,7 +123,6 @@ public class JsonLDService {
               String[].class,
               Integer.class,
               Integer.class,
-              String.class,
               HttpServletRequest.class,
               HttpServletResponse.class);
       datasetUrl = linkTo(method, null, null, null, null, null, null, null).toUri().toString();

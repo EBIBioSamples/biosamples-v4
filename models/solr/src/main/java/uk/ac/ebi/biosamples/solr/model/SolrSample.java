@@ -34,7 +34,7 @@ public class SolrSample {
   protected String domain;
 
   @Indexed(name = "webinId", required = true)
-  private String webinSubmissionAcccountId;
+  protected String webinSubmissionAcccountId;
 
   // TODO
   /**
@@ -51,46 +51,46 @@ public class SolrSample {
   protected String update;
 
   @Indexed(name = "modified_dt", required = true, type = "date") // TODO why type=date ?
-  private String modified;
+  protected String modified;
 
   @Indexed(name = "indexed_dt", required = true, type = "date") // TODO why type=date ?
-  private String indexed;
+  protected String indexed;
 
   @Indexed(name = "*_av_ss")
   @Dynamic
-  private Map<String, List<String>> attributeValues;
+  protected Map<String, List<String>> attributeValues;
 
   @Indexed(
       name = "*_ai_ss",
       copyTo = {"ontologyiri_ss"})
   @Dynamic
-  private Map<String, List<String>> attributeIris;
+  protected Map<String, List<String>> attributeIris;
 
   @Indexed(name = "*_au_ss")
   @Dynamic
-  private Map<String, List<String>> attributeUnits;
+  protected Map<String, List<String>> attributeUnits;
 
   /** Relationships for which this sample is the source */
   @Indexed(name = "*_or_ss", copyTo = "keywords_ss")
   @Dynamic
-  private Map<String, List<String>> outgoingRelationships;
+  protected Map<String, List<String>> outgoingRelationships;
 
   /** Relationships for which this sample is the target */
   @Indexed(name = "*_ir_ss", copyTo = "keywords_ss")
   @Dynamic
-  private Map<String, List<String>> incomingRelationships;
+  protected Map<String, List<String>> incomingRelationships;
 
   /**
    * This field shouldn't be populated directly, instead Solr will copy all the ontology terms from
    * the attributes into it.
    */
   @Indexed(name = "ontologyiri_ss")
-  private List<String> ontologyIris;
+  protected List<String> ontologyIris;
 
   /** This field is used to store external references only */
   @Indexed(name = "*_erd_ss", copyTo = "facetfields_ss")
   @Dynamic
-  private Map<String, List<String>> externalReferencesData;
+  protected Map<String, List<String>> externalReferencesData;
 
   /**
    * This field is required to get a list of attribute to use for faceting. * It includes attributes
@@ -98,14 +98,13 @@ public class SolrSample {
    * save space.
    */
   @Indexed(name = "facetfields_ss")
-  private List<String> facetFields;
-  // TODO consider renaming as used only for faceting
+  protected List<String> facetFields;
 
   /** This field is required to store the ontology expansion and attributes from related samples */
   @Indexed(name = "keywords_ss")
   protected List<String> keywords;
 
-  private SolrSample() {}
+  public SolrSample() {}
 
   public String getAccession() {
     return accession;

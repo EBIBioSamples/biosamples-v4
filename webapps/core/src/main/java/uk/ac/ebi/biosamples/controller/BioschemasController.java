@@ -10,7 +10,6 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import java.time.Instant;
 import java.util.Optional;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -54,19 +53,12 @@ public class BioschemasController {
   @PreAuthorize("isAuthenticated()")
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(value = "/samples/{accession}", produces = "application/ld+json")
-  public JsonLDDataRecord getJsonLDSample(@PathVariable final String accession) {
-    final Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
-    if (!sample.isPresent()) {
-      throw new GlobalExceptions.SampleNotFoundException();
-    }
-    bioSamplesAapService.isSampleAccessible(sample.get());
-
-    // check if the release date is in the future and if so return it as
-    // private
-    if (sample.get().getRelease().isAfter(Instant.now())) {
-      throw new GlobalExceptions.SampleNotAccessibleException();
-    }
-
-    return jsonLDService.sampleToJsonLD(sample.get());
+  public JsonLDDataRecord getJsonLDSample(@PathVariable String accession) {
+    Sample sample =
+        sampleService
+            .fetch(accession, Optional.empty())
+            .orElseThrow(() -> new GlobalExceptions.SampleNotFoundException());
+    bioSamplesAapService.isSampleAccessible(sample);
+    return jsonLDService.sampleToJsonLD(sample);
   }
 }

@@ -24,7 +24,7 @@ public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, Js
   public JsonLDDataRecord convert(final Sample sample) {
 
     final JsonLDDataRecord sampleRecord = new JsonLDDataRecord();
-    // TODO Check if we actually want to use release date as date created
+
     sampleRecord.dateCreated(sample.getCreate().atZone(ZoneId.of("UTC")));
     sampleRecord.dateReleased(sample.getRelease().atZone(ZoneId.of("UTC")));
     sampleRecord.dateModified(sample.getUpdate().atZone(ZoneId.of("UTC")));

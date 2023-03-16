@@ -51,9 +51,6 @@ public class SampleFacetRestController {
     final Collection<String> domains = Collections.emptyList();
     final List<Facet> sampleFacets = facetService.getFacets(text, filters, domains, 10, 10);
 
-    //    	PagedResources<StringListFacet> resources = new PagedResources<>(
-    //    			sampleFacets,
-    //				new PagedResources.PageMetadata(10, 1, 10, 5));
     final CollectionModel<Facet> resources = CollectionModel.of(sampleFacets);
 
     // Links for the entire page

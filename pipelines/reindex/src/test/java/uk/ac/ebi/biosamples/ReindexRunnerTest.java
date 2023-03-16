@@ -10,6 +10,8 @@
 */
 package uk.ac.ebi.biosamples;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -21,7 +23,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.util.CloseableIterator;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleStatus;
@@ -95,7 +96,8 @@ public class ReindexRunnerTest {
             null,
             Collections.EMPTY_SET,
             Collections.EMPTY_SET);
-    when(mongoOperations.stream(new Query(), MongoSample.class)).thenReturn(samples);
+
+    when(mongoOperations.stream(any(), eq(MongoSample.class))).thenReturn(samples);
     when(sampleReadService.fetch("ACCESSION1", Optional.empty())).thenReturn(Optional.of(sample1));
     when(sampleReadService.fetch("ACCESSION2", Optional.empty())).thenReturn(Optional.empty());
     when(sampleReadService.fetch("ACCESSION3", Optional.empty()))

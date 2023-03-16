@@ -109,9 +109,8 @@ public class SolrSampleService {
       query = new SimpleQuery("*:*"); // default to search all
     } else {
       final String lowerCasedSearchTerm = searchTerm.toLowerCase();
-      // search for copied fields keywords_ss.
-      // query = new SimpleQuery("keywords_ss:\"" + lowerCasedSearchTerm + "\"");
 
+      // search for copied fields keywords_ss.
       query = new SimpleQuery();
       final Criteria searchCriteria = new Criteria("keywords_ss").fuzzy(lowerCasedSearchTerm);
       searchCriteria.setPartIsOr(true);

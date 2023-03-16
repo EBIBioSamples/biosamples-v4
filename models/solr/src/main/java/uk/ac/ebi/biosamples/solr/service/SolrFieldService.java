@@ -28,7 +28,6 @@ import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 @Service
 public class SolrFieldService {
 
-  //    private Logger log = LoggerFactory.getLogger(getClass());
   private final List<SolrSampleField> solrFieldList;
 
   @Autowired
@@ -70,7 +69,7 @@ public class SolrFieldService {
    * @param encodedField encoded version of the field with the type suffix
    * @return the field name decoded
    */
-  SolrSampleField decodeField(final String encodedField) {
+  public SolrSampleField decodeField(final String encodedField) {
 
     final Optional<SolrSampleField> optionalType =
         solrFieldList.stream().filter(solrField -> solrField.matches(encodedField)).findFirst();
@@ -101,7 +100,7 @@ public class SolrFieldService {
     throw new RuntimeException("Provide field " + encodedField + " is unknown");
   }
 
-  SolrSampleField getCompatibleField(final Filter filter) {
+  public SolrSampleField getCompatibleField(final Filter filter) {
 
     final Optional<SolrSampleField> optionalType =
         solrFieldList.stream().filter(solrField -> solrField.isCompatibleWith(filter)).findFirst();
@@ -126,7 +125,7 @@ public class SolrFieldService {
     throw new RuntimeException("Provide filter " + filter + " is unknown");
   }
 
-  private SolrSampleField getNewFieldInstance(
+  public SolrSampleField getNewFieldInstance(
       final Class<? extends SolrSampleField> prototype,
       final String baseLabel,
       final String encodedLabel)
@@ -137,7 +136,7 @@ public class SolrFieldService {
         .newInstance(baseLabel, encodedLabel);
   }
 
-  private SolrSampleField getNewFieldInstance(
+  public SolrSampleField getNewFieldInstance(
       final Class<? extends SolrSampleField> prototype, final String baseLabel)
       throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
           InstantiationException {
