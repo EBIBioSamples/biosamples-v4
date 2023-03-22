@@ -84,7 +84,7 @@ services:
       - rabbitmq
     volumes:
       - logs:/logs
-      - /home/dennis/secrets:/secrets
+      - "/mnt/c/Users/dennis/WorkStation/ena-secrets:/secrets"
     command:
       - java
       - -jar
@@ -146,7 +146,7 @@ services:
       # Force the encoding to the configured charset on HTTP requests and responses.
       - spring.http.encoding.force=true
       # gcp monitoring servoce account key.
-      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/project-dev-internal.json
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/prj-dev-internal-ena-1-f085fda7a1ae.json
     ports:
       - 8082:8080
 
