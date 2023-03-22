@@ -84,6 +84,7 @@ services:
       - rabbitmq
     volumes:
       - logs:/logs
+      - /home/dennis/secrets:/secrets
     command:
       - java
       - -jar
@@ -94,7 +95,7 @@ services:
       - security.basic.path=
       - aap.domains.url=https://explore.api.aai.ebi.ac.uk
       - aap.token.url=https://explore.api.aai.ebi.ac.uk/auth
-      #configure other services
+      #configure other servicesgit
       - spring.data.solr.host=http://solr:8983/solr
       - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
       - spring.data.mongodb.auto-index-creation=true
@@ -112,6 +113,16 @@ services:
       - management.health.solr.enabled=false
       - management.health.rabbit.enabled=false
       - management.endpoint.health.show-details=always
+      - management.metrics.enable.all=false
+      - management.metrics.enable.http=true
+      - management.metrics.web.server.request.autotime.percentiles-histogram=true
+      - management.metrics.web.server.request.autotime.percentiles=0.50,0.90,0.99
+      #buckets(in ms to match base Time Unit)
+      - management.metrics.distribution.sla.http.server.requests.duration.buckets=50,100,250,500,1000,5000,10000,15000,30000,60000,120000,180000,240000,300000,+Inf
+      # Micrometer
+      - management.metrics.export.stackdriver.projectId=prj-dev-internal-ena-1
+      - management.metrics.export.stackdriver.useSemanticMetricTypes=true
+      - management.metrics.export.stackdriver.step=5m
       #Configure root path to server from
       - server.servlet.context-path=/biosamples/v2
       - server.context-path=/biosamples/v2
@@ -134,6 +145,8 @@ services:
       - spring.http.encoding.enabled=true
       # Force the encoding to the configured charset on HTTP requests and responses.
       - spring.http.encoding.force=true
+      # gcp monitoring servoce account key.
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/project-dev-internal.json
     ports:
       - 8082:8080
 

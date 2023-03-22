@@ -45,6 +45,17 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-core</artifactId>
+			<version>1.10.3</version>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-stackdriver</artifactId>
+			<version>1.10.3</version>
+		</dependency>
+
 
 		<!-- connection pools -->
 		<dependency>
