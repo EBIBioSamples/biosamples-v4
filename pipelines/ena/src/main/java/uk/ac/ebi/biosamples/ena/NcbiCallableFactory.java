@@ -21,12 +21,12 @@ public class NcbiCallableFactory {
   private final String domain;
 
   public NcbiCallableFactory(
-      BioSamplesClient bioSamplesClient,
-      EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService,
-      PipelinesProperties pipelinesProperties) {
+      final BioSamplesClient bioSamplesClient,
+      final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService,
+      final PipelinesProperties pipelinesProperties) {
     this.bioSamplesClient = bioSamplesClient;
     this.enaSampleToBioSampleConversionService = enaSampleToBioSampleConversionService;
-    this.domain = pipelinesProperties.getEnaDomain();
+    domain = pipelinesProperties.getEnaDomain();
   }
 
   /**
@@ -35,7 +35,12 @@ public class NcbiCallableFactory {
    * @param accession The accession passed
    * @return the callable, {@link NcbiCallable}
    */
-  public NcbiCallable build(String accession) {
+  public NcbiCallable build(final String accession) {
+    return new NcbiCallable(
+        accession, bioSamplesClient, domain, enaSampleToBioSampleConversionService);
+  }
+
+  public NcbiCallable build(final String accession, final boolean suppressionRunner) {
     return new NcbiCallable(
         accession, bioSamplesClient,
         domain, enaSampleToBioSampleConversionService);

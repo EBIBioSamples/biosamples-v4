@@ -21,9 +21,9 @@ import uk.ac.ebi.biosamples.model.SampleAnalytics;
 @Document
 public class MongoAnalytics {
   @Id protected String collectionDate;
-  private int year;
-  private int month;
-  private int day;
+  private final int year;
+  private final int month;
+  private final int day;
 
   protected List<PipelineAnalytics> pipelines;
 

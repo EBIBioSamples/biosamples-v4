@@ -64,7 +64,8 @@ public class TestConversion {
                   null,
                   bioSamplesWebinClient,
                   egaSampleExporter,
-                  enaSampleToBioSampleConversionService);
+                  enaSampleToBioSampleConversionService,
+                  suppressionRunner);
           try {
             enaImportCallable.call();
           } catch (final Exception e) {
@@ -87,7 +88,8 @@ public class TestConversion {
                   null,
                   bioSamplesWebinClient,
                   egaSampleExporter,
-                  enaSampleToBioSampleConversionService);
+                  enaSampleToBioSampleConversionService,
+                  suppressionRunner);
           try {
             enaImportCallable.call();
           } catch (final Exception e) {
@@ -109,7 +111,8 @@ public class TestConversion {
                   null,
                   bioSamplesWebinClient,
                   egaSampleExporter,
-                  enaSampleToBioSampleConversionService);
+                  enaSampleToBioSampleConversionService,
+                  suppressionRunner);
           try {
             enaImportCallable.call();
           } catch (final Exception e) {
@@ -131,7 +134,8 @@ public class TestConversion {
                   null,
                   bioSamplesWebinClient,
                   egaSampleExporter,
-                  enaSampleToBioSampleConversionService);
+                  enaSampleToBioSampleConversionService,
+                  suppressionRunner);
           try {
             enaImportCallable.call();
           } catch (final Exception e) {
@@ -153,7 +157,8 @@ public class TestConversion {
                   null,
                   bioSamplesWebinClient,
                   egaSampleExporter,
-                  enaSampleToBioSampleConversionService);
+                  enaSampleToBioSampleConversionService,
+                  suppressionRunner);
           try {
             enaImportCallable.call();
           } catch (final Exception e) {
