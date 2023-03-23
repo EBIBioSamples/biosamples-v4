@@ -36,6 +36,9 @@ public class SolrSample {
   @Indexed(name = "webinId", required = true)
   protected String webinSubmissionAcccountId;
 
+  @Indexed(name = "status_s", required = true)
+  protected String status;
+
   // TODO
   /**
    * Store the release date as a string so that it can be used easily by solr Use a TrieDate type
@@ -122,6 +125,10 @@ public class SolrSample {
     return webinSubmissionAcccountId;
   }
 
+  public String getStatus() {
+    return status;
+  }
+
   public String getRelease() {
     return release;
   }
@@ -206,6 +213,7 @@ public class SolrSample {
       final String accession,
       final String domain,
       final String webinSubmissionAcccountId,
+      final String status,
       final String release,
       final String update,
       final String modified,
@@ -236,6 +244,7 @@ public class SolrSample {
     sample.update = update;
     sample.domain = domain;
     sample.webinSubmissionAcccountId = webinSubmissionAcccountId;
+    sample.status = status;
     sample.modified = modified;
     sample.indexed = indexed;
     sample.attributeValues = attributeValues;

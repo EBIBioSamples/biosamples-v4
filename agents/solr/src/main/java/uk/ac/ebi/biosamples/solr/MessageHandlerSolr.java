@@ -89,6 +89,7 @@ public class MessageHandlerSolr {
               solrSample.getAccession(),
               solrSample.getDomain(),
               solrSample.getWebinSubmissionAcccountId(),
+              solrSample.getStatus(),
               solrSample.getRelease(),
               solrSample.getUpdate(),
               modifiedTime,

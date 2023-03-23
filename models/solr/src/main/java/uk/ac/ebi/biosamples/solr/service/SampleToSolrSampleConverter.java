@@ -190,6 +190,14 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
     final String releaseSolr = DateTimeFormatter.ISO_INSTANT.format(sample.getRelease());
     final String updateSolr = DateTimeFormatter.ISO_INSTANT.format(sample.getUpdate());
 
+    if (sample.getStatus() != null) {
+      final String attributeValueKey = SolrFieldService.encodeFieldName("status");
+      if (!attributeValues.containsKey(attributeValueKey)) {
+        attributeValues.put(attributeValueKey, new ArrayList<>());
+      }
+      attributeValues.get(attributeValueKey).add(sample.getStatus().name());
+    }
+
     sample
         .getOrganizations()
         .forEach(
@@ -218,6 +226,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
         sample.getAccession(),
         sample.getDomain(),
         sample.getWebinSubmissionAccountId(),
+        sample.getStatus().name(),
         releaseSolr,
         updateSolr,
         null,
