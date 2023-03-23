@@ -30,7 +30,7 @@ This document provides information about the local installation, development env
 * Git 2.17.1
 * Java 8
 * JDK 8
-* Maven 3.6.0
+* Maven 3.6.3
 * Docker 18.6
 
 == Setup
@@ -47,10 +47,6 @@ sudo apt-get install openjdk-8-jdk maven git docker
 +
 [source,sh]
 ----
-mvn -v
-# Output: 
-# Apache Maven 3.6.0
-
 docker -v 
 # Output
 # Docker version 18.06.1-ce
@@ -70,7 +66,7 @@ minutes.
 ----
 git clone https://github.com/EBIBioSamples/biosamples-v4.git
 cd biosamples-v4
-mvn -T 2C package
+./mvnw -T 2C package
 ----
 . Start Biosamples on your own machine
 +
@@ -165,7 +161,7 @@ docker-compose to start by default.
 
 As you make changes to the code, you can recompile it via Maven with:
 
-`mvn -T 2C package`
+`./mvnw -T 2C package`
 
 And to get the new packages into the docker containers you will need to
 rebuild containers with:
@@ -202,7 +198,7 @@ http://www.jamasoftware.com/blog/monitoring-java-applications/
 Note that you can bring maven and docker together into a single
 commandline like:
 
-`mvn -T 2C package && docker-compose build && docker-compose run --service-ports biosamples-pipelines`
+`./mvnw -T 2C package && docker-compose build && docker-compose run --service-ports biosamples-pipelines`
 
 Beware, Docker tar's and copies all the files on the filesystem from the
 location of docker-compose down. If you have data files there (e.g.

@@ -111,3 +111,6 @@ create_new_facets_and_filters.md
 #docker
 data
 docker
+
+#maven wrapper
+.mvn

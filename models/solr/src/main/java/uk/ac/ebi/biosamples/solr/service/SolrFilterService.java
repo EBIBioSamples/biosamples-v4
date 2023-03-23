@@ -10,30 +10,24 @@
 */
 package uk.ac.ebi.biosamples.solr.service;
 
-import java.time.format.DateTimeFormatter;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import org.springframework.data.solr.core.query.Criteria;
 import org.springframework.data.solr.core.query.FilterQuery;
 import org.springframework.data.solr.core.query.SimpleFilterQuery;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.model.SampleStatus;
 import uk.ac.ebi.biosamples.model.filter.AccessionFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 
+import java.util.AbstractMap.SimpleEntry;
+import java.util.*;
+import java.util.stream.Collectors;
+
 @Service
 public class SolrFilterService {
-
   private final SolrFieldService solrFieldService;
   private final BioSamplesProperties bioSamplesProperties;
-
-  private final DateTimeFormatter releaseFilterFormatter =
-      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'23:59:59'Z'");
 
   public SolrFilterService(
       final SolrFieldService solrFieldService, final BioSamplesProperties bioSamplesProperties) {
@@ -146,27 +140,32 @@ public class SolrFilterService {
     // check if this is a read superuser
     if ((domains != null && domains.contains(bioSamplesProperties.getBiosamplesAapSuperRead()))
         || (webinSubmissionAccountId != null
-            && webinSubmissionAccountId.equalsIgnoreCase(
-                bioSamplesProperties.getBiosamplesClientWebinUsername()))) {
+        && webinSubmissionAccountId.equalsIgnoreCase(
+            bioSamplesProperties.getBiosamplesClientWebinUsername()))) {
       return Optional.empty();
     }
 
     // filter out non-public
     final FilterQuery filterQuery = new SimpleFilterQuery();
     Criteria publicSampleCriteria = new Criteria("release_dt").lessThan("NOW");
-    // can use .and("release_dt").isNotNull(); to filter out non-null
-    // but nothing should be null and this slows search
 
     if (domains != null && !domains.isEmpty()) {
-      // user can only see private samples inside its own domain
+      // user can see public and private samples inside its own domain
       publicSampleCriteria = publicSampleCriteria.or(new Criteria("domain_s").in(domains));
     }
 
     if (webinSubmissionAccountId != null && !webinSubmissionAccountId.isEmpty()) {
-      // user can only see private samples submitted by them using their webin auth tokens
+      // user can see public and private samples submitted by them using their webin auth tokens
       publicSampleCriteria =
           publicSampleCriteria.or(new Criteria("webinId").in(webinSubmissionAccountId));
     }
+
+    publicSampleCriteria =
+        publicSampleCriteria.and(new Criteria("status_s").not().in(SampleStatus.getSearchHiddenStatuses()));
+
+//    String[] allowedSampleStatus = {SampleStatus.PUBLIC.name()};
+//    publicSampleCriteria =
+//        publicSampleCriteria.or(new Criteria("status_s").in(Arrays.asList(allowedSampleStatus)));
 
     filterQuery.addCriteria(publicSampleCriteria);
     return Optional.of(filterQuery);

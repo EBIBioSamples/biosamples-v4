@@ -12,6 +12,7 @@ package uk.ac.ebi.biosamples;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -139,5 +140,27 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
             () ->
                 new IntegrationTestFailException(
                     "Sample does not exist, sample name: " + name, phase));
+  }
+
+  void fetchByNameAndThrowOrElsePersist(Sample sample) {
+    final Optional<Sample> optionalSample = fetchUniqueSampleByName(sample.getName());
+    if (optionalSample.isPresent()) {
+      throw new IntegrationTestFailException(
+          "RestIntegration test sample should not be available during phase 1", Phase.ONE);
+    } else {
+      final EntityModel<Sample> resource = client.persistSampleResource(sample);
+      final Sample sampleContent = resource.getContent();
+
+      final Sample testSampleWithAccession =
+          Sample.Builder.fromSample(sample)
+              .withAccession(Objects.requireNonNull(sampleContent).getAccession())
+              .withStatus(sampleContent.getStatus())
+              .build();
+
+      if (!testSampleWithAccession.equals(sampleContent)) {
+        throw new IntegrationTestFailException(
+            "Expected response (" + sampleContent + ") to equal submission (" + sample + ")");
+      }
+    }
   }
 }
