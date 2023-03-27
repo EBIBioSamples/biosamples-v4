@@ -10,6 +10,9 @@
 */
 package uk.ac.ebi.biosamples.solr.service;
 
+import java.util.*;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.stream.Collectors;
 import org.springframework.data.solr.core.query.Criteria;
 import org.springframework.data.solr.core.query.FilterQuery;
 import org.springframework.data.solr.core.query.SimpleFilterQuery;
@@ -19,10 +22,6 @@ import uk.ac.ebi.biosamples.model.SampleStatus;
 import uk.ac.ebi.biosamples.model.filter.AccessionFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
-
-import java.util.AbstractMap.SimpleEntry;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class SolrFilterService {
@@ -140,8 +139,8 @@ public class SolrFilterService {
     // check if this is a read superuser
     if ((domains != null && domains.contains(bioSamplesProperties.getBiosamplesAapSuperRead()))
         || (webinSubmissionAccountId != null
-        && webinSubmissionAccountId.equalsIgnoreCase(
-            bioSamplesProperties.getBiosamplesClientWebinUsername()))) {
+            && webinSubmissionAccountId.equalsIgnoreCase(
+                bioSamplesProperties.getBiosamplesClientWebinUsername()))) {
       return Optional.empty();
     }
 
@@ -161,11 +160,13 @@ public class SolrFilterService {
     }
 
     publicSampleCriteria =
-        publicSampleCriteria.and(new Criteria("status_s").not().in(SampleStatus.getSearchHiddenStatuses()));
+        publicSampleCriteria.and(
+            new Criteria("status_s").not().in(SampleStatus.getSearchHiddenStatuses()));
 
-//    String[] allowedSampleStatus = {SampleStatus.PUBLIC.name()};
-//    publicSampleCriteria =
-//        publicSampleCriteria.or(new Criteria("status_s").in(Arrays.asList(allowedSampleStatus)));
+    //    String[] allowedSampleStatus = {SampleStatus.PUBLIC.name()};
+    //    publicSampleCriteria =
+    //        publicSampleCriteria.or(new
+    // Criteria("status_s").in(Arrays.asList(allowedSampleStatus)));
 
     filterQuery.addCriteria(publicSampleCriteria);
     return Optional.of(filterQuery);

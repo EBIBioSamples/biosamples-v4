@@ -1,15 +1,21 @@
 /*
- * Copyright 2021 EMBL - European Bioinformatics Institute
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- */
+* Copyright 2021 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples;
 
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import javax.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.annotation.Order;
@@ -19,13 +25,6 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleStatus;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
-
-import javax.annotation.PreDestroy;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 @Component
 @Order(2)
@@ -38,13 +37,14 @@ public class RestSampleStatusIntegration extends AbstractIntegration {
       final BioSamplesProperties clientProperties,
       @Qualifier("WEBINCLIENT") final BioSamplesClient webinClient) {
     super(client, webinClient);
-    anonymousClient = new BioSamplesClient(
-        clientProperties.getBiosamplesClientUri(),
-        clientProperties.getBiosamplesClientUriV2(),
-        restTemplateBuilder,
-        null,
-        null,
-        clientProperties);
+    anonymousClient =
+        new BioSamplesClient(
+            clientProperties.getBiosamplesClientUri(),
+            clientProperties.getBiosamplesClientUriV2(),
+            restTemplateBuilder,
+            null,
+            null,
+            clientProperties);
   }
 
   @Override
@@ -70,40 +70,50 @@ public class RestSampleStatusIntegration extends AbstractIntegration {
     final Optional<Sample> publicSampleDb = fetchUniqueSampleByName(publicSample.getName());
     final Optional<Sample> suppressedSampleDb = fetchUniqueSampleByName(suppressedSample.getName());
     final Optional<Sample> privateSampleDb = fetchUniqueSampleByName(privateSample.getName());
-    final Optional<Sample> publicSampleWithPrivateStatusDb = fetchUniqueSampleByName(publicSampleWithPrivateStatus.getName());
+    final Optional<Sample> publicSampleWithPrivateStatusDb =
+        fetchUniqueSampleByName(publicSampleWithPrivateStatus.getName());
 
     publicSampleDb.orElseThrow(
-        () -> new IntegrationTestFailException("PUBLIC sample not present in search result: " + publicSample.getName(), Phase.TWO));
-    suppressedSampleDb.ifPresent(s -> {
-      throw new IntegrationTestFailException("SUPPRESSED sample present in search result: " + suppressedSample.getName(), Phase.TWO);
-    });
-    privateSampleDb.ifPresent(s -> {
-      throw new IntegrationTestFailException("PRIVATE sample present in search result: " + privateSample.getName(), Phase.TWO);
-    });
+        () ->
+            new IntegrationTestFailException(
+                "PUBLIC sample not present in search result: " + publicSample.getName(),
+                Phase.TWO));
+    suppressedSampleDb.ifPresent(
+        s -> {
+          throw new IntegrationTestFailException(
+              "SUPPRESSED sample present in search result: " + suppressedSample.getName(),
+              Phase.TWO);
+        });
+    privateSampleDb.ifPresent(
+        s -> {
+          throw new IntegrationTestFailException(
+              "PRIVATE sample present in search result: " + privateSample.getName(), Phase.TWO);
+        });
     publicSampleWithPrivateStatusDb.orElseThrow(
-        () -> new IntegrationTestFailException("PUBLIC sample not present in search result: " + publicSampleWithPrivateStatus.getName(), Phase.TWO));
+        () ->
+            new IntegrationTestFailException(
+                "PUBLIC sample not present in search result: "
+                    + publicSampleWithPrivateStatus.getName(),
+                Phase.TWO));
   }
 
   @Override
-  protected void phaseThree() throws InterruptedException {
-  }
+  protected void phaseThree() throws InterruptedException {}
 
   @Override
-  protected void phaseFour() {
-  }
+  protected void phaseFour() {}
 
   @Override
-  protected void phaseFive() {
-  }
+  protected void phaseFive() {}
 
   @Override
-  protected void phaseSix() {
-  }
+  protected void phaseSix() {}
 
   private Sample getPublicSample() {
     final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
-        Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+        Attribute.build(
+            "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
     attributes.add(Attribute.build("age", "3", null, Collections.emptyList(), "year"));
     attributes.add(Attribute.build("organism part", "lung"));
     attributes.add(Attribute.build("sex", "female"));
@@ -121,7 +131,8 @@ public class RestSampleStatusIntegration extends AbstractIntegration {
   private Sample getSuppressedSample() {
     final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
-        Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+        Attribute.build(
+            "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
     attributes.add(Attribute.build("age", "3", null, Collections.emptyList(), "year"));
     attributes.add(Attribute.build("organism part", "lung"));
     attributes.add(Attribute.build("sex", "female"));
@@ -139,7 +150,8 @@ public class RestSampleStatusIntegration extends AbstractIntegration {
   private Sample getPrivateSample() {
     final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
-        Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+        Attribute.build(
+            "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
     attributes.add(Attribute.build("age", "3", null, Collections.emptyList(), "year"));
     attributes.add(Attribute.build("organism part", "lung"));
     attributes.add(Attribute.build("sex", "female"));
@@ -157,7 +169,8 @@ public class RestSampleStatusIntegration extends AbstractIntegration {
   private Sample getPublicSampleWithWrongStatus() {
     final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
-        Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+        Attribute.build(
+            "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
     attributes.add(Attribute.build("age", "3", null, Collections.emptyList(), "year"));
     attributes.add(Attribute.build("organism part", "lung"));
     attributes.add(Attribute.build("sex", "female"));
