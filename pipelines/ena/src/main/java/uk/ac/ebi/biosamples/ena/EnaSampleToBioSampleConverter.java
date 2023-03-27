@@ -19,7 +19,9 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.dom4j.Element;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Publication;
+import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
@@ -32,8 +34,6 @@ class EnaSampleToBioSampleConverter {
       final boolean isNcbi) {
     final SortedSet<Attribute> bioSampleAttributes = new TreeSet<>();
     final SortedSet<Publication> bioSamplePublications = new TreeSet<>();
-    final SortedSet<Relationship> bioSampleRelationships = new TreeSet<>();
-    final SortedSet<ExternalReference> bioSampleExternalReferences = new TreeSet<>();
     final XmlPathBuilder eraSampleXmlRootPath =
         XmlPathBuilder.of(eraSampleXmlRootElement).path(ENA_SAMPLE_ROOT);
 
@@ -356,9 +356,7 @@ class EnaSampleToBioSampleConverter {
         .withRelease(Instant.now())
         .withUpdate(Instant.now())
         .withAttributes(bioSampleAttributes)
-        .withRelationships(bioSampleRelationships)
         .withPublications(bioSamplePublications)
-        .withExternalReferences(bioSampleExternalReferences)
         .build();
   }
 }

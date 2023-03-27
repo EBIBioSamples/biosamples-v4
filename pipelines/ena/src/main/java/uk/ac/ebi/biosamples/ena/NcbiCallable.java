@@ -55,7 +55,7 @@ public class NcbiCallable implements Callable<Void> {
               "NCBI sample doesn't exists in BioSamples " + accession + " fetching from ERAPRO");
 
           final Sample sample =
-              enaSampleToBioSampleConversionService.enrichSample(accession, true, null, null);
+              enaSampleToBioSampleConversionService.enrichSample(accession, true, null);
 
           try {
             bioSamplesClient.persistSampleResource(sample);
