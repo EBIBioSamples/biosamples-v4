@@ -24,12 +24,12 @@ import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 @Component
 public class CustomWriteConcernResolver implements WriteConcernResolver {
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   @Autowired private MongoProperties mongoProperties;
 
   @Override
-  public WriteConcern resolve(MongoAction action) {
+  public WriteConcern resolve(final MongoAction action) {
     log.trace("Resolving mongoAction " + action);
 
     if (MongoSample.class.isAssignableFrom(action.getEntityType())) {

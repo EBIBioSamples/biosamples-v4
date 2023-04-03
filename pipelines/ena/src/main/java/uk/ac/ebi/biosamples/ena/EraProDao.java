@@ -31,6 +31,7 @@ public class EraProDao {
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   private static final String STATUS_CLAUSE = "STATUS_ID IN (3, 4, 5, 6, 7, 8)";
+  private static final String STATUS_CLAUSE_SUPPRESSED = "STATUS_ID IN (5, 7)";
 
   /*private static final String SQL_WWWDEV_MAPPING =
         "SELECT BIOSAMPLE_ID FROM SAMPLE WHERE SUBMISSION_ACCOUNT_ID = 'Webin-161' AND BIOSAMPLE_AUTHORITY= 'N' AND ((LAST_UPDATED BETWEEN TO_DATE('2022-01-01', 'YYYY-MM-DD') AND TO_DATE('2022-07-15', 'YYYY-MM-DD')) OR (FIRST_PUBLIC BETWEEN TO_DATE('2022-01-01', 'YYYY-MM-DD') AND TO_DATE('2022-07-15', 'YYYY-MM-DD'))) ORDER BY BIOSAMPLE_ID DESC";
@@ -47,6 +48,32 @@ public class EraProDao {
     final Date maxDateOld = java.sql.Date.valueOf(maxDate);
 
     jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
+  }
+
+  /**
+   * Returns SUPPRESSED ENA samples
+   *
+   * @param rch {@link RowCallbackHandler}
+   */
+  public void doGetSuppressedEnaSamples(final RowCallbackHandler rch) {
+    final String query =
+        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND "
+            + STATUS_CLAUSE_SUPPRESSED;
+
+    jdbcTemplate.query(query, rch);
+  }
+
+  /**
+   * Returns SUPPRESSED NCBI/DDBJ samples
+   *
+   * @param rch {@link RowCallbackHandler}
+   */
+  public void doGetSuppressedNcbiDdbjSamples(final RowCallbackHandler rch) {
+    final String query =
+        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND "
+            + STATUS_CLAUSE_SUPPRESSED;
+
+    jdbcTemplate.query(query, rch);
   }
 
   /*public List<String> doWWWDEVMapping() {

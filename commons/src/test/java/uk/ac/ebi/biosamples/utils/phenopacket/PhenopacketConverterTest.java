@@ -22,9 +22,9 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 
 public class PhenopacketConverterTest {
-  private PhenopacketConverter phenopacketConverter =
+  private final PhenopacketConverter phenopacketConverter =
       new PhenopacketConverter(new PhenopacketConversionHelper());
-  private ObjectMapper jsonMapper = new ObjectMapper();
+  private final ObjectMapper jsonMapper = new ObjectMapper();
 
   @Test
   @Ignore
