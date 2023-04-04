@@ -51,7 +51,7 @@ public class ZoomaProcessor {
   }
 
   @Cacheable(value = "zooma", sync = true)
-  Optional<String> queryZooma(final String type, final String value) {
+  public Optional<String> queryZooma(final String type, final String value) {
     log.trace("Zooma getting : " + type + " : " + value);
     final URI uri = uriBuilder.expand(value, type).encode().toUri();
     // log.info("Zooma uri : "+url);

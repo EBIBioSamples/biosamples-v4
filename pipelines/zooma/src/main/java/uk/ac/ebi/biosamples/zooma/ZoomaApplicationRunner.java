@@ -10,6 +10,7 @@
 */
 package uk.ac.ebi.biosamples.zooma;
 
+import com.google.common.collect.Lists;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -63,6 +64,8 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
   public void run(final ApplicationArguments args) {
     final Instant startTime = Instant.now();
     final Collection<Filter> filters = PipelineUtils.getDateFilters(args);
+    final List<String> projectList = Lists.newArrayList("ASG");
+
     long sampleCount = 0;
 
     try (final AdaptiveThreadPoolExecutor executorService =
@@ -75,24 +78,30 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
 
       final Map<String, Future<PipelineResult>> futures = new HashMap<>();
 
-      for (final EntityModel<Sample> sampleResource :
-          bioSamplesClient.fetchSampleResourceAll("", filters)) {
-        LOG.trace("Handling " + sampleResource);
-        final Sample sample = sampleResource.getContent();
-        if (sample == null) {
-          throw new RuntimeException("Sample should not be null");
+      for (final String project : projectList) {
+        filters.add(PipelineUtils.getAttributeFilter("project name", project));
+
+        for (final EntityModel<Sample> sampleResource :
+            bioSamplesClient.fetchSampleResourceAll("", filters)) {
+          LOG.info("Handling " + sampleResource.getContent().getAccession());
+
+          final Sample sample = sampleResource.getContent();
+
+          if (sample == null) {
+            throw new RuntimeException("Sample should not be null");
+          }
+
+          final Callable<PipelineResult> task =
+              new SampleZoomaCallable(
+                  bioSamplesClient,
+                  sample,
+                  zoomaProcessor,
+                  curationApplicationService,
+                  pipelinesProperties.getZoomaDomain());
+          sampleCount++;
+
+          futures.put(sample.getAccession(), executorService.submit(task));
         }
-
-        final Callable<PipelineResult> task =
-            new SampleZoomaCallable(
-                bioSamplesClient,
-                sample,
-                zoomaProcessor,
-                curationApplicationService,
-                pipelinesProperties.getZoomaDomain());
-        sampleCount++;
-
-        futures.put(sample.getAccession(), executorService.submit(task));
       }
 
       LOG.info("waiting for futures");

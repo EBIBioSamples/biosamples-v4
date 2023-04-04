@@ -157,7 +157,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
     // multiple sample fetch by accessions test - v2, unauthorized user
     final Map<String, Sample> sampleResourcesV2Map2 =
         annonymousClient.fetchSampleResourcesByAccessionsV2(
-            Arrays.asList(webinSampleAccession, "SAMEA1", "SAMEA8"));
+            Arrays.asList(webinSampleAccession, "SAMEA1", "SAMEA14"));
 
     if (sampleResourcesV2Map2.size() > 2) {
       throw new IntegrationTestFailException(

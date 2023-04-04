@@ -67,7 +67,7 @@ public class SampleZoomaCallable implements Callable<PipelineResult> {
     return new PipelineResult(sample.getAccession(), curationCount, success);
   }
 
-  private Sample zooma(Sample sample) {
+  private Sample zooma(final Sample sample) {
     for (final Attribute attribute : sample.getAttributes()) {
       // if there are any iris already, skip zoomafying it and curate elsewhere
       if (attribute.getIri().size() > 0) {
@@ -81,33 +81,33 @@ public class SampleZoomaCallable implements Callable<PipelineResult> {
         continue;
       }
 
-      if (attribute.getType().toLowerCase().equals("synonym")) {
+      if (attribute.getType().equalsIgnoreCase("synonym")) {
         log.trace("Skipping synonym " + attribute.getValue());
         continue;
       }
 
-      if (attribute.getType().toLowerCase().equals("other")) {
+      if (attribute.getType().equalsIgnoreCase("other")) {
         log.trace("Skipping other " + attribute.getValue());
         continue;
       }
 
-      if (attribute.getType().toLowerCase().equals("unknown")) {
+      if (attribute.getType().equalsIgnoreCase("unknown")) {
         log.trace("Skipping unknown " + attribute.getValue());
         continue;
       }
 
-      if (attribute.getType().toLowerCase().equals("description")) {
+      if (attribute.getType().equalsIgnoreCase("description")) {
         log.trace("Skipping description " + attribute.getValue());
         continue;
       }
 
-      if (attribute.getType().toLowerCase().equals("label")) {
+      if (attribute.getType().equalsIgnoreCase("label")) {
         log.trace("Skipping label " + attribute.getValue());
         continue;
       }
 
-      if ("model".equals(attribute.getType().toLowerCase())
-          || "package".equals(attribute.getType().toLowerCase())
+      if ("model".equalsIgnoreCase(attribute.getType())
+          || "package".equalsIgnoreCase(attribute.getType())
           || "INSDC first public".equals(attribute.getType())
           || "INSDC last update".equals(attribute.getType())
           || "NCBI submission model".equals(attribute.getType())
@@ -119,7 +119,7 @@ public class SampleZoomaCallable implements Callable<PipelineResult> {
         continue;
       }
 
-      if (attribute.getType().toLowerCase().equals("host_subject_id")) {
+      if (attribute.getType().equalsIgnoreCase("host_subject_id")) {
         log.trace("Skipping host_subject_id " + attribute.getValue());
         continue;
       }
@@ -158,8 +158,8 @@ public class SampleZoomaCallable implements Callable<PipelineResult> {
                   Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 
           // save the curation back in biosamples
-          bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
-          sample = curationApplicationService.applyCurationToSample(sample, curation);
+          /*bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
+          sample = curationApplicationService.applyCurationToSample(sample, curation);*/
           curationCount++;
         }
       }
