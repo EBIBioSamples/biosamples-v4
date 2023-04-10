@@ -65,6 +65,11 @@ import uk.ac.ebi.tsc.aap.client.repo.*;
 @EnableCaching
 public class Application extends SpringBootServletInitializer {
   public static void main(final String[] args) {
+    System.setProperty("http.proxyHost", "hh-wwwcache.ebi.ac.uk");
+    System.setProperty("http.proxyPort", "3128");
+    System.setProperty("https.proxyHost", "hh-wwwcache.ebi.ac.uk");
+    System.setProperty("https.proxyPort", "3128");
+
     SpringApplication.run(Application.class, args);
   }
 

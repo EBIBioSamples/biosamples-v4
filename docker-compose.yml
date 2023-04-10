@@ -120,8 +120,8 @@ services:
       #buckets(in ms to match base Time Unit)
       - management.metrics.distribution.sla.http.server.requests.duration.buckets=50,100,250,500,1000,5000,10000,15000,30000,60000,120000,180000,240000,300000
       # Micrometer
-      - spring.cloud.gcp.project-id=prj-dev-internal-ena-1
-      - management.metrics.export.stackdriver.projectId=prj-dev-internal-ena-1
+      - spring.cloud.gcp.project-id=prj-int-dev-omics-apps-mon
+      - management.metrics.export.stackdriver.projectId=prj-int-dev-omics-apps-mon
       - management.metrics.export.stackdriver.useSemanticMetricTypes=true
       - management.metrics.export.stackdriver.step=5m
       #Configure root path to server from
@@ -147,7 +147,7 @@ services:
       # Force the encoding to the configured charset on HTTP requests and responses.
       - spring.http.encoding.force=true
       # gcp monitoring servoce account key.
-      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/prj-dev-internal-ena-1-26cee53c09ac.json
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/prj-int-dev-omics-apps-mon-1fba094e79b2.json
     ports:
       - 8082:8080
 
