@@ -58,7 +58,7 @@ public class EnaImportRunner implements ApplicationRunner {
   private static final Map<String, String> failures = new HashMap<>();
 
   @Override
-  public void run(final ApplicationArguments args) throws Exception {
+  public void run(final ApplicationArguments args) {
     log.info("Processing ENA pipeline...");
 
     boolean isPassed = true;
