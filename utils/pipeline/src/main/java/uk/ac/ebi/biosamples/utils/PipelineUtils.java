@@ -26,6 +26,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import uk.ac.ebi.biosamples.model.PipelineName;
+import uk.ac.ebi.biosamples.model.filter.AttributeFilter;
 import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
@@ -102,10 +103,14 @@ public class PipelineUtils {
     }
   }
 
-  public static void exitApplication(final ConfigurableApplicationContext ctx) {
+  public static void exitPipeline(final ConfigurableApplicationContext ctx) {
     final int exitCode = SpringApplication.exit(ctx, () -> 0);
     log.info("Exit Spring Boot");
 
     System.exit(exitCode);
+  }
+
+  public static Filter getAttributeFilter(final String attributeName, final String attributeValue) {
+    return new AttributeFilter.Builder(attributeName).withValue(attributeValue).build();
   }
 }
