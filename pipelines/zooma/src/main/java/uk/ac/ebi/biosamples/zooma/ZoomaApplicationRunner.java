@@ -62,7 +62,7 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
   @Override
   public void run(final ApplicationArguments args) {
     final Instant startTime = Instant.now();
-    final Collection<Filter> filters = PipelineUtils.getDateFilters(args);
+    final Collection<Filter> filters = PipelineUtils.getDateFilters(args, "update");
     long sampleCount = 0;
 
     try (final AdaptiveThreadPoolExecutor executorService =
