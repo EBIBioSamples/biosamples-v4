@@ -58,7 +58,7 @@ public class EnaImportRunner implements ApplicationRunner {
   private static final Map<String, String> failures = new HashMap<>();
 
   @Override
-  public void run(final ApplicationArguments args) {
+  public void run(final ApplicationArguments args) throws Exception {
     log.info("Processing ENA pipeline...");
 
     boolean isPassed = true;
@@ -98,19 +98,14 @@ public class EnaImportRunner implements ApplicationRunner {
       log.info("Suppression Runner is to be executed: " + suppressionRunner);
 
       // Import ENA samples
-      // importEraSamples(fromDate, toDate);
+      importEraSamples(fromDate, toDate);
 
       if (suppressionRunner) {
         try {
           // handler for suppressed ENA samples
           handleSuppressedEnaSamples();
         } catch (final Exception e) {
-        }
-
-        try {
-          // handler for suppressed NCBI/DDBJ samples
-          // handleSuppressedNcbiDdbjSamples();
-        } catch (final Exception e) {
+          log.info("Suppression Runner failed");
         }
       }
     } catch (final Exception e) {
@@ -292,7 +287,7 @@ public class EnaImportRunner implements ApplicationRunner {
       final NcbiRowCallbackHandler ncbiRowCallbackHandler =
           new NcbiRowCallbackHandler(null, ncbiCallableFactory, futures);
 
-      // eraProDao.getNcbiCallback(fromDate, toDate, ncbiRowCallbackHandler);
+      eraProDao.getNcbiCallback(fromDate, toDate, ncbiRowCallbackHandler);
     } else {
       try (final AdaptiveThreadPoolExecutor executorService =
           AdaptiveThreadPoolExecutor.create(
@@ -310,7 +305,7 @@ public class EnaImportRunner implements ApplicationRunner {
         final NcbiRowCallbackHandler ncbiRowCallbackHandler =
             new NcbiRowCallbackHandler(executorService, ncbiCallableFactory, futures);
 
-        // eraProDao.getNcbiCallback(fromDate, toDate, ncbiRowCallbackHandler);
+        eraProDao.getNcbiCallback(fromDate, toDate, ncbiRowCallbackHandler);
 
         log.info("waiting for futures"); // wait for anything to finish
         ThreadUtils.checkFutures(futures, 0);

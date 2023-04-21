@@ -53,7 +53,7 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
   public void run(final ApplicationArguments args) throws Exception {
     final Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
-    final Collection<Filter> filters = PipelineUtils.getDateFilters(args);
+    final Collection<Filter> filters = PipelineUtils.getDateFilters(args, "update");
     long sampleCount = 0;
 
     loadPreConfiguration();

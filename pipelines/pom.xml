@@ -38,5 +38,6 @@
 		<module>ebeye-search-export</module>
 		<module>analytics</module>
 		<module>clearinghouse</module>
+		<module>sample-post-release-action</module>
 	</modules>
 </project>

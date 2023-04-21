@@ -32,8 +32,13 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 public class PipelineUtils {
   private static final Logger log = LoggerFactory.getLogger(PipelineUtils.class);
 
-  public static Collection<Filter> getDateFilters(final ApplicationArguments args) {
+  public static Collection<Filter> getDateFilters(
+      final ApplicationArguments args, final String dateType) {
+    final Collection<Filter> filters = new ArrayList<>();
     final LocalDate fromDate;
+    final LocalDate toDate;
+    final Filter fromDateFilter;
+
     if (args.getOptionNames().contains("from")) {
       fromDate =
           LocalDate.parse(
@@ -41,7 +46,7 @@ public class PipelineUtils {
     } else {
       fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
     }
-    final LocalDate toDate;
+
     if (args.getOptionNames().contains("until")) {
       toDate =
           LocalDate.parse(
@@ -53,13 +58,22 @@ public class PipelineUtils {
     log.info("Processing samples from " + DateTimeFormatter.ISO_LOCAL_DATE.format(fromDate));
     log.info("Processing samples to " + DateTimeFormatter.ISO_LOCAL_DATE.format(toDate));
 
-    final Filter fromDateFilter =
-        new DateRangeFilter.DateRangeFilterBuilder("update")
-            .from(fromDate.atStartOfDay().toInstant(ZoneOffset.UTC))
-            .until(toDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))
-            .build();
-    final Collection<Filter> filters = new ArrayList<>();
+    if (!dateType.equals("release")) {
+      fromDateFilter =
+          new DateRangeFilter.DateRangeFilterBuilder(dateType)
+              .from(fromDate.atStartOfDay().toInstant(ZoneOffset.UTC))
+              .until(toDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))
+              .build();
+    } else {
+      fromDateFilter =
+          new DateRangeFilter.DateRangeFilterBuilder(dateType)
+              .from(fromDate.atStartOfDay().toInstant(ZoneOffset.UTC))
+              .until(fromDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))
+              .build();
+    }
+
     filters.add(fromDateFilter);
+
     return filters;
   }
 
