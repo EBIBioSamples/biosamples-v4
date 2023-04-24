@@ -71,7 +71,7 @@ public class EnaImportCallable implements Callable<Void> {
           sampleAttributes.removeIf(attribute -> attribute.getType().equals("INSDC Status"));
           sampleAttributes.add(
               Attribute.build(
-                  "INSDC Status", "SUPPRESSED", "attribute", Collections.emptyList(), null));
+                  "INSDC Status", "suppressed", "attribute", Collections.emptyList(), null));
         }
 
         bioSamplesWebinClient.persistSampleResource(
