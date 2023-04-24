@@ -24,22 +24,23 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 public class FileDownloadService {
   private final SamplePageService samplePageService;
 
-  public FileDownloadService(SamplePageService samplePageService) {
+  public FileDownloadService(final SamplePageService samplePageService) {
     this.samplePageService = samplePageService;
   }
 
   public InputStream getDownloadStream(
-      String text,
-      Collection<Filter> filters,
-      Collection<String> domains,
-      String format,
-      int count) {
-    FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor(format);
+      final String text,
+      final Collection<Filter> filters,
+      final Collection<String> domains,
+      final String format,
+      final int count) {
+    final FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor(format);
     return new FileDownloadInputStream(
         samplePageService, text, filters, count, domains, serializer);
   }
 
-  public void copyAndCompress(InputStream in, OutputStream out, boolean zip, String format)
+  public void copyAndCompress(
+      final InputStream in, final OutputStream out, final boolean zip, final String format)
       throws IOException {
     if (zip) {
       zip(in, out, format);
@@ -48,9 +49,10 @@ public class FileDownloadService {
     }
   }
 
-  private void zip(InputStream in, OutputStream out, String format) throws IOException {
-    try (ZipOutputStream zippedOut = new ZipOutputStream(out)) {
-      ZipEntry zipEntry = new ZipEntry("samples." + format);
+  private void zip(final InputStream in, final OutputStream out, final String format)
+      throws IOException {
+    try (final ZipOutputStream zippedOut = new ZipOutputStream(out)) {
+      final ZipEntry zipEntry = new ZipEntry("samples." + format);
       zippedOut.putNextEntry(zipEntry);
       StreamUtils.copy(in, zippedOut);
 

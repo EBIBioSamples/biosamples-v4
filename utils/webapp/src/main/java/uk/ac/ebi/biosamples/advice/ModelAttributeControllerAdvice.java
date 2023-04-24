@@ -20,7 +20,7 @@ public class ModelAttributeControllerAdvice {
 
   private final BioSamplesProperties bioSamplesProperties;
 
-  public ModelAttributeControllerAdvice(BioSamplesProperties bioSamplesProperties) {
+  public ModelAttributeControllerAdvice(final BioSamplesProperties bioSamplesProperties) {
     this.bioSamplesProperties = bioSamplesProperties;
   }
 

@@ -21,30 +21,33 @@ import uk.ac.ebi.biosamples.model.certification.SampleDocument;
 
 @Service
 public class Identifier {
-  private static Logger EVENTS = LoggerFactory.getLogger("events");
+  private static final Logger EVENTS = LoggerFactory.getLogger("events");
 
-  public SampleDocument identify(String data) {
+  public SampleDocument identify(final String data) {
     if (data == null) {
       throw new IllegalArgumentException("cannot identify a null data");
     }
 
-    ObjectMapper mapper = new ObjectMapper();
+    final ObjectMapper mapper = new ObjectMapper();
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
     try {
-      SampleDocument sampleDocument = mapper.readValue(data, SampleDocument.class);
-      String accession = sampleDocument.getAccession();
+      final SampleDocument sampleDocument = mapper.readValue(data, SampleDocument.class);
+      final String accession = sampleDocument.getAccession();
       String message = "";
 
-      if (accession != null && !accession.isEmpty()) message = accession;
-      else message = "New sample";
+      if (accession != null && !accession.isEmpty()) {
+        message = accession;
+      } else {
+        message = "New sample";
+      }
 
       sampleDocument.setDocument(data);
       EVENTS.info(String.format("%s identification successful", message));
 
       return sampleDocument;
-    } catch (IOException e) {
-      String uuid = UUID.randomUUID().toString();
+    } catch (final IOException e) {
+      final String uuid = UUID.randomUUID().toString();
       EVENTS.info(String.format("%s identification failed for sample, assigned UUID", uuid));
       return new SampleDocument(uuid, data);
     }

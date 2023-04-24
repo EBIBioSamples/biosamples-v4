@@ -20,24 +20,24 @@ import java.util.Objects;
 @JsonDeserialize(builder = Contact.Builder.class)
 public class Contact implements Comparable<Contact> {
 
-  private String firstName;
-  private String lastName;
-  private String midInitials;
-  private String role;
-  private String email;
-  private String affiliation;
-  private String name;
-  private String url;
+  private final String firstName;
+  private final String lastName;
+  private final String midInitials;
+  private final String role;
+  private final String email;
+  private final String affiliation;
+  private final String name;
+  private final String url;
 
   private Contact(
-      String firstName,
-      String lastName,
-      String midInitials,
-      String name,
-      String role,
-      String email,
-      String affiliation,
-      String url) {
+      final String firstName,
+      final String lastName,
+      final String midInitials,
+      final String name,
+      final String role,
+      final String email,
+      final String affiliation,
+      final String url) {
     this.firstName = firstName;
     this.lastName = lastName;
     this.midInitials = midInitials;
@@ -50,62 +50,64 @@ public class Contact implements Comparable<Contact> {
 
   @JsonProperty("FirstName")
   public String getFirstName() {
-    return this.firstName;
+    return firstName;
   }
 
   @JsonProperty("LastName")
   public String getLastName() {
-    return this.lastName;
+    return lastName;
   }
 
   @JsonProperty("MidInitials")
   public String getMidInitials() {
-    return this.midInitials;
+    return midInitials;
   }
 
   @JsonProperty("Name")
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @JsonProperty("Role")
   public String getRole() {
-    return this.role;
+    return role;
   }
 
   @JsonProperty("E-mail")
   public String getEmail() {
-    return this.email;
+    return email;
   }
 
   //    @JsonIgnore
   @JsonProperty("Affiliation")
   public String getAffiliation() {
-    return this.affiliation;
+    return affiliation;
   }
 
   //    @JsonIgnore
   @JsonProperty("URL")
   public String getUrl() {
-    return this.url;
+    return url;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
 
-    if (o == this) return true;
+    if (o == this) {
+      return true;
+    }
     if (!(o instanceof Contact)) {
       return false;
     }
-    Contact other = (Contact) o;
-    return Objects.equals(this.firstName, other.firstName)
-        && Objects.equals(this.lastName, other.lastName)
-        && Objects.equals(this.midInitials, other.midInitials)
-        && Objects.equals(this.name, other.name)
-        && Objects.equals(this.role, other.role)
-        && Objects.equals(this.email, other.email)
-        && Objects.equals(this.url, other.url)
-        && Objects.equals(this.affiliation, other.affiliation);
+    final Contact other = (Contact) o;
+    return Objects.equals(firstName, other.firstName)
+        && Objects.equals(lastName, other.lastName)
+        && Objects.equals(midInitials, other.midInitials)
+        && Objects.equals(name, other.name)
+        && Objects.equals(role, other.role)
+        && Objects.equals(email, other.email)
+        && Objects.equals(url, other.url)
+        && Objects.equals(affiliation, other.affiliation);
   }
 
   @Override
@@ -144,49 +146,55 @@ public class Contact implements Comparable<Contact> {
   }
 
   @Override
-  public int compareTo(Contact other) {
+  public int compareTo(final Contact other) {
     if (other == null) {
       return 1;
     }
 
-    int comparisonResult = nullSafeStringComparison(this.firstName, other.firstName);
+    int comparisonResult = nullSafeStringComparison(firstName, other.firstName);
     if (comparisonResult != 0) {
       return comparisonResult;
     }
 
-    comparisonResult = nullSafeStringComparison(this.lastName, other.lastName);
+    comparisonResult = nullSafeStringComparison(lastName, other.lastName);
     if (comparisonResult != 0) {
       return comparisonResult;
     }
 
-    comparisonResult = nullSafeStringComparison(this.midInitials, other.midInitials);
+    comparisonResult = nullSafeStringComparison(midInitials, other.midInitials);
     if (comparisonResult != 0) {
       return comparisonResult;
     }
 
-    comparisonResult = nullSafeStringComparison(this.name, other.name);
+    comparisonResult = nullSafeStringComparison(name, other.name);
     if (comparisonResult != 0) {
       return comparisonResult;
     }
 
-    comparisonResult = nullSafeStringComparison(this.role, other.role);
+    comparisonResult = nullSafeStringComparison(role, other.role);
     if (comparisonResult != 0) {
       return comparisonResult;
     }
 
-    comparisonResult = nullSafeStringComparison(this.email, other.email);
+    comparisonResult = nullSafeStringComparison(email, other.email);
     if (comparisonResult != 0) {
       return comparisonResult;
     }
 
-    comparisonResult = nullSafeStringComparison(this.affiliation, other.affiliation);
+    comparisonResult = nullSafeStringComparison(affiliation, other.affiliation);
     return comparisonResult;
   }
 
-  private int nullSafeStringComparison(String first, String other) {
-    if (first == null && other == null) return 0;
-    if (first == null) return -1;
-    if (other == null) return 1;
+  private int nullSafeStringComparison(final String first, final String other) {
+    if (first == null && other == null) {
+      return 0;
+    }
+    if (first == null) {
+      return -1;
+    }
+    if (other == null) {
+      return 1;
+    }
     return first.compareTo(other);
   }
 
@@ -210,59 +218,61 @@ public class Contact implements Comparable<Contact> {
     public Builder() {}
 
     @JsonProperty("FirstName")
-    public Builder firstName(String firstName) {
+    public Builder firstName(final String firstName) {
       this.firstName = firstName;
       return this;
     }
 
     @JsonProperty("LastName")
-    public Builder lastName(String lastName) {
+    public Builder lastName(final String lastName) {
       this.lastName = lastName;
       return this;
     }
 
     @JsonProperty("MidInitials")
-    public Builder midInitials(String midInitials) {
+    public Builder midInitials(final String midInitials) {
       this.midInitials = midInitials;
       return this;
     }
 
     @JsonProperty("Role")
-    public Builder role(String role) {
+    public Builder role(final String role) {
       this.role = role;
       return this;
     }
 
     @JsonProperty("E-mail")
-    public Builder email(String email) {
+    public Builder email(final String email) {
       this.email = email;
       return this;
     }
 
     @JsonProperty("URL")
-    public Builder url(String url) {
+    public Builder url(final String url) {
       this.url = url;
       return this;
     }
 
     @JsonProperty("Affiliation")
-    public Builder affiliation(String affiliation) {
+    public Builder affiliation(final String affiliation) {
       this.affiliation = affiliation;
       return this;
     }
 
     @JsonProperty("Name")
-    public Builder name(String name) {
+    public Builder name(final String name) {
       this.name = name;
       return this;
     }
 
     private String composedName() {
-      String nullSafeFirstName = firstName == null ? "" : firstName;
-      String nullSafeLastName = lastName == null ? "" : lastName;
-      String fullName = (nullSafeFirstName + " " + nullSafeLastName).trim();
+      final String nullSafeFirstName = firstName == null ? "" : firstName;
+      final String nullSafeLastName = lastName == null ? "" : lastName;
+      final String fullName = (nullSafeFirstName + " " + nullSafeLastName).trim();
 
-      if (fullName.isEmpty()) return null;
+      if (fullName.isEmpty()) {
+        return null;
+      }
       return fullName;
     }
 

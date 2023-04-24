@@ -25,7 +25,6 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.certification.SampleDocument;
 import uk.ac.ebi.biosamples.service.certification.*;
-import uk.ac.ebi.biosamples.service.certification.Validator;
 import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
 import uk.ac.ebi.biosamples.validation.ValidatorI;
 
@@ -51,10 +50,10 @@ public class IdentifierTest {
 
   @Test
   public void given_ncbi_sample_return_sample() throws IOException {
-    String data =
+    final String data =
         IOUtils.toString(
             getClass().getClassLoader().getResourceAsStream("json/ncbi-SAMN03894263.json"), "UTF8");
-    SampleDocument sampleDocument = identifier.identify(data);
+    final SampleDocument sampleDocument = identifier.identify(data);
     assertTrue(sampleDocument.getAccession().matches("SAM[END][AG]?[0-9]+"));
   }
 

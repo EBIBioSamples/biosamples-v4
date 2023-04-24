@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- BioSamples API XML Schema - version v1.0 -->
 <xs:schema xmlns="http://www.ebi.ac.uk/biosamples/ResultQuery/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	targetNamespace="http://www.ebi.ac.uk/biosamples/ResultQuery/1.0"
-	xmlns:tns="http://www.ebi.ac.uk/biosamples/ResultQuery"
-	elementFormDefault="qualified">
+           targetNamespace="http://www.ebi.ac.uk/biosamples/ResultQuery/1.0"
+           elementFormDefault="qualified">
 
 
 	

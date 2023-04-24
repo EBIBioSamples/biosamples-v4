@@ -22,7 +22,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 public class NcbiCallable implements Callable<Void> {
   private static final int MAX_RETRIES = 5;
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final String accession;
   private final BioSamplesClient bioSamplesClient;
@@ -31,11 +31,11 @@ public class NcbiCallable implements Callable<Void> {
   private final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
 
   /** Construction */
-  public NcbiCallable(
-      String accession,
-      BioSamplesClient bioSamplesClient,
-      String domain,
-      EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService) {
+  NcbiCallable(
+      final String accession,
+      final BioSamplesClient bioSamplesClient,
+      final String domain,
+      final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService) {
     this.accession = accession;
     this.bioSamplesClient = bioSamplesClient;
     this.domain = domain;
@@ -50,14 +50,12 @@ public class NcbiCallable implements Callable<Void> {
     try {
       // get the sample to make sure it exists first
       while (!success) {
-        if (!bioSamplesClient.fetchSampleResource(this.accession).isPresent()) {
+        if (!bioSamplesClient.fetchSampleResource(accession).isPresent()) {
           log.info(
-              "NCBI sample doesn't exists in BioSamples "
-                  + this.accession
-                  + " fetching from ERAPRO");
+              "NCBI sample doesn't exists in BioSamples " + accession + " fetching from ERAPRO");
 
           final Sample sample =
-              enaSampleToBioSampleConversionService.enrichSample(this.accession, true);
+              enaSampleToBioSampleConversionService.enrichSample(accession, true, null);
 
           try {
             bioSamplesClient.persistSampleResource(sample);
@@ -66,29 +64,29 @@ public class NcbiCallable implements Callable<Void> {
           } catch (final Exception e) {
             if (++numRetry == MAX_RETRIES) {
               throw new RuntimeException(
-                  "Failed to enrich and persist NCBI sample with accession " + this.accession);
+                  "Failed to enrich and persist NCBI sample with accession " + accession);
             }
 
             success = false;
           }
         } else {
-          log.info("NCBI sample exists " + this.accession + " adding ENA link");
+          log.info("NCBI sample exists " + accession + " adding ENA link");
 
-          ExternalReference exRef =
-              ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + this.accession);
-          Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
+          final ExternalReference exRef =
+              ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + accession);
+          final Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
 
           try {
-            bioSamplesClient.persistCuration(this.accession, curation, domain, false);
+            bioSamplesClient.persistCuration(accession, curation, domain, false);
           } catch (final Exception e) {
-            log.info("Failed to curate NCBI sample with ENA link " + this.accession);
+            log.info("Failed to curate NCBI sample with ENA link " + accession);
           }
 
           success = true;
         }
       }
     } catch (final Exception e) {
-      log.info("Failed to handle NCBI sample with accession " + this.accession, e);
+      log.info("Failed to handle NCBI sample with accession " + accession, e);
     }
 
     return null;

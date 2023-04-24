@@ -32,7 +32,7 @@ public class MongoPipeline {
       final String pipelineName,
       final PipelineCompletionStatus pipelineCompletionStatus,
       final String failedSamples,
-      String exceptionCause) {
+      final String exceptionCause) {
     this.pipelineUniqueIdentifier = pipelineUniqueIdentifier;
     this.pipelineRunDate = pipelineRunDate;
     this.pipelineName = pipelineName;
@@ -42,10 +42,14 @@ public class MongoPipeline {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof MongoPipeline)) return false;
-    MongoPipeline that = (MongoPipeline) o;
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof MongoPipeline)) {
+      return false;
+    }
+    final MongoPipeline that = (MongoPipeline) o;
     return Objects.equals(pipelineUniqueIdentifier, that.pipelineUniqueIdentifier)
         && Objects.equals(pipelineRunDate, that.pipelineRunDate)
         && Objects.equals(pipelineName, that.pipelineName)

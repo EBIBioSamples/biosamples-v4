@@ -22,7 +22,8 @@ public class AccessionSerializer extends StdSerializer<Accession> {
   }
 
   @Override
-  public void serialize(Accession accession, JsonGenerator gen, SerializerProvider provider)
+  public void serialize(
+      final Accession accession, final JsonGenerator gen, final SerializerProvider provider)
       throws IOException {
     gen.writeString(accession.getId());
   }

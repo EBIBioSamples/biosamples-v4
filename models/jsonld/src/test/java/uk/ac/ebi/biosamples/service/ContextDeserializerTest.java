@@ -24,15 +24,15 @@ public class ContextDeserializerTest {
 
   @Test
   public void testSerialize_schemaOrgContext() {
-    String contextString =
+    final String contextString =
         "[\"http://schema.org\",{\"OBI\":\"http://purl.obolibrary.org/obo/OBI_\","
             + "\"biosample\":\"http://identifiers.org/biosample\"}]";
-    BioSchemasContext expectedContext = new BioSchemasContext();
-    ObjectMapper mapper = new ObjectMapper();
+    final BioSchemasContext expectedContext = new BioSchemasContext();
+    final ObjectMapper mapper = new ObjectMapper();
     BioSchemasContext context = null;
     try {
       context = mapper.readValue(contextString, BioSchemasContext.class);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       log.error("Failed to deserialize context");
       Assert.fail();
     }
@@ -42,16 +42,16 @@ public class ContextDeserializerTest {
 
   @Test
   public void testSerialize_otherContext() {
-    String contextString =
+    final String contextString =
         "[\"http://schema.org\",{\"OBI\":\"http://purl.obolibrary.org/obo/OBI_\","
             + "\"biosample\":\"http://identifiers.org/biosample\",\"ebi\":\"https://www.ebi.ac.uk/biosamples/\"}]";
-    BioSchemasContext expectedContext = new BioSchemasContext();
+    final BioSchemasContext expectedContext = new BioSchemasContext();
     expectedContext.addOtherContexts("ebi", URI.create("https://www.ebi.ac.uk/biosamples/"));
-    ObjectMapper mapper = new ObjectMapper();
+    final ObjectMapper mapper = new ObjectMapper();
     BioSchemasContext context = null;
     try {
       context = mapper.readValue(contextString, BioSchemasContext.class);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       log.error("Failed to deserialize context");
       Assert.fail();
     }

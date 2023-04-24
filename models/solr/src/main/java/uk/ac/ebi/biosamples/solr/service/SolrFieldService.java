@@ -28,12 +28,11 @@ import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 @Service
 public class SolrFieldService {
 
-  //    private Logger log = LoggerFactory.getLogger(getClass());
-  private List<SolrSampleField> solrFieldList;
+  private final List<SolrSampleField> solrFieldList;
 
   @Autowired
-  public SolrFieldService(List<SolrSampleField> solrSampleFields) {
-    this.solrFieldList = solrSampleFields;
+  public SolrFieldService(final List<SolrSampleField> solrSampleFields) {
+    solrFieldList = solrSampleFields;
   }
 
   public List<SolrSampleField> getSolrFieldList() {
@@ -44,7 +43,7 @@ public class SolrFieldService {
     // solr only allows alphanumeric field types
     try {
       field = BaseEncoding.base32().encode(field.getBytes("UTF-8"));
-    } catch (UnsupportedEncodingException e) {
+    } catch (final UnsupportedEncodingException e) {
       throw new RuntimeException(e);
     }
     // although its base32 encoded, that include = which solr doesn't allow
@@ -53,12 +52,12 @@ public class SolrFieldService {
     return field;
   }
 
-  public static String decodeFieldName(String encodedField) {
+  public static String decodeFieldName(final String encodedField) {
     // although its base32 encoded, that include = which solr doesn't allow
     String decodedField = encodedField.replace("_", "=");
     try {
       decodedField = new String(BaseEncoding.base32().decode(decodedField), "UTF-8");
-    } catch (UnsupportedEncodingException e) {
+    } catch (final UnsupportedEncodingException e) {
       throw new RuntimeException(e);
     }
     return decodedField;
@@ -70,13 +69,13 @@ public class SolrFieldService {
    * @param encodedField encoded version of the field with the type suffix
    * @return the field name decoded
    */
-  public SolrSampleField decodeField(String encodedField) {
+  public SolrSampleField decodeField(final String encodedField) {
 
-    Optional<SolrSampleField> optionalType =
+    final Optional<SolrSampleField> optionalType =
         solrFieldList.stream().filter(solrField -> solrField.matches(encodedField)).findFirst();
     if (optionalType.isPresent()) {
-      SolrSampleField fieldCandidate = optionalType.get();
-      Matcher m = fieldCandidate.getSolrFieldPattern().matcher(encodedField);
+      final SolrSampleField fieldCandidate = optionalType.get();
+      final Matcher m = fieldCandidate.getSolrFieldPattern().matcher(encodedField);
       if (m.find()) {
         String baseLabel = m.group("fieldname");
 
@@ -87,7 +86,7 @@ public class SolrFieldService {
 
           return getNewFieldInstance(fieldCandidate.getClass(), baseLabel, encodedField);
 
-        } catch (NoSuchMethodException
+        } catch (final NoSuchMethodException
             | IllegalAccessException
             | InvocationTargetException
             | InstantiationException e) {
@@ -101,19 +100,19 @@ public class SolrFieldService {
     throw new RuntimeException("Provide field " + encodedField + " is unknown");
   }
 
-  public SolrSampleField getCompatibleField(Filter filter) {
+  public SolrSampleField getCompatibleField(final Filter filter) {
 
-    Optional<SolrSampleField> optionalType =
+    final Optional<SolrSampleField> optionalType =
         solrFieldList.stream().filter(solrField -> solrField.isCompatibleWith(filter)).findFirst();
     if (optionalType.isPresent()) {
-      SolrSampleField fieldCandidate = optionalType.get();
+      final SolrSampleField fieldCandidate = optionalType.get();
       // TODO implement methods to extract suffix and generate also the encoded label
 
       try {
 
         return getNewFieldInstance(fieldCandidate.getClass(), filter.getLabel());
 
-      } catch (NoSuchMethodException
+      } catch (final NoSuchMethodException
           | IllegalAccessException
           | InvocationTargetException
           | InstantiationException e) {
@@ -127,7 +126,9 @@ public class SolrFieldService {
   }
 
   public SolrSampleField getNewFieldInstance(
-      Class<? extends SolrSampleField> prototype, String baseLabel, String encodedLabel)
+      final Class<? extends SolrSampleField> prototype,
+      final String baseLabel,
+      final String encodedLabel)
       throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
           InstantiationException {
     return prototype
@@ -136,7 +137,7 @@ public class SolrFieldService {
   }
 
   public SolrSampleField getNewFieldInstance(
-      Class<? extends SolrSampleField> prototype, String baseLabel)
+      final Class<? extends SolrSampleField> prototype, final String baseLabel)
       throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
           InstantiationException {
     return prototype.getConstructor(String.class).newInstance(baseLabel);

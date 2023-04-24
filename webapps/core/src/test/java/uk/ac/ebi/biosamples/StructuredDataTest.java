@@ -29,7 +29,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.StreamUtils;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.structured.*;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
@@ -62,7 +61,7 @@ public class StructuredDataTest {
   @Test
   public void able_to_submit_sample_with_structuredData() throws Exception {
     exception.expect(JsonMappingException.class);
-    String json =
+    final String json =
         StreamUtils.copyToString(
             new ClassPathResource("structured_data_sample.json").getInputStream(),
             Charset.defaultCharset());

@@ -21,26 +21,31 @@ public class Certificate implements HasCuratedSample, HasChecklist {
   private final Checklist checklist;
 
   @JsonPropertyOrder({"sampleDocument", "curationsResults", "checklist"})
-  public Certificate(HasCuratedSample hasCuratedSample, Checklist checklist) {
+  public Certificate(final HasCuratedSample hasCuratedSample, final Checklist checklist) {
     this(hasCuratedSample.getSampleDocument(), hasCuratedSample.getCurationResults(), checklist);
   }
 
   @JsonPropertyOrder({"sampleDocument", "curationsResults", "checklist"})
   public Certificate(
-      SampleDocument sampleDocument, List<CurationResult> curationsResults, Checklist checklist) {
+      final SampleDocument sampleDocument,
+      final List<CurationResult> curationsResults,
+      final Checklist checklist) {
     this.sampleDocument = sampleDocument;
     this.curationsResults = curationsResults;
     this.checklist = checklist;
   }
 
+  @Override
   public SampleDocument getSampleDocument() {
     return sampleDocument;
   }
 
+  @Override
   public Checklist getChecklist() {
     return checklist;
   }
 
+  @Override
   @JsonProperty(value = "curations")
   public List<CurationResult> getCurationResults() {
     return curationsResults;
@@ -59,10 +64,14 @@ public class Certificate implements HasCuratedSample, HasChecklist {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    Certificate that = (Certificate) o;
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    final Certificate that = (Certificate) o;
     return sampleDocument.equals(that.sampleDocument)
         && curationsResults.equals(that.curationsResults)
         && checklist.equals(that.checklist);

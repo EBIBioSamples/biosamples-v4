@@ -38,37 +38,41 @@ import uk.ac.ebi.biosamples.utils.PipelineUtils;
 @EnableCaching
 public class Application {
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     final ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
-    PipelineUtils.exitApplication(ctx);
+    PipelineUtils.exitPipeline(ctx);
   }
 
   @Bean
-  public RestTemplate restTemplate(RestTemplateCustomizer restTemplateCustomizer) {
-    RestTemplate restTemplate = new RestTemplate();
+  public RestTemplate restTemplate(final RestTemplateCustomizer restTemplateCustomizer) {
+    final RestTemplate restTemplate = new RestTemplate();
     restTemplateCustomizer.customize(restTemplate);
     return restTemplate;
   }
 
   @Bean
   public RestTemplateCustomizer restTemplateCustomizer(
-      BioSamplesProperties bioSamplesProperties, PipelinesProperties piplinesProperties) {
+      final BioSamplesProperties bioSamplesProperties,
+      final PipelinesProperties piplinesProperties) {
     return new RestTemplateCustomizer() {
-      public void customize(RestTemplate restTemplate) {
+      @Override
+      public void customize(final RestTemplate restTemplate) {
 
         // use a keep alive strategy to try to make it easier to maintain connections for
         // reuse
-        ConnectionKeepAliveStrategy keepAliveStrategy =
+        final ConnectionKeepAliveStrategy keepAliveStrategy =
             new ConnectionKeepAliveStrategy() {
-              public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
+              @Override
+              public long getKeepAliveDuration(
+                  final HttpResponse response, final HttpContext context) {
 
                 // check if there is a non-standard keep alive header present
-                HeaderElementIterator it =
+                final HeaderElementIterator it =
                     new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
                 while (it.hasNext()) {
-                  HeaderElement he = it.nextElement();
-                  String param = he.getName();
-                  String value = he.getValue();
+                  final HeaderElement he = it.nextElement();
+                  final String param = he.getName();
+                  final String value = he.getValue();
                   if (value != null && param.equalsIgnoreCase("timeout")) {
                     return Long.parseLong(value) * 1000;
                   }
@@ -79,7 +83,7 @@ public class Application {
             };
 
         // set a number of connections to use at once for multiple threads
-        PoolingHttpClientConnectionManager poolingHttpClientConnectionManager =
+        final PoolingHttpClientConnectionManager poolingHttpClientConnectionManager =
             new PoolingHttpClientConnectionManager();
         poolingHttpClientConnectionManager.setMaxTotal(piplinesProperties.getConnectionCountMax());
         poolingHttpClientConnectionManager.setDefaultMaxPerRoute(
@@ -92,7 +96,7 @@ public class Application {
             piplinesProperties.getConnectionCountOls());
 
         // set a local cache for cacheable responses
-        CacheConfig cacheConfig =
+        final CacheConfig cacheConfig =
             CacheConfig.custom()
                 .setMaxCacheEntries(1024)
                 .setMaxObjectSize(1024 * 1024) // max size of 1Mb
@@ -102,8 +106,8 @@ public class Application {
 
         // set a timeout limit
         // TODO put this in application.properties
-        int timeout = 60; // in seconds
-        RequestConfig config =
+        final int timeout = 60; // in seconds
+        final RequestConfig config =
             RequestConfig.custom()
                 .setConnectTimeout(timeout * 1000) // time to establish the connection with the
                 // remote host
@@ -115,7 +119,7 @@ public class Application {
         // manager/pool
 
         // make the actual client
-        HttpClient httpClient =
+        final HttpClient httpClient =
             CachingHttpClientBuilder.create()
                 .setCacheConfig(cacheConfig)
                 .useSystemProperties()

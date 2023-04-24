@@ -21,16 +21,17 @@ import uk.ac.ebi.biosamples.model.SampleAnalytics;
 @Document
 public class MongoAnalytics {
   @Id protected String collectionDate;
-  protected int year;
-  protected int month;
-  protected int day;
+  private final int year;
+  private final int month;
+  private final int day;
 
   protected List<PipelineAnalytics> pipelines;
 
   @Field("samples")
-  protected SampleAnalytics sampleAnalytics;
+  private SampleAnalytics sampleAnalytics;
 
-  public MongoAnalytics(String collectionDate, int year, int month, int day) {
+  public MongoAnalytics(
+      final String collectionDate, final int year, final int month, final int day) {
     this.collectionDate = collectionDate;
     pipelines = new ArrayList<>();
     this.year = year;
@@ -42,7 +43,7 @@ public class MongoAnalytics {
     return collectionDate;
   }
 
-  public void setCollectionDate(String collectionDate) {
+  public void setCollectionDate(final String collectionDate) {
     this.collectionDate = collectionDate;
   }
 
@@ -50,15 +51,15 @@ public class MongoAnalytics {
     return pipelines;
   }
 
-  public void addPipelineAnalytics(PipelineAnalytics pipelineAnalytics) {
-    this.pipelines.add(pipelineAnalytics);
+  public void addPipelineAnalytics(final PipelineAnalytics pipelineAnalytics) {
+    pipelines.add(pipelineAnalytics);
   }
 
   public SampleAnalytics getSampleAnalytics() {
     return sampleAnalytics;
   }
 
-  public void setSampleAnalytics(SampleAnalytics sampleAnalytics) {
+  public void setSampleAnalytics(final SampleAnalytics sampleAnalytics) {
     this.sampleAnalytics = sampleAnalytics;
   }
 

@@ -24,12 +24,12 @@ public class CustomInstantDeserializer extends StdDeserializer<Instant> {
     this(null);
   }
 
-  public CustomInstantDeserializer(Class<Instant> t) {
+  private CustomInstantDeserializer(final Class<Instant> t) {
     super(t);
   }
 
   @Override
-  public Instant deserialize(JsonParser jsonparser, DeserializationContext ctxt)
+  public Instant deserialize(final JsonParser jsonparser, final DeserializationContext ctxt)
       throws IOException, JsonProcessingException {
     String date = jsonparser.getText();
     // TODO remove this hack
@@ -38,7 +38,7 @@ public class CustomInstantDeserializer extends StdDeserializer<Instant> {
     }
     try {
       return Instant.parse(date);
-    } catch (DateTimeParseException e) {
+    } catch (final DateTimeParseException e) {
       throw new RuntimeException(e);
     }
   }

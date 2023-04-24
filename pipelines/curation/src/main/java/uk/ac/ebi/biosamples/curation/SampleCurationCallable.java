@@ -25,7 +25,7 @@ import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 
 public class SampleCurationCallable implements Callable<PipelineResult> {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final Sample sample;
   private final BioSamplesClient bioSamplesClient;
   private final OlsProcessor olsProcessor;
@@ -34,7 +34,7 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
   private final String domain;
   private int curationCount;
 
-  public static final String[] NON_APPLICABLE_SYNONYMS = {
+  static final String[] NON_APPLICABLE_SYNONYMS = {
     "n/a",
     "na",
     "n.a",
@@ -48,22 +48,22 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
     "not_applicable"
   };
 
-  public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
+  static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
-  public SampleCurationCallable(
-      BioSamplesClient bioSamplesClient,
-      Sample sample,
-      OlsProcessor olsProcessor,
-      CurationApplicationService curationApplicationService,
-      String domain,
-      IriUrlValidatorService iriUrlValidatorService) {
+  SampleCurationCallable(
+      final BioSamplesClient bioSamplesClient,
+      final Sample sample,
+      final OlsProcessor olsProcessor,
+      final CurationApplicationService curationApplicationService,
+      final String domain,
+      final IriUrlValidatorService iriUrlValidatorService) {
     this.bioSamplesClient = bioSamplesClient;
     this.sample = sample;
     this.olsProcessor = olsProcessor;
     this.curationApplicationService = curationApplicationService;
     this.domain = domain;
     this.iriUrlValidatorService = iriUrlValidatorService;
-    this.curationCount = 0;
+    curationCount = 0;
   }
 
   @Override
@@ -83,7 +83,7 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
         curated = ols(last);
       } while (!last.equals(curated));
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       log.warn("Encountered exception with " + sample.getAccession(), e);
       failedQueue.add(sample.getAccession());
       success = false;
@@ -92,15 +92,15 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
     return new PipelineResult(sample.getAccession(), curationCount, success);
   }
 
-  public Sample curate(Sample sample) {
-    for (Attribute attribute : sample.getAttributes()) {
+  private Sample curate(Sample sample) {
+    for (final Attribute attribute : sample.getAttributes()) {
       // clean unexpected characters
-      String newType = cleanString(attribute.getType());
-      String newValue = cleanString(attribute.getValue());
+      final String newType = cleanString(attribute.getType());
+      final String newValue = cleanString(attribute.getValue());
 
       // if the clean type or value would be empty, curate to an non attribute
       if (newType.length() == 0 || newValue.length() == 0) {
-        Curation curation =
+        final Curation curation =
             Curation.build(Collections.singleton(attribute), Collections.emptyList());
 
         bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
@@ -111,10 +111,10 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
       }
 
       if (!attribute.getType().equals(newType) || !attribute.getValue().equals(newValue)) {
-        Attribute newAttribute =
+        final Attribute newAttribute =
             Attribute.build(
                 newType, newValue, attribute.getTag(), attribute.getIri(), attribute.getUnit());
-        Curation curation = Curation.build(attribute, newAttribute);
+        final Curation curation = Curation.build(attribute, newAttribute);
 
         bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
         sample = curationApplicationService.applyCurationToSample(sample, curation);
@@ -125,7 +125,7 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
 
       // if no information content, remove
       if (isNotApplicableSynonym(attribute.getValue())) {
-        Curation curation = Curation.build(attribute, null);
+        final Curation curation = Curation.build(attribute, null);
 
         bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
         sample = curationApplicationService.applyCurationToSample(sample, curation);
@@ -136,17 +136,17 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
 
       // if it has a unit, make sure it is clean
       if (attribute.getUnit() != null) {
-        String newUnit = correctUnit(attribute.getUnit());
+        final String newUnit = correctUnit(attribute.getUnit());
 
         if (!attribute.getUnit().equals(newUnit)) {
-          Attribute newAttribute =
+          final Attribute newAttribute =
               Attribute.build(
                   attribute.getType(),
                   attribute.getValue(),
                   attribute.getTag(),
                   attribute.getIri(),
                   newUnit);
-          Curation curation = Curation.build(attribute, newAttribute);
+          final Curation curation = Curation.build(attribute, newAttribute);
 
           bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
           sample = curationApplicationService.applyCurationToSample(sample, curation);
@@ -162,23 +162,23 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
 
         try {
           taxId = Integer.parseInt(attribute.getIri().first());
-        } catch (NumberFormatException ignored) {
+        } catch (final NumberFormatException ignored) {
         }
 
         if (taxId != null) {
-          SortedSet<String> iris = new TreeSet<>();
+          final SortedSet<String> iris = new TreeSet<>();
 
           iris.add("http://purl.obolibrary.org/obo/NCBITaxon_" + taxId);
           // TODO check this IRI exists via OLS
 
-          Attribute newAttribute =
+          final Attribute newAttribute =
               Attribute.build(
                   attribute.getType(),
                   attribute.getValue(),
                   attribute.getTag(),
                   iris,
                   attribute.getUnit());
-          Curation curation = Curation.build(attribute, newAttribute);
+          final Curation curation = Curation.build(attribute, newAttribute);
 
           bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
           sample = curationApplicationService.applyCurationToSample(sample, curation);
@@ -199,7 +199,7 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
     return sample;
   }
 
-  public String cleanString(String string) {
+  private String cleanString(String string) {
     if (string == null) {
       return null;
     }
@@ -249,7 +249,7 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
     // from
     // http://blog.mark-mclaren.info/2007/02/invalid-xml-characters-when-valid-utf8_5873.html
     // TODO check for valid UTF-8 but invalid JSON characters
-    StringBuilder sb = new StringBuilder(); // Used to hold the output.
+    final StringBuilder sb = new StringBuilder(); // Used to hold the output.
     char current; // Used to reference the current character.
     for (int i = 0; i < string.length(); i++) {
       current = string.charAt(i); // NOTE: No IndexOutOfBoundsException
@@ -266,20 +266,20 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
     return sb.toString();
   }
 
-  private static boolean stringContainsItemFromList(String value) {
+  private static boolean stringContainsItemFromList(final String value) {
     return Arrays.stream(SampleCurationCallable.NON_APPLICABLE_SYNONYMS)
         .parallel()
         .anyMatch(value::equals);
   }
 
-  public static boolean isNotApplicableSynonym(String string) {
-    String lsString = string.toLowerCase().trim();
+  static boolean isNotApplicableSynonym(final String string) {
+    final String lsString = string.toLowerCase().trim();
 
     return stringContainsItemFromList(lsString);
   }
 
-  private String correctUnit(String unit) {
-    String lcval = unit.toLowerCase();
+  private String correctUnit(final String unit) {
+    final String lcval = unit.toLowerCase();
 
     switch (lcval) {
       case "alphanumeric":
@@ -405,7 +405,7 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
     for (final Attribute attribute : sample.getAttributes()) {
       final Set<String> iriSet = new TreeSet<>(attribute.getIri());
 
-      for (String iri : attribute.getIri()) {
+      for (final String iri : attribute.getIri()) {
         log.trace("Checking iri " + iri);
 
         if (iri.matches("^[A-Za-z]+[_:\\-][0-9]+$")) {

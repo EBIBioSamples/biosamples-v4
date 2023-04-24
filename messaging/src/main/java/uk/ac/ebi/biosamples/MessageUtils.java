@@ -18,13 +18,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class MessageUtils {
-
   @Autowired private RabbitTemplate rabbitTemplate;
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
-  private Logger log = LoggerFactory.getLogger(this.getClass());
-
-  public long getQueueCount(String queue) {
-    long count = rabbitTemplate.execute(channel -> channel.messageCount(queue));
+  public long getQueueCount(final String queue) {
+    final long count = rabbitTemplate.execute(channel -> channel.messageCount(queue));
     log.trace("Number of messages in " + queue + " = " + count);
     return count;
   }

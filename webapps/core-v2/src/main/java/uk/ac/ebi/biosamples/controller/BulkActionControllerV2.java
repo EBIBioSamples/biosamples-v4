@@ -44,7 +44,6 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 @CrossOrigin
 public class BulkActionControllerV2 {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
@@ -253,7 +252,7 @@ public class BulkActionControllerV2 {
         throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
-      boolean isWebinSuperUser =
+      final boolean isWebinSuperUser =
           bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
 
       createdSamples =
@@ -342,7 +341,7 @@ public class BulkActionControllerV2 {
         .build();
   }
 
-  private Sample validateSample(Sample sample, boolean isWebinSubmission) {
+  private Sample validateSample(Sample sample, final boolean isWebinSubmission) {
     schemaValidationService.validate(sample);
     sample =
         taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(

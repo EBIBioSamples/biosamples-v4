@@ -28,14 +28,15 @@ public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
     super(AbstractData.class);
   }
 
-  protected AbstractDataDeserializer(Class<AbstractData> t) {
+  protected AbstractDataDeserializer(final Class<AbstractData> t) {
     super(t);
   }
 
   @Override
-  public AbstractData deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-    JsonNode rootNode = p.getCodec().readTree(p);
-    JsonNode content = rootNode.get("content");
+  public AbstractData deserialize(final JsonParser p, final DeserializationContext ctxt)
+      throws IOException {
+    final JsonNode rootNode = p.getCodec().readTree(p);
+    final JsonNode content = rootNode.get("content");
 
     if (content.elements().hasNext()) {
       log.warn("Trying to deserialize deprecated structured data. Ignoring the input.");

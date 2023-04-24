@@ -26,7 +26,7 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 
 @Service
 public class JsonSchemaStoreSchemaRetrievalService {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
   @Autowired private BioSamplesProperties bioSamplesProperties;
 
   public Map<String, String> getChecklists() {

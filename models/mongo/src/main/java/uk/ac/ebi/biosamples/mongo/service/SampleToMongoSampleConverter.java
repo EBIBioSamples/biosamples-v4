@@ -36,21 +36,21 @@ public class SampleToMongoSampleConverter implements Converter<Sample, MongoSamp
   @Autowired private CertificateToMongoCertificateConverter certificateToMongoCertificateConverter;
 
   @Override
-  public MongoSample convert(Sample sample) {
-    SortedSet<MongoExternalReference> externalReferences = new TreeSet<>();
-    for (ExternalReference mongoExternalReference : sample.getExternalReferences()) {
+  public MongoSample convert(final Sample sample) {
+    final SortedSet<MongoExternalReference> externalReferences = new TreeSet<>();
+    for (final ExternalReference mongoExternalReference : sample.getExternalReferences()) {
       externalReferences.add(
           externalReferenceToMongoExternalReferenceConverter.convert(mongoExternalReference));
     }
 
-    SortedSet<MongoRelationship> relationships = new TreeSet<>();
-    for (Relationship relationship : sample.getRelationships()) {
+    final SortedSet<MongoRelationship> relationships = new TreeSet<>();
+    for (final Relationship relationship : sample.getRelationships()) {
       relationships.add(relationshipToMongoRelationshipConverter.convert(relationship));
     }
 
-    SortedSet<MongoCertificate> certificates = new TreeSet<>();
+    final SortedSet<MongoCertificate> certificates = new TreeSet<>();
 
-    for (Certificate certificate : sample.getCertificates()) {
+    for (final Certificate certificate : sample.getCertificates()) {
       certificates.add(certificateToMongoCertificateConverter.convert(certificate));
     }
 
@@ -65,6 +65,7 @@ public class SampleToMongoSampleConverter implements Converter<Sample, MongoSamp
         sample.getDomain(),
         sample.getWebinSubmissionAccountId(),
         sample.getTaxId(),
+        sample.getStatus(),
         sample.getRelease(),
         sample.getUpdate(),
         sample.getCreate(),

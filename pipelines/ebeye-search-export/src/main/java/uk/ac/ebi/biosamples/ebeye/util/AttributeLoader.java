@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AttributeLoader {
-  private Set<String> attributeSet = new HashSet<>();
+  private final Set<String> attributeSet = new HashSet<>();
 
   public Set<String> getAllAttributes() throws IOException {
     final InputStream resource =

@@ -23,7 +23,6 @@ import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 import uk.ac.ebi.biosamples.solr.service.SampleToSolrSampleConverter;
@@ -37,52 +36,50 @@ public class MessageHandlerSolr {
 
   private final SolrSampleRepository repository;
   private final SampleToSolrSampleConverter sampleToSolrSampleConverter;
-  private final OlsProcessor olsProcessor;
 
   public MessageHandlerSolr(
-      SolrSampleRepository repository,
-      SampleToSolrSampleConverter sampleToSolrSampleConverter,
-      OlsProcessor olsProcessor) {
+      final SolrSampleRepository repository,
+      final SampleToSolrSampleConverter sampleToSolrSampleConverter) {
     this.repository = repository;
     this.sampleToSolrSampleConverter = sampleToSolrSampleConverter;
-    this.olsProcessor = olsProcessor;
   }
 
   @RabbitListener(
       queues = Messaging.INDEXING_QUEUE,
       containerFactory = "biosamplesAgentSolrContainerFactory")
-  public void handleIndexing(MessageContent messageContent) {
+  public void handleIndexing(final MessageContent messageContent) {
     handle(messageContent);
   }
 
   @RabbitListener(
       queues = Messaging.REINDEXING_QUEUE,
       containerFactory = "biosamplesAgentSolrContainerFactory")
-  public void handleReindxing(MessageContent messageContent) {
+  public void handleReindxing(final MessageContent messageContent) {
     handle(messageContent);
   }
 
-  public void handle(MessageContent messageContent) {
+  private void handle(final MessageContent messageContent) {
 
     if (messageContent.getSample() == null) {
       LOGGER.warn("received message without sample");
       return;
     }
 
-    Sample sample = messageContent.getSample();
+    final Sample sample = messageContent.getSample();
     handleSample(sample, messageContent.getCreationTime());
-    for (Sample related : messageContent.getRelated()) {
+    for (final Sample related : messageContent.getRelated()) {
       handleSample(related, messageContent.getCreationTime());
     }
   }
 
-  private void handleSample(Sample sample, String modifiedTime) {
+  private void handleSample(final Sample sample, final String modifiedTime) {
     final String accession = sample.getAccession();
 
     if (isIndexingCandidate(sample)) {
       SolrSample solrSample = sampleToSolrSampleConverter.convert(sample);
       // add the modified time to the solrSample
-      String indexedTime = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
+      final String indexedTime =
+          ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
 
       assert solrSample != null;
 
@@ -92,6 +89,7 @@ public class MessageHandlerSolr {
               solrSample.getAccession(),
               solrSample.getDomain(),
               solrSample.getWebinSubmissionAcccountId(),
+              solrSample.getStatus(),
               solrSample.getRelease(),
               solrSample.getUpdate(),
               modifiedTime,
@@ -129,8 +127,8 @@ public class MessageHandlerSolr {
     }
   }
 
-  static boolean isIndexingCandidate(Sample sample) {
-    for (Attribute attribute : sample.getAttributes()) {
+  static boolean isIndexingCandidate(final Sample sample) {
+    for (final Attribute attribute : sample.getAttributes()) {
       if (attribute.getType().equals("INSDC status")) {
         if (!INDEXABLE_STATUSES.contains(attribute.getValue())) {
           LOGGER.debug(

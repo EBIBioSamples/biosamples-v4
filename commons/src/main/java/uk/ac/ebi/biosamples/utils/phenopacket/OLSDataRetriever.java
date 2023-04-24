@@ -30,7 +30,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class OLSDataRetriever {
   private JsonNode node;
-
   private final Map<String, String> ontologyPrefixMapping = new HashMap<>();
 
   public OLSDataRetriever() {
@@ -41,12 +40,12 @@ public class OLSDataRetriever {
    *
    * @param iri
    */
-  public void readOntologyJsonFromUrl(String iri) {
+  void readOntologyJsonFromUrl(final String iri) {
     String linkToTerm = null;
     try {
       // TODO move to application properties
       linkToTerm = "https://www.ebi.ac.uk/ols/api/terms?iri=" + URLEncoder.encode(iri, "UTF-8");
-    } catch (UnsupportedEncodingException e) {
+    } catch (final UnsupportedEncodingException e) {
       throw new RuntimeException(e);
     }
     readJson(linkToTerm);
@@ -57,10 +56,10 @@ public class OLSDataRetriever {
    *
    * @param id
    */
-  public void readResourceInfoFromUrl(String id) {
+  void readResourceInfoFromUrl(String id) {
 
     // Necessary for ontologies like orphanet, where the prefix is not orphanet but ordo
-    if (this.ontologyPrefixMapping.containsKey(id.toLowerCase())) {
+    if (ontologyPrefixMapping.containsKey(id.toLowerCase())) {
       id = ontologyPrefixMapping.get(id.toLowerCase());
     }
 
@@ -70,7 +69,7 @@ public class OLSDataRetriever {
       linkToResourceInfo =
           "https://www.ebi.ac.uk/ols/api/ontologies/"
               + URLEncoder.encode(id.toLowerCase(), "UTF-8");
-    } catch (UnsupportedEncodingException e) {
+    } catch (final UnsupportedEncodingException e) {
       e.printStackTrace();
     }
     readJson(linkToResourceInfo);
@@ -81,56 +80,56 @@ public class OLSDataRetriever {
    *
    * @param link link to OLS element
    */
-  private void readJson(String link) {
-    URL urlToTerm;
+  private void readJson(final String link) {
+    final URL urlToTerm;
     try {
       urlToTerm = new URL(link);
-    } catch (MalformedURLException e) {
+    } catch (final MalformedURLException e) {
       throw new RuntimeException(e);
     }
-    ObjectMapper mapper = new ObjectMapper();
+    final ObjectMapper mapper = new ObjectMapper();
     try {
-      this.node = mapper.readTree(urlToTerm);
-    } catch (IOException e) {
+      node = mapper.readTree(urlToTerm);
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public String getOntologyTermId() {
+  String getOntologyTermId() {
     JsonNode terms = node.get("_embedded").get("terms");
     terms = terms.get(0);
     return terms.get("obo_id").asText();
   }
 
-  public String getOntologyTermLabel() {
+  String getOntologyTermLabel() {
     JsonNode terms = node.get("_embedded").get("terms");
     terms = terms.get(0);
     return terms.get("label").asText();
   }
 
-  public String getResourceId() {
+  String getResourceId() {
     return node.get("ontologyId").asText();
   }
 
-  public String getResourceName() {
-    JsonNode config = node.get("config");
+  String getResourceName() {
+    final JsonNode config = node.get("config");
     return config.get("title").isNull()
         ? config.get("localizedTitles").get("en").asText()
         : config.get("title").asText();
   }
 
-  public String getResourcePrefix() {
-    JsonNode config = node.get("config");
+  String getResourcePrefix() {
+    final JsonNode config = node.get("config");
     return config.get("preferredPrefix").asText();
   }
 
-  public String getResourceUrl() {
-    JsonNode config = node.get("config");
+  String getResourceUrl() {
+    final JsonNode config = node.get("config");
     return config.get("fileLocation").asText();
   }
 
-  public String getResourceVersion() {
-    JsonNode config = node.get("config");
+  String getResourceVersion() {
+    final JsonNode config = node.get("config");
     return config.get("version").asText();
   }
 }

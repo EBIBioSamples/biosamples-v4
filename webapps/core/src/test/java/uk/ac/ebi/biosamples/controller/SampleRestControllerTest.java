@@ -11,9 +11,9 @@
 package uk.ac.ebi.biosamples.controller;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Collections;
 import org.junit.Before;
@@ -53,15 +53,15 @@ public class SampleRestControllerTest {
   public void setUp() {
     faker = new DocumentationHelper();
     mockMvc =
-        MockMvcBuilders.webAppContextSetup(this.context)
+        MockMvcBuilders.webAppContextSetup(context)
             .defaultRequest(get("/").contextPath("/biosamples"))
             .build();
   }
 
   @Test
   public void getSamples() throws Exception {
-    Sample fakeSample = faker.getExampleSample();
-    CursorArrayList<Sample> sampleCursorArrayList =
+    final Sample fakeSample = faker.getExampleSample();
+    final CursorArrayList<Sample> sampleCursorArrayList =
         new CursorArrayList<>(Collections.singletonList(fakeSample), "");
     when(samplePageService.getSamplesByText(
             nullable(String.class),

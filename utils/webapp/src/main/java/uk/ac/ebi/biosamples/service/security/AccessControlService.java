@@ -27,7 +27,7 @@ import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 public class AccessControlService {
   private final ObjectMapper objectMapper;
 
-  public AccessControlService(ObjectMapper objectMapper) {
+  public AccessControlService(final ObjectMapper objectMapper) {
     this.objectMapper = objectMapper;
   }
 
@@ -39,24 +39,24 @@ public class AccessControlService {
 
       token = token.startsWith("Bearer ") ? token.split("Bearer ")[1] : token;
 
-      String[] chunks = token.split("\\.");
-      Base64.Decoder decoder = Base64.getDecoder();
-      String header = new String(decoder.decode(chunks[0]));
-      String payload = new String(decoder.decode(chunks[1]));
+      final String[] chunks = token.split("\\.");
+      final Base64.Decoder decoder = Base64.getDecoder();
+      final String header = new String(decoder.decode(chunks[0]));
+      final String payload = new String(decoder.decode(chunks[1]));
 
       if (!verifySignature()) {
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
       }
 
-      AuthToken authToken;
+      final AuthToken authToken;
 
       try {
-        String algorithm = objectMapper.readTree(header).get("alg").asText();
-        AuthorizationProvider authority;
-        String user;
-        List<String> roles;
+        final String algorithm = objectMapper.readTree(header).get("alg").asText();
+        final AuthorizationProvider authority;
+        final String user;
+        final List<String> roles;
 
-        JsonNode node = objectMapper.readTree(payload);
+        final JsonNode node = objectMapper.readTree(payload);
         if (isAap(node)) {
           authority = AuthorizationProvider.AAP;
           user = node.get("sub").asText();
@@ -71,7 +71,7 @@ public class AccessControlService {
         }
 
         authToken = new AuthToken(algorithm, authority, user, roles);
-      } catch (IOException e) {
+      } catch (final IOException e) {
         throw new ResponseStatusException(
             HttpStatus.UNAUTHORIZED, "Invalid authentication details provided", e);
       }
@@ -91,15 +91,15 @@ public class AccessControlService {
     }
   }
 
-  private static boolean isAap(JsonNode node) {
+  private static boolean isAap(final JsonNode node) {
     return node.get("iss") != null && node.get("iss").asText().contains("aai.ebi.ac.uk");
   }
 
-  public boolean verifySignature() {
+  private boolean verifySignature() {
     return true;
   }
 
-  public List<String> getUserRoles(AuthToken token) {
+  public List<String> getUserRoles(final AuthToken token) {
     return token.getAuthority() == AuthorizationProvider.AAP
         ? token.getRoles()
         : Collections.singletonList(token.getUser());

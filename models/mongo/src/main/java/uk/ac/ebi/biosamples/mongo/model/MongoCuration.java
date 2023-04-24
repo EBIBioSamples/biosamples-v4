@@ -36,13 +36,13 @@ public class MongoCuration implements Comparable<MongoCuration> {
   @Id private String hash;
 
   private MongoCuration(
-      Collection<Attribute> attributesPre,
-      Collection<Attribute> attributesPost,
-      Collection<ExternalReference> externalPre,
-      Collection<ExternalReference> externaPost,
-      Collection<Relationship> relationshipsPre,
-      Collection<Relationship> relationshipsPost,
-      String hash) {
+      final Collection<Attribute> attributesPre,
+      final Collection<Attribute> attributesPost,
+      final Collection<ExternalReference> externalPre,
+      final Collection<ExternalReference> externaPost,
+      final Collection<Relationship> relationshipsPre,
+      final Collection<Relationship> relationshipsPost,
+      final String hash) {
     this.attributesPre = Collections.unmodifiableSortedSet(new TreeSet<>(attributesPre));
     this.attributesPost = Collections.unmodifiableSortedSet(new TreeSet<>(attributesPost));
     this.externalPre = Collections.unmodifiableSortedSet(new TreeSet<>(externalPre));
@@ -98,110 +98,124 @@ public class MongoCuration implements Comparable<MongoCuration> {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (o == this) return true;
+  public boolean equals(final Object o) {
+    if (o == this) {
+      return true;
+    }
     if (!(o instanceof MongoCuration)) {
       return false;
     }
-    MongoCuration other = (MongoCuration) o;
-    return Objects.equals(this.hash, other.hash)
-        && Objects.equals(this.attributesPre, other.attributesPre)
-        && Objects.equals(this.attributesPost, other.attributesPost)
-        && Objects.equals(this.externalPre, other.externalPre)
-        && Objects.equals(this.externaPost, other.externaPost)
-        && Objects.equals(this.relationshipsPre, other.relationshipsPre)
-        && Objects.equals(this.relationshipsPost, other.relationshipsPost);
+    final MongoCuration other = (MongoCuration) o;
+    return Objects.equals(hash, other.hash)
+        && Objects.equals(attributesPre, other.attributesPre)
+        && Objects.equals(attributesPost, other.attributesPost)
+        && Objects.equals(externalPre, other.externalPre)
+        && Objects.equals(externaPost, other.externaPost)
+        && Objects.equals(relationshipsPre, other.relationshipsPre)
+        && Objects.equals(relationshipsPost, other.relationshipsPost);
   }
 
   @Override
-  public int compareTo(MongoCuration other) {
+  public int compareTo(final MongoCuration other) {
     if (other == null) {
       return 1;
     }
 
-    if (!this.attributesPre.equals(other.attributesPre)) {
-      if (this.attributesPre.size() < other.attributesPre.size()) {
+    if (!attributesPre.equals(other.attributesPre)) {
+      if (attributesPre.size() < other.attributesPre.size()) {
         return -1;
-      } else if (this.attributesPre.size() > other.attributesPre.size()) {
+      } else if (attributesPre.size() > other.attributesPre.size()) {
         return 1;
       } else {
-        Iterator<Attribute> thisIt = this.attributesPre.iterator();
-        Iterator<Attribute> otherIt = other.attributesPre.iterator();
+        final Iterator<Attribute> thisIt = attributesPre.iterator();
+        final Iterator<Attribute> otherIt = other.attributesPre.iterator();
         while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
         }
       }
     }
-    if (!this.attributesPost.equals(other.attributesPost)) {
-      if (this.attributesPost.size() < other.attributesPost.size()) {
+    if (!attributesPost.equals(other.attributesPost)) {
+      if (attributesPost.size() < other.attributesPost.size()) {
         return -1;
-      } else if (this.attributesPost.size() > other.attributesPost.size()) {
+      } else if (attributesPost.size() > other.attributesPost.size()) {
         return 1;
       } else {
-        Iterator<Attribute> thisIt = this.attributesPost.iterator();
-        Iterator<Attribute> otherIt = other.attributesPost.iterator();
+        final Iterator<Attribute> thisIt = attributesPost.iterator();
+        final Iterator<Attribute> otherIt = other.attributesPost.iterator();
         while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
-        }
-      }
-    }
-
-    if (!this.externalPre.equals(other.externalPre)) {
-      if (this.externalPre.size() < other.externalPre.size()) {
-        return -1;
-      } else if (this.externalPre.size() > other.externalPre.size()) {
-        return 1;
-      } else {
-        Iterator<ExternalReference> thisIt = this.externalPre.iterator();
-        Iterator<ExternalReference> otherIt = other.externalPre.iterator();
-        while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
-        }
-      }
-    }
-    if (!this.externaPost.equals(other.externaPost)) {
-      if (this.externaPost.size() < other.externaPost.size()) {
-        return -1;
-      } else if (this.externaPost.size() > other.externaPost.size()) {
-        return 1;
-      } else {
-        Iterator<ExternalReference> thisIt = this.externaPost.iterator();
-        Iterator<ExternalReference> otherIt = other.externaPost.iterator();
-        while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
         }
       }
     }
 
-    if (!this.relationshipsPre.equals(other.relationshipsPre)) {
-      if (this.relationshipsPre.size() < other.relationshipsPre.size()) {
+    if (!externalPre.equals(other.externalPre)) {
+      if (externalPre.size() < other.externalPre.size()) {
         return -1;
-      } else if (this.relationshipsPre.size() > other.relationshipsPre.size()) {
+      } else if (externalPre.size() > other.externalPre.size()) {
         return 1;
       } else {
-        Iterator<Relationship> thisIt = this.relationshipsPre.iterator();
-        Iterator<Relationship> otherIt = other.relationshipsPre.iterator();
+        final Iterator<ExternalReference> thisIt = externalPre.iterator();
+        final Iterator<ExternalReference> otherIt = other.externalPre.iterator();
         while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
         }
       }
     }
-    if (!this.relationshipsPost.equals(other.relationshipsPost)) {
-      if (this.relationshipsPost.size() < other.relationshipsPost.size()) {
+    if (!externaPost.equals(other.externaPost)) {
+      if (externaPost.size() < other.externaPost.size()) {
         return -1;
-      } else if (this.relationshipsPost.size() > other.relationshipsPost.size()) {
+      } else if (externaPost.size() > other.externaPost.size()) {
         return 1;
       } else {
-        Iterator<Relationship> thisIt = this.relationshipsPost.iterator();
-        Iterator<Relationship> otherIt = other.relationshipsPost.iterator();
+        final Iterator<ExternalReference> thisIt = externaPost.iterator();
+        final Iterator<ExternalReference> otherIt = other.externaPost.iterator();
         while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
+        }
+      }
+    }
+
+    if (!relationshipsPre.equals(other.relationshipsPre)) {
+      if (relationshipsPre.size() < other.relationshipsPre.size()) {
+        return -1;
+      } else if (relationshipsPre.size() > other.relationshipsPre.size()) {
+        return 1;
+      } else {
+        final Iterator<Relationship> thisIt = relationshipsPre.iterator();
+        final Iterator<Relationship> otherIt = other.relationshipsPre.iterator();
+        while (thisIt.hasNext() && otherIt.hasNext()) {
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
+        }
+      }
+    }
+    if (!relationshipsPost.equals(other.relationshipsPost)) {
+      if (relationshipsPost.size() < other.relationshipsPost.size()) {
+        return -1;
+      } else if (relationshipsPost.size() > other.relationshipsPost.size()) {
+        return 1;
+      } else {
+        final Iterator<Relationship> thisIt = relationshipsPost.iterator();
+        final Iterator<Relationship> otherIt = other.relationshipsPost.iterator();
+        while (thisIt.hasNext() && otherIt.hasNext()) {
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
         }
       }
     }
@@ -210,7 +224,7 @@ public class MongoCuration implements Comparable<MongoCuration> {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     sb.append("MongoCuration(");
     sb.append(attributesPre);
     sb.append(",");
@@ -229,12 +243,12 @@ public class MongoCuration implements Comparable<MongoCuration> {
 
   @JsonCreator
   public static MongoCuration build(
-      @JsonProperty("attributesPre") Collection<Attribute> attributesPre,
-      @JsonProperty("attributesPost") Collection<Attribute> attributesPost,
-      @JsonProperty("externalReferencesPre") Collection<ExternalReference> externalPre,
-      @JsonProperty("externalReferencesPost") Collection<ExternalReference> externaPost,
-      @JsonProperty("relationshipsPre") Collection<Relationship> relationshipsPre,
-      @JsonProperty("relationshipsPost") Collection<Relationship> relationshipsPost) {
+      @JsonProperty("attributesPre") final Collection<Attribute> attributesPre,
+      @JsonProperty("attributesPost") final Collection<Attribute> attributesPost,
+      @JsonProperty("externalReferencesPre") final Collection<ExternalReference> externalPre,
+      @JsonProperty("externalReferencesPost") final Collection<ExternalReference> externaPost,
+      @JsonProperty("relationshipsPre") final Collection<Relationship> relationshipsPre,
+      @JsonProperty("relationshipsPost") final Collection<Relationship> relationshipsPost) {
 
     SortedSet<Attribute> sortedPreAttributes = new TreeSet<>();
     SortedSet<Attribute> sortedPostAttributes = new TreeSet<>();
@@ -243,12 +257,24 @@ public class MongoCuration implements Comparable<MongoCuration> {
     SortedSet<Relationship> sortedPreRelationships = new TreeSet<>();
     SortedSet<Relationship> sortedPostRelationships = new TreeSet<>();
 
-    if (attributesPre != null) sortedPreAttributes.addAll(attributesPre);
-    if (attributesPost != null) sortedPostAttributes.addAll(attributesPost);
-    if (externalPre != null) sortedPreExternal.addAll(externalPre);
-    if (externaPost != null) sortedPostExternal.addAll(externaPost);
-    if (relationshipsPre != null) sortedPreRelationships.addAll(relationshipsPre);
-    if (relationshipsPost != null) sortedPostRelationships.addAll(relationshipsPost);
+    if (attributesPre != null) {
+      sortedPreAttributes.addAll(attributesPre);
+    }
+    if (attributesPost != null) {
+      sortedPostAttributes.addAll(attributesPost);
+    }
+    if (externalPre != null) {
+      sortedPreExternal.addAll(externalPre);
+    }
+    if (externaPost != null) {
+      sortedPostExternal.addAll(externaPost);
+    }
+    if (relationshipsPre != null) {
+      sortedPreRelationships.addAll(relationshipsPre);
+    }
+    if (relationshipsPost != null) {
+      sortedPostRelationships.addAll(relationshipsPost);
+    }
 
     sortedPreAttributes = Collections.unmodifiableSortedSet(sortedPreAttributes);
     sortedPostAttributes = Collections.unmodifiableSortedSet(sortedPostAttributes);
@@ -257,58 +283,58 @@ public class MongoCuration implements Comparable<MongoCuration> {
     sortedPreRelationships = Collections.unmodifiableSortedSet(sortedPreRelationships);
     sortedPostRelationships = Collections.unmodifiableSortedSet(sortedPostRelationships);
 
-    Hasher hasher = Hashing.sha256().newHasher();
-    for (Attribute a : sortedPreAttributes) {
+    final Hasher hasher = Hashing.sha256().newHasher();
+    for (final Attribute a : sortedPreAttributes) {
       hasher.putUnencodedChars(a.getType());
       hasher.putUnencodedChars(a.getValue());
       if (a.getUnit() != null) {
         hasher.putUnencodedChars(a.getUnit());
       }
       if (a.getIri() != null) {
-        for (String iri : a.getIri()) {
+        for (final String iri : a.getIri()) {
           hasher.putUnencodedChars(iri);
         }
       }
     }
-    for (Attribute a : sortedPostAttributes) {
+    for (final Attribute a : sortedPostAttributes) {
       hasher.putUnencodedChars(a.getType());
       hasher.putUnencodedChars(a.getValue());
       if (a.getUnit() != null) {
         hasher.putUnencodedChars(a.getUnit());
       }
       if (a.getIri() != null) {
-        for (String iri : a.getIri()) {
+        for (final String iri : a.getIri()) {
           hasher.putUnencodedChars(iri);
         }
       }
     }
-    for (ExternalReference a : sortedPreExternal) {
+    for (final ExternalReference a : sortedPreExternal) {
       hasher.putUnencodedChars(a.getUrl());
       if (a.getDuo() != null) {
-        for (String duo : a.getDuo()) {
+        for (final String duo : a.getDuo()) {
           hasher.putUnencodedChars(duo);
         }
       }
     }
-    for (ExternalReference a : sortedPostExternal) {
+    for (final ExternalReference a : sortedPostExternal) {
       hasher.putUnencodedChars(a.getUrl());
       if (a.getDuo() != null) {
-        for (String duo : a.getDuo()) {
+        for (final String duo : a.getDuo()) {
           hasher.putUnencodedChars(duo);
         }
       }
     }
-    for (Relationship a : sortedPreRelationships) {
+    for (final Relationship a : sortedPreRelationships) {
       hasher.putUnencodedChars(a.getSource());
       hasher.putUnencodedChars(a.getTarget());
       hasher.putUnencodedChars(a.getType());
     }
-    for (Relationship a : sortedPostRelationships) {
+    for (final Relationship a : sortedPostRelationships) {
       hasher.putUnencodedChars(a.getSource());
       hasher.putUnencodedChars(a.getTarget());
       hasher.putUnencodedChars(a.getType());
     }
-    String hash = hasher.hash().toString();
+    final String hash = hasher.hash().toString();
 
     return new MongoCuration(
         sortedPreAttributes,

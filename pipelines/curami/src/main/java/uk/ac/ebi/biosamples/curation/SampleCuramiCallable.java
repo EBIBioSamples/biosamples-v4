@@ -33,11 +33,11 @@ public class SampleCuramiCallable implements Callable<PipelineResult> {
   private final String domain;
   private final Map<String, String> curationRules;
 
-  public SampleCuramiCallable(
-      BioSamplesClient bioSamplesClient,
-      Sample sample,
-      String domain,
-      Map<String, String> curationRules) {
+  SampleCuramiCallable(
+      final BioSamplesClient bioSamplesClient,
+      final Sample sample,
+      final String domain,
+      final Map<String, String> curationRules) {
     this.bioSamplesClient = bioSamplesClient;
     this.sample = sample;
     this.domain = domain;
@@ -49,12 +49,12 @@ public class SampleCuramiCallable implements Callable<PipelineResult> {
     int appliedCurations = 0;
     boolean success = true;
     try {
-      List<Curation> curations = getRuleBasedCurations(sample);
+      final List<Curation> curations = getRuleBasedCurations(sample);
       if (!curations.isEmpty()) {
         LOG.info("{} curations added for sample {}", curations.size(), sample.getAccession());
       }
       appliedCurations = curations.size();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       success = false;
       failedQueue.add(sample.getAccession());
       LOG.error("Failed to add curation on sample: " + sample.getAccession(), e);
@@ -62,10 +62,10 @@ public class SampleCuramiCallable implements Callable<PipelineResult> {
     return new PipelineResult(sample.getAccession(), appliedCurations, success);
   }
 
-  private List<Curation> getRuleBasedCurations(Sample sample) {
-    SortedSet<Attribute> attributes = sample.getAttributes();
-    List<Curation> curations = new ArrayList<>();
-    for (Attribute a : attributes) {
+  private List<Curation> getRuleBasedCurations(final Sample sample) {
+    final SortedSet<Attribute> attributes = sample.getAttributes();
+    final List<Curation> curations = new ArrayList<>();
+    for (final Attribute a : attributes) {
       // @here ignoring empty values is wrong. This has done as a workaround as pipeline fails
       // if we
       // post empty
@@ -73,7 +73,7 @@ public class SampleCuramiCallable implements Callable<PipelineResult> {
       // and
       // throw an exception.
       if (curationRules.containsKey(a.getType()) && !a.getValue().isEmpty()) {
-        Curation curation =
+        final Curation curation =
             Curation.build(
                 Attribute.build(a.getType(), a.getValue(), a.getTag(), a.getIri(), a.getUnit()),
                 Attribute.build(

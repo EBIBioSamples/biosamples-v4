@@ -51,7 +51,7 @@ public class FileUploadUtils {
 
               headers.forEach(
                   header -> {
-                    String record = csvRecord.get(i.get());
+                    final String record = csvRecord.get(i.get());
                     listMultiMap.put(header != null ? header.toLowerCase() : null, record);
                     i.getAndIncrement();
                   });
@@ -197,7 +197,7 @@ public class FileUploadUtils {
         && (characteristicsValue != null && !characteristicsValue.isEmpty());
   }
 
-  public List<Contact> handleContacts(final Multimap<String, String> multiMap) {
+  private List<Contact> handleContacts(final Multimap<String, String> multiMap) {
     final List<Contact> contactList = new ArrayList<>();
     final List<String> contactEmails = new ArrayList<>();
     final List<String> contactNames = new ArrayList<>();
@@ -253,7 +253,7 @@ public class FileUploadUtils {
     return contactList;
   }
 
-  public List<Publication> handlePublications(final Multimap<String, String> multiMap) {
+  private List<Publication> handlePublications(final Multimap<String, String> multiMap) {
     final List<String> publicationDois = handlePublicationDois(multiMap);
     final List<String> publicationPubMedIds = handlePublicationPubMedIds(multiMap);
     final List<Publication> publicationList = new ArrayList<>();
@@ -339,7 +339,8 @@ public class FileUploadUtils {
     return sampleAccession.orElse(null);
   }
 
-  public List<ExternalReference> handleExternalReferences(final Multimap<String, String> multiMap) {
+  private List<ExternalReference> handleExternalReferences(
+      final Multimap<String, String> multiMap) {
     final List<ExternalReference> externalReferenceList = new ArrayList<>();
 
     multiMap
@@ -372,7 +373,7 @@ public class FileUploadUtils {
         .collect(Collectors.toList());
   }
 
-  public Relationship getRelationship(
+  private Relationship getRelationship(
       final Sample sample,
       final Map<String, String> sampleNameToAccessionMap,
       final Map.Entry<String, String> entry,
@@ -393,7 +394,7 @@ public class FileUploadUtils {
 
           return null;
         }
-      } catch (Exception e) {
+      } catch (final Exception e) {
         log.info("Failed to add relationship");
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
@@ -408,7 +409,7 @@ public class FileUploadUtils {
     return null;
   }
 
-  public String getRelationshipTarget(
+  private String getRelationshipTarget(
       final Map<String, String> sampleNameToAccessionMap, final Map.Entry<String, String> entry) {
     final String relationshipTarget = entry.getValue().trim();
 
@@ -441,7 +442,7 @@ public class FileUploadUtils {
                 LinkedListMultimap::create));
   }
 
-  public List<Characteristics> handleCharacteristics(final Multimap<String, String> multiMap) {
+  private List<Characteristics> handleCharacteristics(final Multimap<String, String> multiMap) {
     final List<Characteristics> characteristicsList = new ArrayList<>();
 
     multiMap
@@ -459,7 +460,7 @@ public class FileUploadUtils {
               }
             });
 
-    List<String> termRefList =
+    final List<String> termRefList =
         multiMap.entries().stream()
             .map(
                 entry -> {
@@ -467,12 +468,14 @@ public class FileUploadUtils {
                     final String value = entry.getValue();
 
                     return value != null ? value.trim() : null;
-                  } else return null;
+                  } else {
+                    return null;
+                  }
                 })
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
 
-    List<String> unitList =
+    final List<String> unitList =
         multiMap.entries().stream()
             .map(
                 entry -> {
@@ -480,7 +483,9 @@ public class FileUploadUtils {
                     final String value = entry.getValue();
 
                     return value != null ? value.trim() : null;
-                  } else return null;
+                  } else {
+                    return null;
+                  }
                 })
             .filter(Objects::nonNull)
             .collect(Collectors.toList()); // handle units
@@ -509,7 +514,7 @@ public class FileUploadUtils {
     return sampleName.orElse(null);
   }
 
-  public String getReleaseDate(final Multimap<String, String> multiMap) {
+  private String getReleaseDate(final Multimap<String, String> multiMap) {
     final Optional<String> sampleReleaseDate = multiMap.get("release date").stream().findFirst();
 
     return sampleReleaseDate.orElse(null);
@@ -525,7 +530,7 @@ public class FileUploadUtils {
     return sample;
   }
 
-  public boolean isValidSample(
+  private boolean isValidSample(
       final String sampleName,
       final String sampleReleaseDate,
       final ValidationResult validationResult) {
@@ -597,7 +602,7 @@ public class FileUploadUtils {
           final CSVPrinter csvPrinter =
               new CSVPrinter(writer, CSVFormat.TDF.withHeader(headerParsed));
           final PrintWriter out = new PrintWriter(writer)) {
-        for (CSVRecord row : records) {
+        for (final CSVRecord row : records) {
           if (headerHasIdentifier) {
             csvPrinter.printRecord(row);
           } else {

@@ -58,8 +58,8 @@ public class DatesType {
    */
   public List<DateType> getDate() {
     if (date == null) {
-      date = new ArrayList<DateType>();
+      date = new ArrayList<>();
     }
-    return this.date;
+    return date;
   }
 }

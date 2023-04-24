@@ -28,7 +28,7 @@ import org.springframework.web.client.RestOperations;
 
 public class AapClientService implements ClientService {
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final RestOperations restOperations;
 
@@ -40,13 +40,17 @@ public class AapClientService implements ClientService {
   private Optional<Date> expiry = Optional.empty();
 
   public AapClientService(
-      RestTemplateBuilder restTemplateBuilder, URI aapUri, String username, String password) {
-    this.restOperations = restTemplateBuilder.build();
+      final RestTemplateBuilder restTemplateBuilder,
+      final URI aapUri,
+      final String username,
+      final String password) {
+    restOperations = restTemplateBuilder.build();
     this.aapUri = aapUri;
     this.username = username;
     this.password = password;
   }
 
+  @Override
   public synchronized String getJwt() {
 
     if (username == null
@@ -59,24 +63,25 @@ public class AapClientService implements ClientService {
     // TODO refresh token when less than 5 minutes left, rather than when expired
     if (!jwt.isPresent() || (expiry.isPresent() && expiry.get().before(new Date()))) {
 
-      String auth = username + ":" + password;
-      byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.US_ASCII));
-      String authHeader = "Basic " + new String(encodedAuth);
+      final String auth = username + ":" + password;
+      final byte[] encodedAuth =
+          Base64.getEncoder().encode(auth.getBytes(StandardCharsets.US_ASCII));
+      final String authHeader = "Basic " + new String(encodedAuth);
 
-      RequestEntity<?> request =
+      final RequestEntity<?> request =
           RequestEntity.get(aapUri)
               .header(HttpHeaders.AUTHORIZATION, authHeader)
               // .accept(MediaType.TEXT_PLAIN)
               .build();
 
-      ResponseEntity<String> response = restOperations.exchange(request, String.class);
+      final ResponseEntity<String> response = restOperations.exchange(request, String.class);
 
       jwt = Optional.ofNullable(response.getBody());
 
       try {
-        DecodedJWT decodedJwt = JWT.decode(jwt.get());
+        final DecodedJWT decodedJwt = JWT.decode(jwt.get());
         expiry = Optional.of(decodedJwt.getExpiresAt());
-      } catch (JWTDecodeException e) {
+      } catch (final JWTDecodeException e) {
         // Invalid token
         throw new RuntimeException(e);
       }

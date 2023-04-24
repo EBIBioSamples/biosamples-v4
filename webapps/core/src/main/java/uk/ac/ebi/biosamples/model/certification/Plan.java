@@ -27,7 +27,9 @@ public class Plan {
   private List<Curation> curations;
 
   public Plan(
-      String candidateChecklistID, String certificationChecklistID, List<Curation> curations) {
+      final String candidateChecklistID,
+      final String certificationChecklistID,
+      final List<Curation> curations) {
     this.candidateChecklistID = candidateChecklistID;
     this.certificationChecklistID = certificationChecklistID;
     this.curations = curations;
@@ -43,7 +45,7 @@ public class Plan {
     return candidateChecklistID;
   }
 
-  public void setCandidateChecklistID(String candidateChecklistID) {
+  public void setCandidateChecklistID(final String candidateChecklistID) {
     this.candidateChecklistID = candidateChecklistID;
   }
 
@@ -51,7 +53,7 @@ public class Plan {
     return certificationChecklistID;
   }
 
-  public void setCertificationChecklistID(String certificationChecklistID) {
+  public void setCertificationChecklistID(final String certificationChecklistID) {
     this.certificationChecklistID = certificationChecklistID;
   }
 
@@ -59,18 +61,19 @@ public class Plan {
     return curations;
   }
 
-  public void setCurations(List<Curation> curations) {
+  public void setCurations(final List<Curation> curations) {
     this.curations = curations;
   }
 
-  public CurationResult applyCuration(SampleDocument sampleDocument, Curation curation) {
-    JSONObject jsonObject = new JSONObject(sampleDocument.getDocument());
-    JSONObject sampleCharacteristics = jsonObject.getJSONObject("characteristics");
-    String targetCharateristic = curation.getCharacteristic();
+  public CurationResult applyCuration(
+      final SampleDocument sampleDocument, final Curation curation) {
+    final JSONObject jsonObject = new JSONObject(sampleDocument.getDocument());
+    final JSONObject sampleCharacteristics = jsonObject.getJSONObject("characteristics");
+    final String targetCharateristic = curation.getCharacteristic();
     if (sampleCharacteristics.has(targetCharateristic)) {
-      JSONArray jsonArray = sampleCharacteristics.getJSONArray(curation.getCharacteristic());
-      String before = jsonArray.getJSONObject(0).getString("text");
-      CurationResult curationResult =
+      final JSONArray jsonArray = sampleCharacteristics.getJSONArray(curation.getCharacteristic());
+      final String before = jsonArray.getJSONObject(0).getString("text");
+      final CurationResult curationResult =
           new CurationResult(targetCharateristic, before, curation.getValue());
       return curationResult;
     }

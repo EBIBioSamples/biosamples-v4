@@ -39,7 +39,9 @@ public class SampleRetrievalService {
   private final RestOperations restOperations;
 
   public SampleRetrievalService(
-      RestOperations restOperations, Traverson traverson, ExecutorService executor) {
+      final RestOperations restOperations,
+      final Traverson traverson,
+      final ExecutorService executor) {
     this.restOperations = restOperations;
     this.traverson = traverson;
     this.executor = executor;
@@ -52,12 +54,12 @@ public class SampleRetrievalService {
    * @return
    */
   public Future<Optional<EntityModel<Sample>>> fetch(
-      String accession, Optional<List<String>> curationDomains) {
+      final String accession, final Optional<List<String>> curationDomains) {
     return executor.submit(new FetchCallable(accession, curationDomains));
   }
 
   public Future<Optional<EntityModel<Sample>>> fetch(
-      String accession, Optional<List<String>> curationDomains, String jwt) {
+      final String accession, final Optional<List<String>> curationDomains, final String jwt) {
     return executor.submit(new FetchCallable(accession, curationDomains, jwt));
   }
 
@@ -66,13 +68,14 @@ public class SampleRetrievalService {
     private final Optional<List<String>> curationDomains;
     private final String jwt;
 
-    public FetchCallable(String accession, Optional<List<String>> curationDomains) {
+    FetchCallable(final String accession, final Optional<List<String>> curationDomains) {
       this.accession = accession;
       this.curationDomains = curationDomains;
-      this.jwt = null;
+      jwt = null;
     }
 
-    public FetchCallable(String accession, Optional<List<String>> curationDomains, String jwt) {
+    FetchCallable(
+        final String accession, final Optional<List<String>> curationDomains, final String jwt) {
       this.accession = accession;
       this.curationDomains = curationDomains;
       this.jwt = jwt;
@@ -80,7 +83,7 @@ public class SampleRetrievalService {
 
     @Override
     public Optional<EntityModel<Sample>> call() {
-      URI uri;
+      final URI uri;
 
       if (!curationDomains.isPresent()) {
         uri =
@@ -91,11 +94,11 @@ public class SampleRetrievalService {
                     .asLink()
                     .getHref());
       } else {
-        TraversalBuilder traversalBuilder =
+        final TraversalBuilder traversalBuilder =
             traverson
                 .follow("samples")
                 .follow(Hop.rel("sample").withParameter("accession", accession));
-        for (String curationDomain : curationDomains.get()) {
+        for (final String curationDomain : curationDomains.get()) {
           traversalBuilder.follow(
               Hop.rel("curationDomain").withParameter("curationdomain", curationDomain));
         }
@@ -104,21 +107,21 @@ public class SampleRetrievalService {
 
       log.info("GETing " + uri);
 
-      MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+      final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
 
       headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
       if (jwt != null) {
         headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
       }
-      RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
+      final RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
 
-      ResponseEntity<EntityModel<Sample>> responseEntity;
+      final ResponseEntity<EntityModel<Sample>> responseEntity;
 
       try {
         responseEntity =
             restOperations.exchange(
                 requestEntity, new ParameterizedTypeReference<EntityModel<Sample>>() {});
-      } catch (HttpStatusCodeException e) {
+      } catch (final HttpStatusCodeException e) {
         if (e.getStatusCode().equals(HttpStatus.FORBIDDEN)
             || e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
           return Optional.empty();
@@ -132,11 +135,12 @@ public class SampleRetrievalService {
     }
   }
 
-  public Iterable<Optional<EntityModel<Sample>>> fetchAll(Iterable<String> accessions) {
+  public Iterable<Optional<EntityModel<Sample>>> fetchAll(final Iterable<String> accessions) {
     return new IterableResourceFetch(accessions);
   }
 
-  public Iterable<Optional<EntityModel<Sample>>> fetchAll(Iterable<String> accessions, String jwt) {
+  public Iterable<Optional<EntityModel<Sample>>> fetchAll(
+      final Iterable<String> accessions, final String jwt) {
     return new IterableResourceFetch(accessions);
   }
 
@@ -145,12 +149,12 @@ public class SampleRetrievalService {
     private final Iterable<String> accessions;
     private final String jwt;
 
-    public IterableResourceFetch(Iterable<String> accessions) {
+    IterableResourceFetch(final Iterable<String> accessions) {
       this.accessions = accessions;
-      this.jwt = null;
+      jwt = null;
     }
 
-    public IterableResourceFetch(Iterable<String> accessions, String jwt) {
+    public IterableResourceFetch(final Iterable<String> accessions, final String jwt) {
       this.accessions = accessions;
       this.jwt = jwt;
     }
@@ -167,15 +171,17 @@ public class SampleRetrievalService {
       // TODO application property this
       private final int queueMaxSize = 1000;
 
-      public IteratorResourceFetch(Iterator<String> accessions) {
+      IteratorResourceFetch(final Iterator<String> accessions) {
         this.accessions = accessions;
       }
 
       @Override
       public boolean hasNext() {
-        if (this.accessions.hasNext()) {
+        if (accessions.hasNext()) {
           return true;
-        } else return !queue.isEmpty();
+        } else {
+          return !queue.isEmpty();
+        }
       }
 
       @Override
@@ -187,12 +193,12 @@ public class SampleRetrievalService {
         // fill up the queue if possible
         while (queue.size() < queueMaxSize && accessions.hasNext()) {
           log.trace("Queue size is " + queue.size());
-          String nextAccession = accessions.next();
+          final String nextAccession = accessions.next();
           queue.add(fetch(nextAccession, Optional.empty(), jwt));
         }
 
         // get the end of the queue and wait for it to finish if needed
-        Future<Optional<EntityModel<Sample>>> future = queue.poll();
+        final Future<Optional<EntityModel<Sample>>> future = queue.poll();
         // this shouldn't happen, but best to check
         if (future == null) {
           throw new NoSuchElementException();
@@ -200,9 +206,9 @@ public class SampleRetrievalService {
 
         try {
           return future.get();
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
           throw new RuntimeException(e);
-        } catch (ExecutionException e) {
+        } catch (final ExecutionException e) {
           throw new RuntimeException(e.getCause());
         }
       }

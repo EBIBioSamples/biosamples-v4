@@ -31,7 +31,10 @@ public class CurationRetrievalService {
   private final int pageSize;
 
   public CurationRetrievalService(
-      RestOperations restOperations, Traverson traverson, ExecutorService executor, int pageSize) {
+      final RestOperations restOperations,
+      final Traverson traverson,
+      final ExecutorService executor,
+      final int pageSize) {
     this.restOperations = restOperations;
     this.traverson = traverson;
     this.executor = executor;
@@ -42,8 +45,8 @@ public class CurationRetrievalService {
     return fetchAll(null);
   }
 
-  public Iterable<EntityModel<Curation>> fetchAll(String jwt) {
-    MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+  public Iterable<EntityModel<Curation>> fetchAll(final String jwt) {
+    final MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
     params.add("size", Integer.toString(pageSize));
     return new IterableResourceFetchAll<>(
         executor,
@@ -55,13 +58,13 @@ public class CurationRetrievalService {
         "curations");
   }
 
-  public Iterable<EntityModel<CurationLink>> fetchCurationLinksOfSample(String accession) {
+  public Iterable<EntityModel<CurationLink>> fetchCurationLinksOfSample(final String accession) {
     return fetchCurationLinksOfSample(accession, null);
   }
 
   public Iterable<EntityModel<CurationLink>> fetchCurationLinksOfSample(
-      String accession, String jwt) {
-    MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+      final String accession, final String jwt) {
+    final MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
     params.add("size", Integer.toString(pageSize));
     return new IterableResourceFetchAll<>(
         executor,

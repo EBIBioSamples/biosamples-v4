@@ -46,17 +46,17 @@ public class CopydownApplicationRunner implements ApplicationRunner {
   public CopydownApplicationRunner(
       final BioSamplesClient bioSamplesClient,
       final PipelinesProperties pipelinesProperties,
-      AnalyticsService analyticsService) {
+      final AnalyticsService analyticsService) {
     this.bioSamplesClient = bioSamplesClient;
     this.pipelinesProperties = pipelinesProperties;
     this.analyticsService = analyticsService;
-    this.pipelineFutureCallback = new PipelineFutureCallback();
+    pipelineFutureCallback = new PipelineFutureCallback();
   }
 
   @Override
-  public void run(ApplicationArguments args) throws Exception {
-    final Collection<Filter> filters = PipelineUtils.getDateFilters(args);
-    Instant startTime = Instant.now();
+  public void run(final ApplicationArguments args) throws Exception {
+    final Collection<Filter> filters = PipelineUtils.getDateFilters(args, "update");
+    final Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
     long sampleCount = 0;
 
@@ -93,7 +93,7 @@ public class CopydownApplicationRunner implements ApplicationRunner {
       LOG.error("Pipeline failed to finish successfully", e);
       throw e;
     } finally {
-      Instant endTime = Instant.now();
+      final Instant endTime = Instant.now();
       LOG.info("Total samples processed {}", sampleCount);
       LOG.info("Total curation objects added {}", pipelineFutureCallback.getTotalCount());
       LOG.info("Pipeline finished at {}", endTime);
@@ -101,7 +101,7 @@ public class CopydownApplicationRunner implements ApplicationRunner {
           "Pipeline total running time {} seconds",
           Duration.between(startTime, endTime).getSeconds());
 
-      PipelineAnalytics pipelineAnalytics =
+      final PipelineAnalytics pipelineAnalytics =
           new PipelineAnalytics(
               "copydown", startTime, endTime, sampleCount, pipelineFutureCallback.getTotalCount());
       pipelineAnalytics.setDateRange(filters);

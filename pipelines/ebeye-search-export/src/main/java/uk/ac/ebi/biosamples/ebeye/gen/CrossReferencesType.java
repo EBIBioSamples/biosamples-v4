@@ -39,7 +39,7 @@ import javax.xml.bind.annotation.XmlType;
     propOrder = {"ref"})
 public class CrossReferencesType {
 
-  protected List<RefType> ref;
+  private List<RefType> ref;
 
   /**
    * Gets the value of the ref property.
@@ -58,8 +58,8 @@ public class CrossReferencesType {
    */
   public List<RefType> getRef() {
     if (ref == null) {
-      ref = new ArrayList<RefType>();
+      ref = new ArrayList<>();
     }
-    return this.ref;
+    return ref;
   }
 }

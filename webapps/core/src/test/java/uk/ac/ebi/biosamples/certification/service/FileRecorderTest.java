@@ -28,7 +28,6 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.certification.*;
 import uk.ac.ebi.biosamples.service.certification.*;
-import uk.ac.ebi.biosamples.service.certification.Validator;
 import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
 import uk.ac.ebi.biosamples.validation.ValidatorI;
 
@@ -58,17 +57,18 @@ public class FileRecorderTest {
 
   @Test
   public void given_certificate_save_to_file() throws IOException {
-    String data =
+    final String data =
         IOUtils.toString(
             getClass().getClassLoader().getResourceAsStream("json/ncbi-SAMN03894263.json"), "UTF8");
-    SampleDocument sampleDocument = new SampleDocument("test-uuid", data);
-    Checklist checklist =
+    final SampleDocument sampleDocument = new SampleDocument("test-uuid", data);
+    final Checklist checklist =
         new Checklist("ncbi", "0.0.1", "schemas/certification/ncbi-candidate-schema.json", false);
-    Certificate certificate = new Certificate(sampleDocument, Collections.emptyList(), checklist);
-    CertificationResult certificationResult =
+    final Certificate certificate =
+        new Certificate(sampleDocument, Collections.emptyList(), checklist);
+    final CertificationResult certificationResult =
         new CertificationResult(sampleDocument.getAccession());
     certificationResult.add(certificate);
-    BioSamplesCertificationComplainceResult bioSamplesCertificationComplainceResult =
+    final BioSamplesCertificationComplainceResult bioSamplesCertificationComplainceResult =
         recorder.record(Collections.singleton(certificationResult), null);
     assertNotNull(bioSamplesCertificationComplainceResult);
     assertEquals(certificate, bioSamplesCertificationComplainceResult.getCertificates().get(0));

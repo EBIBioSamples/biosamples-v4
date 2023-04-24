@@ -17,7 +17,7 @@ import uk.ac.ebi.biosamples.model.Attribute;
 @Service
 public class AttributeValidator {
 
-  public void validate(Attribute attribute, Collection<String> errors) {
+  public void validate(final Attribute attribute, final Collection<String> errors) {
     /*
     if (attribute.getType().length() > 255) {
     	errors.add(attribute+" type too long");

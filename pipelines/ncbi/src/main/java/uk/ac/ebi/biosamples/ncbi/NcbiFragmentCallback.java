@@ -29,7 +29,7 @@ import uk.ac.ebi.biosamples.utils.XmlFragmenter.ElementCallback;
 
 @Component
 public class NcbiFragmentCallback implements ElementCallback {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final NcbiElementCallableFactory ncbiElementCallableFactory;
   private final PipelinesProperties pipelinesProperties;
   private final SortedSet<String> accessions = new TreeSet<>();
@@ -40,8 +40,8 @@ public class NcbiFragmentCallback implements ElementCallback {
   private Map<String, Set<StructuredDataTable>> sampleToAmrMap = new HashMap<>();
 
   private NcbiFragmentCallback(
-      NcbiElementCallableFactory ncbiElementCallableFactory,
-      PipelinesProperties pipelinesProperties) {
+      final NcbiElementCallableFactory ncbiElementCallableFactory,
+      final PipelinesProperties pipelinesProperties) {
     this.ncbiElementCallableFactory = ncbiElementCallableFactory;
     this.pipelinesProperties = pipelinesProperties;
   }
@@ -50,7 +50,7 @@ public class NcbiFragmentCallback implements ElementCallback {
     return fromDate;
   }
 
-  public void setFromDate(LocalDate fromDate) {
+  void setFromDate(final LocalDate fromDate) {
     this.fromDate = fromDate;
   }
 
@@ -58,7 +58,7 @@ public class NcbiFragmentCallback implements ElementCallback {
     return toDate;
   }
 
-  public void setToDate(LocalDate toDate) {
+  void setToDate(final LocalDate toDate) {
     this.toDate = toDate;
   }
 
@@ -66,7 +66,7 @@ public class NcbiFragmentCallback implements ElementCallback {
     return executorService;
   }
 
-  public void setExecutorService(ExecutorService executorService) {
+  void setExecutorService(final ExecutorService executorService) {
     this.executorService = executorService;
   }
 
@@ -74,32 +74,32 @@ public class NcbiFragmentCallback implements ElementCallback {
     return futures;
   }
 
-  public void setFutures(Map<Element, Future<Void>> futures) {
+  void setFutures(final Map<Element, Future<Void>> futures) {
     this.futures = futures;
   }
 
-  public void setSampleToAmrMap(Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
+  void setSampleToAmrMap(final Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
     this.sampleToAmrMap = sampleToAmrMap;
   }
 
-  public SortedSet<String> getAccessions() {
+  SortedSet<String> getAccessions() {
     return Collections.unmodifiableSortedSet(accessions);
   }
 
   @Override
-  public void handleElement(Element element) throws InterruptedException, ExecutionException {
+  public void handleElement(final Element element) throws InterruptedException, ExecutionException {
     log.trace("Handling element");
 
-    Callable<Void> callable = ncbiElementCallableFactory.build(element, sampleToAmrMap);
+    final Callable<Void> callable = ncbiElementCallableFactory.build(element, sampleToAmrMap);
 
     if (executorService == null) {
       try {
         callable.call();
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       }
     } else {
-      Future<Void> future = executorService.submit(callable);
+      final Future<Void> future = executorService.submit(callable);
       if (futures != null) {
         futures.put(element, future);
       }
@@ -108,7 +108,8 @@ public class NcbiFragmentCallback implements ElementCallback {
   }
 
   @Override
-  public boolean isBlockStart(String uri, String localName, String qName, Attributes attributes) {
+  public boolean isBlockStart(
+      final String uri, final String localName, final String qName, final Attributes attributes) {
     // its not a biosample element, skip
     if (!qName.equals("BioSample")) {
       return false;
@@ -123,7 +124,7 @@ public class NcbiFragmentCallback implements ElementCallback {
       return false;
     }
     // its an EBI biosample, or has no accession, skip
-    String accession = attributes.getValue("", "accession");
+    final String accession = attributes.getValue("", "accession");
     if (accession == null || accession.startsWith("SAME")) {
       return false;
     }
@@ -132,7 +133,7 @@ public class NcbiFragmentCallback implements ElementCallback {
     accessions.add(accession);
 
     // check the date compared to window
-    LocalDate updateDate;
+    final LocalDate updateDate;
     if (attributes.getValue("", "last_update") != null) {
       updateDate =
           LocalDate.parse(
@@ -141,7 +142,7 @@ public class NcbiFragmentCallback implements ElementCallback {
       // no update date, abort
       return false;
     }
-    LocalDate releaseDate;
+    final LocalDate releaseDate;
     if (attributes.getValue("", "publication_date") != null) {
       releaseDate =
           LocalDate.parse(

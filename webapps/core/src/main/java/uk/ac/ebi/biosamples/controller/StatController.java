@@ -13,11 +13,7 @@ package uk.ac.ebi.biosamples.controller;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.mongo.model.MongoAnalytics;
 import uk.ac.ebi.biosamples.service.StatService;
@@ -27,7 +23,7 @@ import uk.ac.ebi.biosamples.service.StatService;
 public class StatController {
   private final StatService statService;
 
-  public StatController(StatService statService) {
+  public StatController(final StatService statService) {
     this.statService = statService;
   }
 
@@ -46,8 +42,8 @@ public class StatController {
       produces = MediaType.APPLICATION_JSON_VALUE)
   @RequestMapping("/facets")
   public List<Facet> getFacets(
-      @RequestParam(name = "text", required = false) String text,
-      @RequestParam(name = "filter", required = false) String[] filter) {
+      @RequestParam(name = "text", required = false) final String text,
+      @RequestParam(name = "filter", required = false) final String[] filter) {
 
     return statService.getSingleFacet(filter);
   }

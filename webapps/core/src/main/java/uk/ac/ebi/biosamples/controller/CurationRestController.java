@@ -40,24 +40,24 @@ public class CurationRestController {
   private final EntityLinks entityLinks;
 
   public CurationRestController(
-      SamplePageService samplePageService,
-      CurationReadService curationService,
-      SampleResourceAssembler sampleResourceAssembler,
-      CurationResourceAssembler curationResourceAssembler,
-      EntityLinks entityLinks) {
+      final SamplePageService samplePageService,
+      final CurationReadService curationService,
+      final SampleResourceAssembler sampleResourceAssembler,
+      final CurationResourceAssembler curationResourceAssembler,
+      final EntityLinks entityLinks) {
     this.samplePageService = samplePageService;
     this.entityLinks = entityLinks;
     this.sampleResourceAssembler = sampleResourceAssembler;
-    this.curationReadService = curationService;
+    curationReadService = curationService;
     this.curationResourceAssembler = curationResourceAssembler;
   }
 
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<PagedModel<EntityModel<Curation>>> getPagedHal(
-      Pageable page, PagedResourcesAssembler<Curation> pageAssembler) {
-    Page<Curation> pageExternalReference = curationReadService.getPage(page);
-    PagedModel<EntityModel<Curation>> pagedResources =
+      final Pageable page, final PagedResourcesAssembler<Curation> pageAssembler) {
+    final Page<Curation> pageExternalReference = curationReadService.getPage(page);
+    final PagedModel<EntityModel<Curation>> pagedResources =
         pageAssembler.toModel(
             pageExternalReference,
             curationResourceAssembler,
@@ -70,12 +70,12 @@ public class CurationRestController {
   @GetMapping(
       value = "/{hash}",
       produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<EntityModel<Curation>> getCurationHal(@PathVariable String hash) {
-    Curation curation = curationReadService.getCuration(hash);
+  public ResponseEntity<EntityModel<Curation>> getCurationHal(@PathVariable final String hash) {
+    final Curation curation = curationReadService.getCuration(hash);
     if (curation == null) {
       return ResponseEntity.notFound().build();
     }
-    EntityModel<Curation> resource = curationResourceAssembler.toModel(curation);
+    final EntityModel<Curation> resource = curationResourceAssembler.toModel(curation);
     return ResponseEntity.ok().body(resource);
   }
 
@@ -84,20 +84,22 @@ public class CurationRestController {
       value = "/{hash}/samples",
       produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<PagedModel<EntityModel<Sample>>> getCurationSamplesHal(
-      @PathVariable String hash, Pageable pageable, PagedResourcesAssembler<Sample> pageAssembler) {
+      @PathVariable final String hash,
+      final Pageable pageable,
+      final PagedResourcesAssembler<Sample> pageAssembler) {
 
     // get the response as if we'd called the externalReference endpoint
-    ResponseEntity<EntityModel<Curation>> externalReferenceResponse = getCurationHal(hash);
+    final ResponseEntity<EntityModel<Curation>> externalReferenceResponse = getCurationHal(hash);
     if (!externalReferenceResponse.getStatusCode().is2xxSuccessful()) {
       // propagate any non-2xx status code from /{id}/ to this endpoint
       return ResponseEntity.status(externalReferenceResponse.getStatusCode()).build();
     }
 
     // get the content from the services
-    Page<Sample> pageSample = samplePageService.getSamplesOfCuration(hash, pageable);
+    final Page<Sample> pageSample = samplePageService.getSamplesOfCuration(hash, pageable);
 
     // use the resource assembler and a link to this method to build out the response content
-    PagedModel<EntityModel<Sample>> pagedResources =
+    final PagedModel<EntityModel<Sample>> pagedResources =
         pageAssembler.toModel(
             pageSample,
             sampleResourceAssembler,

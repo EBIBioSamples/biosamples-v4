@@ -14,12 +14,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 public class Curation implements Comparable<Curation> {
 
@@ -32,16 +27,16 @@ public class Curation implements Comparable<Curation> {
   private final SortedSet<Relationship> relationshipsPre;
   private final SortedSet<Relationship> relationshipsPost;
 
-  private String hash;
+  private final String hash;
 
   private Curation(
-      Collection<Attribute> attributesPre,
-      Collection<Attribute> attributesPost,
-      Collection<ExternalReference> externalPre,
-      Collection<ExternalReference> externalPost,
-      Collection<Relationship> relationshipsPre,
-      Collection<Relationship> relationshipsPost,
-      String hash) {
+      final Collection<Attribute> attributesPre,
+      final Collection<Attribute> attributesPost,
+      final Collection<ExternalReference> externalPre,
+      final Collection<ExternalReference> externalPost,
+      final Collection<Relationship> relationshipsPre,
+      final Collection<Relationship> relationshipsPost,
+      final String hash) {
     this.attributesPre = Collections.unmodifiableSortedSet(new TreeSet<>(attributesPre));
     this.attributesPost = Collections.unmodifiableSortedSet(new TreeSet<>(attributesPost));
     this.externalPre = Collections.unmodifiableSortedSet(new TreeSet<>(externalPre));
@@ -97,110 +92,124 @@ public class Curation implements Comparable<Curation> {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
 
-    if (o == this) return true;
+    if (o == this) {
+      return true;
+    }
     if (!(o instanceof Curation)) {
       return false;
     }
-    Curation other = (Curation) o;
-    return Objects.equals(this.attributesPre, other.attributesPre)
-        && Objects.equals(this.attributesPost, other.attributesPost)
-        && Objects.equals(this.externalPre, other.externalPre)
-        && Objects.equals(this.externalPost, other.externalPost)
-        && Objects.equals(this.relationshipsPre, other.relationshipsPre)
-        && Objects.equals(this.relationshipsPost, other.relationshipsPost);
+    final Curation other = (Curation) o;
+    return Objects.equals(attributesPre, other.attributesPre)
+        && Objects.equals(attributesPost, other.attributesPost)
+        && Objects.equals(externalPre, other.externalPre)
+        && Objects.equals(externalPost, other.externalPost)
+        && Objects.equals(relationshipsPre, other.relationshipsPre)
+        && Objects.equals(relationshipsPost, other.relationshipsPost);
   }
 
   @Override
-  public int compareTo(Curation other) {
+  public int compareTo(final Curation other) {
     if (other == null) {
       return 1;
     }
 
-    if (!this.attributesPre.equals(other.attributesPre)) {
-      if (this.attributesPre.size() < other.attributesPre.size()) {
+    if (!attributesPre.equals(other.attributesPre)) {
+      if (attributesPre.size() < other.attributesPre.size()) {
         return -1;
-      } else if (this.attributesPre.size() > other.attributesPre.size()) {
+      } else if (attributesPre.size() > other.attributesPre.size()) {
         return 1;
       } else {
-        Iterator<Attribute> thisIt = this.attributesPre.iterator();
-        Iterator<Attribute> otherIt = other.attributesPre.iterator();
+        final Iterator<Attribute> thisIt = attributesPre.iterator();
+        final Iterator<Attribute> otherIt = other.attributesPre.iterator();
         while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
         }
       }
     }
-    if (!this.attributesPost.equals(other.attributesPost)) {
-      if (this.attributesPost.size() < other.attributesPost.size()) {
+    if (!attributesPost.equals(other.attributesPost)) {
+      if (attributesPost.size() < other.attributesPost.size()) {
         return -1;
-      } else if (this.attributesPost.size() > other.attributesPost.size()) {
+      } else if (attributesPost.size() > other.attributesPost.size()) {
         return 1;
       } else {
-        Iterator<Attribute> thisIt = this.attributesPost.iterator();
-        Iterator<Attribute> otherIt = other.attributesPost.iterator();
+        final Iterator<Attribute> thisIt = attributesPost.iterator();
+        final Iterator<Attribute> otherIt = other.attributesPost.iterator();
         while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
-        }
-      }
-    }
-
-    if (!this.externalPre.equals(other.externalPre)) {
-      if (this.externalPre.size() < other.externalPre.size()) {
-        return -1;
-      } else if (this.externalPre.size() > other.externalPre.size()) {
-        return 1;
-      } else {
-        Iterator<ExternalReference> thisIt = this.externalPre.iterator();
-        Iterator<ExternalReference> otherIt = other.externalPre.iterator();
-        while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
-        }
-      }
-    }
-    if (!this.externalPost.equals(other.externalPost)) {
-      if (this.externalPost.size() < other.externalPost.size()) {
-        return -1;
-      } else if (this.externalPost.size() > other.externalPost.size()) {
-        return 1;
-      } else {
-        Iterator<ExternalReference> thisIt = this.externalPost.iterator();
-        Iterator<ExternalReference> otherIt = other.externalPost.iterator();
-        while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
         }
       }
     }
 
-    if (!this.relationshipsPre.equals(other.relationshipsPre)) {
-      if (this.relationshipsPre.size() < other.relationshipsPre.size()) {
+    if (!externalPre.equals(other.externalPre)) {
+      if (externalPre.size() < other.externalPre.size()) {
         return -1;
-      } else if (this.relationshipsPre.size() > other.relationshipsPre.size()) {
+      } else if (externalPre.size() > other.externalPre.size()) {
         return 1;
       } else {
-        Iterator<Relationship> thisIt = this.relationshipsPre.iterator();
-        Iterator<Relationship> otherIt = other.relationshipsPre.iterator();
+        final Iterator<ExternalReference> thisIt = externalPre.iterator();
+        final Iterator<ExternalReference> otherIt = other.externalPre.iterator();
         while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
         }
       }
     }
-    if (!this.relationshipsPost.equals(other.relationshipsPost)) {
-      if (this.relationshipsPost.size() < other.relationshipsPost.size()) {
+    if (!externalPost.equals(other.externalPost)) {
+      if (externalPost.size() < other.externalPost.size()) {
         return -1;
-      } else if (this.relationshipsPost.size() > other.relationshipsPost.size()) {
+      } else if (externalPost.size() > other.externalPost.size()) {
         return 1;
       } else {
-        Iterator<Relationship> thisIt = this.relationshipsPost.iterator();
-        Iterator<Relationship> otherIt = other.relationshipsPost.iterator();
+        final Iterator<ExternalReference> thisIt = externalPost.iterator();
+        final Iterator<ExternalReference> otherIt = other.externalPost.iterator();
         while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
+        }
+      }
+    }
+
+    if (!relationshipsPre.equals(other.relationshipsPre)) {
+      if (relationshipsPre.size() < other.relationshipsPre.size()) {
+        return -1;
+      } else if (relationshipsPre.size() > other.relationshipsPre.size()) {
+        return 1;
+      } else {
+        final Iterator<Relationship> thisIt = relationshipsPre.iterator();
+        final Iterator<Relationship> otherIt = other.relationshipsPre.iterator();
+        while (thisIt.hasNext() && otherIt.hasNext()) {
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
+        }
+      }
+    }
+    if (!relationshipsPost.equals(other.relationshipsPost)) {
+      if (relationshipsPost.size() < other.relationshipsPost.size()) {
+        return -1;
+      } else if (relationshipsPost.size() > other.relationshipsPost.size()) {
+        return 1;
+      } else {
+        final Iterator<Relationship> thisIt = relationshipsPost.iterator();
+        final Iterator<Relationship> otherIt = other.relationshipsPost.iterator();
+        while (thisIt.hasNext() && otherIt.hasNext()) {
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
         }
       }
     }
@@ -209,7 +218,7 @@ public class Curation implements Comparable<Curation> {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     sb.append("Curation(");
     sb.append(attributesPre);
     sb.append(",");
@@ -228,12 +237,12 @@ public class Curation implements Comparable<Curation> {
 
   @JsonCreator
   public static Curation build(
-      @JsonProperty("attributesPre") Collection<Attribute> attributesPre,
-      @JsonProperty("attributesPost") Collection<Attribute> attributesPost,
-      @JsonProperty("externalReferencesPre") Collection<ExternalReference> externalPre,
-      @JsonProperty("externalReferencesPost") Collection<ExternalReference> externalPost,
-      @JsonProperty("relationshipsPre") Collection<Relationship> relationshipsPre,
-      @JsonProperty("relationshipsPost") Collection<Relationship> relationshipsPost) {
+      @JsonProperty("attributesPre") final Collection<Attribute> attributesPre,
+      @JsonProperty("attributesPost") final Collection<Attribute> attributesPost,
+      @JsonProperty("externalReferencesPre") final Collection<ExternalReference> externalPre,
+      @JsonProperty("externalReferencesPost") final Collection<ExternalReference> externalPost,
+      @JsonProperty("relationshipsPre") final Collection<Relationship> relationshipsPre,
+      @JsonProperty("relationshipsPost") final Collection<Relationship> relationshipsPost) {
 
     SortedSet<Attribute> sortedPreAttributes = new TreeSet<>();
     SortedSet<Attribute> sortedPostAttributes = new TreeSet<>();
@@ -242,12 +251,24 @@ public class Curation implements Comparable<Curation> {
     SortedSet<Relationship> sortedPreRelationships = new TreeSet<>();
     SortedSet<Relationship> sortedPostRelationships = new TreeSet<>();
 
-    if (attributesPre != null) sortedPreAttributes.addAll(attributesPre);
-    if (attributesPost != null) sortedPostAttributes.addAll(attributesPost);
-    if (externalPre != null) sortedPreExternal.addAll(externalPre);
-    if (externalPost != null) sortedPostExternal.addAll(externalPost);
-    if (relationshipsPre != null) sortedPreRelationships.addAll(relationshipsPre);
-    if (relationshipsPost != null) sortedPostRelationships.addAll(relationshipsPost);
+    if (attributesPre != null) {
+      sortedPreAttributes.addAll(attributesPre);
+    }
+    if (attributesPost != null) {
+      sortedPostAttributes.addAll(attributesPost);
+    }
+    if (externalPre != null) {
+      sortedPreExternal.addAll(externalPre);
+    }
+    if (externalPost != null) {
+      sortedPostExternal.addAll(externalPost);
+    }
+    if (relationshipsPre != null) {
+      sortedPreRelationships.addAll(relationshipsPre);
+    }
+    if (relationshipsPost != null) {
+      sortedPostRelationships.addAll(relationshipsPost);
+    }
 
     sortedPreAttributes = Collections.unmodifiableSortedSet(sortedPreAttributes);
     sortedPostAttributes = Collections.unmodifiableSortedSet(sortedPostAttributes);
@@ -256,8 +277,8 @@ public class Curation implements Comparable<Curation> {
     sortedPreRelationships = Collections.unmodifiableSortedSet(sortedPreRelationships);
     sortedPostRelationships = Collections.unmodifiableSortedSet(sortedPostRelationships);
 
-    Hasher hasher = Hashing.sha256().newHasher();
-    for (Attribute a : sortedPreAttributes) {
+    final Hasher hasher = Hashing.sha256().newHasher();
+    for (final Attribute a : sortedPreAttributes) {
       hasher.putUnencodedChars(a.getType());
       hasher.putUnencodedChars(a.getValue());
 
@@ -268,11 +289,11 @@ public class Curation implements Comparable<Curation> {
       if (a.getUnit() != null) {
         hasher.putUnencodedChars(a.getUnit());
       }
-      for (String iri : a.getIri()) {
+      for (final String iri : a.getIri()) {
         hasher.putUnencodedChars(iri);
       }
     }
-    for (Attribute a : sortedPostAttributes) {
+    for (final Attribute a : sortedPostAttributes) {
       hasher.putUnencodedChars(a.getType());
       hasher.putUnencodedChars(a.getValue());
       /*Consider tag if present*/
@@ -282,33 +303,33 @@ public class Curation implements Comparable<Curation> {
       if (a.getUnit() != null) {
         hasher.putUnencodedChars(a.getUnit());
       }
-      for (String iri : a.getIri()) {
+      for (final String iri : a.getIri()) {
         hasher.putUnencodedChars(iri);
       }
     }
-    for (ExternalReference a : sortedPreExternal) {
+    for (final ExternalReference a : sortedPreExternal) {
       hasher.putUnencodedChars(a.getUrl());
-      for (String s : a.getDuo()) {
+      for (final String s : a.getDuo()) {
         hasher.putUnencodedChars(s);
       }
     }
-    for (ExternalReference a : sortedPostExternal) {
+    for (final ExternalReference a : sortedPostExternal) {
       hasher.putUnencodedChars(a.getUrl());
-      for (String s : a.getDuo()) {
+      for (final String s : a.getDuo()) {
         hasher.putUnencodedChars(s);
       }
     }
-    for (Relationship a : sortedPreRelationships) {
+    for (final Relationship a : sortedPreRelationships) {
       hasher.putUnencodedChars(a.getSource());
       hasher.putUnencodedChars(a.getTarget());
       hasher.putUnencodedChars(a.getType());
     }
-    for (Relationship a : sortedPostRelationships) {
+    for (final Relationship a : sortedPostRelationships) {
       hasher.putUnencodedChars(a.getSource());
       hasher.putUnencodedChars(a.getTarget());
       hasher.putUnencodedChars(a.getType());
     }
-    String hash = hasher.hash().toString();
+    final String hash = hasher.hash().toString();
 
     return new Curation(
         sortedPreAttributes,
@@ -331,20 +352,20 @@ public class Curation implements Comparable<Curation> {
   //	}
 
   public static Curation build(
-      Collection<Attribute> attributesPre,
-      Collection<Attribute> attributesPost,
-      Collection<ExternalReference> externalPre,
-      Collection<ExternalReference> externalPost) {
+      final Collection<Attribute> attributesPre,
+      final Collection<Attribute> attributesPost,
+      final Collection<ExternalReference> externalPre,
+      final Collection<ExternalReference> externalPost) {
 
     return build(attributesPre, attributesPost, externalPre, externalPost, null, null);
   }
 
   public static Curation build(
-      Collection<Attribute> attributesPre, Collection<Attribute> attributesPost) {
+      final Collection<Attribute> attributesPre, final Collection<Attribute> attributesPost) {
     return build(attributesPre, attributesPost, null, null);
   }
 
-  public static Curation build(Attribute attributePre, Attribute attributePost) {
+  public static Curation build(final Attribute attributePre, final Attribute attributePost) {
 
     if (attributePre == null && attributePost == null) {
       throw new IllegalArgumentException("Must specify pre and/or post attribute");

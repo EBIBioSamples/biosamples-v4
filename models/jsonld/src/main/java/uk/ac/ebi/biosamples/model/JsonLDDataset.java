@@ -39,7 +39,7 @@ public class JsonLDDataset implements BioschemasObject {
   private Map<String, String> dataCatalog = getDefaultDataCatalog();
 
   private Map getDefaultDataCatalog() {
-    Map<String, String> dataCatalog = new HashMap<>();
+    final Map<String, String> dataCatalog = new HashMap<>();
     dataCatalog.put("@type", "DataCatalog");
     dataCatalog.put("@id", "https://www.ebi.ac.uk/biosamples");
     return dataCatalog;
@@ -50,7 +50,7 @@ public class JsonLDDataset implements BioschemasObject {
     return url;
   }
 
-  public JsonLDDataset datasetUrl(String url) {
+  public JsonLDDataset datasetUrl(final String url) {
     this.url = url;
     return this;
   }
@@ -60,8 +60,8 @@ public class JsonLDDataset implements BioschemasObject {
     return dataCatalog;
   }
 
-  public JsonLDDataset dataCatalogUrl(String dataCatalogUrl) {
-    Map dataCatalog = getDefaultDataCatalog();
+  public JsonLDDataset dataCatalogUrl(final String dataCatalogUrl) {
+    final Map dataCatalog = getDefaultDataCatalog();
     dataCatalog.put("@id", dataCatalogUrl);
     this.dataCatalog = dataCatalog;
     return this;

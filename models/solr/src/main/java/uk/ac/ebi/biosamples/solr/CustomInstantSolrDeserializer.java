@@ -23,12 +23,12 @@ public class CustomInstantSolrDeserializer extends StdDeserializer<Instant> {
     this(null);
   }
 
-  public CustomInstantSolrDeserializer(Class<Instant> t) {
+  private CustomInstantSolrDeserializer(final Class<Instant> t) {
     super(t);
   }
 
   @Override
-  public Instant deserialize(JsonParser p, DeserializationContext ctxt)
+  public Instant deserialize(final JsonParser p, final DeserializationContext ctxt)
       throws IOException, JsonProcessingException {
     return Instant.parse(p.readValueAs(String.class));
   }

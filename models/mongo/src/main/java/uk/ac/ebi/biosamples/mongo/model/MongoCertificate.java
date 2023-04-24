@@ -19,20 +19,20 @@ public class MongoCertificate implements Comparable<MongoCertificate> {
   private String version;
   private String fileName;
 
-  public MongoCertificate(String name, String version, String fileName) {
+  public MongoCertificate(final String name, final String version, final String fileName) {
     this.name = name;
     this.version = version;
     this.fileName = fileName;
   }
 
-  public MongoCertificate() {}
+  private MongoCertificate() {}
 
   @JsonProperty("name")
   public String getName() {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName(final String name) {
     this.name = name;
   }
 
@@ -41,7 +41,7 @@ public class MongoCertificate implements Comparable<MongoCertificate> {
     return version;
   }
 
-  public void setVersion(String version) {
+  public void setVersion(final String version) {
     this.version = version;
   }
 
@@ -50,7 +50,7 @@ public class MongoCertificate implements Comparable<MongoCertificate> {
     return fileName;
   }
 
-  public void setFileName(String fileName) {
+  public void setFileName(final String fileName) {
     this.fileName = fileName;
   }
 
@@ -70,10 +70,14 @@ public class MongoCertificate implements Comparable<MongoCertificate> {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof Certificate)) return false;
-    Certificate that = (Certificate) o;
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Certificate)) {
+      return false;
+    }
+    final Certificate that = (Certificate) o;
     return Objects.equals(getName(), that.getName())
         && Objects.equals(getVersion(), that.getVersion())
         && Objects.equals(getFileName(), that.getFileName());
@@ -85,22 +89,22 @@ public class MongoCertificate implements Comparable<MongoCertificate> {
   }
 
   @Override
-  public int compareTo(MongoCertificate cert) {
+  public int compareTo(final MongoCertificate cert) {
     if (cert == null) {
       return 1;
     }
 
-    int comparison = nullSafeStringComparison(this.name, cert.name);
+    int comparison = nullSafeStringComparison(name, cert.name);
 
     if (comparison != 0) {
       return comparison;
     }
 
-    comparison = nullSafeStringComparison(this.version, cert.version);
+    comparison = nullSafeStringComparison(version, cert.version);
     return comparison;
   }
 
-  public int nullSafeStringComparison(String one, String two) {
+  private int nullSafeStringComparison(final String one, final String two) {
     if (one == null && two != null) {
       return -1;
     }
@@ -114,7 +118,7 @@ public class MongoCertificate implements Comparable<MongoCertificate> {
     return 0;
   }
 
-  public static MongoCertificate build(String name, String version, String fileName) {
+  public static MongoCertificate build(String name, String version, final String fileName) {
     // check for nulls
     if (name == null) {
       throw new IllegalArgumentException("Certificate name must not be null");
@@ -131,7 +135,7 @@ public class MongoCertificate implements Comparable<MongoCertificate> {
     name = name.trim();
     version = version.trim();
 
-    MongoCertificate cert = new MongoCertificate();
+    final MongoCertificate cert = new MongoCertificate();
     cert.name = name;
     cert.fileName = fileName;
     cert.version = version;

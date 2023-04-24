@@ -42,7 +42,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @TestPropertySource(properties = {"spring.jackson.serialization.INDENT_OUTPUT=true"})
 public class ResourceSerializationTest {
 
-  private Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private JacksonTester<EntityModel<Sample>> json;
 
@@ -50,18 +50,18 @@ public class ResourceSerializationTest {
 
   @Before
   public void setup() {
-    ObjectMapper objectMapper = new ObjectMapper();
+    final ObjectMapper objectMapper = new ObjectMapper();
     JacksonTester.initFields(this, objectMapper);
   }
 
   private Sample getSimpleSample() {
-    String name = "Test Sample";
-    String accession = "SAMEA1234";
-    String domain = "abcde12345";
-    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final String name = "Test Sample";
+    final String accession = "SAMEA1234";
+    final String domain = "abcde12345";
+    final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
         Attribute.build(
             "organism",
@@ -73,10 +73,10 @@ public class ResourceSerializationTest {
     attributes.add(Attribute.build("organism part", "lung"));
     attributes.add(Attribute.build("organism part", "heart"));
 
-    SortedSet<Relationship> relationships = new TreeSet<>();
+    final SortedSet<Relationship> relationships = new TreeSet<>();
     relationships.add(Relationship.build("SAMEA1234", "derived from", "SAMD4321"));
 
-    SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+    final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
     externalReferences.add(ExternalReference.build("http://www.google.com"));
 
     //		return Sample.build(name, accession, domain, release, update, attributes, relationships,
@@ -93,24 +93,24 @@ public class ResourceSerializationTest {
 
   @Test
   public void testSerialize() throws Exception {
-    EntityModel<Sample> details = EntityModel.of(getSimpleSample());
+    final EntityModel<Sample> details = EntityModel.of(getSimpleSample());
 
-    log.info(this.json.write(details).getJson());
+    log.info(json.write(details).getJson());
 
     // Use JSON path based assertions
-    assertThat(this.json.write(details)).hasJsonPathStringValue("@.accession");
-    assertThat(this.json.write(details))
+    assertThat(json.write(details)).hasJsonPathStringValue("@.accession");
+    assertThat(json.write(details))
         .extractingJsonPathStringValue("@.accession")
         .isEqualTo("SAMEA1234");
 
     // Assert against a `.json` file in the same package as the test
-    assertThat(this.json.write(details)).isEqualToJson("/TEST1.json");
+    assertThat(json.write(details)).isEqualToJson("/TEST1.json");
   }
 
   @Test
   public void testDeserialize() throws Exception {
-    EntityModel<Sample> fileSample = this.json.readObject("/TEST1.json");
-    EntityModel<Sample> simpleSample = EntityModel.of(getSimpleSample());
+    final EntityModel<Sample> fileSample = json.readObject("/TEST1.json");
+    final EntityModel<Sample> simpleSample = EntityModel.of(getSimpleSample());
     log.info("fileSample = " + fileSample);
     log.info("simpleSample = " + simpleSample);
     // Use JSON path based assertions
@@ -129,29 +129,29 @@ public class ResourceSerializationTest {
 
   @Test
   public void testRoundTrip() throws Exception {
-    EntityModel<Sample> sample = EntityModel.of(getSimpleSample());
+    final EntityModel<Sample> sample = EntityModel.of(getSimpleSample());
     log.info("roundTrip sample = " + sample);
 
-    String json = this.json.write(sample).getJson();
+    final String json = this.json.write(sample).getJson();
     log.info("roundTrip json = " + json);
 
-    InputStream inputStream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
-    EntityModel<Sample> sampleRedux = this.json.readObject(inputStream);
+    final InputStream inputStream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+    final EntityModel<Sample> sampleRedux = this.json.readObject(inputStream);
     log.info("roundTrip sampleRedux = " + sampleRedux);
 
-    String jsonRedux = this.json.write(sampleRedux).getJson();
+    final String jsonRedux = this.json.write(sampleRedux).getJson();
     log.info("roundTrip jsonRedux = " + jsonRedux);
 
-    BufferedReader br =
+    final BufferedReader br =
         new BufferedReader(
             new InputStreamReader(new ClassPathResource("/TEST1.json").getInputStream()), 1024);
-    StringBuilder stringBuilder = new StringBuilder();
+    final StringBuilder stringBuilder = new StringBuilder();
     String line;
     while ((line = br.readLine()) != null) {
       stringBuilder.append(line).append('\n');
     }
     br.close();
-    String jsonFile = stringBuilder.toString();
+    final String jsonFile = stringBuilder.toString();
 
     assertThat(sample.equals(sampleRedux));
     assertThat(sample.equals(jsonFile));

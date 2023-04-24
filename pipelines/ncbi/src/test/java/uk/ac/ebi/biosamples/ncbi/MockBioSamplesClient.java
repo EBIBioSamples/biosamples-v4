@@ -30,41 +30,41 @@ import uk.ac.ebi.biosamples.service.SampleValidator;
 
 public class MockBioSamplesClient extends BioSamplesClient {
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private static PrintWriter printWriter;
 
   private static FileWriter fileWriter;
 
-  private ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper;
 
   private long count = 0;
 
   public MockBioSamplesClient(
-      URI uri,
-      URI uriV2,
-      RestTemplateBuilder restTemplateBuilder,
-      SampleValidator sampleValidator,
-      AapClientService aapClientService,
-      BioSamplesProperties bioSamplesProperties,
-      ObjectMapper objectMapper) {
+      final URI uri,
+      final URI uriV2,
+      final RestTemplateBuilder restTemplateBuilder,
+      final SampleValidator sampleValidator,
+      final AapClientService aapClientService,
+      final BioSamplesProperties bioSamplesProperties,
+      final ObjectMapper objectMapper) {
     super(uri, uriV2, restTemplateBuilder, sampleValidator, aapClientService, bioSamplesProperties);
     this.objectMapper = objectMapper;
     try {
       fileWriter = new FileWriter("ncbi-import.json");
       printWriter = new PrintWriter(fileWriter);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       e.printStackTrace();
     }
   }
 
-  private void logSample(Sample sample) {
+  private void logSample(final Sample sample) {
     count++;
     String sampleJson = "";
     try {
       objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
       sampleJson = objectMapper.writeValueAsString(sample);
-    } catch (JsonProcessingException e) {
+    } catch (final JsonProcessingException e) {
       e.printStackTrace();
     }
     printWriter.printf("%s\n", sampleJson);
@@ -74,16 +74,17 @@ public class MockBioSamplesClient extends BioSamplesClient {
   }
 
   @Override
-  public EntityModel<Sample> persistSampleResource(Sample sample) {
+  public EntityModel<Sample> persistSampleResource(final Sample sample) {
     logSample(sample);
     return Mockito.mock(EntityModel.class);
   }
 
+  @Override
   public void finalize() {
     try {
       fileWriter.close();
       printWriter.close();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       e.printStackTrace();
     }
   }

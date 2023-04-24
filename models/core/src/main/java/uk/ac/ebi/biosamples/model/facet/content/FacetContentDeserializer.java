@@ -22,9 +22,9 @@ import java.util.List;
 public class FacetContentDeserializer extends JsonDeserializer<FacetContent> {
 
   @Override
-  public FacetContent deserialize(JsonParser p, DeserializationContext ctxt)
+  public FacetContent deserialize(final JsonParser p, final DeserializationContext ctxt)
       throws IOException, JsonParseException {
-    JsonNode root = p.readValueAsTree();
+    final JsonNode root = p.readValueAsTree();
     if (root.isArray()) {
       // If the json is an array, I'm assuming it to be a LabelCountListContent facet content
       return parseLabelCountListContent(root);
@@ -38,11 +38,11 @@ public class FacetContentDeserializer extends JsonDeserializer<FacetContent> {
    * @param jsonArray the Json Array representing LabelCountListContent
    * @return LabelCountListContent
    */
-  private LabelCountListContent parseLabelCountListContent(JsonNode jsonArray) {
-    List<LabelCountEntry> labelCountList = new ArrayList<>();
-    for (JsonNode labelCountJsonEntry : jsonArray) {
-      String label = labelCountJsonEntry.get("label").asText();
-      Long count = labelCountJsonEntry.get("count").asLong();
+  private LabelCountListContent parseLabelCountListContent(final JsonNode jsonArray) {
+    final List<LabelCountEntry> labelCountList = new ArrayList<>();
+    for (final JsonNode labelCountJsonEntry : jsonArray) {
+      final String label = labelCountJsonEntry.get("label").asText();
+      final Long count = labelCountJsonEntry.get("count").asLong();
       labelCountList.add(LabelCountEntry.build(label, count));
     }
     return new LabelCountListContent(labelCountList);

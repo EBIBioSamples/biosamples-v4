@@ -196,7 +196,6 @@ public class SampleService {
       MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
 
       assert mongoSample != null;
-
       mongoSample = mongoSampleRepository.save(mongoSample);
 
       if (isSampleTaxIdUpdated) {
@@ -219,17 +218,17 @@ public class SampleService {
     final Optional<Sample> sampleOptional = fetch(sample.getAccession(), Optional.empty());
 
     if (sampleOptional.isPresent()) {
-      return sampleOptional.get();
-    } else {
-      log.info("Fetch of sample didn't work " + sample.getAccession());
+      final Sample fetchedSample = sampleOptional.get();
 
-      if (sample.getAccession() != null) {
-        return sample;
+      if (fetchedSample.getAccession() != null) {
+        return fetchedSample;
       } else {
         throw new RuntimeException(
             "Failed to create sample. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
       }
     }
+
+    return null;
   }
 
   /*
@@ -273,11 +272,23 @@ public class SampleService {
 
       mongoSample = mongoSampleRepository.save(mongoSample);
       sample = mongoSampleToSampleConverter.apply(mongoSample);
+
+      sendMessageToRabbitForIndexingToSolr(sample);
     } else {
       sample = mongoAccessionService.generateAccession(sample);
+
+      sendMessageToRabbitForIndexingToSolr(sample);
     }
 
     return sample;
+  }
+
+  private void sendMessageToRabbitForIndexingToSolr(final Sample sample) {
+    try {
+      messagingService.fetchThenSendMessage(sample.getAccession());
+    } catch (final Exception e) {
+      log.error("Indexing failed for accession " + sample.getAccession());
+    }
   }
 
   /*
@@ -308,6 +319,7 @@ public class SampleService {
   private List<String> getExistingRelationshipTargets(
       final String accession, final MongoSample mongoOldSample) {
     final List<String> oldRelationshipTargets = new ArrayList<>();
+
     for (final MongoRelationship relationship : mongoOldSample.getRelationships()) {
       if (relationship.getSource().equals(accession)) {
         oldRelationshipTargets.add(relationship.getTarget());

@@ -11,11 +11,7 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.Filter;
@@ -34,11 +30,11 @@ public class StatService {
   private final SolrFieldService solrFieldService;
 
   public StatService(
-      FacetService facetService,
-      FilterService filterService,
-      AnalyticsService analyticsService,
-      SolrFacetService solrFacetService,
-      SolrFieldService solrFieldService) {
+      final FacetService facetService,
+      final FilterService filterService,
+      final AnalyticsService analyticsService,
+      final SolrFacetService solrFacetService,
+      final SolrFieldService solrFieldService) {
     this.facetService = facetService;
     this.filterService = filterService;
     this.analyticsService = analyticsService;
@@ -47,12 +43,12 @@ public class StatService {
   }
 
   public MongoAnalytics getStats() {
-    MongoAnalytics mongoAnalytics = analyticsService.getLatestAnalytics();
+    final MongoAnalytics mongoAnalytics = analyticsService.getLatestAnalytics();
     return mongoAnalytics;
   }
 
   public Map<String, Integer> getBasicStat() {
-    Map<String, Integer> statMap = new HashMap<>();
+    final Map<String, Integer> statMap = new HashMap<>();
     statMap.put("totalSampleCount", 0);
     statMap.put("totalCurationCount", 0);
     statMap.put("totalLinks", 0);
@@ -61,24 +57,24 @@ public class StatService {
   }
 
   // organims, tissue, sex
-  public List<Facet> getSingleFacet(String[] filter) {
-    Collection<Filter> filters = filterService.getFiltersCollection(filter);
-    Collection<String> domains = Collections.emptyList();
-    List<Facet> sampleFacets = facetService.getFacets("", filters, domains, 1, 10);
+  public List<Facet> getSingleFacet(final String[] filter) {
+    final Collection<Filter> filters = filterService.getFiltersCollection(filter);
+    final Collection<String> domains = Collections.emptyList();
+    final List<Facet> sampleFacets = facetService.getFacets("", filters, domains, 1, 10);
 
     return sampleFacets;
   }
 
   public List<MongoAnalytics> getPipelineStats() {
-    LocalDate to = LocalDate.now();
-    LocalDate from = to.minusMonths(8);
+    final LocalDate to = LocalDate.now();
+    final LocalDate from = to.minusMonths(8);
 
     return analyticsService.getAnalytics(from, to);
   }
 
   // this is not ideal, but we have hardcoded the data growth in this function
   public Map<String, Integer> getBioSamplesYearlyGrowth() {
-    Map<String, Integer> growthMap = new HashMap<>();
+    final Map<String, Integer> growthMap = new HashMap<>();
     growthMap.put("2015", 3);
     growthMap.put("2016", 4);
     growthMap.put("2017", 7);

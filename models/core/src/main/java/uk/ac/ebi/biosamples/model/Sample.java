@@ -13,19 +13,10 @@ package uk.ac.ebi.biosamples.model;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
@@ -44,6 +35,7 @@ import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
   "domain",
   "webinSubmissionAccountId",
   "taxId",
+  "status",
   "release",
   "update",
   "submitted",
@@ -66,6 +58,8 @@ public class Sample implements Comparable<Sample> {
 
   protected Long taxId;
 
+  protected SampleStatus status;
+
   protected Instant release;
   protected Instant update;
   protected Instant create;
@@ -83,7 +77,7 @@ public class Sample implements Comparable<Sample> {
   protected SortedSet<Publication> publications;
   protected SortedSet<Certificate> certificates;
 
-  protected SubmittedViaType submittedVia;
+  private SubmittedViaType submittedVia;
 
   protected Sample() {}
 
@@ -183,7 +177,8 @@ public class Sample implements Comparable<Sample> {
     }
 
     Optional<Long> taxon = Optional.empty();
-    for (Attribute attribute : attributes) {
+
+    for (final Attribute attribute : attributes) {
       if ("organism".equalsIgnoreCase(attribute.getType()) && !attribute.getIri().isEmpty()) {
         taxon =
             attribute.getIri().stream()
@@ -197,14 +192,25 @@ public class Sample implements Comparable<Sample> {
     return taxon.orElse(null);
   }
 
-  private long extractTaxIdFromIri(String iri) {
-    if (iri.isEmpty()) return 0;
-    String[] segments = iri.split("NCBITaxon_");
-    try {
-      return Integer.parseInt(segments[segments.length - 1]);
-    } catch (NumberFormatException e) {
+  private long extractTaxIdFromIri(final String iri) {
+    if (iri.isEmpty()) {
       return 0;
     }
+    final String[] segments = iri.split("NCBITaxon_");
+    try {
+      return Integer.parseInt(segments[segments.length - 1]);
+    } catch (final NumberFormatException e) {
+      return 0;
+    }
+  }
+
+  @JsonProperty(value = "status")
+  public SampleStatus getStatus() {
+    if (status != null) {
+      return status;
+    }
+
+    return null;
   }
 
   @JsonIgnore
@@ -264,135 +270,153 @@ public class Sample implements Comparable<Sample> {
   }
 
   @Override
-  public boolean equals(Object o) {
-
-    if (o == this) return true;
+  public boolean equals(final Object o) {
+    if (o == this) {
+      return true;
+    }
     if (!(o instanceof Sample)) {
       return false;
     }
-    Sample other = (Sample) o;
+    final Sample other = (Sample) o;
 
     // dont use update date for comparisons, too volatile. SubmittedVia doesnt contain information
     // for comparison
 
-    return Objects.equals(this.name, other.name)
-        && Objects.equals(this.accession, other.accession)
-        && Objects.equals(this.domain, other.domain)
-        && Objects.equals(this.webinSubmissionAccountId, other.webinSubmissionAccountId)
-        && Objects.equals(this.taxId, other.taxId)
-        && Objects.equals(this.release, other.release)
-        && Objects.equals(this.attributes, other.attributes)
-        && Objects.equals(this.data, other.data)
-        && Objects.equals(this.relationships, other.relationships)
-        && Objects.equals(this.externalReferences, other.externalReferences)
-        && Objects.equals(this.organizations, other.organizations)
-        && Objects.equals(this.contacts, other.contacts)
-        && Objects.equals(this.publications, other.publications);
+    return Objects.equals(name, other.name)
+        && Objects.equals(accession, other.accession)
+        && Objects.equals(domain, other.domain)
+        && Objects.equals(webinSubmissionAccountId, other.webinSubmissionAccountId)
+        && Objects.equals(taxId, other.taxId)
+        && Objects.equals(status, other.status)
+        && Objects.equals(release, other.release)
+        && Objects.equals(attributes, other.attributes)
+        && Objects.equals(data, other.data)
+        && Objects.equals(relationships, other.relationships)
+        && Objects.equals(externalReferences, other.externalReferences)
+        && Objects.equals(organizations, other.organizations)
+        && Objects.equals(contacts, other.contacts)
+        && Objects.equals(publications, other.publications);
   }
 
   @Override
-  public int compareTo(Sample other) {
+  public int compareTo(final Sample other) {
     if (other == null) {
       return 1;
     }
 
-    if (!this.accession.equals(other.accession)) {
-      return this.accession.compareTo(other.accession);
+    if (!accession.equals(other.accession)) {
+      return accession.compareTo(other.accession);
     }
 
-    if (!this.name.equals(other.name)) {
-      return this.name.compareTo(other.name);
+    if (!name.equals(other.name)) {
+      return name.compareTo(other.name);
     }
 
-    if (!this.taxId.equals(other.taxId)) {
-      return this.taxId.compareTo(other.taxId);
+    if (!taxId.equals(other.taxId)) {
+      return taxId.compareTo(other.taxId);
     }
 
-    if (!this.release.equals(other.release)) {
-      return this.release.compareTo(other.release);
+    if (!status.equals(other.status)) {
+      return status.compareTo(other.status);
     }
 
-    if (!this.attributes.equals(other.attributes)) {
-      if (this.attributes.size() < other.attributes.size()) {
+    if (!release.equals(other.release)) {
+      return release.compareTo(other.release);
+    }
+
+    if (!attributes.equals(other.attributes)) {
+      if (attributes.size() < other.attributes.size()) {
         return -1;
-      } else if (this.attributes.size() > other.attributes.size()) {
+      } else if (attributes.size() > other.attributes.size()) {
         return 1;
       } else {
-        Iterator<Attribute> thisIt = this.attributes.iterator();
-        Iterator<Attribute> otherIt = other.attributes.iterator();
+        final Iterator<Attribute> thisIt = attributes.iterator();
+        final Iterator<Attribute> otherIt = other.attributes.iterator();
         while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
         }
       }
     }
-    if (!this.relationships.equals(other.relationships)) {
-      if (this.relationships.size() < other.relationships.size()) {
+    if (!relationships.equals(other.relationships)) {
+      if (relationships.size() < other.relationships.size()) {
         return -1;
-      } else if (this.relationships.size() > other.relationships.size()) {
+      } else if (relationships.size() > other.relationships.size()) {
         return 1;
       } else {
-        Iterator<Relationship> thisIt = this.relationships.iterator();
-        Iterator<Relationship> otherIt = other.relationships.iterator();
+        final Iterator<Relationship> thisIt = relationships.iterator();
+        final Iterator<Relationship> otherIt = other.relationships.iterator();
         while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
         }
       }
     }
-    if (!this.externalReferences.equals(other.externalReferences)) {
-      if (this.externalReferences.size() < other.externalReferences.size()) {
+    if (!externalReferences.equals(other.externalReferences)) {
+      if (externalReferences.size() < other.externalReferences.size()) {
         return -1;
-      } else if (this.externalReferences.size() > other.externalReferences.size()) {
+      } else if (externalReferences.size() > other.externalReferences.size()) {
         return 1;
       } else {
-        Iterator<ExternalReference> thisIt = this.externalReferences.iterator();
-        Iterator<ExternalReference> otherIt = other.externalReferences.iterator();
+        final Iterator<ExternalReference> thisIt = externalReferences.iterator();
+        final Iterator<ExternalReference> otherIt = other.externalReferences.iterator();
         while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
         }
       }
     }
-    if (!this.organizations.equals(other.organizations)) {
-      if (this.organizations.size() < other.organizations.size()) {
+    if (!organizations.equals(other.organizations)) {
+      if (organizations.size() < other.organizations.size()) {
         return -1;
-      } else if (this.organizations.size() > other.organizations.size()) {
+      } else if (organizations.size() > other.organizations.size()) {
         return 1;
       } else {
-        Iterator<Organization> thisIt = this.organizations.iterator();
-        Iterator<Organization> otherIt = other.organizations.iterator();
+        final Iterator<Organization> thisIt = organizations.iterator();
+        final Iterator<Organization> otherIt = other.organizations.iterator();
         while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
         }
       }
     }
-    if (!this.contacts.equals(other.contacts)) {
-      if (this.contacts.size() < other.contacts.size()) {
+    if (!contacts.equals(other.contacts)) {
+      if (contacts.size() < other.contacts.size()) {
         return -1;
-      } else if (this.contacts.size() > other.contacts.size()) {
+      } else if (contacts.size() > other.contacts.size()) {
         return 1;
       } else {
-        Iterator<Contact> thisIt = this.contacts.iterator();
-        Iterator<Contact> otherIt = other.contacts.iterator();
+        final Iterator<Contact> thisIt = contacts.iterator();
+        final Iterator<Contact> otherIt = other.contacts.iterator();
         while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
         }
       }
     }
-    if (!this.publications.equals(other.publications)) {
-      if (this.publications.size() < other.publications.size()) {
+    if (!publications.equals(other.publications)) {
+      if (publications.size() < other.publications.size()) {
         return -1;
-      } else if (this.publications.size() > other.publications.size()) {
+      } else if (publications.size() > other.publications.size()) {
         return 1;
       } else {
-        Iterator<Publication> thisIt = this.publications.iterator();
-        Iterator<Publication> otherIt = other.publications.iterator();
+        final Iterator<Publication> thisIt = publications.iterator();
+        final Iterator<Publication> otherIt = other.publications.iterator();
         while (thisIt.hasNext() && otherIt.hasNext()) {
-          int val = thisIt.next().compareTo(otherIt.next());
-          if (val != 0) return val;
+          final int val = thisIt.next().compareTo(otherIt.next());
+          if (val != 0) {
+            return val;
+          }
         }
       }
     }
@@ -406,6 +430,7 @@ public class Sample implements Comparable<Sample> {
         name,
         accession,
         taxId,
+        status,
         release,
         attributes,
         data,
@@ -417,7 +442,7 @@ public class Sample implements Comparable<Sample> {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     sb.append("Sample(");
     sb.append(name);
     sb.append(",");
@@ -428,6 +453,8 @@ public class Sample implements Comparable<Sample> {
     sb.append(webinSubmissionAccountId);
     sb.append(",");
     sb.append(taxId);
+    sb.append(",");
+    sb.append(status);
     sb.append(",");
     sb.append(release);
     sb.append(",");
@@ -457,25 +484,27 @@ public class Sample implements Comparable<Sample> {
   }
 
   public static Sample build(
-      String name,
-      String accession,
-      String domain,
-      String webinSubmissionAccountId,
-      Long taxId,
-      Instant release,
-      Instant update,
-      Instant create,
-      Instant submitted,
-      Instant reviewed,
-      Set<Attribute> attributes,
-      Set<Relationship> relationships,
-      Set<ExternalReference> externalReferences) {
+      final String name,
+      final String accession,
+      final String domain,
+      final String webinSubmissionAccountId,
+      final Long taxId,
+      final SampleStatus status,
+      final Instant release,
+      final Instant update,
+      final Instant create,
+      final Instant submitted,
+      final Instant reviewed,
+      final Set<Attribute> attributes,
+      final Set<Relationship> relationships,
+      final Set<ExternalReference> externalReferences) {
     return build(
         name,
         accession,
         domain,
         webinSubmissionAccountId,
         taxId,
+        status,
         release,
         update,
         create,
@@ -494,26 +523,28 @@ public class Sample implements Comparable<Sample> {
   }
 
   public static Sample build(
-      String name,
-      String accession,
-      String domain,
-      String webinSubmissionAccountId,
-      Long taxId,
-      Instant release,
-      Instant update,
-      Instant create,
-      Instant submitted,
-      Instant reviewed,
-      Set<Attribute> attributes,
-      Set<Relationship> relationships,
-      Set<ExternalReference> externalReferences,
-      SubmittedViaType submittedVia) {
+      final String name,
+      final String accession,
+      final String domain,
+      final String webinSubmissionAccountId,
+      final Long taxId,
+      final SampleStatus status,
+      final Instant release,
+      final Instant update,
+      final Instant create,
+      final Instant submitted,
+      final Instant reviewed,
+      final Set<Attribute> attributes,
+      final Set<Relationship> relationships,
+      final Set<ExternalReference> externalReferences,
+      final SubmittedViaType submittedVia) {
     return build(
         name,
         accession,
         domain,
         webinSubmissionAccountId,
         taxId,
+        status,
         release,
         update,
         create,
@@ -534,40 +565,43 @@ public class Sample implements Comparable<Sample> {
   // Used for deserializtion (JSON -> Java)
   @JsonCreator
   public static Sample build(
-      @JsonProperty("name") String name,
-      @JsonProperty("accession") String accession,
-      @JsonProperty("domain") String domain,
-      @JsonProperty("webinSubmissionAccountId") String webinSubmissionAccountId,
-      @JsonProperty("taxId") Long taxId,
+      @JsonProperty("name") final String name,
+      @JsonProperty("accession") final String accession,
+      @JsonProperty("domain") final String domain,
+      @JsonProperty("webinSubmissionAccountId") final String webinSubmissionAccountId,
+      @JsonProperty("taxId") final Long taxId,
+      @JsonProperty("status") final SampleStatus status,
       @JsonProperty("release") @JsonDeserialize(using = CustomInstantDeserializer.class)
-          Instant release,
+          final Instant release,
       @JsonProperty("update") @JsonDeserialize(using = CustomInstantDeserializer.class)
-          Instant update,
+          final Instant update,
       @JsonProperty("create") @JsonDeserialize(using = CustomInstantDeserializer.class)
-          Instant create,
+          final Instant create,
       @JsonProperty("submitted") @JsonDeserialize(using = CustomInstantDeserializer.class)
-          Instant submitted,
+          final Instant submitted,
       @JsonProperty("reviewed") @JsonDeserialize(using = CustomInstantDeserializer.class)
-          Instant reviewed,
+          final Instant reviewed,
       @JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class)
-          Collection<Attribute> attributes,
-      @JsonProperty("data") Collection<AbstractData> data,
-      @JsonProperty("structuredData") Collection<StructuredDataTable> structuredData,
-      @JsonProperty("relationships") Collection<Relationship> relationships,
-      @JsonProperty("externalReferences") Collection<ExternalReference> externalReferences,
-      @JsonProperty("organization") Collection<Organization> organizations,
-      @JsonProperty("contact") Collection<Contact> contacts,
-      @JsonProperty("publications") Collection<Publication> publications,
-      @JsonProperty("certificates") Collection<Certificate> certificates,
-      @JsonProperty("submittedVia") SubmittedViaType submittedVia) {
+          final Collection<Attribute> attributes,
+      @JsonProperty("data") final Collection<AbstractData> data,
+      @JsonProperty("structuredData") final Collection<StructuredDataTable> structuredData,
+      @JsonProperty("relationships") final Collection<Relationship> relationships,
+      @JsonProperty("externalReferences") final Collection<ExternalReference> externalReferences,
+      @JsonProperty("organization") final Collection<Organization> organizations,
+      @JsonProperty("contact") final Collection<Contact> contacts,
+      @JsonProperty("publications") final Collection<Publication> publications,
+      @JsonProperty("certificates") final Collection<Certificate> certificates,
+      @JsonProperty("submittedVia") final SubmittedViaType submittedVia) {
 
-    Sample sample = new Sample();
+    final Sample sample = new Sample();
 
     if (accession != null) {
       sample.accession = accession.trim();
     }
 
-    if (name == null) throw new IllegalArgumentException("Sample name must be provided");
+    if (name == null) {
+      throw new IllegalArgumentException("Sample name must be provided");
+    }
     sample.name = name.trim();
 
     if (domain != null) {
@@ -593,6 +627,15 @@ public class Sample implements Comparable<Sample> {
 
     // Validation moved to a later stage, to capture the error (SampleService.store())
     sample.release = release;
+
+    if (status != null) {
+      sample.status = status;
+    } else {
+      sample.status =
+          sample.release != null && sample.release.isAfter(Instant.now())
+              ? SampleStatus.PRIVATE
+              : SampleStatus.PUBLIC;
+    }
 
     sample.attributes = new TreeSet<>();
     if (attributes != null) {
@@ -648,23 +691,18 @@ public class Sample implements Comparable<Sample> {
   }
 
   public static class Builder {
-
     protected String name;
-
     protected String accession = null;
     protected String domain = null;
     protected String webinSubmissionAccountId = null;
-
     protected Long taxId = null;
-
+    protected SampleStatus status = null;
     protected Instant release = Instant.now();
     protected Instant update = Instant.now();
     protected Instant create = Instant.now();
     protected Instant submitted = Instant.now();
     protected Instant reviewed;
-
-    protected SubmittedViaType submittedVia;
-
+    SubmittedViaType submittedVia;
     protected SortedSet<Attribute> attributes = new TreeSet<>();
     protected SortedSet<Relationship> relationships = new TreeSet<>();
     protected SortedSet<ExternalReference> externalReferences = new TreeSet<>();
@@ -675,96 +713,112 @@ public class Sample implements Comparable<Sample> {
     protected Set<AbstractData> data = new TreeSet<>();
     protected Set<StructuredDataTable> structuredData = new HashSet<>();
 
-    public Builder(String name, String accession) {
+    public Builder(final String name, final String accession) {
       this.name = name;
       this.accession = accession;
     }
 
-    public Builder(String name) {
+    public Builder(final String name, final String accession, final SampleStatus status) {
+      this.name = name;
+      this.accession = accession;
+      this.status = status;
+    }
+
+    public Builder(final String name) {
       this.name = name;
     }
 
-    public Builder withAccession(String accession) {
+    public Builder(final String name, final SampleStatus status) {
+      this.name = name;
+      this.status = status;
+    }
+
+    public Builder withAccession(final String accession) {
       this.accession = accession;
       return this;
     }
 
-    public Builder withDomain(String domain) {
+    public Builder withDomain(final String domain) {
       this.domain = domain;
       return this;
     }
 
-    public Builder withWebinSubmissionAccountId(String webinSubmissionAccountId) {
+    public Builder withWebinSubmissionAccountId(final String webinSubmissionAccountId) {
       this.webinSubmissionAccountId = webinSubmissionAccountId;
       return this;
     }
 
-    public Builder withTaxId(Long taxId) {
+    public Builder withTaxId(final Long taxId) {
       this.taxId = taxId;
       return this;
     }
 
-    public Builder withRelease(String release) {
+    public Builder withStatus(final SampleStatus status) {
+      this.status = status;
+      return this;
+    }
+
+    public Builder withRelease(final String release) {
       this.release = parseDateTime(release).toInstant();
       return this;
     }
 
-    public Builder withRelease(Instant release) {
+    public Builder withRelease(final Instant release) {
       this.release = release;
       return this;
     }
 
-    public Builder withUpdate(Instant update) {
+    public Builder withUpdate(final Instant update) {
       this.update = update;
       return this;
     }
 
-    public Builder withUpdate(String update) {
+    public Builder withUpdate(final String update) {
       this.update = parseDateTime(update).toInstant();
       return this;
     }
 
-    public Builder withCreate(Instant create) {
+    public Builder withCreate(final Instant create) {
       this.create = create;
       return this;
     }
 
-    public Builder withCreate(String create) {
+    public Builder withCreate(final String create) {
       this.create = parseDateTime(create).toInstant();
       return this;
     }
 
-    public Builder withSubmitted(Instant submitted) {
+    public Builder withSubmitted(final Instant submitted) {
       this.submitted = submitted;
       return this;
     }
 
-    public Builder withSubmitted(String submitted) {
+    public Builder withSubmitted(final String submitted) {
       this.submitted = parseDateTime(submitted).toInstant();
       return this;
     }
 
     public Builder withNoSubmitted() {
-      this.submitted = null;
+      submitted = null;
       return this;
     }
 
-    public Builder withReviewed(Instant reviewed) {
+    public Builder withReviewed(final Instant reviewed) {
       this.reviewed = reviewed;
       return this;
     }
 
-    public Builder withReviewed(String reviewed) {
+    public Builder withReviewed(final String reviewed) {
       this.reviewed = parseDateTime(reviewed).toInstant();
       return this;
     }
 
     public Builder withNoReviewed() {
-      this.reviewed = null;
+      reviewed = null;
       return this;
     }
 
-    public Builder withSubmittedVia(SubmittedViaType submittedVia) {
+    public Builder withSubmittedVia(final SubmittedViaType submittedVia) {
       this.submittedVia = submittedVia;
       return this;
     }
@@ -775,17 +829,17 @@ public class Sample implements Comparable<Sample> {
      * @param attributes
      * @return
      */
-    public Builder withAttributes(Collection<Attribute> attributes) {
+    public Builder withAttributes(final Collection<Attribute> attributes) {
       this.attributes = new TreeSet<>(attributes);
       return this;
     }
 
-    public Builder addAttribute(Attribute attribute) {
-      this.attributes.add(attribute);
+    public Builder addAttribute(final Attribute attribute) {
+      attributes.add(attribute);
       return this;
     }
 
-    public Builder addAllAttributes(Collection<Attribute> attributes) {
+    public Builder addAllAttributes(final Collection<Attribute> attributes) {
       this.attributes.addAll(attributes);
       return this;
     }
@@ -796,7 +850,7 @@ public class Sample implements Comparable<Sample> {
      * @param data
      * @return
      */
-    public Builder withData(Collection<AbstractData> data) {
+    public Builder withData(final Collection<AbstractData> data) {
       if (data != null) {
         this.data = new TreeSet<>(data);
       } else {
@@ -805,7 +859,7 @@ public class Sample implements Comparable<Sample> {
       return this;
     }
 
-    public Builder withStructuredData(Set<StructuredDataTable> structuredData) {
+    public Builder withStructuredData(final Set<StructuredDataTable> structuredData) {
       if (structuredData != null) {
         this.structuredData = structuredData;
       } else {
@@ -814,12 +868,12 @@ public class Sample implements Comparable<Sample> {
       return this;
     }
 
-    public Builder addData(AbstractData data) {
+    public Builder addData(final AbstractData data) {
       this.data.add(data);
       return this;
     }
 
-    public Builder addAllData(Collection<AbstractData> data) {
+    public Builder addAllData(final Collection<AbstractData> data) {
       this.data.addAll(data);
       return this;
     }
@@ -830,17 +884,19 @@ public class Sample implements Comparable<Sample> {
      * @param relationships
      * @return
      */
-    public Builder withRelationships(Collection<Relationship> relationships) {
-      if (relationships != null) this.relationships = new TreeSet<>(relationships);
+    public Builder withRelationships(final Collection<Relationship> relationships) {
+      if (relationships != null) {
+        this.relationships = new TreeSet<>(relationships);
+      }
       return this;
     }
 
-    public Builder addRelationship(Relationship relationship) {
-      this.relationships.add(relationship);
+    public Builder addRelationship(final Relationship relationship) {
+      relationships.add(relationship);
       return this;
     }
 
-    public Builder addAllRelationships(Collection<Relationship> relationships) {
+    public Builder addAllRelationships(final Collection<Relationship> relationships) {
       this.relationships.addAll(relationships);
       return this;
     }
@@ -851,18 +907,20 @@ public class Sample implements Comparable<Sample> {
      * @param externalReferences
      * @return
      */
-    public Builder withExternalReferences(Collection<ExternalReference> externalReferences) {
-      if (externalReferences != null && externalReferences.size() > 0)
+    public Builder withExternalReferences(final Collection<ExternalReference> externalReferences) {
+      if (externalReferences != null && externalReferences.size() > 0) {
         this.externalReferences = new TreeSet<>(externalReferences);
+      }
       return this;
     }
 
-    public Builder addExternalReference(ExternalReference externalReference) {
-      this.externalReferences.add(externalReference);
+    public Builder addExternalReference(final ExternalReference externalReference) {
+      externalReferences.add(externalReference);
       return this;
     }
 
-    public Builder addAllExternalReferences(Collection<ExternalReference> externalReferences) {
+    public Builder addAllExternalReferences(
+        final Collection<ExternalReference> externalReferences) {
       this.externalReferences.addAll(externalReferences);
       return this;
     }
@@ -873,18 +931,19 @@ public class Sample implements Comparable<Sample> {
      * @param organizations
      * @return
      */
-    public Builder withOrganizations(Collection<Organization> organizations) {
-      if (organizations != null && organizations.size() > 0)
+    public Builder withOrganizations(final Collection<Organization> organizations) {
+      if (organizations != null && organizations.size() > 0) {
         this.organizations = new TreeSet<>(organizations);
+      }
       return this;
     }
 
-    public Builder addOrganization(Organization organization) {
-      this.organizations.add(organization);
+    public Builder addOrganization(final Organization organization) {
+      organizations.add(organization);
       return this;
     }
 
-    public Builder allAllOrganizations(Collection<Organization> organizations) {
+    public Builder allAllOrganizations(final Collection<Organization> organizations) {
       this.organizations.addAll(organizations);
       return this;
     }
@@ -895,17 +954,19 @@ public class Sample implements Comparable<Sample> {
      * @param contacts
      * @return
      */
-    public Builder withContacts(Collection<Contact> contacts) {
-      if (contacts != null && contacts.size() > 0) this.contacts = new TreeSet<>(contacts);
+    public Builder withContacts(final Collection<Contact> contacts) {
+      if (contacts != null && contacts.size() > 0) {
+        this.contacts = new TreeSet<>(contacts);
+      }
       return this;
     }
 
-    public Builder addContact(Contact contact) {
-      this.contacts.add(contact);
+    public Builder addContact(final Contact contact) {
+      contacts.add(contact);
       return this;
     }
 
-    public Builder addAllContacts(Collection<Contact> contacts) {
+    public Builder addAllContacts(final Collection<Contact> contacts) {
       this.contacts.addAll(contacts);
       return this;
     }
@@ -916,9 +977,10 @@ public class Sample implements Comparable<Sample> {
      * @param publications
      * @return
      */
-    public Builder withPublications(Collection<Publication> publications) {
-      if (publications != null && publications.size() > 0)
+    public Builder withPublications(final Collection<Publication> publications) {
+      if (publications != null && publications.size() > 0) {
         this.publications = new TreeSet<>(publications);
+      }
       return this;
     }
 
@@ -928,8 +990,8 @@ public class Sample implements Comparable<Sample> {
      * @param publication
      * @return
      */
-    public Builder addPublication(Publication publication) {
-      this.publications.add(publication);
+    public Builder addPublication(final Publication publication) {
+      publications.add(publication);
       return this;
     }
 
@@ -939,53 +1001,54 @@ public class Sample implements Comparable<Sample> {
      * @param publications
      * @return
      */
-    public Builder addAllPublications(Collection<Publication> publications) {
+    public Builder addAllPublications(final Collection<Publication> publications) {
       this.publications.addAll(publications);
       return this;
     }
 
-    public Builder withCertificates(Collection<Certificate> certificates) {
-      if (certificates != null && certificates.size() > 0)
+    public Builder withCertificates(final Collection<Certificate> certificates) {
+      if (certificates != null && certificates.size() > 0) {
         this.certificates = new TreeSet<>(certificates);
+      }
       return this;
     }
 
-    public Builder addAllCertificates(Collection<Certificate> certificates) {
+    public Builder addAllCertificates(final Collection<Certificate> certificates) {
       this.certificates.addAll(certificates);
       return this;
     }
 
     // Clean accession field
     public Builder withNoAccession() {
-      this.accession = null;
+      accession = null;
       return this;
     }
 
     // Clean domain field
     public Builder withNoDomain() {
-      this.domain = null;
+      domain = null;
       return this;
     }
 
     // Clean webin account id field
     public Builder withNoWebinSubmissionAccountId() {
-      this.webinSubmissionAccountId = null;
+      webinSubmissionAccountId = null;
       return this;
     }
 
     // Clean collection fields
     public Builder withNoAttributes() {
-      this.attributes = new TreeSet<>();
+      attributes = new TreeSet<>();
       return this;
     }
 
     public Builder withNoRelationships() {
-      this.relationships = new TreeSet<>();
+      relationships = new TreeSet<>();
       return this;
     }
 
     public Builder withNoData() {
-      this.data = new TreeSet<>();
+      data = new TreeSet<>();
       return this;
     }
 
@@ -995,22 +1058,22 @@ public class Sample implements Comparable<Sample> {
     }
 
     public Builder withNoExternalReferences() {
-      this.externalReferences = new TreeSet<>();
+      externalReferences = new TreeSet<>();
       return this;
     }
 
     public Builder withNoContacts() {
-      this.contacts = new TreeSet<>();
+      contacts = new TreeSet<>();
       return this;
     }
 
     public Builder withNoOrganisations() {
-      this.organizations = new TreeSet<>();
+      organizations = new TreeSet<>();
       return this;
     }
 
     public Builder withNoPublications() {
-      this.publications = new TreeSet<>();
+      publications = new TreeSet<>();
       return this;
     }
 
@@ -1021,6 +1084,7 @@ public class Sample implements Comparable<Sample> {
           domain,
           webinSubmissionAccountId,
           taxId,
+          status,
           release,
           update,
           create,
@@ -1038,9 +1102,11 @@ public class Sample implements Comparable<Sample> {
           submittedVia);
     }
 
-    private ZonedDateTime parseDateTime(String datetimeString) {
-      if (datetimeString.isEmpty()) return null;
-      TemporalAccessor temporalAccessor =
+    private ZonedDateTime parseDateTime(final String datetimeString) {
+      if (datetimeString.isEmpty()) {
+        return null;
+      }
+      final TemporalAccessor temporalAccessor =
           getFormatter()
               .parseBest(datetimeString, ZonedDateTime::from, LocalDateTime::from, LocalDate::from);
       if (temporalAccessor instanceof ZonedDateTime) {
@@ -1058,11 +1124,12 @@ public class Sample implements Comparable<Sample> {
      * @param sample the sample to use as reference
      * @return the Builder
      */
-    public static Builder fromSample(Sample sample) {
+    public static Builder fromSample(final Sample sample) {
       return new Builder(sample.getName(), sample.getAccession())
           .withDomain(sample.getDomain())
           .withWebinSubmissionAccountId(sample.getWebinSubmissionAccountId())
           .withTaxId(sample.getTaxId())
+          .withStatus(sample.getStatus())
           .withRelease(sample.getRelease())
           .withUpdate(sample.getUpdate())
           .withCreate(sample.getCreate())

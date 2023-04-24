@@ -22,12 +22,11 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.SubmissionFile;
 
 @Service
-public class FileUploadStorageService {
+class FileUploadStorageService {
   @Autowired private GridFsTemplate gridFsTemplate;
   @Autowired private GridFsOperations operations;
 
-  public SubmissionFile getFile(final String submissionId)
-      throws IllegalStateException, IOException {
+  SubmissionFile getFile(final String submissionId) throws IllegalStateException, IOException {
     final GridFSFile file =
         gridFsTemplate.findOne(
             new Query().addCriteria(Criteria.where("_id").is(submissionId)).limit(1));
@@ -42,7 +41,7 @@ public class FileUploadStorageService {
     return null;
   }
 
-  public void deleteFile(final String submissionId) throws IllegalStateException {
+  void deleteFile(final String submissionId) throws IllegalStateException {
     gridFsTemplate.delete(new Query().addCriteria(Criteria.where("_id").is(submissionId)).limit(1));
   }
 }

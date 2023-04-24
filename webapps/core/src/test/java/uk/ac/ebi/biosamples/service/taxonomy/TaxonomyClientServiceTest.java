@@ -20,14 +20,14 @@ import uk.ac.ebi.biosamples.model.Sample;
 public class TaxonomyClientServiceTest {
   @Test
   public void validateSample() throws IOException {
-    File file =
+    final File file =
         new File(
             getClass()
                 .getClassLoader()
                 .getResource("json/ncbi-SAMN03894263-curated-no-data.json")
                 .getFile());
-    ObjectMapper objectMapper = new ObjectMapper();
-    TaxonomyClientService taxonomyClientService = new TaxonomyClientService();
+    final ObjectMapper objectMapper = new ObjectMapper();
+    final TaxonomyClientService taxonomyClientService = new TaxonomyClientService();
     Sample sample = objectMapper.readValue(file, Sample.class);
 
     sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);

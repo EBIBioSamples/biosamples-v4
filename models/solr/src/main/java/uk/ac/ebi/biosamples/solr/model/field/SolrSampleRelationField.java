@@ -27,7 +27,7 @@ public class SolrSampleRelationField extends SolrSampleField {
     super();
   }
 
-  public SolrSampleRelationField(String readableLabel) {
+  public SolrSampleRelationField(final String readableLabel) {
     super(readableLabel);
   }
 
@@ -37,7 +37,7 @@ public class SolrSampleRelationField extends SolrSampleField {
    * @param readableLabel
    * @param solrDocumentLabel
    */
-  public SolrSampleRelationField(String readableLabel, String solrDocumentLabel) {
+  public SolrSampleRelationField(final String readableLabel, final String solrDocumentLabel) {
     super(readableLabel, solrDocumentLabel);
   }
 
@@ -58,7 +58,7 @@ public class SolrSampleRelationField extends SolrSampleField {
   }
 
   @Override
-  public boolean isCompatibleWith(Filter filter) {
+  public boolean isCompatibleWith(final Filter filter) {
     return filter instanceof RelationFilter;
   }
 
@@ -68,7 +68,7 @@ public class SolrSampleRelationField extends SolrSampleField {
   }
 
   @Override
-  public Facet.Builder getFacetBuilder(String facetLabel, Long facetCount) {
+  public Facet.Builder getFacetBuilder(final String facetLabel, final Long facetCount) {
     return new RelationFacet.Builder(facetLabel, facetCount);
   }
 
@@ -78,14 +78,14 @@ public class SolrSampleRelationField extends SolrSampleField {
   }
 
   @Override
-  public Criteria getFilterCriteria(Filter filter) {
+  public Criteria getFilterCriteria(final Filter filter) {
     Criteria filterCriteria = null;
 
     if (filter instanceof RelationFilter) {
 
       filterCriteria = new Criteria(getSolrLabel());
 
-      RelationFilter relationFilter = (RelationFilter) filter;
+      final RelationFilter relationFilter = (RelationFilter) filter;
       if (relationFilter.getContent().isPresent()) {
         //                filterCriteria = filterCriteria.expression("/" +
         // relationFilter.getContent().get() + "/");

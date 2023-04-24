@@ -36,15 +36,15 @@ public class FileDownloadInputStream extends InputStream {
   private InputStream sampleStream;
   private String cursor;
   private int sampleCount;
-  private int totalCount;
+  private final int totalCount;
 
-  public FileDownloadInputStream(
-      SamplePageService samplePageService,
-      String text,
-      Collection<Filter> filters,
-      int totalCount,
-      Collection<String> domains,
-      FileDownloadSerializer serializer) {
+  FileDownloadInputStream(
+      final SamplePageService samplePageService,
+      final String text,
+      final Collection<Filter> filters,
+      final int totalCount,
+      final Collection<String> domains,
+      final FileDownloadSerializer serializer) {
     this.samplePageService = samplePageService;
     this.text = text;
     this.filters = filters;
@@ -72,14 +72,14 @@ public class FileDownloadInputStream extends InputStream {
     return nextByte;
   }
 
-  private InputStream generateStream(String delimiter) throws IOException {
-    InputStream inputStream;
+  private InputStream generateStream(final String delimiter) throws IOException {
+    final InputStream inputStream;
     if (sampleQueue.isEmpty() && !CURSOR_EOF.equals(cursor)) {
       loadSamples();
     }
 
     if (!CURSOR_EOF.equals(cursor)) {
-      Sample sample = sampleQueue.poll();
+      final Sample sample = sampleQueue.poll();
       sampleCount++;
       inputStream = toInputStream(delimiter, serializer.asString(sample));
       if (sampleCount >= totalCount) {
@@ -97,7 +97,7 @@ public class FileDownloadInputStream extends InputStream {
   }
 
   private void loadSamples() {
-    CursorArrayList<Sample> samplePage =
+    final CursorArrayList<Sample> samplePage =
         samplePageService.getSamplesByText(
             text, filters, domains, null, cursor, PAGE_SIZE, Optional.empty());
     if (!samplePage.isEmpty()) {
@@ -108,7 +108,7 @@ public class FileDownloadInputStream extends InputStream {
     }
   }
 
-  private InputStream toInputStream(String delimiter, String sample) {
+  private InputStream toInputStream(final String delimiter, final String sample) {
     return IOUtils.toInputStream(delimiter + sample, StandardCharsets.UTF_8);
   }
 }

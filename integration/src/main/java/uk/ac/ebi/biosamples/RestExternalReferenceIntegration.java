@@ -22,20 +22,20 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 @Order(6)
 // @Profile({ "default", "rest" })
 public class RestExternalReferenceIntegration extends AbstractIntegration {
-  public RestExternalReferenceIntegration(BioSamplesClient client) {
+  public RestExternalReferenceIntegration(final BioSamplesClient client) {
     super(client);
   }
 
   @Override
   protected void phaseOne() {
-    Sample sample = getSampleTest1();
+    final Sample sample = getSampleTest1();
     client.persistSampleResource(sample);
   }
 
   @Override
   protected void phaseTwo() {
     Sample sample = getSampleTest1();
-    Optional<Sample> optionalSample = fetchUniqueSampleByName(sample.getName());
+    final Optional<Sample> optionalSample = fetchUniqueSampleByName(sample.getName());
     if (optionalSample.isPresent()) {
       sample =
           Sample.Builder.fromSample(sample)
@@ -61,7 +61,7 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseThree() {
-    Sample sample = getSampleTest1();
+    final Sample sample = getSampleTest1();
     // check there was no side-effects
     fetchUniqueSampleByName(sample.getName());
   }
@@ -117,16 +117,16 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
   }
 
   private Sample getSampleTest1() {
-    String name = "RestExternalReferenceIntegration_sample_1";
-    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final String name = "RestExternalReferenceIntegration_sample_1";
+    final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(Attribute.build("Organism", "Human"));
 
-    SortedSet<Relationship> relationships = new TreeSet<>();
+    final SortedSet<Relationship> relationships = new TreeSet<>();
 
-    SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+    final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
     externalReferences.add(
         ExternalReference.build(
             "http://ega-archive.org/datasets/1",

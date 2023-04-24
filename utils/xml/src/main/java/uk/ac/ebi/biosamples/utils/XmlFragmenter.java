@@ -36,18 +36,19 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 @Service
 public class XmlFragmenter {
-  private SAXParserFactory factory = SAXParserFactory.newInstance();
+  private final SAXParserFactory factory = SAXParserFactory.newInstance();
 
   private XmlFragmenter() {}
 
-  public void handleStream(InputStream inputStream, String encoding, ElementCallback... callback)
+  public void handleStream(
+      final InputStream inputStream, final String encoding, final ElementCallback... callback)
       throws ParserConfigurationException, SAXException, IOException {
 
-    InputSource isource = new InputSource(inputStream);
+    final InputSource isource = new InputSource(inputStream);
     isource.setEncoding(encoding);
 
-    DefaultHandler handler = new FragmentationHandler(callback);
-    SAXParser saxParser = factory.newSAXParser();
+    final DefaultHandler handler = new FragmentationHandler(callback);
+    final SAXParser saxParser = factory.newSAXParser();
 
     saxParser.parse(isource, handler);
   }
@@ -59,15 +60,15 @@ public class XmlFragmenter {
     private final List<Stack<Element>> elementStack;
     private final List<StringBuilder> textBuffer;
 
-    public FragmentationHandler(ElementCallback... callbacks) {
+    FragmentationHandler(final ElementCallback... callbacks) {
       this.callbacks = Arrays.asList(callbacks);
 
-      this.doc = new ArrayList<>(this.callbacks.size());
-      this.inRegion = new ArrayList<>(this.callbacks.size());
-      this.elementStack = new ArrayList<>(this.callbacks.size());
-      this.textBuffer = new ArrayList<>(this.callbacks.size());
+      doc = new ArrayList<>(this.callbacks.size());
+      inRegion = new ArrayList<>(this.callbacks.size());
+      elementStack = new ArrayList<>(this.callbacks.size());
+      textBuffer = new ArrayList<>(this.callbacks.size());
 
-      for (ElementCallback callback : callbacks) {
+      for (final ElementCallback callback : callbacks) {
         doc.add(null);
         inRegion.add(false);
         elementStack.add(new Stack<>());
@@ -76,7 +77,8 @@ public class XmlFragmenter {
     }
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) {
+    public void startElement(
+        final String uri, final String localName, final String qName, final Attributes attributes) {
       for (int i = 0; i < callbacks.size(); i++) {
         if (callbacks.get(i).isBlockStart(uri, localName, qName, attributes)) {
           inRegion.set(i, true);
@@ -84,7 +86,7 @@ public class XmlFragmenter {
         }
         if (inRegion.get(i)) {
           addTextIfNeeded(i);
-          Element el;
+          final Element el;
           if (elementStack.get(i).size() == 0) {
             el = doc.get(i).addElement(qName);
           } else {
@@ -99,7 +101,7 @@ public class XmlFragmenter {
     }
 
     @Override
-    public void endElement(String uri, String localName, String qName) {
+    public void endElement(final String uri, final String localName, final String qName) {
       for (int i = 0; i < callbacks.size(); i++) {
         if (inRegion.get(i)) {
           addTextIfNeeded(i);
@@ -109,7 +111,7 @@ public class XmlFragmenter {
             // do something with the element
             try {
               callbacks.get(i).handleElement(doc.get(i).getRootElement());
-            } catch (Exception e) {
+            } catch (final Exception e) {
               throw new RuntimeException(e);
             }
 
@@ -121,7 +123,7 @@ public class XmlFragmenter {
     }
 
     @Override
-    public void characters(char ch[], int start, int length) throws SAXException {
+    public void characters(final char[] ch, final int start, final int length) throws SAXException {
       for (int i = 0; i < callbacks.size(); i++) {
         if (inRegion.get(i)) {
           textBuffer.get(i).append(ch, start, length);
@@ -130,14 +132,14 @@ public class XmlFragmenter {
     }
 
     // Outputs text accumulated under the current node
-    private void addTextIfNeeded(int i) {
+    private void addTextIfNeeded(final int i) {
       if (textBuffer.get(i).length() > 0) {
-        Element el = elementStack.get(i).peek();
+        final Element el = elementStack.get(i).peek();
         el.addText(textBuffer.get(i).toString());
         textBuffer.get(i).delete(0, textBuffer.get(i).length());
       }
     }
-  };
+  }
 
   public interface ElementCallback {
     /**

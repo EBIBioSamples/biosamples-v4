@@ -41,27 +41,29 @@ import uk.ac.ebi.biosamples.model.Attribute;
     ],
  */
 public class CharacteristicSerializer extends StdSerializer<SortedSet> {
-  private Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   public CharacteristicSerializer() {
     this(SortedSet.class);
   }
 
-  public CharacteristicSerializer(Class<SortedSet> t) {
+  private CharacteristicSerializer(final Class<SortedSet> t) {
     super(t);
   }
 
   @Override
-  public void serialize(SortedSet attributesRaw, JsonGenerator gen, SerializerProvider arg2)
+  public void serialize(
+      final SortedSet attributesRaw, final JsonGenerator gen, final SerializerProvider arg2)
       throws IOException {
-    SortedSet<Attribute> attributes = (SortedSet<Attribute>) attributesRaw;
+    final SortedSet<Attribute> attributes = (SortedSet<Attribute>) attributesRaw;
 
     gen.writeStartObject();
 
-    SortedMap<String, ArrayListValuedHashMap<String, Attribute>> attributeMap = new TreeMap<>();
+    final SortedMap<String, ArrayListValuedHashMap<String, Attribute>> attributeMap =
+        new TreeMap<>();
 
     if (attributes != null && attributes.size() > 0) {
-      for (Attribute attribute : attributes) {
+      for (final Attribute attribute : attributes) {
         if (!attributeMap.containsKey(attribute.getType())) {
           attributeMap.put(attribute.getType(), new ArrayListValuedHashMap<>());
         }
@@ -78,18 +80,18 @@ public class CharacteristicSerializer extends StdSerializer<SortedSet> {
                     attribute.getUnit()));
       }
 
-      for (String type : attributeMap.keySet()) {
+      for (final String type : attributeMap.keySet()) {
         gen.writeArrayFieldStart(type);
 
-        for (String value : attributeMap.get(type).keySet()) {
-          for (Attribute attr : attributeMap.get(type).get(value)) {
+        for (final String value : attributeMap.get(type).keySet()) {
+          for (final Attribute attr : attributeMap.get(type).get(value)) {
             gen.writeStartObject();
             gen.writeStringField("text", value);
 
             if (attr.getIri() != null && attr.getIri().size() > 0) {
               gen.writeArrayFieldStart("ontologyTerms");
 
-              for (String iri : attr.getIri()) {
+              for (final String iri : attr.getIri()) {
                 gen.writeString(iri);
               }
 

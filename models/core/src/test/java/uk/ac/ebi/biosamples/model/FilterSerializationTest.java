@@ -30,37 +30,39 @@ import uk.ac.ebi.biosamples.service.FilterBuilder;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = {FilterBuilder.class})
 public class FilterSerializationTest {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   @Autowired public FilterBuilder filterBuilder;
 
   @Test
   public void testAttributeFilterDeserialization() {
-    String stringToTest = "attr:organism:Homo sapiens";
-    Filter expectedFilter =
+    final String stringToTest = "attr:organism:Homo sapiens";
+    final Filter expectedFilter =
         FilterBuilder.create().onAttribute("organism").withValue("Homo sapiens").build();
 
-    Filter attributeFilter = FilterBuilder.create().buildFromString(stringToTest);
+    final Filter attributeFilter = FilterBuilder.create().buildFromString(stringToTest);
     assertEquals(attributeFilter, expectedFilter);
   }
 
   @Test
   public void testFromLocalDateFilterDeserialization() {
-    String stringToTest = "dt:update:from=2017-01-10";
-    Instant from = ZonedDateTime.of(2017, 1, 10, 0, 0, 0, 0, ZoneOffset.UTC).toInstant();
+    final String stringToTest = "dt:update:from=2017-01-10";
+    final Instant from = ZonedDateTime.of(2017, 1, 10, 0, 0, 0, 0, ZoneOffset.UTC).toInstant();
 
-    Filter expectedFilter = FilterBuilder.create().onUpdateDate().from(from).build();
-    Filter dateRangeFilter = FilterBuilder.create().buildFromString(stringToTest);
+    final Filter expectedFilter = FilterBuilder.create().onUpdateDate().from(from).build();
+    final Filter dateRangeFilter = FilterBuilder.create().buildFromString(stringToTest);
     assertEquals(dateRangeFilter, expectedFilter);
   }
 
   @Test
   public void testDateRangeFromLocalDateTimeToLocalDateFilterDeserialization() {
-    String stringToTest = "dt:release:from=2014-01-01T20:30:00until=2015-01-01";
-    Instant from = ZonedDateTime.of(2014, 1, 1, 20, 30, 0, 0, ZoneOffset.UTC).toInstant();
-    Instant until = LocalDate.of(2015, 1, 1).atStartOfDay().plusDays(1).toInstant(ZoneOffset.UTC);
-    Filter expectedFilter = FilterBuilder.create().onReleaseDate().from(from).until(until).build();
-    Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
+    final String stringToTest = "dt:release:from=2014-01-01T20:30:00until=2015-01-01";
+    final Instant from = ZonedDateTime.of(2014, 1, 1, 20, 30, 0, 0, ZoneOffset.UTC).toInstant();
+    final Instant until =
+        LocalDate.of(2015, 1, 1).atStartOfDay().plusDays(1).toInstant(ZoneOffset.UTC);
+    final Filter expectedFilter =
+        FilterBuilder.create().onReleaseDate().from(from).until(until).build();
+    final Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
     log.info(
         "testDateRangeFromLocalDateTimeToLocalDateFilterDeserialization expected = "
             + expectedFilter.getSerialization());
@@ -72,11 +74,13 @@ public class FilterSerializationTest {
 
   @Test
   public void testInvertedDateRangeFilterDeserialization() {
-    String stringToTest = "dt:update:until=2018-01-01from=2016-01-01";
-    Instant from = LocalDate.of(2016, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC);
-    Instant until = LocalDate.of(2018, 1, 1).atStartOfDay().plusDays(1).toInstant(ZoneOffset.UTC);
-    Filter expectedFilter = FilterBuilder.create().onUpdateDate().from(from).until(until).build();
-    Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
+    final String stringToTest = "dt:update:until=2018-01-01from=2016-01-01";
+    final Instant from = LocalDate.of(2016, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC);
+    final Instant until =
+        LocalDate.of(2018, 1, 1).atStartOfDay().plusDays(1).toInstant(ZoneOffset.UTC);
+    final Filter expectedFilter =
+        FilterBuilder.create().onUpdateDate().from(from).until(until).build();
+    final Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
     log.info(
         "testInvertedDateRangeFilterDeserialization expected = "
             + expectedFilter.getSerialization());
@@ -87,72 +91,72 @@ public class FilterSerializationTest {
 
   @Test
   public void testAccessionFilterSerialization() {
-    String stringToTest = "acc:SAMEA123123";
-    Filter expectedFilter = FilterBuilder.create().onAccession("SAMEA123123").build();
-    Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
+    final String stringToTest = "acc:SAMEA123123";
+    final Filter expectedFilter = FilterBuilder.create().onAccession("SAMEA123123").build();
+    final Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
     assertEquals(expectedFilter, actualFilter);
   }
 
   @Test
   public void testExternalReferenceFilterSerialization() {
-    String stringToTest = "extd:ENA:E-MTAB-123123";
-    Filter expectedFilter =
+    final String stringToTest = "extd:ENA:E-MTAB-123123";
+    final Filter expectedFilter =
         FilterBuilder.create()
             .onDataFromExternalReference("ENA")
             .withValue("E-MTAB-123123")
             .build();
-    Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
+    final Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
     assertEquals(expectedFilter, actualFilter);
   }
 
   @Test
   public void testRelationFilterSerialization() {
-    String stringToTest = "rel:derive From:SAMEA123123";
-    Filter expectedFilter =
+    final String stringToTest = "rel:derive From:SAMEA123123";
+    final Filter expectedFilter =
         FilterBuilder.create().onRelation("derive From").withValue("SAMEA123123").build();
-    Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
+    final Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
     assertEquals(expectedFilter, actualFilter);
   }
 
   @Test
   public void testInverseRelationFilterSerialization() {
-    String stringToTest = "rrel:derive From:SAMEA123123";
-    Filter expectedFilter =
+    final String stringToTest = "rrel:derive From:SAMEA123123";
+    final Filter expectedFilter =
         FilterBuilder.create().onInverseRelation("derive From").withValue("SAMEA123123").build();
-    Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
+    final Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
     assertEquals(expectedFilter, actualFilter);
   }
 
   @Test
   public void testNameFilterSerialization() {
-    String stringToTest = "name:Test filter 2";
-    Filter expectedFilter = FilterBuilder.create().onName("Test filter 2").build();
-    Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
+    final String stringToTest = "name:Test filter 2";
+    final Filter expectedFilter = FilterBuilder.create().onName("Test filter 2").build();
+    final Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
     assertEquals(expectedFilter, actualFilter);
   }
 
   @Test
   public void testWildcardFilterSerialization() {
-    String stringToTest = "name:Test filter *";
-    Filter expectedFilter = FilterBuilder.create().onName("Test filter *").build();
-    Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
+    final String stringToTest = "name:Test filter *";
+    final Filter expectedFilter = FilterBuilder.create().onName("Test filter *").build();
+    final Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
     assertEquals(expectedFilter, actualFilter);
   }
 
   @Test
   public void testEscapeSerialization() {
-    String stringToTest = "attr:(?\\:O)organism";
-    Filter expectedFilter = FilterBuilder.create().onAttribute("(?:O)organism").build();
-    Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
+    final String stringToTest = "attr:(?\\:O)organism";
+    final Filter expectedFilter = FilterBuilder.create().onAttribute("(?:O)organism").build();
+    final Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
     assertEquals(expectedFilter, actualFilter);
   }
 
   @Test
   public void testForDifferentFiltersWithEscapedCharacters() {
-    String stringToTest = "attr:(?\\:O)rganism";
-    Filter wrongDeserializedFilter =
+    final String stringToTest = "attr:(?\\:O)rganism";
+    final Filter wrongDeserializedFilter =
         FilterBuilder.create().onAttribute("(?").withValue("O)rganism").build();
-    Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
+    final Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
     assertNotEquals(wrongDeserializedFilter, actualFilter);
   }
 }

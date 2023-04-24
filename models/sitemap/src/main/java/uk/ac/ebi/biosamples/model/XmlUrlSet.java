@@ -13,11 +13,7 @@ package uk.ac.ebi.biosamples.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 
 /** @author mrelac */
 @XmlAccessorType(value = XmlAccessType.NONE)
@@ -29,7 +25,7 @@ public class XmlUrlSet {
   @XmlElements({@XmlElement(name = "url", type = XmlUrl.class)})
   private final List<XmlUrl> xmlUrls = new ArrayList();
 
-  public void addUrl(XmlUrl xmlUrl) {
+  public void addUrl(final XmlUrl xmlUrl) {
 
     final int size = xmlUrls.size();
 
@@ -37,7 +33,7 @@ public class XmlUrlSet {
     // eventually, but not exceed the model entry size restriction)
     if (size >= MAX_SITEMAP_ENTRIES) {
       // Randomly replace elements in the reservoir with a decreasing probability.
-      int idx = new Double(Math.floor(Math.random() * size)).intValue();
+      final int idx = new Double(Math.floor(Math.random() * size)).intValue();
       if (idx < MAX_SITEMAP_ENTRIES) {
         xmlUrls.set(idx, xmlUrl);
       }

@@ -50,28 +50,28 @@ public class CurationApplicationRunner implements ApplicationRunner {
   private final IriUrlValidatorService iriUrlValidatorService;
 
   public CurationApplicationRunner(
-      @Qualifier("AAPCLIENT") BioSamplesClient bioSamplesClient,
-      PipelinesProperties pipelinesProperties,
-      OlsProcessor olsProcessor,
-      CurationApplicationService curationApplicationService,
-      AnalyticsService analyticsService,
-      IriUrlValidatorService iriUrlValidatorService) {
+      @Qualifier("AAPCLIENT") final BioSamplesClient bioSamplesClient,
+      final PipelinesProperties pipelinesProperties,
+      final OlsProcessor olsProcessor,
+      final CurationApplicationService curationApplicationService,
+      final AnalyticsService analyticsService,
+      final IriUrlValidatorService iriUrlValidatorService) {
     this.bioSamplesClient = bioSamplesClient;
     this.pipelinesProperties = pipelinesProperties;
     this.olsProcessor = olsProcessor;
     this.curationApplicationService = curationApplicationService;
     this.analyticsService = analyticsService;
     this.iriUrlValidatorService = iriUrlValidatorService;
-    this.pipelineFutureCallback = new PipelineFutureCallback();
+    pipelineFutureCallback = new PipelineFutureCallback();
   }
 
   @Override
-  public void run(ApplicationArguments args) throws Exception {
-    Instant startTime = Instant.now();
-    Collection<Filter> filters = PipelineUtils.getDateFilters(args);
+  public void run(final ApplicationArguments args) throws Exception {
+    final Instant startTime = Instant.now();
+    final Collection<Filter> filters = PipelineUtils.getDateFilters(args, "update");
     long sampleCount = 0;
 
-    try (AdaptiveThreadPoolExecutor executorService =
+    try (final AdaptiveThreadPoolExecutor executorService =
         AdaptiveThreadPoolExecutor.create(
             100,
             10000,
@@ -79,16 +79,16 @@ public class CurationApplicationRunner implements ApplicationRunner {
             pipelinesProperties.getThreadCount(),
             pipelinesProperties.getThreadCountMax())) {
 
-      Map<String, Future<PipelineResult>> futures = new HashMap<>();
-      for (EntityModel<Sample> sampleResource :
+      final Map<String, Future<PipelineResult>> futures = new HashMap<>();
+      for (final EntityModel<Sample> sampleResource :
           bioSamplesClient.fetchSampleResourceAll("", filters)) {
         LOG.trace("Handling {}", sampleResource);
-        Sample sample = sampleResource.getContent();
+        final Sample sample = sampleResource.getContent();
         if (sample == null) {
           throw new RuntimeException("Sample should not be null");
         }
 
-        Callable<PipelineResult> task =
+        final Callable<PipelineResult> task =
             new SampleCurationCallable(
                 bioSamplesClient,
                 sample,
@@ -111,8 +111,8 @@ public class CurationApplicationRunner implements ApplicationRunner {
 
       throw e;
     } finally {
-      Instant endTime = Instant.now();
-      String failures;
+      final Instant endTime = Instant.now();
+      final String failures;
 
       LOG.info("Total samples processed {}", sampleCount);
       LOG.info("Total curation objects added {}", pipelineFutureCallback.getTotalCount());
@@ -121,7 +121,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
           "Pipeline total running time {} seconds",
           Duration.between(startTime, endTime).getSeconds());
 
-      PipelineAnalytics pipelineAnalytics =
+      final PipelineAnalytics pipelineAnalytics =
           new PipelineAnalytics(
               "curation", startTime, endTime, sampleCount, pipelineFutureCallback.getTotalCount());
       pipelineAnalytics.setDateRange(filters);
@@ -133,7 +133,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
       if (!failedQueue.isEmpty()) {
         // put the first ones on the queue into a list
         // limit the size of list to avoid overload
-        List<String> fails = new LinkedList<>();
+        final List<String> fails = new LinkedList<>();
         while (failedQueue.peek() != null) {
           fails.add(failedQueue.poll());
         }

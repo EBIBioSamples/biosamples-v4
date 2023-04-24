@@ -18,7 +18,7 @@ public class CertificationResult {
   private final List<Certificate> certificates = new ArrayList<>();
   private String sampleAccession;
 
-  public CertificationResult(String sampleAccession) {
+  public CertificationResult(final String sampleAccession) {
     this.sampleAccession = sampleAccession;
   }
 
@@ -29,7 +29,7 @@ public class CertificationResult {
     return sampleAccession;
   }
 
-  public void add(Certificate certificate) {
+  public void add(final Certificate certificate) {
     certificates.add(certificate);
   }
 

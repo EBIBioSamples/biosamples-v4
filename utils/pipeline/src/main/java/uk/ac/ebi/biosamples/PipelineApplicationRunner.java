@@ -41,24 +41,24 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
   private final PipelineFutureCallback pipelineFutureCallback;
 
   public PipelineApplicationRunner(
-      BioSamplesClient bioSamplesClient, PipelinesProperties pipelinesProperties /*,
+      final BioSamplesClient bioSamplesClient, final PipelinesProperties pipelinesProperties /*,
                                      AnalyticsService analyticsService*/) {
     this.bioSamplesClient = bioSamplesClient;
     this.pipelinesProperties = pipelinesProperties;
     //        this.analyticsService = analyticsService;
-    this.pipelineFutureCallback = new PipelineFutureCallback();
+    pipelineFutureCallback = new PipelineFutureCallback();
   }
 
   @Override
-  public void run(ApplicationArguments args) throws Exception {
-    Instant startTime = Instant.now();
+  public void run(final ApplicationArguments args) throws Exception {
+    final Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
-    Collection<Filter> filters = PipelineUtils.getDateFilters(args);
+    final Collection<Filter> filters = PipelineUtils.getDateFilters(args, "update");
     long sampleCount = 0;
 
     loadPreConfiguration();
 
-    try (AdaptiveThreadPoolExecutor executorService =
+    try (final AdaptiveThreadPoolExecutor executorService =
         AdaptiveThreadPoolExecutor.create(
             100,
             10000,
@@ -66,13 +66,13 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
             pipelinesProperties.getThreadCount(),
             pipelinesProperties.getThreadCountMax())) {
 
-      Map<String, Future<PipelineResult>> futures = new HashMap<>();
-      for (EntityModel<Sample> sampleResource :
+      final Map<String, Future<PipelineResult>> futures = new HashMap<>();
+      for (final EntityModel<Sample> sampleResource :
           bioSamplesClient.fetchSampleResourceAll("", filters)) {
-        Sample sample = Objects.requireNonNull(sampleResource.getContent());
+        final Sample sample = Objects.requireNonNull(sampleResource.getContent());
         LOG.trace("Handling {}", sample);
 
-        Callable<PipelineResult> task = getNewCallableClassInstance().withSample(sample);
+        final Callable<PipelineResult> task = getNewCallableClassInstance().withSample(sample);
         sampleCount++;
         if (sampleCount % 10000 == 0) {
           LOG.info("{} samples scheduled for processing", sampleCount);
@@ -86,7 +86,7 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
       LOG.error("Pipeline failed to finish successfully", e);
       throw e;
     } finally {
-      Instant endTime = Instant.now();
+      final Instant endTime = Instant.now();
       LOG.info("Total samples processed {}", sampleCount);
       LOG.info("Total curation objects added {}", pipelineFutureCallback.getTotalCount());
       LOG.info("Pipeline finished at {}", endTime);
@@ -94,7 +94,7 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
           "Pipeline total running time {} seconds",
           Duration.between(startTime, endTime).getSeconds());
 
-      PipelineAnalytics pipelineAnalytics =
+      final PipelineAnalytics pipelineAnalytics =
           new PipelineAnalytics(
               getPipelineName(),
               startTime,
@@ -106,11 +106,11 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
     }
   }
 
-  protected String getPipelineName() {
+  private String getPipelineName() {
     return PIPELINE_NAME;
   }
 
-  public abstract void loadPreConfiguration();
+  abstract void loadPreConfiguration();
 
-  public abstract PipelineSampleCallable getNewCallableClassInstance();
+  abstract PipelineSampleCallable getNewCallableClassInstance();
 }

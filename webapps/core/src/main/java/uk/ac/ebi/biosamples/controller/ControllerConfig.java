@@ -20,12 +20,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
 public class ControllerConfig {
-
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   @ExceptionHandler
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public void handle(HttpMessageNotReadableException e) {
+  public void handle(final HttpMessageNotReadableException e) {
     log.warn("Returning HTTP 400 Bad Request", e);
     throw e;
   }

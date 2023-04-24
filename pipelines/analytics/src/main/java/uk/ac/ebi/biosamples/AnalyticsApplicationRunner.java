@@ -39,23 +39,23 @@ public class AnalyticsApplicationRunner implements ApplicationRunner {
   private final SamplePageService samplePageService;
 
   public AnalyticsApplicationRunner(
-      AnalyticsService analyticsService,
-      FacetService facetService,
-      SamplePageService samplePageService) {
+      final AnalyticsService analyticsService,
+      final FacetService facetService,
+      final SamplePageService samplePageService) {
     this.analyticsService = analyticsService;
     this.facetService = facetService;
     this.samplePageService = samplePageService;
-    this.pipelineFutureCallback = new PipelineFutureCallback();
+    pipelineFutureCallback = new PipelineFutureCallback();
   }
 
   @Override
-  public void run(ApplicationArguments args) {
-    Instant startTime = Instant.now();
+  public void run(final ApplicationArguments args) {
+    final Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
-    long sampleCount = 0;
-    SampleAnalytics sampleAnalytics = new SampleAnalytics();
+    final long sampleCount = 0;
+    final SampleAnalytics sampleAnalytics = new SampleAnalytics();
 
-    Page<Sample> samplePage =
+    final Page<Sample> samplePage =
         samplePageService.getSamplesByText(
             "",
             Collections.emptyList(),
@@ -69,7 +69,7 @@ public class AnalyticsApplicationRunner implements ApplicationRunner {
     addToFacets("sex", sampleAnalytics);
     addToFacets("external reference", sampleAnalytics);
 
-    Instant endTime = Instant.now();
+    final Instant endTime = Instant.now();
     LOG.info("Total samples processed {}", sampleCount);
     LOG.info("Total curation objects added {}", pipelineFutureCallback.getTotalCount());
     LOG.info("Pipeline finished at {}", endTime);
@@ -80,19 +80,19 @@ public class AnalyticsApplicationRunner implements ApplicationRunner {
     analyticsService.mergeSampleAnalytics(startTime, sampleAnalytics);
   }
 
-  private void addToFacets(String facetField, SampleAnalytics sampleAnalytics) {
-    List<Facet> facetList =
+  private void addToFacets(final String facetField, final SampleAnalytics sampleAnalytics) {
+    final List<Facet> facetList =
         facetService.getFacets(
             "", Collections.emptyList(), Collections.emptyList(), 1, 10, facetField);
-    for (Facet facet : facetList) {
-      String label = facet.getLabel();
-      Long totalCount = facet.getCount();
+    for (final Facet facet : facetList) {
+      final String label = facet.getLabel();
+      final Long totalCount = facet.getCount();
       Long existingFacetSum = 0L;
-      Map<String, Map<String, Long>> facetListMap = sampleAnalytics.getFacets();
+      final Map<String, Map<String, Long>> facetListMap = sampleAnalytics.getFacets();
       if (facet.getContent() instanceof LabelCountListContent) {
-        Map<String, Long> facetMap = new HashMap<>();
+        final Map<String, Long> facetMap = new HashMap<>();
         facetListMap.put(label, facetMap);
-        for (LabelCountEntry e : (LabelCountListContent) facet.getContent()) {
+        for (final LabelCountEntry e : (LabelCountListContent) facet.getContent()) {
           facetMap.put(e.getLabel(), e.getCount());
           existingFacetSum += e.getCount();
         }

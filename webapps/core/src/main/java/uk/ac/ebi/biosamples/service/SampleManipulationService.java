@@ -28,17 +28,12 @@ public class SampleManipulationService {
    * @param sample
    * @return a sample which contacts has only name field
    */
-  public Sample removeLegacyFields(Sample sample) {
-    SortedSet<Contact> contacts =
+  public Sample removeLegacyFields(final Sample sample) {
+    final SortedSet<Contact> contacts =
         sample.getContacts().stream()
             .map(this::removeContactLegacyFields)
             .collect(Collectors.toCollection(TreeSet::new));
 
-    //        return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
-    //                sample.getRelease(), sample.getUpdate(), sample.getCharacteristics(),
-    //                sample.getRelationships(), sample.getExternalReferences(),
-    // sample.getOrganizations(),
-    //                contacts, sample.getPublications());
     return Sample.Builder.fromSample(sample).withContacts(contacts).build();
   }
 
@@ -48,7 +43,7 @@ public class SampleManipulationService {
    * @param sample
    * @return sample which update date is set to current instant
    */
-  public Sample setUpdateDateToNow(Sample sample) {
+  public Sample setUpdateDateToNow(final Sample sample) {
     //        return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
     //                sample.getRelease(), Instant.now(),
     //                sample.getCharacteristics(), sample.getRelationships(),
@@ -64,14 +59,16 @@ public class SampleManipulationService {
    * @param contact
    * @return the polished contact
    */
-  private Contact removeContactLegacyFields(Contact contact) {
+  private Contact removeContactLegacyFields(final Contact contact) {
     String name = contact.getName();
     if (Strings.isNullOrEmpty(name)) {
-      String nullSafeFirstName = contact.getFirstName() == null ? "" : contact.getFirstName();
-      String nullSafeLastName = contact.getLastName() == null ? "" : contact.getLastName();
-      String fullName = (nullSafeFirstName + " " + nullSafeLastName).trim();
+      final String nullSafeFirstName = contact.getFirstName() == null ? "" : contact.getFirstName();
+      final String nullSafeLastName = contact.getLastName() == null ? "" : contact.getLastName();
+      final String fullName = (nullSafeFirstName + " " + nullSafeLastName).trim();
 
-      if (!fullName.isEmpty()) name = fullName;
+      if (!fullName.isEmpty()) {
+        name = fullName;
+      }
     }
     return new Contact.Builder().name(name).build();
   }

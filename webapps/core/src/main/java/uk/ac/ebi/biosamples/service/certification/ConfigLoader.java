@@ -20,22 +20,22 @@ import uk.ac.ebi.biosamples.model.certification.Config;
 
 @Service
 public class ConfigLoader {
-  private String configFile = "config.json";
+  private final String configFile = "config.json";
   public Config config;
 
   @PostConstruct
   public void init() {
-    ObjectMapper mapper = new ObjectMapper();
+    final ObjectMapper mapper = new ObjectMapper();
     try {
       // Convert JSON string from file to Object
       config =
           mapper.readValue(
-              this.getClass().getClassLoader().getResourceAsStream(configFile), Config.class);
-    } catch (JsonGenerationException e) {
+              getClass().getClassLoader().getResourceAsStream(configFile), Config.class);
+    } catch (final JsonGenerationException e) {
       e.printStackTrace();
-    } catch (JsonMappingException e) {
+    } catch (final JsonMappingException e) {
       e.printStackTrace();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       e.printStackTrace();
     }
   }

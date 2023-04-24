@@ -29,18 +29,18 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 @Component
 @Order(2)
 public class RestIntegrationV2 extends AbstractIntegration {
-  private final Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final BioSamplesClient annonymousClient;
   private final BioSamplesClient webinClient;
 
   public RestIntegrationV2(
-      BioSamplesClient client,
-      RestTemplateBuilder restTemplateBuilder,
-      BioSamplesProperties clientProperties,
-      @Qualifier("WEBINCLIENT") BioSamplesClient webinClient) {
+      final BioSamplesClient client,
+      final RestTemplateBuilder restTemplateBuilder,
+      final BioSamplesProperties clientProperties,
+      @Qualifier("WEBINCLIENT") final BioSamplesClient webinClient) {
     super(client, webinClient);
     this.webinClient = webinClient;
-    this.annonymousClient =
+    annonymousClient =
         new BioSamplesClient(
             clientProperties.getBiosamplesClientUri(),
             clientProperties.getBiosamplesClientUriV2(),
@@ -68,15 +68,16 @@ public class RestIntegrationV2 extends AbstractIntegration {
   // TODO: cleanup this test
   @Override
   protected void phaseSix() throws ExecutionException, InterruptedException {
-    Sample webinSampleTest1 = getWebinSampleTest1();
+    final Sample webinSampleTest1 = getWebinSampleTest1();
 
     // Submit with webin client, no jwt passed
-    List<Sample> webinSampleResource =
-        this.webinClient.persistSampleResourceV2(Collections.singletonList(webinSampleTest1));
-    String webinSampleAccession = Objects.requireNonNull(webinSampleResource.get(0)).getAccession();
+    final List<Sample> webinSampleResource =
+        webinClient.persistSampleResourceV2(Collections.singletonList(webinSampleTest1));
+    final String webinSampleAccession =
+        Objects.requireNonNull(webinSampleResource.get(0)).getAccession();
 
-    Optional<EntityModel<Sample>> webinSamplePostPersistence =
-        this.webinClient.fetchSampleResource(webinSampleAccession);
+    final Optional<EntityModel<Sample>> webinSamplePostPersistence =
+        webinClient.fetchSampleResource(webinSampleAccession);
 
     if (!webinSamplePostPersistence.isPresent()) {
       throw new IntegrationTestFailException(
@@ -101,9 +102,9 @@ public class RestIntegrationV2 extends AbstractIntegration {
           "Private sample submitted using webin auth not retrieved", Phase.SIX);
     }*/
 
-    Sample webinSampleMinimalInfo = getWebinSampleMinimalInfo();
-    Map<String, String> sampleAccessionToNameMap =
-        this.webinClient.bulkAccessionV2(Collections.singletonList(webinSampleMinimalInfo));
+    final Sample webinSampleMinimalInfo = getWebinSampleMinimalInfo();
+    final Map<String, String> sampleAccessionToNameMap =
+        webinClient.bulkAccessionV2(Collections.singletonList(webinSampleMinimalInfo));
 
     if (sampleAccessionToNameMap.size() == 0) {
       throw new IntegrationTestFailException("Bulk accession is not working for V2", Phase.SIX);
@@ -111,15 +112,15 @@ public class RestIntegrationV2 extends AbstractIntegration {
 
     // test private sample create and fetch using webin auth - v2
     try {
-      Sample webinTestSampleV2Submission = getWebinSampleTest1();
-      List<Sample> apiResponseSampleResourceList =
-          this.webinClient.persistSampleResourceV2(
+      final Sample webinTestSampleV2Submission = getWebinSampleTest1();
+      final List<Sample> apiResponseSampleResourceList =
+          webinClient.persistSampleResourceV2(
               Collections.singletonList(webinTestSampleV2Submission));
-      String apiResponseSampleAccession1 =
+      final String apiResponseSampleAccession1 =
           Objects.requireNonNull(apiResponseSampleResourceList.get(0)).getAccession();
 
-      Map<String, Sample> apiResponseV2SampleBulkFetch =
-          this.webinClient.fetchSampleResourcesByAccessionsV2(
+      final Map<String, Sample> apiResponseV2SampleBulkFetch =
+          webinClient.fetchSampleResourcesByAccessionsV2(
               Collections.singletonList(apiResponseSampleAccession1));
 
       if (apiResponseV2SampleBulkFetch.isEmpty()) {
@@ -137,8 +138,8 @@ public class RestIntegrationV2 extends AbstractIntegration {
     }
 
     // multiple sample fetch by accessions test - v2, authorized user
-    Map<String, Sample> sampleResourcesV2Map1 =
-        this.webinClient.fetchSampleResourcesByAccessionsV2(
+    final Map<String, Sample> sampleResourcesV2Map1 =
+        webinClient.fetchSampleResourcesByAccessionsV2(
             Arrays.asList(webinSampleAccession, "SAMEA1", "SAMEA8"));
 
     if (sampleResourcesV2Map1 == null || sampleResourcesV2Map1.size() == 0) {
@@ -146,7 +147,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
     }
 
     // single private sample fetch by accessions test - v2, authorized user
-    Sample fetchedSample = this.webinClient.fetchSampleResourceV2(webinSampleAccession);
+    final Sample fetchedSample = webinClient.fetchSampleResourceV2(webinSampleAccession);
 
     if (fetchedSample == null) {
       throw new IntegrationTestFailException(
@@ -154,9 +155,9 @@ public class RestIntegrationV2 extends AbstractIntegration {
     }
 
     // multiple sample fetch by accessions test - v2, unauthorized user
-    Map<String, Sample> sampleResourcesV2Map2 =
-        this.annonymousClient.fetchSampleResourcesByAccessionsV2(
-            Arrays.asList(webinSampleAccession, "SAMEA1", "SAMEA8"));
+    final Map<String, Sample> sampleResourcesV2Map2 =
+        annonymousClient.fetchSampleResourcesByAccessionsV2(
+            Arrays.asList(webinSampleAccession, "SAMEA1", "SAMEA14"));
 
     if (sampleResourcesV2Map2.size() > 2) {
       throw new IntegrationTestFailException(
@@ -171,7 +172,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
     }
 
     // single private sample fetch by accessions test - v2, authorized user
-    Sample fetchedSample2 = this.annonymousClient.fetchSampleResourceV2(webinSampleAccession);
+    final Sample fetchedSample2 = annonymousClient.fetchSampleResourceV2(webinSampleAccession);
 
     if (fetchedSample2 != null) {
       throw new IntegrationTestFailException(
@@ -180,7 +181,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
     }
 
     // single public sample fetch by accessions test - v2, unauthorized user
-    Sample fetchedSample3 = this.webinClient.fetchSampleResourceV2("SAMEA8");
+    final Sample fetchedSample3 = webinClient.fetchSampleResourceV2("SAMEA8");
 
     if (fetchedSample3 == null) {
       throw new IntegrationTestFailException(
@@ -191,8 +192,8 @@ public class RestIntegrationV2 extends AbstractIntegration {
     // multiple sample fetch by accessions test, authorized user - v2, all samples not found,
     // partial
     // fetch result
-    Map<String, Sample> sampleResourcesV2Map3 =
-        this.webinClient.fetchSampleResourcesByAccessionsV2(
+    final Map<String, Sample> sampleResourcesV2Map3 =
+        webinClient.fetchSampleResourcesByAccessionsV2(
             Arrays.asList(webinSampleAccession, "SAMEA100008", "SAMEA100023", "SAMEA99999999"));
 
     if (sampleResourcesV2Map3.size() > 3) {
@@ -208,11 +209,11 @@ public class RestIntegrationV2 extends AbstractIntegration {
   }
 
   private Sample getWebinSampleTest1() {
-    String name = "RestIntegrationWebin_sample_1";
-    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant release = Instant.parse("2116-04-01T11:36:57.00Z");
+    final String name = "RestIntegrationWebin_sample_1";
+    final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant release = Instant.parse("2116-04-01T11:36:57.00Z");
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
@@ -229,11 +230,11 @@ public class RestIntegrationV2 extends AbstractIntegration {
                 "http://www.ebi.ac.uk/efo/EFO_0001265"),
             null));
 
-    SortedSet<Relationship> relationships = new TreeSet<>();
-    SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+    final SortedSet<Relationship> relationships = new TreeSet<>();
+    final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
     externalReferences.add(ExternalReference.build("http://www.google.com"));
 
-    SortedSet<Organization> organizations = new TreeSet<>();
+    final SortedSet<Organization> organizations = new TreeSet<>();
     organizations.add(
         new Organization.Builder()
             .name("Jo Bloggs Inc")
@@ -242,7 +243,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
             .url("http://www.jobloggs.com")
             .build());
 
-    SortedSet<Contact> contacts = new TreeSet<>();
+    final SortedSet<Contact> contacts = new TreeSet<>();
     contacts.add(
         new Contact.Builder()
             .name("Joe Bloggs")
@@ -250,7 +251,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
             .email("jobloggs@joblogs.com")
             .build());
 
-    SortedSet<Publication> publications = new TreeSet<>();
+    final SortedSet<Publication> publications = new TreeSet<>();
     publications.add(
         new Publication.Builder().doi("10.1093/nar/gkt1081").pubmed_id("24265224").build());
 
@@ -268,7 +269,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
   }
 
   private Sample getWebinSampleMinimalInfo() {
-    String name = "RestIntegrationWebin_sample_1";
+    final String name = "RestIntegrationWebin_sample_1";
 
     return new Sample.Builder(name).build();
   }

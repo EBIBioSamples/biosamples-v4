@@ -30,8 +30,7 @@ import uk.ac.ebi.biosamples.mongo.service.MongoCurationToCurationConverter;
 
 @Service
 public class CurationReadService {
-
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
   @Autowired private MongoCurationRepository mongoCurationRepository;
   @Autowired private MongoCurationLinkRepository mongoCurationLinkRepository;
 
@@ -41,12 +40,12 @@ public class CurationReadService {
 
   @Autowired private MongoCurationToCurationConverter mongoCurationToCurationConverter;
 
-  public Page<Curation> getPage(Pageable pageable) {
-    Page<MongoCuration> pageNeoCuration = mongoCurationRepository.findAll(pageable);
+  public Page<Curation> getPage(final Pageable pageable) {
+    final Page<MongoCuration> pageNeoCuration = mongoCurationRepository.findAll(pageable);
     return pageNeoCuration.map(mongoCurationToCurationConverter);
   }
 
-  public Curation getCuration(String hash) {
+  public Curation getCuration(final String hash) {
     final Optional<MongoCuration> byId = mongoCurationRepository.findById(hash);
     final MongoCuration neoCuration = byId.orElse(null);
 
@@ -57,14 +56,15 @@ public class CurationReadService {
     }
   }
 
-  public Page<CurationLink> getCurationLinksForSample(String accession, Pageable pageable) {
-    Page<MongoCurationLink> pageNeoCurationLink =
+  public Page<CurationLink> getCurationLinksForSample(
+      final String accession, final Pageable pageable) {
+    final Page<MongoCurationLink> pageNeoCurationLink =
         mongoCurationLinkRepository.findBySample(accession, pageable);
     // convert them into a state to return
     return pageNeoCurationLink.map(mongoCurationLinkToCurationLinkConverter);
   }
 
-  public CurationLink getCurationLink(String hash) {
+  public CurationLink getCurationLink(final String hash) {
     final Optional<MongoCurationLink> byId = mongoCurationLinkRepository.findById(hash);
     final MongoCurationLink mongoCurationLink = byId.orElse(null);
 
@@ -82,29 +82,30 @@ public class CurationReadService {
    * @param curationLink
    * @return
    */
-  public Sample applyCurationLinkToSample(Sample sample, CurationLink curationLink) {
+  Sample applyCurationLinkToSample(final Sample sample, final CurationLink curationLink) {
     log.trace("Applying curation " + curationLink + " to sample " + sample.getAccession());
-    Curation curation = curationLink.getCuration();
+    final Curation curation = curationLink.getCuration();
 
-    SortedSet<Attribute> attributes = new TreeSet<>(sample.getAttributes());
-    SortedSet<ExternalReference> externalReferences = new TreeSet<>(sample.getExternalReferences());
-    SortedSet<Relationship> relationships = new TreeSet<>(sample.getRelationships());
+    final SortedSet<Attribute> attributes = new TreeSet<>(sample.getAttributes());
+    final SortedSet<ExternalReference> externalReferences =
+        new TreeSet<>(sample.getExternalReferences());
+    final SortedSet<Relationship> relationships = new TreeSet<>(sample.getRelationships());
     // remove pre-curation things
-    for (Attribute attribute : curation.getAttributesPre()) {
+    for (final Attribute attribute : curation.getAttributesPre()) {
       if (!attributes.contains(attribute)) {
         throw new IllegalArgumentException(
             "Failed to apply curation " + curation + " to sample " + sample);
       }
       attributes.remove(attribute);
     }
-    for (ExternalReference externalReference : curation.getExternalReferencesPre()) {
+    for (final ExternalReference externalReference : curation.getExternalReferencesPre()) {
       if (!externalReferences.contains(externalReference)) {
         throw new IllegalArgumentException(
             "Failed to apply curation " + curation + " to sample " + sample);
       }
       externalReferences.remove(externalReference);
     }
-    for (Relationship relationship : curation.getRelationshipsPre()) {
+    for (final Relationship relationship : curation.getRelationshipsPre()) {
       if (!relationships.contains(relationship)) {
         throw new IllegalArgumentException(
             "Failed to apply curation " + curation + " to sample " + sample);
@@ -112,21 +113,21 @@ public class CurationReadService {
       relationships.remove(relationship);
     }
     // add post-curation things
-    for (Attribute attribute : curation.getAttributesPost()) {
+    for (final Attribute attribute : curation.getAttributesPost()) {
       if (attributes.contains(attribute)) {
         throw new IllegalArgumentException(
             "Failed to apply curation " + curation + " to sample " + sample);
       }
       attributes.add(attribute);
     }
-    for (ExternalReference externalReference : curation.getExternalReferencesPost()) {
+    for (final ExternalReference externalReference : curation.getExternalReferencesPost()) {
       if (externalReferences.contains(externalReference)) {
         throw new IllegalArgumentException(
             "Failed to apply curation " + curation + " to sample " + sample);
       }
       externalReferences.add(externalReference);
     }
-    for (Relationship relationship : curation.getRelationshipsPost()) {
+    for (final Relationship relationship : curation.getRelationshipsPost()) {
       if (relationships.contains(relationship)) {
         throw new IllegalArgumentException(
             "Failed to apply curation " + curation + " to sample " + sample);
@@ -138,7 +139,7 @@ public class CurationReadService {
     Instant reviewed = curationLink.getCreated();
 
     if (reviewed != null) {
-      Instant update = sample.getUpdate();
+      final Instant update = sample.getUpdate();
 
       if (update.isAfter(reviewed)) {
         reviewed = update;
@@ -153,7 +154,7 @@ public class CurationReadService {
         .build();
   }
 
-  public Sample applyAllCurationToSample(Sample sample, Optional<List<String>> curationDomains) {
+  Sample applyAllCurationToSample(Sample sample, final Optional<List<String>> curationDomains) {
     // short-circuit if no curation domains specified
     if (curationDomains.isPresent() && curationDomains.get().isEmpty()) {
       return sample;
@@ -161,13 +162,13 @@ public class CurationReadService {
 
     // Try to apply curations in the order of creation date.
     // Because of the index in creation date mongo returns in that order
-    Set<CurationLink> curationLinks = new LinkedHashSet<>();
+    final Set<CurationLink> curationLinks = new LinkedHashSet<>();
     int pageNo = 0;
     Page<CurationLink> page;
     do {
-      Pageable pageable = PageRequest.of(pageNo, 1000, Sort.Direction.ASC, "created");
+      final Pageable pageable = PageRequest.of(pageNo, 1000, Sort.Direction.ASC, "created");
       page = getCurationLinksForSample(sample.getAccession(), pageable);
-      for (CurationLink curationLink : page) {
+      for (final CurationLink curationLink : page) {
         if (curationDomains.isPresent()) {
           // curation domains restricted, curation must be part of that domain
           if (curationDomains.get().contains(curationLink.getDomain())) {
@@ -181,10 +182,10 @@ public class CurationReadService {
       pageNo += 1;
     } while (pageNo < page.getTotalPages());
 
-    for (CurationLink curation : curationLinks) {
+    for (final CurationLink curation : curationLinks) {
       try {
         sample = applyCurationLinkToSample(sample, curation);
-      } catch (IllegalArgumentException e) {
+      } catch (final IllegalArgumentException e) {
         log.trace(e.getMessage());
       }
     }

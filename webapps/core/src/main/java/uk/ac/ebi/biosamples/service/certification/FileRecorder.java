@@ -26,22 +26,23 @@ import uk.ac.ebi.biosamples.model.certification.Recommendation;
 
 @Service
 public class FileRecorder implements Recorder {
-  private static Logger LOG = LoggerFactory.getLogger(FileRecorder.class);
-  private static Logger EVENTS = LoggerFactory.getLogger("events");
+  private static final Logger LOG = LoggerFactory.getLogger(FileRecorder.class);
+  private static final Logger EVENTS = LoggerFactory.getLogger("events");
 
   @Override
   public BioSamplesCertificationComplainceResult record(
-      Set<CertificationResult> certificationResults, List<Recommendation> recommendations) {
-    BioSamplesCertificationComplainceResult bioSamplesCertificationComplainceResult =
+      final Set<CertificationResult> certificationResults,
+      final List<Recommendation> recommendations) {
+    final BioSamplesCertificationComplainceResult bioSamplesCertificationComplainceResult =
         new BioSamplesCertificationComplainceResult();
-    ObjectMapper objectMapper = new ObjectMapper();
+    final ObjectMapper objectMapper = new ObjectMapper();
 
     if (certificationResults == null) {
       throw new IllegalArgumentException("cannot record a null certification result");
     }
 
-    for (CertificationResult certificationResult : certificationResults) {
-      for (Certificate certificate : certificationResult.getCertificates()) {
+    for (final CertificationResult certificationResult : certificationResults) {
+      for (final Certificate certificate : certificationResult.getCertificates()) {
         EVENTS.info(
             String.format(
                 "%s recorded %s certificate",
@@ -52,17 +53,17 @@ public class FileRecorder implements Recorder {
 
         try {
           objectMapper.writeValueAsString(certificationResult);
-        } catch (IOException e) {
+        } catch (final IOException e) {
           LOG.error(String.format("failed to write"));
         }
       }
     }
 
-    for (Recommendation recommendation : recommendations) {
+    for (final Recommendation recommendation : recommendations) {
       bioSamplesCertificationComplainceResult.add(recommendation);
       try {
         objectMapper.writeValueAsString(recommendation);
-      } catch (JsonProcessingException e) {
+      } catch (final JsonProcessingException e) {
         LOG.error(String.format("failed to write"));
       }
     }

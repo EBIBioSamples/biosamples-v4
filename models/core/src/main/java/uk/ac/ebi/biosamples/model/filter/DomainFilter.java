@@ -16,9 +16,9 @@ import uk.ac.ebi.biosamples.model.facet.FacetType;
 
 public class DomainFilter implements Filter {
 
-  private String domain;
+  private final String domain;
 
-  private DomainFilter(String domain) {
+  private DomainFilter(final String domain) {
     this.domain = domain;
   }
 
@@ -34,12 +34,12 @@ public class DomainFilter implements Filter {
 
   @Override
   public Optional<String> getContent() {
-    return Optional.of(this.domain);
+    return Optional.of(domain);
   }
 
   @Override
   public String getSerialization() {
-    return this.getType().getSerialization() + ":" + this.domain;
+    return getType().getSerialization() + ":" + domain;
   }
 
   @Override
@@ -48,37 +48,37 @@ public class DomainFilter implements Filter {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (obj == this) {
       return true;
     }
     if (!(obj instanceof DomainFilter)) {
       return false;
     }
-    DomainFilter other = (DomainFilter) obj;
-    return Objects.equals(other.getContent().orElse(null), this.getContent().orElse(null));
+    final DomainFilter other = (DomainFilter) obj;
+    return Objects.equals(other.getContent().orElse(null), getContent().orElse(null));
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.getContent().orElse(null));
+    return Objects.hash(getContent().orElse(null));
   }
 
   public static class Builder implements Filter.Builder {
 
-    private String domain;
+    private final String domain;
 
-    public Builder(String domain) {
+    public Builder(final String domain) {
       this.domain = domain;
     }
 
     @Override
     public Filter build() {
-      return new DomainFilter(this.domain);
+      return new DomainFilter(domain);
     }
 
     @Override
-    public Filter.Builder parseContent(String filterSerialized) {
+    public Filter.Builder parseContent(final String filterSerialized) {
       return new Builder(filterSerialized);
     }
   }

@@ -12,18 +12,24 @@ package uk.ac.ebi.biosamples.neoexport;
 
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo4j.model.NeoExternalEntity;
 import uk.ac.ebi.biosamples.neo4j.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo4j.model.NeoSample;
 
 @Component
-public class NeoCsvExporter {
+class NeoCsvExporter {
   private static final Logger LOG = LoggerFactory.getLogger(NeoCsvExporter.class);
 
   private static final String EXPORT_PATH = "./export/";
@@ -46,27 +52,27 @@ public class NeoCsvExporter {
   private static final String[] EXTERNAL_ENTITY_HEADER = {"name", "archive", "ref", "url"};
   private static final String[] REL_HEADER = {REL_SOURCE_HEADER, REL_TARGET_HEADER};
 
-  private List<Map<String, String>> samples = new ArrayList<>();
-  private List<Map<String, String>> externalEntity = new ArrayList<>();
+  private final List<Map<String, String>> samples = new ArrayList<>();
+  private final List<Map<String, String>> externalEntity = new ArrayList<>();
 
-  private List<Map<String, String>> relsDerivedFrom = new ArrayList<>();
-  private List<Map<String, String>> relsSameAs = new ArrayList<>();
-  private List<Map<String, String>> relsHasMember = new ArrayList<>();
-  private List<Map<String, String>> relsChildOf = new ArrayList<>();
-  private List<Map<String, String>> relsOther = new ArrayList<>();
-  private List<Map<String, String>> relsExternalRef = new ArrayList<>();
+  private final List<Map<String, String>> relsDerivedFrom = new ArrayList<>();
+  private final List<Map<String, String>> relsSameAs = new ArrayList<>();
+  private final List<Map<String, String>> relsHasMember = new ArrayList<>();
+  private final List<Map<String, String>> relsChildOf = new ArrayList<>();
+  private final List<Map<String, String>> relsOther = new ArrayList<>();
+  private final List<Map<String, String>> relsExternalRef = new ArrayList<>();
 
   private int sampleIndex = 1;
   private int externalEntityIndex = 1;
   private int relsExternelRefIndex = 1;
-  private int mockIndex = 1;
+  private final int mockIndex = 1;
 
-  public void addToCSVFile(Sample sample) {
-    NeoSample neoSample = NeoSample.build(sample);
+  void addToCSVFile(final Sample sample) {
+    final NeoSample neoSample = NeoSample.build(sample);
     addSample(neoSample);
   }
 
-  public void flush() {
+  void flush() {
     writeCSV(samples, "samples-" + sampleIndex + ".csv", SAMPLES_HEADER, false);
     writeCSV(
         externalEntity,
@@ -83,8 +89,8 @@ public class NeoCsvExporter {
     writeCSV(relsOther, "other-" + mockIndex + ".csv", REL_HEADER, true);
   }
 
-  private void addSample(NeoSample sample) {
-    Map<String, String> attributeMap = new HashMap<>();
+  private void addSample(final NeoSample sample) {
+    final Map<String, String> attributeMap = new HashMap<>();
     attributeMap.put("accession", sample.getAccession());
     attributeMap.put("name", sample.getName());
     attributeMap.put("organism", sample.getOrganism() == null ? "" : sample.getOrganism());
@@ -98,35 +104,35 @@ public class NeoCsvExporter {
         "organismPart", sample.getOrganismPart() == null ? "" : sample.getOrganismPart());
     samples.add(attributeMap);
 
-    for (NeoRelationship rel : sample.getRelationships()) {
+    for (final NeoRelationship rel : sample.getRelationships()) {
       if (rel.getSource().equals(sample.getAccession())) {
         switch (rel.getType()) {
           case DERIVED_FROM:
-            Map<String, String> e = new HashMap<>();
+            final Map<String, String> e = new HashMap<>();
             e.put(REL_SOURCE_HEADER, rel.getSource());
             e.put(REL_TARGET_HEADER, rel.getTarget());
             relsDerivedFrom.add(e);
             break;
           case SAME_AS:
-            Map<String, String> e1 = new HashMap<>();
+            final Map<String, String> e1 = new HashMap<>();
             e1.put(REL_SOURCE_HEADER, rel.getSource());
             e1.put(REL_TARGET_HEADER, rel.getTarget());
             relsSameAs.add(e1);
             break;
           case HAS_MEMBER:
-            Map<String, String> e2 = new HashMap<>();
+            final Map<String, String> e2 = new HashMap<>();
             e2.put(REL_SOURCE_HEADER, rel.getSource());
             e2.put(REL_TARGET_HEADER, rel.getTarget());
             relsHasMember.add(e2);
             break;
           case CHILD_OF:
-            Map<String, String> e3 = new HashMap<>();
+            final Map<String, String> e3 = new HashMap<>();
             e3.put(REL_SOURCE_HEADER, rel.getSource());
             e3.put(REL_TARGET_HEADER, rel.getTarget());
             relsChildOf.add(e3);
             break;
           default:
-            Map<String, String> e4 = new HashMap<>();
+            final Map<String, String> e4 = new HashMap<>();
             e4.put(REL_SOURCE_HEADER, rel.getSource());
             e4.put(REL_TARGET_HEADER, rel.getTarget());
             relsOther.add(e4);
@@ -135,15 +141,15 @@ public class NeoCsvExporter {
       }
     }
 
-    for (NeoExternalEntity ref : sample.getExternalRefs()) {
-      String refId = ref.getArchive() + "_" + ref.getRef();
-      Map<String, String> e = new HashMap<>();
+    for (final NeoExternalEntity ref : sample.getExternalRefs()) {
+      final String refId = ref.getArchive() + "_" + ref.getRef();
+      final Map<String, String> e = new HashMap<>();
       e.put("name", refId);
       e.put("archive", ref.getArchive());
       e.put("ref", ref.getRef());
       e.put("url", ref.getUrl());
       externalEntity.add(e);
-      Map<String, String> e1 = new HashMap<>();
+      final Map<String, String> e1 = new HashMap<>();
       e1.put(REL_SOURCE_HEADER, sample.getAccession());
       e1.put(REL_TARGET_HEADER, refId);
       relsExternalRef.add(e1);
@@ -200,23 +206,26 @@ public class NeoCsvExporter {
   }
 
   private void writeCSV(
-      List<Map<String, String>> records, String fileName, String[] headerOrder, boolean append) {
+      final List<Map<String, String>> records,
+      final String fileName,
+      final String[] headerOrder,
+      final boolean append) {
     CsvSchema schema = null;
-    CsvSchema.Builder schemaBuilder = CsvSchema.builder();
+    final CsvSchema.Builder schemaBuilder = CsvSchema.builder();
     if (records != null && !records.isEmpty()) {
-      for (String col : records.get(0).keySet()) {
+      for (final String col : records.get(0).keySet()) {
         schemaBuilder.addColumn(col);
       }
       schema = schemaBuilder.build();
       schema = schema.sortedBy(headerOrder);
     }
 
-    CsvMapper mapper = new CsvMapper();
-    File file = new File(EXPORT_PATH + fileName);
-    try (Writer writer = new FileWriter(file, append)) {
+    final CsvMapper mapper = new CsvMapper();
+    final File file = new File(EXPORT_PATH + fileName);
+    try (final Writer writer = new FileWriter(file, append)) {
       mapper.writer(schema).writeValues(writer).writeAll(records);
       writer.flush();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       LOG.error("Failed writing to csv file: {}", fileName, e);
     }
   }

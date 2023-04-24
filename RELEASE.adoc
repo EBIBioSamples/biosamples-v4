@@ -2,6 +2,8 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+[[v5.2.16]]
+== v5.2.16 Release notes
 
 [[v5.2.15]]
 == v5.2.15 Release notes

@@ -16,9 +16,9 @@ import uk.ac.ebi.biosamples.model.facet.FacetType;
 
 public class NameFilter implements Filter {
 
-  private String name;
+  private final String name;
 
-  private NameFilter(String name) {
+  private NameFilter(final String name) {
     this.name = name;
   }
 
@@ -34,7 +34,7 @@ public class NameFilter implements Filter {
 
   @Override
   public Optional<String> getContent() {
-    return Optional.of(this.name);
+    return Optional.of(name);
   }
 
   @Override
@@ -44,41 +44,41 @@ public class NameFilter implements Filter {
 
   @Override
   public String getSerialization() {
-    return this.getType().getSerialization() + ":" + this.name;
+    return getType().getSerialization() + ":" + name;
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (obj == this) {
       return true;
     }
     if (!(obj instanceof NameFilter)) {
       return false;
     }
-    NameFilter other = (NameFilter) obj;
-    return Objects.equals(other.getContent().orElse(null), this.getContent().orElse(null));
+    final NameFilter other = (NameFilter) obj;
+    return Objects.equals(other.getContent().orElse(null), getContent().orElse(null));
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.getContent().orElse(null));
+    return Objects.hash(getContent().orElse(null));
   }
 
   public static class Builder implements Filter.Builder {
 
-    private String name;
+    private final String name;
 
-    public Builder(String name) {
+    public Builder(final String name) {
       this.name = name;
     }
 
     @Override
     public Filter build() {
-      return new NameFilter(this.name);
+      return new NameFilter(name);
     }
 
     @Override
-    public Filter.Builder parseContent(String filterSerialized) {
+    public Filter.Builder parseContent(final String filterSerialized) {
       return new Builder(filterSerialized);
     }
   }

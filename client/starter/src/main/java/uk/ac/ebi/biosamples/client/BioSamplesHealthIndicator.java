@@ -29,24 +29,26 @@ public class BioSamplesHealthIndicator implements HealthIndicator {
   private final RestTemplate restTemplate;
   private final URI uri;
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
-  public BioSamplesHealthIndicator(
-      RestTemplateBuilder restTemplateBuilder, BioSamplesProperties bioSamplesProperties) {
-    this.restTemplate = restTemplateBuilder.build();
+  BioSamplesHealthIndicator(
+      final RestTemplateBuilder restTemplateBuilder,
+      final BioSamplesProperties bioSamplesProperties) {
+    restTemplate = restTemplateBuilder.build();
 
     // TODO use HAL for this
-    this.uri =
+    uri =
         UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri())
             .pathSegment("health")
             .build()
             .toUri();
   }
 
+  @Override
   public Health health() {
     log.trace("Checking health...");
     // .accept(MediaType.parseMediaType("application/vnd.spring-boot.actuator.v1+json"))
-    RequestEntity<Void> request = RequestEntity.get(uri).build();
+    final RequestEntity<Void> request = RequestEntity.get(uri).build();
     ResponseEntity<?> response = null;
     try {
       // by default, Health doesn't deseralize appropriately due to lack of builder
@@ -54,10 +56,10 @@ public class BioSamplesHealthIndicator implements HealthIndicator {
       // instead
       // therefore we use void here to ignore the body of the response
       response = restTemplate.exchange(request, Void.class);
-    } catch (RestClientResponseException e) {
+    } catch (final RestClientResponseException e) {
       log.trace("health down ", e);
       return Health.down().withDetail("connection", "" + e.getRawStatusCode()).build();
-    } catch (RestClientException e) {
+    } catch (final RestClientException e) {
       log.trace("health down unable to connect", e);
       return Health.down().withDetail("connection", "unable to connect").build();
     }

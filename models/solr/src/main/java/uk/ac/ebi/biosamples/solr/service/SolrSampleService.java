@@ -19,11 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.solr.core.query.Criteria;
-import org.springframework.data.solr.core.query.FilterQuery;
-import org.springframework.data.solr.core.query.Query;
-import org.springframework.data.solr.core.query.SimpleField;
-import org.springframework.data.solr.core.query.SimpleQuery;
+import org.springframework.data.solr.core.query.*;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
@@ -32,7 +28,7 @@ import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 @Service
 public class SolrSampleService {
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final SolrSampleRepository solrSampleRepository;
   private final SolrFilterService solrFilterService;
 
@@ -41,7 +37,7 @@ public class SolrSampleService {
   private static final int TIMEALLOWED = 55;
 
   public SolrSampleService(
-      SolrSampleRepository solrSampleRepository, SolrFilterService solrFilterService) {
+      final SolrSampleRepository solrSampleRepository, final SolrFilterService solrFilterService) {
     this.solrSampleRepository = solrSampleRepository;
     this.solrFilterService = solrFilterService;
   }
@@ -56,23 +52,23 @@ public class SolrSampleService {
    * @return a page of Samples full-filling the query
    */
   public Page<SolrSample> fetchSolrSampleByText(
-      String searchTerm,
-      Collection<Filter> filters,
-      Collection<String> domains,
-      String webinSubmissionAccountId,
-      Pageable pageable) {
+      final String searchTerm,
+      final Collection<Filter> filters,
+      final Collection<String> domains,
+      final String webinSubmissionAccountId,
+      final Pageable pageable) {
     Page<SolrSample> result;
     try {
-      Query query = buildQuery(searchTerm, filters, domains, webinSubmissionAccountId);
+      final Query query = buildQuery(searchTerm, filters, domains, webinSubmissionAccountId);
       query.setPageRequest(pageable);
       query.setTimeAllowed(TIMEALLOWED * 1000);
       // return the samples from solr that match the query
       result = solrSampleRepository.findByQuery(query);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       // If it is not possible to use the search as a filter treat search string as text
-      String escapedSearchTerm =
+      final String escapedSearchTerm =
           searchTerm == null ? null : ClientUtils.escapeQueryChars(searchTerm);
-      Query query = buildQuery(escapedSearchTerm, filters, domains, webinSubmissionAccountId);
+      final Query query = buildQuery(escapedSearchTerm, filters, domains, webinSubmissionAccountId);
       query.setPageRequest(pageable);
       query.setTimeAllowed(TIMEALLOWED * 1000);
       // return the samples from solr that match the query
@@ -91,54 +87,53 @@ public class SolrSampleService {
    * @return a page of Samples full-filling the query
    */
   public CursorArrayList<SolrSample> fetchSolrSampleByText(
-      String searchTerm,
-      Collection<Filter> filters,
-      Collection<String> domains,
-      String webinSubmissionAccountId,
-      String cursorMark,
-      int size) {
-    Query query = buildQuery(searchTerm, filters, domains, webinSubmissionAccountId);
+      final String searchTerm,
+      final Collection<Filter> filters,
+      final Collection<String> domains,
+      final String webinSubmissionAccountId,
+      final String cursorMark,
+      final int size) {
+    final Query query = buildQuery(searchTerm, filters, domains, webinSubmissionAccountId);
     query.addSort(Sort.by("id")); // this must match the field in solr
 
     return solrSampleRepository.findByQueryCursorMark(query, cursorMark, size);
   }
 
   private Query buildQuery(
-      String searchTerm,
-      Collection<Filter> filters,
-      Collection<String> domains,
-      String webinSubmissionAccountId) {
-    Query query;
+      final String searchTerm,
+      final Collection<Filter> filters,
+      final Collection<String> domains,
+      final String webinSubmissionAccountId) {
+    final Query query;
     if (StringUtils.isBlank(searchTerm) || "*:*".equals(searchTerm.trim())) {
       query = new SimpleQuery("*:*"); // default to search all
     } else {
-      String lowerCasedSearchTerm = searchTerm.toLowerCase();
-      // search for copied fields keywords_ss.
-      // query = new SimpleQuery("keywords_ss:\"" + lowerCasedSearchTerm + "\"");
+      final String lowerCasedSearchTerm = searchTerm.toLowerCase();
 
+      // search for copied fields keywords_ss.
       query = new SimpleQuery();
-      Criteria searchCriteria = new Criteria("keywords_ss").fuzzy(lowerCasedSearchTerm);
+      final Criteria searchCriteria = new Criteria("keywords_ss").fuzzy(lowerCasedSearchTerm);
       searchCriteria.setPartIsOr(true);
       query.addCriteria(searchCriteria);
 
       // boosting accession to bring accession matches to the top
-      Criteria boostId = new Criteria("id").is(searchTerm).boost(5);
+      final Criteria boostId = new Criteria("id").is(searchTerm).boost(5);
       boostId.setPartIsOr(true);
       query.addCriteria(boostId);
 
       // boosting name to bring accession matches to the top
-      Criteria boostName = new Criteria("name_s").is(searchTerm).boost(3);
+      final Criteria boostName = new Criteria("name_s").is(searchTerm).boost(3);
       boostName.setPartIsOr(true);
       query.addCriteria(boostName);
     }
 
     query.addProjectionOnField(new SimpleField("id"));
 
-    Optional<FilterQuery> publicFilterQuery =
+    final Optional<FilterQuery> publicFilterQuery =
         solrFilterService.getPublicFilterQuery(domains, webinSubmissionAccountId);
     publicFilterQuery.ifPresent(query::addFilterQuery);
 
-    Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
+    final Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
     optionalFilter.ifPresent(query::addFilterQuery);
 
     return query;

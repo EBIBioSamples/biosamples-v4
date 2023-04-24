@@ -30,7 +30,7 @@ public class ClearninghouseCallable implements Callable<PipelineResult> {
   private final String domain;
   private final List<Map<String, String>> curations;
 
-  static final String[] NON_APPLICABLE_CURATION_VALUES = {
+  private static final String[] NON_APPLICABLE_CURATION_VALUES = {
     "n/a",
     "na",
     "n.a",
@@ -43,9 +43,9 @@ public class ClearninghouseCallable implements Callable<PipelineResult> {
     "not applicable",
     "not_applicable"
   };
-  static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
+  private static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
-  public ClearninghouseCallable(
+  ClearninghouseCallable(
       final BioSamplesClient bioSamplesClient,
       final Sample sample,
       final String domain,
@@ -62,10 +62,10 @@ public class ClearninghouseCallable implements Callable<PipelineResult> {
     boolean success = true;
     try {
       for (final Map<String, String> curationAsMap : curations) {
-        String preAttrString = curationAsMap.get("attributePre");
-        String preValString = curationAsMap.get("valuePre");
-        String postAttrString = curationAsMap.get("attributePost");
-        String postValString = curationAsMap.get("valuePost");
+        final String preAttrString = curationAsMap.get("attributePre");
+        final String preValString = curationAsMap.get("valuePre");
+        final String postAttrString = curationAsMap.get("attributePost");
+        final String postValString = curationAsMap.get("valuePost");
 
         for (final Attribute sampleAttribute : sample.getAttributes()) {
           if (sampleAttribute.getType().equals(postAttrString)

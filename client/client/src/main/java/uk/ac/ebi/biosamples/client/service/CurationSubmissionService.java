@@ -32,20 +32,21 @@ public class CurationSubmissionService {
   private final Traverson traverson;
   private final RestOperations restOperations;
 
-  public CurationSubmissionService(RestOperations restOperations, Traverson traverson) {
+  public CurationSubmissionService(final RestOperations restOperations, final Traverson traverson) {
     this.restOperations = restOperations;
     this.traverson = traverson;
   }
 
-  public EntityModel<CurationLink> submit(CurationLink curationLink) throws RestClientException {
+  public EntityModel<CurationLink> submit(final CurationLink curationLink)
+      throws RestClientException {
     return persistCuration(curationLink, null);
   }
 
-  public EntityModel<CurationLink> persistCuration(CurationLink curationLink, String jwt)
-      throws RestClientException {
-    String addWebinRequestParam = "";
+  public EntityModel<CurationLink> persistCuration(
+      final CurationLink curationLink, final String jwt) throws RestClientException {
+    final String addWebinRequestParam = "";
 
-    URI target =
+    final URI target =
         URI.create(
             traverson
                 .follow("samples")
@@ -57,29 +58,29 @@ public class CurationSubmissionService {
 
     log.trace("POSTing to " + target + " " + curationLink);
 
-    RequestEntity.BodyBuilder bodyBuilder =
+    final RequestEntity.BodyBuilder bodyBuilder =
         RequestEntity.post(target)
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaTypes.HAL_JSON);
     if (jwt != null) {
       bodyBuilder.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
     }
-    RequestEntity<CurationLink> requestEntity = bodyBuilder.body(curationLink);
+    final RequestEntity<CurationLink> requestEntity = bodyBuilder.body(curationLink);
 
-    ResponseEntity<EntityModel<CurationLink>> responseEntity =
+    final ResponseEntity<EntityModel<CurationLink>> responseEntity =
         restOperations.exchange(
             requestEntity, new ParameterizedTypeReference<EntityModel<CurationLink>>() {});
 
     return responseEntity.getBody();
   }
 
-  public void deleteCurationLink(String sample, String hash) {
+  public void deleteCurationLink(final String sample, final String hash) {
     deleteCurationLink(sample, hash, null);
   }
 
-  public void deleteCurationLink(String sample, String hash, String jwt) {
+  public void deleteCurationLink(final String sample, final String hash, final String jwt) {
 
-    URI target =
+    final URI target =
         URI.create(
             traverson
                 .follow("samples")
@@ -89,7 +90,7 @@ public class CurationSubmissionService {
                 .getHref());
     log.trace("DELETEing " + target);
 
-    RequestEntity requestEntity;
+    final RequestEntity requestEntity;
     if (jwt != null) {
       requestEntity =
           RequestEntity.delete(target).header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt).build();

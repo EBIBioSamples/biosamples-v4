@@ -27,11 +27,11 @@ public class SolrSampleAttributeValueField extends SolrSampleField {
     super();
   }
 
-  public SolrSampleAttributeValueField(String readableLabel) {
+  public SolrSampleAttributeValueField(final String readableLabel) {
     super(readableLabel);
   }
 
-  public SolrSampleAttributeValueField(String label, String documentField) {
+  public SolrSampleAttributeValueField(final String label, final String documentField) {
     super(label, documentField);
   }
 
@@ -57,7 +57,7 @@ public class SolrSampleAttributeValueField extends SolrSampleField {
   }
 
   @Override
-  public Facet.Builder getFacetBuilder(String facetLabel, Long facetCount) {
+  public Facet.Builder getFacetBuilder(final String facetLabel, final Long facetCount) {
     return new AttributeFacet.Builder(facetLabel, facetCount);
   }
 
@@ -67,25 +67,28 @@ public class SolrSampleAttributeValueField extends SolrSampleField {
   }
 
   @Override
-  public boolean isCompatibleWith(Filter filter) {
+  public boolean isCompatibleWith(final Filter filter) {
     return filter instanceof AttributeFilter;
   }
 
   @Override
-  public Criteria getFilterCriteria(Filter filter) {
+  public Criteria getFilterCriteria(final Filter filter) {
 
     Criteria filterCriteria = null;
     if (filter instanceof AttributeFilter) {
 
-      filterCriteria = new Criteria(this.getSolrLabel());
+      filterCriteria = new Criteria(getSolrLabel());
 
-      AttributeFilter attributeFilter = (AttributeFilter) filter;
+      final AttributeFilter attributeFilter = (AttributeFilter) filter;
       if (attributeFilter.getContent().isPresent())
-        //
-        // filterCriteria.expression(String.format("/%s/",attributeFilter.getContent().get()));
+      //
+      // filterCriteria.expression(String.format("/%s/",attributeFilter.getContent().get()));
+      {
         filterCriteria =
             filterCriteria.expression(String.format("\"%s\"", attributeFilter.getContent().get()));
-      else filterCriteria = filterCriteria.isNotNull();
+      } else {
+        filterCriteria = filterCriteria.isNotNull();
+      }
     }
 
     return filterCriteria;

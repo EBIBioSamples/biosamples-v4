@@ -27,58 +27,62 @@ import uk.ac.ebi.biosamples.utils.TestUtilities;
 
 @Component
 public class StructuredDataGenericIntegration extends AbstractIntegration {
-  private ObjectMapper mapper;
+  private final ObjectMapper mapper;
 
-  public StructuredDataGenericIntegration(BioSamplesClient client) {
+  public StructuredDataGenericIntegration(final BioSamplesClient client) {
     super(client);
     mapper = new ObjectMapper();
   }
 
   @Override
   protected void phaseOne() {
-    Sample testSample = getSampleTest1();
-    Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
+    final Sample testSample = getSampleTest1();
+    final Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
 
-    String accession;
+    final String accession;
     if (optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
           "RestIntegration test sample should not be available during phase 1", Phase.ONE);
     } else {
-      EntityModel<Sample> resource = client.persistSampleResource(testSample);
+      final EntityModel<Sample> resource = client.persistSampleResource(testSample);
+      final Sample sampleContent = resource.getContent();
+
       Sample testSampleWithAccession =
           Sample.Builder.fromSample(testSample)
-              .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
+              .withAccession(Objects.requireNonNull(sampleContent).getAccession())
               .build();
 
-      accession = resource.getContent().getAccession();
-      if (!testSampleWithAccession.equals(resource.getContent())) {
+      testSampleWithAccession =
+          Sample.Builder.fromSample(testSampleWithAccession)
+              .withStatus(sampleContent.getStatus())
+              .build();
+
+      accession = sampleContent.getAccession();
+
+      if (!testSampleWithAccession.equals(sampleContent)) {
         throw new IntegrationTestFailException(
-            "Expected response ("
-                + resource.getContent()
-                + ") to equal submission ("
-                + testSample
-                + ")");
+            "Expected response (" + sampleContent + ") to equal submission (" + testSample + ")");
       }
     }
 
-    String json = TestUtilities.readFileAsString("structured_data.json");
+    final String json = TestUtilities.readFileAsString("structured_data.json");
     StructuredData structuredData;
     try {
       structuredData = mapper.readValue(json, StructuredData.class);
       structuredData = StructuredData.build(accession, Instant.now(), structuredData.getData());
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new IntegrationTestFailException(
           "An error occurred while converting json to Sample class" + e, Phase.ONE);
     }
 
-    EntityModel<StructuredData> dataResource = client.persistStructuredData(structuredData);
+    final EntityModel<StructuredData> dataResource = client.persistStructuredData(structuredData);
     if (!structuredData.equals(dataResource.getContent())) {
       try {
-        String expected = mapper.writeValueAsString(structuredData);
-        String actual = mapper.writeValueAsString(dataResource.getContent());
+        final String expected = mapper.writeValueAsString(structuredData);
+        final String actual = mapper.writeValueAsString(dataResource.getContent());
         throw new IntegrationTestFailException(
             "Expected: " + expected + ", found: " + actual, Phase.ONE);
-      } catch (JsonProcessingException e) {
+      } catch (final JsonProcessingException e) {
         throw new IntegrationTestFailException(
             "Expected: " + structuredData + ", found: " + dataResource.getContent(), Phase.ONE);
       }
@@ -87,14 +91,14 @@ public class StructuredDataGenericIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseTwo() {
-    Sample sampleTest1 = getSampleTest1();
-    Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest1.getName());
+    final Sample sampleTest1 = getSampleTest1();
+    final Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest1.getName());
     if (!optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
           "Cant find sample " + sampleTest1.getName(), Phase.TWO);
     }
 
-    Sample sample =
+    final Sample sample =
         optionalSample.orElseThrow(
             () ->
                 new IntegrationTestFailException(
@@ -124,13 +128,14 @@ public class StructuredDataGenericIntegration extends AbstractIntegration {
   protected void phaseSix() {}
 
   private Sample getSampleTest1() {
-    String name = "StructuredDataGenericIntegration_sample_1";
-    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    final String name = "StructuredDataGenericIntegration_sample_1";
+    final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
-    Publication publication = new Publication.Builder().doi("doi").pubmed_id("pubmed_id").build();
+    final Publication publication =
+        new Publication.Builder().doi("doi").pubmed_id("pubmed_id").build();
 
-    SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));

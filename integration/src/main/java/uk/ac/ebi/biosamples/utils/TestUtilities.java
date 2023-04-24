@@ -22,39 +22,39 @@ import org.springframework.util.StreamUtils;
 
 public class TestUtilities {
 
-  public static String readFileAsString(String pathToFile) {
+  public static String readFileAsString(final String pathToFile) {
 
-    String fileContent;
+    final String fileContent;
 
     try {
       fileContent =
           StreamUtils.copyToString(
               new ClassPathResource(pathToFile).getInputStream(), Charset.defaultCharset());
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException("An error occurred while reading resource " + pathToFile, e);
     }
 
     return fileContent;
   }
 
-  public static JsonNode readJsonDocument(String pathToFile) {
-    ObjectMapper mapper = new ObjectMapper();
+  public static JsonNode readJsonDocument(final String pathToFile) {
+    final ObjectMapper mapper = new ObjectMapper();
 
-    String fileContent = TestUtilities.readFileAsString(pathToFile);
+    final String fileContent = TestUtilities.readFileAsString(pathToFile);
 
     try {
       return mapper.readTree(fileContent);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(
           "An error occurred while converting the string " + fileContent + " to a JSON object", e);
     }
   }
 
-  public static Document readXmlDocument(String pathToFile) {
-    String fileContent = TestUtilities.readFileAsString(pathToFile);
+  public static Document readXmlDocument(final String pathToFile) {
+    final String fileContent = TestUtilities.readFileAsString(pathToFile);
     try {
       return DocumentHelper.parseText(fileContent);
-    } catch (DocumentException exp) {
+    } catch (final DocumentException exp) {
       throw new RuntimeException(exp);
     }
   }

@@ -24,7 +24,7 @@ import org.springframework.web.util.UriUtils;
 @RunWith(SpringRunner.class)
 public class UrlDecodingTest {
 
-  private Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   @Test
   public void testSpringUriUtils() throws UnsupportedEncodingException {
@@ -60,9 +60,9 @@ public class UrlDecodingTest {
 
   @Test
   public void testStrippedHateoasUriTemplate() {
-    String uriTemplated =
+    final String uriTemplated =
         "http://localhost:8081/biosamples/samples?text=&cursor=AoErVGVzdEZpbHRlcjM%3D&size=1000{&filter,page,sort}";
-    String uriUntemplated =
+    final String uriUntemplated =
         "http://localhost:8081/biosamples/samples?text=&cursor=AoErVGVzdEZpbHRlcjM%3D&size=1000";
     Assert.assertEquals(
         uriUntemplated,

@@ -26,19 +26,19 @@ import org.springframework.web.client.RestOperations;
 
 public class ClientUtils {
 
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   public static <U, V> ResponseEntity<V> doRetryQuery(
       final RequestEntity<U> requestEntity,
       final RestOperations restOperations,
       final int maxRetries,
-      ParameterizedTypeReference<V> parameterizedTypeReference) {
+      final ParameterizedTypeReference<V> parameterizedTypeReference) {
     ResponseEntity<V> responseEntity = null;
     int retries = 0;
     while (responseEntity == null && retries < maxRetries) {
       try {
         responseEntity = restOperations.exchange(requestEntity, parameterizedTypeReference);
-      } catch (HttpStatusCodeException e) {
+      } catch (final HttpStatusCodeException e) {
         if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS
             || e.getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE) {
           // need to wait and retry
@@ -51,7 +51,7 @@ public class ClientUtils {
           ZonedDateTime retryTime = null;
           try {
             retryTime = ZonedDateTime.parse(retryString, DateTimeFormatter.RFC_1123_DATE_TIME);
-          } catch (DateTimeParseException e2) {
+          } catch (final DateTimeParseException e2) {
             // do nothing
           }
           if (retryTime == null) {
@@ -59,7 +59,7 @@ public class ClientUtils {
             // trying again
             try {
               delaySeconds = Integer.parseInt(retryString);
-            } catch (NumberFormatException e2) {
+            } catch (final NumberFormatException e2) {
               // do nothing
             }
             // TODO use the date/time from the response, instead of now?
@@ -71,7 +71,7 @@ public class ClientUtils {
           while (ZonedDateTime.now(ZoneOffset.UTC).isBefore(retryTime)) {
             try {
               Thread.sleep(1000);
-            } catch (InterruptedException e2) {
+            } catch (final InterruptedException e2) {
               throw new RuntimeException(e2);
             }
           }

@@ -24,9 +24,9 @@ public class ContextSerializer extends StdSerializer<BioSchemasContext> {
 
   @Override
   public void serialize(
-      BioSchemasContext bioSchemasContext,
-      JsonGenerator jsonGenerator,
-      SerializerProvider serializerProvider)
+      final BioSchemasContext bioSchemasContext,
+      final JsonGenerator jsonGenerator,
+      final SerializerProvider serializerProvider)
       throws IOException {
 
     // Write the @base field -> Not sure why this is need, but following UNIPROT convention

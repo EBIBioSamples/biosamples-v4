@@ -35,24 +35,25 @@ public class XmlTest {
 
   @Test
   public void testSerialize() throws Exception {
-    ExternalReferenceService externalReferenceService = new ExternalReferenceService();
-    SampleToXmlConverter sampleToXmlConverter = new SampleToXmlConverter(externalReferenceService);
-    Sample jsonSample =
-        objectMapper.readValue(this.getClass().getResource("/TEST1.json"), Sample.class);
-    Document docFromJson = sampleToXmlConverter.convert(jsonSample);
+    final ExternalReferenceService externalReferenceService = new ExternalReferenceService();
+    final SampleToXmlConverter sampleToXmlConverter =
+        new SampleToXmlConverter(externalReferenceService);
+    final Sample jsonSample =
+        objectMapper.readValue(getClass().getResource("/TEST1.json"), Sample.class);
+    final Document docFromJson = sampleToXmlConverter.convert(jsonSample);
 
-    SAXReader reader = new SAXReader();
-    Document docFromXml = reader.read(this.getClass().getResource("/TEST1.xml"));
+    final SAXReader reader = new SAXReader();
+    final Document docFromXml = reader.read(getClass().getResource("/TEST1.xml"));
 
-    OutputFormat format = OutputFormat.createPrettyPrint();
-    XMLWriter writer = new XMLWriter(System.out, format);
+    final OutputFormat format = OutputFormat.createPrettyPrint();
+    final XMLWriter writer = new XMLWriter(System.out, format);
     writer.write(docFromJson);
     writer.write(docFromXml);
 
     XMLUnit.setIgnoreAttributeOrder(true);
     XMLUnit.setIgnoreWhitespace(true);
     XMLUnit.setIgnoreComments(true);
-    Diff diff = XMLUnit.compareXML(docFromJson.asXML(), docFromXml.asXML());
+    final Diff diff = XMLUnit.compareXML(docFromJson.asXML(), docFromXml.asXML());
 
     assertThat(diff.similar()).isTrue();
   }

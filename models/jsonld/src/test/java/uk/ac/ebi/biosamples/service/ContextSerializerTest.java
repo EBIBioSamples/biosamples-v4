@@ -23,15 +23,15 @@ public class ContextSerializerTest {
 
   @Test
   public void testSerialize() {
-    String expectedSerializedContext =
+    final String expectedSerializedContext =
         "[\"http://schema.org\",{\"OBI\":\"http://purl.obolibrary.org/obo/OBI_\","
             + "\"biosample\":\"http://identifiers.org/biosample/\"}]";
-    BioSchemasContext context = new BioSchemasContext();
-    ObjectMapper mapper = new ObjectMapper();
+    final BioSchemasContext context = new BioSchemasContext();
+    final ObjectMapper mapper = new ObjectMapper();
     String serializedContext = null;
     try {
       serializedContext = mapper.writeValueAsString(context);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       log.error("Failed to serialize context");
     }
 

@@ -26,14 +26,20 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import uk.ac.ebi.biosamples.model.PipelineName;
+import uk.ac.ebi.biosamples.model.filter.AttributeFilter;
 import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
 public class PipelineUtils {
-  private static Logger log = LoggerFactory.getLogger(PipelineUtils.class);
+  private static final Logger log = LoggerFactory.getLogger(PipelineUtils.class);
 
-  public static Collection<Filter> getDateFilters(ApplicationArguments args) {
-    LocalDate fromDate;
+  public static Collection<Filter> getDateFilters(
+      final ApplicationArguments args, final String dateType) {
+    final Collection<Filter> filters = new ArrayList<>();
+    final LocalDate fromDate;
+    final LocalDate toDate;
+    final Filter fromDateFilter;
+
     if (args.getOptionNames().contains("from")) {
       fromDate =
           LocalDate.parse(
@@ -41,7 +47,7 @@ public class PipelineUtils {
     } else {
       fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
     }
-    LocalDate toDate;
+
     if (args.getOptionNames().contains("until")) {
       toDate =
           LocalDate.parse(
@@ -53,13 +59,22 @@ public class PipelineUtils {
     log.info("Processing samples from " + DateTimeFormatter.ISO_LOCAL_DATE.format(fromDate));
     log.info("Processing samples to " + DateTimeFormatter.ISO_LOCAL_DATE.format(toDate));
 
-    Filter fromDateFilter =
-        new DateRangeFilter.DateRangeFilterBuilder("update")
-            .from(fromDate.atStartOfDay().toInstant(ZoneOffset.UTC))
-            .until(toDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))
-            .build();
-    Collection<Filter> filters = new ArrayList<>();
+    if (!dateType.equals("release")) {
+      fromDateFilter =
+          new DateRangeFilter.DateRangeFilterBuilder(dateType)
+              .from(fromDate.atStartOfDay().toInstant(ZoneOffset.UTC))
+              .until(toDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))
+              .build();
+    } else {
+      fromDateFilter =
+          new DateRangeFilter.DateRangeFilterBuilder(dateType)
+              .from(fromDate.atStartOfDay().toInstant(ZoneOffset.UTC))
+              .until(fromDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))
+              .build();
+    }
+
     filters.add(fromDateFilter);
+
     return filters;
   }
 
@@ -88,10 +103,14 @@ public class PipelineUtils {
     }
   }
 
-  public static void exitApplication(final ConfigurableApplicationContext ctx) {
-    int exitCode = SpringApplication.exit(ctx, () -> 0);
+  public static void exitPipeline(final ConfigurableApplicationContext ctx) {
+    final int exitCode = SpringApplication.exit(ctx, () -> 0);
     log.info("Exit Spring Boot");
 
     System.exit(exitCode);
+  }
+
+  public static Filter getAttributeFilter(final String attributeName, final String attributeValue) {
+    return new AttributeFilter.Builder(attributeName).withValue(attributeValue).build();
   }
 }

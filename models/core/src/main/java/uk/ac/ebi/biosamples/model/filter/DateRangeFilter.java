@@ -22,10 +22,10 @@ import uk.ac.ebi.biosamples.model.facet.FacetType;
 
 public class DateRangeFilter implements Filter {
 
-  private Optional<DateRange> dateRange;
-  private String label;
+  private final Optional<DateRange> dateRange;
+  private final String label;
 
-  public DateRangeFilter(String label, DateRange dateRange) {
+  DateRangeFilter(final String label, final DateRange dateRange) {
     this.label = label;
     this.dateRange = Optional.ofNullable(dateRange);
   }
@@ -37,7 +37,7 @@ public class DateRangeFilter implements Filter {
 
   @Override
   public String getLabel() {
-    return this.label;
+    return label;
   }
 
   @Override
@@ -52,10 +52,10 @@ public class DateRangeFilter implements Filter {
 
   @Override
   public String getSerialization() {
-    StringBuilder serializationBuilder =
-        new StringBuilder(this.getType().getSerialization()).append(":").append(this.getLabel());
+    final StringBuilder serializationBuilder =
+        new StringBuilder(getType().getSerialization()).append(":").append(getLabel());
 
-    this.getContent()
+    getContent()
         .ifPresent(
             dateRange -> {
               serializationBuilder.append(":");
@@ -81,46 +81,50 @@ public class DateRangeFilter implements Filter {
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.getLabel(), this.getContent());
+    return Objects.hash(getLabel(), getContent());
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (obj == this) return true;
+  public boolean equals(final Object obj) {
+    if (obj == this) {
+      return true;
+    }
     if (!(obj instanceof DateRangeFilter)) {
       return false;
     }
-    DateRangeFilter other = (DateRangeFilter) obj;
-    return Objects.equals(this.getLabel(), other.getLabel())
-        && Objects.equals(this.getContent(), other.getContent());
+    final DateRangeFilter other = (DateRangeFilter) obj;
+    return Objects.equals(getLabel(), other.getLabel())
+        && Objects.equals(getContent(), other.getContent());
   }
 
   public static class DateRangeFilterBuilder implements Filter.Builder {
-    private String label;
+    private final String label;
 
     private Instant from = null;
     private Instant until = null;
 
-    public DateRangeFilterBuilder(String label) {
+    public DateRangeFilterBuilder(final String label) {
       this.label = label;
     }
 
-    public DateRangeFilterBuilder from(Instant from) {
+    public DateRangeFilterBuilder from(final Instant from) {
       this.from = from;
       return this;
     }
 
-    public DateRangeFilterBuilder from(String value) {
+    public DateRangeFilterBuilder from(final String value) {
       // quick exit
-      if (value == null || value.trim().length() == 0) return this;
+      if (value == null || value.trim().length() == 0) {
+        return this;
+      }
 
       try {
-        this.from =
+        from =
             LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                 .toInstant(ZoneOffset.UTC);
-      } catch (DateTimeParseException e) {
+      } catch (final DateTimeParseException e) {
         // retry for just the date
-        this.from =
+        from =
             LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE)
                 .atStartOfDay()
                 .toInstant(ZoneOffset.UTC);
@@ -128,22 +132,24 @@ public class DateRangeFilter implements Filter {
       return this;
     }
 
-    public DateRangeFilterBuilder until(Instant until) {
+    public DateRangeFilterBuilder until(final Instant until) {
       this.until = until;
       return this;
     }
 
-    public DateRangeFilterBuilder until(String value) {
+    public DateRangeFilterBuilder until(final String value) {
       // quick exit
-      if (value == null || value.trim().length() == 0) return this;
+      if (value == null || value.trim().length() == 0) {
+        return this;
+      }
 
       try {
-        this.until =
+        until =
             LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                 .toInstant(ZoneOffset.UTC);
-      } catch (DateTimeParseException e) {
+      } catch (final DateTimeParseException e) {
         // retry for just the date
-        this.until =
+        until =
             LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE)
                 .plusDays(1)
                 .atStartOfDay()
@@ -155,22 +161,22 @@ public class DateRangeFilter implements Filter {
 
     @Override
     public DateRangeFilter build() {
-      if (this.from == null && this.until == null) {
-        return new DateRangeFilter(this.label, null);
+      if (from == null && until == null) {
+        return new DateRangeFilter(label, null);
       }
-      return new DateRangeFilter(this.label, new DateRange(from, until));
+      return new DateRangeFilter(label, new DateRange(from, until));
     }
 
     @Override
-    public DateRangeFilterBuilder parseContent(String filterValue) {
-      String fromValue = extractFromFieldFromString(filterValue);
-      String untilValue = extractToFieldFromString(filterValue);
-      return this.from(fromValue).until(untilValue);
+    public DateRangeFilterBuilder parseContent(final String filterValue) {
+      final String fromValue = extractFromFieldFromString(filterValue);
+      final String untilValue = extractToFieldFromString(filterValue);
+      return from(fromValue).until(untilValue);
     }
 
-    private String extractFromFieldFromString(String dateRangeString) {
-      int fromIndex = dateRangeString.indexOf(getFromFieldPrefix());
-      int toIndex = dateRangeString.indexOf(getToFieldPrefix());
+    private String extractFromFieldFromString(final String dateRangeString) {
+      final int fromIndex = dateRangeString.indexOf(getFromFieldPrefix());
+      final int toIndex = dateRangeString.indexOf(getToFieldPrefix());
       if (fromIndex == -1) {
         return "";
       } else {
@@ -182,9 +188,9 @@ public class DateRangeFilter implements Filter {
       }
     }
 
-    private String extractToFieldFromString(String dateRangeString) {
-      int fromIndex = dateRangeString.indexOf(getFromFieldPrefix());
-      int toIndex = dateRangeString.indexOf(getToFieldPrefix());
+    private String extractToFieldFromString(final String dateRangeString) {
+      final int fromIndex = dateRangeString.indexOf(getFromFieldPrefix());
+      final int toIndex = dateRangeString.indexOf(getToFieldPrefix());
       if (toIndex == -1) {
         return "";
       } else {
@@ -211,7 +217,7 @@ public class DateRangeFilter implements Filter {
     private static final Instant min = LocalDateTime.MIN.atZone(ZoneOffset.UTC).toInstant();
     private static final Instant max = LocalDateTime.MAX.atZone(ZoneOffset.UTC).toInstant();
 
-    private DateRange(Instant from, Instant until) {
+    private DateRange(final Instant from, final Instant until) {
       if (from == null) {
         this.from = min;
       } else {
@@ -234,11 +240,11 @@ public class DateRangeFilter implements Filter {
     }
 
     public boolean isFromMinDate() {
-      return this.getFrom().equals(min);
+      return getFrom().equals(min);
     }
 
     public boolean isUntilMaxDate() {
-      return this.getUntil().equals(max);
+      return getUntil().equals(max);
     }
 
     public static DateRange any() {
@@ -247,19 +253,19 @@ public class DateRangeFilter implements Filter {
 
     @Override
     public int hashCode() {
-      return Objects.hash(this.from, this.until);
+      return Objects.hash(from, until);
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
       if (obj == this) {
         return true;
       }
       if (!(obj instanceof DateRange)) {
         return false;
       }
-      DateRange other = (DateRange) obj;
-      return Objects.equals(this.from, other.from) && Objects.equals(this.until, other.until);
+      final DateRange other = (DateRange) obj;
+      return Objects.equals(from, other.from) && Objects.equals(until, other.until);
     }
   }
 }

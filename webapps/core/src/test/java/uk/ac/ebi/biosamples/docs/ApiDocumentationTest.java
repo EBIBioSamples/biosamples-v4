@@ -56,7 +56,10 @@ import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.certification.*;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
-import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.service.CurationPersistService;
+import uk.ac.ebi.biosamples.service.SamplePageService;
+import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.StructuredDataService;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
@@ -107,12 +110,12 @@ public class ApiDocumentationTest {
 
   @Before
   public void setUp() {
-    this.faker = new DocumentationHelper();
-    this.mapper = new ObjectMapper();
-    this.mockMvc =
-        MockMvcBuilders.webAppContextSetup(this.context)
+    faker = new DocumentationHelper();
+    mapper = new ObjectMapper();
+    mockMvc =
+        MockMvcBuilders.webAppContextSetup(context)
             .apply(
-                documentationConfiguration(this.restDocumentation)
+                documentationConfiguration(restDocumentation)
                     .uris()
                     .withScheme("https")
                     .withHost("www.ebi.ac.uk")
@@ -128,7 +131,7 @@ public class ApiDocumentationTest {
    */
   @Test
   public void getIndex() throws Exception {
-    this.mockMvc
+    mockMvc
         .perform(get("/biosamples").accept(MediaTypes.HAL_JSON))
         .andExpect(status().isOk())
         .andDo(
@@ -143,7 +146,7 @@ public class ApiDocumentationTest {
    */
   @Test
   public void getSamples() throws Exception {
-    Sample fakeSample = this.faker.getExampleSample();
+    final Sample fakeSample = faker.getExampleSample();
     when(samplePageService.getSamplesByText(
             nullable(String.class),
             anyList(),
@@ -196,14 +199,15 @@ public class ApiDocumentationTest {
   @Ignore
   public void postSampleMinimalInfo() throws Exception {
     final ObjectMapper jsonMapper = new ObjectMapper();
-    String wrongSampleSerialized = "{\"name\": \"Sample without minimum information\" }";
-    Sample wrongSample =
+    final String wrongSampleSerialized = "{\"name\": \"Sample without minimum information\" }";
+    final Sample wrongSample =
         Sample.build(
             "Sample without minimum information",
             null,
             null,
             null,
             Long.valueOf(9606),
+            SampleStatus.PUBLIC,
             null,
             null,
             null,
@@ -219,7 +223,7 @@ public class ApiDocumentationTest {
     when(certifyService.certify(jsonMapper.writeValueAsString(wrongSample), true))
         .thenReturn(Collections.emptyList());
 
-    this.mockMvc
+    mockMvc
         .perform(
             post("/biosamples/samples")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -241,9 +245,9 @@ public class ApiDocumentationTest {
   @Test
   public void postCurationLinkMinimalInfo() throws Exception {
 
-    String wrongSampleSerialized = "{\"sample\": \"SAMFAKE123456\", \"curation\": {}}";
+    final String wrongSampleSerialized = "{\"sample\": \"SAMFAKE123456\", \"curation\": {}}";
 
-    this.mockMvc
+    mockMvc
         .perform(
             post("/biosamples/samples")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -264,10 +268,10 @@ public class ApiDocumentationTest {
    */
   @Test
   public void postSample() throws Exception {
-    Sample sample = this.faker.getExampleSample();
-    Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
+    final Sample sample = faker.getExampleSample();
+    final Sample sampleWithDomain = faker.getExampleSampleWithDomain();
 
-    String sampleToSubmit =
+    final String sampleToSubmit =
         "{ "
             + "\"name\" : \""
             + sample.getName()
@@ -293,7 +297,7 @@ public class ApiDocumentationTest {
                     "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
     when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
-    this.mockMvc
+    mockMvc
         .perform(
             post("/biosamples/samples")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -314,12 +318,12 @@ public class ApiDocumentationTest {
    */
   @Test
   public void postSampleWithWebinAuthentication() throws Exception {
-    Sample sample = this.faker.getExampleSample();
-    Sample sampleWithWebinId = this.faker.getExampleSampleWithWebinId();
-    SubmissionAccount submissionAccount = new SubmissionAccount();
+    final Sample sample = faker.getExampleSample();
+    final Sample sampleWithWebinId = faker.getExampleSampleWithWebinId();
+    final SubmissionAccount submissionAccount = new SubmissionAccount();
     submissionAccount.setId("WEBIN-12345");
 
-    String sampleToSubmit =
+    final String sampleToSubmit =
         "{ "
             + "\"name\" : \""
             + sample.getName()
@@ -348,7 +352,7 @@ public class ApiDocumentationTest {
                     "RS256", AuthorizationProvider.WEBIN, "WEBIN-12345", Collections.emptyList())));
     when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
-    this.mockMvc
+    mockMvc
         .perform(
             post("/biosamples/samples")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -369,10 +373,10 @@ public class ApiDocumentationTest {
    */
   @Test
   public void postSampleWithExternalReferences() throws Exception {
-    Sample sample = this.faker.getExampleSample();
-    Sample sampleWithDomain = this.faker.getExampleSampleWithExternalReferences();
+    final Sample sample = faker.getExampleSample();
+    final Sample sampleWithDomain = faker.getExampleSampleWithExternalReferences();
 
-    String sampleToSubmit =
+    final String sampleToSubmit =
         "{ "
             + "\"name\" : \""
             + sample.getName()
@@ -401,7 +405,7 @@ public class ApiDocumentationTest {
                     "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
     when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
-    this.mockMvc
+    mockMvc
         .perform(
             post("/biosamples/samples")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -422,7 +426,7 @@ public class ApiDocumentationTest {
    */
   @Test
   public void putStructuredData() throws Exception {
-    StructuredData structuredData = faker.getExampleStructuredData();
+    final StructuredData structuredData = faker.getExampleStructuredData();
     when(structuredDataService.saveStructuredData(eq(structuredData))).thenReturn(structuredData);
     when(structuredDataService.getStructuredData(eq(structuredData.getAccession())))
         .thenReturn(Optional.of(structuredData));
@@ -453,15 +457,15 @@ public class ApiDocumentationTest {
   /** Accessioning service to generate accession */
   @Test
   public void postToGenerateAccession() throws Exception {
-    Sample sample = this.faker.getExampleSample();
-    Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
-    Instant release =
+    final Sample sample = faker.getExampleSample();
+    final Sample sampleWithDomain = faker.getExampleSampleWithDomain();
+    final Instant release =
         Instant.ofEpochSecond(
             LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
-    Sample sampleWithUpdatedDate =
+    final Sample sampleWithUpdatedDate =
         Sample.Builder.fromSample(sampleWithDomain).withRelease(release).build();
 
-    String sampleToSubmit =
+    final String sampleToSubmit =
         "{ "
             + "\"name\" : \""
             + sample.getName()
@@ -484,7 +488,7 @@ public class ApiDocumentationTest {
                     "RS256", AuthorizationProvider.AAP, "user-12345", Collections.emptyList())));
     when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
-    this.mockMvc
+    mockMvc
         .perform(
             post("/biosamples/samples/accession")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -500,15 +504,15 @@ public class ApiDocumentationTest {
 
   @Test
   public void postToGenerateAccessionWithWebinAuthentication() throws Exception {
-    Sample sample = this.faker.getExampleSample();
-    Sample sampleWithWebinId = this.faker.getExampleSampleWithWebinId();
-    Instant release =
+    final Sample sample = faker.getExampleSample();
+    final Sample sampleWithWebinId = faker.getExampleSampleWithWebinId();
+    final Instant release =
         Instant.ofEpochSecond(
             LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
-    Sample sampleWithUpdatedDate =
+    final Sample sampleWithUpdatedDate =
         Sample.Builder.fromSample(sampleWithWebinId).withRelease(release).build();
 
-    String sampleToSubmit =
+    final String sampleToSubmit =
         "{ "
             + "\"name\" : \""
             + sample.getName()
@@ -521,7 +525,7 @@ public class ApiDocumentationTest {
             // "\", " +
             + "}";
 
-    SubmissionAccount submissionAccount = new SubmissionAccount();
+    final SubmissionAccount submissionAccount = new SubmissionAccount();
     submissionAccount.setId("WEBIN-12345");
 
     when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
@@ -540,7 +544,7 @@ public class ApiDocumentationTest {
                     "RS256", AuthorizationProvider.WEBIN, "WEBIN-12345", Collections.emptyList())));
     when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
-    this.mockMvc
+    mockMvc
         .perform(
             post("/biosamples/samples/accession")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -557,10 +561,10 @@ public class ApiDocumentationTest {
   /** Accessioning service to generate accession */
   @Test
   public void post_for_accessioning_with_accession_should_get_error() throws Exception {
-    Sample sample = this.faker.getExampleSample();
-    Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
+    final Sample sample = faker.getExampleSample();
+    final Sample sampleWithDomain = faker.getExampleSampleWithDomain();
 
-    String sampleToSubmit =
+    final String sampleToSubmit =
         "{ "
             + "\"accession\" : \""
             + "FakeAccession"
@@ -582,7 +586,7 @@ public class ApiDocumentationTest {
             any(Sample.class), eq(null), eq(AuthorizationProvider.WEBIN), eq(false)))
         .thenReturn(sampleWithDomain);
 
-    this.mockMvc
+    mockMvc
         .perform(
             post("/biosamples/samples/accession")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -594,8 +598,8 @@ public class ApiDocumentationTest {
   /** validation service to validate basic fields */
   @Test
   public void post_for_validation() throws Exception {
-    Sample sample = this.faker.getExampleSample();
-    String sampleToSubmit =
+    final Sample sample = faker.getExampleSample();
+    final String sampleToSubmit =
         "{ "
             + "\"name\" : \""
             + "fake_sample"
@@ -622,7 +626,7 @@ public class ApiDocumentationTest {
             + "} ]}"
             + "}";
 
-    this.mockMvc
+    mockMvc
         .perform(
             post("/biosamples/validate")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -639,8 +643,8 @@ public class ApiDocumentationTest {
   /** Recommendation service to suggest sample attributes */
   @Test
   public void post_for_recommendation() throws Exception {
-    Sample sample = this.faker.getExampleSample();
-    String sampleToSubmit =
+    final Sample sample = faker.getExampleSample();
+    final String sampleToSubmit =
         "{ "
             + "\"name\" : \""
             + "fake_sample"
@@ -668,7 +672,7 @@ public class ApiDocumentationTest {
             + "} ]}"
             + "}";
 
-    this.mockMvc
+    mockMvc
         .perform(
             post("/biosamples/recommendations")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -684,8 +688,8 @@ public class ApiDocumentationTest {
 
   @Test
   public void post_for_certification() throws Exception {
-    Sample sample = this.faker.getExampleSampleWithDomain();
-    Attribute attribute = Attribute.build("Organism", "Homo Sapiens");
+    Sample sample = faker.getExampleSampleWithDomain();
+    final Attribute attribute = Attribute.build("Organism", "Homo Sapiens");
 
     sample =
         Sample.Builder.fromSample(sample)
@@ -704,7 +708,7 @@ public class ApiDocumentationTest {
                     "RS256", AuthorizationProvider.AAP, "user-12345", Collections.emptyList())));
     when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
-    List<Certificate> certificates = new java.util.ArrayList<>();
+    final List<Certificate> certificates = new java.util.ArrayList<>();
 
     certificates.add(
         Certificate.build(
@@ -721,7 +725,7 @@ public class ApiDocumentationTest {
         .thenReturn(Sample.Builder.fromSample(sample).withCertificates(certificates).build());
     doNothing().when(aapService).isSampleAccessible(isA(Sample.class));
 
-    this.mockMvc
+    mockMvc
         .perform(
             put("/biosamples/samples/" + sample.getAccession() + "/certify")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -737,15 +741,15 @@ public class ApiDocumentationTest {
 
   @Test
   public void post_for_certification_with_webin_authentication() throws Exception {
-    Sample sampleWithWebinId = this.faker.getExampleSampleWithWebinId();
-    Attribute attribute = Attribute.build("Organism", "Homo Sapiens");
+    Sample sampleWithWebinId = faker.getExampleSampleWithWebinId();
+    final Attribute attribute = Attribute.build("Organism", "Homo Sapiens");
 
     sampleWithWebinId =
         Sample.Builder.fromSample(sampleWithWebinId)
             .withAttributes(Collections.unmodifiableList(Arrays.asList(attribute)))
             .build();
 
-    SubmissionAccount submissionAccount = new SubmissionAccount();
+    final SubmissionAccount submissionAccount = new SubmissionAccount();
     submissionAccount.setId("WEBIN-12345");
 
     when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
@@ -760,7 +764,7 @@ public class ApiDocumentationTest {
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
 
-    List<Certificate> certificates = new java.util.ArrayList<>();
+    final List<Certificate> certificates = new java.util.ArrayList<>();
     certificates.add(
         Certificate.build(
             "biosamples-minimal", "0.0.1", "schemas/certification/biosamples-minimal.json"));
@@ -779,7 +783,7 @@ public class ApiDocumentationTest {
                     "RS256", AuthorizationProvider.WEBIN, "WEBIN-12345", Collections.emptyList())));
     when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
-    this.mockMvc
+    mockMvc
         .perform(
             put("/biosamples/samples/" + sampleWithWebinId.getAccession() + "/certify")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -795,23 +799,23 @@ public class ApiDocumentationTest {
 
   @Test
   public void post_for_checking_compliance() throws Exception {
-    Sample sample = this.faker.getExampleSampleWithDomain();
-    Attribute attribute = Attribute.build("INSDC status", "live");
+    Sample sample = faker.getExampleSampleWithDomain();
+    final Attribute attribute = Attribute.build("INSDC status", "live");
 
     sample =
         Sample.Builder.fromSample(sample)
             .withAttributes(Collections.unmodifiableList(Arrays.asList(attribute)))
             .build();
 
-    BioSamplesCertificationComplainceResult bioSamplesCertificationComplainceResult =
+    final BioSamplesCertificationComplainceResult bioSamplesCertificationComplainceResult =
         new BioSamplesCertificationComplainceResult();
 
-    Suggestion suggestion = new Suggestion();
+    final Suggestion suggestion = new Suggestion();
     suggestion.setCharacteristic(new String[] {"organism", "species"});
     suggestion.setMandatory(true);
     suggestion.setComment("Either Organism or Species must be present in sample");
 
-    CurationResult curationResult = new CurationResult("INSDC status", "live", "public");
+    final CurationResult curationResult = new CurationResult("INSDC status", "live", "public");
 
     bioSamplesCertificationComplainceResult.add(
         new uk.ac.ebi.biosamples.model.certification.Certificate(
@@ -823,7 +827,7 @@ public class ApiDocumentationTest {
                 "schemas/certification/ncbi-candidate-schema.json",
                 false)));
 
-    List<CurationResult> curationResults = new ArrayList<>();
+    final List<CurationResult> curationResults = new ArrayList<>();
     curationResults.add(curationResult);
 
     bioSamplesCertificationComplainceResult.add(
@@ -836,7 +840,7 @@ public class ApiDocumentationTest {
                 "schemas/certification/biosamples-basic.json",
                 false)));
 
-    List<Suggestion> suggestions = new ArrayList<>();
+    final List<Suggestion> suggestions = new ArrayList<>();
     suggestions.add(suggestion);
 
     bioSamplesCertificationComplainceResult.add(
@@ -845,7 +849,7 @@ public class ApiDocumentationTest {
     when(certifyService.recordResult(new ObjectMapper().writeValueAsString(sample), true))
         .thenReturn(bioSamplesCertificationComplainceResult);
 
-    this.mockMvc
+    mockMvc
         .perform(
             post("/biosamples/samples/checkCompliance")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -862,7 +866,7 @@ public class ApiDocumentationTest {
   @Test
   public void putSample() throws Exception {
 
-    Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
+    final Sample sampleWithDomain = faker.getExampleSampleWithDomain();
 
     when(sampleService.fetch(eq(sampleWithDomain.getAccession()), eq(Optional.empty())))
         .thenReturn(Optional.of(sampleWithDomain));
@@ -880,7 +884,7 @@ public class ApiDocumentationTest {
                 new AuthToken(
                     "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
 
-    this.mockMvc
+    mockMvc
         .perform(
             put("/biosamples/samples/" + sampleWithDomain.getAccession())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -895,8 +899,8 @@ public class ApiDocumentationTest {
   @Test
   public void putSampleWithWebinAuthentication() throws Exception {
 
-    Sample sampleWithWebinId = this.faker.getExampleSampleWithWebinId();
-    SubmissionAccount submissionAccount = new SubmissionAccount();
+    final Sample sampleWithWebinId = faker.getExampleSampleWithWebinId();
+    final SubmissionAccount submissionAccount = new SubmissionAccount();
 
     submissionAccount.setId("WEBIN-12345");
 
@@ -924,7 +928,7 @@ public class ApiDocumentationTest {
                 new AuthToken(
                     "RS256", AuthorizationProvider.WEBIN, "user", Collections.emptyList())));
 
-    this.mockMvc
+    mockMvc
         .perform(
             put("/biosamples/samples/" + sampleWithWebinId.getAccession())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -945,7 +949,7 @@ public class ApiDocumentationTest {
    */
   @Test
   public void putSampleWithRelationships() throws Exception {
-    Sample sampleWithDomain = this.faker.getExampleSampleWithRelationships();
+    final Sample sampleWithDomain = faker.getExampleSampleWithRelationships();
 
     when(sampleService.fetch(eq(sampleWithDomain.getAccession()), eq(Optional.empty())))
         .thenReturn(Optional.of(sampleWithDomain));
@@ -963,7 +967,7 @@ public class ApiDocumentationTest {
                 new AuthToken(
                     "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
 
-    this.mockMvc
+    mockMvc
         .perform(
             put("/biosamples/samples/" + sampleWithDomain.getAccession())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -979,7 +983,7 @@ public class ApiDocumentationTest {
 
   @Test
   public void postCurationLink() throws Exception {
-    CurationLink curationLink = this.faker.getExampleCurationLink();
+    final CurationLink curationLink = faker.getExampleCurationLink();
     when(aapService.handleCurationLinkDomain(eq(curationLink))).thenReturn(curationLink);
     when(curationPersistService.store(curationLink)).thenReturn(curationLink);
     when(accessControlService.extractToken(anyString()))
@@ -989,7 +993,7 @@ public class ApiDocumentationTest {
                     "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
     when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
-    this.mockMvc
+    mockMvc
         .perform(
             post("/biosamples/samples/{accession}/curationlinks", curationLink.getSample())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -1005,8 +1009,8 @@ public class ApiDocumentationTest {
 
   @Test
   public void postCurationLinkWithWebinAuthentication() throws Exception {
-    CurationLink curationLink = this.faker.getExampleCurationLinkWithWebinId();
-    SubmissionAccount submissionAccount = new SubmissionAccount();
+    final CurationLink curationLink = faker.getExampleCurationLinkWithWebinId();
+    final SubmissionAccount submissionAccount = new SubmissionAccount();
     submissionAccount.setId("WEBIN-12345");
 
     when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
@@ -1022,7 +1026,7 @@ public class ApiDocumentationTest {
                     "RS256", AuthorizationProvider.WEBIN, "WEBIN-12345", Collections.emptyList())));
     when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
-    this.mockMvc
+    mockMvc
         .perform(
             post("/biosamples/samples/{accession}/curationlinks", curationLink.getSample())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -1038,7 +1042,8 @@ public class ApiDocumentationTest {
 
   @Test
   public void getSample() throws Exception {
-    Sample sample = faker.getExampleSampleBuilder().withDomain(faker.getExampleDomain()).build();
+    final Sample sample =
+        faker.getExampleSampleBuilder().withDomain(faker.getExampleDomain()).build();
     when(sampleService.fetch(sample.getAccession(), Optional.empty()))
         .thenReturn(Optional.of(sample));
     doNothing().when(aapService).isSampleAccessible(isA(Sample.class));
@@ -1056,14 +1061,14 @@ public class ApiDocumentationTest {
 
   @Test
   public void getCurations() throws Exception {
-    Page<Curation> curationPage =
+    final Page<Curation> curationPage =
         new PageImpl<>(
-            Collections.singletonList(this.faker.getExampleCurationLink().getCuration()),
+            Collections.singletonList(faker.getExampleCurationLink().getCuration()),
             getDefaultPageable(),
             100);
     when(curationReadService.getPage(isA(Pageable.class))).thenReturn(curationPage);
 
-    this.mockMvc
+    mockMvc
         .perform(get("/biosamples/curations").accept(MediaTypes.HAL_JSON))
         .andExpect(status().is2xxSuccessful())
         .andDo(document("get-curations"));
@@ -1071,17 +1076,15 @@ public class ApiDocumentationTest {
 
   @Test
   public void getSampleCurationLinks() throws Exception {
-    Page<CurationLink> curationLinkPage =
+    final Page<CurationLink> curationLinkPage =
         new PageImpl<>(
-            Collections.singletonList(this.faker.getExampleCurationLink()),
-            getDefaultPageable(),
-            100);
-    String sampleAccession = curationLinkPage.getContent().get(0).getSample();
+            Collections.singletonList(faker.getExampleCurationLink()), getDefaultPageable(), 100);
+    final String sampleAccession = curationLinkPage.getContent().get(0).getSample();
 
     when(curationReadService.getCurationLinksForSample(eq(sampleAccession), isA(Pageable.class)))
         .thenReturn(curationLinkPage);
 
-    this.mockMvc
+    mockMvc
         .perform(
             get("/biosamples/samples/{accession}/curationlinks", sampleAccession)
                 .accept(MediaTypes.HAL_JSON))
@@ -1103,7 +1106,7 @@ public class ApiDocumentationTest {
         Stream.of("score,desc", "id,asc").map(this::parseSort).collect(Collectors.toList()));
   }
 
-  private Sort.Order parseSort(String sort) {
+  private Sort.Order parseSort(final String sort) {
     if (sort.endsWith(",desc")) {
       return new Sort.Order(Sort.Direction.DESC, sort.substring(0, sort.length() - 5));
     } else if (sort.endsWith(",asc")) {
@@ -1113,7 +1116,7 @@ public class ApiDocumentationTest {
     }
   }
 
-  private String serialize(Object obj) throws JsonProcessingException {
+  private String serialize(final Object obj) throws JsonProcessingException {
     return mapper.writeValueAsString(obj);
   }
 }

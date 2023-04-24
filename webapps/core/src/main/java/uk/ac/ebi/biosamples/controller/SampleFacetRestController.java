@@ -33,7 +33,8 @@ public class SampleFacetRestController {
   private final FacetService facetService;
   private final FilterService filterService;
 
-  public SampleFacetRestController(FacetService facetService, FilterService filterService) {
+  public SampleFacetRestController(
+      final FacetService facetService, final FilterService filterService) {
     this.facetService = facetService;
     this.filterService = filterService;
   }
@@ -41,19 +42,16 @@ public class SampleFacetRestController {
   @CrossOrigin
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<CollectionModel<Facet>> getFacetsHal(
-      @RequestParam(name = "text", required = false) String text,
-      @RequestParam(name = "filter", required = false) String[] filter) {
+      @RequestParam(name = "text", required = false) final String text,
+      @RequestParam(name = "filter", required = false) final String[] filter) {
 
     // TODO support rows and start parameters
     //		MultiValueMap<String, String> filters = filterService.getFilters(filter);
-    Collection<Filter> filters = filterService.getFiltersCollection(filter);
-    Collection<String> domains = Collections.emptyList();
-    List<Facet> sampleFacets = facetService.getFacets(text, filters, domains, 10, 10);
+    final Collection<Filter> filters = filterService.getFiltersCollection(filter);
+    final Collection<String> domains = Collections.emptyList();
+    final List<Facet> sampleFacets = facetService.getFacets(text, filters, domains, 10, 10);
 
-    //    	PagedResources<StringListFacet> resources = new PagedResources<>(
-    //    			sampleFacets,
-    //				new PagedResources.PageMetadata(10, 1, 10, 5));
-    CollectionModel<Facet> resources = CollectionModel.of(sampleFacets);
+    final CollectionModel<Facet> resources = CollectionModel.of(sampleFacets);
 
     // Links for the entire page
     // this is hacky, but no clear way to do this in spring-hateoas currently

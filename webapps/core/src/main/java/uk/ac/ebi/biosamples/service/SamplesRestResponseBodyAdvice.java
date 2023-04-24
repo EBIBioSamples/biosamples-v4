@@ -33,18 +33,19 @@ public class SamplesRestResponseBodyAdvice
 
   @Override
   public boolean supports(
-      MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
+      final MethodParameter returnType,
+      final Class<? extends HttpMessageConverter<?>> converterType) {
     return Objects.requireNonNull(returnType.getMethod()).getReturnType() == PagedModel.class;
   }
 
   @Override
   public PagedModel<EntityModel<Sample>> beforeBodyWrite(
-      PagedModel<EntityModel<Sample>> body,
-      MethodParameter returnType,
-      MediaType selectedContentType,
-      Class<? extends HttpMessageConverter<?>> selectedConverterType,
-      ServerHttpRequest request,
-      ServerHttpResponse response) {
+      final PagedModel<EntityModel<Sample>> body,
+      final MethodParameter returnType,
+      final MediaType selectedContentType,
+      final Class<? extends HttpMessageConverter<?>> selectedConverterType,
+      final ServerHttpRequest request,
+      final ServerHttpResponse response) {
 
     // TODO application.properties the cache time
 

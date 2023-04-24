@@ -42,30 +42,30 @@ import uk.ac.ebi.biosamples.model.Sample;
 // @Profile({"default", "rest"})
 public class PhenopacketIntegration extends AbstractIntegration {
 
-  private Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final RestTemplate restTemplate;
-  private BioSamplesProperties clientProperties;
+  private final BioSamplesProperties clientProperties;
   private final ObjectMapper mapper;
 
   public PhenopacketIntegration(
-      BioSamplesClient client,
-      RestTemplateBuilder restTemplateBuilder,
-      BioSamplesProperties clientProperties) {
+      final BioSamplesClient client,
+      final RestTemplateBuilder restTemplateBuilder,
+      final BioSamplesProperties clientProperties) {
     super(client);
-    this.restTemplate = restTemplateBuilder.build();
+    restTemplate = restTemplateBuilder.build();
     this.clientProperties = clientProperties;
-    this.mapper = new ObjectMapper();
+    mapper = new ObjectMapper();
   }
 
   @Override
   protected void phaseOne() {
-    Sample testSample = getTestSample();
-    Optional<EntityModel<Sample>> optionalSample =
+    final Sample testSample = getTestSample();
+    final Optional<EntityModel<Sample>> optionalSample =
         client.fetchSampleResource(testSample.getAccession());
     if (optionalSample.isPresent()) {
       throw new RuntimeException("Phenopacket test sample should not be available during phase 1");
     }
-    EntityModel<Sample> resource = client.persistSampleResource(testSample);
+    final EntityModel<Sample> resource = client.persistSampleResource(testSample);
     if (!testSample.equals(resource.getContent())) {
       throw new RuntimeException(
           "Expected response ("
@@ -82,27 +82,27 @@ public class PhenopacketIntegration extends AbstractIntegration {
   }
 
   private void checkSampleWithOrphanetLinkWorks() {
-    Sample testSample = getTestSample();
+    final Sample testSample = getTestSample();
 
-    Optional<EntityModel<Sample>> sampleResource =
+    final Optional<EntityModel<Sample>> sampleResource =
         client.fetchSampleResource(testSample.getAccession());
 
     assertThat(sampleResource.isPresent(), CoreMatchers.is(true));
-    URI sampleURI = URI.create(sampleResource.get().getLink("self").get().getHref());
+    final URI sampleURI = URI.create(sampleResource.get().getLink("self").get().getHref());
 
-    MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+    final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
     headers.add("Accept", "application/phenopacket+json");
-    RequestEntity request = new RequestEntity<>(headers, HttpMethod.GET, sampleURI);
-    ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+    final RequestEntity request = new RequestEntity<>(headers, HttpMethod.GET, sampleURI);
+    final ResponseEntity<String> response = restTemplate.exchange(request, String.class);
     if (!response.getStatusCode().is2xxSuccessful()) {
       throw new RuntimeException(
           "Impossible to retrieve correctly phenopacket sample with name " + testSample.getName());
     }
 
-    List<LinkedHashMap> allMetadata =
+    final List<LinkedHashMap> allMetadata =
         JsonPath.read(response.getBody(), "$.metaData.resources[?(@.id==\"ordo\")]");
     assertThat(allMetadata.size(), is(1));
-    LinkedHashMap<String, String> ordoMetadata = allMetadata.get(0);
+    final LinkedHashMap<String, String> ordoMetadata = allMetadata.get(0);
     assertThat(ordoMetadata.get("namespacePrefix"), equalTo("ORDO"));
     assertThat(ordoMetadata.get("name"), equalTo("Orphanet Rare Disease Ontology"));
     assertThat(
@@ -122,10 +122,10 @@ public class PhenopacketIntegration extends AbstractIntegration {
   protected void phaseSix() {}
 
   private Sample getTestSample() {
-    Sample.Builder sampleBuilder =
+    final Sample.Builder sampleBuilder =
         new Sample.Builder("Phenopacket_ERS1790018", "Phenopacket_ERS1790018");
     sampleBuilder
-        .withDomain(this.defaultIntegrationSubmissionDomain)
+        .withDomain(defaultIntegrationSubmissionDomain)
         .withRelease("2017-01-01T12:00:00")
         .withUpdate("2017-01-01T12:00:00")
         .withTaxId(Long.valueOf(9606))

@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service;
 /** Service to validate if an IRI URL resolves */
 @Service
 public class IriUrlValidatorService {
-  public static final String OBO = "purl.obolibrary.org/obo";
-  public static final String EBIUK = "www.ebi.ac.uk";
+  private static final String OBO = "purl.obolibrary.org/obo";
+  private static final String EBIUK = "www.ebi.ac.uk";
 
   public IriUrlValidatorService() {}
 
@@ -28,16 +28,16 @@ public class IriUrlValidatorService {
   public boolean validateIri(final String iri) {
     try {
       return checkHttpStatusOfUrl(iri);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       return false;
     }
   }
 
-  public boolean checkHttpStatusOfUrl(final String urlToCheck) throws IOException {
+  private boolean checkHttpStatusOfUrl(final String urlToCheck) throws IOException {
     final URL url = new URL(urlToCheck);
     final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
     conn.setConnectTimeout(5000);
-    int response;
+    final int response;
 
     conn.setRequestMethod("GET");
     conn.connect();
@@ -47,7 +47,10 @@ public class IriUrlValidatorService {
   }
 
   public boolean checkUrlForPattern(final String displayIri) {
-    if (displayIri.contains(OBO) || displayIri.contains(EBIUK)) return false;
-    else return true;
+    if (displayIri.contains(OBO) || displayIri.contains(EBIUK)) {
+      return false;
+    } else {
+      return true;
+    }
   }
 }

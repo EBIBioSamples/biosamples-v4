@@ -70,12 +70,12 @@ public class FileQueueService {
     }
   }
 
-  public String persistUploadedFileInMongo(final MultipartFile file) throws IOException {
+  private String persistUploadedFileInMongo(final MultipartFile file) throws IOException {
     final DBObject metaData = new BasicDBObject();
 
     metaData.put("upload_timestamp", new Date());
 
-    ObjectId gridFSFileId =
+    final ObjectId gridFSFileId =
         gridFsTemplate.store(
             file.getInputStream(), file.getOriginalFilename(), file.getContentType(), metaData);
 

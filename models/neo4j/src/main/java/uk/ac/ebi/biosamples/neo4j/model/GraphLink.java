@@ -22,40 +22,40 @@ public class GraphLink implements Comparable<GraphLink> {
     return type;
   }
 
-  public void setType(RelationshipType type) {
+  public void setType(final RelationshipType type) {
     this.type = type;
   }
 
-  public String getStartNode() {
+  private String getStartNode() {
     return startNode;
   }
 
-  public void setStartNode(String startNode) {
+  public void setStartNode(final String startNode) {
     this.startNode = startNode;
   }
 
-  public String getEndNode() {
+  private String getEndNode() {
     return endNode;
   }
 
-  public void setEndNode(String endNode) {
+  public void setEndNode(final String endNode) {
     this.endNode = endNode;
   }
 
-  public String getQueryString(String relName) {
-    String rel = (type == RelationshipType.ANY) ? relName : relName + ":" + type;
+  public String getQueryString(final String relName) {
+    final String rel = (type == RelationshipType.ANY) ? relName : relName + ":" + type;
     return "(" + startNode + ")-[" + rel + "]->(" + endNode + ") ";
   }
 
   @Override
-  public boolean equals(Object other) {
+  public boolean equals(final Object other) {
     if (!(other instanceof GraphLink)) {
       return false;
     }
-    GraphLink otherLink = (GraphLink) other;
-    return this.type.equals(otherLink.getType())
-        && this.startNode.equals(otherLink.getStartNode())
-        && this.endNode.equals(otherLink.getEndNode());
+    final GraphLink otherLink = (GraphLink) other;
+    return type.equals(otherLink.getType())
+        && startNode.equals(otherLink.getStartNode())
+        && endNode.equals(otherLink.getEndNode());
   }
 
   @Override
@@ -64,15 +64,15 @@ public class GraphLink implements Comparable<GraphLink> {
   }
 
   @Override
-  public int compareTo(GraphLink other) {
-    if (!this.type.equals(other.getType())) {
-      return this.type.compareTo(other.getType());
+  public int compareTo(final GraphLink other) {
+    if (!type.equals(other.getType())) {
+      return type.compareTo(other.getType());
     }
 
-    if (!this.startNode.equals(other.getStartNode())) {
-      return this.startNode.compareTo(other.getStartNode());
+    if (!startNode.equals(other.getStartNode())) {
+      return startNode.compareTo(other.getStartNode());
     }
 
-    return this.endNode.compareTo(other.getEndNode());
+    return endNode.compareTo(other.getEndNode());
   }
 }
