@@ -73,7 +73,7 @@ clone-config-production:
     - master
 
 deploy-preproduction:
-  image: ubuntu:22.04
+  image: ubuntu:18.04
   stage: deploy
   script:
     - chmod +x deploy.sh
@@ -97,7 +97,7 @@ deploy-production-p2m-servers:
     - master
 
 deploy-production-p1m-servers:
-  image: ubuntu:22.04
+  image: ubuntu:18.04
   stage: deploy
   script:
     - chmod +x deploy.sh
