@@ -39,5 +39,6 @@
 		<module>analytics</module>
 		<module>clearinghouse</module>
 		<module>sample-post-release-action</module>
+		<module>taxonimport</module>
 	</modules>
 </project>
