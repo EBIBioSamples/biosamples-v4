@@ -148,6 +148,14 @@ public class SolrFilterService {
     final FilterQuery filterQuery = new SimpleFilterQuery();
     Criteria publicSampleCriteria = new Criteria("release_dt").lessThan("NOW");
 
+//    publicSampleCriteria =
+//        publicSampleCriteria.and(
+//            new Criteria("status_s").not().in(SampleStatus.getSearchHiddenStatuses()));
+    publicSampleCriteria =
+        publicSampleCriteria.and(
+            new Criteria(SolrFieldService.encodeFieldName("INSDC status") + "_av_ss")
+                .not().in(Collections.singletonList("suppressed")));
+
     if (domains != null && !domains.isEmpty()) {
       // user can see public and private samples inside its own domain
       publicSampleCriteria = publicSampleCriteria.or(new Criteria("domain_s").in(domains));
@@ -158,15 +166,6 @@ public class SolrFilterService {
       publicSampleCriteria =
           publicSampleCriteria.or(new Criteria("webinId").in(webinSubmissionAccountId));
     }
-
-    publicSampleCriteria =
-        publicSampleCriteria.and(
-            new Criteria("status_s").not().in(SampleStatus.getSearchHiddenStatuses()));
-
-    //    String[] allowedSampleStatus = {SampleStatus.PUBLIC.name()};
-    //    publicSampleCriteria =
-    //        publicSampleCriteria.or(new
-    // Criteria("status_s").in(Arrays.asList(allowedSampleStatus)));
 
     filterQuery.addCriteria(publicSampleCriteria);
     return Optional.of(filterQuery);
