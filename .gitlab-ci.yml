@@ -28,7 +28,6 @@ maven-package:
     - cp pipelines/ena/target/pipelines-ena-*.jar deployment/pipelines-ena.jar
     - cp pipelines/sample-release/target/pipelines-sample-release-*.jar deployment/pipelines-sample-release.jar
     - cp pipelines/sample-post-release-action/target/pipelines-sample-post-release-action*.jar deployment/pipelines-sample-post-release-action.jar
-    - cp pipelines/export/target/pipelines-export-*.jar deployment/pipelines-export.jar
     - cp pipelines/ncbi/target/pipelines-ncbi-*.jar deployment/pipelines-ncbi.jar
     - cp pipelines/reindex/target/pipelines-reindex-*.jar deployment/pipelines-reindex.jar
     - cp pipelines/zooma/target/pipelines-zooma-*.jar deployment/pipelines-zooma.jar
