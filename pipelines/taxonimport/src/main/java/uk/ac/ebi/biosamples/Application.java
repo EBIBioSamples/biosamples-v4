@@ -40,7 +40,7 @@ public class Application {
 
   public static void main(String[] args) {
     final ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
-    PipelineUtils.exitApplication(ctx);
+    PipelineUtils.exitPipeline(ctx);
   }
 
   @Bean
