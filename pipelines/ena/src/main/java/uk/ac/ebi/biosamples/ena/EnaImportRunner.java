@@ -287,7 +287,7 @@ public class EnaImportRunner implements ApplicationRunner {
       final NcbiRowCallbackHandler ncbiRowCallbackHandler =
           new NcbiRowCallbackHandler(null, ncbiCallableFactory, futures);
 
-      eraProDao.getNcbiCallback(fromDate, toDate, ncbiRowCallbackHandler);
+      // eraProDao.getNcbiCallback(fromDate, toDate, ncbiRowCallbackHandler);
     } else {
       try (final AdaptiveThreadPoolExecutor executorService =
           AdaptiveThreadPoolExecutor.create(
@@ -305,7 +305,7 @@ public class EnaImportRunner implements ApplicationRunner {
         final NcbiRowCallbackHandler ncbiRowCallbackHandler =
             new NcbiRowCallbackHandler(executorService, ncbiCallableFactory, futures);
 
-        eraProDao.getNcbiCallback(fromDate, toDate, ncbiRowCallbackHandler);
+        // eraProDao.getNcbiCallback(fromDate, toDate, ncbiRowCallbackHandler);
 
         log.info("waiting for futures"); // wait for anything to finish
         ThreadUtils.checkFutures(futures, 0);
