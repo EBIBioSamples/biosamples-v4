@@ -74,7 +74,7 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
                 .filter(c -> c.getType().equalsIgnoreCase("organism"))
                 .findFirst();
 
-        Attribute newOrganism = Attribute.build("organism", entry.getBioSampleTaxName());
+        Attribute newOrganism = Attribute.build("organism", entry.getNcbiTaxonName());
 
         Sample newSample;
         Set<Attribute> sampleAttributes = sample.getAttributes();
