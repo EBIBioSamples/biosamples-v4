@@ -127,6 +127,14 @@ public class BioSamplesWebinAuthenticationService {
             }
           }
 
+          if (oldSamplePresent
+              && oldSample.get().getSubmittedVia()
+                  == SubmittedViaType.FILE_UPLOADER) { // file uploader samples re-update protection
+            if (sample.getSubmittedVia() == SubmittedViaType.PIPELINE_IMPORT) {
+              throw new GlobalExceptions.InvalidSubmissionSourceException();
+            }
+          }
+
           if (oldSamplePresent) {
             final Sample oldSavedSample = oldSample.get();
             final String oldSavedSampleWebinSubmissionAccountId =

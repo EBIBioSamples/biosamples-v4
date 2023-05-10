@@ -20,7 +20,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(properties = {"spring.cloud.gcp.project-id=no_project"})
 @TestPropertySource(properties = {"aap.domains.url = ''"})
 @AutoConfigureMockMvc
 public class FileDownloadControllerTest {

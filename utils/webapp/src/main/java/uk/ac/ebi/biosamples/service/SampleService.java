@@ -74,7 +74,7 @@ public class SampleService {
 
     if (isWebinSuperUser) {
       if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-        // file uploader submissions are done via super user but they are non imported samples,
+        // file uploader submissions are done via super-user but they are non imported samples,
         // needs to be handled safely
         if (sample.hasAccession()) {
           return isExistingSampleEmpty(oldSample);

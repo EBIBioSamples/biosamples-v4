@@ -11,13 +11,27 @@
 package uk.ac.ebi.biosamples;
 
 import com.github.benmanes.caffeine.cache.CaffeineSpec;
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.spring.autoconfigure.metrics.GcpStackdriverMetricsAutoConfiguration;
+import com.google.cloud.spring.core.DefaultGcpProjectIdProvider;
+import com.google.cloud.spring.core.GcpProjectIdProvider;
+import io.micrometer.stackdriver.StackdriverConfig;
+import io.micrometer.stackdriver.StackdriverMeterRegistry;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.concurrent.Executor;
 import javax.servlet.Filter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -47,14 +61,82 @@ import uk.ac.ebi.tsc.aap.client.repo.*;
       UserService.class,
       UserRepositoryRest.class,
       TokenService.class,
-      TokenRepositoryRest.class
+      TokenRepositoryRest.class,
+      GcpStackdriverMetricsAutoConfiguration.class
     })
 @EnableAsync
 @EnableCaching
 public class Application extends SpringBootServletInitializer {
-
   public static void main(final String[] args) {
+    System.setProperty("http.proxyHost", "hh-wwwcache.ebi.ac.uk");
+    System.setProperty("http.proxyPort", "3128");
+    System.setProperty("https.proxyHost", "hh-wwwcache.ebi.ac.uk");
+    System.setProperty("https.proxyPort", "3128");
+
     SpringApplication.run(Application.class, args);
+  }
+
+  @Value("${spring.cloud.gcp.project-id}")
+  private String enaGcpProject;
+
+  @Autowired private Environment environment;
+
+  @Bean(name = "defaultServiceAccountCredentialFilePath")
+  public String getGcpProjectCredentialsFilePath() {
+    return environment.getProperty("GOOGLE_APPLICATION_CREDENTIALS");
+  }
+
+  @Bean(name = "enaGcpProject")
+  public GcpProjectIdProvider enaGcpProject() {
+    return new DefaultGcpProjectIdProvider() {
+      @Override
+      public String getProjectId() {
+        return enaGcpProject;
+      }
+    };
+  }
+
+  @Bean(name = "gcpDefaultProjectCredentialsProvider")
+  @Primary
+  public CredentialsProvider gcpDefaultProjectCredentialsProvider() {
+    return () ->
+        GoogleCredentials.fromStream(
+            Files.newInputStream(Paths.get(getGcpProjectCredentialsFilePath())));
+  }
+
+  @Bean
+  public StackdriverConfig stackdriverConfig() {
+    return new StackdriverConfig() {
+      @Override
+      public String projectId() {
+        return enaGcpProject;
+      }
+
+      @Override
+      public String get(final String key) {
+        return null;
+      }
+
+      @Override
+      public CredentialsProvider credentials() {
+        return gcpDefaultProjectCredentialsProvider();
+      }
+
+      @Override
+      public boolean useSemanticMetricTypes() {
+        return true;
+      }
+
+      @Override
+      public Duration step() {
+        return Duration.ofMinutes(5);
+      }
+    };
+  }
+
+  @Bean
+  public StackdriverMeterRegistry meterRegistry(final StackdriverConfig stackdriverConfig) {
+    return StackdriverMeterRegistry.builder(stackdriverConfig).build();
   }
 
   @Bean
