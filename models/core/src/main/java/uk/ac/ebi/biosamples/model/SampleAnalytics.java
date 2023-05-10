@@ -23,7 +23,7 @@ public class SampleAnalytics {
   private String dateRange;
   private long processedRecords;
   protected Map<String, Long> center;
-  private final Map<String, Long> channel;
+  protected Map<String, Long> channel;
   protected Map<String, Map<String, Long>> facets;
 
   public SampleAnalytics() {

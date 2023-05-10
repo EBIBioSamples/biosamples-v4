@@ -74,7 +74,7 @@ public class SampleService {
 
     if (isWebinSuperUser) {
       if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-        // file uploader submissions are done via super user but they are non imported samples,
+        // file uploader submissions are done via super-user but they are non imported samples,
         // needs to be handled safely
         if (sample.hasAccession()) {
           return isExistingSampleEmpty(oldSample);
@@ -180,6 +180,8 @@ public class SampleService {
                 sample.getAccession(),
                 Objects.requireNonNull(sampleToMongoSampleConverter.convert(oldSample)));
 
+        isImportedSampleUpdatedByNonPipelineSource(sample, oldSample);
+
         sample =
             compareWithExistingAndUpdateSample(
                 sample, oldSample, isExistingSampleEmpty, authProvider);
@@ -191,6 +193,14 @@ public class SampleService {
         }
       } else {
         log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
+
+        if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
+          log.error(
+              "Not permitted to update sample not in database using the file uploader, accession: {}",
+              sample.getAccession());
+
+          throw new GlobalExceptions.SampleAccessionDoesNotExistException();
+        }
       }
 
       MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
@@ -258,6 +268,8 @@ public class SampleService {
         if (isExistingSampleEmpty) {
           sample = Sample.Builder.fromSample(sample).withSubmitted(Instant.now()).build();
         }
+
+        isImportedSampleUpdatedByNonPipelineSource(sample, oldSample);
 
         sample =
             compareWithExistingAndUpdateSample(
@@ -336,8 +348,6 @@ public class SampleService {
       final AuthorizationProvider authProvider) {
     Set<AbstractData> structuredData = new HashSet<>();
     boolean applyOldSampleStructuredData = false;
-
-    isImportedSampleUpdatedByNonPipelineSource(newSample, oldSample);
 
     if (newSample.getData().size() < 1) {
       log.info("No structured data in new sample");

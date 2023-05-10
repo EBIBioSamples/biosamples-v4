@@ -35,7 +35,7 @@ import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.mongo.CurationReadService;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(properties = {"spring.cloud.gcp.project-id=no_project"})
 public class SampleRestControllerTest {
 
   @Autowired private WebApplicationContext context;

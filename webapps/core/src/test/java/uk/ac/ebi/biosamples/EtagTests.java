@@ -40,7 +40,7 @@ import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(properties = {"spring.cloud.gcp.project-id=no_project"})
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class EtagTests {

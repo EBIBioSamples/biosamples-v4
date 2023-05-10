@@ -18,7 +18,6 @@ import org.springframework.data.solr.core.query.FilterQuery;
 import org.springframework.data.solr.core.query.SimpleFilterQuery;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.model.SampleStatus;
 import uk.ac.ebi.biosamples.model.filter.AccessionFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
@@ -148,13 +147,14 @@ public class SolrFilterService {
     final FilterQuery filterQuery = new SimpleFilterQuery();
     Criteria publicSampleCriteria = new Criteria("release_dt").lessThan("NOW");
 
-//    publicSampleCriteria =
-//        publicSampleCriteria.and(
-//            new Criteria("status_s").not().in(SampleStatus.getSearchHiddenStatuses()));
+    //    publicSampleCriteria =
+    //        publicSampleCriteria.and(
+    //            new Criteria("status_s").not().in(SampleStatus.getSearchHiddenStatuses()));
     publicSampleCriteria =
         publicSampleCriteria.and(
             new Criteria(SolrFieldService.encodeFieldName("INSDC status") + "_av_ss")
-                .not().in(Collections.singletonList("suppressed")));
+                .not()
+                .in(Collections.singletonList("suppressed")));
 
     if (domains != null && !domains.isEmpty()) {
       // user can see public and private samples inside its own domain

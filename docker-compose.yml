@@ -14,10 +14,11 @@ services:
     - schema-store
     volumes:
     - logs:/logs
+    - "/mnt/c/Users/dgupta/secrets:/secrets"
     command:
     - java
     - -jar
-    - webapps-core-5.2.16-RC1.war
+    - webapps-core-5.2.18-SNAPSHOT.war
     environment:
     #AAP certificate
     - jwt.certificate=public.explore.der
@@ -42,6 +43,17 @@ services:
     - spring.jackson.serialization.indent_output=true
     - management.health.solr.enabled=false
     - management.endpoint.health.show-details=always
+    - management.metrics.enable.all=false
+    - management.metrics.enable.http=true
+    - management.metrics.web.server.request.autotime.percentiles-histogram=true
+    - management.metrics.web.server.request.autotime.percentiles=0.50,0.90,0.99
+    #buckets(in ms to match base Time Unit)
+    - management.metrics.distribution.sla.http.server.requests.duration.buckets=50,100,250,500,1000,5000,10000,15000,30000,60000,120000,180000,240000,300000
+    # Micrometer
+    - spring.cloud.gcp.project-id=prj-int-dev-omics-apps-mon
+    - management.metrics.export.stackdriver.projectId=prj-int-dev-omics-apps-mon
+    - management.metrics.export.stackdriver.useSemanticMetricTypes=true
+    - management.metrics.export.stackdriver.step=5m
     #Configure root path to server from
     - server.servlet.context-path=/biosamples
     - server.context-path=/biosamples
@@ -68,6 +80,8 @@ services:
     - spring.mvc.pathmatch.matching-strategy=ant-path-matcher
     # File upload
     - spring.servlet.multipart.location=/data/upload_tmp
+    # gcp monitoring servoce account key.
+    - GOOGLE_APPLICATION_CREDENTIALS=/secrets/prj-int-dev-omics-apps-mon-1fba094e79b2.json
     ports:
     - 8081:8080
     - 9090:9090
@@ -84,10 +98,11 @@ services:
       - rabbitmq
     volumes:
       - logs:/logs
+      - "/mnt/c/Users/dgupta/secrets:/secrets"
     command:
       - java
       - -jar
-      - webapps-core-v2-5.2.16-RC1.jar
+      - webapps-core-v2-5.2.18-SNAPSHOT.jar
     environment:
       #AAP certificate
       - jwt.certificate=public.explore.der
@@ -112,6 +127,17 @@ services:
       - management.health.solr.enabled=false
       - management.health.rabbit.enabled=false
       - management.endpoint.health.show-details=always
+      - management.metrics.enable.all=false
+      - management.metrics.enable.http=true
+      - management.metrics.web.server.request.autotime.percentiles-histogram=true
+      - management.metrics.web.server.request.autotime.percentiles=0.50,0.90,0.99
+      #buckets(in ms to match base Time Unit)
+      - management.metrics.distribution.sla.http.server.requests.duration.buckets=50,100,250,500,1000,5000,10000,15000,30000,60000,120000,180000,240000,300000
+      # Micrometer
+      - spring.cloud.gcp.project-id=prj-int-dev-omics-apps-mon
+      - management.metrics.export.stackdriver.projectId=prj-int-dev-omics-apps-mon
+      - management.metrics.export.stackdriver.useSemanticMetricTypes=true
+      - management.metrics.export.stackdriver.step=5m
       #Configure root path to server from
       - server.servlet.context-path=/biosamples/v2
       - server.context-path=/biosamples/v2
@@ -134,6 +160,8 @@ services:
       - spring.http.encoding.enabled=true
       # Force the encoding to the configured charset on HTTP requests and responses.
       - spring.http.encoding.force=true
+      # gcp monitoring servoce account key.
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/prj-int-dev-omics-apps-mon-1fba094e79b2.json
     ports:
       - 8082:8080
 
@@ -148,7 +176,7 @@ services:
     command:
     - java
     - -jar
-    - agents-solr-5.2.16-RC1.jar
+    - agents-solr-5.2.18-SNAPSHOT.jar
     environment:
     - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
@@ -173,7 +201,7 @@ services:
     command:
       - java
       - -jar
-      - agents-uploadworkers-5.2.16-RC1.jar
+      - agents-uploadworkers-5.2.18-SNAPSHOT.jar
     environment:
       #AAP certificate
       - jwt.certificate=public.explore.der
@@ -202,7 +230,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-ena-5.2.16-RC1.jar
+    - pipelines-ena-5.2.18-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ena.log
@@ -217,7 +245,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-ncbi-5.2.16-RC1.jar
+    - pipelines-ncbi-5.2.18-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ncbi.log
@@ -232,7 +260,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-accession-5.2.16-RC1.jar
+    - pipelines-accession-5.2.18-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-accession.log
@@ -247,7 +275,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-copydown-5.2.16-RC1.jar
+    - pipelines-copydown-5.2.18-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-copydown.log
@@ -262,7 +290,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-curation-5.2.16-RC1.jar
+    - pipelines-curation-5.2.18-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-curation.log
@@ -279,7 +307,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-zooma-5.2.16-RC1.jar
+    - pipelines-zooma-5.2.18-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-zooma.log
@@ -296,7 +324,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-reindex-5.2.16-RC1.jar
+    - pipelines-reindex-5.2.18-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-reindex.log
@@ -314,7 +342,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-export-5.2.16-RC1.jar
+    - pipelines-export-5.2.18-SNAPSHOT.jar
     - --gzip
     - /export/export.json.gzip
     environment:
@@ -332,7 +360,7 @@ services:
     command:
     - java
     - -jar
-    - integration-5.2.16-RC1.jar
+    - integration-5.2.18-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - BIOSAMPLES_CLIENT_URI_V2=http://biosamples-webapps-core-v2:8080/biosamples/v2

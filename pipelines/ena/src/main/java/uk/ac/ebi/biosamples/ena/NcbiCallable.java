@@ -66,8 +66,6 @@ public class NcbiCallable implements Callable<Void> {
               throw new RuntimeException(
                   "Failed to enrich and persist NCBI sample with accession " + accession);
             }
-
-            success = false;
           }
         } else {
           log.info("NCBI sample exists " + accession + " adding ENA link");
