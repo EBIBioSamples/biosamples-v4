@@ -70,7 +70,7 @@ import uk.ac.ebi.biosamples.utils.mongo.CurationReadService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(properties = {"spring.cloud.gcp.project-id=no_project"})
 @AutoConfigureRestDocs
 @TestPropertySource(properties = {"aap.domains.url = ''"})
 public class ApiDocumentationTest {

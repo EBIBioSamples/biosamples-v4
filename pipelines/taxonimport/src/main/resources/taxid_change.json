@@ -1,0 +1,20 @@
+[
+  {
+    "taxId": 2060921,
+    "ncbiTaxonName": "Fusobacteriota bacterium",
+    "bioSampleTaxName": "Fusobacteria bacterium",
+    "bioSampleAccession": "SAMEA15"
+  },
+  {
+    "taxId": 40117,
+    "ncbiTaxonName": "Nitrospirota",
+    "bioSampleTaxName": "Nitrospirae",
+    "bioSampleAccession": "SAMEA16"
+  },
+  {
+    "taxId": 2202144,
+    "ncbiTaxonName": "Spirochaetota bacterium",
+    "bioSampleTaxName": "Spirochaetes bacterium",
+    "bioSampleAccession": "SAMEA17"
+  }
+]

@@ -27,7 +27,7 @@ import uk.ac.ebi.biosamples.model.CuramiRecommendation;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(properties = {"spring.cloud.gcp.project-id=no_project"})
 @ActiveProfiles("test")
 public class RecommendationServiceTest {
 

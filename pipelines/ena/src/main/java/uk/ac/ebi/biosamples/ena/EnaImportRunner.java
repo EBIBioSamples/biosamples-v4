@@ -103,7 +103,7 @@ public class EnaImportRunner implements ApplicationRunner {
       if (suppressionRunner) {
         try {
           // handler for suppressed ENA samples
-          handleSuppressedEnaSamples();
+          // handleSuppressedEnaSamples();
         } catch (final Exception e) {
           log.info("Suppression Runner failed");
         }

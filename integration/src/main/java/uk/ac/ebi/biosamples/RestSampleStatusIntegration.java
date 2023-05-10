@@ -136,6 +136,7 @@ public class RestSampleStatusIntegration extends AbstractIntegration {
     attributes.add(Attribute.build("age", "3", null, Collections.emptyList(), "year"));
     attributes.add(Attribute.build("organism part", "lung"));
     attributes.add(Attribute.build("sex", "female"));
+    attributes.add(Attribute.build("INSDC status", "suppressed"));
 
     return new Sample.Builder("RestSampleStatusIntegration_sample_suppressed")
         .withTaxId(9606L)
