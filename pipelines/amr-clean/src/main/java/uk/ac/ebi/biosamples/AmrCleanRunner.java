@@ -10,11 +10,6 @@
 */
 package uk.ac.ebi.biosamples;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +23,12 @@ import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.mongo.model.MongoStructuredData;
 import uk.ac.ebi.biosamples.mongo.repo.MongoStructuredDataRepository;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.*;
 
 /**
  * This runner will get a list of accessions from mongo directly, query the API to get the latest
@@ -63,7 +64,7 @@ public class AmrCleanRunner implements ApplicationRunner {
 
       final Query query = new Query();
       try (final CloseableIterator<MongoStructuredData> it =
-          mongoOperations.stream(query, MongoStructuredData.class)) {
+                   mongoOperations.stream(query, MongoStructuredData.class)) {
         while (it.hasNext()) {
           final MongoStructuredData structuredData = it.next();
           final String accession = structuredData.getAccession();
@@ -140,12 +141,12 @@ public class AmrCleanRunner implements ApplicationRunner {
       dataSet.removeAll(emptyDomainAndWebinData);
 
       LOGGER.info(
-          structuredData.getAccession()
+              structuredData.getAccession()
               + ", original size: "
               + originalSize
               + ", now: "
               + dataSet.size());
-      mongoStructuredDataRepository.save(structuredData);
+        mongoStructuredDataRepository.save(structuredData);
 
       return null;
     }

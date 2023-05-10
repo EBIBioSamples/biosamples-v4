@@ -333,9 +333,9 @@ public class SampleHtmlController {
     model.addAttribute("release", sample.get().getRelease().atOffset(ZoneOffset.UTC));
     model.addAttribute("create", sample.get().getCreate().atOffset(ZoneOffset.UTC));
 
-    Instant submitted = sample.get().getSubmitted();
+    final Instant submitted = sample.get().getSubmitted();
     model.addAttribute("submitted", submitted != null ? submitted.atOffset(ZoneOffset.UTC) : null);
-    Instant reviewed = sample.get().getReviewed();
+    final Instant reviewed = sample.get().getReviewed();
     model.addAttribute("reviewed", reviewed != null ? reviewed.atOffset(ZoneOffset.UTC) : null);
 
     addCacheControlHeadersToResponse(new ArrayList<>(), response, 10);
@@ -373,10 +373,10 @@ public class SampleHtmlController {
   }
 
   private void addCacheControlHeadersToResponse(
-      final Collection<String> domains, final HttpServletResponse response, long maxAge) {
+      final Collection<String> domains, final HttpServletResponse response, final long maxAge) {
     // EBI load balancer does cache but doesn't add age header, so clients could cache up to twice
     // this age
-    CacheControl cacheControl = CacheControl.maxAge(maxAge, TimeUnit.SECONDS);
+    final CacheControl cacheControl = CacheControl.maxAge(maxAge, TimeUnit.SECONDS);
     // if the user has access to any domains, then mark the response as
     // private as must be using AAP and responses will be different
     if (domains != null && !domains.isEmpty()) {

@@ -36,13 +36,13 @@ public class FileDownloadInputStreamTest {
 
   private FileDownloadInputStream fileDownloadInputStream;
 
-  private int pageSize = 1000;
-  private int sampleCount = 100;
-  private String cursor = "*";
-  private String sampleSearchText = "";
-  private String emptySamplesText = "no samples search";
-  private Collection<Filter> filters = Collections.emptyList();
-  private Collection<String> domains = Collections.emptyList();
+  private final int pageSize = 1000;
+  private final int sampleCount = 100;
+  private final String cursor = "*";
+  private final String sampleSearchText = "";
+  private final String emptySamplesText = "no samples search";
+  private final Collection<Filter> filters = Collections.emptyList();
+  private final Collection<String> domains = Collections.emptyList();
 
   @Before
   public void init() {

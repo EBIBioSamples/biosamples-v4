@@ -55,8 +55,8 @@ then
 fi
 
 ## invoke maven versions plugin to increment project structure versions
-mvn versions:set -DgroupId="uk.ac.ebi.biosamples" -DoldVersion="$LAST_VERSION" -DnewVersion="$NEW_VERSION"  || exit 1
-mvn versions:set -DartifactId="biosamples-spring-boot-starter" -DoldVersion="$LAST_VERSION" -DnewVersion="$NEW_VERSION" || exit 1
+./mvnw versions:set -DgroupId="uk.ac.ebi.biosamples" -DoldVersion="$LAST_VERSION" -DnewVersion="$NEW_VERSION"  || exit 1
+./mvnw versions:set -DartifactId="biosamples-spring-boot-starter" -DoldVersion="$LAST_VERSION" -DnewVersion="$NEW_VERSION" || exit 1
 
 # updates all the docker files and the shell scripts
 echo " "

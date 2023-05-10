@@ -33,7 +33,8 @@ public class AccessControlServiceTest extends TestCase {
           + "J4tNgaihj7OmZmCpIKTOecxEhh3anNfjQQ1O9vQhtCeiFz9g2Tj8pTdv-6FBZ5t5gidz5W4GDsJ_8hDnXPge7Gk5ug3_GddDAWHv"
           + "wJhuK_OR5oIIAf6SBeWNr9HKLpOQYcywYsrmKAFjTgA-wrGWtcR3qvFVDiQCpW2UzB8kzFVKdegIdrI2PgQnP5e0f5BoQ5V-qo7W"
           + "Bwn81bW7NkWHBXVecMab_UsKUyTMqNbsFY5TGJNj715a1Z_N6npkynGCpB3VbR5X6L3JVEnlhkBoCTE9zKUbfa3KLglYA";
-  private AccessControlService accessControlService = new AccessControlService(new ObjectMapper());
+  private final AccessControlService accessControlService =
+      new AccessControlService(new ObjectMapper());
 
   public void testExtractToken() {
     final AuthToken aapToken = accessControlService.extractToken(AAP_TOKEN).orElse(null);

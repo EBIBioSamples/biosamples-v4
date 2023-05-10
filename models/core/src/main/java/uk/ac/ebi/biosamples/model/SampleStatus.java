@@ -10,9 +10,16 @@
 */
 package uk.ac.ebi.biosamples.model;
 
+import java.util.Arrays;
+import java.util.List;
+
 public enum SampleStatus {
   PRIVATE,
   PUBLIC,
   SUPPRESSED,
-  KILLED
+  KILLED;
+
+  public static List<String> getSearchHiddenStatuses() {
+    return Arrays.asList(SUPPRESSED.name(), KILLED.name());
+  }
 }

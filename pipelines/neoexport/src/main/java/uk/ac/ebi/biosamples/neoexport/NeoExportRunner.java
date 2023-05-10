@@ -59,7 +59,7 @@ public class NeoExportRunner implements ApplicationRunner {
 
   @Override
   public void run(final ApplicationArguments args) throws Exception {
-    final Collection<Filter> filters = PipelineUtils.getDateFilters(args);
+    final Collection<Filter> filters = PipelineUtils.getDateFilters(args, "update");
     //    RelationFilter relationFilter = new RelationFilter.Builder("has member").build();
     //    filters.add(relationFilter);
     //    ExternalReferenceDataFilter externalFilter = new ExternalReferenceDataFilter.Builder("EGA

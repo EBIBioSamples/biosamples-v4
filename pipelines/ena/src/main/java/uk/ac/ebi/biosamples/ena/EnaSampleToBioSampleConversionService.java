@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -26,10 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.PipelinesProperties;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Publication;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
@@ -54,11 +52,7 @@ public class EnaSampleToBioSampleConversionService {
   }
 
   /** Handles one ENA sample */
-  Sample enrichSample(
-      final String accession,
-      final boolean isNcbi,
-      final Set<AbstractData> oldStructuredData,
-      final Set<StructuredDataTable> newStructuredData)
+  Sample enrichSample(final String accession, final boolean isNcbi, final Sample existingSample)
       throws DocumentException {
     final EraproSample eraproSample = eraProDao.getSampleDetailsByBioSampleId(accession);
 
@@ -72,13 +66,7 @@ public class EnaSampleToBioSampleConversionService {
 
       // check that we got some content
       if (XmlPathBuilder.of(enaSampleRootElement).path("SAMPLE").exists()) {
-        return enrichSample(
-            eraproSample,
-            enaSampleRootElement,
-            accession,
-            isNcbi,
-            oldStructuredData,
-            newStructuredData);
+        return enrichSample(eraproSample, enaSampleRootElement, accession, isNcbi, existingSample);
       } else {
         log.warn("Unable to find SAMPLE element for " + accession);
       }
@@ -93,8 +81,15 @@ public class EnaSampleToBioSampleConversionService {
       final Element enaSampleRootElement,
       final String accession,
       final boolean isNcbi,
-      final Set<AbstractData> oldStructuredData,
-      final Set<StructuredDataTable> newStructuredData) {
+      final Sample existingSample) {
+    Set<AbstractData> oldStructuredData = null;
+    Set<StructuredDataTable> newStructuredData = null;
+
+    if (existingSample != null) {
+      oldStructuredData = existingSample.getData();
+      newStructuredData = existingSample.getStructuredData();
+    }
+
     Sample sample =
         enaSampleToBioSampleConverter.convertEnaSampleXmlToBioSample(
             enaSampleRootElement, accession, isNcbi);
@@ -157,8 +152,13 @@ public class EnaSampleToBioSampleConversionService {
               submitted,
               null,
               attributes,
-              sample.getRelationships(),
-              sample.getExternalReferences());
+              existingSample != null
+                  ? existingSample.getRelationships() != null
+                      ? existingSample.getRelationships()
+                      : null
+                  : null,
+              Collections.singleton(
+                  ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + accession)));
     } else {
       sample =
           Sample.build(
@@ -174,8 +174,13 @@ public class EnaSampleToBioSampleConversionService {
               submitted,
               null,
               attributes,
-              sample.getRelationships(),
-              sample.getExternalReferences());
+              existingSample != null
+                  ? existingSample.getRelationships() != null
+                      ? existingSample.getRelationships()
+                      : null
+                  : null,
+              Collections.singleton(
+                  ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + accession)));
     }
 
     if (oldStructuredData != null && oldStructuredData.size() > 0) {

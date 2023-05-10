@@ -10,12 +10,8 @@
 */
 package uk.ac.ebi.biosamples.solr.service;
 
-import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.data.solr.core.query.Criteria;
 import org.springframework.data.solr.core.query.FilterQuery;
@@ -28,12 +24,8 @@ import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 
 @Service
 public class SolrFilterService {
-
   private final SolrFieldService solrFieldService;
   private final BioSamplesProperties bioSamplesProperties;
-
-  private final DateTimeFormatter releaseFilterFormatter =
-      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'23:59:59'Z'");
 
   public SolrFilterService(
       final SolrFieldService solrFieldService, final BioSamplesProperties bioSamplesProperties) {
@@ -154,16 +146,23 @@ public class SolrFilterService {
     // filter out non-public
     final FilterQuery filterQuery = new SimpleFilterQuery();
     Criteria publicSampleCriteria = new Criteria("release_dt").lessThan("NOW");
-    // can use .and("release_dt").isNotNull(); to filter out non-null
-    // but nothing should be null and this slows search
+
+    //    publicSampleCriteria =
+    //        publicSampleCriteria.and(
+    //            new Criteria("status_s").not().in(SampleStatus.getSearchHiddenStatuses()));
+    publicSampleCriteria =
+        publicSampleCriteria.and(
+            new Criteria(SolrFieldService.encodeFieldName("INSDC status") + "_av_ss")
+                .not()
+                .in(Collections.singletonList("suppressed")));
 
     if (domains != null && !domains.isEmpty()) {
-      // user can only see private samples inside its own domain
+      // user can see public and private samples inside its own domain
       publicSampleCriteria = publicSampleCriteria.or(new Criteria("domain_s").in(domains));
     }
 
     if (webinSubmissionAccountId != null && !webinSubmissionAccountId.isEmpty()) {
-      // user can only see private samples submitted by them using their webin auth tokens
+      // user can see public and private samples submitted by them using their webin auth tokens
       publicSampleCriteria =
           publicSampleCriteria.or(new Criteria("webinId").in(webinSubmissionAccountId));
     }

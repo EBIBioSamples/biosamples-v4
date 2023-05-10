@@ -22,7 +22,7 @@ import uk.ac.ebi.biosamples.utils.PipelineUtils;
 public class Application {
   public static void main(final String[] args) {
     final ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
-    PipelineUtils.exitApplication(ctx);
+    PipelineUtils.exitPipeline(ctx);
   }
 
   @Bean

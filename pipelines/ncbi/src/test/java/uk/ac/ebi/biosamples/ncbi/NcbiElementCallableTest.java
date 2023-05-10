@@ -42,8 +42,8 @@ public class NcbiElementCallableTest {
 
   @MockBean BioSamplesClient bioSamplesClient;
 
-  private TestUtilities testUtils = new TestUtilities();
-  private TaxonomyService taxonService = new TaxonomyService();
+  private final TestUtilities testUtils = new TestUtilities();
+  private final TaxonomyService taxonService = new TaxonomyService();
 
   private Element sample;
 

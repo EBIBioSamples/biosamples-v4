@@ -43,6 +43,24 @@ public class EnaImportCallableFactory {
         egaId,
         bioSamplesWebinClient,
         egaSampleExporter,
-        enaSampleToBioSampleConversionService);
+        enaSampleToBioSampleConversionService,
+        false);
+  }
+
+  /**
+   * Builds callable for dealing most ENA samples
+   *
+   * @param accession The accession passed
+   * @return the callable, {@link EnaImportCallable}
+   */
+  public Callable<Void> build(
+      final String accession, final String egaId, final boolean suppressionRunner) {
+    return new EnaImportCallable(
+        accession,
+        egaId,
+        bioSamplesWebinClient,
+        egaSampleExporter,
+        enaSampleToBioSampleConversionService,
+        suppressionRunner);
   }
 }

@@ -20,21 +20,22 @@ import uk.ac.ebi.biosamples.utils.PipelineUtils;
 
 @SpringBootApplication
 public class Application {
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     final ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
-    PipelineUtils.exitApplication(ctx);
+    PipelineUtils.exitPipeline(ctx);
   }
 
   @Bean
-  public RestTemplate restTemplate(RestTemplateCustomizer restTemplateCustomizer) {
-    RestTemplate restTemplate = new RestTemplate();
+  public RestTemplate restTemplate(final RestTemplateCustomizer restTemplateCustomizer) {
+    final RestTemplate restTemplate = new RestTemplate();
     restTemplateCustomizer.customize(restTemplate);
     return restTemplate;
   }
 
   @Bean
   public RestTemplateCustomizer restTemplateCustomizer(
-      BioSamplesProperties bioSamplesProperties, PipelinesProperties pipelinesProperties) {
+      final BioSamplesProperties bioSamplesProperties,
+      final PipelinesProperties pipelinesProperties) {
     return new PipelinesHelper()
         .getRestTemplateCustomizer(bioSamplesProperties, pipelinesProperties);
   }

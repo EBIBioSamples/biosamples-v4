@@ -30,8 +30,8 @@ public class Application {
     return new PropertySourcesPlaceholderConfigurer();
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     final ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
-    PipelineUtils.exitApplication(ctx);
+    PipelineUtils.exitPipeline(ctx);
   }
 }
