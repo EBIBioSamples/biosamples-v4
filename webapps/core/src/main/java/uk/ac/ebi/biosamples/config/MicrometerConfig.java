@@ -25,9 +25,7 @@ public class MicrometerConfig {
     final String hostName = InetAddress.getLocalHost().getHostName();
 
     return (registry) -> {
-      registry
-          .config()
-          .commonTags("application", "biosamples-webapps-core-v2", "instance", hostName);
+      registry.config().commonTags("application", "biosamples-webapps-core", "instance", hostName);
     };
   }
 }
