@@ -21,7 +21,6 @@ public class EnaSampleToBioSampleConversionConstants {
   static final String ENA_SAMPLE_DESCRIPTION = "DESCRIPTION";
   static final String ENA_SAMPLE_ROOT = "SAMPLE";
   static final String ENA_SAMPLE_DENTIFIERS = "IDENTIFIERS";
-  public static final String ENA_SAMPLE_PRIMARY_ID = "PRIMARY_ID";
   static final String ENA_SAMPLE_SUBMITTER_ID = "SUBMITTER_ID";
   static final String ENA_SAMPLE_EXTERNAL_ID = "EXTERNAL_ID";
   static final String ENA_SAMPLE_UUID = "UUID";

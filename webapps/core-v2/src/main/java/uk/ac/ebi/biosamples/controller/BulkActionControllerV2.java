@@ -101,7 +101,7 @@ public class BulkActionControllerV2 {
           samples.stream()
               .map(
                   sample ->
-                      bioSamplesWebinAuthenticationService.buildSampleWithWebinSubmissionAccountId(
+                      bioSamplesWebinAuthenticationService.buildSampleWithWebinId(
                           sample, webinSubmissionAccountId))
               .collect(Collectors.toList());
     } else {

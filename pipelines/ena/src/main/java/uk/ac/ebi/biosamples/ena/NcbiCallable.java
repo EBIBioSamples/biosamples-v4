@@ -49,14 +49,12 @@ public class NcbiCallable implements Callable<Void> {
 
     try {
       // get the sample to make sure it exists first
-      while (!success) {
-        if (!bioSamplesClient.fetchSampleResource(accession).isPresent()) {
-          log.info(
-              "NCBI sample doesn't exists in BioSamples " + accession + " fetching from ERAPRO");
+      if (!bioSamplesClient.fetchSampleResource(accession).isPresent()) {
+        log.info("NCBI sample doesn't exists in BioSamples " + accession + " fetching from ERAPRO");
 
-          final Sample sample =
-              enaSampleToBioSampleConversionService.enrichSample(accession, true, null);
+        final Sample sample = enaSampleToBioSampleConversionService.enrichSample(accession, true);
 
+        while (!success) {
           try {
             bioSamplesClient.persistSampleResource(sample);
 
@@ -67,20 +65,18 @@ public class NcbiCallable implements Callable<Void> {
                   "Failed to enrich and persist NCBI sample with accession " + accession);
             }
           }
-        } else {
-          log.info("NCBI sample exists " + accession + " adding ENA link");
+        }
+      } else {
+        log.info("NCBI sample exists " + accession + " adding ENA link");
 
-          final ExternalReference exRef =
-              ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + accession);
-          final Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
+        final ExternalReference exRef =
+            ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + accession);
+        final Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
 
-          try {
-            bioSamplesClient.persistCuration(accession, curation, domain, false);
-          } catch (final Exception e) {
-            log.info("Failed to curate NCBI sample with ENA link " + accession);
-          }
-
-          success = true;
+        try {
+          bioSamplesClient.persistCuration(accession, curation, domain, false);
+        } catch (final Exception e) {
+          log.info("Failed to curate NCBI sample with ENA link " + accession);
         }
       }
     } catch (final Exception e) {

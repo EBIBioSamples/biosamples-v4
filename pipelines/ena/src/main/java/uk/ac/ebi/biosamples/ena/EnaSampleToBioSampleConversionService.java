@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.dom4j.Document;
@@ -28,8 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
@@ -52,8 +49,7 @@ public class EnaSampleToBioSampleConversionService {
   }
 
   /** Handles one ENA sample */
-  Sample enrichSample(final String accession, final boolean isNcbi, final Sample existingSample)
-      throws DocumentException {
+  Sample enrichSample(final String accession, final boolean isNcbi) throws DocumentException {
     final EraproSample eraproSample = eraProDao.getSampleDetailsByBioSampleId(accession);
 
     if (eraproSample != null) {
@@ -66,7 +62,7 @@ public class EnaSampleToBioSampleConversionService {
 
       // check that we got some content
       if (XmlPathBuilder.of(enaSampleRootElement).path("SAMPLE").exists()) {
-        return enrichSample(eraproSample, enaSampleRootElement, accession, isNcbi, existingSample);
+        return enrichSample(eraproSample, enaSampleRootElement, accession, isNcbi);
       } else {
         log.warn("Unable to find SAMPLE element for " + accession);
       }
@@ -80,16 +76,7 @@ public class EnaSampleToBioSampleConversionService {
       final EraproSample eraproSample,
       final Element enaSampleRootElement,
       final String accession,
-      final boolean isNcbi,
-      final Sample existingSample) {
-    Set<AbstractData> oldStructuredData = null;
-    Set<StructuredDataTable> newStructuredData = null;
-
-    if (existingSample != null) {
-      oldStructuredData = existingSample.getData();
-      newStructuredData = existingSample.getStructuredData();
-    }
-
+      final boolean isNcbi) {
     Sample sample =
         enaSampleToBioSampleConverter.convertEnaSampleXmlToBioSample(
             enaSampleRootElement, accession, isNcbi);
@@ -152,11 +139,7 @@ public class EnaSampleToBioSampleConversionService {
               submitted,
               null,
               attributes,
-              existingSample != null
-                  ? existingSample.getRelationships() != null
-                      ? existingSample.getRelationships()
-                      : null
-                  : null,
+              null,
               Collections.singleton(
                   ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + accession)));
     } else {
@@ -174,35 +157,17 @@ public class EnaSampleToBioSampleConversionService {
               submitted,
               null,
               attributes,
-              existingSample != null
-                  ? existingSample.getRelationships() != null
-                      ? existingSample.getRelationships()
-                      : null
-                  : null,
+              null,
               Collections.singleton(
                   ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + accession)));
     }
 
-    if (oldStructuredData != null && oldStructuredData.size() > 0) {
-      return Sample.Builder.fromSample(sample)
-          .withData(oldStructuredData)
-          .withPublications(publications)
-          .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
-          .build();
-    } else if (newStructuredData != null && newStructuredData.size() > 0) {
-      return Sample.Builder.fromSample(sample)
-          .withStructuredData(newStructuredData)
-          .withPublications(publications)
-          .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
-          .build();
-    } else {
-      return Sample.Builder.fromSample(sample)
-          .withNoData()
-          .withNoStructuredData()
-          .withPublications(publications)
-          .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
-          .build();
-    }
+    return Sample.Builder.fromSample(sample)
+        .withNoData()
+        .withNoStructuredData()
+        .withPublications(publications)
+        .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
+        .build();
   }
 
   private String handleStatus(final int statusId) {
