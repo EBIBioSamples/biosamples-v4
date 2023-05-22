@@ -24,21 +24,19 @@
 	</profiles>
 
 	<modules>
+		<module>analytics</module>
 		<module>curation</module>
 		<module>zooma</module>
-		<module>reindex</module>
-		<module>export</module>
 		<module>copydown</module>
 		<module>curami</module>
-		<module>neoexport</module>
-		<module>sample-release</module>
+		<module>clearinghouse</module>
 		<module>sample-transformation-dtol</module>
 		<module>ena</module>
 		<module>ncbi</module>
-		<module>ebeye-search-export</module>
-		<module>analytics</module>
-		<module>clearinghouse</module>
+		<module>sample-release</module>
 		<module>sample-post-release-action</module>
 		<module>taxonimport</module>
+		<module>neoexport</module>
+		<module>reindex</module>
 	</modules>
 </project>

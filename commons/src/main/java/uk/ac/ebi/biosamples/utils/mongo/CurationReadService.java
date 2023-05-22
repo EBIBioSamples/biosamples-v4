@@ -165,9 +165,11 @@ public class CurationReadService {
     final Set<CurationLink> curationLinks = new LinkedHashSet<>();
     int pageNo = 0;
     Page<CurationLink> page;
+
     do {
       final Pageable pageable = PageRequest.of(pageNo, 1000, Sort.Direction.ASC, "created");
       page = getCurationLinksForSample(sample.getAccession(), pageable);
+
       for (final CurationLink curationLink : page) {
         if (curationDomains.isPresent()) {
           // curation domains restricted, curation must be part of that domain

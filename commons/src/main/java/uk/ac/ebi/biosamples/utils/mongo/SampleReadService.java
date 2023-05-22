@@ -101,6 +101,7 @@ public class SampleReadService {
     // add structured data
     final Optional<MongoStructuredData> mongoStructuredData =
         mongoStructuredDataRepository.findById(accession);
+
     if (mongoStructuredData.isPresent()) {
       final StructuredData structuredData =
           mongoStructuredDataToStructuredDataConverter.convert(mongoStructuredData.get());

@@ -67,7 +67,7 @@ public class GlobalExceptions {
   @ResponseStatus(
       value = HttpStatus.FORBIDDEN,
       reason =
-          "This sample has been imported from other INSDC databases, please update at source. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk for more information")
+          "This sample is not permitted to be updated. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk for more information")
   public static class InvalidSubmissionSourceException extends RuntimeException {}
 
   public static class SampleNotAccessibleAdviceException extends RuntimeException {

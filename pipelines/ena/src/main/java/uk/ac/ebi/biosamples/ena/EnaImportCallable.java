@@ -19,7 +19,6 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SubmittedViaType;
 
 public class EnaImportCallable implements Callable<Void> {
   private final Logger log = LoggerFactory.getLogger(getClass());
@@ -81,54 +80,24 @@ public class EnaImportCallable implements Callable<Void> {
       return null;
     }
 
-    Sample sample;
+    final Sample sample;
 
     if (egaId != null && !egaId.isEmpty()) {
       return egaSampleExporter.populateAndSubmitEgaData(egaId);
     } else {
       try {
-        final Optional<EntityModel<Sample>> sampleOptionalInBioSamples =
-            bioSamplesWebinClient.fetchSampleResource(accession);
-        final Sample sampleInBioSamples =
-            sampleOptionalInBioSamples.map(EntityModel::getContent).orElse(null);
-
-        boolean isSampleImportFromEraDbRequired = true;
-
-        if (sampleInBioSamples != null) {
-          if (sampleInBioSamples.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-            log.info(
-                "ENA sample has been updated in BioSamples using the FILE Uploader, don't re-import "
-                    + accession);
-
-            isSampleImportFromEraDbRequired = false;
-          } /*else if (sampleInBioSamples.getAttributes().stream()
-                .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(ENA_CHECKLIST))) {
-              log.info(
-                  "ENA sample already exists with attributes in BioSamples, don't re-import  "
-                      + accession);
-
-              isSampleImportFromEraDbRequired = false;
-            }*/
-        }
-
+        sample = enaSampleToBioSampleConversionService.enrichSample(accession, false);
         boolean success = false;
         int numRetry = 0;
 
-        if (isSampleImportFromEraDbRequired) {
-          while (!success) {
-            try {
-              sample =
-                  enaSampleToBioSampleConversionService.enrichSample(
-                      accession, false, sampleInBioSamples);
+        while (!success) {
+          try {
+            bioSamplesWebinClient.persistSampleResource(sample);
 
-              bioSamplesWebinClient.persistSampleResource(sample);
-
-              success = true;
-            } catch (final Exception e) {
-              if (++numRetry == MAX_RETRIES) {
-                throw new RuntimeException(
-                    "Failed to handle the sample with accession " + accession);
-              }
+            success = true;
+          } catch (final Exception e) {
+            if (++numRetry == MAX_RETRIES) {
+              throw new RuntimeException("Failed to handle the sample with accession " + accession);
             }
           }
         }

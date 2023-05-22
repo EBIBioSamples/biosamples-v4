@@ -282,7 +282,7 @@ public class EnaImportRunner implements ApplicationRunner {
       final EraRowCallbackHandler eraRowCallbackHandler =
           new EraRowCallbackHandler(null, enaImportCallableFactory, futures);
 
-      getEnaSamplesFromEraDatabase(fromDate, toDate, eraRowCallbackHandler);
+      // getEnaSamplesFromEraDatabase(fromDate, toDate, eraRowCallbackHandler);
 
       final NcbiRowCallbackHandler ncbiRowCallbackHandler =
           new NcbiRowCallbackHandler(null, ncbiCallableFactory, futures);
@@ -300,7 +300,7 @@ public class EnaImportRunner implements ApplicationRunner {
         final EraRowCallbackHandler eraRowCallbackHandler =
             new EraRowCallbackHandler(executorService, enaImportCallableFactory, futures);
 
-        getEnaSamplesFromEraDatabase(fromDate, toDate, eraRowCallbackHandler);
+        //    getEnaSamplesFromEraDatabase(fromDate, toDate, eraRowCallbackHandler);
 
         final NcbiRowCallbackHandler ncbiRowCallbackHandler =
             new NcbiRowCallbackHandler(executorService, ncbiCallableFactory, futures);
