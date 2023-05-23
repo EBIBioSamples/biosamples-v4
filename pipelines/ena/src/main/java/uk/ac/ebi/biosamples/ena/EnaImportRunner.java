@@ -29,12 +29,12 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
 import uk.ac.ebi.biosamples.mongo.repo.MongoPipelineRepository;
 import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
+import uk.ac.ebi.biosamples.service.EraProDao;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.PipelineUniqueIdentifierGenerator;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
@@ -51,7 +51,6 @@ public class EnaImportRunner implements ApplicationRunner {
   @Autowired private PipelinesProperties pipelinesProperties;
   @Autowired private EraProDao eraProDao;
   @Autowired private EnaImportCallableFactory enaImportCallableFactory;
-  @Autowired private NcbiCallableFactory ncbiCallableFactory;
   @Autowired private MongoPipelineRepository mongoPipelineRepository;
 
   private final Map<String, Future<Void>> futures = new LinkedHashMap<>();
@@ -172,35 +171,6 @@ public class EnaImportRunner implements ApplicationRunner {
   }
 
   /**
-   * Handler for suppressed NCBI/DDBJ samples. If status of sample is different in BioSamples,
-   * status will be updated to SUPPRESSED
-   *
-   * @throws Exception in case of failures
-   */
-  private void handleSuppressedNcbiDdbjSamples() throws Exception {
-    log.info(
-        "Fetching all suppressed NCBI/DDBJ samples. "
-            + "If they exist in BioSamples with different status, their status will be updated. If the sample don't exist at all it will be POSTed to BioSamples client");
-
-    try (final AdaptiveThreadPoolExecutor executorService =
-        AdaptiveThreadPoolExecutor.create(
-            100,
-            10000,
-            false,
-            pipelinesProperties.getThreadCount(),
-            pipelinesProperties.getThreadCountMax())) {
-
-      final NcbiDdbjSuppressedSamplesCallbackHandler ncbiDdbjSuppressedSamplesCallbackHandler =
-          new NcbiDdbjSuppressedSamplesCallbackHandler(
-              executorService, ncbiCallableFactory, futures);
-      eraProDao.doGetSuppressedNcbiDdbjSamples(ncbiDdbjSuppressedSamplesCallbackHandler);
-
-      log.info("waiting for futures"); // wait for anything to finish
-      ThreadUtils.checkFutures(futures, 0);
-    }
-  }
-
-  /**
    * @author dgupta
    *     <p>{@link RowCallbackHandler} for suppressed ENA samples
    */
@@ -245,36 +215,6 @@ public class EnaImportRunner implements ApplicationRunner {
     }
   }
 
-  /**
-   * @author dgupta
-   *     <p>{@link RowCallbackHandler} for suppressed NCBI/DDBJ samples
-   */
-  private static class NcbiDdbjSuppressedSamplesCallbackHandler implements RowCallbackHandler {
-    private final AdaptiveThreadPoolExecutor executorService;
-    private final NcbiCallableFactory ncbiCallableFactory;
-    private final Map<String, Future<Void>> futures;
-
-    public NcbiDdbjSuppressedSamplesCallbackHandler(
-        final AdaptiveThreadPoolExecutor executorService,
-        final NcbiCallableFactory ncbiCallableFactory,
-        final Map<String, Future<Void>> futures) {
-      this.executorService = executorService;
-      this.ncbiCallableFactory = ncbiCallableFactory;
-      this.futures = futures;
-    }
-
-    @Override
-    public void processRow(final ResultSet rs) throws SQLException {
-      final String sampleAccession = rs.getString("BIOSAMPLE_ID");
-      final int statusId = rs.getInt("STATUS_ID");
-
-      final Callable<Void> callable = ncbiCallableFactory.build(sampleAccession, true);
-
-      EnaSuppressedSamplesCallbackHandler.execute(
-          sampleAccession, callable, executorService, futures);
-    }
-  }
-
   private void importEraSamples(final LocalDate fromDate, final LocalDate toDate) throws Exception {
     log.info("Handling ENA and NCBI Samples");
 
@@ -282,12 +222,7 @@ public class EnaImportRunner implements ApplicationRunner {
       final EraRowCallbackHandler eraRowCallbackHandler =
           new EraRowCallbackHandler(null, enaImportCallableFactory, futures);
 
-      // getEnaSamplesFromEraDatabase(fromDate, toDate, eraRowCallbackHandler);
-
-      final NcbiRowCallbackHandler ncbiRowCallbackHandler =
-          new NcbiRowCallbackHandler(null, ncbiCallableFactory, futures);
-
-      eraProDao.getNcbiCallback(fromDate, toDate, ncbiRowCallbackHandler);
+      getEnaSamplesFromEraDatabase(fromDate, toDate, eraRowCallbackHandler);
     } else {
       try (final AdaptiveThreadPoolExecutor executorService =
           AdaptiveThreadPoolExecutor.create(
@@ -300,13 +235,7 @@ public class EnaImportRunner implements ApplicationRunner {
         final EraRowCallbackHandler eraRowCallbackHandler =
             new EraRowCallbackHandler(executorService, enaImportCallableFactory, futures);
 
-        //    getEnaSamplesFromEraDatabase(fromDate, toDate, eraRowCallbackHandler);
-
-        final NcbiRowCallbackHandler ncbiRowCallbackHandler =
-            new NcbiRowCallbackHandler(executorService, ncbiCallableFactory, futures);
-
-        eraProDao.getNcbiCallback(fromDate, toDate, ncbiRowCallbackHandler);
-
+        getEnaSamplesFromEraDatabase(fromDate, toDate, eraRowCallbackHandler);
         log.info("waiting for futures"); // wait for anything to finish
         ThreadUtils.checkFutures(futures, 0);
       }
@@ -423,54 +352,6 @@ public class EnaImportRunner implements ApplicationRunner {
         default:
           log.info(
               String.format("%s would be ignored  as status is %s", biosampleId, enaStatus.name()));
-      }
-    }
-  }
-
-  private static class NcbiRowCallbackHandler implements RowCallbackHandler {
-    private final AdaptiveThreadPoolExecutor executorService;
-    private final NcbiCallableFactory ncbiCallableFactory;
-    private final Map<String, Future<Void>> futures;
-    private final Logger log = LoggerFactory.getLogger(getClass());
-
-    NcbiRowCallbackHandler(
-        final AdaptiveThreadPoolExecutor executorService,
-        final NcbiCallableFactory ncbiCallableFactory,
-        final Map<String, Future<Void>> futures) {
-      this.executorService = executorService;
-      this.ncbiCallableFactory = ncbiCallableFactory;
-      this.futures = futures;
-    }
-
-    @Override
-    public void processRow(final ResultSet rs) throws SQLException {
-      final String sampleAccession = rs.getString("BIOSAMPLE_ID");
-      final java.sql.Date lastUpdated = rs.getDate("LAST_UPDATED");
-
-      log.info(
-          String.format(
-              "%s is being handled and last updated is %s", sampleAccession, lastUpdated));
-
-      final Callable<Void> callable = ncbiCallableFactory.build(sampleAccession);
-
-      if (executorService == null) {
-        try {
-          callable.call();
-        } catch (final Exception e) {
-          throw new RuntimeException(e);
-        }
-      } else {
-        futures.put(sampleAccession, executorService.submit(callable));
-        try {
-          ThreadUtils.checkFutures(futures, 100);
-        } catch (final HttpClientErrorException e) {
-          log.error("HTTP Client error body : " + e.getResponseBodyAsString());
-          throw e;
-        } catch (final ExecutionException e) {
-          throw new RuntimeException(e.getCause());
-        } catch (final InterruptedException e) {
-          throw new RuntimeException(e);
-        }
       }
     }
   }

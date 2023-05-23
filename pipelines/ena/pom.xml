@@ -84,7 +84,7 @@
 		<dependency>
 			<groupId>com.oracle.jdbc</groupId>
 			<artifactId>xmlparserv2</artifactId>
-			<version>12.2.0.1</version>
+			<version>19.3.0.0</version>
 		</dependency>
 
 		<!-- AMR processing -->
