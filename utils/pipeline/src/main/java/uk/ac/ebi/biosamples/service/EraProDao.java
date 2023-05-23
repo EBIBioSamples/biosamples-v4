@@ -32,9 +32,6 @@ public class EraProDao {
   private static final String STATUS_CLAUSE = "STATUS_ID IN (3, 4, 5, 6, 7, 8)";
   private static final String STATUS_CLAUSE_SUPPRESSED = "STATUS_ID IN (5, 7)";
 
-  /*private static final String SQL_WWWDEV_MAPPING =
-        "SELECT BIOSAMPLE_ID FROM SAMPLE WHERE SUBMISSION_ACCOUNT_ID = 'Webin-161' AND BIOSAMPLE_AUTHORITY= 'N' AND ((LAST_UPDATED BETWEEN TO_DATE('2022-01-01', 'YYYY-MM-DD') AND TO_DATE('2022-07-15', 'YYYY-MM-DD')) OR (FIRST_PUBLIC BETWEEN TO_DATE('2022-01-01', 'YYYY-MM-DD') AND TO_DATE('2022-07-15', 'YYYY-MM-DD'))) ORDER BY BIOSAMPLE_ID DESC";
-  */
   public void doSampleCallback(
       final LocalDate minDate, final LocalDate maxDate, final RowCallbackHandler rch) {
     final String query =
