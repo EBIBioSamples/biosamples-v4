@@ -57,14 +57,16 @@ public class Attribute implements Comparable<Attribute> {
 
   @Override
   public boolean equals(final Object o) {
-
     if (o == this) {
       return true;
     }
+
     if (!(o instanceof Attribute)) {
       return false;
     }
+
     final Attribute other = (Attribute) o;
+
     return Objects.equals(type, other.type)
         && Objects.equals(value, other.value)
         && Objects.equals(tag, other.tag)
@@ -143,7 +145,6 @@ public class Attribute implements Comparable<Attribute> {
   }
 
   private int nullSafeStringComparison(final String one, final String two) {
-
     if (one == null && two != null) {
       return -1;
     }
@@ -205,38 +206,39 @@ public class Attribute implements Comparable<Attribute> {
     if (type == null) {
       throw new IllegalArgumentException("type must not be null");
     }
+
     if (value == null) {
       value = "";
     }
+
     if (iri == null) {
       iri = Lists.newArrayList();
     }
     // cleanup inputs
-    if (type != null) {
-      type = type.trim();
-    }
-    if (value != null) {
-      value = value.trim();
-    }
+    type = type.trim();
+    value = value.trim();
+
     if (tag != null) {
       tag = tag.trim();
     }
+
     if (unit != null) {
       unit = unit.trim();
     }
     // create output
     final Attribute attr = new Attribute();
+
     attr.type = type;
     attr.value = value;
     attr.tag = tag;
     attr.iri = new TreeSet<>();
-    if (iri != null) {
-      for (final String iriOne : iri) {
-        if (iriOne != null) {
-          attr.iri.add(iriOne);
-        }
+
+    for (final String iriOne : iri) {
+      if (iriOne != null) {
+        attr.iri.add(iriOne);
       }
     }
+
     attr.unit = unit;
     return attr;
   }

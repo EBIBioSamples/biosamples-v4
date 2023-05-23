@@ -11,8 +11,8 @@
 package uk.ac.ebi.biosamples.ena;
 
 import static org.junit.Assert.assertEquals;
-import static uk.ac.ebi.biosamples.ena.EnaXmlUtil.pretty;
 import static uk.ac.ebi.biosamples.ena.ExampleSamples.*;
+import static uk.ac.ebi.biosamples.service.EnaXmlUtil.pretty;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +20,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.ac.ebi.biosamples.ena.EnaSampleXmlEnhancer.*;
+import uk.ac.ebi.biosamples.service.EnaSampleXmlEnhancer;
+import uk.ac.ebi.biosamples.service.EraProDao;
+import uk.ac.ebi.biosamples.service.EraproSample;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -30,38 +32,37 @@ public class EnaSampleXmlEnhancerTest {
 
   @Autowired private EnaSampleXmlEnhancer enaSampleXmlEnhancer;
 
-  private EnaDatabaseSample enaDatabaseSample;
+  private EraproSample eraproSample;
 
   @Before
   public void setup() {
-    enaDatabaseSample = new EnaDatabaseSample();
-    enaDatabaseSample.lastUpdated = "2015-06-23";
-    enaDatabaseSample.firstPublic = "2010-02-26";
-    enaDatabaseSample.brokerName = null;
-    enaDatabaseSample.bioSamplesId = "SAMN00001603";
-    enaDatabaseSample.centreName = "1000G";
-    enaDatabaseSample.fixed = "N";
-    enaDatabaseSample.taxId = "9606";
-    enaDatabaseSample.scientificName = "Homo sapiens";
-    enaDatabaseSample.fixedTaxId = null;
-    enaDatabaseSample.fixedCommonName = null;
-    enaDatabaseSample.fixedScientificName = null;
+    eraproSample = new EraproSample();
+    eraproSample.lastUpdated = "2015-06-23";
+    eraproSample.firstPublic = "2010-02-26";
+    eraproSample.brokerName = null;
+    eraproSample.biosampleId = "SAMN00001603";
+    eraproSample.centreName = "1000G";
+    eraproSample.fixed = "N";
+    eraproSample.taxId = Long.valueOf(9606);
+    eraproSample.scientificName = "Homo sapiens";
+    eraproSample.fixedTaxId = null;
+    eraproSample.fixedCommonName = null;
+    eraproSample.fixedScientificName = null;
   }
 
   @Test
   public void test_xml_with_all_rules() {
     assertEquals(
-        expectedFullSampleXml,
-        enaSampleXmlEnhancer.applyAllRules(fullSampleXml, enaDatabaseSample));
+        expectedFullSampleXml, enaSampleXmlEnhancer.applyAllRules(fullSampleXml, eraproSample));
   }
 
   @Test
   public void test_center_name_rule_fixes_applicable_ebi_xml() {
-    enaDatabaseSample.centreName = "expanded center name";
+    eraproSample.centreName = "expanded center name";
     assertEquals(
         pretty(expectedModifiedCenterNameSampleXml),
         enaSampleXmlEnhancer.applyRules(
-            exampleSampleXml, enaDatabaseSample, CenterNameRule.INSTANCE));
+            exampleSampleXml, eraproSample, EnaSampleXmlEnhancer.CenterNameRule.INSTANCE));
   }
 
   @Test
@@ -69,48 +70,52 @@ public class EnaSampleXmlEnhancerTest {
     assertEquals(
         expectedModifiedEbiBiosamplesSampleXml,
         enaSampleXmlEnhancer.applyRules(
-            exampleSampleXml, enaDatabaseSample, BioSamplesIdRule.INSTANCE));
+            exampleSampleXml, eraproSample, EnaSampleXmlEnhancer.BioSamplesIdRule.INSTANCE));
   }
 
   @Test
   public void test_broker_rule_fixes_applicable_ebi_xml() {
-    enaDatabaseSample.brokerName = "broker";
+    eraproSample.brokerName = "broker";
     assertEquals(
         pretty(expectedModifiedEbiBrokerSampleXml),
-        enaSampleXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, BrokerRule.INSTANCE));
+        enaSampleXmlEnhancer.applyRules(
+            exampleSampleXml, eraproSample, EnaSampleXmlEnhancer.BrokerRule.INSTANCE));
   }
 
   @Test
   public void test_broker_rule_fixes_applicable_ncbi_xml() {
     assertEquals(
         pretty(expectedModifiedNcbiBrokerSampleXml),
-        enaSampleXmlEnhancer.applyRules(ncbiSampleXml, enaDatabaseSample, BrokerRule.INSTANCE));
+        enaSampleXmlEnhancer.applyRules(
+            ncbiSampleXml, eraproSample, EnaSampleXmlEnhancer.BrokerRule.INSTANCE));
   }
 
   @Test
   public void test_broker_rule_fixes_applicable_ddbj_xml() {
     assertEquals(
         pretty(expectedModifiedDdbjBrokerSampleXml),
-        enaSampleXmlEnhancer.applyRules(ddbjSampleXml, enaDatabaseSample, BrokerRule.INSTANCE));
+        enaSampleXmlEnhancer.applyRules(
+            ddbjSampleXml, eraproSample, EnaSampleXmlEnhancer.BrokerRule.INSTANCE));
   }
 
   @Test
   public void test_broker_rule_does_not_change_non_applicable_xml() {
-    enaDatabaseSample = new EnaDatabaseSample();
-    enaDatabaseSample.lastUpdated = "2015-06-23";
-    enaDatabaseSample.firstPublic = "2010-02-26";
-    enaDatabaseSample.brokerName = null;
-    enaDatabaseSample.bioSamplesId = "";
-    enaDatabaseSample.centreName = "1000G";
-    enaDatabaseSample.fixed = "N";
-    enaDatabaseSample.taxId = "9606";
-    enaDatabaseSample.scientificName = "Homo sapiens";
-    enaDatabaseSample.fixedTaxId = null;
-    enaDatabaseSample.fixedCommonName = null;
-    enaDatabaseSample.fixedScientificName = null;
+    eraproSample = new EraproSample();
+    eraproSample.lastUpdated = "2015-06-23";
+    eraproSample.firstPublic = "2010-02-26";
+    eraproSample.brokerName = null;
+    eraproSample.biosampleId = "";
+    eraproSample.centreName = "1000G";
+    eraproSample.fixed = "N";
+    eraproSample.taxId = Long.valueOf("9606");
+    eraproSample.scientificName = "Homo sapiens";
+    eraproSample.fixedTaxId = null;
+    eraproSample.fixedCommonName = null;
+    eraproSample.fixedScientificName = null;
     assertEquals(
         pretty(exampleSampleXml),
-        enaSampleXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, BrokerRule.INSTANCE));
+        enaSampleXmlEnhancer.applyRules(
+            exampleSampleXml, eraproSample, EnaSampleXmlEnhancer.BrokerRule.INSTANCE));
   }
 
   @Test
@@ -118,14 +123,15 @@ public class EnaSampleXmlEnhancerTest {
     assertEquals(
         pretty(expectedModifiedMissingAliasSampleXml),
         enaSampleXmlEnhancer.applyRules(
-            missingAliasSampleXml, enaDatabaseSample, AliasRule.INSTANCE));
+            missingAliasSampleXml, eraproSample, EnaSampleXmlEnhancer.AliasRule.INSTANCE));
   }
 
   @Test
   public void test_alias_rule_does_not_change_non_applicable_xml() {
     assertEquals(
         pretty(exampleSampleXml),
-        enaSampleXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, AliasRule.INSTANCE));
+        enaSampleXmlEnhancer.applyRules(
+            exampleSampleXml, eraproSample, EnaSampleXmlEnhancer.AliasRule.INSTANCE));
   }
 
   @Test
@@ -133,11 +139,11 @@ public class EnaSampleXmlEnhancerTest {
     assertEquals(
         pretty(exampleSampleXml),
         enaSampleXmlEnhancer.applyRules(
-            missingNamespaceSampleXml, enaDatabaseSample, NamespaceRule.INSTANCE));
+            missingNamespaceSampleXml, eraproSample, EnaSampleXmlEnhancer.NamespaceRule.INSTANCE));
     assertEquals(
         pretty(exampleSampleXml),
         enaSampleXmlEnhancer.applyRules(
-            emptyNamespaceSampleXml, enaDatabaseSample, NamespaceRule.INSTANCE));
+            emptyNamespaceSampleXml, eraproSample, EnaSampleXmlEnhancer.NamespaceRule.INSTANCE));
   }
 
   @Test
@@ -145,7 +151,7 @@ public class EnaSampleXmlEnhancerTest {
     assertEquals(
         pretty(exampleSampleXml),
         enaSampleXmlEnhancer.applyRules(
-            exampleSampleXml, enaDatabaseSample, NamespaceRule.INSTANCE));
+            exampleSampleXml, eraproSample, EnaSampleXmlEnhancer.NamespaceRule.INSTANCE));
   }
 
   @Test
@@ -153,76 +159,80 @@ public class EnaSampleXmlEnhancerTest {
     assertEquals(
         expectedModifiedNcbiLinksRemoved,
         enaSampleXmlEnhancer.applyRules(
-            ncbiSampleXml, enaDatabaseSample, LinkRemovalRule.INSTANCE));
+            ncbiSampleXml, eraproSample, EnaSampleXmlEnhancer.LinkRemovalRule.INSTANCE));
   }
 
   @Test
   public void test_first_public_and_last_updated_for_applicable_xml() {
-    enaDatabaseSample.lastUpdated = "2018-02-01";
-    enaDatabaseSample.firstPublic = "2018-01-01";
+    eraproSample.lastUpdated = "2018-02-01";
+    eraproSample.firstPublic = "2018-01-01";
     assertEquals(
         exampleSampleXmlWithDates,
-        enaSampleXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, DatesRule.INSTANCE));
+        enaSampleXmlEnhancer.applyRules(
+            exampleSampleXml, eraproSample, EnaSampleXmlEnhancer.DatesRule.INSTANCE));
   }
 
   @Test
   public void test_title_rule_fixes_applicable_xml() {
-    enaDatabaseSample = new EnaDatabaseSample();
-    enaDatabaseSample.lastUpdated = "2018-03-09";
-    enaDatabaseSample.firstPublic = "2010-02-26";
-    enaDatabaseSample.brokerName = null;
-    enaDatabaseSample.bioSamplesId = "'SAMEA749880'";
-    enaDatabaseSample.centreName = "Wellcome Sanger Institute";
-    enaDatabaseSample.fixed = "N";
-    enaDatabaseSample.taxId = "'580240'";
-    enaDatabaseSample.scientificName = "Saccharomyces cerevisiae W303";
-    enaDatabaseSample.fixedTaxId = null;
-    enaDatabaseSample.fixedCommonName = null;
-    enaDatabaseSample.fixedScientificName = null;
+    eraproSample = new EraproSample();
+    eraproSample.lastUpdated = "2018-03-09";
+    eraproSample.firstPublic = "2010-02-26";
+    eraproSample.brokerName = null;
+    eraproSample.biosampleId = "'SAMEA749880'";
+    eraproSample.centreName = "Wellcome Sanger Institute";
+    eraproSample.fixed = "N";
+    eraproSample.taxId = Long.valueOf("580240");
+    eraproSample.scientificName = "Saccharomyces cerevisiae W303";
+    eraproSample.fixedTaxId = null;
+    eraproSample.fixedCommonName = null;
+    eraproSample.fixedScientificName = null;
     assertEquals(
         exampleSampleWithTitleAddedXml,
         enaSampleXmlEnhancer.applyRules(
-            exampleSampleWithoutTitleXml, enaDatabaseSample, TitleRule.INSTANCE));
+            exampleSampleWithoutTitleXml, eraproSample, EnaSampleXmlEnhancer.TitleRule.INSTANCE));
   }
 
   @Test
   public void test_taxon_fix_rule_fixes_applicable_xml() {
-    enaDatabaseSample = new EnaDatabaseSample();
-    enaDatabaseSample.lastUpdated = "2015-06-23";
-    enaDatabaseSample.firstPublic = "2010-02-26";
-    enaDatabaseSample.brokerName = null;
-    enaDatabaseSample.bioSamplesId = "'SAMN00014227'";
-    enaDatabaseSample.centreName = "Baylor College of Medicine";
-    enaDatabaseSample.fixed = "Y";
-    enaDatabaseSample.taxId = "'7227'";
-    enaDatabaseSample.scientificName = null;
-    enaDatabaseSample.fixedTaxId = "7227";
-    enaDatabaseSample.fixedCommonName = null;
-    enaDatabaseSample.fixedScientificName = "Drosophila melanogaster";
+    eraproSample = new EraproSample();
+    eraproSample.lastUpdated = "2015-06-23";
+    eraproSample.firstPublic = "2010-02-26";
+    eraproSample.brokerName = null;
+    eraproSample.biosampleId = "'SAMN00014227'";
+    eraproSample.centreName = "Baylor College of Medicine";
+    eraproSample.fixed = "Y";
+    eraproSample.taxId = Long.valueOf("7227");
+    eraproSample.scientificName = null;
+    eraproSample.fixedTaxId = "7227";
+    eraproSample.fixedCommonName = null;
+    eraproSample.fixedScientificName = "Drosophila melanogaster";
     assertEquals(
         exampleSampleThatHasBeenTaxonFixed,
         enaSampleXmlEnhancer.applyRules(
-            exampleSampleThatCanBeTaxonFixed, enaDatabaseSample, TaxonRule.INSTANCE));
+            exampleSampleThatCanBeTaxonFixed,
+            eraproSample,
+            EnaSampleXmlEnhancer.TaxonRule.INSTANCE));
   }
 
   @Test
   public void test_taxon_fix_rule_fixes_applicable_xml_SAMN02356578() {
-    enaDatabaseSample.lastUpdated = "2015-06-23";
-    enaDatabaseSample.firstPublic = "2013-09-25";
-    enaDatabaseSample.brokerName = null;
-    enaDatabaseSample.bioSamplesId = "'SAMN02356578'";
-    enaDatabaseSample.centreName = "Broad Institute";
-    enaDatabaseSample.fixed = "Y";
-    enaDatabaseSample.taxId = "'1400346'";
-    enaDatabaseSample.scientificName = "Acinetobacter lwoffii NIPH 512";
-    enaDatabaseSample.fixedTaxId = "981327";
-    enaDatabaseSample.fixedCommonName = null;
-    enaDatabaseSample.fixedScientificName =
-        "Acinetobacter lwoffii NCTC 5866 = CIP 64.10 = NIPH 512";
+    eraproSample.lastUpdated = "2015-06-23";
+    eraproSample.firstPublic = "2013-09-25";
+    eraproSample.brokerName = null;
+    eraproSample.biosampleId = "'SAMN02356578'";
+    eraproSample.centreName = "Broad Institute";
+    eraproSample.fixed = "Y";
+    eraproSample.taxId = Long.valueOf("1400346");
+    eraproSample.scientificName = "Acinetobacter lwoffii NIPH 512";
+    eraproSample.fixedTaxId = "981327";
+    eraproSample.fixedCommonName = null;
+    eraproSample.fixedScientificName = "Acinetobacter lwoffii NCTC 5866 = CIP 64.10 = NIPH 512";
     assertEquals(
         exampleSampleThatHasBeenTaxonFixedSAMN02356578,
         enaSampleXmlEnhancer.applyRules(
-            exampleSampleThatCanBeTaxonFixedSAMN02356578, enaDatabaseSample, TaxonRule.INSTANCE));
+            exampleSampleThatCanBeTaxonFixedSAMN02356578,
+            eraproSample,
+            EnaSampleXmlEnhancer.TaxonRule.INSTANCE));
   }
 
   @Test

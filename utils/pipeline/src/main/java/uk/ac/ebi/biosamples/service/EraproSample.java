@@ -8,7 +8,7 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.ena;
+package uk.ac.ebi.biosamples.service;
 
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -19,14 +19,23 @@ import uk.ac.ebi.biosamples.model.Sample;
  */
 public class EraproSample {
   private String sampleXml;
-  private String firstPublic;
-  private String lastUpdate;
+  public String firstPublic;
+  public String lastUpdated;
   private String firstCreated;
+
+  public String brokerName;
+  public String centreName;
+  public String fixed;
+  public String scientificName;
+  public String fixedTaxId;
+  public String fixedCommonName;
+  public String fixedScientificName;
+
   private String submissionAccountId;
-  private Long taxId;
+  public Long taxId;
   private int status;
   private String sampleId;
-  private String biosampleId;
+  public String biosampleId;
   private String biosampleAuthority;
 
   public String getSampleId() {
@@ -53,7 +62,7 @@ public class EraproSample {
     this.biosampleAuthority = biosampleAuthority;
   }
 
-  Long getTaxId() {
+  public Long getTaxId() {
     return taxId;
   }
 
@@ -61,7 +70,7 @@ public class EraproSample {
     this.taxId = taxId;
   }
 
-  String getSampleXml() {
+  public String getSampleXml() {
     return sampleXml;
   }
 
@@ -69,7 +78,7 @@ public class EraproSample {
     this.sampleXml = sampleXml;
   }
 
-  String getFirstPublic() {
+  public String getFirstPublic() {
     return firstPublic;
   }
 
@@ -77,15 +86,15 @@ public class EraproSample {
     this.firstPublic = firstPublic;
   }
 
-  String getLastUpdate() {
-    return lastUpdate;
+  public String getLastUpdated() {
+    return lastUpdated;
   }
 
-  void setLastUpdate(final String lastUpdate) {
-    this.lastUpdate = lastUpdate;
+  void setLastUpdated(final String lastUpdated) {
+    this.lastUpdated = lastUpdated;
   }
 
-  String getFirstCreated() {
+  public String getFirstCreated() {
     return firstCreated;
   }
 
@@ -93,7 +102,7 @@ public class EraproSample {
     this.firstCreated = firstCreated;
   }
 
-  int getStatus() {
+  public int getStatus() {
     return status;
   }
 
@@ -107,5 +116,68 @@ public class EraproSample {
 
   void setSubmissionAccountId(final String submissionAccountId) {
     this.submissionAccountId = submissionAccountId;
+  }
+
+  public String getBrokerName() {
+    return brokerName;
+  }
+
+  public EraproSample setBrokerName(String brokerName) {
+    this.brokerName = brokerName;
+    return this;
+  }
+
+  public String getCentreName() {
+    return centreName;
+  }
+
+  public EraproSample setCentreName(String centreName) {
+    this.centreName = centreName;
+    return this;
+  }
+
+  public String getFixed() {
+    return fixed;
+  }
+
+  public EraproSample setFixed(String fixed) {
+    this.fixed = fixed;
+    return this;
+  }
+
+  public String getScientificName() {
+    return scientificName;
+  }
+
+  public EraproSample setScientificName(String scientificName) {
+    this.scientificName = scientificName;
+    return this;
+  }
+
+  public String getFixedTaxId() {
+    return fixedTaxId;
+  }
+
+  public EraproSample setFixedTaxId(String fixedTaxId) {
+    this.fixedTaxId = fixedTaxId;
+    return this;
+  }
+
+  public String getFixedCommonName() {
+    return fixedCommonName;
+  }
+
+  public EraproSample setFixedCommonName(String fixedCommonName) {
+    this.fixedCommonName = fixedCommonName;
+    return this;
+  }
+
+  public String getFixedScientificName() {
+    return fixedScientificName;
+  }
+
+  public EraproSample setFixedScientificName(String fixedScientificName) {
+    this.fixedScientificName = fixedScientificName;
+    return this;
   }
 }

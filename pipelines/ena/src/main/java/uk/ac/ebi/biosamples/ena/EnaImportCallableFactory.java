@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
+import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 
 @Service
 public class EnaImportCallableFactory {

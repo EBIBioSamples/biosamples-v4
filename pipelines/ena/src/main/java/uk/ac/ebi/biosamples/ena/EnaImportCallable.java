@@ -19,11 +19,11 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 
 public class EnaImportCallable implements Callable<Void> {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private static final int MAX_RETRIES = 5;
-  private static final String ENA_CHECKLIST = "ENA-CHECKLIST";
   private final String accession;
   private final String egaId;
   private final BioSamplesClient bioSamplesWebinClient;

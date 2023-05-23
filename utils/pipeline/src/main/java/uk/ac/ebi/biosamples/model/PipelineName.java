@@ -21,5 +21,6 @@ public enum PipelineName {
   ZOOMA,
   DTOL,
   NEOEXPORT,
-  SAMPLERELEASE
+  SAMPLERELEASE,
+  NCBIENALINK
 }

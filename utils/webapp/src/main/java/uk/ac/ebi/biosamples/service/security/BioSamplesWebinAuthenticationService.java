@@ -115,7 +115,7 @@ public class BioSamplesWebinAuthenticationService {
             bioSamplesCrossSourceIngestAccessControlService
                 .protectPipelineImportedAndFileUploaderSubmittedSampleAccess(oldSampleInDb, sample);
             bioSamplesCrossSourceIngestAccessControlService.protectEnaPipelineImportedSampleAccess(
-                sample, oldSampleInDb);
+                oldSampleInDb, sample);
 
             if (webinIdInOldSample != null
                 && !webinIdInOldSample.isEmpty()) { // if old sample has user info, use it

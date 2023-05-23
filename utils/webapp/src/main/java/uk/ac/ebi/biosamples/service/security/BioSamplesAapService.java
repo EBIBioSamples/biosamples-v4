@@ -25,7 +25,6 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
@@ -144,12 +143,11 @@ public class BioSamplesAapService {
       bioSamplesCrossSourceIngestAccessControlService.protectPipelineImportedSampleAccess(
           oldSampleInDb, sample);
       bioSamplesCrossSourceIngestAccessControlService.protectEnaPipelineImportedSampleAccess(
-          sample, oldSampleInDb);
+          oldSampleInDb, sample);
+      bioSamplesCrossSourceIngestAccessControlService.protectFileUploaderAapSample(
+          oldSampleInDb, sample, domain);
 
-      if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-        return bioSamplesCrossSourceIngestAccessControlService.protectFileUploaderAapSample(
-            oldSampleInDb, sample, domain);
-      }
+      return sample;
     }
 
     if (domain == null || domain.length() == 0) {
