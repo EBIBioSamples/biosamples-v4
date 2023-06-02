@@ -83,7 +83,7 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
         moveFile(taxonFile, successDir);
         LOG.info("File moved to {}", successDir);
       } catch (Exception e) {
-        LOG.error("Exception while processing the file: {}", taxonFile.getName());
+        LOG.error("Exception while processing the file: {}", taxonFile.getName(), e);
         moveFile(taxonFile, failDir);
         LOG.warn("File moved to {}", failDir);
       }
@@ -111,6 +111,10 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
   private long processTaxonEntries(List<TaxonEntry> taxonEntries) throws Exception {
     long curatedSampleCount = 0;
     for (TaxonEntry entry : taxonEntries) {
+      if (entry.getNcbiTaxonName() == null || entry.getNcbiTaxonName().isEmpty()) {
+        continue;
+      }
+
       Sample sample = getSampleUncurated(entry.getBioSampleAccession());
 
       Long oldTaxId = sample.getTaxId();
@@ -184,7 +188,8 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
     throw new RuntimeException("Failed to retrieve sample, accession: " + accession);
   }
 
-  private void buildAndPersistNewSample(Sample sample, Optional<Attribute> oldOrganism, long oldTaxId, TaxonEntry entry) {
+  private void buildAndPersistNewSample(Sample sample, Optional<Attribute> oldOrganism,
+                                        long oldTaxId, TaxonEntry entry) {
     Sample newSample;
     Attribute newOrganism = Attribute.build("organism", entry.getNcbiTaxonName());
 
