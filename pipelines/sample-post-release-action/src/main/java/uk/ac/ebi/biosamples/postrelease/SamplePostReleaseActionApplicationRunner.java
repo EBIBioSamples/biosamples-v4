@@ -64,7 +64,7 @@ public class SamplePostReleaseActionApplicationRunner implements ApplicationRunn
 
       final Map<String, Future<Boolean>> futures = new HashMap<>();
       for (final EntityModel<Sample> sampleResource :
-          bioSamplesAapClient.fetchSampleResourceAll("", filters)) {
+          bioSamplesAapClient.fetchSampleResourceAllWithoutCuration("", filters)) {
         final Sample sample = sampleResource.getContent();
 
         if (sample == null) {

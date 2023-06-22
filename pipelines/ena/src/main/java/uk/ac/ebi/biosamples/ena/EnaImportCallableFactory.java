@@ -45,7 +45,7 @@ public class EnaImportCallableFactory {
         bioSamplesWebinClient,
         egaSampleExporter,
         enaSampleToBioSampleConversionService,
-        false);
+        null);
   }
 
   /**
@@ -55,13 +55,13 @@ public class EnaImportCallableFactory {
    * @return the callable, {@link EnaImportCallable}
    */
   public Callable<Void> build(
-      final String accession, final String egaId, final boolean suppressionRunner) {
+      final String accession, final String egaId, final SuppressedKilledType suppressedKilledType) {
     return new EnaImportCallable(
         accession,
         egaId,
         bioSamplesWebinClient,
         egaSampleExporter,
         enaSampleToBioSampleConversionService,
-        suppressionRunner);
+        suppressedKilledType);
   }
 }

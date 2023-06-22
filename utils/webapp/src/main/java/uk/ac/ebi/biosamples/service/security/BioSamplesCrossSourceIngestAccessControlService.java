@@ -27,7 +27,7 @@ public class BioSamplesCrossSourceIngestAccessControlService {
       log.info("Super user and file upload submission");
 
       // file uploader submission access protection
-      if (!sample.getWebinSubmissionAccountId().equals(oldSample.getWebinSubmissionAccountId())) {
+      if (!oldSample.getWebinSubmissionAccountId().equals(sample.getWebinSubmissionAccountId())) {
         throw new GlobalExceptions.SampleNotAccessibleException();
       }
     }
@@ -45,7 +45,10 @@ public class BioSamplesCrossSourceIngestAccessControlService {
     if (oldSample.getSubmittedVia()
         == SubmittedViaType.FILE_UPLOADER) { // file uploader samples re-update protection
       if (sample.getSubmittedVia() != SubmittedViaType.FILE_UPLOADER) {
-        throw new GlobalExceptions.InvalidSubmissionSourceException();
+        // file uploader submission access protection
+        if (!oldSample.getWebinSubmissionAccountId().equals(sample.getWebinSubmissionAccountId())) {
+          throw new GlobalExceptions.SampleNotAccessibleException();
+        }
       }
     }
   }

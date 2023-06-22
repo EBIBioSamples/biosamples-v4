@@ -31,6 +31,7 @@ public class EraProDao {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private static final String STATUS_CLAUSE = "STATUS_ID IN (3, 4, 5, 6, 7, 8)";
   private static final String STATUS_CLAUSE_SUPPRESSED = "STATUS_ID IN (5, 7)";
+  private static final String STATUS_CLAUSE_KILLED = "STATUS_ID IN (6, 8)";
 
   public void doSampleCallback(
       final LocalDate minDate, final LocalDate maxDate, final RowCallbackHandler rch) {
@@ -55,6 +56,19 @@ public class EraProDao {
     final String query =
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND "
             + STATUS_CLAUSE_SUPPRESSED;
+
+    jdbcTemplate.query(query, rch);
+  }
+
+  /**
+   * Returns KILLED ENA samples
+   *
+   * @param rch {@link RowCallbackHandler}
+   */
+  public void doGetKilledEnaSamples(final RowCallbackHandler rch) {
+    final String query =
+        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND "
+            + STATUS_CLAUSE_KILLED;
 
     jdbcTemplate.query(query, rch);
   }

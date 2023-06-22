@@ -118,6 +118,11 @@ public class RestIntegrationV2 extends AbstractIntegration {
               Collections.singletonList(webinTestSampleV2Submission));
       final String apiResponseSampleAccession1 =
           Objects.requireNonNull(apiResponseSampleResourceList.get(0)).getAccession();
+      final Attribute attributePre = Attribute.build("organism part", "lung");
+      final Attribute attributePost = Attribute.build("organism part", "lungs");
+      final Curation curation = Curation.build(attributePre, attributePost);
+
+      webinClient.persistCuration(apiResponseSampleAccession1, curation, "Webin-40894", true);
 
       final Map<String, Sample> apiResponseV2SampleBulkFetch =
           webinClient.fetchSampleResourcesByAccessionsV2(
@@ -126,12 +131,61 @@ public class RestIntegrationV2 extends AbstractIntegration {
       if (apiResponseV2SampleBulkFetch.isEmpty()) {
         throw new IntegrationTestFailException(
             "Private sample submitted using webin auth using the V2 end point is not retrieved",
-            Phase.THREE);
+            Phase.SIX);
       } else {
         log.info("Found private sample by webin account");
         final Collection<Sample> foundSamples = apiResponseV2SampleBulkFetch.values();
 
-        foundSamples.forEach(sample -> log.info(String.valueOf(sample)));
+        foundSamples.forEach(
+            // TODO: only sample sample, remove forEach
+            sample -> {
+              log.info(String.valueOf(sample));
+
+              final Optional<Attribute> curatedAttribute =
+                  sample.getAttributes().stream()
+                      .filter(attribute -> attribute.getType().equals("organism part"))
+                      .findFirst();
+
+              if (curatedAttribute.isPresent()) {
+                final Attribute attribute = curatedAttribute.get();
+
+                log.info("Curated attribute value " + attribute.getValue());
+
+                if (attribute.getValue().equals("lungs")) {
+                  throw new IntegrationTestFailException(
+                      "Curated sample returned, uncurated expected", Phase.SIX);
+                }
+              }
+            });
+      }
+
+      final Sample v2SingleSample = webinClient.fetchSampleResourceV2(apiResponseSampleAccession1);
+
+      if (v2SingleSample == null) {
+        throw new IntegrationTestFailException(
+            "Private sample submitted using webin auth using the V2 end point is not retrieved using single sample retrieval endpoint",
+            Phase.SIX);
+      } else {
+        log.info("Found private sample by webin account using single sample retrieval endpoint");
+
+        log.info(String.valueOf(v2SingleSample));
+
+        final Optional<Attribute> curatedAttribute =
+            v2SingleSample.getAttributes().stream()
+                .filter(attribute -> attribute.getType().equals("organism part"))
+                .findFirst();
+
+        if (curatedAttribute.isPresent()) {
+          final Attribute attribute = curatedAttribute.get();
+
+          log.info("Curated attribute value " + attribute.getValue());
+
+          if (attribute.getValue().equals("lungs")) {
+            throw new IntegrationTestFailException(
+                "Curated sample returned in single sample retrieval endpoint, uncurated expected",
+                Phase.SIX);
+          }
+        }
       }
     } catch (final Exception e) {
       throw new IntegrationTestFailException("V2 persist and fetch tests failed", Phase.SIX);
@@ -219,7 +273,6 @@ public class RestIntegrationV2 extends AbstractIntegration {
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
     attributes.add(Attribute.build("age", "3", null, Collections.emptyList(), "year"));
     attributes.add(Attribute.build("organism part", "lung"));
-    attributes.add(Attribute.build("organism part", "heart"));
     attributes.add(
         Attribute.build(
             "sex",

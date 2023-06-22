@@ -89,7 +89,8 @@ public class EgaSampleExporter {
 
   private Sample getBioSample(final String biosampleId) {
     final Optional<EntityModel<Sample>> sample =
-        bioSamplesClient.fetchSampleResource(biosampleId, Optional.of(Collections.emptyList()));
+        bioSamplesClient.fetchSampleResource(
+            biosampleId, Optional.of(Collections.singletonList("")));
     return sample
         .map(EntityModel::getContent)
         .orElseThrow(() -> new RuntimeException("Could not retrieve BioSamples"));

@@ -33,7 +33,7 @@ public class SolrSample {
   @Indexed(name = "domain_s", required = true)
   protected String domain;
 
-  @Indexed(name = "webinId", required = true)
+  @Indexed(name = "webinId_s", required = true)
   protected String webinSubmissionAcccountId;
 
   @Indexed(name = "status_s", required = true)
@@ -255,7 +255,7 @@ public class SolrSample {
     sample.externalReferencesData = externalReferencesData;
 
     final SortedSet<String> facetFieldSet = new TreeSet<>();
-    if (attributeValues != null && !attributeValues.keySet().isEmpty()) {
+    if (!attributeValues.keySet().isEmpty()) {
       for (final String attributeValueKey : attributeValues.keySet()) {
         facetFieldSet.add(attributeValueKey + "_av_ss");
       }
@@ -284,8 +284,10 @@ public class SolrSample {
     // copy into the other fields
     // this should be done in a copyfield but that doesn't work for some reason?
     final Set<String> searchTerms = new HashSet<>();
+
     searchTerms.add(sample.name.toLowerCase());
     searchTerms.addAll(keywords);
+
     for (final Entry<String, List<String>> entry : attributeValues.entrySet()) {
       searchTerms.add(SolrFieldService.decodeFieldName(entry.getKey()).toLowerCase());
       searchTerms.addAll(

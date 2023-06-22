@@ -13,6 +13,7 @@ package uk.ac.ebi.biosamples.zooma;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,11 +32,8 @@ import uk.ac.ebi.biosamples.utils.ClientUtils;
 
 @Service
 public class ZoomaProcessor {
-
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final RestOperations restOperations;
-
   // TODO make this an application.properties value
   private final UriComponents uriBuilder;
 
@@ -66,7 +64,7 @@ public class ZoomaProcessor {
     log.trace("Got zooma response in " + ((endTime - startTime) / 1000000) + "ms");
 
     // if zero or more than one result found, abort
-    if (responseEntity.getBody().size() != 1) {
+    if (Objects.requireNonNull(responseEntity.getBody()).size() != 1) {
       log.info(
           "Zooma failed to map "
               + value
@@ -80,7 +78,7 @@ public class ZoomaProcessor {
     final JsonNode n = responseEntity.getBody().get(0);
 
     // if result is anything other than "high" confidence, abort
-    /* if (!n.has("confidence") || !n.get("confidence").asText().equals("HIGH")) {
+    if (!n.has("confidence") || !n.get("confidence").asText().equals("HIGH")) {
       log.info(
           "Zooma did not map "
               + value
@@ -90,7 +88,7 @@ public class ZoomaProcessor {
               + ((endTime - startTime) / 1000000)
               + "ms");
       return Optional.empty();
-    }*/
+    }
 
     // if result has anything other than 1 semantic tag, abort
     if (!n.has("semanticTags") || n.get("semanticTags").size() != 1) {
