@@ -10,6 +10,8 @@
 */
 package uk.ac.ebi.biosamples.samplerelease;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,12 +51,37 @@ public class SampleReleaseRunner implements ApplicationRunner {
 
   @Override
   public void run(final ApplicationArguments args) throws Exception {
-    releaseSamples();
+    // date format is YYYY-mm-dd
+    final LocalDate fromDate;
+    final LocalDate toDate;
+
+    if (args.getOptionNames().contains("from")) {
+      fromDate =
+          LocalDate.parse(
+              args.getOptionValues("from").iterator().next(), DateTimeFormatter.ISO_LOCAL_DATE);
+    } else {
+      fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
+    }
+
+    if (args.getOptionNames().contains("until")) {
+      toDate =
+          LocalDate.parse(
+              args.getOptionValues("until").iterator().next(), DateTimeFormatter.ISO_LOCAL_DATE);
+    } else {
+      toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
+    }
+
+    log.info("Running from date range from " + fromDate + " until " + toDate);
+
+    releaseSamples(fromDate, toDate);
   }
 
-  private void releaseSamples() throws Exception {
-    final String webinEraServiceSampleReleaseGetUrl =
+  private void releaseSamples(final LocalDate fromDate, final LocalDate toDate) throws Exception {
+    String webinEraServiceSampleReleaseGetUrl =
         pipelinesProperties.getWebinEraServiceSampleReleaseGet();
+    webinEraServiceSampleReleaseGetUrl =
+        webinEraServiceSampleReleaseGetUrl + "?fromDate=" + fromDate + "?toDate=" + toDate;
+
     log.info(
         "Starting sample release pipeline, Getting from " + webinEraServiceSampleReleaseGetUrl);
 
@@ -64,7 +91,7 @@ public class SampleReleaseRunner implements ApplicationRunner {
         restTemplate.exchange(
             webinEraServiceSampleReleaseGetUrl,
             HttpMethod.GET,
-            new HttpEntity<>(SampleReleaseUtil.createHeaders("era", "password")),
+            new HttpEntity<>(SampleReleaseUtil.createHeaders()),
             new ParameterizedTypeReference<List<String>>() {});
 
     log.info(

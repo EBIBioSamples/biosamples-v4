@@ -37,7 +37,6 @@
 		<module>sample-release</module>
 		<module>sample-post-release-action</module>
 		<module>taxonimport</module>
-		<module>neoexport</module>
 		<module>reindex</module>
 	</modules>
 </project>

@@ -57,6 +57,11 @@ public class SampleCursorRetrievalService {
     return fetchAll(text, filterCollection, jwt, true);
   }
 
+  public Iterable<EntityModel<Sample>> fetchAllWithoutCurations(
+      final String text, final Collection<Filter> filterCollection) {
+    return fetchAll(text, filterCollection, null, false);
+  }
+
   public Iterable<EntityModel<Sample>> fetchAll(
       final String text,
       final Collection<Filter> filterCollection,

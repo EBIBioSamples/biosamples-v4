@@ -202,6 +202,19 @@ public class BioSampleConverter {
       }
     }
 
+    // ENA UUID - extra check
+    if (XmlPathBuilder.of(eraSampleXmlRootElement)
+        .path(ENA_SAMPLE_ROOT, ENA_SAMPLE_DENTIFIERS, ENA_SAMPLE_UUID)
+        .exists()) {
+      for (final Element element :
+          XmlPathBuilder.of(eraSampleXmlRootElement)
+              .path(ENA_SAMPLE_ROOT, ENA_SAMPLE_DENTIFIERS)
+              .elements(ENA_SAMPLE_UUID)) {
+        bioSampleAttributes.add(
+            Attribute.build(BIOSAMPLE_UUID_ATTRIBUTE_NAME, element.getTextTrim()));
+      }
+    }
+
     // ENA ANONYMIZED_NAME
     final XmlPathBuilder anonymizedNamePathBuilder =
         XmlPathBuilder.of(eraSampleXmlRootElement)

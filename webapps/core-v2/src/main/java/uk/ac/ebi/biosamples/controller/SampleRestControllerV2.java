@@ -11,6 +11,7 @@
 package uk.ac.ebi.biosamples.controller;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -162,7 +163,8 @@ public class SampleRestControllerV2 {
       @PathVariable final String accession,
       @RequestHeader(name = "Authorization", required = false) final String token) {
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
+    final Optional<Sample> sample =
+        sampleService.fetch(accession, Optional.of(Collections.singletonList("")));
 
     if (sample.isPresent()) {
       final AuthorizationProvider authProvider =

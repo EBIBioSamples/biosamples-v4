@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -93,6 +94,58 @@ public class PipelineUtils {
       bf.flush();
     } catch (final IOException e) {
       log.info("Failed to write failed file ", e);
+    } finally {
+      try {
+        assert bf != null;
+        bf.close();
+      } catch (final Exception e) {
+        log.error(e.getMessage(), e);
+      }
+    }
+  }
+
+  public static void writeFailedSamplesToFile(
+      final Set<String> failures, final PipelineName pipelineName) {
+    BufferedWriter bf = null;
+    final File file = new File(pipelineName + ".failed");
+
+    try {
+      bf = new BufferedWriter(new FileWriter(file));
+      for (final String entry : failures) {
+        bf.write(entry);
+        bf.newLine();
+      }
+
+      bf.flush();
+    } catch (final IOException e) {
+      log.info("Failed to write failed file ", e);
+    } finally {
+      try {
+        assert bf != null;
+        bf.close();
+      } catch (final Exception e) {
+        log.error(e.getMessage(), e);
+      }
+    }
+  }
+
+  public static void writeToFile(
+      final Set<String> accessionsForPurpose,
+      final PipelineName pipelineName,
+      final String typeOfSamples) {
+    BufferedWriter bf = null;
+    final File file = new File(pipelineName + typeOfSamples + ".list");
+
+    try {
+      bf = new BufferedWriter(new FileWriter(file));
+      for (final String entry : accessionsForPurpose) {
+        bf.write(entry);
+        bf.newLine();
+      }
+
+      bf.flush();
+    } catch (final IOException e) {
+      log.info("Failed to write file ", e);
     } finally {
       try {
         assert bf != null;

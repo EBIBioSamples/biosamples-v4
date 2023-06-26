@@ -11,7 +11,6 @@
 package uk.ac.ebi.biosamples.model.filter;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,7 +26,7 @@ public enum FilterType {
   EXTERNAL_REFERENCE_DATA_FILTER("extd", ExternalReferenceDataFilter.Builder.class),
   ACCESSION_FILTER("acc", AccessionFilter.Builder.class);
 
-  private static List<FilterType> filterTypesByLength = new ArrayList<>();
+  private static final List<FilterType> filterTypesByLength;
 
   static {
     filterTypesByLength =
@@ -42,7 +41,7 @@ public enum FilterType {
   String serialization;
   Class<? extends Filter.Builder> associatedBuilder;
 
-  FilterType(String serialization, Class<? extends Filter.Builder> associatedBuilder) {
+  FilterType(final String serialization, final Class<? extends Filter.Builder> associatedBuilder) {
     this.serialization = serialization;
     this.associatedBuilder = associatedBuilder;
   }
@@ -51,10 +50,10 @@ public enum FilterType {
     return this.serialization;
   }
 
-  public Filter.Builder getBuilderForLabel(String label) {
+  public Filter.Builder getBuilderForLabel(final String label) {
     try {
       return this.associatedBuilder.getConstructor(String.class).newInstance(label);
-    } catch (NoSuchMethodException
+    } catch (final NoSuchMethodException
         | IllegalAccessException
         | InstantiationException
         | InvocationTargetException e) {
@@ -62,8 +61,8 @@ public enum FilterType {
     }
   }
 
-  public static FilterType ofFilterString(String filterString) {
-    for (FilterType type : filterTypesByLength) {
+  public static FilterType ofFilterString(final String filterString) {
+    for (final FilterType type : filterTypesByLength) {
       if (filterString.startsWith(type.getSerialization())) {
         return type;
       }

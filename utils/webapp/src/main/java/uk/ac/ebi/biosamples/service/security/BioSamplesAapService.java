@@ -136,16 +136,15 @@ public class BioSamplesAapService {
     final Set<String> usersDomains = getDomains();
     final String domain = sample.getDomain();
     final boolean oldSampleExistsInDb = oldSampleOptional.isPresent();
+    Sample oldSampleInDb = null;
 
     if (oldSampleExistsInDb) {
-      final Sample oldSampleInDb = oldSampleOptional.get();
+      oldSampleInDb = oldSampleOptional.get();
 
       bioSamplesCrossSourceIngestAccessControlService.protectPipelineImportedSampleAccess(
           oldSampleInDb, sample);
       bioSamplesCrossSourceIngestAccessControlService.protectEnaPipelineImportedSampleAccess(
           oldSampleInDb, sample);
-      bioSamplesCrossSourceIngestAccessControlService.protectFileUploaderAapSample(
-          oldSampleInDb, sample, domain);
 
       return sample;
     }
@@ -162,6 +161,9 @@ public class BioSamplesAapService {
         throw new GlobalExceptions.DomainMissingException();
       }
     }
+
+    bioSamplesCrossSourceIngestAccessControlService.protectFileUploaderAapSample(
+        oldSampleInDb, sample, domain);
 
     if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
       // Super user submission

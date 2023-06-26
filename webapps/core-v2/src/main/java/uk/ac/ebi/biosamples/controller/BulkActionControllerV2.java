@@ -11,10 +11,7 @@
 package uk.ac.ebi.biosamples.controller;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +71,7 @@ public class BulkActionControllerV2 {
       consumes = {MediaType.APPLICATION_JSON_VALUE},
       produces = {MediaType.APPLICATION_JSON_VALUE})
   @RequestMapping("/bulk-accession")
-  public ResponseEntity<Map<String, String>> bulkAccessionSampleV2(
+  public ResponseEntity<Map<String, String>> accessionV2(
       @RequestBody List<Sample> samples,
       @RequestHeader(name = "Authorization") final String token) {
     log.info("V2-Received POST for bulk accessioning of " + samples.size() + " samples");
@@ -163,7 +160,7 @@ public class BulkActionControllerV2 {
       produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE},
       params = "accessions",
       value = "/bulk-fetch")
-  public ResponseEntity<Map<String, Sample>> getMultipleSamplesV2(
+  public ResponseEntity<Map<String, Sample>> getV2(
       @RequestParam final List<String> accessions,
       @RequestHeader(name = "Authorization", required = false) final String token) {
     if (accessions == null) {
@@ -179,7 +176,8 @@ public class BulkActionControllerV2 {
                 accession -> {
                   final String cleanAccession = accession.trim();
                   final Optional<Sample> sampleOptional =
-                      sampleService.fetch(cleanAccession, Optional.empty());
+                      sampleService.fetch(
+                          cleanAccession, Optional.of(Collections.singletonList("")));
 
                   if (sampleOptional.isPresent()) {
                     final boolean webinAuth =
@@ -233,7 +231,7 @@ public class BulkActionControllerV2 {
   @PreAuthorize("isAuthenticated()")
   @RequestMapping("/bulk-submit")
   @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<List<Sample>> postSamplesV2(
+  public ResponseEntity<List<Sample>> postV2(
       @RequestBody final List<Sample> samples,
       @RequestHeader(name = "Authorization") final String token) {
     log.info("V2-Received POST for " + samples.size() + " samples");

@@ -23,11 +23,6 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 @Service
 public class EnaSampleXmlEnhancer {
   private static final Logger LOGGER = LoggerFactory.getLogger(EnaSampleXmlEnhancer.class);
-  private final EraProDao eraProDao;
-
-  public EnaSampleXmlEnhancer(final EraProDao eraProDao) {
-    this.eraProDao = eraProDao;
-  }
 
   public String applyRules(
       final String inputXml, final EraproSample eraproSample, final Rule... rules) {

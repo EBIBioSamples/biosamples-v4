@@ -10,16 +10,16 @@
 */
 package uk.ac.ebi.biosamples.samplerelease;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.http.HttpHeaders;
 
 class SampleReleaseUtil {
-  static HttpHeaders createHeaders(final String username, final String password) {
+  static HttpHeaders createHeaders() {
     return new HttpHeaders() {
       {
-        final String auth = username + ":" + password;
-        final byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("US-ASCII")));
+        final String auth = "era" + ":" + "password";
+        final byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.US_ASCII));
         final String authHeader = "Basic " + new String(encodedAuth);
         set("Authorization", authHeader);
       }
