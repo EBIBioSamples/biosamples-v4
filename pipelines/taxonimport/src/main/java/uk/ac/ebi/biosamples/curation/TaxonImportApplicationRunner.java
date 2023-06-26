@@ -65,33 +65,43 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
   @Override
   public void run(final ApplicationArguments args) throws Exception {
     final Instant startTime = Instant.now();
+
     LOG.info("Pipeline started at {}", startTime);
     long totalCurated = 0;
     long totalProcessed = 0;
-    final SampleAnalytics sampleAnalytics = new SampleAnalytics();
 
+    final SampleAnalytics sampleAnalytics = new SampleAnalytics();
     final String taxonDir = getDirectoryNameFromArgs(args);
     final String successDir = taxonDir + File.separator + "processed";
     final String failDir = taxonDir + File.separator + "failed";
 
     final Queue<File> taxonFiles = getFileListFromDirectory(taxonDir);
+
     while (!taxonFiles.isEmpty()) {
       final File taxonFile = taxonFiles.remove();
+
       try {
         LOG.info("Processing file: {}", taxonFile.getName());
+
         final List<TaxonEntry> taxonEntries = loadTaxonEntries(taxonFile);
+
         LOG.info("Number of taxon entries to process: {}", taxonEntries.size());
+
         final long curatedCount = processTaxonEntries(taxonEntries);
 
         totalProcessed += taxonEntries.size();
         totalCurated += curatedCount;
 
         LOG.info("Finished processing file: {}", taxonFile.getName());
+
         moveFile(taxonFile, successDir);
+
         LOG.info("File moved to {}", successDir);
       } catch (final Exception e) {
-        LOG.error("Exception while processing the file: {}", taxonFile.getName());
+        LOG.error("Exception while processing the file: {}", taxonFile.getName(), e);
+
         moveFile(taxonFile, failDir);
+
         LOG.warn("File moved to {}", failDir);
       }
     }
@@ -118,7 +128,12 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
 
   private long processTaxonEntries(final List<TaxonEntry> taxonEntries) throws Exception {
     long curatedSampleCount = 0;
+
     for (final TaxonEntry entry : taxonEntries) {
+      if (entry.getNcbiTaxonName() == null || entry.getNcbiTaxonName().isEmpty()) {
+        continue;
+      }
+
       final Sample sample = getSampleUncurated(entry.getBioSampleAccession());
 
       final Long oldTaxId = sample.getTaxId();
@@ -134,21 +149,25 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
         curatedSampleCount++;
       }
     }
+
     return curatedSampleCount;
   }
 
   private String getDirectoryNameFromArgs(final ApplicationArguments args) {
     String directoryName = null;
+
     if (args.getOptionNames().contains("dir")) {
       directoryName = args.getOptionValues("dir").get(0);
     } else {
       directoryName = "/nfs/production/cochrane/ena/browser/biosamples/output/report";
     }
+
     return directoryName;
   }
 
   private Queue<File> getFileListFromDirectory(final String directoryPath) throws IOException {
     final Queue<File> files;
+
     try (final Stream<Path> paths = Files.walk(Paths.get(directoryPath), 1)) {
       files =
           paths
@@ -156,11 +175,13 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
               .map(Path::toFile)
               .collect(Collectors.toCollection(LinkedList::new));
     }
+
     return files;
   }
 
   private List<TaxonEntry> loadTaxonEntries(final File taxonFile) {
     final List<TaxonEntry> taxonEntries;
+
     try {
       taxonEntries = objectMapper.readValue(taxonFile, new TypeReference<List<TaxonEntry>>() {});
     } catch (final IOException e) {
@@ -175,13 +196,14 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
   private void moveFile(final File target, final String destinationDir) {
     final File destination = new File(destinationDir + File.separator + target.getName());
     final boolean success = target.renameTo(destination);
+
     if (!success) {
       LOG.error("Failed to move file {} to the directory {}", target.getName(), destinationDir);
     }
   }
 
-  private Sample getSampleUncurated(final String accession) {
-    Optional<EntityModel<Sample>> optionalSample =
+  private Sample getSampleUncurated(final String accession) throws Exception {
+    final Optional<EntityModel<Sample>> optionalSample =
         bioSamplesAapClient.fetchSampleResource(
             accession, Optional.of(Collections.singletonList("")));
 
@@ -191,19 +213,8 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
       if (sample != null) {
         return sample;
       }
-    } else {
-      optionalSample =
-          bioSamplesWebinClient.fetchSampleResource(
-              accession, Optional.of(Collections.singletonList("")));
-
-      if (optionalSample.isPresent()) {
-        final Sample sample = optionalSample.get().getContent();
-
-        if (sample != null) {
-          return sample;
-        }
-      }
     }
+
     LOG.error("Failed to retrieve sample, accession: {}", accession);
     throw new RuntimeException("Failed to retrieve sample, accession: " + accession);
   }
@@ -215,11 +226,11 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
       final TaxonEntry entry) {
     final Sample newSample;
     final Attribute newOrganism = Attribute.build("organism", entry.getNcbiTaxonName());
+
     final Set<Attribute> sampleAttributes = sample.getAttributes();
 
     if (oldOrganism.isPresent()) {
       sampleAttributes.remove(oldOrganism.get());
-
       LOG.info(
           "Curating sample {} : taxId = {} -> {}  : organism = {} -> {}",
           entry.getBioSampleAccession(),
@@ -243,7 +254,7 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
     } else if (newSample.getWebinSubmissionAccountId() != null) {
       bioSamplesWebinClient.persistSampleResource(newSample);
     } else {
-      LOG.info("Sample doesn't have an identity information, skipping " + newSample.getAccession());
+      LOG.info("Auth info is not available for " + newSample.getAccession() + " unable to update");
     }
   }
 }
