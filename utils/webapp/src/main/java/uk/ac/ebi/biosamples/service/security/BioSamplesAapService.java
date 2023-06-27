@@ -25,7 +25,6 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
@@ -33,17 +32,22 @@ import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
 @Service
 public class BioSamplesAapService {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final BioSamplesProperties bioSamplesProperties;
   private final AapTokenService tokenService;
   private final AapDomainService domainService;
+  private final BioSamplesCrossSourceIngestAccessControlService
+      bioSamplesCrossSourceIngestAccessControlService;
 
   public BioSamplesAapService(
       final BioSamplesProperties bioSamplesProperties,
       final AapTokenService tokenService,
+      final BioSamplesCrossSourceIngestAccessControlService
+          bioSamplesCrossSourceIngestAccessControlService,
       final AapDomainService domainService) {
     this.tokenService = tokenService;
     this.domainService = domainService;
+    this.bioSamplesCrossSourceIngestAccessControlService =
+        bioSamplesCrossSourceIngestAccessControlService;
     this.bioSamplesProperties = bioSamplesProperties;
   }
 
@@ -125,55 +129,51 @@ public class BioSamplesAapService {
    * <p>May return a different version of the sample, so return needs to be stored in future for
    * that sample.
    */
-  public Sample handleSampleDomain(final Sample sample, final Optional<Sample> oldSample)
+  public Sample handleSampleDomain(final Sample sample, final Optional<Sample> oldSampleOptional)
       throws GlobalExceptions.SampleNotAccessibleException,
           GlobalExceptions.DomainMissingException {
     // Get the domains the current user has access to
     final Set<String> usersDomains = getDomains();
     final String domain = sample.getDomain();
+    final boolean oldSampleExistsInDb = oldSampleOptional.isPresent();
+    Sample oldSampleInDb = null;
 
-    if (oldSample.isPresent()
-        && oldSample.get().getSubmittedVia()
-            == SubmittedViaType.PIPELINE_IMPORT) { // pipeline imports access protection
-      if (sample.getSubmittedVia() != SubmittedViaType.PIPELINE_IMPORT) {
-        throw new GlobalExceptions.InvalidSubmissionSourceException();
+    if (oldSampleExistsInDb) {
+      oldSampleInDb = oldSampleOptional.get();
+
+      bioSamplesCrossSourceIngestAccessControlService.protectPipelineImportedSampleAccess(
+          oldSampleInDb, sample);
+      bioSamplesCrossSourceIngestAccessControlService.protectEnaPipelineImportedSampleAccess(
+          oldSampleInDb, sample);
+
+      return sample;
+    }
+
+    if (domain == null || domain.length() == 0) {
+      // if the sample doesn't have a domain, and the user has one domain, then they must be
+      // submitting to that domain
+      if (usersDomains.size() > 0) {
+        return Sample.Builder.fromSample(sample)
+            .withDomain(usersDomains.iterator().next())
+            .withNoWebinSubmissionAccountId()
+            .build();
+      } else {
+        throw new GlobalExceptions.DomainMissingException();
       }
     }
 
-    // check if FILE UPLOADER submission, domain changes are not allowed, handled differently
-    if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-      if (oldSample.isPresent() && !domain.equals(oldSample.get().getDomain())) {
-        throw new GlobalExceptions.SampleDomainMismatchException();
-      } else {
-        return sample;
-      }
-    } else { // non FILE UPLOADER submissions
-      if (domain == null || domain.length() == 0) {
-        // if the sample doesn't have a domain, and the user has one domain, then they must be
-        // submitting to that domain
-        if (usersDomains.size() > 0) {
-          return Sample.Builder.fromSample(sample)
-              .withDomain(usersDomains.iterator().next())
-              .withNoWebinSubmissionAccountId()
-              .build();
-        } else {
-          throw new GlobalExceptions.DomainMissingException();
-        }
-      }
+    bioSamplesCrossSourceIngestAccessControlService.protectFileUploaderAapSample(
+        oldSampleInDb, sample, domain);
 
-      if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
-        // Super user submission
-        return sample;
-      } else if (usersDomains.contains(domain)) {
-        return sample;
-      } else {
-        log.warn(
-            "User asked to submit sample to domain "
-                + domain
-                + " but has access to "
-                + usersDomains);
-        throw new GlobalExceptions.SampleNotAccessibleException();
-      }
+    if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
+      // Super user submission
+      return sample;
+    } else if (usersDomains.contains(domain)) {
+      return sample;
+    } else {
+      log.warn(
+          "User asked to submit sample to domain " + domain + " but has access to " + usersDomains);
+      throw new GlobalExceptions.SampleNotAccessibleException();
     }
   }
 

@@ -64,13 +64,14 @@ public class SamplePostReleaseActionApplicationRunner implements ApplicationRunn
 
       final Map<String, Future<Boolean>> futures = new HashMap<>();
       for (final EntityModel<Sample> sampleResource :
-          bioSamplesAapClient.fetchSampleResourceAll("", filters)) {
-        LOG.info("Handling {}", sampleResource);
+          bioSamplesAapClient.fetchSampleResourceAllWithoutCuration("", filters)) {
         final Sample sample = sampleResource.getContent();
 
         if (sample == null) {
           throw new RuntimeException("Sample should not be null");
         }
+
+        LOG.info("Handling {}", sample.getAccession());
 
         final Callable<Boolean> task =
             new SamplePostReleaseActionCallable(bioSamplesAapClient, bioSamplesWebinClient, sample);

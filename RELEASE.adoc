@@ -2,6 +2,25 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+[[v5.2.18]]
+== v5.2.18 Release notes
+
+[[v5.2.17]]
+
+== What's Changed
+* add public filter for INSDC status != suppressed by @theisuru in https://github.com/EBIBioSamples/biosamples-v4/pull/630
+* Bsd 2292 taxon importer codon by @theisuru in https://github.com/EBIBioSamples/biosamples-v4/pull/629
+* fix release date/ sample status bug in accessioning of V1 and V2, sam… by @dipayan1985 in https://github.com/EBIBioSamples/biosamples-v4/pull/631
+* Adding sample post release action to CI/CD by @dipayan1985 in https://github.com/EBIBioSamples/biosamples-v4/pull/632
+* Fix Gitlab CI file for post release action pipeline by @dipayan1985 in https://github.com/EBIBioSamples/biosamples-v4/pull/633
+* Fix CI/CD for sample post release action by @dipayan1985 in https://github.com/EBIBioSamples/biosamples-v4/pull/634
+* Too large artifact error in CICD by @dipayan1985 in https://github.com/EBIBioSamples/biosamples-v4/pull/635
+* Configure micrometer stackdriver by @dipayan1985 in https://github.com/EBIBioSamples/biosamples-v4/pull/620
+* Stackdriver monitoring by @dipayan1985 in https://github.com/EBIBioSamples/biosamples-v4/pull/636
+* BSD release 5.2.17 by @dipayan1985 in https://github.com/EBIBioSamples/biosamples-v4/pull/637
+
+**Full Changelog**: https://github.com/EBIBioSamples/biosamples-v4/compare/v5.2.16...v5.2.17
+
 [[v5.2.16]]
 == v5.2.16 Release notes
 

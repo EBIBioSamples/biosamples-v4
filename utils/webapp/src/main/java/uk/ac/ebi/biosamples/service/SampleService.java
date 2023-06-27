@@ -14,12 +14,15 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
@@ -30,8 +33,10 @@ import uk.ac.ebi.biosamples.mongo.model.MongoSampleMessage;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleMessageRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
+import uk.ac.ebi.biosamples.mongo.service.MongoRelationshipToRelationshipConverter;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
+import uk.ac.ebi.biosamples.service.security.BioSamplesCrossSourceIngestAccessControlService;
 import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
 
 /**
@@ -44,7 +49,6 @@ import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
 public class SampleService {
   private static final String NCBI_IMPORT_DOMAIN = "self.BiosampleImportNCBI";
   private static final String ENA_IMPORT_DOMAIN = "self.BiosampleImportENA";
-  private static final String ENA_CHECKLIST = "ENA-CHECKLIST";
   private static final Logger log = LoggerFactory.getLogger(SampleService.class);
 
   @Qualifier("SampleAccessionService")
@@ -55,9 +59,18 @@ public class SampleService {
   @Autowired private MongoSampleMessageRepository mongoSampleMessageRepository;
   @Autowired private MongoSampleToSampleConverter mongoSampleToSampleConverter;
   @Autowired private SampleToMongoSampleConverter sampleToMongoSampleConverter;
+
+  @Autowired
+  private MongoRelationshipToRelationshipConverter mongoRelationshipToRelationshipConverter;
+
   @Autowired private SampleValidator sampleValidator;
   @Autowired private SampleReadService sampleReadService;
   @Autowired private MessagingService messagingService;
+  @Autowired private BioSamplesProperties bioSamplesProperties;
+
+  @Autowired
+  private BioSamplesCrossSourceIngestAccessControlService
+      bioSamplesCrossSourceIngestAccessControlService;
 
   /** Throws an IllegalArgumentException of no sample with that accession exists */
   public Optional<Sample> fetch(
@@ -68,16 +81,16 @@ public class SampleService {
   /*
   Checks if the current sample that exists has no metadata, returns true if empty
    */
-  private boolean isExistingSampleEmpty(
+  private boolean isSampleInDbEmpty(
       final Sample sample, final boolean isWebinSuperUser, final Sample oldSample) {
     final String domain = sample.getDomain();
 
     if (isWebinSuperUser) {
       if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-        // file uploader submissions are done via super-user but they are non imported samples,
+        // file uploader submissions are done via super-user, but they are non imported samples,
         // needs to be handled safely
         if (sample.hasAccession()) {
-          return isExistingSampleEmpty(oldSample);
+          return isSampleInDbEmpty(oldSample);
         }
 
         return true;
@@ -85,13 +98,17 @@ public class SampleService {
         // otherwise it is a ENA pipeline import, cannot be empty
         return false;
       }
+    } else {
+      if (sample.hasAccession()) {
+        return isSampleInDbEmpty(oldSample);
+      }
     }
 
     if (isAPipelineAapDomain(domain)) {
       return false; // imported sample - never submitted first time to BSD, always has metadata
     } else {
       if (sample.hasAccession()) {
-        return isExistingSampleEmpty(oldSample);
+        return isSampleInDbEmpty(oldSample);
       }
 
       return true;
@@ -105,7 +122,7 @@ public class SampleService {
   /*
   Checks if the current sample that exists has no metadata, returns true if empty
    */
-  private boolean isExistingSampleEmpty(final Sample oldSample) {
+  private boolean isSampleInDbEmpty(final Sample oldSample) {
     if (oldSample.getTaxId() != null && oldSample.getTaxId() > 0) {
       return false;
     }
@@ -165,26 +182,37 @@ public class SampleService {
 
     if (sample.hasAccession()) {
       final Long taxId = sample.getTaxId();
-      List<String> existingRelationshipTargets = new ArrayList<>();
+      final List<String> existingRelationshipTargets = new ArrayList<>();
 
       if (oldSample != null) {
-        final boolean isExistingSampleEmpty =
-            isExistingSampleEmpty(sample, isWebinSuperUser, oldSample);
+        final boolean isSampleInDbEmpty = isSampleInDbEmpty(sample, isWebinSuperUser, oldSample);
 
-        if (isExistingSampleEmpty) {
+        if (isSampleInDbEmpty) {
           sample = Sample.Builder.fromSample(sample).withSubmitted(Instant.now()).build();
         }
 
-        existingRelationshipTargets =
+        final Sample finalSample = sample;
+
+        final List<Relationship> existingRelationships =
             getExistingRelationshipTargets(
                 sample.getAccession(),
                 Objects.requireNonNull(sampleToMongoSampleConverter.convert(oldSample)));
 
-        isImportedSampleUpdatedByNonPipelineSource(sample, oldSample);
+        existingRelationshipTargets.addAll(
+            existingRelationships.stream()
+                .map(
+                    relationship -> {
+                      if (relationship.getSource().equals(finalSample.getAccession())) {
+                        return relationship.getTarget();
+                      }
+
+                      return null;
+                    })
+                .collect(Collectors.toList()));
 
         sample =
             compareWithExistingAndUpdateSample(
-                sample, oldSample, isExistingSampleEmpty, authProvider);
+                sample, oldSample, existingRelationships, isSampleInDbEmpty, authProvider);
 
         final Long oldSampleTaxId = oldSample.getTaxId();
 
@@ -194,13 +222,8 @@ public class SampleService {
       } else {
         log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
 
-        if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-          log.error(
-              "Not permitted to update sample not in database using the file uploader, accession: {}",
-              sample.getAccession());
-
-          throw new GlobalExceptions.SampleAccessionDoesNotExistException();
-        }
+        bioSamplesCrossSourceIngestAccessControlService
+            .validateFileUploaderSampleAccessionWhileSampleUpdate(sample);
       }
 
       MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
@@ -262,18 +285,15 @@ public class SampleService {
             "Trying to update sample that exists in database, accession: {}",
             sample.getAccession());
 
-        final boolean isExistingSampleEmpty =
-            isExistingSampleEmpty(sample, isWebinSuperUser, oldSample);
+        final boolean isSampleInDbEmpty = isSampleInDbEmpty(sample, isWebinSuperUser, oldSample);
 
-        if (isExistingSampleEmpty) {
+        if (isSampleInDbEmpty) {
           sample = Sample.Builder.fromSample(sample).withSubmitted(Instant.now()).build();
         }
 
-        isImportedSampleUpdatedByNonPipelineSource(sample, oldSample);
-
         sample =
             compareWithExistingAndUpdateSample(
-                sample, oldSample, isExistingSampleEmpty, authProvider);
+                sample, oldSample, null, isSampleInDbEmpty, authProvider);
       } else {
         log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
       }
@@ -328,13 +348,14 @@ public class SampleService {
     }
   }
 
-  private List<String> getExistingRelationshipTargets(
+  private List<Relationship> getExistingRelationshipTargets(
       final String accession, final MongoSample mongoOldSample) {
-    final List<String> oldRelationshipTargets = new ArrayList<>();
+    final List<Relationship> oldRelationshipTargets = new ArrayList<>();
 
-    for (final MongoRelationship relationship : mongoOldSample.getRelationships()) {
-      if (relationship.getSource().equals(accession)) {
-        oldRelationshipTargets.add(relationship.getTarget());
+    for (final MongoRelationship mongoRelationship : mongoOldSample.getRelationships()) {
+      if (mongoRelationship.getSource().equals(accession)) {
+        oldRelationshipTargets.add(
+            mongoRelationshipToRelationshipConverter.convert(mongoRelationship));
       }
     }
 
@@ -342,12 +363,21 @@ public class SampleService {
   }
 
   private Sample compareWithExistingAndUpdateSample(
-      final Sample newSample,
+      Sample newSample,
       final Sample oldSample,
+      final List<Relationship> existingRelationships,
       final boolean isEmptySample,
       final AuthorizationProvider authProvider) {
     Set<AbstractData> structuredData = new HashSet<>();
     boolean applyOldSampleStructuredData = false;
+
+    if (authProvider == AuthorizationProvider.WEBIN
+        && newSample
+            .getWebinSubmissionAccountId()
+            .equals(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
+      newSample =
+          Sample.Builder.fromSample(newSample).withRelationships(existingRelationships).build();
+    }
 
     if (newSample.getData().size() < 1) {
       log.info("No structured data in new sample");
@@ -380,22 +410,6 @@ public class SampleService {
     }
   }
 
-  private void isImportedSampleUpdatedByNonPipelineSource(
-      final Sample newSample, final Sample oldSample) {
-    /*
-    Old sample has ENA-CHECKLIST attribute, hence it can be concluded that it is imported from ENA
-    New sample has ENA-CHECKLIST attribute, means its updated by ENA pipeline, allow further computation
-    New sample doesn't have ENA-CHECKLIST attribute, means it's not updated by ENA pipeline, don't allow further computation and throw exception
-     */
-    if (oldSample.getAttributes().stream()
-        .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(ENA_CHECKLIST))) {
-      if (newSample.getAttributes().stream()
-          .noneMatch(attribute -> attribute.getType().equalsIgnoreCase(ENA_CHECKLIST))) {
-        throw new GlobalExceptions.InvalidSubmissionSourceException();
-      }
-    }
-  }
-
   private Instant defineCreateDate(
       final Sample newSample, final Sample oldSample, final AuthorizationProvider authProvider) {
     final String domain = newSample.getDomain();
@@ -419,6 +433,7 @@ public class SampleService {
     if (domain == null) {
       return false;
     }
+
     return domain.equalsIgnoreCase(ENA_IMPORT_DOMAIN);
   }
 
@@ -426,6 +441,7 @@ public class SampleService {
     if (domain == null) {
       return false;
     }
+
     return domain.equalsIgnoreCase(NCBI_IMPORT_DOMAIN);
   }
 

@@ -164,7 +164,7 @@ public class SolrFilterService {
     if (webinSubmissionAccountId != null && !webinSubmissionAccountId.isEmpty()) {
       // user can see public and private samples submitted by them using their webin auth tokens
       publicSampleCriteria =
-          publicSampleCriteria.or(new Criteria("webinId").in(webinSubmissionAccountId));
+          publicSampleCriteria.or(new Criteria("webinId_s").in(webinSubmissionAccountId));
     }
 
     filterQuery.addCriteria(publicSampleCriteria);

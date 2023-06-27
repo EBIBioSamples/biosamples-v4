@@ -42,11 +42,10 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
     final Map<String, List<String>> attributeUnits = new HashMap<>();
     Map<String, List<String>> outgoingRelationships = new HashMap<>();
     Map<String, List<String>> incomingRelationships = new HashMap<>();
-    Map<String, List<String>> externalReferencesData = new HashMap<>();
+    final Map<String, List<String>> externalReferencesData = new HashMap<>();
     final List<String> keywords = new ArrayList<>();
 
     if (sample.getCharacteristics() != null && sample.getCharacteristics().size() > 0) {
-
       for (final Attribute attr : sample.getCharacteristics()) {
         final String key = SolrFieldService.encodeFieldName(attr.getType());
 
@@ -76,9 +75,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
           attributeIris.get(key).add("");
         } else {
           final List<String> iris =
-              attr.getIri().stream()
-                  .map(iri -> getOntologyFromIri(iri))
-                  .collect(Collectors.toList());
+              attr.getIri().stream().map(this::getOntologyFromIri).collect(Collectors.toList());
           attributeIris.get(key).addAll(iris);
           keywords.addAll(iris.stream().map(String::toLowerCase).collect(Collectors.toList()));
         }
@@ -119,9 +116,6 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
       final Optional<String> externalReferenceDataId =
           externalReferenceService.getDataId(externalReference);
       if (externalReferenceDataId.isPresent()) {
-        if (externalReferencesData == null) {
-          externalReferencesData = new HashMap<>();
-        }
         if (!externalReferencesData.containsKey(externalReferenceNicknameKey)) {
           externalReferencesData.put(externalReferenceNicknameKey, new ArrayList<>());
         }
@@ -132,7 +126,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
     // Add relationships owned by sample
     final SortedSet<Relationship> sampleOutgoingRelationships =
         SampleRelationshipUtils.getOutgoingRelationships(sample);
-    if (sampleOutgoingRelationships != null && !sampleOutgoingRelationships.isEmpty()) {
+    if (!sampleOutgoingRelationships.isEmpty()) {
       final String attributeValueKey = SolrFieldService.encodeFieldName("outgoing relationships");
       if (!attributeValues.containsKey(attributeValueKey)) {
         attributeValues.put(attributeValueKey, new ArrayList<>());
@@ -169,19 +163,33 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 
     // Add structured data
     final Set<StructuredDataTable> structuredDataSet = sample.getStructuredData();
+
     if (!CollectionUtils.isEmpty(structuredDataSet)) {
       final String key = SolrFieldService.encodeFieldName("structured data");
+
       for (final StructuredDataTable sd : structuredDataSet) {
         keywords.add(sd.getType().toLowerCase());
+
         if (!attributeValues.containsKey(key)) {
           attributeValues.put(key, new ArrayList<>());
         }
+
         attributeValues.get(key).add(sd.getType());
 
         for (final Map<String, StructuredDataEntry> sdMap : sd.getContent()) {
           for (final Map.Entry<String, StructuredDataEntry> sdMapEntry : sdMap.entrySet()) {
-            keywords.addAll(
-                Arrays.asList(sdMapEntry.getKey(), sdMapEntry.getValue().getValue().toLowerCase()));
+            if (sdMapEntry != null) {
+              final StructuredDataEntry sdMapEntryValue = sdMapEntry.getValue();
+
+              if (sdMapEntry.getKey() != null && sdMapEntryValue != null) {
+                final String sdMapEntryValueValue = sdMapEntryValue.getValue();
+
+                if (sdMapEntryValueValue != null) {
+                  keywords.addAll(
+                      Arrays.asList(sdMapEntry.getKey(), sdMapEntryValueValue.toLowerCase()));
+                }
+              }
+            }
           }
         }
       }

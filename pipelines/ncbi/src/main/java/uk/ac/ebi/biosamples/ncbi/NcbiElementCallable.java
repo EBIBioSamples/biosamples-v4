@@ -10,6 +10,7 @@
 */
 package uk.ac.ebi.biosamples.ncbi;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +19,8 @@ import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
@@ -71,18 +74,25 @@ public class NcbiElementCallable implements Callable<Void> {
               .withDomain(domain)
               .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
               .build();
+      final ExternalReference exRef =
+          ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + accession);
+      final Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
 
       while (!success) {
         try {
           bioSamplesClient.persistSampleResource(sample);
 
           success = true;
+
+          try {
+            bioSamplesClient.persistCuration(accession, curation, domain, false);
+          } catch (final Exception e) {
+            log.info("Failed to curate NCBI sample with ENA link " + accession);
+          }
         } catch (final Exception e) {
           if (++numRetry == MAX_RETRIES) {
             throw new RuntimeException("Failed to handle the sample with accession " + accession);
           }
-
-          success = false;
         }
       }
 

@@ -25,6 +25,7 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SampleStatus;
 
 public class SampleReleaseCallable implements Callable<Void> {
   private static final Logger log = LoggerFactory.getLogger(SampleReleaseCallable.class);
@@ -110,6 +111,7 @@ public class SampleReleaseCallable implements Callable<Void> {
                 .persistSampleResource(
                     Sample.Builder.fromSample(sampleWithoutCurations)
                         .withRelease(Instant.now())
+                        .withStatus(SampleStatus.PUBLIC)
                         .build())
                 .getContent();
           }
@@ -148,7 +150,7 @@ public class SampleReleaseCallable implements Callable<Void> {
     return restTemplate.exchange(
         pipelinesProperties.getWebinEraServiceSampleReleaseDelete(),
         HttpMethod.DELETE,
-        new HttpEntity<>(SampleReleaseUtil.createHeaders("era", "password")),
+        new HttpEntity<>(SampleReleaseUtil.createHeaders()),
         ResponseEntity.class,
         params);
   }

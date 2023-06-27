@@ -14,14 +14,17 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.EntityModel;
@@ -38,16 +41,22 @@ import uk.ac.ebi.biosamples.utils.mongo.AnalyticsService;
 public class TaxonImportApplicationRunner implements ApplicationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonImportApplicationRunner.class);
 
-  private final BioSamplesClient bioSamplesClient;
+  private final BioSamplesClient bioSamplesAapClient;
+
+  @Qualifier("WEBINCLIENT")
+  private final BioSamplesClient bioSamplesWebinClient;
+
   private final AnalyticsService analyticsService;
   private final PipelineFutureCallback pipelineFutureCallback;
   private final ObjectMapper objectMapper;
 
   public TaxonImportApplicationRunner(
-      final BioSamplesClient bioSamplesClient,
+      final BioSamplesClient bioSamplesAapClient,
+      final BioSamplesClient bioSamplesWebinClient,
       final AnalyticsService analyticsService,
-      ObjectMapper objectMapper) {
-    this.bioSamplesClient = bioSamplesClient;
+      final ObjectMapper objectMapper) {
+    this.bioSamplesAapClient = bioSamplesAapClient;
+    this.bioSamplesWebinClient = bioSamplesWebinClient;
     this.analyticsService = analyticsService;
     this.objectMapper = objectMapper;
     pipelineFutureCallback = new PipelineFutureCallback();
@@ -56,86 +65,126 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
   @Override
   public void run(final ApplicationArguments args) throws Exception {
     final Instant startTime = Instant.now();
+
     LOG.info("Pipeline started at {}", startTime);
-    long curatedSampleCount = 0;
+    long totalCurated = 0;
+    long totalProcessed = 0;
+
     final SampleAnalytics sampleAnalytics = new SampleAnalytics();
+    final String taxonDir = getDirectoryNameFromArgs(args);
+    final String successDir = taxonDir + File.separator + "processed";
+    final String failDir = taxonDir + File.separator + "failed";
 
-    List<TaxonEntry> taxonEntries = loadTaxonFile(getFileNameFromArgs(args));
-    for (TaxonEntry entry : taxonEntries) {
+    final Queue<File> taxonFiles = getFileListFromDirectory(taxonDir);
 
-      Optional<EntityModel<Sample>> optionalSample =
-          bioSamplesClient.fetchSampleResource(
-              entry.getBioSampleAccession(), Optional.of(Collections.singletonList("")));
-      if (optionalSample.isPresent()) {
-        Sample sample = optionalSample.get().getContent();
-        Long oldTaxId = sample.getTaxId();
-        Optional<Attribute> oldOrganism =
-            sample.getCharacteristics().stream()
-                .filter(c -> c.getType().equalsIgnoreCase("organism"))
-                .findFirst();
+    while (!taxonFiles.isEmpty()) {
+      final File taxonFile = taxonFiles.remove();
 
-        Attribute newOrganism = Attribute.build("organism", entry.getNcbiTaxonName());
+      try {
+        LOG.info("Processing file: {}", taxonFile.getName());
 
-        Sample newSample;
-        Set<Attribute> sampleAttributes = sample.getAttributes();
-        if (oldOrganism.isPresent()) {
-          sampleAttributes.remove(oldOrganism.get());
-          LOG.info(
-              "Curating sample "
-                  + entry.getBioSampleAccession()
-                  + " : taxId = "
-                  + oldTaxId
-                  + " -> "
-                  + entry.getTaxId()
-                  + " : organism = "
-                  + oldOrganism.get().getValue()
-                  + " -> "
-                  + entry.getBioSampleTaxName());
-        } else {
-          LOG.info(
-              "Curating sample "
-                  + entry.getBioSampleAccession()
-                  + " : taxId = "
-                  + oldTaxId
-                  + " : organism = "
-                  + entry.getBioSampleTaxName());
-        }
-        sampleAttributes.add(newOrganism);
-        newSample = Sample.Builder.fromSample(sample).withTaxId(entry.getTaxId()).build();
-        bioSamplesClient.persistSampleResource(newSample);
-        curatedSampleCount++;
+        final List<TaxonEntry> taxonEntries = loadTaxonEntries(taxonFile);
 
-      } else {
-        LOG.error("Failed to retrieve sample with the accession: " + entry.getBioSampleAccession());
+        LOG.info("Number of taxon entries to process: {}", taxonEntries.size());
+
+        final long curatedCount = processTaxonEntries(taxonEntries);
+
+        totalProcessed += taxonEntries.size();
+        totalCurated += curatedCount;
+
+        LOG.info("Finished processing file: {}", taxonFile.getName());
+
+        moveFile(taxonFile, successDir);
+
+        LOG.info("File moved to {}", successDir);
+      } catch (final Exception e) {
+        LOG.error("Exception while processing the file: {}", taxonFile.getName(), e);
+
+        moveFile(taxonFile, failDir);
+
+        LOG.warn("File moved to {}", failDir);
       }
     }
 
     final Instant endTime = Instant.now();
-    LOG.info("Total samples processed {}", taxonEntries.size());
-    LOG.info("Total modified samples {}", curatedSampleCount);
+    final long runtime = Duration.between(startTime, endTime).getSeconds();
+
+    LOG.info("Total samples processed {}", totalProcessed);
+    LOG.info("Total modified samples {}", totalCurated);
     LOG.info("Pipeline finished at {}", endTime);
-    LOG.info(
-        "Pipeline total running time {} seconds",
-        Duration.between(startTime, endTime).getSeconds());
+    LOG.info("Pipeline total running time {} seconds", runtime);
 
     final PipelineAnalytics pipelineAnalytics =
         new PipelineAnalytics(
             "taxonimport",
             startTime,
             endTime,
-            taxonEntries.size(),
+            totalCurated,
             pipelineFutureCallback.getTotalCount());
-    sampleAnalytics.setProcessedRecords(taxonEntries.size());
+    sampleAnalytics.setProcessedRecords(totalProcessed);
     analyticsService.persistSampleAnalytics(startTime, sampleAnalytics);
     analyticsService.persistPipelineAnalytics(pipelineAnalytics);
   }
 
-  private List<TaxonEntry> loadTaxonFile(final String filePath) {
-    List<TaxonEntry> taxonEntries;
+  private long processTaxonEntries(final List<TaxonEntry> taxonEntries) throws Exception {
+    long curatedSampleCount = 0;
+
+    for (final TaxonEntry entry : taxonEntries) {
+      if (entry.getNcbiTaxonName() == null || entry.getNcbiTaxonName().isEmpty()) {
+        continue;
+      }
+
+      final Sample sample = getSampleUncurated(entry.getBioSampleAccession());
+
+      final Long oldTaxId = sample.getTaxId();
+      final Optional<Attribute> oldOrganism =
+          sample.getCharacteristics().stream()
+              .filter(c -> c.getType().equalsIgnoreCase("organism"))
+              .findFirst();
+
+      if (oldTaxId != entry.getTaxId()
+          || !oldOrganism.isPresent()
+          || !entry.getNcbiTaxonName().equalsIgnoreCase(oldOrganism.get().getValue())) {
+        buildAndPersistNewSample(sample, oldOrganism, oldTaxId, entry);
+        curatedSampleCount++;
+      }
+    }
+
+    return curatedSampleCount;
+  }
+
+  private String getDirectoryNameFromArgs(final ApplicationArguments args) {
+    String directoryName = null;
+
+    if (args.getOptionNames().contains("dir")) {
+      directoryName = args.getOptionValues("dir").get(0);
+    } else {
+      directoryName = "/nfs/production/cochrane/ena/browser/biosamples/output/report";
+    }
+
+    return directoryName;
+  }
+
+  private Queue<File> getFileListFromDirectory(final String directoryPath) throws IOException {
+    final Queue<File> files;
+
+    try (final Stream<Path> paths = Files.walk(Paths.get(directoryPath), 1)) {
+      files =
+          paths
+              .filter(Files::isRegularFile)
+              .map(Path::toFile)
+              .collect(Collectors.toCollection(LinkedList::new));
+    }
+
+    return files;
+  }
+
+  private List<TaxonEntry> loadTaxonEntries(final File taxonFile) {
+    final List<TaxonEntry> taxonEntries;
+
     try {
-      File taxonFile = new File(filePath);
       taxonEntries = objectMapper.readValue(taxonFile, new TypeReference<List<TaxonEntry>>() {});
-    } catch (IOException e) {
+    } catch (final IOException e) {
       LOG.error("Failed to process json file", e);
       throw new RuntimeException(
           "Failed to process the json file. Pipeline failed to run. Exiting the pipeline.");
@@ -144,15 +193,68 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
     return taxonEntries;
   }
 
-  private String getFileNameFromArgs(final ApplicationArguments args) {
-    String taxonFile = null;
-    if (args.getOptionNames().contains("file")) {
-      taxonFile = args.getOptionValues("file").get(0);
-    } else {
-      taxonFile =
-          "/lts/production/tburdett/ena/taxon_name_change/taxname_change_20230414_1551_SAMN.json";
+  private void moveFile(final File target, final String destinationDir) {
+    final File destination = new File(destinationDir + File.separator + target.getName());
+    final boolean success = target.renameTo(destination);
+
+    if (!success) {
+      LOG.error("Failed to move file {} to the directory {}", target.getName(), destinationDir);
+    }
+  }
+
+  private Sample getSampleUncurated(final String accession) throws Exception {
+    final Optional<EntityModel<Sample>> optionalSample =
+        bioSamplesAapClient.fetchSampleResource(
+            accession, Optional.of(Collections.singletonList("")));
+
+    if (optionalSample.isPresent()) {
+      final Sample sample = optionalSample.get().getContent();
+
+      if (sample != null) {
+        return sample;
+      }
     }
 
-    return taxonFile;
+    LOG.error("Failed to retrieve sample, accession: {}", accession);
+    throw new RuntimeException("Failed to retrieve sample, accession: " + accession);
+  }
+
+  private void buildAndPersistNewSample(
+      final Sample sample,
+      final Optional<Attribute> oldOrganism,
+      final long oldTaxId,
+      final TaxonEntry entry) {
+    final Sample newSample;
+    final Attribute newOrganism = Attribute.build("organism", entry.getNcbiTaxonName());
+
+    final Set<Attribute> sampleAttributes = sample.getAttributes();
+
+    if (oldOrganism.isPresent()) {
+      sampleAttributes.remove(oldOrganism.get());
+      LOG.info(
+          "Curating sample {} : taxId = {} -> {}  : organism = {} -> {}",
+          entry.getBioSampleAccession(),
+          oldTaxId,
+          entry.getTaxId(),
+          oldOrganism.get().getValue(),
+          entry.getNcbiTaxonName());
+    } else {
+      LOG.info(
+          "Curating sample {} : taxId = {} : organism = {}",
+          entry.getBioSampleAccession(),
+          oldTaxId,
+          entry.getNcbiTaxonName());
+    }
+
+    sampleAttributes.add(newOrganism);
+    newSample = Sample.Builder.fromSample(sample).withTaxId(entry.getTaxId()).build();
+
+    if (newSample.getDomain() != null) {
+      bioSamplesAapClient.persistSampleResource(newSample);
+    } else if (newSample.getWebinSubmissionAccountId() != null) {
+      bioSamplesWebinClient.persistSampleResource(newSample);
+    } else {
+      LOG.info("Auth info is not available for " + newSample.getAccession() + " unable to update");
+    }
   }
 }

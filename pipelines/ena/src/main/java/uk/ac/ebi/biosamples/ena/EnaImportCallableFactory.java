@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
+import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 
 @Service
 public class EnaImportCallableFactory {
@@ -44,7 +45,7 @@ public class EnaImportCallableFactory {
         bioSamplesWebinClient,
         egaSampleExporter,
         enaSampleToBioSampleConversionService,
-        false);
+        null);
   }
 
   /**
@@ -54,13 +55,13 @@ public class EnaImportCallableFactory {
    * @return the callable, {@link EnaImportCallable}
    */
   public Callable<Void> build(
-      final String accession, final String egaId, final boolean suppressionRunner) {
+      final String accession, final String egaId, final SuppressedKilledType suppressedKilledType) {
     return new EnaImportCallable(
         accession,
         egaId,
         bioSamplesWebinClient,
         egaSampleExporter,
         enaSampleToBioSampleConversionService,
-        suppressionRunner);
+        suppressedKilledType);
   }
 }

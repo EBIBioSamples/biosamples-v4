@@ -174,7 +174,7 @@ public class Ncbi implements ApplicationRunner {
       log.info("Number of accession from NCBI = " + sampleCallback.getAccessions().size());
       // remove old NCBI samples no longer present
       // get all existing NCBI samples
-      makingNcbiSamplesPrivate();
+      // makingNcbiSamplesPrivate();
       log.info("Processed NCBI pipeline");
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);

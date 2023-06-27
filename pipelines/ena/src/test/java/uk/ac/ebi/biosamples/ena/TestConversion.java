@@ -25,7 +25,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
-import uk.ac.ebi.biosamples.service.TaxonomyService;
+import uk.ac.ebi.biosamples.service.*;
 
 @Ignore
 @RunWith(SpringRunner.class)
@@ -36,7 +36,7 @@ import uk.ac.ebi.biosamples.service.TaxonomyService;
       EgaSampleExporter.class,
       EnaSampleToBioSampleConversionService.class,
       EnaSampleXmlEnhancer.class,
-      EnaSampleToBioSampleConverter.class,
+      BioSampleConverter.class,
       TaxonomyService.class,
       PipelinesProperties.class
     },
@@ -65,7 +65,7 @@ public class TestConversion {
                   bioSamplesWebinClient,
                   egaSampleExporter,
                   enaSampleToBioSampleConversionService,
-                  false);
+                  null);
           try {
             enaImportCallable.call();
           } catch (final Exception e) {
@@ -89,7 +89,7 @@ public class TestConversion {
                   bioSamplesWebinClient,
                   egaSampleExporter,
                   enaSampleToBioSampleConversionService,
-                  false);
+                  null);
           try {
             enaImportCallable.call();
           } catch (final Exception e) {
@@ -112,7 +112,7 @@ public class TestConversion {
                   bioSamplesWebinClient,
                   egaSampleExporter,
                   enaSampleToBioSampleConversionService,
-                  false);
+                  null);
           try {
             enaImportCallable.call();
           } catch (final Exception e) {
@@ -135,7 +135,7 @@ public class TestConversion {
                   bioSamplesWebinClient,
                   egaSampleExporter,
                   enaSampleToBioSampleConversionService,
-                  false);
+                  null);
           try {
             enaImportCallable.call();
           } catch (final Exception e) {
@@ -158,7 +158,7 @@ public class TestConversion {
                   bioSamplesWebinClient,
                   egaSampleExporter,
                   enaSampleToBioSampleConversionService,
-                  false);
+                  null);
           try {
             enaImportCallable.call();
           } catch (final Exception e) {

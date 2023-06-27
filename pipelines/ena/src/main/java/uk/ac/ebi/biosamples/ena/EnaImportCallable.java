@@ -12,6 +12,7 @@ package uk.ac.ebi.biosamples.ena;
 
 import java.util.*;
 import java.util.concurrent.Callable;
+import org.dom4j.DocumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
@@ -19,19 +20,17 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 
 public class EnaImportCallable implements Callable<Void> {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private static final int MAX_RETRIES = 5;
-  private static final String ENA_CHECKLIST = "ENA-CHECKLIST";
   private final String accession;
   private final String egaId;
   private final BioSamplesClient bioSamplesWebinClient;
   private final EgaSampleExporter egaSampleExporter;
   private final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
-
-  private final boolean suppressionRunner;
+  private final SuppressedKilledType suppressedKilledType;
 
   EnaImportCallable(
       final String accession,
@@ -39,104 +38,151 @@ public class EnaImportCallable implements Callable<Void> {
       final BioSamplesClient bioSamplesWebinClient,
       final EgaSampleExporter egaSampleExporter,
       final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService,
-      final boolean suppressionRunner) {
+      final SuppressedKilledType suppressedKilledType) {
     this.accession = accession;
     this.egaId = egaId;
     this.bioSamplesWebinClient = bioSamplesWebinClient;
     this.egaSampleExporter = egaSampleExporter;
     this.enaSampleToBioSampleConversionService = enaSampleToBioSampleConversionService;
-    this.suppressionRunner = suppressionRunner;
+    this.suppressedKilledType = suppressedKilledType;
   }
 
   @Override
-  public Void call() {
-    final List<String> curationDomainBlankList = new ArrayList<>();
-    curationDomainBlankList.add("");
-
-    if (suppressionRunner) {
-      final Optional<EntityModel<Sample>> sampleOptionalInBioSamples =
-          bioSamplesWebinClient.fetchSampleResource(
-              accession, Optional.of(curationDomainBlankList));
-      final Sample sampleInBioSamples =
-          sampleOptionalInBioSamples.map(EntityModel::getContent).orElse(null);
-
-      if (sampleInBioSamples != null) {
-        final Set<Attribute> sampleAttributes = sampleInBioSamples.getAttributes();
-        final Optional<Attribute> insdcStatusAttributeOptional =
-            sampleAttributes.stream()
-                .filter(attribute -> attribute.getType().equals("INSDC Status"))
-                .findFirst();
-
-        if (insdcStatusAttributeOptional.isPresent()) {
-          sampleAttributes.removeIf(attribute -> attribute.getType().equals("INSDC Status"));
-          sampleAttributes.add(
-              Attribute.build(
-                  "INSDC Status", "suppressed", "attribute", Collections.emptyList(), null));
-        }
-
-        bioSamplesWebinClient.persistSampleResource(
-            Sample.Builder.fromSample(sampleInBioSamples).withAttributes(sampleAttributes).build());
-      }
-
-      return null;
+  public Void call() throws Exception {
+    if (suppressedKilledType != null
+        && (suppressedKilledType == SuppressedKilledType.SUPPRESSED
+            || suppressedKilledType == SuppressedKilledType.KILLED)) {
+      return handleSuppressedKilledSample(suppressedKilledType);
     }
 
-    Sample sample;
+    final Sample sample;
 
     if (egaId != null && !egaId.isEmpty()) {
       return egaSampleExporter.populateAndSubmitEgaData(egaId);
     } else {
       try {
-        final Optional<EntityModel<Sample>> sampleOptionalInBioSamples =
-            bioSamplesWebinClient.fetchSampleResource(accession);
-        final Sample sampleInBioSamples =
-            sampleOptionalInBioSamples.map(EntityModel::getContent).orElse(null);
-
-        boolean isSampleImportFromEraDbRequired = true;
-
-        if (sampleInBioSamples != null) {
-          if (sampleInBioSamples.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-            log.info(
-                "ENA sample has been updated in BioSamples using the FILE Uploader, don't re-import "
-                    + accession);
-
-            isSampleImportFromEraDbRequired = false;
-          } /*else if (sampleInBioSamples.getAttributes().stream()
-                .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(ENA_CHECKLIST))) {
-              log.info(
-                  "ENA sample already exists with attributes in BioSamples, don't re-import  "
-                      + accession);
-
-              isSampleImportFromEraDbRequired = false;
-            }*/
-        }
-
+        sample = enaSampleToBioSampleConversionService.enrichSample(accession, false);
         boolean success = false;
         int numRetry = 0;
 
-        if (isSampleImportFromEraDbRequired) {
-          while (!success) {
-            try {
-              sample =
-                  enaSampleToBioSampleConversionService.enrichSample(
-                      accession, false, sampleInBioSamples);
+        while (!success) {
+          try {
+            bioSamplesWebinClient.persistSampleResource(sample);
 
-              bioSamplesWebinClient.persistSampleResource(sample);
+            success = true;
+          } catch (final Exception e) {
+            if (++numRetry == MAX_RETRIES) {
+              EnaImportRunner.failures.add(accession);
 
-              success = true;
-            } catch (final Exception e) {
-              if (++numRetry == MAX_RETRIES) {
-                throw new RuntimeException(
-                    "Failed to handle the sample with accession " + accession);
-              }
+              throw new RuntimeException("Failed to handle the sample with accession " + accession);
             }
           }
         }
       } catch (final Exception e) {
         log.info("Failed to handle ENA sample with accession " + accession, e);
+
+        throw e;
       }
 
       return null;
+    }
+  }
+
+  private Void handleSuppressedKilledSample(final SuppressedKilledType suppressedKilledType)
+      throws DocumentException {
+    final Optional<EntityModel<Sample>> sampleOptionalInBioSamples =
+        bioSamplesWebinClient.fetchSampleResource(
+            accession, Optional.of(Collections.singletonList("")));
+    final Sample sampleInBioSamples =
+        sampleOptionalInBioSamples.map(EntityModel::getContent).orElse(null);
+    final String status = suppressedKilledType.name().toLowerCase();
+
+    if (sampleInBioSamples != null) {
+      final Set<Attribute> sampleAttributes = sampleInBioSamples.getAttributes();
+      final Optional<Attribute> insdcStatusAttributeOptional =
+          sampleAttributes.stream()
+              .filter(attribute -> attribute.getType().equals("INSDC Status"))
+              .findFirst();
+      final Attribute insdcStatusAttribute = insdcStatusAttributeOptional.orElse(null);
+
+      if (insdcStatusAttribute == null) {
+        log.info(
+            "Sample exists in BioSamples and INSDC status is null, adding INSDC status as "
+                + status
+                + " for "
+                + accession);
+
+        sampleAttributes.add(Attribute.build("INSDC Status", status));
+
+        bioSamplesWebinClient.persistSampleResource(
+            Sample.Builder.fromSample(sampleInBioSamples).withAttributes(sampleAttributes).build());
+
+        addToList(suppressedKilledType);
+      } else if (!insdcStatusAttribute.getValue().equalsIgnoreCase(status)) {
+        log.info(
+            "Sample exists in BioSamples and INSDC status is not "
+                + status
+                + ", adding INSDC status as suppressed "
+                + accession);
+
+        sampleAttributes.remove(insdcStatusAttribute);
+        sampleAttributes.add(Attribute.build("INSDC Status", status));
+
+        bioSamplesWebinClient.persistSampleResource(
+            Sample.Builder.fromSample(sampleInBioSamples).withAttributes(sampleAttributes).build());
+        addToList(suppressedKilledType);
+      } else {
+        log.info(
+            "Sample exists in BioSamples and INSDC status is "
+                + status
+                + " , no change required "
+                + accession);
+
+        addToList(suppressedKilledType);
+      }
+    } else {
+      log.info(
+          "Sample doesn't exist in BioSamples, fetching "
+              + sampleInBioSamples
+              + " sample from ERAPRO "
+              + accession);
+      try {
+        final Sample sample = enaSampleToBioSampleConversionService.enrichSample(accession, false);
+
+        boolean success = false;
+        int numRetry = 0;
+
+        while (!success) {
+          try {
+            bioSamplesWebinClient.persistSampleResource(sample);
+
+            addToList(suppressedKilledType);
+
+            success = true;
+          } catch (final Exception e) {
+            if (++numRetry == MAX_RETRIES) {
+              EnaImportRunner.failures.add(accession);
+
+              throw new RuntimeException(
+                  "Failed to handle the ENA suppressed sample with accession " + accession);
+            }
+          }
+        }
+      } catch (final Exception e) {
+        log.info("Failed to handle ENA suppressed sample with accession " + accession, e);
+
+        throw e;
+      }
+    }
+
+    return null;
+  }
+
+  private void addToList(final SuppressedKilledType suppressedKilledType) {
+    if (suppressedKilledType == SuppressedKilledType.SUPPRESSED) {
+      EnaImportRunner.todaysSuppressedSamples.add(accession);
+    } else {
+      EnaImportRunner.todaysKilledSamples.add(accession);
     }
   }
 }

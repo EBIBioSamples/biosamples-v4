@@ -54,19 +54,20 @@ public class MessageHandlerSolr {
   @RabbitListener(
       queues = Messaging.REINDEXING_QUEUE,
       containerFactory = "biosamplesAgentSolrContainerFactory")
-  public void handleReindxing(final MessageContent messageContent) {
+  public void handleReindexing(final MessageContent messageContent) {
     handle(messageContent);
   }
 
   private void handle(final MessageContent messageContent) {
-
     if (messageContent.getSample() == null) {
       LOGGER.warn("received message without sample");
       return;
     }
 
     final Sample sample = messageContent.getSample();
+
     handleSample(sample, messageContent.getCreationTime());
+
     for (final Sample related : messageContent.getRelated()) {
       handleSample(related, messageContent.getCreationTime());
     }
@@ -76,49 +77,56 @@ public class MessageHandlerSolr {
     final String accession = sample.getAccession();
 
     if (isIndexingCandidate(sample)) {
-      SolrSample solrSample = sampleToSolrSampleConverter.convert(sample);
-      // add the modified time to the solrSample
-      final String indexedTime =
-          ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
+      try {
+        SolrSample solrSample = sampleToSolrSampleConverter.convert(sample);
+        // add the modified time to the solrSample
+        final String indexedTime =
+            ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
 
-      assert solrSample != null;
+        assert solrSample != null;
 
-      solrSample =
-          SolrSample.build(
-              solrSample.getName(),
-              solrSample.getAccession(),
-              solrSample.getDomain(),
-              solrSample.getWebinSubmissionAcccountId(),
-              solrSample.getStatus(),
-              solrSample.getRelease(),
-              solrSample.getUpdate(),
-              modifiedTime,
-              indexedTime,
-              solrSample.getAttributeValues(),
-              solrSample.getAttributeIris(),
-              solrSample.getAttributeUnits(),
-              solrSample.getOutgoingRelationships(),
-              solrSample.getIncomingRelationships(),
-              solrSample.getExternalReferencesData(),
-              solrSample.getKeywords());
+        solrSample =
+            SolrSample.build(
+                solrSample.getName(),
+                solrSample.getAccession(),
+                solrSample.getDomain(),
+                solrSample.getWebinSubmissionAcccountId(),
+                solrSample.getStatus(),
+                solrSample.getRelease(),
+                solrSample.getUpdate(),
+                modifiedTime,
+                indexedTime,
+                solrSample.getAttributeValues(),
+                solrSample.getAttributeIris(),
+                solrSample.getAttributeUnits(),
+                solrSample.getOutgoingRelationships(),
+                solrSample.getIncomingRelationships(),
+                solrSample.getExternalReferencesData(),
+                solrSample.getKeywords());
 
-      // expand ontology terms from OLS // todo move this expansion somewhere else
-      //      Set<String> expandedTerms = new HashSet<>();
-      //      for (List<String> iris : solrSample.getAttributeIris().values()) {
-      //        for (String iri : iris) {
-      //          expandedTerms.addAll(
-      //              olsProcessor.ancestorsAndSynonyms("efo", iri).stream()
-      //                          .map(String::toLowerCase)
-      //                          .collect(Collectors.toSet()));
-      //          expandedTerms.addAll(olsProcessor.ancestorsAndSynonyms("NCBITaxon", iri).stream()
-      //                                                      .map(String::toLowerCase)
-      //                                                      .collect(Collectors.toSet()));
-      //        }
-      //      }
-      //      solrSample.getKeywords().addAll(expandedTerms);
+        // expand ontology terms from OLS // todo move this expansion somewhere else
+        //      Set<String> expandedTerms = new HashSet<>();
+        //      for (List<String> iris : solrSample.getAttributeIris().values()) {
+        //        for (String iri : iris) {
+        //          expandedTerms.addAll(
+        //              olsProcessor.ancestorsAndSynonyms("efo", iri).stream()
+        //                          .map(String::toLowerCase)
+        //                          .collect(Collectors.toSet()));
+        //          expandedTerms.addAll(olsProcessor.ancestorsAndSynonyms("NCBITaxon",
+        // iri).stream()
+        //                                                      .map(String::toLowerCase)
+        //                                                      .collect(Collectors.toSet()));
+        //        }
+        //      }
+        //      solrSample.getKeywords().addAll(expandedTerms);
 
-      repository.saveWithoutCommit(solrSample);
-      LOGGER.info(String.format("added %s to index", accession));
+        repository.saveWithoutCommit(solrSample);
+        LOGGER.info(String.format("added %s to index", accession));
+      } catch (final Exception e) {
+        LOGGER.error("failed to index " + accession, e);
+
+        throw e;
+      }
     } else {
       if (repository.existsById(accession)) {
         repository.deleteById(accession);

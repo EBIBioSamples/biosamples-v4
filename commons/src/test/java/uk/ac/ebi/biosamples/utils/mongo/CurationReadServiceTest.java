@@ -100,6 +100,26 @@ public class CurationReadServiceTest {
   }
 
   @Test
+  public void applyAllCurationToSample_test_dont_add_new_curation_attribute() {
+    final Sample originalSample = getSampleForTest();
+    final Sample curatedSample =
+        curationReadService.applyAllCurationToSample(
+            originalSample, Optional.of(Collections.singletonList("")));
+
+    if (curatedSample
+        .getAttributes()
+        .contains(Attribute.build("NewCuration", "new value", "iri", "unit"))) {
+      Assert.fail("Un-curated view contains curation object");
+    }
+
+    if (curatedSample
+        .getExternalReferences()
+        .contains(ExternalReference.build("www.ebi.ac.uk/test/new"))) {
+      Assert.fail("Un-curated view contains curation object");
+    }
+  }
+
+  @Test
   public void applyAllCurationToSample_test_delete_curation_attribute() {
     final Sample originalSample = getSampleForTest();
     final Sample curatedSample =

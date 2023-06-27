@@ -77,10 +77,6 @@ public class CurationReadService {
    *
    * <p>This needs a curation link rather than a curation object because the samples update date may
    * be modified if the curation link is newer.
-   *
-   * @param sample
-   * @param curationLink
-   * @return
    */
   Sample applyCurationLinkToSample(final Sample sample, final CurationLink curationLink) {
     log.trace("Applying curation " + curationLink + " to sample " + sample.getAccession());
@@ -155,9 +151,13 @@ public class CurationReadService {
   }
 
   Sample applyAllCurationToSample(Sample sample, final Optional<List<String>> curationDomains) {
-    // short-circuit if no curation domains specified
-    if (curationDomains.isPresent() && curationDomains.get().isEmpty()) {
-      return sample;
+    // short-circuit only if curationdomain=<blank represented by "">
+    if (curationDomains.isPresent() && curationDomains.get().size() == 1) {
+      final String curationDomain = curationDomains.get().get(0);
+
+      if (curationDomain.trim().isEmpty()) {
+        return sample;
+      }
     }
 
     // Try to apply curations in the order of creation date.
@@ -165,9 +165,11 @@ public class CurationReadService {
     final Set<CurationLink> curationLinks = new LinkedHashSet<>();
     int pageNo = 0;
     Page<CurationLink> page;
+
     do {
       final Pageable pageable = PageRequest.of(pageNo, 1000, Sort.Direction.ASC, "created");
       page = getCurationLinksForSample(sample.getAccession(), pageable);
+
       for (final CurationLink curationLink : page) {
         if (curationDomains.isPresent()) {
           // curation domains restricted, curation must be part of that domain
