@@ -151,7 +151,7 @@ public class SolrFilterService {
     //        publicSampleCriteria.and(
     //            new Criteria("status_s").not().in(SampleStatus.getSearchHiddenStatuses()));
     publicSampleCriteria =
-        publicSampleCriteria.and(
+        publicSampleCriteria.or(
             new Criteria(SolrFieldService.encodeFieldName("INSDC status") + "_av_ss")
                 .not()
                 .in(Collections.singletonList("suppressed")));
@@ -163,11 +163,13 @@ public class SolrFilterService {
 
     if (webinSubmissionAccountId != null && !webinSubmissionAccountId.isEmpty()) {
       // user can see public and private samples submitted by them using their webin auth tokens
+
       publicSampleCriteria =
-          publicSampleCriteria.or(new Criteria("webinId_s").in(webinSubmissionAccountId));
+          publicSampleCriteria.or(new Criteria("webinId_s").is(webinSubmissionAccountId));
     }
 
     filterQuery.addCriteria(publicSampleCriteria);
+
     return Optional.of(filterQuery);
   }
 }
