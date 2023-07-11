@@ -96,6 +96,9 @@ public class NcbiSampleConversionService {
 
   public Sample convertNcbiXmlElementToSample(final Element sampleElem) {
     final String accession = sampleElem.attributeValue(ACCESSION);
+
+    log.info("Handling " + accession);
+
     final SortedSet<Attribute> attrs = new TreeSet<>();
     final SortedSet<Relationship> rels = new TreeSet<>();
     final SortedSet<Publication> publications = new TreeSet<>();
