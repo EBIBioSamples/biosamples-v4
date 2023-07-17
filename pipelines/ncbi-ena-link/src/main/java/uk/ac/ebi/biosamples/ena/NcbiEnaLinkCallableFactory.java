@@ -38,6 +38,6 @@ public class NcbiEnaLinkCallableFactory {
    */
   public NcbiEnaLinkCallable build(final String accession) {
     return new NcbiEnaLinkCallable(
-        accession, bioSamplesClient, domain, enaSampleToBioSampleConversionService);
+        accession, bioSamplesClient, enaSampleToBioSampleConversionService);
   }
 }
