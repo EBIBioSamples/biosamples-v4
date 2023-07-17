@@ -93,14 +93,14 @@ public class EnaImportRunner implements ApplicationRunner {
         }
       }
 
-      log.info("Suppression Runner is to be executed: " + suppressionRunner);
+      log.info("Suppression Runner and killed runner is to be executed: " + suppressionRunner);
 
       // Import ENA samples
-      importEraSamples(fromDate, toDate);
+      // importEraSamples(fromDate, toDate);
 
       if (suppressionRunner) {
         try {
-          // handler for suppressed ENA samples
+          // handler for suppressed and killed ENA samples
           handleSuppressedAndKilledEnaSamples();
         } catch (final Exception e) {
           log.info("Suppression Runner failed");
@@ -174,6 +174,10 @@ public class EnaImportRunner implements ApplicationRunner {
       ThreadUtils.checkFutures(futures, 0);
     }
 
+    /*log.info(
+            "Fetching all killed ENA samples. "
+                    + "If they exist in BioSamples with different status, their status will be updated. ");
+
     try (final AdaptiveThreadPoolExecutor executorService =
         AdaptiveThreadPoolExecutor.create(
             100,
@@ -190,7 +194,7 @@ public class EnaImportRunner implements ApplicationRunner {
 
       log.info("waiting for futures"); // wait for anything to finish
       ThreadUtils.checkFutures(futures, 0);
-    }
+    }*/
   }
 
   /**

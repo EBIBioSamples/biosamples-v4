@@ -202,43 +202,35 @@ public class BioSamplesClient implements AutoCloseable {
   public Map<String, Sample> fetchSampleResourcesByAccessionsV2(final List<String> accessions)
       throws RestClientException {
     try {
-      return sampleRetrievalServiceV2.fetchSamplesByAccessions(accessions).get();
-    } catch (final InterruptedException e) {
+      return sampleRetrievalServiceV2.fetchSamplesByAccessions(accessions);
+    } catch (final Exception e) {
       throw new RuntimeException(e);
-    } catch (final ExecutionException e) {
-      throw new RuntimeException(e.getCause());
     }
   }
 
   public Map<String, Sample> fetchSampleResourcesByAccessionsV2(
       final List<String> accessions, final String jwt) throws RestClientException {
     try {
-      return sampleRetrievalServiceV2.fetchSamplesByAccessions(accessions, jwt).get();
-    } catch (final InterruptedException e) {
+      return sampleRetrievalServiceV2.fetchSamplesByAccessions(accessions, jwt);
+    } catch (final Exception e) {
       throw new RuntimeException(e);
-    } catch (final ExecutionException e) {
-      throw new RuntimeException(e.getCause());
     }
   }
 
   public Sample fetchSampleResourceV2(final String accession) throws RestClientException {
     try {
-      return sampleRetrievalServiceV2.fetchSampleByAccession(accession).get();
-    } catch (final InterruptedException e) {
+      return sampleRetrievalServiceV2.fetchSampleByAccession(accession);
+    } catch (final Exception e) {
       throw new RuntimeException(e);
-    } catch (final ExecutionException e) {
-      throw new RuntimeException(e.getCause());
     }
   }
 
   public Sample fetchSampleResourceV2(final String accession, final String jwt)
       throws RestClientException {
     try {
-      return sampleRetrievalServiceV2.fetchSampleByAccession(accession, jwt).get();
-    } catch (final InterruptedException e) {
+      return sampleRetrievalServiceV2.fetchSampleByAccession(accession, jwt);
+    } catch (final Exception e) {
       throw new RuntimeException(e);
-    } catch (final ExecutionException e) {
-      throw new RuntimeException(e.getCause());
     }
   }
 
@@ -330,34 +322,27 @@ public class BioSamplesClient implements AutoCloseable {
     return persistSampleResource(sample, null, null);
   }
 
-  public List<Sample> persistSampleResourceV2(final List<Sample> samples)
-      throws ExecutionException, InterruptedException {
-    return persistSampleResourceAsyncV2(samples).get();
+  public List<Sample> persistSampleResourceV2(final List<Sample> samples) {
+    return persistSampleResourceAsyncV2(samples);
   }
 
-  public List<Sample> persistSampleResourceV2(final List<Sample> samples, final String jwt)
-      throws ExecutionException, InterruptedException {
-    return persistSampleResourceAsyncV2(samples, jwt).get();
+  public List<Sample> persistSampleResourceV2(final List<Sample> samples, final String jwt) {
+    return persistSampleResourceAsyncV2(samples, jwt);
   }
 
-  public Map<String, String> bulkAccessionV2(final List<Sample> samples)
-      throws ExecutionException, InterruptedException {
-    return bulkAccessionAsyncV2(samples).get();
+  public Map<String, String> bulkAccessionV2(final List<Sample> samples) {
+    return bulkAccessionAsyncV2(samples);
   }
 
-  public Map<String, String> bulkAccessionV2(final List<Sample> samples, final String jwt)
-      throws ExecutionException, InterruptedException {
-    return bulkAccessionAsyncV2(samples, jwt).get();
+  public Map<String, String> bulkAccessionV2(final List<Sample> samples, final String jwt) {
+    return bulkAccessionAsyncV2(samples, jwt);
   }
 
-  private Future<Map<String, String>> bulkAccessionAsyncV2(final List<Sample> samples)
-      throws ExecutionException, InterruptedException {
+  private Map<String, String> bulkAccessionAsyncV2(final List<Sample> samples) {
     return sampleSubmissionServiceV2.bulkAccessionAsync(samples);
   }
 
-  private Future<Map<String, String>> bulkAccessionAsyncV2(
-      final List<Sample> samples, final String jwt)
-      throws ExecutionException, InterruptedException {
+  private Map<String, String> bulkAccessionAsyncV2(final List<Sample> samples, final String jwt) {
     return sampleSubmissionServiceV2.bulkAccessionAsync(samples, jwt);
   }
 
@@ -389,12 +374,11 @@ public class BioSamplesClient implements AutoCloseable {
     return sampleSubmissionService.submitAsync(sample, setFullDetails);
   }
 
-  private Future<List<Sample>> persistSampleResourceAsyncV2(final List<Sample> samples) {
+  private List<Sample> persistSampleResourceAsyncV2(final List<Sample> samples) {
     return sampleSubmissionServiceV2.postAsync(samples);
   }
 
-  private Future<List<Sample>> persistSampleResourceAsyncV2(
-      final List<Sample> samples, final String jwt) {
+  private List<Sample> persistSampleResourceAsyncV2(final List<Sample> samples, final String jwt) {
     return sampleSubmissionServiceV2.postAsync(samples, jwt);
   }
 

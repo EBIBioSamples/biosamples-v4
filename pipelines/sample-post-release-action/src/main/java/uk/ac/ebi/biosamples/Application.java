@@ -24,15 +24,30 @@ import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.biosamples.configuration.ExclusionConfiguration;
+import uk.ac.ebi.biosamples.service.EnaConfig;
+import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
+import uk.ac.ebi.biosamples.service.EraProDao;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
+@ComponentScan(
+    excludeFilters = {
+      @ComponentScan.Filter(
+          type = FilterType.ASSIGNABLE_TYPE,
+          value = {EnaConfig.class, EraProDao.class, EnaSampleToBioSampleConversionService.class})
+    })
+@Import(ExclusionConfiguration.class)
 @EnableCaching
 public class Application {
   public static void main(final String[] args) {

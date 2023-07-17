@@ -27,7 +27,6 @@ public class NcbiEnaLinkCallable implements Callable<Void> {
 
   private final String accession;
   private final BioSamplesClient bioSamplesClient;
-  private final String domain;
 
   private final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
 
@@ -35,11 +34,9 @@ public class NcbiEnaLinkCallable implements Callable<Void> {
   NcbiEnaLinkCallable(
       final String accession,
       final BioSamplesClient bioSamplesClient,
-      final String domain,
       final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService) {
     this.accession = accession;
     this.bioSamplesClient = bioSamplesClient;
-    this.domain = domain;
     this.enaSampleToBioSampleConversionService = enaSampleToBioSampleConversionService;
   }
 
