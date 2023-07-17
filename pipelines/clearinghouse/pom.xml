@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.2.19-SNAPSHOT</version>
+		<version>5.2.20-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -16,7 +16,7 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-pipeline</artifactId>
-			<version>5.2.19-SNAPSHOT</version>
+			<version>5.2.20-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
