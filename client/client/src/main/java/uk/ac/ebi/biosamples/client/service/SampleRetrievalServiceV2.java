@@ -13,9 +13,7 @@ package uk.ac.ebi.biosamples.client.service;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -43,13 +41,13 @@ public class SampleRetrievalServiceV2 {
   }
 
   /** Accepts a accession and returns the sample */
-  public Future<Sample> fetchSampleByAccession(final String accession) {
-    return executor.submit(new FetchAccessionCallable(accession, uriV2));
+  public Sample fetchSampleByAccession(final String accession) {
+    return new FetchAccessionCallable(accession, uriV2).call();
   }
 
   /** Accepts a accession and returns the sample */
-  public Future<Sample> fetchSampleByAccession(final String accession, final String jwt) {
-    return executor.submit(new FetchAccessionCallable(accession, jwt, uriV2));
+  public Sample fetchSampleByAccession(final String accession, final String jwt) {
+    return new FetchAccessionCallable(accession, jwt, uriV2).call();
   }
 
   /**
@@ -58,8 +56,8 @@ public class SampleRetrievalServiceV2 {
    * @param accessions
    * @return
    */
-  public Future<Map<String, Sample>> fetchSamplesByAccessions(final List<String> accessions) {
-    return executor.submit(new FetchAccessionsCallable(accessions, uriV2));
+  public Map<String, Sample> fetchSamplesByAccessions(final List<String> accessions) {
+    return new FetchAccessionsCallable(accessions, uriV2).call();
   }
 
   /**
@@ -68,12 +66,12 @@ public class SampleRetrievalServiceV2 {
    * @param accessions
    * @return
    */
-  public Future<Map<String, Sample>> fetchSamplesByAccessions(
+  public Map<String, Sample> fetchSamplesByAccessions(
       final List<String> accessions, final String jwt) {
-    return executor.submit(new FetchAccessionsCallable(accessions, uriV2, jwt));
+    return new FetchAccessionsCallable(accessions, uriV2, jwt).call();
   }
 
-  private class FetchAccessionsCallable implements Callable<Map<String, Sample>> {
+  private class FetchAccessionsCallable {
     private final List<String> accessions;
     private final String jwt;
     private final URI uriV2;
@@ -90,7 +88,6 @@ public class SampleRetrievalServiceV2 {
       this.uriV2 = uriV2;
     }
 
-    @Override
     public Map<String, Sample> call() {
       final URI bulkFetchSamplesUri =
           UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples" + "/bulk-fetch"))
@@ -131,7 +128,7 @@ public class SampleRetrievalServiceV2 {
     }
   }
 
-  private class FetchAccessionCallable implements Callable<Sample> {
+  private class FetchAccessionCallable {
     private final String accession;
     private final String jwt;
     private final URI uriV2;
@@ -148,7 +145,6 @@ public class SampleRetrievalServiceV2 {
       this.uriV2 = uriV2;
     }
 
-    @Override
     public Sample call() {
       final URI sampleGetUri =
           UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples" + "/" + accession))

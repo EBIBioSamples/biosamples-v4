@@ -86,8 +86,6 @@ public class EnaSampleToBioSampleConversionService {
     final String lastUpdated = eraproSample.getLastUpdated();
     final String firstPublic = eraproSample.getFirstPublic();
     final String firstCreated = eraproSample.getFirstCreated();
-    final String webinId =
-        pipelinesProperties.getProxyWebinId(); // sampleDBBean.getSubmissionAccountId();
     final String status = handleStatus(eraproSample.getStatus());
     final Long taxId = eraproSample.getTaxId();
     final Instant release;
@@ -130,7 +128,7 @@ public class EnaSampleToBioSampleConversionService {
               sample.getName(),
               accession,
               null,
-              webinId,
+              pipelinesProperties.getProxyWebinId(),
               taxId,
               null, // TODO: status update
               release,
