@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -37,13 +38,10 @@ public class SampleCursorRetrievalService {
   private final int pageSize;
 
   public SampleCursorRetrievalService(
-      final RestOperations restOperations,
-      final Traverson traverson,
-      final ExecutorService executor,
-      final int pageSize) {
+      final RestOperations restOperations, final Traverson traverson, final int pageSize) {
     this.restOperations = restOperations;
     this.traverson = traverson;
-    this.executor = executor;
+    this.executor = Executors.newSingleThreadExecutor();
     this.pageSize = pageSize;
   }
 

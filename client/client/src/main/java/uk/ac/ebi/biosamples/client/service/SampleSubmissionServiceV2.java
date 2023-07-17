@@ -13,7 +13,6 @@ package uk.ac.ebi.biosamples.client.service;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -31,15 +30,12 @@ import uk.ac.ebi.biosamples.model.Sample;
 public class SampleSubmissionServiceV2 {
   private final Logger log = LoggerFactory.getLogger(getClass());
 
-  private final ExecutorService executor;
   private final RestOperations restOperations;
   private final URI uriV2;
 
-  public SampleSubmissionServiceV2(
-      final RestOperations restOperations, final URI uriV2, final ExecutorService executor) {
+  public SampleSubmissionServiceV2(final RestOperations restOperations, final URI uriV2) {
     this.restOperations = restOperations;
     this.uriV2 = uriV2;
-    this.executor = executor;
   }
 
   /**

@@ -62,8 +62,6 @@ public class BioSamplesClient implements AutoCloseable {
 
   private final SampleValidator sampleValidator;
 
-  private final ExecutorService threadPoolExecutor;
-
   private final Optional<BioSamplesClient> publicClient;
 
   public BioSamplesClient(
@@ -78,8 +76,6 @@ public class BioSamplesClient implements AutoCloseable {
     }
 
     final RestTemplate restOperations = restTemplateBuilder.build();
-
-    threadPoolExecutor = Executors.newSingleThreadExecutor();
 
     if (clientService != null) {
       if (clientService instanceof AapClientService) {
@@ -96,24 +92,17 @@ public class BioSamplesClient implements AutoCloseable {
     final Traverson traverson = new Traverson(uri, MediaTypes.HAL_JSON);
     traverson.setRestOperations(restOperations);
 
-    sampleRetrievalService =
-        new SampleRetrievalService(restOperations, traverson, threadPoolExecutor);
+    sampleRetrievalService = new SampleRetrievalService(restOperations, traverson);
     samplePageRetrievalService = new SamplePageRetrievalService(restOperations, traverson);
     sampleCursorRetrievalService =
         new SampleCursorRetrievalService(
-            restOperations,
-            traverson,
-            threadPoolExecutor,
-            bioSamplesProperties.getBiosamplesClientPagesize());
+            restOperations, traverson, bioSamplesProperties.getBiosamplesClientPagesize());
 
-    sampleSubmissionService =
-        new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
+    sampleSubmissionService = new SampleSubmissionService(restOperations, traverson);
 
-    sampleSubmissionServiceV2 =
-        new SampleSubmissionServiceV2(restOperations, uriV2, threadPoolExecutor);
+    sampleSubmissionServiceV2 = new SampleSubmissionServiceV2(restOperations, uriV2);
 
-    sampleRetrievalServiceV2 =
-        new SampleRetrievalServiceV2(restOperations, uriV2, threadPoolExecutor);
+    sampleRetrievalServiceV2 = new SampleRetrievalServiceV2(restOperations, uriV2);
 
     sampleCertificationService = new SampleCertificationService(restOperations, traverson);
 
@@ -122,10 +111,7 @@ public class BioSamplesClient implements AutoCloseable {
 
     curationRetrievalService =
         new CurationRetrievalService(
-            restOperations,
-            traverson,
-            threadPoolExecutor,
-            bioSamplesProperties.getBiosamplesClientPagesize());
+            restOperations, traverson, bioSamplesProperties.getBiosamplesClientPagesize());
 
     /*In CurationSubmissionService and StructuredDataSubmissionService webin auth is handled more elegantly, replicate it in all other services*/
     curationSubmissionService = new CurationSubmissionService(restOperations, traverson);
@@ -181,10 +167,10 @@ public class BioSamplesClient implements AutoCloseable {
     // close down public client if present
     publicClient.ifPresent(BioSamplesClient::close);
     // close down our own thread pools
-    threadPoolExecutor.shutdownNow();
+    // threadPoolExecutor.shutdownNow();
     try {
-      threadPoolExecutor.awaitTermination(1, TimeUnit.MINUTES);
-    } catch (final InterruptedException e) {
+      // threadPoolExecutor.awaitTermination(1, TimeUnit.MINUTES);
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
