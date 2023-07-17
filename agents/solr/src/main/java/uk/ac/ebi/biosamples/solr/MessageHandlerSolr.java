@@ -143,10 +143,12 @@ public class MessageHandlerSolr {
               String.format(
                   "not indexing %s as INSDC status is %s",
                   sample.getAccession(), attribute.getValue()));
+
           return false;
         }
       }
     }
+
     return true;
   }
 }

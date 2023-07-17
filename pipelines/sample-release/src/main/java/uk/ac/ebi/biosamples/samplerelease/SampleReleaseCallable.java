@@ -93,6 +93,7 @@ public class SampleReleaseCallable implements Callable<Void> {
                 .persistSampleResource(
                     Sample.Builder.fromSample(sampleWithoutCurations)
                         .withRelease(Instant.now())
+                        .withStatus(SampleStatus.PUBLIC)
                         .build())
                 .getContent();
           } else {

@@ -54,6 +54,7 @@ public class SampleReleaseRunner implements ApplicationRunner {
     // date format is YYYY-mm-dd
     final LocalDate fromDate;
     final LocalDate toDate;
+    final Integer numRows;
 
     if (args.getOptionNames().contains("from")) {
       fromDate =
@@ -71,16 +72,36 @@ public class SampleReleaseRunner implements ApplicationRunner {
       toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
     }
 
-    log.info("Running from date range from " + fromDate + " until " + toDate);
+    if (args.getOptionNames().contains("numRows")) {
+      numRows = Integer.valueOf(args.getOptionValues("numRows").iterator().next());
+    } else {
+      numRows = null;
+    }
 
-    releaseSamples(fromDate, toDate);
+    log.info(
+        "Running from date range from "
+            + fromDate
+            + " until "
+            + toDate
+            + " and getting "
+            + numRows
+            + " rows");
+
+    releaseSamples(fromDate, toDate, numRows);
   }
 
-  private void releaseSamples(final LocalDate fromDate, final LocalDate toDate) throws Exception {
+  private void releaseSamples(
+      final LocalDate fromDate, final LocalDate toDate, final Integer numRows) throws Exception {
     String webinEraServiceSampleReleaseGetUrl =
         pipelinesProperties.getWebinEraServiceSampleReleaseGet();
     webinEraServiceSampleReleaseGetUrl =
-        webinEraServiceSampleReleaseGetUrl + "?fromDate=" + fromDate + "?toDate=" + toDate;
+        webinEraServiceSampleReleaseGetUrl
+            + "?fromDate="
+            + fromDate
+            + "&toDate="
+            + toDate
+            + "&numRows="
+            + numRows;
 
     log.info(
         "Starting sample release pipeline, Getting from " + webinEraServiceSampleReleaseGetUrl);
