@@ -13,10 +13,7 @@ package uk.ac.ebi.biosamples.client;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
@@ -42,7 +39,6 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.SampleValidator;
-import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 
 /**
  * This is the primary class for interacting with BioSamples.
@@ -83,13 +79,7 @@ public class BioSamplesClient implements AutoCloseable {
 
     final RestTemplate restOperations = restTemplateBuilder.build();
 
-    threadPoolExecutor =
-        AdaptiveThreadPoolExecutor.create(
-            100,
-            10000,
-            true,
-            bioSamplesProperties.getBiosamplesClientThreadCount(),
-            bioSamplesProperties.getBiosamplesClientThreadCountMax());
+    threadPoolExecutor = Executors.newSingleThreadExecutor();
 
     if (clientService != null) {
       if (clientService instanceof AapClientService) {
