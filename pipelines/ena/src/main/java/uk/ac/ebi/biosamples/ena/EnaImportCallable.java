@@ -122,7 +122,7 @@ public class EnaImportCallable implements Callable<Void> {
         log.info(
             "Sample exists in BioSamples and INSDC status is not "
                 + status
-                + ", adding INSDC status as suppressed "
+                + ", adding INSDC status as suppressed for "
                 + accession);
 
         sampleAttributes.remove(insdcStatusAttribute);
@@ -135,7 +135,7 @@ public class EnaImportCallable implements Callable<Void> {
         log.info(
             "Sample exists in BioSamples and INSDC status is "
                 + status
-                + " , no change required "
+                + " ,no change required for "
                 + accession);
 
         addToList(suppressedKilledType);

@@ -11,6 +11,7 @@
 package uk.ac.ebi.biosamples.client.service;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -31,13 +32,10 @@ public class CurationRetrievalService {
   private final int pageSize;
 
   public CurationRetrievalService(
-      final RestOperations restOperations,
-      final Traverson traverson,
-      final ExecutorService executor,
-      final int pageSize) {
+      final RestOperations restOperations, final Traverson traverson, final int pageSize) {
     this.restOperations = restOperations;
     this.traverson = traverson;
-    this.executor = executor;
+    this.executor = Executors.newSingleThreadExecutor();
     this.pageSize = pageSize;
   }
 

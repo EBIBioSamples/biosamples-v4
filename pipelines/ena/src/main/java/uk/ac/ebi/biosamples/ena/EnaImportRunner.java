@@ -56,11 +56,11 @@ public class EnaImportRunner implements ApplicationRunner {
   static final Set<String> todaysKilledSamples = new HashSet<>();
 
   @Override
-  public void run(final ApplicationArguments args) throws Exception {
+  public void run(final ApplicationArguments args) {
     log.info("Processing ENA pipeline...");
 
     boolean isPassed = true;
-    boolean suppressionRunner = true;
+    boolean importSuppressedAndKilled = true;
 
     String pipelineFailureCause = null;
 
@@ -87,18 +87,22 @@ public class EnaImportRunner implements ApplicationRunner {
 
       log.info("Running from date range from " + fromDate + " until " + toDate);
 
-      if (args.getOptionNames().contains("suppressionRunner")) {
-        if (args.getOptionValues("suppressionRunner").iterator().next().equalsIgnoreCase("false")) {
-          suppressionRunner = false;
+      if (args.getOptionNames().contains("importSuppressedAndKilled")) {
+        if (args.getOptionValues("importSuppressedAndKilled")
+            .iterator()
+            .next()
+            .equalsIgnoreCase("false")) {
+          importSuppressedAndKilled = false;
         }
       }
 
-      log.info("Suppression Runner and killed runner is to be executed: " + suppressionRunner);
+      log.info(
+          "Suppression Runner and killed runner is to be executed: " + importSuppressedAndKilled);
 
       // Import ENA samples
       // importEraSamples(fromDate, toDate);
 
-      if (suppressionRunner) {
+      if (importSuppressedAndKilled) {
         try {
           // handler for suppressed and killed ENA samples
           handleSuppressedAndKilledEnaSamples();
@@ -139,7 +143,7 @@ public class EnaImportRunner implements ApplicationRunner {
 
       PipelineUtils.writeFailedSamplesToFile(failures, PipelineName.ENA);
       PipelineUtils.writeToFile(todaysSuppressedSamples, PipelineName.ENA, "SUPPRESSED");
-      PipelineUtils.writeToFile(todaysKilledSamples, PipelineName.ENA, "KILLED");
+      // PipelineUtils.writeToFile(todaysKilledSamples, PipelineName.ENA, "KILLED");
     }
   }
 
