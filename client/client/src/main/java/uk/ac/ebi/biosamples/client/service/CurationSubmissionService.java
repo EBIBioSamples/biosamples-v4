@@ -28,7 +28,6 @@ import uk.ac.ebi.biosamples.model.CurationLink;
 
 public class CurationSubmissionService {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final Traverson traverson;
   private final RestOperations restOperations;
 
@@ -91,6 +90,7 @@ public class CurationSubmissionService {
     log.trace("DELETEing " + target);
 
     final RequestEntity requestEntity;
+
     if (jwt != null) {
       requestEntity =
           RequestEntity.delete(target).header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt).build();

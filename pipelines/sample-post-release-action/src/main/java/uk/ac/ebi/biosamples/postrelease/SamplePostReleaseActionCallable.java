@@ -23,7 +23,6 @@ public class SamplePostReleaseActionCallable implements Callable<Boolean> {
   private final Sample sample;
   private final BioSamplesClient bioSamplesAapClient;
   private final BioSamplesClient bioSamplesWebinClient;
-
   static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
   SamplePostReleaseActionCallable(
@@ -41,7 +40,7 @@ public class SamplePostReleaseActionCallable implements Callable<Boolean> {
     final SampleStatus sampleStatus = sample.getStatus();
 
     if (sampleStatus == SampleStatus.PRIVATE) {
-      success = makeSamplePublic();
+      success = makeSampleStatusPublic();
     } else {
       log.info(sample.getAccession() + " is already public, no change required");
     }
@@ -49,7 +48,7 @@ public class SamplePostReleaseActionCallable implements Callable<Boolean> {
     return success;
   }
 
-  private boolean makeSamplePublic() {
+  private boolean makeSampleStatusPublic() {
     final String sampleAccession = sample.getAccession();
     boolean success = true;
 
@@ -57,9 +56,9 @@ public class SamplePostReleaseActionCallable implements Callable<Boolean> {
       final String webinSubmissionAccountId = sample.getWebinSubmissionAccountId();
 
       if (webinSubmissionAccountId != null && webinSubmissionAccountId.length() > 0) {
-        bioSamplesWebinClient.persistSampleResource(buildPublicSample());
+        bioSamplesWebinClient.persistSampleResource(buildSampleWithPublicStatus());
       } else {
-        bioSamplesAapClient.persistSampleResource(buildPublicSample());
+        bioSamplesAapClient.persistSampleResource(buildSampleWithPublicStatus());
       }
 
       log.info(sampleAccession + " is public now");
@@ -73,7 +72,7 @@ public class SamplePostReleaseActionCallable implements Callable<Boolean> {
     return success;
   }
 
-  private Sample buildPublicSample() {
+  private Sample buildSampleWithPublicStatus() {
     return Sample.Builder.fromSample(sample).withStatus(SampleStatus.PUBLIC).build();
   }
 }

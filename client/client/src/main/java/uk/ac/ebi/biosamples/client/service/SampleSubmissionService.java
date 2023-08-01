@@ -13,6 +13,7 @@ package uk.ac.ebi.biosamples.client.service;
 import java.net.URI;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,13 +40,10 @@ public class SampleSubmissionService {
   private final ExecutorService executor;
   private final RestOperations restOperations;
 
-  public SampleSubmissionService(
-      final RestOperations restOperations,
-      final Traverson traverson,
-      final ExecutorService executor) {
+  public SampleSubmissionService(final RestOperations restOperations, final Traverson traverson) {
     this.restOperations = restOperations;
     this.traverson = traverson;
-    this.executor = executor;
+    this.executor = Executors.newSingleThreadExecutor();
   }
 
   /**
