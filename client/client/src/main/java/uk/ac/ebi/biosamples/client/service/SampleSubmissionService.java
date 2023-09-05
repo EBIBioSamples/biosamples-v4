@@ -122,7 +122,6 @@ public class SampleSubmissionService {
       // if the sample has an accession, put to that
       if (sample.getAccession() != null) {
         // samples with an existing accession should be PUT
-
         // don't do all this in traverson because it will get the end and then use the self
         // link
         // because we might PUT to something that doesn't exist (e.g. migration of data)
@@ -132,10 +131,12 @@ public class SampleSubmissionService {
             traverson
                 .follow("samples")
                 .toObject(new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {});
-        Link sampleLink = pagedSamples.getLink("sample").get();
 
+        Link sampleLink = pagedSamples.getLink("sample").get();
         sampleLink = sampleLink.expand(sample.getAccession());
+
         final URI uri = getSamplePersistURI(sampleLink);
+
         log.trace("PUTing to " + uri + " " + sample);
 
         final RequestEntity.BodyBuilder bodyBuilder =
@@ -145,13 +146,13 @@ public class SampleSubmissionService {
         if (jwt != null) {
           bodyBuilder.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
         }
-        final RequestEntity<Sample> requestEntity = bodyBuilder.body(sample);
 
+        final RequestEntity<Sample> requestEntity = bodyBuilder.body(sample);
         final ResponseEntity<EntityModel<Sample>> responseEntity;
+
         try {
           responseEntity =
-              restOperations.exchange(
-                  requestEntity, new ParameterizedTypeReference<EntityModel<Sample>>() {});
+              restOperations.exchange(requestEntity, new ParameterizedTypeReference<>() {});
         } catch (final RestClientResponseException e) {
           log.error(
               "Unable to PUT to "
@@ -160,26 +161,31 @@ public class SampleSubmissionService {
                   + sample
                   + " got response "
                   + e.getResponseBodyAsString());
+
           throw e;
         }
+
         return responseEntity.getBody();
 
       } else {
         // samples without an existing accession should be POST
         final Link sampleLink = traverson.follow("samples").asLink();
         final URI uri = getSamplePersistURI(sampleLink);
+
         log.trace("POSTing to " + uri + " " + sample);
 
         final RequestEntity.BodyBuilder bodyBuilder =
             RequestEntity.post(uri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaTypes.HAL_JSON);
+
         if (jwt != null) {
           bodyBuilder.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
         }
-        final RequestEntity<Sample> requestEntity = bodyBuilder.body(sample);
 
+        final RequestEntity<Sample> requestEntity = bodyBuilder.body(sample);
         final ResponseEntity<EntityModel<Sample>> responseEntity;
+
         try {
           responseEntity =
               restOperations.exchange(
@@ -202,6 +208,7 @@ public class SampleSubmissionService {
     private URI getSamplePersistURI(final Link sampleLink) {
       final UriComponentsBuilder uriComponentsBuilder =
           UriComponentsBuilder.fromUriString(sampleLink.getHref());
+
       if (setFullDetails != null) {
         uriComponentsBuilder.queryParam("setfulldetails", setFullDetails);
       }

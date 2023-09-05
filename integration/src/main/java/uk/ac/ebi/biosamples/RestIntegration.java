@@ -75,14 +75,24 @@ public class RestIntegration extends AbstractIntegration {
     } else {
       final EntityModel<Sample> resource = client.persistSampleResource(testSample);
       final Sample sampleContent = resource.getContent();
-
       final Sample testSampleWithAccession =
           Sample.Builder.fromSample(testSample)
               .withAccession(Objects.requireNonNull(sampleContent).getAccession())
               .withStatus(sampleContent.getStatus())
               .build();
 
+      // trying to post the same sample back again to see PUT is working fine as the sample at this
+      // stage has an accession
+      final EntityModel<Sample> resourceAfterRepost =
+          client.persistSampleResource(testSampleWithAccession);
+      final Sample repostedSampleContent = resourceAfterRepost.getContent();
+
       if (!testSampleWithAccession.equals(sampleContent)) {
+        throw new IntegrationTestFailException(
+            "Expected response (" + sampleContent + ") to equal submission (" + testSample + ")");
+      }
+
+      if (!testSampleWithAccession.equals(repostedSampleContent)) {
         throw new IntegrationTestFailException(
             "Expected response (" + sampleContent + ") to equal submission (" + testSample + ")");
       }

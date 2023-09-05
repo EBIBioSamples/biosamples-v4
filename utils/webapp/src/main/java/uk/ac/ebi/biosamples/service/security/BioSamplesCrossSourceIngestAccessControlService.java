@@ -22,33 +22,14 @@ public class BioSamplesCrossSourceIngestAccessControlService {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private static final String ENA_CHECKLIST = "ENA-CHECKLIST";
 
-  public void protectFileUploaderSampleAccess(final Sample oldSample, final Sample sample) {
+  public void protectFileUploaderSampleAccess(
+      final String webinIdInOldSample, final Sample sample) {
     if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
       log.info("Super user and file upload submission");
 
       // file uploader submission access protection
-      if (!oldSample.getWebinSubmissionAccountId().equals(sample.getWebinSubmissionAccountId())) {
-        throw new GlobalExceptions.SampleNotAccessibleException();
-      }
-    }
-  }
-
-  public void protectPipelineImportedAndFileUploaderSubmittedSampleAccess(
-      final Sample oldSample, final Sample sample) {
-    if (oldSample.getSubmittedVia()
-        == SubmittedViaType.PIPELINE_IMPORT) { // pipeline imports access protection
-      if (sample.getSubmittedVia() != SubmittedViaType.PIPELINE_IMPORT) {
-        throw new GlobalExceptions.InvalidSubmissionSourceException();
-      }
-    }
-
-    if (oldSample.getSubmittedVia()
-        == SubmittedViaType.FILE_UPLOADER) { // file uploader samples re-update protection
-      if (sample.getSubmittedVia() != SubmittedViaType.FILE_UPLOADER) {
-        // file uploader submission access protection
-        if (!oldSample.getWebinSubmissionAccountId().equals(sample.getWebinSubmissionAccountId())) {
-          throw new GlobalExceptions.SampleNotAccessibleException();
-        }
+      if (!webinIdInOldSample.equals(sample.getWebinSubmissionAccountId())) {
+        throw new GlobalExceptions.NotOriginalSubmitterException();
       }
     }
   }

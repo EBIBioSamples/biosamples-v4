@@ -12,7 +12,7 @@
 		<snippetsDirectory>${project.build.directory}/generated-snippets</snippetsDirectory>
 		<bootstrap.version>4.0.0-2</bootstrap.version>
 		<webjars-locator.version>0.30</webjars-locator.version>
-		<lombok.version>1.18.2</lombok.version>
+		<lombok.version>1.18.22</lombok.version>
 		<spring-cloud-gcp.version>3.4.6</spring-cloud-gcp.version>
 		<spring-cloud.version>2021.0.6</spring-cloud.version>
 	</properties>
@@ -85,6 +85,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-rest</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-solr</artifactId>
+			<version>4.1.0.RELEASE</version>
+		</dependency>
 		<!-- needed for traverson to work properly -->
 		<dependency>
 			<groupId>com.jayway.jsonpath</groupId>
@@ -99,11 +104,6 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-oxm</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.hateoas</groupId>
-			<artifactId>spring-hateoas</artifactId>
-			<version>1.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>

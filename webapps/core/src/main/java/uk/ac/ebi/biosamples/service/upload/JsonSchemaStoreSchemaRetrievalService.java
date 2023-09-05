@@ -45,6 +45,8 @@ public class JsonSchemaStoreSchemaRetrievalService {
 
       final HttpEntity<?> entity = new HttpEntity<>(headers);
 
+      log.info("Schema store URL is " + bioSamplesProperties.getSchemaStore());
+
       response =
           restTemplate.exchange(
               bioSamplesProperties.getSchemaStore() + "/api/v2/schemas/list",
@@ -53,6 +55,8 @@ public class JsonSchemaStoreSchemaRetrievalService {
               String.class);
 
     } catch (final Exception ex) {
+      ex.printStackTrace();
+
       log.info("JSON schema store inaccessible", ex);
       throw new RuntimeException("Failed to retrieve schemas from JSON schema store", ex);
     }

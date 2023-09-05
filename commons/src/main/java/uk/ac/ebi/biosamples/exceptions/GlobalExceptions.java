@@ -70,6 +70,12 @@ public class GlobalExceptions {
           "This sample is not permitted to be updated. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk for more information")
   public static class InvalidSubmissionSourceException extends RuntimeException {}
 
+  @ResponseStatus(
+      value = HttpStatus.FORBIDDEN,
+      reason =
+          "This sample is permitted to be updated only by the original submitter. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk for more information")
+  public static class NotOriginalSubmitterException extends RuntimeException {}
+
   public static class SampleNotAccessibleAdviceException extends RuntimeException {
     private static final long serialVersionUID = -6250819256457895445L;
   }

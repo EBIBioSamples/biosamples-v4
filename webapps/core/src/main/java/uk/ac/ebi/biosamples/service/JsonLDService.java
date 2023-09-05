@@ -60,7 +60,8 @@ public class JsonLDService {
       final Method method =
           SampleRestController.class.getMethod(
               "getSampleHal", String.class, String.class, String[].class, String.class);
-      final String sampleUrl = linkTo(method, sample.getAccession()).toUri().toString();
+      final String sampleUrl =
+          linkTo(method, sample.getAccession(), null, null, null).toUri().toString();
       jsonLDSample.setUrl(sampleUrl);
       jsonLDSample.setId(sampleUrl);
     } catch (final NoSuchMethodException e) {
@@ -68,6 +69,7 @@ public class JsonLDService {
     }
 
     jsonLDDataRecord.mainEntity(jsonLDSample);
+
     return jsonLDDataRecord;
   }
 

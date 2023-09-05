@@ -47,7 +47,7 @@ public class SampleSubmissionServiceV2 {
    * @return sample wrapped in resource
    */
   public List<Sample> postAsync(final List<Sample> samples) throws RestClientException {
-    return new PostCallable(samples).call();
+    return new PostSamplesV2(samples).postSamples();
   }
 
   /**
@@ -60,34 +60,34 @@ public class SampleSubmissionServiceV2 {
    */
   public List<Sample> postAsync(final List<Sample> samples, final String jwt)
       throws RestClientException {
-    return new PostCallable(samples, jwt).call();
+    return new PostSamplesV2(samples, jwt).postSamples();
   }
 
   public Map<String, String> bulkAccessionAsync(final List<Sample> samples)
       throws RestClientException {
-    return new BulkAccessionCallable(samples).call();
+    return new AccessionSamplesV2(samples).accessionSamples();
   }
 
   public Map<String, String> bulkAccessionAsync(final List<Sample> samples, final String jwt)
       throws RestClientException {
-    return new BulkAccessionCallable(samples, jwt).call();
+    return new AccessionSamplesV2(samples, jwt).accessionSamples();
   }
 
-  private class PostCallable {
+  private class PostSamplesV2 {
     private final List<Sample> samples;
     private final String jwt;
 
-    PostCallable(final List<Sample> samples) {
+    PostSamplesV2(final List<Sample> samples) {
       this.samples = samples;
       jwt = null;
     }
 
-    PostCallable(final List<Sample> samples, final String jwt) {
+    PostSamplesV2(final List<Sample> samples, final String jwt) {
       this.samples = samples;
       this.jwt = jwt;
     }
 
-    public List<Sample> call() {
+    public List<Sample> postSamples() {
       final URI v2PostUri =
           UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples/bulk-submit"))
               .build(true)
@@ -112,21 +112,21 @@ public class SampleSubmissionServiceV2 {
     }
   }
 
-  private class BulkAccessionCallable {
+  private class AccessionSamplesV2 {
     private final List<Sample> samples;
     private final String jwt;
 
-    BulkAccessionCallable(final List<Sample> samples) {
+    AccessionSamplesV2(final List<Sample> samples) {
       this.samples = samples;
       jwt = null;
     }
 
-    BulkAccessionCallable(final List<Sample> samples, final String jwt) {
+    AccessionSamplesV2(final List<Sample> samples, final String jwt) {
       this.samples = samples;
       this.jwt = jwt;
     }
 
-    public Map<String, String> call() {
+    public Map<String, String> accessionSamples() {
       final URI v2BulkAccessionUri =
           UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples" + "/bulk-accession"))
               .build(true)

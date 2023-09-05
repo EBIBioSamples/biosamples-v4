@@ -15,7 +15,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
+@ComponentScan(
+        excludeFilters = {
+                @ComponentScan.Filter(
+                        type = FilterType.ASSIGNABLE_TYPE,
+                        value = {EnaConfig.class, EraProDao.class, EnaSampleToBioSampleConversionService.class})
+        })
+@Import(ExclusionConfiguration.class)
 public class Application {
 
   public static void main(final String[] args) {
