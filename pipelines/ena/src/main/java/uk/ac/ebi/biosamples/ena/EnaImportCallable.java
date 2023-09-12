@@ -20,6 +20,7 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SampleStatus;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 
 public class EnaImportCallable implements Callable<Void> {
@@ -95,48 +96,62 @@ public class EnaImportCallable implements Callable<Void> {
             accession, Optional.of(Collections.singletonList("")));
     final Sample sampleInBioSamples =
         sampleOptionalInBioSamples.map(EntityModel::getContent).orElse(null);
-    final String status = suppressedKilledType.name().toLowerCase();
+    final String statusHandled = suppressedKilledType.name().toLowerCase();
 
     if (sampleInBioSamples != null) {
       final Set<Attribute> sampleAttributes = sampleInBioSamples.getAttributes();
-      final Optional<Attribute> insdcStatusAttributeOptional =
+      final Attribute insdcStatusAttribute =
           sampleAttributes.stream()
               .filter(attribute -> attribute.getType().equals("INSDC Status"))
-              .findFirst();
-      final Attribute insdcStatusAttribute = insdcStatusAttributeOptional.orElse(null);
+              .findFirst()
+              .orElse(null);
 
       if (insdcStatusAttribute == null) {
         log.info(
-            "Sample exists in BioSamples and INSDC status is null, adding INSDC status as "
-                + status
+            "Sample exists in BioSamples and INSDC status is not set, adding INSDC status as "
+                + statusHandled
                 + " for "
                 + accession);
 
-        sampleAttributes.add(Attribute.build("INSDC Status", status));
+        sampleAttributes.add(Attribute.build("INSDC Status", statusHandled));
 
         bioSamplesWebinClient.persistSampleResource(
-            Sample.Builder.fromSample(sampleInBioSamples).withAttributes(sampleAttributes).build());
+            Sample.Builder.fromSample(sampleInBioSamples)
+                .withAttributes(sampleAttributes)
+                .withStatus(SampleStatus.valueOf(String.valueOf(suppressedKilledType)))
+                .build());
 
         addToList(suppressedKilledType);
-      } else if (!insdcStatusAttribute.getValue().equalsIgnoreCase(status)) {
+      } else if (!insdcStatusAttribute.getValue().equalsIgnoreCase(statusHandled)) {
         log.info(
             "Sample exists in BioSamples and INSDC status is not "
-                + status
-                + ", adding INSDC status as suppressed for "
+                + statusHandled
+                + ", adding INSDC status as "
+                + statusHandled
+                + " for "
                 + accession);
 
         sampleAttributes.remove(insdcStatusAttribute);
-        sampleAttributes.add(Attribute.build("INSDC Status", status));
+        sampleAttributes.add(Attribute.build("INSDC Status", statusHandled));
 
         bioSamplesWebinClient.persistSampleResource(
-            Sample.Builder.fromSample(sampleInBioSamples).withAttributes(sampleAttributes).build());
+            Sample.Builder.fromSample(sampleInBioSamples)
+                .withAttributes(sampleAttributes)
+                .withStatus(SampleStatus.valueOf(String.valueOf(suppressedKilledType)))
+                .build());
+
         addToList(suppressedKilledType);
       } else {
         log.info(
-            "Sample exists in BioSamples and INSDC status is "
-                + status
+            "Sample exists in BioSamples and INSDC statusHandled is "
+                + statusHandled
                 + " ,no change required for "
                 + accession);
+
+        bioSamplesWebinClient.persistSampleResource(
+            Sample.Builder.fromSample(sampleInBioSamples)
+                .withStatus(SampleStatus.valueOf(String.valueOf(suppressedKilledType)))
+                .build());
 
         addToList(suppressedKilledType);
       }
@@ -164,12 +179,12 @@ public class EnaImportCallable implements Callable<Void> {
               EnaImportRunner.failures.add(accession);
 
               throw new RuntimeException(
-                  "Failed to handle the ENA suppressed sample with accession " + accession);
+                  "Failed to handle the ENA suppressed/ killed sample with accession " + accession);
             }
           }
         }
       } catch (final Exception e) {
-        log.info("Failed to handle ENA suppressed sample with accession " + accession, e);
+        log.info("Failed to handle ENA suppressed/ killed sample with accession " + accession, e);
 
         throw e;
       }
