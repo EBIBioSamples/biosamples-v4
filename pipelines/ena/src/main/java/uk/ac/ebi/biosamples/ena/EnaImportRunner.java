@@ -154,7 +154,7 @@ public class EnaImportRunner implements ApplicationRunner {
    * @throws Exception in case of failures
    */
   private void handleSuppressedAndKilledEnaSamples() throws Exception {
-    /*log.info(
+    log.info(
         "Fetching all suppressed ENA samples. "
             + "If they exist in BioSamples with different status, their status will be updated. ");
     try (final AdaptiveThreadPoolExecutor executorService =
@@ -178,9 +178,9 @@ public class EnaImportRunner implements ApplicationRunner {
       ThreadUtils.checkFutures(futures, 0);
     }
 
-    log.info(
+    /*log.info(
             "Fetching all killed ENA samples. "
-                    + "If they exist in BioSamples with different status, their status will be updated. ");*/
+                    + "If they exist in BioSamples with different status, their status will be updated. ");
 
     try (final AdaptiveThreadPoolExecutor executorService =
         AdaptiveThreadPoolExecutor.create(
@@ -198,7 +198,7 @@ public class EnaImportRunner implements ApplicationRunner {
 
       log.info("waiting for futures"); // wait for anything to finish
       ThreadUtils.checkFutures(futures, 0);
-    }
+    }*/
   }
 
   /**

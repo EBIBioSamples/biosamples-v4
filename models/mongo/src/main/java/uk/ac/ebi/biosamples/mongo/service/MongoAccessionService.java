@@ -88,7 +88,6 @@ public class MongoAccessionService {
               "Cannot generate a new BioSample and SRA accession. please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
         }
 
-        success = false;
         sample = originalSample;
       }
     }
@@ -103,7 +102,7 @@ public class MongoAccessionService {
     final SortedSet<MongoRelationship> newRelationships = new TreeSet<>();
 
     for (final MongoRelationship relationship : relationships) {
-      // this relationship could not specify a source because the sample is unaccessioned
+      // this relationship could not specify a source because the sample is un-accessioned
       // now we are assigning an accession, set the source to the accession
       if (relationship.getSource() == null || relationship.getSource().trim().length() == 0) {
         newRelationships.add(
@@ -114,8 +113,8 @@ public class MongoAccessionService {
       }
     }
 
-    if (accessions.ersAccession != null) {
-      sample.getAttributes().add(Attribute.build(SRA_ACCESSION, accessions.ersAccession));
+    if (accessions.sraAccession != null) {
+      sample.getAttributes().add(Attribute.build(SRA_ACCESSION, accessions.sraAccession));
     }
 
     sample =
@@ -173,10 +172,18 @@ public class MongoAccessionService {
         return new Accessions(ACCESSION_PREFIX + accessionSeq.getSeq(), null);
       } else {
         throw new RuntimeException(
-            "Cannot generate a new BioSample and SRA accession. please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
+            "Cannot generate a new BioSample accession. please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
       }
     }
   }
 
-  private record Accessions(String accession, String ersAccession) {}
+  private static class Accessions {
+    private final String accession;
+    private final String sraAccession;
+
+    private Accessions(final String accession, final String sraAccession) {
+      this.accession = accession;
+      this.sraAccession = sraAccession;
+    }
+  }
 }
