@@ -4,7 +4,7 @@ RUN ls -la /tmp/*
 WORKDIR /tmp/
 RUN ./mvnw -U -P embl-ebi clean package -Dembedmongo.wait -pl !:pipelines-ena
 
-FROM openjdk:8-jre-alpine
+FROM eclipse-temurin:17-jdk-alpine
 MAINTAINER EBI BioSamples <biosamples@ebi.ac.uk>
 COPY --from=MAVEN_TOOL_CHAIN /tmp/webapps/*/target/*.war /tmp/agents/*/target/*.jar /tmp/pipelines/*/target/*.jar /tmp/integration/target/*.jar /
 

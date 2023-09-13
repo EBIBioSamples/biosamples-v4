@@ -10,10 +10,12 @@
 */
 package uk.ac.ebi.biosamples.mongo;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.MongoDbFactory;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import uk.ac.ebi.biosamples.mongo.service.CustomWriteConcernResolver;
@@ -21,14 +23,22 @@ import uk.ac.ebi.biosamples.mongo.service.CustomWriteConcernResolver;
 @Configuration
 @EnableMongoRepositories(basePackageClasses = MongoConfig.class)
 public class MongoConfig {
+  @Value("${spring.data.mongodb.uri}")
+  private String mongoDbUrl;
+
   @Bean
   public MongoTemplate mongoTemplate(
-      MongoDbFactory mongoDbFactory,
-      MongoConverter mongoConverter,
-      CustomWriteConcernResolver customWriteConcernResolver) {
-    MongoTemplate ops = new MongoTemplate(mongoDbFactory, mongoConverter);
+      final MongoDatabaseFactory mongoDatabaseFactory,
+      final MongoConverter mongoConverter,
+      final CustomWriteConcernResolver customWriteConcernResolver) {
+    final MongoTemplate ops = new MongoTemplate(mongoDatabaseFactory, mongoConverter);
     ops.setWriteConcernResolver(customWriteConcernResolver);
 
     return ops;
+  }
+
+  @Bean
+  public MongoDatabaseFactory mongoDatabaseFactory() {
+    return new SimpleMongoClientDatabaseFactory(mongoDbUrl);
   }
 }

@@ -20,7 +20,14 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
+@ComponentScan(
+        excludeFilters = {
+                @ComponentScan.Filter(
+                        type = FilterType.ASSIGNABLE_TYPE,
+                        value = {EnaConfig.class, EraProDao.class, EnaSampleToBioSampleConversionService.class})
+        })
+@Import(ExclusionConfiguration.class)
 @EnableCaching
 @EnableAsync
 @EnableScheduling

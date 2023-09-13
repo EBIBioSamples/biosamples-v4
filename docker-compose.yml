@@ -20,6 +20,7 @@ services:
     - -jar
     - webapps-core-5.2.20-SNAPSHOT.war
     environment:
+    - env=local
     #AAP certificate
     - jwt.certificate=public.explore.der
     - security.basic.path=
@@ -42,6 +43,7 @@ services:
     - spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false
     - spring.jackson.serialization.indent_output=true
     - management.health.solr.enabled=false
+    - management.health.neo4j.enabled=false
     - management.endpoint.health.show-details=always
     - management.metrics.enable.all=false
     - management.metrics.enable.http=true
@@ -125,6 +127,7 @@ services:
       - spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false
       - spring.jackson.serialization.indent_output=true
       - management.health.solr.enabled=false
+      - management.health.neo4j.enabled=false
       - management.health.rabbit.enabled=false
       - management.endpoint.health.show-details=always
       - management.metrics.enable.all=false

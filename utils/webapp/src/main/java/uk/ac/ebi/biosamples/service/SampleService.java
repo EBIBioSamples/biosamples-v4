@@ -81,7 +81,7 @@ public class SampleService {
   /*
   Checks if the current sample that exists has no metadata, returns true if empty
    */
-  private boolean isSampleInDbEmpty(
+  private boolean isSavedSampleEmpty(
       final Sample sample, final boolean isWebinSuperUser, final Sample oldSample) {
     final String domain = sample.getDomain();
 
@@ -90,7 +90,7 @@ public class SampleService {
         // file uploader submissions are done via super-user, but they are non imported samples,
         // needs to be handled safely
         if (sample.hasAccession()) {
-          return isSampleInDbEmpty(oldSample);
+          return isSavedSampleEmpty(oldSample);
         }
 
         return true;
@@ -100,7 +100,7 @@ public class SampleService {
       }
     } else {
       if (sample.hasAccession()) {
-        return isSampleInDbEmpty(oldSample);
+        return isSavedSampleEmpty(oldSample);
       }
     }
 
@@ -108,7 +108,7 @@ public class SampleService {
       return false; // imported sample - never submitted first time to BSD, always has metadata
     } else {
       if (sample.hasAccession()) {
-        return isSampleInDbEmpty(oldSample);
+        return isSavedSampleEmpty(oldSample);
       }
 
       return true;
@@ -122,7 +122,7 @@ public class SampleService {
   /*
   Checks if the current sample that exists has no metadata, returns true if empty
    */
-  private boolean isSampleInDbEmpty(final Sample oldSample) {
+  private boolean isSavedSampleEmpty(final Sample oldSample) {
     if (oldSample.getTaxId() != null && oldSample.getTaxId() > 0) {
       return false;
     }
@@ -185,9 +185,9 @@ public class SampleService {
       final List<String> existingRelationshipTargets = new ArrayList<>();
 
       if (oldSample != null) {
-        final boolean isSampleInDbEmpty = isSampleInDbEmpty(sample, isWebinSuperUser, oldSample);
+        final boolean isSavedSampleEmpty = isSavedSampleEmpty(sample, isWebinSuperUser, oldSample);
 
-        if (isSampleInDbEmpty) {
+        if (isSavedSampleEmpty) {
           sample = Sample.Builder.fromSample(sample).withSubmitted(Instant.now()).build();
         }
 
@@ -212,7 +212,7 @@ public class SampleService {
 
         sample =
             compareWithExistingAndUpdateSample(
-                sample, oldSample, existingRelationships, isSampleInDbEmpty, authProvider);
+                sample, oldSample, existingRelationships, isSavedSampleEmpty, authProvider);
 
         final Long oldSampleTaxId = oldSample.getTaxId();
 
@@ -241,10 +241,10 @@ public class SampleService {
       // send a message for storage and further processing, send relationship targets to
       // identify
       // deleted relationships
-      messagingService.fetchThenSendMessage(sample.getAccession(), existingRelationshipTargets);
+      sendMessageToRabbitForIndexingToSolr(sample.getAccession(), existingRelationshipTargets);
     } else {
       sample = mongoAccessionService.generateAccession(sample);
-      messagingService.fetchThenSendMessage(sample.getAccession());
+      sendMessageToRabbitForIndexingToSolr(sample.getAccession(), Collections.emptyList());
     }
 
     // do a fetch to return it with accession, curation objects, inverse relationships
@@ -285,7 +285,7 @@ public class SampleService {
             "Trying to update sample that exists in database, accession: {}",
             sample.getAccession());
 
-        final boolean isSampleInDbEmpty = isSampleInDbEmpty(sample, isWebinSuperUser, oldSample);
+        final boolean isSampleInDbEmpty = isSavedSampleEmpty(sample, isWebinSuperUser, oldSample);
 
         if (isSampleInDbEmpty) {
           sample = Sample.Builder.fromSample(sample).withSubmitted(Instant.now()).build();
@@ -305,21 +305,22 @@ public class SampleService {
       mongoSample = mongoSampleRepository.save(mongoSample);
       sample = mongoSampleToSampleConverter.apply(mongoSample);
 
-      sendMessageToRabbitForIndexingToSolr(sample);
+      sendMessageToRabbitForIndexingToSolr(sample.getAccession(), Collections.emptyList());
     } else {
       sample = mongoAccessionService.generateAccession(sample);
 
-      sendMessageToRabbitForIndexingToSolr(sample);
+      sendMessageToRabbitForIndexingToSolr(sample.getAccession(), Collections.emptyList());
     }
 
     return sample;
   }
 
-  private void sendMessageToRabbitForIndexingToSolr(final Sample sample) {
+  private void sendMessageToRabbitForIndexingToSolr(
+      final String accession, final List<String> existingRelationshipTargets) {
     try {
-      messagingService.fetchThenSendMessage(sample.getAccession());
+      messagingService.fetchThenSendMessage(accession, existingRelationshipTargets);
     } catch (final Exception e) {
-      log.error("Indexing failed for accession " + sample.getAccession());
+      log.error("Indexing failed for accession " + accession);
     }
   }
 

@@ -105,25 +105,23 @@ public class BioSamplesWebinAuthenticationService {
 
         if (webinId.equalsIgnoreCase(
             proxyWebinId)) { // ENA pipeline submissions or super user submission
-          // (via FILE UPLOADER)
+          // (via FILE UPLOADER) or ENA posted samples
           if (oldSamplePresent) {
             final Sample oldSampleInDb = oldSample.get();
             final String webinIdInOldSample = oldSampleInDb.getWebinSubmissionAccountId();
 
             bioSamplesCrossSourceIngestAccessControlService.protectFileUploaderSampleAccess(
+                webinIdInOldSample, sample);
+            bioSamplesCrossSourceIngestAccessControlService.protectPipelineImportedSampleAccess(
                 oldSampleInDb, sample);
-            bioSamplesCrossSourceIngestAccessControlService
-                .protectPipelineImportedAndFileUploaderSubmittedSampleAccess(oldSampleInDb, sample);
             bioSamplesCrossSourceIngestAccessControlService.protectEnaPipelineImportedSampleAccess(
                 oldSampleInDb, sample);
 
             if (webinIdInOldSample != null
-                && !webinIdInOldSample.isEmpty()) { // if old sample has user info, use it
-              if (webinIdInOldSample.equals(proxyWebinId)) {
-                return buildSampleWithWebinId(sample, webinIdToPickForClientSubmissions);
-              } else {
-                return buildSampleWithWebinId(sample, webinIdInOldSample);
-              }
+                && !webinIdInOldSample
+                    .isEmpty()) { // old sample exists + webin id exists + submission from original
+              // source, i.e. ENA, accept it without validating
+              return buildSampleWithWebinId(sample, webinIdToPickForClientSubmissions);
             } else {
               final String oldSampleAapDomain = oldSampleInDb.getDomain();
 
@@ -151,7 +149,7 @@ public class BioSamplesWebinAuthenticationService {
 
             if (!webinId.equalsIgnoreCase(
                 oldSampleInDb.getWebinSubmissionAccountId())) { // original submitter mismatch
-              throw new GlobalExceptions.SampleNotAccessibleException();
+              throw new GlobalExceptions.NotOriginalSubmitterException();
             } else {
               return buildSampleWithWebinId(sample, webinId);
             }

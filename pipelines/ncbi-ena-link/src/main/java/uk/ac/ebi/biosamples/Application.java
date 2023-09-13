@@ -12,15 +12,30 @@ package uk.ac.ebi.biosamples;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import uk.ac.ebi.biosamples.configuration.ExclusionConfiguration;
+import uk.ac.ebi.biosamples.service.EnaConfig;
+import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
+import uk.ac.ebi.biosamples.service.EraProDao;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
+@ComponentScan(
+        excludeFilters = {
+                @ComponentScan.Filter(
+                        type = FilterType.ASSIGNABLE_TYPE,
+                        value = {EnaConfig.class, EraProDao.class, EnaSampleToBioSampleConversionService.class})
+        })
+@Import(ExclusionConfiguration.class)
 @EnableCaching(proxyTargetClass = true)
 @EnableAsync
 @EnableScheduling

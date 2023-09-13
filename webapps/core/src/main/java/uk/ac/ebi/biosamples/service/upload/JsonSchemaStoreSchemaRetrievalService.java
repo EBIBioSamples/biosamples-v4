@@ -45,6 +45,8 @@ public class JsonSchemaStoreSchemaRetrievalService {
 
       final HttpEntity<?> entity = new HttpEntity<>(headers);
 
+      log.info("Schema store URL is " + bioSamplesProperties.getSchemaStore());
+
       response =
           restTemplate.exchange(
               bioSamplesProperties.getSchemaStore() + "/api/v2/schemas/list",
