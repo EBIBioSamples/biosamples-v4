@@ -376,8 +376,7 @@ public class SampleService {
         && newSample
             .getWebinSubmissionAccountId()
             .equals(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
-      newSample =
-          Sample.Builder.fromSample(newSample).withRelationships(existingRelationships).build();
+      newSample.getRelationships().addAll(existingRelationships);
     }
 
     if (newSample.getData().size() < 1) {

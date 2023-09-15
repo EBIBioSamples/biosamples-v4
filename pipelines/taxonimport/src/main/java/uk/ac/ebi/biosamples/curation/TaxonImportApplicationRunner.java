@@ -22,6 +22,8 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -79,29 +81,22 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
 
     while (!taxonFiles.isEmpty()) {
       final File taxonFile = taxonFiles.remove();
+      LOG.info("Processing file: {}", taxonFile.getName());
 
       try {
-        LOG.info("Processing file: {}", taxonFile.getName());
-
         final List<TaxonEntry> taxonEntries = loadTaxonEntries(taxonFile);
-
         LOG.info("Number of taxon entries to process: {}", taxonEntries.size());
 
         final long curatedCount = processTaxonEntries(taxonEntries);
-
         totalProcessed += taxonEntries.size();
         totalCurated += curatedCount;
 
         LOG.info("Finished processing file: {}", taxonFile.getName());
-
         moveFile(taxonFile, successDir);
-
         LOG.info("File moved to {}", successDir);
       } catch (final Exception e) {
         LOG.error("Exception while processing the file: {}", taxonFile.getName(), e);
-
         moveFile(taxonFile, failDir);
-
         LOG.warn("File moved to {}", failDir);
       }
     }
@@ -130,21 +125,31 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
     long curatedSampleCount = 0;
 
     for (final TaxonEntry entry : taxonEntries) {
-      if (entry.getNcbiTaxonName() == null || entry.getNcbiTaxonName().isEmpty()) {
+      if (entry == null
+          || StringUtils.isEmpty(entry.getNcbiTaxonName())
+          || StringUtils.isEmpty(entry.getBioSampleAccession())
+          || entry.getTaxId() == 0) {
+        if (entry != null) {
+          LOG.error("Invalid Taxon record. accession: {}, TaxonName: {}, TaxId: {}",
+              entry.getBioSampleAccession(), entry.getNcbiTaxonName(), entry.getTaxId());
+        }
         continue;
       }
 
       final Sample sample = getSampleUncurated(entry.getBioSampleAccession());
 
-      final Long oldTaxId = sample.getTaxId();
+      Long oldTaxId = sample.getTaxId();
       final Optional<Attribute> oldOrganism =
           sample.getCharacteristics().stream()
               .filter(c -> c.getType().equalsIgnoreCase("organism"))
               .findFirst();
 
-      if (oldTaxId != entry.getTaxId()
+      if (oldTaxId == null || oldTaxId != entry.getTaxId()
           || !oldOrganism.isPresent()
           || !entry.getNcbiTaxonName().equalsIgnoreCase(oldOrganism.get().getValue())) {
+        if (oldTaxId == null) {
+          oldTaxId = 0L;
+        }
         buildAndPersistNewSample(sample, oldOrganism, oldTaxId, entry);
         curatedSampleCount++;
       }

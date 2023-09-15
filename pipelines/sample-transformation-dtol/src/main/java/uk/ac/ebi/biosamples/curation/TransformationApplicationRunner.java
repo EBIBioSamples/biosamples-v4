@@ -28,6 +28,7 @@ import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.filter.AccessionFilter;
 import uk.ac.ebi.biosamples.model.filter.AttributeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
@@ -38,14 +39,16 @@ import uk.ac.ebi.biosamples.utils.ThreadUtils;
 public class TransformationApplicationRunner implements ApplicationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(TransformationApplicationRunner.class);
 
-  private final BioSamplesClient bioSamplesClient;
+  private final BioSamplesClient bioSamplesClientWebin;
+  private final BioSamplesClient bioSamplesClientAap;
   private final PipelinesProperties pipelinesProperties;
   private final PipelineFutureCallback pipelineFutureCallback;
 
   public TransformationApplicationRunner(
-      @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesClient,
-      final PipelinesProperties pipelinesProperties) {
-    this.bioSamplesClient = bioSamplesClient;
+      @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesClientWebin,
+      BioSamplesClient bioSamplesClientAap, final PipelinesProperties pipelinesProperties) {
+    this.bioSamplesClientWebin = bioSamplesClientWebin;
+    this.bioSamplesClientAap = bioSamplesClientAap;
     this.pipelinesProperties = pipelinesProperties;
     pipelineFutureCallback = new PipelineFutureCallback();
   }
@@ -68,12 +71,12 @@ public class TransformationApplicationRunner implements ApplicationRunner {
       final Map<String, Future<PipelineResult>> futures = new HashMap<>();
       filters.add(new AttributeFilter.Builder("project name").withValue("DTOL").build());
       for (final EntityModel<Sample> sampleResource :
-          bioSamplesClient.fetchSampleResourceAll("", filters)) {
+          bioSamplesClientWebin.fetchSampleResourceAll("", filters)) {
         LOG.trace("Handling {}", sampleResource);
         final Sample sample = sampleResource.getContent();
         Objects.requireNonNull(sample);
 
-        final Callable<PipelineResult> task = new TransformationCallable(bioSamplesClient, sample);
+        final Callable<PipelineResult> task = new TransformationCallable(sample, bioSamplesClientWebin, bioSamplesClientAap);
         futures.put(sample.getAccession(), executorService.submit(task));
 
         if (++sampleCount % 5000 == 0) {

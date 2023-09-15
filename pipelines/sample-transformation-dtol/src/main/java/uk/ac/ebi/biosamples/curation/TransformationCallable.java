@@ -30,13 +30,16 @@ public class TransformationCallable implements Callable<PipelineResult> {
   static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
   private final Sample sample;
-  private final BioSamplesClient bioSamplesClient;
+  private final BioSamplesClient bioSamplesClientWebin;
+  private final BioSamplesClient bioSamplesClientAap;
   private final List<String> curationDomainBlankList = new ArrayList<>();
 
-  TransformationCallable(
-      @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesClient, final Sample sample) {
-    this.bioSamplesClient = bioSamplesClient;
+  TransformationCallable(final Sample sample,
+                         final BioSamplesClient bioSamplesClientWebin,
+                         final BioSamplesClient bioSamplesClientAap) {
     this.sample = sample;
+    this.bioSamplesClientWebin = bioSamplesClientWebin;
+    this.bioSamplesClientAap = bioSamplesClientAap;
 
     curationDomainBlankList.add("");
   }
@@ -46,7 +49,7 @@ public class TransformationCallable implements Callable<PipelineResult> {
     int modifiedRecords = 0;
 
     final Optional<EntityModel<Sample>> optionalSampleResource =
-        bioSamplesClient.fetchSampleResource(
+        bioSamplesClientWebin.fetchSampleResource(
             sample.getAccession(), Optional.of(curationDomainBlankList));
     if (optionalSampleResource.isPresent()) {
       final Sample uncuratedSample = optionalSampleResource.get().getContent();
@@ -69,20 +72,36 @@ public class TransformationCallable implements Callable<PipelineResult> {
         uncuratedSample
             .getRelationships()
             .add(createDerivedRelationship(uncuratedSample.getAccession(), attribute.getValue()));
-        bioSamplesClient.persistSampleResource(uncuratedSample);
-        LOG.info(
-            "Copied derived from relationship from attribute {} -> {}",
-            uncuratedSample.getAccession(),
-            attribute.getValue());
-        modifiedRecords++;
+
+        try {
+          LOG.info("Copying derived from relationship from attribute {} -> {}", uncuratedSample.getAccession(), attribute.getValue());
+          Sample persistedSample = persistSample(uncuratedSample);
+          LOG.debug("Sample persisted with relationships: {}", persistedSample.getAccession());
+          modifiedRecords++;
+        } catch (Exception e) {
+          LOG.error("Failed to persist sample: {}", sample.getAccession(), e);
+          LOG.warn("Ignoring failed sample and processing rest of the records. Future work may required to process failed record.");
+        }
       } else {
-        LOG.info(
-            "Attribute sample derived from is not present in ths sample : {}",
-            sample.getAccession());
+        LOG.info("Attribute sample derived from is not present in ths sample : {}", sample.getAccession());
       }
     }
 
     return new PipelineResult(sample.getAccession(), modifiedRecords, true);
+  }
+
+  private Sample persistSample(Sample s) {
+    EntityModel<Sample> sampleEntity;
+    if (s.getDomain() != null) {
+      sampleEntity = bioSamplesClientAap.persistSampleResource(s);
+    } else if (s.getWebinSubmissionAccountId() != null) {
+      sampleEntity = bioSamplesClientWebin.persistSampleResource(s);
+    } else {
+      LOG.warn("Auth info is not available for {} trying with default AAP client", s.getAccession());
+      sampleEntity = bioSamplesClientAap.persistSampleResource(s);
+    }
+
+    return sampleEntity.getContent();
   }
 
   private Relationship createDerivedRelationship(final String source, final String target) {
