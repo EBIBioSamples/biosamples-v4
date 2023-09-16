@@ -178,4 +178,16 @@ public class GlobalExceptions {
               + "(max page = 500 and max page size = 200). Please use 'cursor' and 'size' for pagination and crawling. "
               + "You can find more information about using cursor in our documentation")
   public static class PaginationException extends RuntimeException {}
+
+  @ResponseStatus(
+      value = HttpStatus.BAD_REQUEST,
+      reason =
+          "Sample is invalid. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk for more information.")
+  public static class InvalidSampleException extends RuntimeException {}
+
+  @ResponseStatus(
+      value = HttpStatus.BAD_REQUEST,
+      reason =
+          "SRA accession cannot be changed while sample updates. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk for more information.")
+  public static class ChangedSRAAccessionException extends RuntimeException {}
 }

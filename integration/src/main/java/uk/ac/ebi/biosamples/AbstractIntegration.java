@@ -23,6 +23,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
@@ -142,7 +143,7 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
                     "Sample does not exist, sample name: " + name, phase));
   }
 
-  void fetchByNameAndThrowOrElsePersist(Sample sample) {
+  void fetchByNameAndThrowOrElsePersist(final Sample sample) {
     final Optional<Sample> optionalSample = fetchUniqueSampleByName(sample.getName());
     if (optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
@@ -150,6 +151,13 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
     } else {
       final EntityModel<Sample> resource = client.persistSampleResource(sample);
       final Sample sampleContent = resource.getContent();
+      final Attribute sraAccessionAttribute =
+          sampleContent.getAttributes().stream()
+              .filter(attribute -> attribute.getType().equals("SRA accession"))
+              .findFirst()
+              .get();
+
+      sample.getAttributes().add(sraAccessionAttribute);
 
       final Sample testSampleWithAccession =
           Sample.Builder.fromSample(sample)

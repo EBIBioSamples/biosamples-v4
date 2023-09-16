@@ -65,6 +65,14 @@ public class AmrDataIntegration extends AbstractIntegration {
             .withStatus(resource.getContent().getStatus())
             .build();
 
+    final Attribute sraAccessionAttribute =
+        resource.getContent().getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals("SRA accession"))
+            .findFirst()
+            .get();
+
+    testSampleWithAccession.getAttributes().add(sraAccessionAttribute);
+
     if (!testSampleWithAccession.equals(resource.getContent())) {
       throw new IntegrationTestFailException(
           "Expected response ("

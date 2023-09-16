@@ -52,6 +52,14 @@ public class RestFacetIntegration extends AbstractIntegration {
 
     // put a sample
     EntityModel<Sample> resource = client.persistSampleResource(sampleTest1);
+
+    final Attribute sraAccessionAttribute1 =
+        resource.getContent().getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals("SRA accession"))
+            .findFirst()
+            .get();
+
+    sampleTest1.getAttributes().add(sraAccessionAttribute1);
     sampleTest1 =
         Sample.Builder.fromSample(sampleTest1)
             .withAccession(resource.getContent().getAccession())
@@ -67,6 +75,13 @@ public class RestFacetIntegration extends AbstractIntegration {
     }
 
     resource = client.persistSampleResource(enaSampleTest);
+
+    final Attribute sraAccessionAttribute2 =
+        resource.getContent().getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals("SRA accession"))
+            .findFirst()
+            .get();
+    enaSampleTest.getAttributes().add(sraAccessionAttribute2);
     enaSampleTest =
         Sample.Builder.fromSample(enaSampleTest)
             .withAccession(resource.getContent().getAccession())
@@ -82,6 +97,13 @@ public class RestFacetIntegration extends AbstractIntegration {
     }
 
     resource = client.persistSampleResource(aeSampleTest);
+
+    final Attribute sraAccessionAttribute3 =
+        resource.getContent().getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals("SRA accession"))
+            .findFirst()
+            .get();
+    aeSampleTest.getAttributes().add(sraAccessionAttribute3);
     aeSampleTest =
         Sample.Builder.fromSample(aeSampleTest)
             .withAccession(resource.getContent().getAccession())

@@ -38,12 +38,18 @@ public class RestSearchIntegration extends AbstractIntegration {
 
     // put a private sample
     EntityModel<Sample> resource = client.persistSampleResource(test1);
+    final Attribute sraAccessionAttribute1 =
+        resource.getContent().getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals("SRA accession"))
+            .findFirst()
+            .get();
 
     test1 =
         Sample.Builder.fromSample(test1)
             .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
             .build();
 
+    test1.getAttributes().add(sraAccessionAttribute1);
     test1 = Sample.Builder.fromSample(test1).withStatus(resource.getContent().getStatus()).build();
 
     if (!test1.equals(resource.getContent())) {
@@ -55,11 +61,17 @@ public class RestSearchIntegration extends AbstractIntegration {
     // put a sample that refers to a non-existing sample, Should this fail???
     resource = client.persistSampleResource(test2);
 
+    final Attribute sraAccessionAttribute2 =
+        resource.getContent().getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals("SRA accession"))
+            .findFirst()
+            .get();
+
     test2 =
         Sample.Builder.fromSample(test2)
             .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
             .build();
-
+    test2.getAttributes().add(sraAccessionAttribute2);
     test2 = Sample.Builder.fromSample(test2).withStatus(resource.getContent().getStatus()).build();
 
     if (!test2.equals(resource.getContent())) {
@@ -70,10 +82,17 @@ public class RestSearchIntegration extends AbstractIntegration {
 
     resource = client.persistSampleResource(test4);
 
+    final Attribute sraAccessionAttribute4 =
+        resource.getContent().getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals("SRA accession"))
+            .findFirst()
+            .get();
+
     test4 =
         Sample.Builder.fromSample(test4)
             .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
             .build();
+    test4.getAttributes().add(sraAccessionAttribute4);
     test4 = Sample.Builder.fromSample(test4).withStatus(resource.getContent().getStatus()).build();
 
     if (!test4.equals(resource.getContent())) {
@@ -84,11 +103,17 @@ public class RestSearchIntegration extends AbstractIntegration {
 
     resource = client.persistSampleResource(test5);
 
+    final Attribute sraAccessionAttribute5 =
+        resource.getContent().getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals("SRA accession"))
+            .findFirst()
+            .get();
+
     test5 =
         Sample.Builder.fromSample(test5)
             .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
             .build();
-
+    test5.getAttributes().add(sraAccessionAttribute5);
     test5 = Sample.Builder.fromSample(test5).withStatus(resource.getContent().getStatus()).build();
 
     if (!test5.equals(resource.getContent())) {

@@ -89,8 +89,10 @@ public class XmlSearchIntegration extends AbstractIntegration {
       }
 
       final Sample sampleWithinGroup = TestSampleGenerator.getSampleWithinGroup();
+
       Optional<EntityModel<Sample>> optional =
           client.fetchSampleResource(sampleWithinGroup.getAccession());
+
       if (optional.isPresent()) {
         throw new RuntimeException("Found existing " + sampleWithinGroup.getAccession());
       }

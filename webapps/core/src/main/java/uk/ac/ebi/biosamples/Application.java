@@ -74,7 +74,7 @@ public class Application extends SpringBootServletInitializer {
     SpringApplication.run(Application.class, args);
   }
 
-  @Value("${spring.cloud.gcp.project-id}")
+  @Value("${spring.cloud.gcp.project-id:no_project}")
   private String enaGcpProject;
 
   @Autowired private Environment environment;
