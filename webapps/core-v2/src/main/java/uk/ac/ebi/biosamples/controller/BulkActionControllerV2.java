@@ -134,7 +134,7 @@ public class BulkActionControllerV2 {
                    */
                   return sampleService.accessionSample(sample);
                 })
-            .collect(Collectors.toList());
+            .toList();
 
     final Map<String, String> outputMap =
         createdSamplesList.stream()
@@ -209,7 +209,7 @@ public class BulkActionControllerV2 {
                   }
                 })
             .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            .toList();
 
     log.info(
         "V2-Received bulk-fetch request for : "
@@ -263,7 +263,7 @@ public class BulkActionControllerV2 {
                     if (sampleAccession != null) {
                       oldSample = sampleService.fetch(sampleAccession, Optional.empty());
 
-                      if (!isWebinSuperUser && !oldSample.isPresent()) {
+                      if (!isWebinSuperUser && oldSample.isEmpty()) {
                         throw new ResponseStatusException(
                             HttpStatus.BAD_REQUEST,
                             "New submission should not consist of an accession");
@@ -297,7 +297,7 @@ public class BulkActionControllerV2 {
                     if (sampleAccession != null) {
                       oldSample = sampleService.fetch(sampleAccession, Optional.empty());
 
-                      if (!isAapSuperUser && !oldSample.isPresent()) {
+                      if (!isAapSuperUser && oldSample.isEmpty()) {
                         throw new ResponseStatusException(
                             HttpStatus.BAD_REQUEST,
                             "New submission should not consist of an accession");

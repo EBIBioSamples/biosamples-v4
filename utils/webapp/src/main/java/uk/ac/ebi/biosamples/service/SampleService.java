@@ -442,7 +442,9 @@ public class SampleService {
             .getWebinSubmissionAccountId()
             .equals(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
       if (newSample.getSubmittedVia() != SubmittedViaType.FILE_UPLOADER) {
-        newSample.getRelationships().addAll(existingRelationships);
+        if (existingRelationships != null && existingRelationships.size() > 0) {
+          newSample.getRelationships().addAll(existingRelationships);
+        }
       }
     }
   }

@@ -35,10 +35,9 @@ import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component
-@Order(2)
+@Order(6)
 // @Profile({"default", "rest"})
 public class RestIntegration extends AbstractIntegration {
-
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final RestTemplate restTemplate;
   private final BioSamplesProperties clientProperties;
