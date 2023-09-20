@@ -74,6 +74,7 @@ public class TransformationApplicationRunner implements ApplicationRunner {
       for (final EntityModel<Sample> sampleResource :
           bioSamplesClientWebin.fetchSampleResourceAll("", filters)) {
         LOG.trace("Handling {}", sampleResource);
+
         final Sample sample = sampleResource.getContent();
 
         Objects.requireNonNull(sample);

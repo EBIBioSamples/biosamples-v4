@@ -43,25 +43,20 @@ public class FileQueueService {
     try {
       final String fileId = persistUploadedFileInMongo(file);
       final boolean isWebin = webinId != null && !webinId.isEmpty();
+      final MongoFileUpload mongoFileUpload =
+          new MongoFileUpload(
+              fileId,
+              BioSamplesFileUploadSubmissionStatus.ACTIVE,
+              isWebin ? webinId : aapDomain,
+              checklist,
+              isWebin,
+              new ArrayList<>(),
+              null);
 
-      if (fileId != null) {
-        final MongoFileUpload mongoFileUpload =
-            new MongoFileUpload(
-                fileId,
-                BioSamplesFileUploadSubmissionStatus.ACTIVE,
-                isWebin ? webinId : aapDomain,
-                checklist,
-                isWebin,
-                new ArrayList<>(),
-                null);
+      mongoFileUploadRepository.insert(mongoFileUpload);
+      messagingService.sendFileUploadedMessage(fileId);
 
-        mongoFileUploadRepository.insert(mongoFileUpload);
-        messagingService.sendFileUploadedMessage(fileId);
-
-        return fileId;
-      } else {
-        throw new RuntimeException("Failed to save Submission");
-      }
+      return fileId;
     } catch (final Exception e) {
       final String message = "Failed to save Submission";
 

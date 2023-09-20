@@ -51,6 +51,7 @@ public class TransformationCallable implements Callable<PipelineResult> {
     final Optional<EntityModel<Sample>> optionalSampleResource =
         bioSamplesClientWebin.fetchSampleResource(
             sample.getAccession(), Optional.of(curationDomainBlankList));
+
     if (optionalSampleResource.isPresent()) {
       final Sample uncuratedSample = optionalSampleResource.get().getContent();
       final Optional<Attribute> optionalRelAttribute =
@@ -60,12 +61,16 @@ public class TransformationCallable implements Callable<PipelineResult> {
 
       if (optionalRelAttribute.isPresent()) {
         final Attribute attribute = optionalRelAttribute.get();
+
         if (uncuratedSample.getRelationships().size() == 2) {
           Relationship wrongRel = uncuratedSample.getRelationships().first();
           uncuratedSample.getRelationships().remove(wrongRel);
+
           LOG.info("Removed relationship of {}: {}", sample.getAccession(), wrongRel);
+
           wrongRel = uncuratedSample.getRelationships().first();
           uncuratedSample.getRelationships().remove(wrongRel);
+
           LOG.info("Removed relationship of {}: {}", sample.getAccession(), wrongRel);
         }
 
@@ -78,8 +83,11 @@ public class TransformationCallable implements Callable<PipelineResult> {
               "Copying derived from relationship from attribute {} -> {}",
               uncuratedSample.getAccession(),
               attribute.getValue());
+
           final Sample persistedSample = persistSample(uncuratedSample);
+
           LOG.debug("Sample persisted with relationships: {}", persistedSample.getAccession());
+
           modifiedRecords++;
         } catch (final Exception e) {
           LOG.error("Failed to persist sample: {}", sample.getAccession(), e);
@@ -98,6 +106,7 @@ public class TransformationCallable implements Callable<PipelineResult> {
 
   private Sample persistSample(final Sample s) {
     final EntityModel<Sample> sampleEntity;
+
     if (s.getDomain() != null) {
       sampleEntity = bioSamplesClientAap.persistSampleResource(s);
     } else if (s.getWebinSubmissionAccountId() != null) {

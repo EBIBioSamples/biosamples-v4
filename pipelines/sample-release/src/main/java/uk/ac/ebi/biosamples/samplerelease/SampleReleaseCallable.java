@@ -11,6 +11,7 @@
 package uk.ac.ebi.biosamples.samplerelease;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -36,7 +37,7 @@ public class SampleReleaseCallable implements Callable<Void> {
   private final RestTemplate restTemplate;
   private final String accession;
   private final List<String> curationDomainBlankList;
-
+  private final LocalDate localDate;
   static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
   SampleReleaseCallable(
@@ -44,12 +45,14 @@ public class SampleReleaseCallable implements Callable<Void> {
       final BioSamplesClient bioSamplesAapClient,
       final PipelinesProperties pipelinesProperties,
       final RestTemplate restTemplate,
-      final String accession) {
+      final String accession,
+      final LocalDate fromDate) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
     this.bioSamplesAapClient = bioSamplesAapClient;
     this.restTemplate = restTemplate;
     this.pipelinesProperties = pipelinesProperties;
     this.accession = accession;
+    this.localDate = fromDate;
 
     curationDomainBlankList = new ArrayList<>();
     curationDomainBlankList.add("");
@@ -132,11 +135,14 @@ public class SampleReleaseCallable implements Callable<Void> {
     }
   }
 
-  private static void handleInsdcStatusAttribute(final Sample sampleWithoutCurations) {
+  private void handleInsdcStatusAttribute(final Sample sampleWithoutCurations) {
     sampleWithoutCurations
         .getAttributes()
         .removeIf(attribute -> attribute.getType().equals("INSDC status"));
     sampleWithoutCurations.getAttributes().add(Attribute.build("INSDC status", "public"));
+    sampleWithoutCurations
+        .getAttributes()
+        .add(Attribute.build("ENA first public", localDate.toString()));
   }
 
   private ResponseEntity deleteSampleReleaseMessageInEna(final String accession) {
