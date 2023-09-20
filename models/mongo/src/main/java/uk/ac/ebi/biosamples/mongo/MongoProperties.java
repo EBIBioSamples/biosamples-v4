@@ -19,13 +19,6 @@ public class MongoProperties {
   @Value("${biosamples.mongo.sample.writeConcern:1}")
   private String sampleWriteConcern;
 
-  @Value("${biosamples.accession.prefix:SAMEA}")
-  private String accessionPrefix;
-
-  public String getAccessionPrefix() {
-    return accessionPrefix;
-  }
-
   public String getSampleWriteConcern() {
     return sampleWriteConcern;
   }

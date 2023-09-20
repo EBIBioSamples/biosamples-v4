@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Update;
+import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -30,35 +31,35 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 // this needs to be the spring exception, not the mongo one
 public class MongoAccessionService {
   private static final int MAX_RETRIES = 5;
+  private static final String SRA_ACCESSION_PREFIX = "ERS";
+  private static final String ACCESSION_PREFIX = "SAMEA";
+  private static final String SRA_ACCESSION = "SRA accession";
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final MongoSampleRepository mongoSampleRepository;
   private final SampleToMongoSampleConverter sampleToMongoSampleConverter;
   private final MongoSampleToSampleConverter mongoSampleToSampleConverter;
-  private final String prefix;
   private final MongoOperations mongoOperations;
 
   public MongoAccessionService(
       final MongoSampleRepository mongoSampleRepository,
       final SampleToMongoSampleConverter sampleToMongoSampleConverter,
       final MongoSampleToSampleConverter mongoSampleToSampleConverter,
-      final String prefix,
       final MongoOperations mongoOperations) {
     this.mongoSampleRepository = mongoSampleRepository;
     this.sampleToMongoSampleConverter = sampleToMongoSampleConverter;
     this.mongoSampleToSampleConverter = mongoSampleToSampleConverter;
-    this.prefix = prefix;
     this.mongoOperations = mongoOperations;
   }
 
-  public Sample generateAccession(final Sample sample) {
+  public Sample generateAccession(final Sample sample, final boolean generateSAMEAndSRAAccession) {
     MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
 
-    mongoSample = accessionAndInsert(mongoSample);
+    mongoSample = accessionAndInsert(mongoSample, generateSAMEAndSRAAccession);
     return mongoSampleToSampleConverter.apply(mongoSample);
   }
 
-  private MongoSample accessionAndInsert(MongoSample sample) {
+  private MongoSample accessionAndInsert(
+      MongoSample sample, final boolean generateSAMEAndSRAAccession) {
     log.trace("Generating a new accession");
 
     final MongoSample originalSample = sample;
@@ -71,7 +72,7 @@ public class MongoAccessionService {
     while (!success) {
       // TODO add a timeout here
       try {
-        sample = prepare(sample, getAccession());
+        sample = prepare(sample, generateUniqueAccessions(generateSAMEAndSRAAccession));
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
@@ -85,21 +86,20 @@ public class MongoAccessionService {
               "Cannot generate a new BioSample accession. please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
         }
 
-        success = false;
         sample = originalSample;
       }
     }
 
-    log.info("generated accession " + sample);
+    if (generateSAMEAndSRAAccession) {
+      log.info("Generated BioSample and SRA accession " + sample);
+    } else {
+      log.info("Generated BioSample accession " + sample);
+    }
 
     return sample;
   }
 
-  private String getAccession() {
-    return prefix + generateUniqueAccession();
-  }
-
-  private MongoSample prepare(MongoSample sample, final String accession) {
+  private MongoSample prepare(MongoSample sample, final Accessions accessions) {
     final SortedSet<MongoRelationship> relationships = sample.getRelationships();
     final SortedSet<MongoRelationship> newRelationships = new TreeSet<>();
     for (final MongoRelationship relationship : relationships) {
@@ -107,15 +107,21 @@ public class MongoAccessionService {
       // now we are assigning an accession, set the source to the accession
       if (relationship.getSource() == null || relationship.getSource().trim().length() == 0) {
         newRelationships.add(
-            MongoRelationship.build(accession, relationship.getType(), relationship.getTarget()));
+            MongoRelationship.build(
+                accessions.accession, relationship.getType(), relationship.getTarget()));
       } else {
         newRelationships.add(relationship);
       }
     }
+
+    if (accessions.sraAccession != null) {
+      sample.getAttributes().add(Attribute.build(SRA_ACCESSION, accessions.sraAccession));
+    }
+
     sample =
         MongoSample.build(
             sample.getName(),
-            accession,
+            accessions.accession,
             sample.getDomain(),
             sample.getWebinSubmissionAccountId(),
             sample.getTaxId(),
@@ -138,19 +144,63 @@ public class MongoAccessionService {
     return sample;
   }
 
-  private long generateUniqueAccession() {
-    final MongoSequence counter =
+  private Accessions generateUniqueAccessions(final boolean generateSAMEAndSRAAccession) {
+    final MongoSequence accessionSeq =
         mongoOperations.findAndModify(
             query(where("_id").is(MongoSample.SEQUENCE_NAME)),
             new Update().inc("seq", 1),
             options().returnNew(true).upsert(true),
             MongoSequence.class);
 
-    if (!Objects.isNull(counter)) {
-      return counter.getSeq();
+    if (generateSAMEAndSRAAccession) {
+      final MongoSequence sraAccessionSeq =
+          mongoOperations.findAndModify(
+              query(where("_id").is(MongoSample.SRA_SEQUENCE_NAME)),
+              new Update().inc("seq", 1),
+              options().returnNew(true).upsert(true),
+              MongoSequence.class);
+
+      if (!Objects.isNull(accessionSeq) && !Objects.isNull(sraAccessionSeq)) {
+        return new Accessions(
+            ACCESSION_PREFIX + accessionSeq.getSeq(),
+            SRA_ACCESSION_PREFIX + sraAccessionSeq.getSeq());
+      } else {
+        throw new RuntimeException(
+            "Cannot generate a new BioSample and SRA accession. please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
+      }
+    } else {
+      if (!Objects.isNull(accessionSeq)) {
+        return new Accessions(ACCESSION_PREFIX + accessionSeq.getSeq(), null);
+      } else {
+        throw new RuntimeException(
+            "Cannot generate a new BioSample accession. please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
+      }
+    }
+  }
+
+  public String generateOneSRAAccession() {
+    final MongoSequence sraAccessionSeq =
+        mongoOperations.findAndModify(
+            query(where("_id").is(MongoSample.SRA_SEQUENCE_NAME)),
+            new Update().inc("seq", 1),
+            options().returnNew(true).upsert(true),
+            MongoSequence.class);
+
+    if (!Objects.isNull(sraAccessionSeq)) {
+      return SRA_ACCESSION_PREFIX + sraAccessionSeq.getSeq();
     } else {
       throw new RuntimeException(
-          "Cannot generate a new BioSample accession. please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
+          "Cannot generate a new SRA accession number. please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
+    }
+  }
+
+  private static class Accessions {
+    private final String accession;
+    private final String sraAccession;
+
+    private Accessions(final String accession, final String sraAccession) {
+      this.accession = accession;
+      this.sraAccession = sraAccession;
     }
   }
 }

@@ -116,12 +116,14 @@ public class FileUploadService {
           samples.stream()
               .filter(sample -> sample.getAccession() != null)
               .map(sample -> new SampleNameAccessionPair(sample.getName(), sample.getAccession()))
-              .collect(Collectors.toList());
+              .toList();
       final String persistenceMessage = "Number of samples persisted: " + accessionsList.size();
 
       log.info("Persistence message: " + persistenceMessage);
+
       validationResult.addValidationMessage(
           new ValidationResult.ValidationMessage(uniqueUploadId, persistenceMessage, false));
+
       log.info(
           "Final message: "
               + validationResult.getValidationMessagesList().stream()
@@ -141,6 +143,12 @@ public class FileUploadService {
             BioSamplesFileUploadSubmissionStatus.COMPLETED_WITH_ERRORS;
       }
 
+      final String joinedValidationMessage =
+          validationResult.getValidationMessagesList().stream()
+              .map(
+                  validationMessage ->
+                      validationMessage.getMessageKey() + ":" + validationMessage.getMessageValue())
+              .collect(Collectors.joining(" -- "));
       final MongoFileUpload mongoFileUploadCompleted =
           new MongoFileUpload(
               uniqueUploadId,
@@ -148,8 +156,8 @@ public class FileUploadService {
               isWebin ? webinId : aapDomain,
               checklist,
               isWebin,
-              new ArrayList<>(),
-              null);
+              accessionsList,
+              joinedValidationMessage);
 
       mongoFileUploadRepository.save(mongoFileUploadCompleted);
 

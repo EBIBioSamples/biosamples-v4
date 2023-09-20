@@ -60,6 +60,13 @@ public class JsonLdIntegration extends AbstractIntegration {
     } else {
       final EntityModel<Sample> resource = client.persistSampleResource(testSample);
       final Sample sampleContent = resource.getContent();
+      final Attribute sraAccessionAttribute =
+          sampleContent.getAttributes().stream()
+              .filter(attribute -> attribute.getType().equals("SRA accession"))
+              .findFirst()
+              .get();
+
+      testSample.getAttributes().add(sraAccessionAttribute);
 
       final Sample testSampleWithAccession =
           Sample.Builder.fromSample(testSample)

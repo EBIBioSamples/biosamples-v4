@@ -38,7 +38,6 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.configuration.ExclusionConfiguration;
-import uk.ac.ebi.biosamples.mongo.MongoProperties;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
@@ -160,13 +159,11 @@ public class Application {
       final MongoSampleRepository mongoSampleRepository,
       final SampleToMongoSampleConverter sampleToMongoSampleConverter,
       final MongoSampleToSampleConverter mongoSampleToSampleConverter,
-      final MongoProperties mongoProperties,
       final MongoOperations mongoOperations) {
     return new MongoAccessionService(
         mongoSampleRepository,
         sampleToMongoSampleConverter,
         mongoSampleToSampleConverter,
-        mongoProperties.getAccessionPrefix(),
         mongoOperations);
   }
 }

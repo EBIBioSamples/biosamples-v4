@@ -20,6 +20,7 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
@@ -110,12 +111,14 @@ public class BioSamplesWebinAuthenticationService {
             final Sample oldSampleInDb = oldSample.get();
             final String webinIdInOldSample = oldSampleInDb.getWebinSubmissionAccountId();
 
-            bioSamplesCrossSourceIngestAccessControlService.protectFileUploaderSampleAccess(
-                webinIdInOldSample, sample);
-            bioSamplesCrossSourceIngestAccessControlService.protectPipelineImportedSampleAccess(
-                oldSampleInDb, sample);
-            bioSamplesCrossSourceIngestAccessControlService.protectEnaPipelineImportedSampleAccess(
-                oldSampleInDb, sample);
+            if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
+              bioSamplesCrossSourceIngestAccessControlService.protectFileUploaderSampleAccess(
+                  webinIdInOldSample, sample);
+              bioSamplesCrossSourceIngestAccessControlService.protectPipelineImportedSampleAccess(
+                  oldSampleInDb, sample);
+              bioSamplesCrossSourceIngestAccessControlService
+                  .protectEnaPipelineImportedSampleAccess(oldSampleInDb, sample);
+            }
 
             if (webinIdInOldSample != null
                 && !webinIdInOldSample

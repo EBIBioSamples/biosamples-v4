@@ -134,7 +134,7 @@ public class BulkActionControllerV2 {
                    */
                   return sampleService.accessionSample(sample);
                 })
-            .collect(Collectors.toList());
+            .toList();
 
     final Map<String, String> outputMap =
         createdSamplesList.stream()
@@ -209,7 +209,7 @@ public class BulkActionControllerV2 {
                   }
                 })
             .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            .toList();
 
     log.info(
         "V2-Received bulk-fetch request for : "
@@ -250,72 +250,16 @@ public class BulkActionControllerV2 {
         throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
-      final boolean isWebinSuperUser =
-          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
-
       createdSamples =
           samples.stream()
               .map(
-                  sample -> {
-                    final String sampleAccession = sample.getAccession();
-                    Optional<Sample> oldSample = Optional.empty();
-
-                    if (sampleAccession != null) {
-                      oldSample = sampleService.fetch(sampleAccession, Optional.empty());
-
-                      if (!isWebinSuperUser && !oldSample.isPresent()) {
-                        throw new ResponseStatusException(
-                            HttpStatus.BAD_REQUEST,
-                            "New submission should not consist of an accession");
-                      }
-                    }
-
-                    sample =
-                        bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-                            sample, webinSubmissionAccountId, oldSample);
-                    sample = buildSample(sample, isWebinSuperUser);
-
-                    sampleService.validateSampleHasNoRelationshipsV2(sample);
-
-                    if (!isWebinSuperUser) {
-                      sample = validateSample(sample, true);
-                    }
-
-                    return sampleService.persistSampleV2(
-                        sample, oldSample.orElse(null), authProvider, isWebinSuperUser);
-                  })
+                  sample ->
+                      persistSampleV2WebinAuth(authProvider, webinSubmissionAccountId, sample))
               .collect(Collectors.toList());
     } else {
       createdSamples =
           samples.stream()
-              .map(
-                  sample -> {
-                    final String sampleAccession = sample.getAccession();
-                    final boolean isAapSuperUser = bioSamplesAapService.isWriteSuperUser();
-                    Optional<Sample> oldSample = Optional.empty();
-
-                    if (sampleAccession != null) {
-                      oldSample = sampleService.fetch(sampleAccession, Optional.empty());
-
-                      if (!isAapSuperUser && !oldSample.isPresent()) {
-                        throw new ResponseStatusException(
-                            HttpStatus.BAD_REQUEST,
-                            "New submission should not consist of an accession");
-                      }
-                    }
-
-                    sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
-                    sample = buildSample(sample, false);
-
-                    sampleService.validateSampleHasNoRelationshipsV2(sample);
-
-                    if (!isAapSuperUser) {
-                      sample = validateSample(sample, false);
-                    }
-
-                    return sampleService.persistSampleV2(
-                        sample, oldSample.orElse(null), authProvider, false);
-                  })
+              .map(sample -> persistSampleV2AAPAuth(authProvider, sample))
               .collect(Collectors.toList());
     }
 
@@ -327,6 +271,66 @@ public class BulkActionControllerV2 {
             + " samples.");
 
     return ResponseEntity.status(HttpStatus.CREATED).body(createdSamples);
+  }
+
+  private Sample persistSampleV2AAPAuth(final AuthorizationProvider authProvider, Sample sample) {
+    final String sampleAccession = sample.getAccession();
+    final boolean isAapSuperUser = bioSamplesAapService.isWriteSuperUser();
+    Optional<Sample> oldSample = Optional.empty();
+
+    if (sampleAccession != null) {
+      oldSample = sampleService.fetch(sampleAccession, Optional.empty());
+
+      if (!isAapSuperUser && oldSample.isEmpty()) {
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "New submission should not consist of an accession");
+      }
+    }
+
+    sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
+    sample = buildSample(sample, false);
+
+    sampleService.validateSampleHasNoRelationshipsV2(sample);
+
+    if (!isAapSuperUser) {
+      sample = validateSample(sample, false);
+    }
+
+    return sampleService.persistSampleV2(sample, oldSample.orElse(null), authProvider, false);
+  }
+
+  private Sample persistSampleV2WebinAuth(
+      final AuthorizationProvider authProvider,
+      final String webinSubmissionAccountId,
+      Sample sample) {
+    final String sampleAccession = sample.getAccession();
+    final boolean isWebinSuperUser =
+        bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
+
+    Optional<Sample> oldSample = Optional.empty();
+
+    if (sampleAccession != null) {
+      oldSample = sampleService.fetch(sampleAccession, Optional.empty());
+
+      if (!isWebinSuperUser && oldSample.isEmpty()) {
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "New submission should not consist of an accession");
+      }
+    }
+
+    sample =
+        bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+            sample, webinSubmissionAccountId, oldSample);
+    sample = buildSample(sample, isWebinSuperUser);
+
+    sampleService.validateSampleHasNoRelationshipsV2(sample);
+
+    if (!isWebinSuperUser) {
+      sample = validateSample(sample, true);
+    }
+
+    return sampleService.persistSampleV2(
+        sample, oldSample.orElse(null), authProvider, isWebinSuperUser);
   }
 
   private Sample buildSample(final Sample sample, final boolean isWebinSuperUser) {

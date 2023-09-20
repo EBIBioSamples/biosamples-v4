@@ -113,7 +113,7 @@ public class SampleReleaseRunner implements ApplicationRunner {
             webinEraServiceSampleReleaseGetUrl,
             HttpMethod.GET,
             new HttpEntity<>(SampleReleaseUtil.createHeaders()),
-            new ParameterizedTypeReference<List<String>>() {});
+            new ParameterizedTypeReference<>() {});
 
     log.info(
         "Response code "
@@ -136,7 +136,8 @@ public class SampleReleaseRunner implements ApplicationRunner {
                           bioSamplesAapClient,
                           pipelinesProperties,
                           restTemplate,
-                          accession);
+                          accession,
+                          fromDate);
 
                   futures.put(accession, executorService.submit(task));
                 });

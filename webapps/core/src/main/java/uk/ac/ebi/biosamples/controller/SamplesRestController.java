@@ -557,10 +557,10 @@ public class SamplesRestController {
           // Cannot submit sample with accession unless superuser
           throw new GlobalExceptions.SampleWithAccessionSubmissionException();
         } else {
-          final boolean notExistingAccession =
+          final boolean nonExistingAccession =
               sampleService.isNotExistingAccession(sample.getAccession());
 
-          if (!notExistingAccession) {
+          if (!nonExistingAccession) {
             // fetch old sample if sample exists
             oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
           }

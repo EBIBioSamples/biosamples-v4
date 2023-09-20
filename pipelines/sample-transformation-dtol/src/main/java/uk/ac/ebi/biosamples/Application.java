@@ -45,14 +45,13 @@ import uk.ac.ebi.biosamples.utils.PipelineUtils;
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
 @ComponentScan(
     excludeFilters = {
-        @ComponentScan.Filter(
-            type = FilterType.ASSIGNABLE_TYPE,
-            value = {EnaConfig.class, EraProDao.class, EnaSampleToBioSampleConversionService.class})
+      @ComponentScan.Filter(
+          type = FilterType.ASSIGNABLE_TYPE,
+          value = {EnaConfig.class, EraProDao.class, EnaSampleToBioSampleConversionService.class})
     })
 @Import(ExclusionConfiguration.class)
 @EnableCaching
 public class Application {
-
   public static void main(final String[] args) {
     final ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
     PipelineUtils.exitPipeline(ctx);

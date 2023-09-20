@@ -23,7 +23,6 @@ import org.springframework.util.StreamUtils;
 public class TestUtilities {
 
   public static String readFileAsString(final String pathToFile) {
-
     final String fileContent;
 
     try {

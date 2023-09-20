@@ -14,7 +14,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +21,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
+import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
@@ -47,9 +47,10 @@ import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
  */
 @Service
 public class SampleService {
+  private static final Logger log = LoggerFactory.getLogger(SampleService.class);
   private static final String NCBI_IMPORT_DOMAIN = "self.BiosampleImportNCBI";
   private static final String ENA_IMPORT_DOMAIN = "self.BiosampleImportENA";
-  private static final Logger log = LoggerFactory.getLogger(SampleService.class);
+  private static final String SRA_ACCESSION = "SRA accession";
 
   @Qualifier("SampleAccessionService")
   @Autowired
@@ -185,9 +186,9 @@ public class SampleService {
       final List<String> existingRelationshipTargets = new ArrayList<>();
 
       if (oldSample != null) {
-        final boolean isSavedSampleEmpty = isSavedSampleEmpty(sample, isWebinSuperUser, oldSample);
+        final boolean savedSampleEmpty = isSavedSampleEmpty(sample, isWebinSuperUser, oldSample);
 
-        if (isSavedSampleEmpty) {
+        if (savedSampleEmpty) {
           sample = Sample.Builder.fromSample(sample).withSubmitted(Instant.now()).build();
         }
 
@@ -208,11 +209,11 @@ public class SampleService {
 
                       return null;
                     })
-                .collect(Collectors.toList()));
+                .toList());
 
         sample =
             compareWithExistingAndUpdateSample(
-                sample, oldSample, existingRelationships, isSavedSampleEmpty, authProvider);
+                sample, oldSample, existingRelationships, savedSampleEmpty, authProvider);
 
         final Long oldSampleTaxId = oldSample.getTaxId();
 
@@ -243,7 +244,11 @@ public class SampleService {
       // deleted relationships
       sendMessageToRabbitForIndexingToSolr(sample.getAccession(), existingRelationshipTargets);
     } else {
-      sample = mongoAccessionService.generateAccession(sample);
+      final boolean sampleNotSraAccessioned =
+          sample.getAttributes().stream()
+              .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION));
+
+      sample = mongoAccessionService.generateAccession(sample, sampleNotSraAccessioned);
       sendMessageToRabbitForIndexingToSolr(sample.getAccession(), Collections.emptyList());
     }
 
@@ -285,15 +290,15 @@ public class SampleService {
             "Trying to update sample that exists in database, accession: {}",
             sample.getAccession());
 
-        final boolean isSampleInDbEmpty = isSavedSampleEmpty(sample, isWebinSuperUser, oldSample);
+        final boolean savedSampleEmpty = isSavedSampleEmpty(sample, isWebinSuperUser, oldSample);
 
-        if (isSampleInDbEmpty) {
+        if (savedSampleEmpty) {
           sample = Sample.Builder.fromSample(sample).withSubmitted(Instant.now()).build();
         }
 
         sample =
             compareWithExistingAndUpdateSample(
-                sample, oldSample, null, isSampleInDbEmpty, authProvider);
+                sample, oldSample, null, savedSampleEmpty, authProvider);
       } else {
         log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
       }
@@ -307,7 +312,11 @@ public class SampleService {
 
       sendMessageToRabbitForIndexingToSolr(sample.getAccession(), Collections.emptyList());
     } else {
-      sample = mongoAccessionService.generateAccession(sample);
+      final boolean sampleNotSraAccessioned =
+          sample.getAttributes().stream()
+              .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION));
+
+      sample = mongoAccessionService.generateAccession(sample, sampleNotSraAccessioned);
 
       sendMessageToRabbitForIndexingToSolr(sample.getAccession(), Collections.emptyList());
     }
@@ -327,7 +336,7 @@ public class SampleService {
   /*
   Called by V2 endpoints to build a sample with a newly generated sample accession
    */
-  public Sample accessionSample(final Sample sample) {
+  public Sample accessionSample(Sample sample) {
     final Collection<String> errors = sampleValidator.validate(sample);
 
     if (!errors.isEmpty()) {
@@ -335,7 +344,23 @@ public class SampleService {
       throw new GlobalExceptions.SampleValidationControllerException(String.join("|", errors));
     }
 
-    return mongoAccessionService.generateAccession(sample);
+    if (sample
+        .getWebinSubmissionAccountId()
+        .equalsIgnoreCase(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
+      // accessioning from ENA, sample name is the SRA accession here
+      final Attribute sraAccessionAttribute = Attribute.build(SRA_ACCESSION, sample.getName());
+
+      sample.getAttributes().add(sraAccessionAttribute);
+      sample = Sample.Builder.fromSample(sample).build();
+
+      return mongoAccessionService.generateAccession(sample, false);
+    } else {
+      return mongoAccessionService.generateAccession(sample, true);
+    }
+  }
+
+  public String generateOneSRAAccession() {
+    return mongoAccessionService.generateOneSRAAccession();
   }
 
   /*
@@ -343,7 +368,7 @@ public class SampleService {
    */
   public boolean isNotExistingAccession(final String accession) {
     if (accession != null) {
-      return !mongoSampleRepository.findById(accession).isPresent();
+      return mongoSampleRepository.findById(accession).isEmpty();
     } else {
       return true;
     }
@@ -364,7 +389,7 @@ public class SampleService {
   }
 
   private Sample compareWithExistingAndUpdateSample(
-      Sample newSample,
+      final Sample newSample,
       final Sample oldSample,
       final List<Relationship> existingRelationships,
       final boolean isEmptySample,
@@ -372,13 +397,10 @@ public class SampleService {
     Set<AbstractData> structuredData = new HashSet<>();
     boolean applyOldSampleStructuredData = false;
 
-    if (authProvider == AuthorizationProvider.WEBIN
-        && newSample
-            .getWebinSubmissionAccountId()
-            .equals(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
-      newSample =
-          Sample.Builder.fromSample(newSample).withRelationships(existingRelationships).build();
-    }
+    // retain existing relationships for supre user submissions, pipelines, ENA POSTED, not for file
+    // uploads though
+    handleRelationships(newSample, existingRelationships, authProvider);
+    handleSRAAccession(newSample, oldSample);
 
     if (newSample.getData().size() < 1) {
       log.info("No structured data in new sample");
@@ -408,6 +430,66 @@ public class SampleService {
           .withCreate(defineCreateDate(newSample, oldSample, authProvider))
           .withSubmitted(defineSubmittedDate(newSample, oldSample, isEmptySample, authProvider))
           .build();
+    }
+  }
+
+  private void handleRelationships(
+      final Sample newSample,
+      final List<Relationship> existingRelationships,
+      final AuthorizationProvider authProvider) {
+    if (authProvider == AuthorizationProvider.WEBIN
+        && newSample
+            .getWebinSubmissionAccountId()
+            .equals(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
+      if (newSample.getSubmittedVia() != SubmittedViaType.FILE_UPLOADER) {
+        if (existingRelationships != null && existingRelationships.size() > 0) {
+          newSample.getRelationships().addAll(existingRelationships);
+        }
+      }
+    }
+  }
+
+  private void handleSRAAccession(final Sample newSample, final Sample oldSample) {
+    final List<Attribute> oldSampleSraAccessions =
+        oldSample.getAttributes().stream()
+            .filter(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))
+            .toList();
+    final SortedSet<Attribute> newSampleAttributes = newSample.getAttributes();
+    final List<Attribute> newSampleSraAccessions =
+        newSampleAttributes.stream()
+            .filter(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))
+            .toList();
+
+    if (oldSampleSraAccessions.size() > 1) {
+      throw new GlobalExceptions.InvalidSampleException();
+    }
+
+    if (newSampleSraAccessions.size() > 1) {
+      throw new GlobalExceptions.InvalidSampleException();
+    }
+
+    Attribute oldSampleSraAccession = null;
+    Attribute newSampleSraAccession = null;
+
+    if (oldSampleSraAccessions.size() > 0) {
+      oldSampleSraAccession = oldSampleSraAccessions.get(0);
+    }
+
+    if (newSampleSraAccessions.size() > 0) {
+      newSampleSraAccession = newSampleSraAccessions.get(0);
+    }
+
+    if (newSampleSraAccession == null) {
+      newSampleSraAccession =
+          Objects.requireNonNullElseGet(
+              oldSampleSraAccession,
+              () -> Attribute.build(SRA_ACCESSION, generateOneSRAAccession()));
+      newSampleAttributes.add(newSampleSraAccession);
+    }
+
+    if (oldSampleSraAccession != null
+        && !oldSampleSraAccession.getValue().equals(newSampleSraAccession.getValue())) {
+      throw new GlobalExceptions.ChangedSRAAccessionException();
     }
   }
 

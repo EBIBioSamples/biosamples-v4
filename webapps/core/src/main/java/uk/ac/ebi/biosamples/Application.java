@@ -45,7 +45,6 @@ import org.springframework.web.filter.ShallowEtagHeaderFilter;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 import org.thymeleaf.templateresolver.UrlTemplateResolver;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.mongo.MongoProperties;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
@@ -75,7 +74,7 @@ public class Application extends SpringBootServletInitializer {
     SpringApplication.run(Application.class, args);
   }
 
-  @Value("${spring.cloud.gcp.project-id}")
+  @Value("${spring.cloud.gcp.project-id:no_project}")
   private String enaGcpProject;
 
   @Autowired private Environment environment;
@@ -183,13 +182,11 @@ public class Application extends SpringBootServletInitializer {
       final MongoSampleRepository mongoSampleRepository,
       final SampleToMongoSampleConverter sampleToMongoSampleConverter,
       final MongoSampleToSampleConverter mongoSampleToSampleConverter,
-      final MongoProperties mongoProperties,
       final MongoOperations mongoOperations) {
     return new MongoAccessionService(
         mongoSampleRepository,
         sampleToMongoSampleConverter,
         mongoSampleToSampleConverter,
-        mongoProperties.getAccessionPrefix(),
         mongoOperations);
   }
 

@@ -13,7 +13,7 @@ stages:
   - deploy
 
 maven-package:
-  image: openjdk:11
+  image: eclipse-temurin:17-jdk-alpine
   stage: package
   script:
     - './mvnw -q deploy -P embl-ebi -s ci_settings.xml -Dmaven.source.skip=true'
@@ -35,7 +35,6 @@ maven-package:
 #  when: manual
 
 clone-config-preproduction:
-  image: openjdk:11
   stage: config
   script:
     - git clone https://$BSD_INTERNAL_USER:$BSD_INTERNAL_PASS@gitlab.ebi.ac.uk/biosamples/biosamples-internal.git
@@ -51,7 +50,6 @@ clone-config-preproduction:
   when: manual
 
 clone-config-production:
-  image: openjdk:11
   stage: config
   script:
     - git clone https://$BSD_INTERNAL_USER:$BSD_INTERNAL_PASS@gitlab.ebi.ac.uk/biosamples/biosamples-internal.git

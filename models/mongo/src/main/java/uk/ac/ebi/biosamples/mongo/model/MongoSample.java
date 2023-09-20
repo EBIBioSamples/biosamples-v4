@@ -34,6 +34,7 @@ import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 @Document
 public class MongoSample {
   @Transient public static final String SEQUENCE_NAME = "accession_sequence";
+  @Transient public static final String SRA_SEQUENCE_NAME = "sra_accession_sequence";
 
   @Id protected String accession;
 

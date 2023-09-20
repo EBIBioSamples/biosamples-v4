@@ -17,7 +17,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.amqp.SimpleRabbitListenerContainerFactoryConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.core.MongoOperations;
-import uk.ac.ebi.biosamples.mongo.MongoProperties;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
@@ -36,15 +35,15 @@ import uk.ac.ebi.tsc.aap.client.repo.*;
       TokenRepositoryRest.class
     })
 public class Application {
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     System.exit(SpringApplication.exit(SpringApplication.run(Application.class, args)));
   }
 
   @Bean("biosamplesFileUploadSubmissionContainerFactory")
   public SimpleRabbitListenerContainerFactory containerFactory(
-      SimpleRabbitListenerContainerFactoryConfigurer configurer,
-      ConnectionFactory connectionFactory) {
-    SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+      final SimpleRabbitListenerContainerFactoryConfigurer configurer,
+      final ConnectionFactory connectionFactory) {
+    final SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
     factory.setConcurrentConsumers(5);
     factory.setMaxConcurrentConsumers(5);
     configurer.configure(factory, connectionFactory);
@@ -54,16 +53,14 @@ public class Application {
 
   @Bean(name = "SampleAccessionService")
   public MongoAccessionService mongoSampleAccessionService(
-      MongoSampleRepository mongoSampleRepository,
-      SampleToMongoSampleConverter sampleToMongoSampleConverter,
-      MongoSampleToSampleConverter mongoSampleToSampleConverter,
-      MongoProperties mongoProperties,
-      MongoOperations mongoOperations) {
+      final MongoSampleRepository mongoSampleRepository,
+      final SampleToMongoSampleConverter sampleToMongoSampleConverter,
+      final MongoSampleToSampleConverter mongoSampleToSampleConverter,
+      final MongoOperations mongoOperations) {
     return new MongoAccessionService(
         mongoSampleRepository,
         sampleToMongoSampleConverter,
         mongoSampleToSampleConverter,
-        mongoProperties.getAccessionPrefix(),
         mongoOperations);
   }
 }

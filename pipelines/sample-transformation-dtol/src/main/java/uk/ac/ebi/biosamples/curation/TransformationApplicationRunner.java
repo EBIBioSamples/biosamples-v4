@@ -37,15 +37,17 @@ import uk.ac.ebi.biosamples.utils.ThreadUtils;
 @Component
 public class TransformationApplicationRunner implements ApplicationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(TransformationApplicationRunner.class);
-
-  private final BioSamplesClient bioSamplesClient;
+  private final BioSamplesClient bioSamplesClientWebin;
+  private final BioSamplesClient bioSamplesClientAap;
   private final PipelinesProperties pipelinesProperties;
   private final PipelineFutureCallback pipelineFutureCallback;
 
   public TransformationApplicationRunner(
-      @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesClient,
+      @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesClientWebin,
+      final BioSamplesClient bioSamplesClientAap,
       final PipelinesProperties pipelinesProperties) {
-    this.bioSamplesClient = bioSamplesClient;
+    this.bioSamplesClientWebin = bioSamplesClientWebin;
+    this.bioSamplesClientAap = bioSamplesClientAap;
     this.pipelinesProperties = pipelinesProperties;
     pipelineFutureCallback = new PipelineFutureCallback();
   }
@@ -66,14 +68,20 @@ public class TransformationApplicationRunner implements ApplicationRunner {
             pipelinesProperties.getThreadCountMax())) {
 
       final Map<String, Future<PipelineResult>> futures = new HashMap<>();
+
       filters.add(new AttributeFilter.Builder("project name").withValue("DTOL").build());
+
       for (final EntityModel<Sample> sampleResource :
-          bioSamplesClient.fetchSampleResourceAll("", filters)) {
+          bioSamplesClientWebin.fetchSampleResourceAll("", filters)) {
         LOG.trace("Handling {}", sampleResource);
+
         final Sample sample = sampleResource.getContent();
+
         Objects.requireNonNull(sample);
 
-        final Callable<PipelineResult> task = new TransformationCallable(bioSamplesClient, sample);
+        final Callable<PipelineResult> task =
+            new TransformationCallable(sample, bioSamplesClientWebin, bioSamplesClientAap);
+
         futures.put(sample.getAccession(), executorService.submit(task));
 
         if (++sampleCount % 5000 == 0) {
@@ -88,6 +96,7 @@ public class TransformationApplicationRunner implements ApplicationRunner {
       throw e;
     } finally {
       final Instant endTime = Instant.now();
+
       LOG.info("Total samples processed {}", sampleCount);
       LOG.info("Total samples modified {}", pipelineFutureCallback.getTotalCount());
       LOG.info("Pipeline finished at {}", endTime);
@@ -102,14 +111,17 @@ public class TransformationApplicationRunner implements ApplicationRunner {
     String failures = null;
     if (!failedQueue.isEmpty()) {
       final List<String> fails = new LinkedList<>();
+
       while (failedQueue.peek() != null) {
         fails.add(failedQueue.poll());
       }
+
       failures = "Failed files (" + fails.size() + ") " + String.join(" , ", fails);
       LOG.warn(failures);
     } else {
       LOG.info("Pipeline completed without any failures");
     }
+
     return failures;
   }
 }

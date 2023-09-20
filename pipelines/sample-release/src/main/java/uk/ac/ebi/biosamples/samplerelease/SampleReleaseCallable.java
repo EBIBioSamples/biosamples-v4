@@ -11,6 +11,7 @@
 package uk.ac.ebi.biosamples.samplerelease;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -24,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleStatus;
 
@@ -35,7 +37,7 @@ public class SampleReleaseCallable implements Callable<Void> {
   private final RestTemplate restTemplate;
   private final String accession;
   private final List<String> curationDomainBlankList;
-
+  private final LocalDate localDate;
   static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
   SampleReleaseCallable(
@@ -43,12 +45,14 @@ public class SampleReleaseCallable implements Callable<Void> {
       final BioSamplesClient bioSamplesAapClient,
       final PipelinesProperties pipelinesProperties,
       final RestTemplate restTemplate,
-      final String accession) {
+      final String accession,
+      final LocalDate fromDate) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
     this.bioSamplesAapClient = bioSamplesAapClient;
     this.restTemplate = restTemplate;
     this.pipelinesProperties = pipelinesProperties;
     this.accession = accession;
+    this.localDate = fromDate;
 
     curationDomainBlankList = new ArrayList<>();
     curationDomainBlankList.add("");
@@ -63,31 +67,28 @@ public class SampleReleaseCallable implements Callable<Void> {
       log.info("Handling sample with accession " + accession);
 
       Optional<EntityModel<Sample>> optionalSampleResource =
-          bioSamplesWebinClient.fetchSampleResource(accession);
+          bioSamplesWebinClient.fetchSampleResource(
+              accession, Optional.of(curationDomainBlankList));
 
-      if (!optionalSampleResource.isPresent()) {
-        optionalSampleResource = bioSamplesAapClient.fetchSampleResource(accession);
+      if (optionalSampleResource.isEmpty()) {
+        optionalSampleResource =
+            bioSamplesAapClient.fetchSampleResource(
+                accession, Optional.of(curationDomainBlankList));
         isAap = true;
       }
 
       if (optionalSampleResource.isPresent()) {
-        final Sample sample = optionalSampleResource.get().getContent();
+        final Sample sampleWithoutCurations = optionalSampleResource.get().getContent();
 
-        log.info("Sample with accession " + sample.getAccession() + " exists in BioSamples");
+        log.info(
+            "Sample with accession "
+                + sampleWithoutCurations.getAccession()
+                + " exists in BioSamples");
 
-        if (sample.getRelease().isAfter(Instant.now())) {
+        if (sampleWithoutCurations.getRelease().isAfter(Instant.now())) {
           // private sample, make it public
           if (isAap) {
-            // re-fetch the sample without curations, passing curation domain list as blank to the
-            // client API fails with an exception if the sample is not present
-            // hence this workaround of fetching twice
-            // TODO: fix the curation domain blank list based find in client
-            final Optional<EntityModel<Sample>> optionalSampleResourceWithoutCurations =
-                bioSamplesAapClient.fetchSampleResource(
-                    accession, Optional.of(curationDomainBlankList));
-
-            final Sample sampleWithoutCurations =
-                optionalSampleResourceWithoutCurations.get().getContent();
+            handleInsdcStatusAttribute(sampleWithoutCurations);
 
             bioSamplesAapClient
                 .persistSampleResource(
@@ -97,16 +98,7 @@ public class SampleReleaseCallable implements Callable<Void> {
                         .build())
                 .getContent();
           } else {
-            // re-fetch the sample without curations, passing curation domain list as blank to the
-            // client API fails with an exception if the sample is not present
-            // hence this workaround of fetching twice
-            // TODO: fix the curation domain blank list based find in client
-            final Optional<EntityModel<Sample>> optionalSampleResourceWithoutCurations =
-                bioSamplesWebinClient.fetchSampleResource(
-                    accession, Optional.of(curationDomainBlankList));
-
-            final Sample sampleWithoutCurations =
-                optionalSampleResourceWithoutCurations.get().getContent();
+            handleInsdcStatusAttribute(sampleWithoutCurations);
 
             bioSamplesWebinClient
                 .persistSampleResource(
@@ -141,6 +133,16 @@ public class SampleReleaseCallable implements Callable<Void> {
 
       return null;
     }
+  }
+
+  private void handleInsdcStatusAttribute(final Sample sampleWithoutCurations) {
+    sampleWithoutCurations
+        .getAttributes()
+        .removeIf(attribute -> attribute.getType().equals("INSDC status"));
+    sampleWithoutCurations.getAttributes().add(Attribute.build("INSDC status", "public"));
+    sampleWithoutCurations
+        .getAttributes()
+        .add(Attribute.build("ENA first public", localDate.toString()));
   }
 
   private ResponseEntity deleteSampleReleaseMessageInEna(final String accession) {

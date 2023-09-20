@@ -50,12 +50,17 @@ public class StructuredDataGenericIntegration extends AbstractIntegration {
       Sample testSampleWithAccession =
           Sample.Builder.fromSample(testSample)
               .withAccession(Objects.requireNonNull(sampleContent).getAccession())
-              .build();
-
-      testSampleWithAccession =
-          Sample.Builder.fromSample(testSampleWithAccession)
               .withStatus(sampleContent.getStatus())
               .build();
+
+      final Attribute sraAccessionAttribute4 =
+          resource.getContent().getAttributes().stream()
+              .filter(attribute -> attribute.getType().equals("SRA accession"))
+              .findFirst()
+              .get();
+
+      testSampleWithAccession.getAttributes().add(sraAccessionAttribute4);
+      testSampleWithAccession = Sample.Builder.fromSample(testSampleWithAccession).build();
 
       accession = sampleContent.getAccession();
 
