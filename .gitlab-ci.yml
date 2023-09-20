@@ -1,4 +1,6 @@
 image: docker:stable
+services:
+  - docker:stable-dind
 
 variables:
   DEPLOY_PATH: ~/gitlab
@@ -6,6 +8,7 @@ variables:
 before_script:
   - echo $CI_BUILD_REF
   - echo $CI_PROJECT_DIR
+  - apk update && apk add git
 
 stages:
   - package
