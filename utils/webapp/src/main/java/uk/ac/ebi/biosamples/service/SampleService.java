@@ -173,8 +173,9 @@ public class SampleService {
       final Sample oldSample,
       final AuthorizationProvider authProvider,
       final boolean isWebinSuperUser) {
-    boolean isSampleTaxIdUpdated = false;
     final Collection<String> errors = sampleValidator.validate(sample);
+
+    boolean isSampleTaxIdUpdated = false;
 
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
@@ -604,5 +605,31 @@ public class SampleService {
     if (sample.getRelationships().size() > 0) {
       throw new GlobalExceptions.SampleWithRelationshipSubmissionExceptionV2();
     }
+  }
+
+  public Optional<Sample> validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
+      final Sample sample, final boolean anySuperUser) {
+    if (!anySuperUser) {
+      if (sample.hasAccession()) {
+        throw new GlobalExceptions.SampleWithAccessionSubmissionException();
+      }
+
+      if (sample.getAttributes() != null
+          && sample.getAttributes().stream()
+              .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))) {
+        throw new GlobalExceptions.SampleWithAccessionSubmissionException();
+      }
+    } else {
+      if (sample.hasAccession()) {
+        final boolean nonExistingAccession = isNotExistingAccession(sample.getAccession());
+
+        if (!nonExistingAccession) {
+          // fetch old sample if sample exists
+          return fetch(sample.getAccession(), Optional.empty());
+        }
+      }
+    }
+
+    return Optional.empty();
   }
 }

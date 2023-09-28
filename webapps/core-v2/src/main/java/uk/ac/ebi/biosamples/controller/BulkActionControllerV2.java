@@ -22,7 +22,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -41,6 +40,7 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 @CrossOrigin
 public class BulkActionControllerV2 {
   private final Logger log = LoggerFactory.getLogger(getClass());
+  private static final String SRA_ACCESSION = "SRA accession";
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
@@ -78,7 +78,10 @@ public class BulkActionControllerV2 {
 
     samples.forEach(
         sample -> {
-          if (sample.hasAccession()) {
+          if (sample.hasAccession()
+              || sample.getAttributes() != null
+                  && sample.getAttributes().stream()
+                      .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))) {
             throw new GlobalExceptions.SampleWithAccessionSubmissionException();
           }
         });
@@ -274,18 +277,10 @@ public class BulkActionControllerV2 {
   }
 
   private Sample persistSampleV2AAPAuth(final AuthorizationProvider authProvider, Sample sample) {
-    final String sampleAccession = sample.getAccession();
     final boolean isAapSuperUser = bioSamplesAapService.isWriteSuperUser();
-    Optional<Sample> oldSample = Optional.empty();
-
-    if (sampleAccession != null) {
-      oldSample = sampleService.fetch(sampleAccession, Optional.empty());
-
-      if (!isAapSuperUser && oldSample.isEmpty()) {
-        throw new ResponseStatusException(
-            HttpStatus.BAD_REQUEST, "New submission should not consist of an accession");
-      }
-    }
+    final Optional<Sample> oldSample =
+        sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
+            sample, isAapSuperUser);
 
     sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
     sample = buildSample(sample, false);
@@ -303,20 +298,11 @@ public class BulkActionControllerV2 {
       final AuthorizationProvider authProvider,
       final String webinSubmissionAccountId,
       Sample sample) {
-    final String sampleAccession = sample.getAccession();
     final boolean isWebinSuperUser =
         bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
-
-    Optional<Sample> oldSample = Optional.empty();
-
-    if (sampleAccession != null) {
-      oldSample = sampleService.fetch(sampleAccession, Optional.empty());
-
-      if (!isWebinSuperUser && oldSample.isEmpty()) {
-        throw new ResponseStatusException(
-            HttpStatus.BAD_REQUEST, "New submission should not consist of an accession");
-      }
-    }
+    final Optional<Sample> oldSample =
+        sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
+            sample, isWebinSuperUser);
 
     sample =
         bioSamplesWebinAuthenticationService.handleWebinUserSubmission(

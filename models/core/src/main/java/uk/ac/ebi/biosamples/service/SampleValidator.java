@@ -58,7 +58,6 @@ public class SampleValidator {
   }
 
   public void validate(final Sample sample, final Collection<String> errors) {
-
     if (sample.getRelease() == null) {
       errors.add("Must provide release date in format YYYY-MM-DDTHH:MM:SS");
     }
