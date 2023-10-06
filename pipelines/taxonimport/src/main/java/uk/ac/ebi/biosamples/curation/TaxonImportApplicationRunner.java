@@ -36,7 +36,7 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleAnalytics;
-import uk.ac.ebi.biosamples.utils.mongo.AnalyticsService;
+import uk.ac.ebi.biosamples.mongo.service.AnalyticsService;
 
 @Component
 public class TaxonImportApplicationRunner implements ApplicationRunner {

@@ -177,10 +177,10 @@ public class BulkActionControllerV2 {
         accessions.stream()
             .map(
                 accession -> {
-                  final String cleanAccession = accession.trim();
+                  final String justAccession = accession.trim();
                   final Optional<Sample> sampleOptional =
                       sampleService.fetch(
-                          cleanAccession, Optional.of(Collections.singletonList("")));
+                          justAccession, Optional.of(Collections.singletonList("")));
 
                   if (sampleOptional.isPresent()) {
                     final boolean webinAuth =

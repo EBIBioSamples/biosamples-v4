@@ -25,7 +25,7 @@ import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
+import uk.ac.ebi.biosamples.mongo.service.SampleReadService;
 
 @Service
 public class MessagingService {
