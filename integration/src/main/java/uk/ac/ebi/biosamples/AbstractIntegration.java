@@ -31,11 +31,11 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 public abstract class AbstractIntegration implements ApplicationRunner, ExitCodeGenerator {
   private final Logger log = LoggerFactory.getLogger(getClass());
-  private int exitCode = 1;
+  final BioSamplesClient publicClient;
+  private int exitCode = 1; // don't make this final
   private BioSamplesClient webinClient;
   protected final BioSamplesClient client;
   protected final String defaultIntegrationSubmissionDomain = "self.BiosampleIntegrationTest";
-  final BioSamplesClient publicClient;
 
   protected abstract void phaseOne();
 
@@ -75,31 +75,33 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
   public void run(final ApplicationArguments args) throws Exception {
     final Phase phase = Phase.readPhaseFromArguments(args);
     switch (phase) {
-      case ONE -> {
+      case ONE:
         phaseOne();
         TimeUnit.SECONDS.sleep(1);
-      }
-      case TWO -> {
+        break;
+      case TWO:
         phaseTwo();
         TimeUnit.SECONDS.sleep(1);
-      }
-      case THREE -> {
+        break;
+      case THREE:
         phaseThree();
         TimeUnit.SECONDS.sleep(1);
-      }
-      case FOUR -> {
+        break;
+      case FOUR:
         phaseFour();
         TimeUnit.SECONDS.sleep(1);
-      }
-      case FIVE -> {
+        break;
+      case FIVE:
         phaseFive();
         TimeUnit.SECONDS.sleep(1);
-      }
-      case SIX -> {
+        break;
+      case SIX:
         phaseSix();
         TimeUnit.SECONDS.sleep(1);
-      }
-      default -> log.warn("Invalid integration test phase {}", phase);
+        break;
+      default:
+        log.warn("Invalid integration test phase {}", phase);
+        break;
     }
 
     close();

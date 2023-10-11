@@ -29,7 +29,6 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 public class SampleSubmissionServiceV2 {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final RestOperations restOperations;
   private final URI uriV2;
 
