@@ -32,12 +32,8 @@ import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSampleMessage;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleMessageRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
-import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
-import uk.ac.ebi.biosamples.mongo.service.MongoRelationshipToRelationshipConverter;
-import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
-import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
+import uk.ac.ebi.biosamples.mongo.service.*;
 import uk.ac.ebi.biosamples.service.security.BioSamplesCrossSourceIngestAccessControlService;
-import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
 
 /**
  * Service layer business logic for centralising repository access and conversions between different
@@ -173,8 +169,9 @@ public class SampleService {
       final Sample oldSample,
       final AuthorizationProvider authProvider,
       final boolean isWebinSuperUser) {
-    boolean isSampleTaxIdUpdated = false;
     final Collection<String> errors = sampleValidator.validate(sample);
+
+    boolean isSampleTaxIdUpdated = false;
 
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
@@ -399,7 +396,7 @@ public class SampleService {
 
     // retain existing relationships for supre user submissions, pipelines, ENA POSTED, not for file
     // uploads though
-    handleRelationships(newSample, existingRelationships, authProvider);
+    handleRelationships(newSample, existingRelationships);
     handleSRAAccession(newSample, oldSample);
 
     if (newSample.getData().size() < 1) {
@@ -434,15 +431,16 @@ public class SampleService {
   }
 
   private void handleRelationships(
-      final Sample newSample,
-      final List<Relationship> existingRelationships,
-      final AuthorizationProvider authProvider) {
-    if (authProvider == AuthorizationProvider.WEBIN
-        && newSample
-            .getWebinSubmissionAccountId()
-            .equals(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
-      if (newSample.getSubmittedVia() != SubmittedViaType.FILE_UPLOADER) {
-        if (existingRelationships != null && existingRelationships.size() > 0) {
+      final Sample newSample, final List<Relationship> existingRelationships) {
+    if (existingRelationships != null && existingRelationships.size() > 0) {
+      final String webinId = newSample.getWebinSubmissionAccountId();
+      final String domain = newSample.getDomain();
+
+      // superuser and non file upload submissions
+      if ((webinId != null
+              && webinId.equals(bioSamplesProperties.getBiosamplesClientWebinUsername()))
+          || domain != null && domain.equals(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
+        if (newSample.getSubmittedVia() != SubmittedViaType.FILE_UPLOADER) {
           newSample.getRelationships().addAll(existingRelationships);
         }
       }
@@ -604,5 +602,31 @@ public class SampleService {
     if (sample.getRelationships().size() > 0) {
       throw new GlobalExceptions.SampleWithRelationshipSubmissionExceptionV2();
     }
+  }
+
+  public Optional<Sample> validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
+      final Sample sample, final boolean anySuperUser) {
+    if (!anySuperUser) {
+      if (sample.hasAccession()) {
+        throw new GlobalExceptions.SampleWithAccessionSubmissionException();
+      }
+
+      if (sample.getAttributes() != null
+          && sample.getAttributes().stream()
+              .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))) {
+        throw new GlobalExceptions.SampleWithAccessionSubmissionException();
+      }
+    } else {
+      if (sample.hasAccession()) {
+        final boolean nonExistingAccession = isNotExistingAccession(sample.getAccession());
+
+        if (!nonExistingAccession) {
+          // fetch old sample if sample exists
+          return fetch(sample.getAccession(), Optional.empty());
+        }
+      }
+    }
+
+    return Optional.empty();
   }
 }

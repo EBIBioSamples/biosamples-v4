@@ -25,14 +25,13 @@ import uk.ac.ebi.biosamples.model.SampleAnalytics;
 import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountEntry;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountListContent;
+import uk.ac.ebi.biosamples.mongo.service.AnalyticsService;
 import uk.ac.ebi.biosamples.service.FacetService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
-import uk.ac.ebi.biosamples.utils.mongo.AnalyticsService;
 
 @Component
 public class AnalyticsApplicationRunner implements ApplicationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(AnalyticsApplicationRunner.class);
-
   private final AnalyticsService analyticsService;
   private final PipelineFutureCallback pipelineFutureCallback;
   private final FacetService facetService;

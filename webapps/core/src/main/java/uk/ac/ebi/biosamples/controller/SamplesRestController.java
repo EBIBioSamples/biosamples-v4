@@ -61,6 +61,7 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 @RequestMapping("/samples")
 @CrossOrigin
 public class SamplesRestController {
+  private static final String SRA_ACCESSION = "SRA accession";
   private final SamplePageService samplePageService;
   private final SampleService sampleService;
   private final FilterService filterService;
@@ -478,11 +479,16 @@ public class SamplesRestController {
       consumes = {MediaType.APPLICATION_JSON_VALUE},
       produces = {MediaType.APPLICATION_JSON_VALUE})
   @RequestMapping("/accession")
-  public ResponseEntity<EntityModel<Sample>> accessionSample(
+  public ResponseEntity<EntityModel<Sample>> accession(
       @RequestBody Sample sample, @RequestHeader(name = "Authorization") final String token) {
+    final boolean sampleHasSRAAccessionInAttributes =
+        sample.getAttributes() != null
+            && sample.getAttributes().stream()
+                .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION));
+
     boolean isWebinSuperUser = false;
 
-    if (sample.hasAccession()) {
+    if (sample.hasAccession() || sampleHasSRAAccessionInAttributes) {
       throw new GlobalExceptions.SampleWithAccessionSubmissionException();
     }
 
@@ -528,6 +534,7 @@ public class SamplesRestController {
 
     // can't submit structured data with the sample
     final Set<AbstractData> structuredData = sample.getData();
+    final Optional<Sample> oldSample;
 
     if (structuredData != null && !structuredData.isEmpty()) {
       throw new GlobalExceptions.SampleValidationException(
@@ -540,7 +547,6 @@ public class SamplesRestController {
             ? AuthorizationProvider.WEBIN
             : AuthorizationProvider.AAP;
     boolean isWebinSuperUser = false;
-    Optional<Sample> oldSample = Optional.empty();
 
     if (authProvider == AuthorizationProvider.WEBIN) {
       final String webinSubmissionAccountId = authToken.get().getUser();
@@ -552,39 +558,17 @@ public class SamplesRestController {
       isWebinSuperUser =
           bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
 
-      if (sample.hasAccession()) {
-        if (!isWebinSuperUser) {
-          // Cannot submit sample with accession unless superuser
-          throw new GlobalExceptions.SampleWithAccessionSubmissionException();
-        } else {
-          final boolean nonExistingAccession =
-              sampleService.isNotExistingAccession(sample.getAccession());
-
-          if (!nonExistingAccession) {
-            // fetch old sample if sample exists
-            oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
-          }
-        }
-      }
+      oldSample =
+          sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
+              sample, isWebinSuperUser);
 
       sample =
           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
               sample, webinSubmissionAccountId, oldSample);
     } else {
-      if (sample.hasAccession()) {
-        if (!bioSamplesAapService.isWriteSuperUser()) {
-          // Cannot submit sample with accession unless superuser
-          throw new GlobalExceptions.SampleWithAccessionSubmissionException();
-        } else {
-          final boolean notExistingAccession =
-              sampleService.isNotExistingAccession(sample.getAccession());
-
-          if (!notExistingAccession) {
-            // fetch old sample if sample exists
-            oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
-          }
-        }
-      }
+      oldSample =
+          sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
+              sample, bioSamplesAapService.isWriteSuperUser());
 
       sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
     }

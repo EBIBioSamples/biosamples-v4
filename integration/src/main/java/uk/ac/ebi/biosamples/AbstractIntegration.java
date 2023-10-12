@@ -31,13 +31,11 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 public abstract class AbstractIntegration implements ApplicationRunner, ExitCodeGenerator {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
-  protected final String defaultIntegrationSubmissionDomain = "self.BiosampleIntegrationTest";
-  private int exitCode = 1;
-  protected final BioSamplesClient client;
   final BioSamplesClient publicClient;
-
+  private int exitCode = 1; // don't make this final
   private BioSamplesClient webinClient;
+  protected final BioSamplesClient client;
+  protected final String defaultIntegrationSubmissionDomain = "self.BiosampleIntegrationTest";
 
   protected abstract void phaseOne();
 

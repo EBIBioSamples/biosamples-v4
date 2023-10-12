@@ -56,7 +56,7 @@ public class EnaImportRunner implements ApplicationRunner {
   static final Set<String> todaysKilledSamples = new HashSet<>();
 
   @Override
-  public void run(final ApplicationArguments args) {
+  public void run(final ApplicationArguments args) throws Exception {
     log.info("Processing ENA pipeline...");
 
     boolean isPassed = true;
@@ -100,7 +100,7 @@ public class EnaImportRunner implements ApplicationRunner {
           "Suppression Runner and killed runner is to be executed: " + importSuppressedAndKilled);
 
       // Import ENA samples
-      // importEraSamples(fromDate, toDate);
+      importEraSamples(fromDate, toDate);
 
       if (importSuppressedAndKilled) {
         try {
