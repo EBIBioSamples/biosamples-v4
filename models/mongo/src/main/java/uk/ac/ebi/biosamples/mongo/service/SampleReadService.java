@@ -37,6 +37,7 @@ import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 @Service
 public class SampleReadService {
   private static final Logger LOGGER = LoggerFactory.getLogger(SampleReadService.class);
+  private static final String SRA_ACCESSION = "SRA accession";
   private final MongoSampleRepository mongoSampleRepository;
   private final MongoSampleToSampleConverter mongoSampleToSampleConverter;
   private final CurationReadService curationReadService;
@@ -122,7 +123,7 @@ public class SampleReadService {
 
     final Optional<Attribute> sraAccessionOptional =
         mongoSample.getAttributes().stream()
-            .filter(attribute -> attribute.getType().equals("SRA accession"))
+            .filter(attribute -> attribute.getType().equals(SRA_ACCESSION))
             .findAny();
 
     if (sraAccessionOptional.isEmpty()) {}

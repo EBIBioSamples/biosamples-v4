@@ -204,6 +204,7 @@ public class SampleRestController {
 
     final SortedSet<AbstractData> abstractData = sample.getData();
     boolean isWebinSuperUser = false;
+    final String webinIdFromAuthToken;
 
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
       throw new GlobalExceptions.SampleAccessionMismatchException();
@@ -224,7 +225,7 @@ public class SampleRestController {
     }
 
     if (authProvider == AuthorizationProvider.WEBIN) {
-      final String webinIdFromAuthToken = authToken.get().getUser();
+      webinIdFromAuthToken = authToken.get().getUser();
 
       if (webinIdFromAuthToken == null) {
         throw new GlobalExceptions.WebinTokenInvalidException();

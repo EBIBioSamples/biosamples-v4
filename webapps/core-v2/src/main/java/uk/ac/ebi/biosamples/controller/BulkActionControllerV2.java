@@ -24,6 +24,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
@@ -281,11 +282,13 @@ public class BulkActionControllerV2 {
     final Optional<Sample> oldSample =
         sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
             sample, isAapSuperUser);
+    final Set<Relationship> relationships =
+        sampleService.handleSampleRelationshipsV2(sample, oldSample, isAapSuperUser);
 
     sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
-    sample = buildSample(sample, false);
+    sample = buildSample(sample, relationships, false);
 
-    sampleService.validateSampleHasNoRelationshipsV2(sample);
+    sampleService.handleSampleRelationshipsV2(sample, oldSample, isAapSuperUser);
 
     if (!isAapSuperUser) {
       sample = validateSample(sample, false);
@@ -303,13 +306,14 @@ public class BulkActionControllerV2 {
     final Optional<Sample> oldSample =
         sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
             sample, isWebinSuperUser);
+    final Set<Relationship> relationships =
+        sampleService.handleSampleRelationshipsV2(sample, oldSample, isWebinSuperUser);
 
     sample =
         bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
             sample, webinSubmissionAccountId, oldSample);
-    sample = buildSample(sample, isWebinSuperUser);
 
-    sampleService.validateSampleHasNoRelationshipsV2(sample);
+    sample = buildSample(sample, relationships, isWebinSuperUser);
 
     if (!isWebinSuperUser) {
       sample = validateSample(sample, true);
@@ -319,8 +323,10 @@ public class BulkActionControllerV2 {
         sample, oldSample.orElse(null), authProvider, isWebinSuperUser);
   }
 
-  private Sample buildSample(final Sample sample, final boolean isWebinSuperUser) {
+  private Sample buildSample(
+      final Sample sample, final Set<Relationship> relationships, final boolean isWebinSuperUser) {
     return Sample.Builder.fromSample(sample)
+        .withRelationships(relationships)
         .withCreate(sampleService.defineCreateDate(sample, isWebinSuperUser))
         .withSubmitted(sampleService.defineSubmittedDate(sample, isWebinSuperUser))
         .withUpdate(Instant.now())

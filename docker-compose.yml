@@ -61,6 +61,9 @@ services:
     - server.context-path=/biosamples
     #Enable use behind a proxy with original urls
     - server.use-forward-headers=true
+    # show error messages
+    - server.error.include-binding-errors=always
+    - server.error.include-message=always
     #Improve logging
     - LOGGING_FILE=/logs/webapps-core.log
     - server.tomcat.accesslog.enabled=true
@@ -144,6 +147,9 @@ services:
       #Configure root path to server from
       - server.servlet.context-path=/biosamples/v2
       - server.context-path=/biosamples/v2
+      # show error messages
+      - server.error.include-binding-errors=always
+      - server.error.include-message=always
       #Enable use behind a proxy with original urls
       - server.use-forward-headers=true
       #Improve logging
