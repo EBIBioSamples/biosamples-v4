@@ -10,10 +10,13 @@
 */
 package uk.ac.ebi.biosamples.service;
 
+import static java.util.stream.Collectors.toSet;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -210,7 +213,12 @@ public class SampleService {
 
         sample =
             compareWithExistingAndUpdateSample(
-                sample, oldSample, existingRelationships, savedSampleEmpty, authProvider);
+                sample,
+                oldSample,
+                existingRelationships,
+                savedSampleEmpty,
+                authProvider,
+                isWebinSuperUser);
 
         final Long oldSampleTaxId = oldSample.getTaxId();
 
@@ -295,7 +303,7 @@ public class SampleService {
 
         sample =
             compareWithExistingAndUpdateSample(
-                sample, oldSample, null, savedSampleEmpty, authProvider);
+                sample, oldSample, null, savedSampleEmpty, authProvider, isWebinSuperUser);
       } else {
         log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
       }
@@ -390,14 +398,15 @@ public class SampleService {
       final Sample oldSample,
       final List<Relationship> existingRelationships,
       final boolean isEmptySample,
-      final AuthorizationProvider authProvider) {
+      final AuthorizationProvider authProvider,
+      final boolean isWebinSuperUser) {
     Set<AbstractData> structuredData = new HashSet<>();
     boolean applyOldSampleStructuredData = false;
 
     // retain existing relationships for supre user submissions, pipelines, ENA POSTED, not for file
     // uploads though
     handleRelationships(newSample, existingRelationships);
-    handleSRAAccession(newSample, oldSample);
+    handleSRAAccession(newSample, oldSample, isWebinSuperUser);
 
     if (newSample.getData().size() < 1) {
       log.info("No structured data in new sample");
@@ -447,7 +456,8 @@ public class SampleService {
     }
   }
 
-  private void handleSRAAccession(final Sample newSample, final Sample oldSample) {
+  private void handleSRAAccession(
+      final Sample newSample, final Sample oldSample, final boolean isWebinSuperUser) {
     final List<Attribute> oldSampleSraAccessions =
         oldSample.getAttributes().stream()
             .filter(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))
@@ -487,7 +497,9 @@ public class SampleService {
 
     if (oldSampleSraAccession != null
         && !oldSampleSraAccession.getValue().equals(newSampleSraAccession.getValue())) {
-      throw new GlobalExceptions.ChangedSRAAccessionException();
+      if (!isWebinSuperUser) {
+        throw new GlobalExceptions.ChangedSRAAccessionException();
+      }
     }
   }
 
@@ -598,10 +610,38 @@ public class SampleService {
         .build();
   }
 
-  public void validateSampleHasNoRelationshipsV2(final Sample sample) {
-    if (sample.getRelationships().size() > 0) {
-      throw new GlobalExceptions.SampleWithRelationshipSubmissionExceptionV2();
+  public Set<Relationship> handleSampleRelationshipsV2(
+      final Sample sample,
+      final Optional<Sample> oldSampleOptional,
+      final boolean isSuperUserSubmission) {
+    final SortedSet<Relationship> sampleRelationships = sample.getRelationships();
+
+    if (!isSuperUserSubmission) {
+      if (sampleRelationships != null && sampleRelationships.size() > 0) {
+        throw new GlobalExceptions.SampleWithRelationshipSubmissionExceptionV2();
+      }
     }
+
+    if (sample.hasAccession()) {
+      if (oldSampleOptional.isPresent()) {
+        final Sample oldSample = oldSampleOptional.get();
+
+        if (oldSample.getRelationships() != null && oldSample.getRelationships().size() > 0) {
+          return Stream.of(oldSample.getRelationships(), sampleRelationships)
+              .filter(Objects::nonNull)
+              .flatMap(Set::stream)
+              .collect(toSet());
+        }
+      } else {
+        return sampleRelationships;
+      }
+    } else {
+      if (sampleRelationships != null && sampleRelationships.size() > 0) {
+        throw new GlobalExceptions.SampleWithRelationshipSubmissionExceptionV2();
+      }
+    }
+
+    return null;
   }
 
   public Optional<Sample> validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
