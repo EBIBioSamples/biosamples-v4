@@ -396,7 +396,7 @@ public class SampleService {
 
     // retain existing relationships for supre user submissions, pipelines, ENA POSTED, not for file
     // uploads though
-    handleRelationships(newSample, existingRelationships, authProvider);
+    handleRelationships(newSample, existingRelationships);
     handleSRAAccession(newSample, oldSample);
 
     if (newSample.getData().size() < 1) {
@@ -431,15 +431,16 @@ public class SampleService {
   }
 
   private void handleRelationships(
-      final Sample newSample,
-      final List<Relationship> existingRelationships,
-      final AuthorizationProvider authProvider) {
-    if (authProvider == AuthorizationProvider.WEBIN
-        && newSample
-            .getWebinSubmissionAccountId()
-            .equals(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
-      if (newSample.getSubmittedVia() != SubmittedViaType.FILE_UPLOADER) {
-        if (existingRelationships != null && existingRelationships.size() > 0) {
+      final Sample newSample, final List<Relationship> existingRelationships) {
+    if (existingRelationships != null && existingRelationships.size() > 0) {
+      final String webinId = newSample.getWebinSubmissionAccountId();
+      final String domain = newSample.getDomain();
+
+      // superuser and non file upload submissions
+      if ((webinId != null
+              && webinId.equals(bioSamplesProperties.getBiosamplesClientWebinUsername()))
+          || domain != null && domain.equals(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
+        if (newSample.getSubmittedVia() != SubmittedViaType.FILE_UPLOADER) {
           newSample.getRelationships().addAll(existingRelationships);
         }
       }
