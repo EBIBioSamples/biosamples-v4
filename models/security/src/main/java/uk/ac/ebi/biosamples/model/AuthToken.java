@@ -17,7 +17,6 @@ public class AuthToken {
   private final String algorithm;
   private final AuthorizationProvider authority;
   private final String user;
-  private String email;
   private final List<String> roles;
 
   public AuthToken(
@@ -41,10 +40,6 @@ public class AuthToken {
 
   public String getUser() {
     return user;
-  }
-
-  public String getEmail() {
-    return email;
   }
 
   public List<String> getRoles() {

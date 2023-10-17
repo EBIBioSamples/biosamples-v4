@@ -263,7 +263,7 @@ public class BulkActionControllerV2 {
     } else {
       createdSamples =
           samples.stream()
-              .map(sample -> persistSampleV2AAPAuth(authProvider, sample))
+              .map(sample -> persistSampleV2AapAuth(authProvider, sample))
               .collect(Collectors.toList());
     }
 
@@ -277,7 +277,7 @@ public class BulkActionControllerV2 {
     return ResponseEntity.status(HttpStatus.CREATED).body(createdSamples);
   }
 
-  private Sample persistSampleV2AAPAuth(final AuthorizationProvider authProvider, Sample sample) {
+  private Sample persistSampleV2AapAuth(final AuthorizationProvider authProvider, Sample sample) {
     final boolean isAapSuperUser = bioSamplesAapService.isWriteSuperUser();
     final Optional<Sample> oldSample =
         sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(

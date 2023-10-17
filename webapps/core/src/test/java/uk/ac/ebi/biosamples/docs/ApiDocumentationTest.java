@@ -42,7 +42,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.*;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -53,7 +52,6 @@ import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
-import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.certification.*;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.mongo.service.CurationReadService;
@@ -320,8 +318,6 @@ public class ApiDocumentationTest {
   public void postSampleWithWebinAuthentication() throws Exception {
     final Sample sample = faker.getExampleSample();
     final Sample sampleWithWebinId = faker.getExampleSampleWithWebinId();
-    final SubmissionAccount submissionAccount = new SubmissionAccount();
-    submissionAccount.setId("WEBIN-12345");
 
     final String sampleToSubmit =
         "{ "
@@ -336,8 +332,6 @@ public class ApiDocumentationTest {
     when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
             any(Sample.class), any(String.class), eq(Optional.empty())))
         .thenReturn(sampleWithWebinId);
-    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
-        .thenReturn(ResponseEntity.ok(submissionAccount));
     when(sampleService.persistSample(
             any(Sample.class), eq(null), eq(AuthorizationProvider.WEBIN), eq(false)))
         .thenReturn(sampleWithWebinId);
@@ -525,14 +519,9 @@ public class ApiDocumentationTest {
             // "\", " +
             + "}";
 
-    final SubmissionAccount submissionAccount = new SubmissionAccount();
-    submissionAccount.setId("WEBIN-12345");
-
     when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
             any(Sample.class), any(String.class), eq(Optional.empty())))
         .thenReturn(sampleWithWebinId);
-    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
-        .thenReturn(ResponseEntity.ok(submissionAccount));
     when(sampleService.buildPrivateSample(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
     when(sampleService.persistSample(
             any(Sample.class), eq(null), eq(AuthorizationProvider.WEBIN), eq(false)))
@@ -749,14 +738,9 @@ public class ApiDocumentationTest {
             .withAttributes(Collections.unmodifiableList(Arrays.asList(attribute)))
             .build();
 
-    final SubmissionAccount submissionAccount = new SubmissionAccount();
-    submissionAccount.setId("WEBIN-12345");
-
     when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
             any(Sample.class), any(String.class), eq(Optional.empty())))
         .thenReturn(sampleWithWebinId);
-    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
-        .thenReturn(ResponseEntity.ok(submissionAccount));
     when(sampleService.fetch(eq(sampleWithWebinId.getAccession()), eq(Optional.empty())))
         .thenReturn(Optional.of(sampleWithWebinId));
     when(aapService.handleSampleDomain(sampleWithWebinId, Optional.empty()))
@@ -900,15 +884,10 @@ public class ApiDocumentationTest {
   public void putSampleWithWebinAuthentication() throws Exception {
 
     final Sample sampleWithWebinId = faker.getExampleSampleWithWebinId();
-    final SubmissionAccount submissionAccount = new SubmissionAccount();
-
-    submissionAccount.setId("WEBIN-12345");
 
     when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
             any(Sample.class), any(String.class), eq(Optional.of(sampleWithWebinId))))
         .thenReturn(sampleWithWebinId);
-    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
-        .thenReturn(ResponseEntity.ok(submissionAccount));
     when(sampleService.fetch(eq(sampleWithWebinId.getAccession()), eq(Optional.empty())))
         .thenReturn(Optional.of(sampleWithWebinId));
     when(sampleService.isNotExistingAccession(sampleWithWebinId.getAccession())).thenReturn(false);
@@ -1010,15 +989,11 @@ public class ApiDocumentationTest {
   @Test
   public void postCurationLinkWithWebinAuthentication() throws Exception {
     final CurationLink curationLink = faker.getExampleCurationLinkWithWebinId();
-    final SubmissionAccount submissionAccount = new SubmissionAccount();
-    submissionAccount.setId("WEBIN-12345");
 
     when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
             eq(curationLink), eq("WEBIN-12345")))
         .thenReturn(curationLink);
     when(curationPersistService.store(curationLink)).thenReturn(curationLink);
-    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
-        .thenReturn(ResponseEntity.ok(submissionAccount));
     when(accessControlService.extractToken(anyString()))
         .thenReturn(
             Optional.of(

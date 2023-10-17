@@ -21,7 +21,6 @@ import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
@@ -45,29 +44,6 @@ public class BioSamplesWebinAuthenticationService {
     this.bioSamplesCrossSourceIngestAccessControlService =
         bioSamplesCrossSourceIngestAccessControlService;
     this.bioSamplesProperties = bioSamplesProperties;
-  }
-
-  public ResponseEntity<SubmissionAccount> getWebinSubmissionAccount(final String webinAuthToken) {
-    final HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-    headers.set("Authorization", "Bearer " + webinAuthToken);
-    final HttpEntity<String> entity = new HttpEntity<>(headers);
-
-    try {
-      final ResponseEntity<SubmissionAccount> responseEntity =
-          restTemplate.exchange(
-              bioSamplesProperties.getBiosamplesWebinAuthFetchSubmissionAccountUri(),
-              HttpMethod.GET,
-              entity,
-              SubmissionAccount.class);
-      if (responseEntity.getStatusCode() == HttpStatus.OK) {
-        return responseEntity;
-      } else {
-        return null;
-      }
-    } catch (final Exception e) {
-      throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
-    }
   }
 
   public ResponseEntity<String> getWebinAuthenticationToken(final String authRequest) {
