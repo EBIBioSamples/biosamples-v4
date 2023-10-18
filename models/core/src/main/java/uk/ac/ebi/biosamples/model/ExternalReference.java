@@ -42,7 +42,7 @@ public class ExternalReference implements Comparable<ExternalReference> {
   }
 
   public SortedSet<String> getDuo() {
-    return duo;
+    return duo != null ? duo : Collections.emptySortedSet();
   }
 
   @Override
