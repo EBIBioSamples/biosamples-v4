@@ -29,7 +29,7 @@ public class EraProDao {
   protected JdbcTemplate jdbcTemplate;
 
   private final Logger log = LoggerFactory.getLogger(getClass());
-  private static final String STATUS_CLAUSE = "STATUS_ID IN (3, 4, 5, 6, 7, 8)";
+  private static final String STATUS_CLAUSE = "STATUS_ID IN (4, 5, 6, 7, 8)";
   private static final String STATUS_CLAUSE_SUPPRESSED = "STATUS_ID IN (5, 7)";
   private static final String STATUS_CLAUSE_KILLED = "STATUS_ID IN (6, 8)";
 
@@ -111,12 +111,9 @@ public class EraProDao {
               + "STATUS_ID, "
               + "SUBMISSION_ACCOUNT_ID, "
               + "BIOSAMPLE_ID, "
-              + "FIXED_TAX_ID, "
-              + "FIXED_SCIENTIFIC_NAME, "
-              + "FIXED_COMMON_NAME, "
-              + "FIXED, "
               + "TAX_ID, "
               + "SCIENTIFIC_NAME, "
+              + "COMMON_NAME, "
               + "to_char(first_public, 'yyyy-mm-dd')                                                as first_public,\n"
               + "to_char(last_updated, 'yyyy-mm-dd')                                                as last_updated,\n"
               + "(select nvl(cv_broker_name.description, T1.broker_name)\n"
@@ -155,11 +152,8 @@ public class EraProDao {
         sampleBean.setBiosampleId(rs.getString("BIOSAMPLE_ID"));
         sampleBean.setBrokerName(rs.getString("BROKER_NAME"));
         sampleBean.setCentreName(rs.getString("CENTER_NAME"));
-        sampleBean.setFixed(rs.getString("FIXED"));
         sampleBean.setScientificName(rs.getString("SCIENTIFIC_NAME"));
-        sampleBean.setFixedTaxId(rs.getString("FIXED_TAX_ID"));
-        sampleBean.setFixedCommonName(rs.getString("FIXED_COMMON_NAME"));
-        sampleBean.setFixedScientificName(rs.getString("FIXED_SCIENTIFIC_NAME"));
+        sampleBean.setCommonName(rs.getString("COMMON_NAME"));
 
         return sampleBean;
       };

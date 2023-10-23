@@ -87,7 +87,8 @@ public class BioSamplesWebinAuthenticationService {
           // (via FILE UPLOADER) or ENA posted samples
           return handleWebinSuperUserSampleSubmission(
               sample, oldSample, domain, webinIdToSetForSample, oldSamplePresent);
-        } else { // normal sample update - not pipeline, check for old user, if mismatch throw
+        } else { // normal sample update - not pipeline, not super user check for old user, if
+          // mismatch throw
           // exception, else build the Sample
           if (domain != null) {
             throw new GlobalExceptions.AccessControlException(
@@ -143,7 +144,7 @@ public class BioSamplesWebinAuthenticationService {
             webinIdInOldSample, sample);
         bioSamplesCrossSourceIngestAccessControlService.protectPipelineImportedSampleAccess(
             oldSampleInDb, sample);
-        bioSamplesCrossSourceIngestAccessControlService.protectEnaPipelineImportedSampleAccess(
+        bioSamplesCrossSourceIngestAccessControlService.protectWebinSourcedSampleAccess(
             oldSampleInDb, sample);
       }
 

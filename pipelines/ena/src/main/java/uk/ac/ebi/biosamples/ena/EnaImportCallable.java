@@ -143,7 +143,7 @@ public class EnaImportCallable implements Callable<Void> {
         addToList(suppressedKilledType);
       } else {
         log.info(
-            "Sample exists in BioSamples and INSDC statusHandled is "
+            "Sample exists in BioSamples and INSDC status is "
                 + statusHandled
                 + " ,no change required for "
                 + accession);

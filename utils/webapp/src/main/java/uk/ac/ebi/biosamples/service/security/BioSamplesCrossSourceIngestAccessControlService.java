@@ -32,11 +32,11 @@ public class BioSamplesCrossSourceIngestAccessControlService {
     }
   }
 
-  public void protectEnaPipelineImportedSampleAccess(final Sample oldSample, final Sample sample) {
+  public void protectWebinSourcedSampleAccess(final Sample oldSample, final Sample sample) {
     /*
     Old sample has ENA-CHECKLIST attribute, hence it can be concluded that it is imported from ENA
-    New sample has ENA-CHECKLIST attribute, means its updated by ENA pipeline, allow further computation
-    New sample doesn't have ENA-CHECKLIST attribute, means it's not updated by ENA pipeline, don't allow further computation and throw exception
+    New sample has ENA-CHECKLIST attribute, means its updated by ENA pipeline or WEBIN, allow further computation
+    New sample doesn't have ENA-CHECKLIST attribute, means it's not updated by ENA pipeline or WEBIN, don't allow further computation and throw exception
      */
     if (oldSample.getAttributes().stream()
         .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(ENA_CHECKLIST))) {

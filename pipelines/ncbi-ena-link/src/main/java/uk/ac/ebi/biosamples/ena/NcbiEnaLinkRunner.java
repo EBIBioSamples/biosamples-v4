@@ -87,8 +87,8 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
 
       log.info("Running from date range from " + fromDate + " until " + toDate);
 
-      // Import ENA samples
-      importMissingNcbiSamplesAddEnaLinkToExisting(fromDate, toDate);
+      // Import NCBI missing samples from ENA
+      importMissingNcbiSamples(fromDate, toDate);
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);
       pipelineFailureCause = e.getMessage();
@@ -124,7 +124,7 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
     }
   }
 
-  private void importMissingNcbiSamplesAddEnaLinkToExisting(final LocalDate fromDate, final LocalDate toDate) throws Exception {
+  private void importMissingNcbiSamples(final LocalDate fromDate, final LocalDate toDate) throws Exception {
     log.info("Handling NCBI Samples");
 
     if (pipelinesProperties.getThreadCount() == 0) {
