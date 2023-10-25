@@ -74,7 +74,7 @@ public class TestConversion {
         };
     final LocalDate fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
     final LocalDate toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
-    eraProDao.doSampleCallback(fromDate, toDate, rowCallbackHandler);
+    eraProDao.doSampleCallback(fromDate, toDate);
   }
 
   @Test

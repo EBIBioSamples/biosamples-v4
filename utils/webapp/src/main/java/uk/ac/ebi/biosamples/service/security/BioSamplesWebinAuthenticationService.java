@@ -100,6 +100,8 @@ public class BioSamplesWebinAuthenticationService {
 
             bioSamplesCrossSourceIngestAccessControlService.protectPipelineImportedSampleAccess(
                 oldSampleInDb, sample);
+            bioSamplesCrossSourceIngestAccessControlService.protectWebinSourcedSampleAccess(
+                oldSampleInDb, sample);
 
             if (!webinIdFromAuthToken.equalsIgnoreCase(
                 oldSampleInDb.getWebinSubmissionAccountId())) { // original submitter mismatch

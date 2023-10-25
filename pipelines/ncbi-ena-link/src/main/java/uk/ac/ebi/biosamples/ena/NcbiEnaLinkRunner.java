@@ -10,14 +10,9 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -27,15 +22,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
 import uk.ac.ebi.biosamples.mongo.repo.MongoPipelineRepository;
 import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
 import uk.ac.ebi.biosamples.service.EraProDao;
+import uk.ac.ebi.biosamples.service.SampleCallbackResult;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.PipelineUniqueIdentifierGenerator;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
@@ -124,14 +118,41 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
     }
   }
 
+  private List<SampleCallbackResult> getAllNcbiSamplesToHandle(
+          final LocalDate fromDate, final LocalDate toDate) {
+    final int MAX_RETRIES = 5;
+    List<SampleCallbackResult> sampleCallbackResults = new ArrayList<>();
+    boolean success = false;
+    int numRetry = 0;
+
+    while (!success) {
+      try {
+        sampleCallbackResults = eraProDao.doNcbiCallback(fromDate, toDate);
+
+        success = true;
+      } catch (final Exception e) {
+        log.error("Fetching from ERAPRO failed with exception - retry ", e);
+
+        if (++numRetry == MAX_RETRIES) {
+          throw new RuntimeException("Permanent failure in fetching samples from ERAPRO");
+        }
+      }
+    }
+
+    return sampleCallbackResults;
+  }
+
   private void importMissingNcbiSamples(final LocalDate fromDate, final LocalDate toDate) throws Exception {
     log.info("Handling NCBI Samples");
 
-    if (pipelinesProperties.getThreadCount() == 0) {
-      final NcbiRowCallbackHandler ncbiRowCallbackHandler =
-          new NcbiRowCallbackHandler(null, ncbiEnaLinkCallableFactory, futures);
+    final List<SampleCallbackResult> sampleCallbackResults =
+            getAllNcbiSamplesToHandle(fromDate, toDate);
 
-      eraProDao.getNcbiCallback(fromDate, toDate, ncbiRowCallbackHandler);
+    if (pipelinesProperties.getThreadCount() == 0) {
+      final NcbiRowHandler ncbiRowHandler =
+          new NcbiRowHandler(ncbiEnaLinkCallableFactory);
+
+      sampleCallbackResults.forEach(ncbiRowHandler::processRow);
     } else {
       try (final AdaptiveThreadPoolExecutor executorService =
           AdaptiveThreadPoolExecutor.create(
@@ -140,10 +161,24 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
               false,
               pipelinesProperties.getThreadCount(),
               pipelinesProperties.getThreadCountMax())) {
-        final NcbiRowCallbackHandler ncbiRowCallbackHandler =
-            new NcbiRowCallbackHandler(executorService, ncbiEnaLinkCallableFactory, futures);
+        final NcbiRowHandler ncbiRowHandler =
+            new NcbiRowHandler(ncbiEnaLinkCallableFactory);
 
-        eraProDao.getNcbiCallback(fromDate, toDate, ncbiRowCallbackHandler);
+        sampleCallbackResults.forEach(
+                sampleCallbackResult -> {
+                  futures.put(
+                          sampleCallbackResult.getBiosampleId(),
+                          executorService.submit(
+                                  Objects.requireNonNull(ncbiRowHandler.processRow(sampleCallbackResult))));
+                });
+
+        try {
+          ThreadUtils.checkFutures(futures, 100);
+        } catch (final ExecutionException e) {
+          throw new RuntimeException(e.getCause());
+        } catch (final InterruptedException e) {
+          throw new RuntimeException(e);
+        }
 
         log.info("waiting for futures"); // wait for anything to finish
         ThreadUtils.checkFutures(futures, 0);
@@ -151,51 +186,24 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
     }
   }
 
-  private static class NcbiRowCallbackHandler implements RowCallbackHandler {
-    private final AdaptiveThreadPoolExecutor executorService;
+  private static class NcbiRowHandler {
     private final NcbiEnaLinkCallableFactory ncbiEnaLinkCallableFactory;
-    private final Map<String, Future<Void>> futures;
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    NcbiRowCallbackHandler(
-        final AdaptiveThreadPoolExecutor executorService,
-        final NcbiEnaLinkCallableFactory ncbiEnaLinkCallableFactory,
-        final Map<String, Future<Void>> futures) {
-      this.executorService = executorService;
+    NcbiRowHandler(
+        final NcbiEnaLinkCallableFactory ncbiEnaLinkCallableFactory) {
       this.ncbiEnaLinkCallableFactory = ncbiEnaLinkCallableFactory;
-      this.futures = futures;
     }
 
-    @Override
-    public void processRow(final ResultSet rs) throws SQLException {
-      final String sampleAccession = rs.getString("BIOSAMPLE_ID");
-      final java.sql.Date lastUpdated = rs.getDate("LAST_UPDATED");
+    public Callable<Void> processRow(final SampleCallbackResult sampleCallbackResult) {
+      final String sampleAccession = sampleCallbackResult.getBiosampleId();
+      final java.sql.Date lastUpdated = sampleCallbackResult.getLastUpdated();
 
       log.info(
           String.format(
               "%s is being handled and last updated is %s", sampleAccession, lastUpdated));
 
-      final Callable<Void> callable = ncbiEnaLinkCallableFactory.build(sampleAccession);
-
-      if (executorService == null) {
-        try {
-          callable.call();
-        } catch (final Exception e) {
-          throw new RuntimeException(e);
-        }
-      } else {
-        futures.put(sampleAccession, executorService.submit(callable));
-        try {
-          ThreadUtils.checkFutures(futures, 100);
-        } catch (final HttpClientErrorException e) {
-          log.error("HTTP Client error body : " + e.getResponseBodyAsString());
-          throw e;
-        } catch (final ExecutionException e) {
-          throw new RuntimeException(e.getCause());
-        } catch (final InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-      }
+      return ncbiEnaLinkCallableFactory.build(sampleAccession);
     }
   }
 }
