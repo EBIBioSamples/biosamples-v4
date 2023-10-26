@@ -38,5 +38,10 @@
 		<module>sample-post-release-action</module>
 		<module>taxonimport</module>
 		<module>reindex</module>
+		<module>ebeye-search-export</module>
+		<module>curationundo</module>
+		<module>export</module>
+		<module>neoexport</module>
+		<module>template</module>
 	</modules>
 </project>

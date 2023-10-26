@@ -10,7 +10,8 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-public enum SuppressedKilledType {
+public enum SpecialTypes {
+  BSD_AUTHORITY,
   SUPPRESSED,
   KILLED
 }

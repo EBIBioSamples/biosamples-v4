@@ -60,11 +60,10 @@ public class FileUploadService {
       final String webinId,
       final FileUploadUtils fileUploadUtils) {
     final ValidationResult validationResult = new ValidationResult();
+    final boolean isWebin = isWebinIdUsedToAuthenticate(webinId);
+    final String uniqueUploadId = UUID.randomUUID().toString();
 
     this.fileUploadUtils = fileUploadUtils;
-    final String authProvider = isWebin(isWebinIdUsedToAuthenticate(webinId));
-    final boolean isWebin = authProvider.equals(FileUploadUtils.WEBIN_AUTH);
-    final String uniqueUploadId = UUID.randomUUID().toString();
 
     try {
       final MongoFileUpload mongoFileUploadInitial =
@@ -225,7 +224,7 @@ public class FileUploadService {
   }
 
   private boolean isWebinIdUsedToAuthenticate(final String webinId) {
-    return webinId != null && webinId.toUpperCase().startsWith(FileUploadUtils.WEBIN_AUTH);
+    return webinId != null && webinId.toUpperCase().startsWith("WEBIN");
   }
 
   private List<Sample> addRelationshipsAndThenBuildSamples(
@@ -366,6 +365,8 @@ public class FileUploadService {
 
       return sample;
     } catch (final Exception e) {
+      e.printStackTrace();
+
       if (e instanceof GlobalExceptions.SampleNotAccessibleException) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(

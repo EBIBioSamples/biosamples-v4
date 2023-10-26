@@ -145,7 +145,7 @@ public class BioSamplesAapService {
       if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
         bioSamplesCrossSourceIngestAccessControlService.protectPipelineImportedSampleAccess(
             oldSampleInDb, sample);
-        bioSamplesCrossSourceIngestAccessControlService.protectEnaPipelineImportedSampleAccess(
+        bioSamplesCrossSourceIngestAccessControlService.protectWebinSourcedSampleAccess(
             oldSampleInDb, sample);
       }
 

@@ -28,14 +28,7 @@ import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 import uk.ac.ebi.biosamples.service.EraProDao;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 
-@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
-@ComponentScan(
-        excludeFilters = {
-                @ComponentScan.Filter(
-                        type = FilterType.ASSIGNABLE_TYPE,
-                        value = {EnaConfig.class, EraProDao.class, EnaSampleToBioSampleConversionService.class})
-        })
-@Import(ExclusionConfiguration.class)
+@SpringBootApplication
 @EnableCaching(proxyTargetClass = true)
 @EnableAsync
 @EnableScheduling

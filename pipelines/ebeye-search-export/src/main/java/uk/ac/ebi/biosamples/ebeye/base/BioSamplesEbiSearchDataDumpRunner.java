@@ -42,17 +42,12 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 public class BioSamplesEbiSearchDataDumpRunner implements ApplicationRunner {
   private static final Logger log =
       LoggerFactory.getLogger(BioSamplesEbiSearchDataDumpRunner.class);
-  /*private static final String BIOSAMPLES = "biosamples";
-  private static final String MONGO_SAMPLE = "mongoSample";*/
   private static final String ENA_LC = "ena";
   private static final String ENA_UC = "ENA";
   private static final int MAX_RETRY = 3;
   private final RefType taxonomyRefType = new RefType();
   @Autowired BioSamplesClient bioSamplesClient;
   @Autowired AttributeLoader attributeLoader;
-
-  /*@Value("${spring.data.mongodb.uri}")
-  private String mongoUri;*/
 
   private Set<String> attributeSet;
   private Set<String> uniqueAccessionsSet;
@@ -72,7 +67,7 @@ public class BioSamplesEbiSearchDataDumpRunner implements ApplicationRunner {
       final List<String> programArguments =
           args.getOptionNames().stream()
               .filter(optionName -> optionName.equals("startDate") || optionName.equals("endDate"))
-              .collect(Collectors.toList());
+              .toList();
 
       programArguments.forEach(
           programArgument -> {
@@ -101,6 +96,7 @@ public class BioSamplesEbiSearchDataDumpRunner implements ApplicationRunner {
         log.info("[ORGANISM] Attempting to run for from date " + fromDate + " until " + toDate);
 
         final Collection<Filter> covidSamplesDateAndOrganismFilter = new ArrayList<>();
+
         covidSamplesDateAndOrganismFilter.add(getDateFilterCovid(fromDate, toDate));
         covidSamplesDateAndOrganismFilter.add(
             getAttributeFilter("organism", "Severe acute respiratory syndrome coronavirus 2"));
@@ -132,51 +128,6 @@ public class BioSamplesEbiSearchDataDumpRunner implements ApplicationRunner {
           "PROJECT",
           userSuppliedFromDate,
           userSuppliedToDate);
-    } else {
-      /*final DateTimeFormatter dtFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-      final MongoClientURI uri = new MongoClientURI(mongoUri);
-      final MongoClient mongoClient = new MongoClient(uri);
-      final DB db = mongoClient.getDB(BIOSAMPLES);
-      final DBCollection coll = db.getCollection(MONGO_SAMPLE);
-      final AtomicReference<String> startDate = new AtomicReference<>("");
-      final String filePath = "";
-
-      final List<String> programArguments =
-          args.getOptionNames().stream()
-              .filter(optionName -> optionName.equals("startDate"))
-              .collect(Collectors.toList());
-
-      programArguments.forEach(
-          programArgument -> {
-            if (programArgument.equals("startDate"))
-              startDate.set(args.getOptionValues("startDate").get(0));
-          });
-
-      Date startDateFormatted = formatter.parse(String.valueOf(startDate));
-
-      int fileCounter = 1;
-      LocalDate startLocalDate = convertToLocalDateViaInstant(startDateFormatted);
-      LocalDate endLocalDate = startLocalDate.plusMonths(1).minusDays(1);
-
-      while (endLocalDate.isBefore(LocalDate.now())) {
-        final File newFile = new File(filePath + "biosd_dump" + fileCounter++ + ".xml");
-
-        log.info(
-            "Running for samples with release date starting "
-                + startLocalDate.toString()
-                + " ending "
-                + endLocalDate.toString()
-                + " and writing to file "
-                + newFile.getPath());
-
-        fetchQueryAndDump(
-            coll, startLocalDate.format(dtFormatter), endLocalDate.format(dtFormatter), newFile);
-
-        startLocalDate = startLocalDate.plusMonths(1);
-        endLocalDate = startLocalDate.plusMonths(1).minusDays(1);
-
-        // if (fileCounter == 1) break;
-      }*/
     }
   }
 
@@ -251,52 +202,6 @@ public class BioSamplesEbiSearchDataDumpRunner implements ApplicationRunner {
       }
     }
   }
-
-  /* public LocalDate convertToLocalDateViaInstant(Date dateToConvert) {
-      return dateToConvert.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-    }
-  */
-  /*private void fetchQueryAndDump(
-      final DBCollection coll, final String from, final String until, final File file)
-      throws ParseException, JAXBException {
-    final List<String> listOfAccessions = getAllDocuments(coll, from, until);
-
-    log.info("Total number of samples to be dumped is : " + listOfAccessions.size());
-
-    List<Sample> samplesList =
-        listOfAccessions.stream().map(this::fetchSample).collect(Collectors.toList());
-
-    convertSampleToXml(samplesList, file, false);
-  }*/
-
-  /*private static List<String> getAllDocuments(
-      final DBCollection col, final String from, final String until) throws ParseException {
-    final List<String> listOfAccessions = new ArrayList<>();
-    final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    final Date startDate = simpleDateFormat.parse(from);
-    final Date endDate = simpleDateFormat.parse(until);
-
-    final BasicDBObject query =
-        new BasicDBObject("release", new BasicDBObject("$gte", startDate).append("$lt", endDate));
-    final DBCursor cursor =
-        col.find(query).sort(new BasicDBObject("release", OrderBy.ASC.getIntRepresentation()));
-
-    cursor.forEach(
-        elem -> {
-          final String accession = elem.get("_id").toString();
-
-          log.info("Accession " + accession);
-          listOfAccessions.add(elem.get("_id").toString());
-        });
-
-    return listOfAccessions;
-  }*/
-
-  /*public Sample fetchSample(final String accession) {
-    Optional<Resource<Sample>> sampleResource = bioSamplesClient.fetchSampleResource(accession);
-
-    return sampleResource.map(Resource::getContent).orElse(null);
-  }*/
 
   private void convertSampleToXml(
       final List<Sample> samples, final File file, final boolean covidRun) throws JAXBException {
@@ -537,39 +442,4 @@ public class BioSamplesEbiSearchDataDumpRunner implements ApplicationRunner {
 
     return sampleList;
   }
-
-  /*public List<Sample> getSamplesListCovid(
-      AtomicReference<String> startDate, AtomicReference<String> endDate) {
-    final List<Sample> sampleList = new ArrayList<>();
-    final Collection<Filter> covidSamplesDateFilter =
-        getDateFiltersCovid(startDate.get(), endDate.get());
-    final Iterable<Resource<Sample>> textAndDateFilteredCovidSamples =
-        bioSamplesClient.fetchSampleResourceAll("NCBITaxon_2697049", covidSamplesDateFilter);
-
-    textAndDateFilteredCovidSamples.forEach(
-        sampleResource -> {
-          final Sample sample = sampleResource.getContent();
-
-          sampleList.add(sample);
-          log.info("Sample added for text and date match: " + sample.getAccession());
-        });
-
-    final Collection<Filter> covidSamplesDateAndDiseaseTagFilter = new ArrayList<>();
-    covidSamplesDateAndDiseaseTagFilter.add(
-        new AttributeFilter.Builder("disease").withValue("COVID-19").build());
-    covidSamplesDateAndDiseaseTagFilter.addAll(covidSamplesDateFilter);
-
-    final Iterable<Resource<Sample>> diseaseTagAndDateFilteredCovidSamples =
-        bioSamplesClient.fetchSampleResourceAll(covidSamplesDateAndDiseaseTagFilter);
-
-    diseaseTagAndDateFilteredCovidSamples.forEach(
-        sampleResource -> {
-          final Sample sample = sampleResource.getContent();
-
-          sampleList.add(sample);
-          log.info("Sample added for disease tag and date match: " + sample.getAccession());
-        });
-
-    return sampleList;
-  }*/
 }

@@ -26,12 +26,12 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component
 @Order(2)
-public class RestIntegrationSRAV2 extends AbstractIntegration {
+public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
   public static final String SRA_ACCESSION = "SRA accession";
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final BioSamplesClient webinClient;
 
-  public RestIntegrationSRAV2(
+  public RestIntegrationSRAAccessioningV2(
       final BioSamplesClient client, @Qualifier("WEBINCLIENT") final BioSamplesClient webinClient) {
     super(client, webinClient);
     this.webinClient = webinClient;
@@ -63,7 +63,7 @@ public class RestIntegrationSRAV2 extends AbstractIntegration {
     if (sample1Content.getAttributes().stream()
         .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION))) {
       throw new IntegrationTestFailException(
-          "New sample doesn't contain a SRA accession attribute", Phase.SIX);
+          "New sample doesn't contain a SRA accession attribute - check 1", Phase.SIX);
     }
 
     final Optional<Attribute> optionalSraAccessionAttributeForSampleTest1 =
@@ -73,7 +73,7 @@ public class RestIntegrationSRAV2 extends AbstractIntegration {
 
     if (optionalSraAccessionAttributeForSampleTest1.isEmpty()) {
       throw new IntegrationTestFailException(
-          "New sample doesn't contain a SRA accession attribute", Phase.SIX);
+          "New sample doesn't contain a SRA accession attribute - check 2", Phase.SIX);
     }
 
     final Attribute sraAccessionAttributeForSampleTest1 =
@@ -88,7 +88,7 @@ public class RestIntegrationSRAV2 extends AbstractIntegration {
 
     if (optionalSraAccessionAttributeForSampleTestAfterRePost.isEmpty()) {
       throw new IntegrationTestFailException(
-          "New sample doesn't contain a SRA accession attribute", Phase.SIX);
+          "New sample doesn't contain a SRA accession attribute after Re-POST", Phase.SIX);
     }
 
     final Attribute sraAccessionAttributeForSampleTest1AfterRePost =
@@ -100,46 +100,102 @@ public class RestIntegrationSRAV2 extends AbstractIntegration {
           "SRA accession mismatch after sample post and re-post", Phase.SIX);
     }
 
-    // submit sample 2 that already has a SRA accession
+    // submit sample 2 that already has an SRA accession
     // Submit with webin client, no jwt passed
-    final Sample sample2Content = persistAndFetch(webinSampleTest2);
+    Sample sample2Content = persistAndFetch(webinSampleTest2);
+    final SortedSet<Attribute> sample2ContentAttributesAfterPersistence =
+        sample2Content.getAttributes();
+    final Set<Attribute> sample2ContentAttributesBeforePersistence =
+        webinSampleTest2.getAttributes();
 
-    if (sample2Content.getAttributes().stream()
+    if (sample2ContentAttributesAfterPersistence.stream()
         .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION))) {
       throw new IntegrationTestFailException(
-          "New sample-2 doesn't contain a SRA accession attribute", Phase.SIX);
+          "New sample-2 doesn't contain a SRA accession attribute, even if it was in submission sample - check 1",
+          Phase.SIX);
     }
 
     final Optional<Attribute> optionalSraAccessionAttributeForSampleTest2 =
-        sample2Content.getAttributes().stream()
+        sample2ContentAttributesAfterPersistence.stream()
             .filter(attribute -> attribute.getType().equals(SRA_ACCESSION))
             .findFirst();
 
     if (optionalSraAccessionAttributeForSampleTest2.isEmpty()) {
       throw new IntegrationTestFailException(
-          "New sample-2 doesn't contain a SRA accession attribute", Phase.SIX);
+          "New sample-2 doesn't contain a SRA accession attribute, even if it was in submission sample - check 2",
+          Phase.SIX);
     }
 
     final Attribute sraAccessionAttributeForSampleTest2 =
         optionalSraAccessionAttributeForSampleTest2.get();
-    final Set<Attribute> sample2ContentAttributes = sample2Content.getAttributes();
 
     if (!sraAccessionAttributeForSampleTest2.equals(
-        sample2ContentAttributes.stream()
+        sample2ContentAttributesBeforePersistence.stream()
             .filter(attribute -> attribute.getType().equals(SRA_ACCESSION))
             .findFirst()
             .get())) {
-      throw new IntegrationTestFailException("New sample-2 SRA accession mismatch", Phase.SIX);
+      throw new IntegrationTestFailException(
+          "New sample-2 SRA accession mismatch with sample state before persistence", Phase.SIX);
+    }
+
+    if (!sraAccessionAttributeForSampleTest2.equals(
+        sample2ContentAttributesAfterPersistence.stream()
+            .filter(attribute -> attribute.getType().equals(SRA_ACCESSION))
+            .findFirst()
+            .get())) {
+      throw new IntegrationTestFailException(
+          "New sample-2 SRA accession mismatch with sample state after persistence", Phase.SIX);
     }
 
     // remove SRA accession and add a different one
-    sample2ContentAttributes.removeIf(attribute -> attribute.getType().equals(SRA_ACCESSION));
-    sample2Content.getAttributes().add(Attribute.build(SRA_ACCESSION, "ERS100002"));
+    sample2ContentAttributesBeforePersistence.removeIf(
+        attribute -> attribute.getType().equals(SRA_ACCESSION));
+    sample2ContentAttributesAfterPersistence.add(Attribute.build(SRA_ACCESSION, "ERS100002"));
+
+    sample2Content =
+        Sample.Builder.fromSample(sample2Content)
+            .withAttributes(sample2ContentAttributesAfterPersistence)
+            .build();
 
     try {
       webinClient.persistSampleResourceV2(Collections.singletonList(sample2Content));
     } catch (final Exception e) {
       log.info("Expectedly failed with message " + e.getMessage());
+    }
+
+    // remove SRA accession and add none
+    sample2ContentAttributesBeforePersistence.removeIf(
+        attribute -> attribute.getType().equals(SRA_ACCESSION));
+
+    sample2Content =
+        Sample.Builder.fromSample(sample2Content)
+            .withAttributes(sample2ContentAttributesBeforePersistence)
+            .build();
+
+    if (sample2Content.getAttributes().stream()
+        .anyMatch(attribute -> attribute.getType().equals(SRA_ACCESSION))) {
+      throw new IntegrationTestFailException(
+          "Attempt to remove SRA accesion attribute didn't work", Phase.SIX);
+    }
+
+    final Sample sample2ContentAfterRePersistWithSRAAccessionRemoved =
+        webinClient.persistSampleResourceV2(Collections.singletonList(sample2Content)).get(0);
+
+    final Optional<Attribute>
+        optionalSraAccessionAttributeForSample2ContentAfterRePersistWithSRAAccessionRemoved =
+            sample2ContentAfterRePersistWithSRAAccessionRemoved.getAttributes().stream()
+                .filter(attribute -> attribute.getType().equals(SRA_ACCESSION))
+                .findFirst();
+
+    if (!optionalSraAccessionAttributeForSample2ContentAfterRePersistWithSRAAccessionRemoved
+        .get()
+        .getValue()
+        .equals("ERS100001")) {
+      throw new IntegrationTestFailException(
+          "New sample-2 SRA accession mismatch with sample state after persistence with SRA accession removed",
+          Phase.SIX);
+    } else {
+      log.info("Old SRA accession retained even after persistence with SRA accession removed");
     }
   }
 

@@ -22,65 +22,105 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleStatus;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
+import uk.ac.ebi.biosamples.service.EraProDao;
+import uk.ac.ebi.biosamples.service.EraproSample;
 
 public class EnaImportCallable implements Callable<Void> {
-  private final Logger log = LoggerFactory.getLogger(getClass());
+  private static final String SRA_ACCESSION = "SRA accession";
   private static final int MAX_RETRIES = 5;
-  private final String accession;
-  private final String egaId;
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final BioSamplesClient bioSamplesWebinClient;
+  private final BioSamplesClient bioSamplesAapClient;
   private final EgaSampleExporter egaSampleExporter;
   private final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
-  private final SuppressedKilledType suppressedKilledType;
+  private final EraProDao eraProDao;
+  private final SpecialTypes specialTypes;
+  private final String accession;
+  private final String egaId;
 
   EnaImportCallable(
       final String accession,
       final String egaId,
       final BioSamplesClient bioSamplesWebinClient,
+      final BioSamplesClient bioSamplesAapClient,
       final EgaSampleExporter egaSampleExporter,
       final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService,
-      final SuppressedKilledType suppressedKilledType) {
+      final EraProDao eraProDao,
+      final SpecialTypes specialTypes) {
     this.accession = accession;
     this.egaId = egaId;
     this.bioSamplesWebinClient = bioSamplesWebinClient;
+    this.bioSamplesAapClient = bioSamplesAapClient;
     this.egaSampleExporter = egaSampleExporter;
     this.enaSampleToBioSampleConversionService = enaSampleToBioSampleConversionService;
-    this.suppressedKilledType = suppressedKilledType;
+    this.eraProDao = eraProDao;
+    this.specialTypes = specialTypes;
   }
 
   @Override
   public Void call() throws Exception {
-    if (suppressedKilledType != null
-        && (suppressedKilledType == SuppressedKilledType.SUPPRESSED
-            || suppressedKilledType == SuppressedKilledType.KILLED)) {
-      return handleSuppressedKilledSample(suppressedKilledType);
+    if (specialTypes != null
+        && (specialTypes.equals(SpecialTypes.SUPPRESSED)
+            || specialTypes.equals(SpecialTypes.KILLED))) {
+      return handleSuppressedKilledSample(specialTypes);
     }
 
-    final Sample sample;
+    Sample enaSampleConvertedToBioSample = null;
 
     if (egaId != null && !egaId.isEmpty()) {
       return egaSampleExporter.populateAndSubmitEgaData(egaId);
     } else {
       try {
-        sample = enaSampleToBioSampleConversionService.enrichSample(accession, false);
+        Sample bsdAuthoritySampleWithSraAccession = null;
+
+        if (specialTypes == SpecialTypes.BSD_AUTHORITY) {
+          bsdAuthoritySampleWithSraAccession = buildBsdAuthoritySampleWithSraAccession(accession);
+        } else {
+          enaSampleConvertedToBioSample =
+              enaSampleToBioSampleConversionService.enrichSample(accession, false);
+        }
+
         boolean success = false;
         int numRetry = 0;
 
         while (!success) {
           try {
-            bioSamplesWebinClient.persistSampleResource(sample);
+            if (specialTypes == SpecialTypes.BSD_AUTHORITY) {
+              if (bsdAuthoritySampleWithSraAccession != null) {
+                if (bsdAuthoritySampleWithSraAccession.getDomain() != null) {
+                  bioSamplesAapClient.persistSampleResource(bsdAuthoritySampleWithSraAccession);
+                } else if (bsdAuthoritySampleWithSraAccession.getWebinSubmissionAccountId()
+                    != null) {
+                  bioSamplesWebinClient.persistSampleResource(bsdAuthoritySampleWithSraAccession);
+                } else {
+                  throw new RuntimeException(
+                      "Couldn't determine authentication of sample: " + accession);
+                }
+              } else {
+                throw new RuntimeException(
+                    "Failed to fetch BioSample authority sample from BioSamples: " + accession);
+              }
+            } else {
+              if (enaSampleConvertedToBioSample != null) {
+                bioSamplesWebinClient.persistSampleResource(enaSampleConvertedToBioSample);
+              } else {
+                throw new RuntimeException(
+                    "ENA sample converted to BioSample is null: " + accession);
+              }
+            }
 
             success = true;
           } catch (final Exception e) {
             if (++numRetry == MAX_RETRIES) {
               EnaImportRunner.failures.add(accession);
 
-              throw new RuntimeException("Failed to handle the sample with accession " + accession);
+              throw new RuntimeException(
+                  "Failed to handle the sample with accession: " + accession);
             }
           }
         }
       } catch (final Exception e) {
-        log.info("Failed to handle ENA sample with accession " + accession, e);
+        log.info("Failed to handle ENA sample with accession: " + accession, e);
 
         throw e;
       }
@@ -89,14 +129,36 @@ public class EnaImportCallable implements Callable<Void> {
     }
   }
 
-  private Void handleSuppressedKilledSample(final SuppressedKilledType suppressedKilledType)
+  private Sample buildBsdAuthoritySampleWithSraAccession(final String accession) {
+    final Optional<EntityModel<Sample>> sampleOptionalInBioSamples =
+        bioSamplesWebinClient.fetchSampleResource(
+            accession, Optional.of(Collections.singletonList("")));
+    final Sample sampleInBioSamples =
+        sampleOptionalInBioSamples.map(EntityModel::getContent).orElse(null);
+    final EraproSample eraproSample = eraProDao.getSampleDetailsByBioSampleId(accession);
+
+    assert sampleInBioSamples != null;
+
+    final Set<Attribute> attributesInBioSample = sampleInBioSamples.getAttributes();
+
+    if (attributesInBioSample.stream()
+        .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION))) {
+      attributesInBioSample.add(Attribute.build(SRA_ACCESSION, eraproSample.getSampleId()));
+    }
+
+    return Sample.Builder.fromSample(sampleInBioSamples)
+        .withAttributes(attributesInBioSample)
+        .build();
+  }
+
+  private Void handleSuppressedKilledSample(final SpecialTypes specialTypes)
       throws DocumentException {
     final Optional<EntityModel<Sample>> sampleOptionalInBioSamples =
         bioSamplesWebinClient.fetchSampleResource(
             accession, Optional.of(Collections.singletonList("")));
     final Sample sampleInBioSamples =
         sampleOptionalInBioSamples.map(EntityModel::getContent).orElse(null);
-    final String statusHandled = suppressedKilledType.name().toLowerCase();
+    final String statusHandled = specialTypes.name().toLowerCase();
 
     if (sampleInBioSamples != null) {
       final Set<Attribute> sampleAttributes = sampleInBioSamples.getAttributes();
@@ -118,10 +180,10 @@ public class EnaImportCallable implements Callable<Void> {
         bioSamplesWebinClient.persistSampleResource(
             Sample.Builder.fromSample(sampleInBioSamples)
                 .withAttributes(sampleAttributes)
-                .withStatus(SampleStatus.valueOf(String.valueOf(suppressedKilledType)))
+                .withStatus(SampleStatus.valueOf(String.valueOf(specialTypes)))
                 .build());
 
-        addToList(suppressedKilledType);
+        addToList(specialTypes);
       } else if (!insdcStatusAttribute.getValue().equalsIgnoreCase(statusHandled)) {
         log.info(
             "Sample exists in BioSamples and INSDC status is not "
@@ -137,23 +199,23 @@ public class EnaImportCallable implements Callable<Void> {
         bioSamplesWebinClient.persistSampleResource(
             Sample.Builder.fromSample(sampleInBioSamples)
                 .withAttributes(sampleAttributes)
-                .withStatus(SampleStatus.valueOf(String.valueOf(suppressedKilledType)))
+                .withStatus(SampleStatus.valueOf(String.valueOf(specialTypes)))
                 .build());
 
-        addToList(suppressedKilledType);
+        addToList(specialTypes);
       } else {
         log.info(
-            "Sample exists in BioSamples and INSDC statusHandled is "
+            "Sample exists in BioSamples and INSDC status is "
                 + statusHandled
                 + " ,no change required for "
                 + accession);
 
         bioSamplesWebinClient.persistSampleResource(
             Sample.Builder.fromSample(sampleInBioSamples)
-                .withStatus(SampleStatus.valueOf(String.valueOf(suppressedKilledType)))
+                .withStatus(SampleStatus.valueOf(String.valueOf(specialTypes)))
                 .build());
 
-        addToList(suppressedKilledType);
+        addToList(specialTypes);
       }
     } else {
       log.info(
@@ -171,7 +233,7 @@ public class EnaImportCallable implements Callable<Void> {
           try {
             bioSamplesWebinClient.persistSampleResource(sample);
 
-            addToList(suppressedKilledType);
+            addToList(specialTypes);
 
             success = true;
           } catch (final Exception e) {
@@ -193,8 +255,8 @@ public class EnaImportCallable implements Callable<Void> {
     return null;
   }
 
-  private void addToList(final SuppressedKilledType suppressedKilledType) {
-    if (suppressedKilledType == SuppressedKilledType.SUPPRESSED) {
+  private void addToList(final SpecialTypes specialTypes) {
+    if (specialTypes.equals(SpecialTypes.SUPPRESSED)) {
       EnaImportRunner.todaysSuppressedSamples.add(accession);
     } else {
       EnaImportRunner.todaysKilledSamples.add(accession);

@@ -67,7 +67,7 @@ public class AccessControlService {
 
           authority = AuthorizationProvider.WEBIN;
           user = node.get("principle").asText();
-          roles = objectMapper.convertValue(node.get("role"), new TypeReference<List<String>>() {});
+          roles = objectMapper.convertValue(node.get("role"), new TypeReference<>() {});
         }
 
         authToken = new AuthToken(algorithm, authority, user, roles);

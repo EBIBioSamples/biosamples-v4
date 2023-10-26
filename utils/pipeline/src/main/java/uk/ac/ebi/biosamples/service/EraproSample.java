@@ -22,15 +22,10 @@ public class EraproSample {
   public String firstPublic;
   public String lastUpdated;
   private String firstCreated;
-
   public String brokerName;
   public String centreName;
-  public String fixed;
   public String scientificName;
-  public String fixedTaxId;
-  public String fixedCommonName;
-  public String fixedScientificName;
-
+  public String commonName;
   private String submissionAccountId;
   public Long taxId;
   private int status;
@@ -122,7 +117,7 @@ public class EraproSample {
     return brokerName;
   }
 
-  public EraproSample setBrokerName(String brokerName) {
+  public EraproSample setBrokerName(final String brokerName) {
     this.brokerName = brokerName;
     return this;
   }
@@ -131,17 +126,8 @@ public class EraproSample {
     return centreName;
   }
 
-  public EraproSample setCentreName(String centreName) {
+  public EraproSample setCentreName(final String centreName) {
     this.centreName = centreName;
-    return this;
-  }
-
-  public String getFixed() {
-    return fixed;
-  }
-
-  public EraproSample setFixed(String fixed) {
-    this.fixed = fixed;
     return this;
   }
 
@@ -149,35 +135,16 @@ public class EraproSample {
     return scientificName;
   }
 
-  public EraproSample setScientificName(String scientificName) {
+  public EraproSample setScientificName(final String scientificName) {
     this.scientificName = scientificName;
     return this;
   }
 
-  public String getFixedTaxId() {
-    return fixedTaxId;
+  public String getCommonName() {
+    return commonName;
   }
 
-  public EraproSample setFixedTaxId(String fixedTaxId) {
-    this.fixedTaxId = fixedTaxId;
-    return this;
-  }
-
-  public String getFixedCommonName() {
-    return fixedCommonName;
-  }
-
-  public EraproSample setFixedCommonName(String fixedCommonName) {
-    this.fixedCommonName = fixedCommonName;
-    return this;
-  }
-
-  public String getFixedScientificName() {
-    return fixedScientificName;
-  }
-
-  public EraproSample setFixedScientificName(String fixedScientificName) {
-    this.fixedScientificName = fixedScientificName;
-    return this;
+  public void setCommonName(final String commonName) {
+    this.commonName = commonName;
   }
 }
