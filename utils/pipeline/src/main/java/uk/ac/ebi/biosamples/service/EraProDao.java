@@ -49,6 +49,21 @@ public class EraProDao {
         query, sampleCallbackResultRowMapper, minDateOld, maxDateOld, minDateOld, maxDateOld);
   }
 
+  public List<SampleCallbackResult> doSampleCallbackForBsdAuthoritySamples(
+      final LocalDate minDate, final LocalDate maxDate) {
+    final String query =
+        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID, LAST_UPDATED FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'Y' "
+            + "AND "
+            + STATUS_CLAUSE
+            + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY LAST_UPDATED ASC";
+
+    final Date minDateOld = java.sql.Date.valueOf(minDate);
+    final Date maxDateOld = java.sql.Date.valueOf(maxDate);
+
+    return jdbcTemplate.query(
+        query, sampleCallbackResultRowMapper, minDateOld, maxDateOld, minDateOld, maxDateOld);
+  }
+
   /**
    * Returns SUPPRESSED ENA samples
    *
@@ -107,7 +122,7 @@ public class EraProDao {
   public EraproSample getSampleDetailsByBioSampleId(final String bioSampleId) {
     try {
       final String sql =
-          "SELECT SAMPLE_XML, TAX_ID, "
+          "SELECT SAMPLE_XML, TAX_ID, SAMPLE_ID, "
               + "to_char(LAST_UPDATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS LAST_UPDATED, "
               + "to_char(FIRST_PUBLIC, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_PUBLIC,  "
               + "to_char(FIRST_CREATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_CREATED, "
@@ -146,6 +161,7 @@ public class EraProDao {
         final EraproSample sampleBean = new EraproSample();
 
         sampleBean.setSampleXml(rs.getString("SAMPLE_XML"));
+        sampleBean.setSampleId(rs.getString("SAMPLE_ID"));
         sampleBean.setFirstPublic(rs.getString("FIRST_PUBLIC"));
         sampleBean.setLastUpdated(rs.getString("LAST_UPDATED"));
         sampleBean.setFirstCreated(rs.getString("FIRST_CREATED"));

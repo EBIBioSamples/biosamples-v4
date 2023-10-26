@@ -101,12 +101,15 @@ public class EnaImportRunner implements ApplicationRunner {
           "Suppression Runner and killed runner is to be executed: " + importSuppressedAndKilled);
 
       // Import ENA samples
-      importEraSamples(fromDate, toDate);
+      // importEraSamples(fromDate, toDate);
+
+      // Import BSD authority samples to update SRA accession
+      importEraBsdAuthoritySamples(fromDate, toDate);
 
       if (importSuppressedAndKilled) {
         try {
           // handler for suppressed and killed ENA samples
-          handleSuppressedAndKilledEnaSamples();
+          // handleSuppressedAndKilledEnaSamples();
         } catch (final Exception e) {
           log.info("Suppression Runner failed");
         }
@@ -144,7 +147,6 @@ public class EnaImportRunner implements ApplicationRunner {
 
       PipelineUtils.writeFailedSamplesToFile(failures, PipelineName.ENA);
       PipelineUtils.writeToFile(todaysSuppressedSamples, PipelineName.ENA, "SUPPRESSED");
-      // PipelineUtils.writeToFile(todaysKilledSamples, PipelineName.ENA, "KILLED");
     }
   }
 
@@ -169,37 +171,12 @@ public class EnaImportRunner implements ApplicationRunner {
       final EnaSuppressedAndKilledSamplesCallbackHandler
           enaSuppressedAndKilledSamplesCallbackHandler =
               new EnaSuppressedAndKilledSamplesCallbackHandler(
-                  executorService,
-                  enaImportCallableFactory,
-                  futures,
-                  SuppressedKilledType.SUPPRESSED);
+                  executorService, enaImportCallableFactory, futures, SpecialTypes.SUPPRESSED);
       eraProDao.doGetSuppressedEnaSamples(enaSuppressedAndKilledSamplesCallbackHandler);
 
       log.info("waiting for futures"); // wait for anything to finish
       ThreadUtils.checkFutures(futures, 0);
     }
-
-    /*log.info(
-            "Fetching all killed ENA samples. "
-                    + "If they exist in BioSamples with different status, their status will be updated. ");
-
-    try (final AdaptiveThreadPoolExecutor executorService =
-        AdaptiveThreadPoolExecutor.create(
-            100,
-            10000,
-            false,
-            pipelinesProperties.getThreadCount(),
-            pipelinesProperties.getThreadCountMax())) {
-
-      final EnaSuppressedAndKilledSamplesCallbackHandler
-          enaSuppressedAndKilledSamplesCallbackHandler =
-              new EnaSuppressedAndKilledSamplesCallbackHandler(
-                  executorService, enaImportCallableFactory, futures, SuppressedKilledType.KILLED);
-      eraProDao.doGetKilledEnaSamples(enaSuppressedAndKilledSamplesCallbackHandler);
-
-      log.info("waiting for futures"); // wait for anything to finish
-      ThreadUtils.checkFutures(futures, 0);
-    }*/
   }
 
   /**
@@ -211,24 +188,23 @@ public class EnaImportRunner implements ApplicationRunner {
     private final EnaImportCallableFactory enaCallableFactory;
     private final Map<String, Future<Void>> futures;
 
-    private final SuppressedKilledType suppressedKilledType;
+    private final SpecialTypes specialTypes;
 
     public EnaSuppressedAndKilledSamplesCallbackHandler(
         final AdaptiveThreadPoolExecutor executorService,
         final EnaImportCallableFactory enaCallableFactory,
         final Map<String, Future<Void>> futures,
-        final SuppressedKilledType suppressedKilledType) {
+        final SpecialTypes specialTypes) {
       this.executorService = executorService;
       this.enaCallableFactory = enaCallableFactory;
       this.futures = futures;
-      this.suppressedKilledType = suppressedKilledType;
+      this.specialTypes = specialTypes;
     }
 
     @Override
     public void processRow(final ResultSet rs) throws SQLException {
       final String sampleAccession = rs.getString("BIOSAMPLE_ID");
-      final Callable<Void> callable =
-          enaCallableFactory.build(sampleAccession, null, suppressedKilledType);
+      final Callable<Void> callable = enaCallableFactory.build(sampleAccession, null, specialTypes);
 
       execute(sampleAccession, callable, executorService, futures);
     }
@@ -260,7 +236,8 @@ public class EnaImportRunner implements ApplicationRunner {
     final EraRowHandler eraRowHandler = new EraRowHandler(enaImportCallableFactory);
 
     if (pipelinesProperties.getThreadCount() == 0) {
-      sampleCallbackResults.forEach(eraRowHandler::processRow);
+      sampleCallbackResults.forEach(
+          sampleCallbackResult -> eraRowHandler.processRow(sampleCallbackResult, false));
     } else {
       try (final AdaptiveThreadPoolExecutor executorService =
           AdaptiveThreadPoolExecutor.create(
@@ -275,7 +252,51 @@ public class EnaImportRunner implements ApplicationRunner {
               futures.put(
                   sampleCallbackResult.getBiosampleId(),
                   executorService.submit(
-                      Objects.requireNonNull(eraRowHandler.processRow(sampleCallbackResult))));
+                      Objects.requireNonNull(
+                          eraRowHandler.processRow(sampleCallbackResult, false))));
+            });
+
+        try {
+          ThreadUtils.checkFutures(futures, 100);
+        } catch (final ExecutionException e) {
+          throw new RuntimeException(e.getCause());
+        } catch (final InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+
+        log.info("waiting for futures"); // wait for anything to finish
+        ThreadUtils.checkFutures(futures, 0);
+      }
+    }
+  }
+
+  private void importEraBsdAuthoritySamples(final LocalDate fromDate, final LocalDate toDate)
+      throws Exception {
+    log.info("Handling ENA BioSample authority Samples");
+
+    final List<SampleCallbackResult> sampleCallbackResults =
+        getAllEnaBsdAuthoritySamplesToHandle(fromDate, toDate);
+    final EraRowHandler eraRowHandler = new EraRowHandler(enaImportCallableFactory);
+
+    if (pipelinesProperties.getThreadCount() == 0) {
+      sampleCallbackResults.forEach(
+          sampleCallbackResult -> eraRowHandler.processRow(sampleCallbackResult, true));
+    } else {
+      try (final AdaptiveThreadPoolExecutor executorService =
+          AdaptiveThreadPoolExecutor.create(
+              100,
+              10000,
+              false,
+              pipelinesProperties.getThreadCount(),
+              pipelinesProperties.getThreadCountMax())) {
+
+        sampleCallbackResults.forEach(
+            sampleCallbackResult -> {
+              futures.put(
+                  sampleCallbackResult.getBiosampleId(),
+                  executorService.submit(
+                      Objects.requireNonNull(
+                          eraRowHandler.processRow(sampleCallbackResult, true))));
             });
 
         try {
@@ -302,6 +323,30 @@ public class EnaImportRunner implements ApplicationRunner {
     while (!success) {
       try {
         sampleCallbackResults = eraProDao.doSampleCallback(fromDate, toDate);
+
+        success = true;
+      } catch (final Exception e) {
+        log.error("Fetching from ERAPRO failed with exception - retry ", e);
+
+        if (++numRetry == MAX_RETRIES) {
+          throw new RuntimeException("Permanent failure in fetching samples from ERAPRO");
+        }
+      }
+    }
+
+    return sampleCallbackResults;
+  }
+
+  private List<SampleCallbackResult> getAllEnaBsdAuthoritySamplesToHandle(
+      final LocalDate fromDate, final LocalDate toDate) {
+    final int MAX_RETRIES = 5;
+    List<SampleCallbackResult> sampleCallbackResults = new ArrayList<>();
+    boolean success = false;
+    int numRetry = 0;
+
+    while (!success) {
+      try {
+        sampleCallbackResults = eraProDao.doSampleCallbackForBsdAuthoritySamples(fromDate, toDate);
 
         success = true;
       } catch (final Exception e) {
@@ -349,7 +394,8 @@ public class EnaImportRunner implements ApplicationRunner {
       }
     }
 
-    public Callable<Void> processRow(final SampleCallbackResult sampleCallbackResult) {
+    public Callable<Void> processRow(
+        final SampleCallbackResult sampleCallbackResult, final boolean bsdAuthority) {
       final String biosampleId = sampleCallbackResult.getBiosampleId();
       final int statusId = sampleCallbackResult.getStatusId();
       final String egaId = sampleCallbackResult.getEgaId();
@@ -368,7 +414,11 @@ public class EnaImportRunner implements ApplicationRunner {
                   "%s is being handled as status is %s and last updated is %s",
                   biosampleId, enaStatus.name(), lastUpdated));
           // update if sample already exists else import
-          return enaImportCallableFactory.build(biosampleId, egaId);
+          if (bsdAuthority) {
+            return enaImportCallableFactory.build(biosampleId, egaId, SpecialTypes.BSD_AUTHORITY);
+          } else {
+            return enaImportCallableFactory.build(biosampleId, egaId);
+          }
         default:
           log.info(
               String.format("%s would be ignored  as status is %s", biosampleId, enaStatus.name()));

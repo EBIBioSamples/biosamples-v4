@@ -55,23 +55,6 @@ public class TestConversion {
   @Test
   @Ignore
   public void test_over_all_samples() {
-    final RowCallbackHandler rowCallbackHandler =
-        resultSet -> {
-          final String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-          final EnaImportCallable enaImportCallable =
-              new EnaImportCallable(
-                  sampleAccession,
-                  null,
-                  bioSamplesWebinClient,
-                  egaSampleExporter,
-                  enaSampleToBioSampleConversionService,
-                  null);
-          try {
-            enaImportCallable.call();
-          } catch (final Exception e) {
-            e.printStackTrace();
-          }
-        };
     final LocalDate fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
     final LocalDate toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
     eraProDao.doSampleCallback(fromDate, toDate);
@@ -87,8 +70,10 @@ public class TestConversion {
                   sampleAccession,
                   null,
                   bioSamplesWebinClient,
+                  null,
                   egaSampleExporter,
                   enaSampleToBioSampleConversionService,
+                  eraProDao,
                   null);
           try {
             enaImportCallable.call();
@@ -110,8 +95,10 @@ public class TestConversion {
                   sampleAccession,
                   null,
                   bioSamplesWebinClient,
+                  null,
                   egaSampleExporter,
                   enaSampleToBioSampleConversionService,
+                  eraProDao,
                   null);
           try {
             enaImportCallable.call();
@@ -133,8 +120,10 @@ public class TestConversion {
                   sampleAccession,
                   null,
                   bioSamplesWebinClient,
+                  null,
                   egaSampleExporter,
                   enaSampleToBioSampleConversionService,
+                  eraProDao,
                   null);
           try {
             enaImportCallable.call();
@@ -156,8 +145,10 @@ public class TestConversion {
                   sampleAccession,
                   null,
                   bioSamplesWebinClient,
+                  null,
                   egaSampleExporter,
                   enaSampleToBioSampleConversionService,
+                  eraProDao,
                   null);
           try {
             enaImportCallable.call();

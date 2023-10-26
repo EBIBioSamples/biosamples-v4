@@ -32,11 +32,11 @@ import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
 @ComponentScan(
-        excludeFilters = {
-                @ComponentScan.Filter(
-                        type = FilterType.ASSIGNABLE_TYPE,
-                        value = {EnaConfig.class, EraProDao.class, EnaSampleToBioSampleConversionService.class})
-        })
+    excludeFilters = {
+      @ComponentScan.Filter(
+          type = FilterType.ASSIGNABLE_TYPE,
+          value = {EnaConfig.class, EraProDao.class, EnaSampleToBioSampleConversionService.class})
+    })
 @Import(ExclusionConfiguration.class)
 @EnableCaching
 public class Application {
@@ -55,7 +55,8 @@ public class Application {
 
   @Bean
   public RestTemplateCustomizer restTemplateCustomizer(
-          final BioSamplesProperties bioSamplesProperties, final PipelinesProperties piplinesProperties) {
+      final BioSamplesProperties bioSamplesProperties,
+      final PipelinesProperties piplinesProperties) {
     return new RestTemplateCustomizer() {
       public void customize(final RestTemplate restTemplate) {
 
@@ -63,7 +64,8 @@ public class Application {
         // reuse
         final ConnectionKeepAliveStrategy keepAliveStrategy =
             new ConnectionKeepAliveStrategy() {
-              public long getKeepAliveDuration(final HttpResponse response, final HttpContext context) {
+              public long getKeepAliveDuration(
+                  final HttpResponse response, final HttpContext context) {
 
                 // check if there is a non-standard keep alive header present
                 final HeaderElementIterator it =

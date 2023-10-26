@@ -17,11 +17,11 @@ import uk.ac.ebi.biosamples.utils.PipelineUtils;
 
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
 @ComponentScan(
-        excludeFilters = {
-                @ComponentScan.Filter(
-                        type = FilterType.ASSIGNABLE_TYPE,
-                        value = {EnaConfig.class, EraProDao.class, EnaSampleToBioSampleConversionService.class})
-        })
+    excludeFilters = {
+      @ComponentScan.Filter(
+          type = FilterType.ASSIGNABLE_TYPE,
+          value = {EnaConfig.class, EraProDao.class, EnaSampleToBioSampleConversionService.class})
+    })
 @Import(ExclusionConfiguration.class)
 public class Application {
 
