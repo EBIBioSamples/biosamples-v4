@@ -22,7 +22,7 @@ public class PipelinesProperties {
   @Value("${biosamples.pipelines.threadcount:1}")
   private int threadCount;
 
-  @Value("${biosamples.pipelines.threadcount.max:8}")
+  @Value("${biosamples.pipelines.threadcount.max:60}")
   private int threadCountMax;
 
   @Value("${biosamples.pipelines.connectioncount.max:8}")

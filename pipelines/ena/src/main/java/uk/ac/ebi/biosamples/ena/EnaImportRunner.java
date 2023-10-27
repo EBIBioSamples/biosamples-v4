@@ -255,19 +255,22 @@ public class EnaImportRunner implements ApplicationRunner {
                       Objects.requireNonNull(
                           eraRowHandler.processRow(sampleCallbackResult, false))));
             });
-
-        try {
-          ThreadUtils.checkFutures(futures, 100);
-        } catch (final ExecutionException e) {
-          throw new RuntimeException(e.getCause());
-        } catch (final InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-
-        log.info("waiting for futures"); // wait for anything to finish
-        ThreadUtils.checkFutures(futures, 0);
+        checkFutures();
       }
     }
+  }
+
+  private void checkFutures() throws InterruptedException, ExecutionException {
+    try {
+      ThreadUtils.checkFutures(futures, 100);
+    } catch (final ExecutionException e) {
+      throw new RuntimeException(e.getCause());
+    } catch (final InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+
+    log.info("waiting for futures"); // wait for anything to finish
+    ThreadUtils.checkFutures(futures, 0);
   }
 
   private void importEraBsdAuthoritySamples(final LocalDate fromDate, final LocalDate toDate)
@@ -299,16 +302,7 @@ public class EnaImportRunner implements ApplicationRunner {
                           eraRowHandler.processRow(sampleCallbackResult, true))));
             });
 
-        try {
-          ThreadUtils.checkFutures(futures, 100);
-        } catch (final ExecutionException e) {
-          throw new RuntimeException(e.getCause());
-        } catch (final InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-
-        log.info("waiting for futures"); // wait for anything to finish
-        ThreadUtils.checkFutures(futures, 0);
+        checkFutures();
       }
     }
   }

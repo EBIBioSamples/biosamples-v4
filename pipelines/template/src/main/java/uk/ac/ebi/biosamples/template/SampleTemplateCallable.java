@@ -15,15 +15,12 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 
 public class SampleTemplateCallable extends PipelineSampleCallable {
-  private final String domain;
-
-  public SampleTemplateCallable(BioSamplesClient bioSamplesClient, String domain) {
+  public SampleTemplateCallable(final BioSamplesClient bioSamplesClient, final String domain) {
     super(bioSamplesClient);
-    this.domain = domain;
   }
 
   @Override
-  public int processSample(Sample sample) throws Exception {
+  public int processSample(final Sample sample) {
     return 1;
   }
 }
