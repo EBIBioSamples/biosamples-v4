@@ -44,5 +44,5 @@ public abstract class PipelineSampleCallable implements Callable<PipelineResult>
     return this;
   }
 
-  abstract int processSample(Sample sample) throws Exception;
+  protected abstract int processSample(Sample sample) throws Exception;
 }

@@ -110,7 +110,7 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
     return PIPELINE_NAME;
   }
 
-  abstract void loadPreConfiguration();
+  protected abstract void loadPreConfiguration();
 
-  abstract PipelineSampleCallable getNewCallableClassInstance();
+  protected abstract PipelineSampleCallable getNewCallableClassInstance();
 }

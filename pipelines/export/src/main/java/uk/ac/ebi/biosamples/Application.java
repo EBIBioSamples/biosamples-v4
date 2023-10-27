@@ -12,7 +12,15 @@ package uk.ac.ebi.biosamples;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
+import uk.ac.ebi.biosamples.configuration.ExclusionConfiguration;
+import uk.ac.ebi.biosamples.service.EnaConfig;
+import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
+import uk.ac.ebi.biosamples.service.EraProDao;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
