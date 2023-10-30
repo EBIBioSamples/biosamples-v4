@@ -165,6 +165,7 @@ public class BioSamplesAapService {
       }
     }
 
+    // file uploader domains check
     bioSamplesCrossSourceIngestAccessControlService.protectFileUploaderAapSample(
         oldSampleInDb, sample, domain);
 
