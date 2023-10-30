@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.2.19-RC3</version>
+		<version>5.2.21-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 	<properties>
 		<bootstrap.version>4.0.0-2</bootstrap.version>
-		<lombok.version>1.18.2</lombok.version>
+		<lombok.version>1.18.22</lombok.version>
 		<spring-cloud-gcp.version>3.4.6</spring-cloud-gcp.version>
 		<spring-cloud.version>2021.0.6</spring-cloud.version>
 	</properties>
@@ -18,27 +18,27 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-webapp</artifactId>
-			<version>5.2.19-RC3</version>
+			<version>5.2.21-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>commons</artifactId>
-			<version>5.2.19-RC3</version>
+			<version>5.2.21-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-thread</artifactId>
-			<version>5.2.19-RC3</version>
+			<version>5.2.21-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-validation</artifactId>
-			<version>5.2.19-RC3</version>
+			<version>5.2.21-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>properties</artifactId>
-			<version>5.2.19-RC3</version>
+			<version>5.2.21-SNAPSHOT</version>
 		</dependency>
 		<!-- other spring dependencies -->
 		<dependency>
@@ -114,11 +114,6 @@
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt</artifactId>
 			<version>0.9.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.hateoas</groupId>
-			<artifactId>spring-hateoas</artifactId>
-			<version>1.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>io.micrometer</groupId>

@@ -1,4 +1,6 @@
-image: docker:latest
+image: docker:stable
+services:
+  - docker:stable-dind
 
 variables:
   DEPLOY_PATH: ~/gitlab
@@ -6,6 +8,7 @@ variables:
 before_script:
   - echo $CI_BUILD_REF
   - echo $CI_PROJECT_DIR
+  - apk update && apk add git
 
 stages:
   - package
@@ -13,7 +16,7 @@ stages:
   - deploy
 
 maven-package:
-  image: openjdk:11
+  image: eclipse-temurin:17-jdk-alpine
   stage: package
   script:
     - './mvnw -q deploy -P embl-ebi -s ci_settings.xml -Dmaven.source.skip=true'
@@ -24,17 +27,18 @@ maven-package:
     - cp agents/uploadworkers/target/agents-uploadworkers-*.jar deployment/agents-uploadworkers.jar
     - cp pipelines/curation/target/pipelines-curation-*.jar deployment/pipelines-curation.jar
     - cp pipelines/ena/target/pipelines-ena-*.jar deployment/pipelines-ena.jar
+    - cp pipelines/ncbi-ena-link/target/pipelines-ncbi-ena-link-*.jar deployment/pipelines-ncbi-ena-link.jar
     - cp pipelines/sample-release/target/pipelines-sample-release-*.jar deployment/pipelines-sample-release.jar
     - cp pipelines/sample-post-release-action/target/pipelines-sample-post-release-action*.jar deployment/pipelines-sample-post-release-action.jar
     - cp pipelines/ncbi/target/pipelines-ncbi-*.jar deployment/pipelines-ncbi.jar
     - cp pipelines/reindex/target/pipelines-reindex-*.jar deployment/pipelines-reindex.jar
+    - cp pipelines/sample-transformation-dtol/target/pipelines-sample-transformation-dtol-*.jar deployment/pipelines-sample-transformation-dtol.jar
   artifacts:
     paths:
       - deployment
 #  when: manual
 
 clone-config-preproduction:
-  image: openjdk:11
   stage: config
   script:
     - git clone https://$BSD_INTERNAL_USER:$BSD_INTERNAL_PASS@gitlab.ebi.ac.uk/biosamples/biosamples-internal.git
@@ -50,7 +54,6 @@ clone-config-preproduction:
   when: manual
 
 clone-config-production:
-  image: openjdk:11
   stage: config
   script:
     - git clone https://$BSD_INTERNAL_USER:$BSD_INTERNAL_PASS@gitlab.ebi.ac.uk/biosamples/biosamples-internal.git

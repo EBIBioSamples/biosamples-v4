@@ -4,27 +4,25 @@
 
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>biosamples-spring-boot-starter</artifactId>
-	<version>5.2.19-RC3</version>
+	<version>5.2.21-SNAPSHOT</version>
 
 	<packaging>jar</packaging>
 
 	<properties>
-		<maven.compiler.source>1.7</maven.compiler.source>
-		<maven.compiler.target>1.7</maven.compiler.target>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>client</artifactId>
-			<version>5.2.19-RC3</version>
+			<version>5.2.21-SNAPSHOT</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-autoconfigure</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-configuration-processor</artifactId>
@@ -35,7 +33,6 @@
 			<artifactId>spring-boot-actuator</artifactId>
 			<optional>true</optional>
 		</dependency>
-
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
@@ -50,7 +47,7 @@
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
-			<version>1.2.0</version>
+			<version>1.3.4</version>
 		</dependency>
 	</dependencies>
 
@@ -82,6 +79,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
+				<version>3.2.1</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>

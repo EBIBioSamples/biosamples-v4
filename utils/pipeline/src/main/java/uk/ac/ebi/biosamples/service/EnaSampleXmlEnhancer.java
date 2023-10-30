@@ -263,13 +263,19 @@ public class EnaSampleXmlEnhancer {
 
       if (!xmlPathBuilder.exists()) {
         String newTitle = null;
-        if (eraproSample.fixed.equals("Y")) {
-          if (eraproSample.fixedScientificName != null) {
-            newTitle = eraproSample.fixedScientificName;
-          }
-        } else if (eraproSample.scientificName != null) {
+
+        if (eraproSample.scientificName != null) {
           newTitle = eraproSample.scientificName;
         }
+
+        if (newTitle == null && eraproSample.commonName != null) {
+          newTitle = eraproSample.commonName;
+        }
+
+        if (newTitle == null && eraproSample.taxId != null) {
+          newTitle = String.valueOf(eraproSample.taxId);
+        }
+
         if (newTitle != null) {
           xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE");
 
@@ -289,45 +295,42 @@ public class EnaSampleXmlEnhancer {
 
     @Override
     public Element apply(final Element sampleXml, final EraproSample eraproSample) {
-      if (eraproSample.fixed.equals("Y")) {
-        final XmlPathBuilder parentXmlPathBuilderName =
-            XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_NAME");
+      final XmlPathBuilder parentXmlPathBuilderName =
+          XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_NAME");
 
-        if (!parentXmlPathBuilderName.exists()) {
-          XmlPathBuilder.of(sampleXml).path("SAMPLE").element().addElement("SAMPLE_NAME");
-        }
+      if (!parentXmlPathBuilderName.exists()) {
+        XmlPathBuilder.of(sampleXml).path("SAMPLE").element().addElement("SAMPLE_NAME");
+      }
 
-        final XmlPathBuilder taxIdXmlPathBuilderTaxonId =
-            XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_NAME", "TAXON_ID");
-        final String taxId = eraproSample.fixedTaxId == null ? "" : eraproSample.fixedTaxId;
+      final XmlPathBuilder taxIdXmlPathBuilderTaxonId =
+          XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_NAME", "TAXON_ID");
+      final String taxId = eraproSample.taxId == null ? "" : String.valueOf(eraproSample.taxId);
 
-        if (taxIdXmlPathBuilderTaxonId.exists()) {
-          taxIdXmlPathBuilderTaxonId.element().setText(taxId);
-        } else {
-          parentXmlPathBuilderName.element().addElement("TAXON_ID", taxId);
-        }
+      if (taxIdXmlPathBuilderTaxonId.exists()) {
+        taxIdXmlPathBuilderTaxonId.element().setText(taxId);
+      } else {
+        parentXmlPathBuilderName.element().addElement("TAXON_ID", taxId);
+      }
 
-        final XmlPathBuilder taxIdXmlPathBuilderScientificName =
-            XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_NAME", "SCIENTIFIC_NAME");
-        final String scientificName =
-            eraproSample.fixedScientificName == null ? "" : eraproSample.fixedScientificName;
+      final XmlPathBuilder taxIdXmlPathBuilderScientificName =
+          XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_NAME", "SCIENTIFIC_NAME");
+      final String scientificName =
+          eraproSample.scientificName == null ? "" : eraproSample.scientificName;
 
-        if (taxIdXmlPathBuilderScientificName.exists()) {
-          taxIdXmlPathBuilderScientificName.element().setText(scientificName);
-        } else {
-          parentXmlPathBuilderName.element().addElement("SCIENTIFIC_NAME", scientificName);
-        }
+      if (taxIdXmlPathBuilderScientificName.exists()) {
+        taxIdXmlPathBuilderScientificName.element().setText(scientificName);
+      } else {
+        parentXmlPathBuilderName.element().addElement("SCIENTIFIC_NAME", scientificName);
+      }
 
-        final XmlPathBuilder taxIdXmlPathBuilderCommonName =
-            XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_NAME", "COMMON_NAME");
-        final String commonName =
-            eraproSample.fixedCommonName == null ? "" : eraproSample.fixedCommonName;
+      final XmlPathBuilder taxIdXmlPathBuilderCommonName =
+          XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_NAME", "COMMON_NAME");
+      final String commonName = eraproSample.commonName == null ? "" : eraproSample.commonName;
 
-        if (taxIdXmlPathBuilderCommonName.exists()) {
-          taxIdXmlPathBuilderCommonName.element().setText(commonName);
-        } else {
-          parentXmlPathBuilderName.element().addElement("COMMON_NAME", commonName);
-        }
+      if (taxIdXmlPathBuilderCommonName.exists()) {
+        taxIdXmlPathBuilderCommonName.element().setText(commonName);
+      } else {
+        parentXmlPathBuilderName.element().addElement("COMMON_NAME", commonName);
       }
 
       return sampleXml;

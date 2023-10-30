@@ -47,7 +47,6 @@ public class FileUploadSubmissionService {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private ValidationResult validationResult;
   private FileUploadUtils fileUploadUtils;
-
   @Autowired BioSamplesClient bioSamplesAapClient;
 
   @Autowired
@@ -55,9 +54,7 @@ public class FileUploadSubmissionService {
   BioSamplesClient bioSamplesWebinClient;
 
   @Autowired FileUploadStorageService fileUploadStorageService;
-
   @Autowired MongoFileUploadRepository mongoFileUploadRepository;
-
   @Autowired MongoSampleRepository mongoSampleRepository;
 
   @RabbitListener(

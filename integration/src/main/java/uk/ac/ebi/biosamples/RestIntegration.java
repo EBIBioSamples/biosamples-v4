@@ -35,10 +35,9 @@ import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component
-@Order(2)
+@Order(6)
 // @Profile({"default", "rest"})
 public class RestIntegration extends AbstractIntegration {
-
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final RestTemplate restTemplate;
   private final BioSamplesProperties clientProperties;
@@ -75,16 +74,38 @@ public class RestIntegration extends AbstractIntegration {
     } else {
       final EntityModel<Sample> resource = client.persistSampleResource(testSample);
       final Sample sampleContent = resource.getContent();
-
       final Sample testSampleWithAccession =
           Sample.Builder.fromSample(testSample)
               .withAccession(Objects.requireNonNull(sampleContent).getAccession())
               .withStatus(sampleContent.getStatus())
               .build();
 
+      // trying to post the same sample back again to see PUT is working fine as the sample at this
+      // stage has an accession
+      final Attribute sraAccessionAttribute =
+          resource.getContent().getAttributes().stream()
+              .filter(attribute -> attribute.getType().equals("SRA accession"))
+              .findFirst()
+              .get();
+
+      testSampleWithAccession.getAttributes().add(sraAccessionAttribute);
+
+      final EntityModel<Sample> resourceAfterRepost =
+          client.persistSampleResource(testSampleWithAccession);
+      final Sample repostedSampleContent = resourceAfterRepost.getContent();
+
       if (!testSampleWithAccession.equals(sampleContent)) {
         throw new IntegrationTestFailException(
             "Expected response (" + sampleContent + ") to equal submission (" + testSample + ")");
+      }
+
+      if (!testSampleWithAccession.equals(repostedSampleContent)) {
+        throw new IntegrationTestFailException(
+            "Expected response ("
+                + repostedSampleContent
+                + ") to equal submission ("
+                + testSample
+                + ")");
       }
     }
   }
@@ -98,7 +119,7 @@ public class RestIntegration extends AbstractIntegration {
     final Sample sampleTest1 = getSampleTest1();
     // get to check it worked
     final Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest1.getName());
-    if (!optionalSample.isPresent()) {
+    if (optionalSample.isEmpty()) {
       throw new IntegrationTestFailException(
           "Cant find sample " + sampleTest1.getName(), Phase.TWO);
     }
@@ -139,9 +160,11 @@ public class RestIntegration extends AbstractIntegration {
 
     TimeUnit.SECONDS.sleep(2);
 
+    // fetch the already submitted test sample 1
     final Iterable<EntityModel<Sample>> optionalSampleIterable =
         client.fetchSampleResourceAll(sampleTest1.getName());
     final Iterator<EntityModel<Sample>> sampleIterator = optionalSampleIterable.iterator();
+
     boolean found = false;
 
     while (sampleIterator.hasNext()) {
@@ -156,6 +179,7 @@ public class RestIntegration extends AbstractIntegration {
       throw new IntegrationTestFailException(
           "Cannot access private " + sampleTest1.getName(), Phase.THREE);
     } else {
+      // prepare test sample 1 for resubmission with attached accession
       sampleTest1 =
           Sample.Builder.fromSample(sampleTest1)
               .withAccession(retrievedFromIterable.getAccession())
@@ -163,29 +187,52 @@ public class RestIntegration extends AbstractIntegration {
     }
 
     // put the second sample in
-    EntityModel<Sample> resource = client.persistSampleResource(sampleTest2, false, true);
-    final String sample2Accession = Objects.requireNonNull(resource.getContent()).getAccession();
+    final EntityModel<Sample> sampleTest2Resource =
+        client.persistSampleResource(sampleTest2, false, true);
+
+    // get the accession and sra accession of test sample 2
+    final Sample sampleTest2ResourceContent = sampleTest2Resource.getContent();
+    final String sampleTest2Accession =
+        Objects.requireNonNull(sampleTest2ResourceContent).getAccession();
+    final Attribute sraAccessionAttributeForSampleTest2 =
+        sampleTest2ResourceContent.getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals("SRA accession"))
+            .findFirst()
+            .get();
+    sampleTest2.getAttributes().add(sraAccessionAttributeForSampleTest2);
 
     // put a version that is private and also update relationships
     final SortedSet<Relationship> relationships = new TreeSet<>();
+
     relationships.add(
-        Relationship.build(sampleTest1.getAccession(), "derived from", sample2Accession));
+        Relationship.build(sampleTest1.getAccession(), "derived from", sampleTest2Accession));
+
+    // prepare the test sample 1 and now private
     sampleTest1 =
         new Sample.Builder(sampleTest1.getName(), sampleTest1.getAccession())
             .withTaxId(sampleTest1.getTaxId())
             .withDomain(sampleTest1.getDomain())
             .withRelease("2116-04-01T11:36:57.00Z")
             .withUpdate(sampleTest1.getUpdate())
-            .withAttributes(sampleTest1.getCharacteristics())
+            .withAttributes(sampleTest1.getAttributes())
             .withRelationships(relationships)
             .withExternalReferences(sampleTest1.getExternalReferences())
             .build();
 
-    resource = client.persistSampleResource(sampleTest1);
-    if (!sampleTest1.equals(resource.getContent())) {
+    final EntityModel<Sample> sampleTest1Resource = client.persistSampleResource(sampleTest1);
+    final Sample sampleTest1ResourceContent = sampleTest1Resource.getContent();
+    final Attribute sraAccessionAttributeForSampleTest1 =
+        sampleTest1ResourceContent.getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals("SRA accession"))
+            .findFirst()
+            .get();
+
+    sampleTest1.getAttributes().add(sraAccessionAttributeForSampleTest1);
+
+    if (!sampleTest1.equals(sampleTest1ResourceContent)) {
       throw new IntegrationTestFailException(
           "Expected response ("
-              + resource.getContent()
+              + sampleTest1ResourceContent
               + ") to equal submission ("
               + sampleTest1
               + ")",
@@ -193,36 +240,41 @@ public class RestIntegration extends AbstractIntegration {
     }
 
     // check that it is private
-    Optional<EntityModel<Sample>> optional =
+    Optional<EntityModel<Sample>> sampleTest1Optional =
         annonymousClient.fetchSampleResource(sampleTest1.getAccession());
-    if (optional.isPresent()) {
+
+    if (sampleTest1Optional.isPresent()) {
       throw new IntegrationTestFailException(
           "Can access private " + sampleTest1.getAccession() + " as annonymous", Phase.THREE);
     }
 
     // check that it is accessible, if authorised
-    optional = client.fetchSampleResource(sampleTest1.getAccession());
-    if (!optional.isPresent()) {
+    sampleTest1Optional = client.fetchSampleResource(sampleTest1.getAccession());
+
+    if (sampleTest1Optional.isEmpty()) {
       throw new IntegrationTestFailException(
           "Cannot access private " + sampleTest1.getAccession(), Phase.THREE);
     }
 
+    // build sample test 2 with accession for resubmission
     sampleTest2 =
         Sample.Builder.fromSample(sampleTest2)
-            .withAccession(sample2Accession)
+            .withAccession(sampleTest2Accession)
             .withRelationships(sampleTest1.getRelationships())
             .build();
 
-    optional = client.fetchSampleResource(sampleTest2.getAccession());
-    if (!optional.isPresent()) {
+    final Optional<EntityModel<Sample>> sampleTest2Optional =
+        client.fetchSampleResource(sampleTest2Accession);
+
+    if (sampleTest2Optional.isEmpty()) {
       throw new IntegrationTestFailException(
           "Cannot access private " + sampleTest2.getAccession(), Phase.THREE);
     }
 
-    if (!sampleTest2.equals(optional.get().getContent())) {
+    if (!sampleTest2.equals(sampleTest2Optional.get().getContent())) {
       throw new IntegrationTestFailException(
           "Expected response ("
-              + resource.getContent()
+              + sampleTest2ResourceContent
               + ") to equal submission ("
               + sampleTest2
               + ")",
@@ -235,11 +287,10 @@ public class RestIntegration extends AbstractIntegration {
         webinClient.persistSampleResource(webinSampleTest1, false, true);
     final String webinSampleAccession =
         Objects.requireNonNull(webinSampleResource.getContent()).getAccession();
-
     final Optional<EntityModel<Sample>> webinSamplePostPersistance =
         webinClient.fetchSampleResource(webinSampleAccession);
 
-    if (!webinSamplePostPersistance.isPresent()) {
+    if (webinSamplePostPersistance.isEmpty()) {
       throw new IntegrationTestFailException(
           "Private sample submitted using webin auth not retrieved", Phase.THREE);
     } else {
@@ -253,7 +304,7 @@ public class RestIntegration extends AbstractIntegration {
     Sample sampleTest2 = getSampleTest2();
 
     final Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest2.getName());
-    if (!optionalSample.isPresent()) {
+    if (optionalSample.isEmpty()) {
       throw new IntegrationTestFailException(
           "Cannot access private " + sampleTest2.getName(), Phase.FOUR);
     } else {
@@ -263,6 +314,7 @@ public class RestIntegration extends AbstractIntegration {
               .build();
 
       final SortedSet<Relationship> relationships = new TreeSet<>();
+
       relationships.add(
           Relationship.build(
               optionalSample.get().getRelationships().first().getSource(),
@@ -287,20 +339,31 @@ public class RestIntegration extends AbstractIntegration {
     // get to check it worked
     final Optional<EntityModel<Sample>> optional =
         client.fetchSampleResource(sampleTest2.getAccession());
-    if (!optional.isPresent()) {
+
+    if (optional.isEmpty()) {
       throw new IntegrationTestFailException("No existing " + sampleTest2.getName(), Phase.FOUR);
     }
     final Sample sampleTest2Rest = optional.get().getContent();
+    final Attribute sraAccessionAttributeForSampleTest2 =
+        sampleTest2Rest.getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals("SRA accession"))
+            .findFirst()
+            .get();
+
+    sampleTest2.getAttributes().add(sraAccessionAttributeForSampleTest2);
+
     // check other details i.e relationship
     if (!sampleTest2.equals(sampleTest2Rest)) {
       throw new IntegrationTestFailException(
           "Expected response (" + sampleTest2Rest + ") to equal submission (" + sampleTest2 + ")",
           Phase.FOUR);
     }
+
     // check utf -8
     if (!sampleTest2Rest.getCharacteristics().contains(Attribute.build("UTF-8 test", "αβ"))) {
       throw new IntegrationTestFailException("Unable to find UTF-8 characters", Phase.FOUR);
     }
+
     // check the update date is updated by the system
     if (sampleTest2Rest.getUpdate().equals(sampleTest2.getUpdate())) {
       throw new IntegrationTestFailException(
@@ -316,7 +379,16 @@ public class RestIntegration extends AbstractIntegration {
             .withNoPublications()
             .withNoOrganisations()
             .build();
+
     final EntityModel<Sample> resource = client.persistSampleResource(sampleTest1);
+    final Attribute sraAccessionAttributeForSampleTest1 =
+        resource.getContent().getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals("SRA accession"))
+            .findFirst()
+            .get();
+
+    sampleTest1.getAttributes().add(sraAccessionAttributeForSampleTest1);
+
     if (!sampleTest1.equals(resource.getContent())) {
       throw new IntegrationTestFailException(
           "Expected response ("
@@ -333,23 +405,28 @@ public class RestIntegration extends AbstractIntegration {
     // check that deleting the relationship actually deleted it
     Sample sampleTest2 = getSampleTest2();
     final Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest2.getName());
-    if (!optionalSample.isPresent()) {
+    final Sample sample;
+
+    if (optionalSample.isEmpty()) {
       throw new IntegrationTestFailException(
           "Cannot access private " + sampleTest2.getName(), Phase.FOUR);
     } else {
+      sample = optionalSample.get();
       sampleTest2 =
-          Sample.Builder.fromSample(sampleTest2)
-              .withAccession(optionalSample.get().getAccession())
-              .build();
+          Sample.Builder.fromSample(sampleTest2).withAccession(sample.getAccession()).build();
     }
 
-    if (!sampleTest2.equals(optionalSample.get())) {
+    final Attribute sraAccessionAttributeForSampleTest2 =
+        sample.getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals("SRA accession"))
+            .findFirst()
+            .get();
+
+    sampleTest2.getAttributes().add(sraAccessionAttributeForSampleTest2);
+
+    if (!sampleTest2.equals(sample)) {
       throw new IntegrationTestFailException(
-          "Expected response ("
-              + optionalSample.get()
-              + ") to equal submission ("
-              + sampleTest2
-              + ")",
+          "Expected response (" + sample + ") to equal submission (" + sampleTest2 + ")",
           Phase.FIVE);
     }
   }
@@ -361,7 +438,6 @@ public class RestIntegration extends AbstractIntegration {
     final String name = "RestIntegration_sample_1";
     final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-
     final SortedSet<Attribute> attributes = new TreeSet<>();
 
     attributes.add(
@@ -382,6 +458,7 @@ public class RestIntegration extends AbstractIntegration {
 
     final SortedSet<Relationship> relationships = new TreeSet<>();
     final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+
     externalReferences.add(ExternalReference.build("http://www.google.com"));
 
     final SortedSet<Organization> organizations = new TreeSet<>();
@@ -394,6 +471,7 @@ public class RestIntegration extends AbstractIntegration {
             .build());
 
     final SortedSet<Contact> contacts = new TreeSet<>();
+
     contacts.add(
         new Contact.Builder()
             .name("Joe Bloggs")
@@ -402,6 +480,7 @@ public class RestIntegration extends AbstractIntegration {
             .build());
 
     final SortedSet<Publication> publications = new TreeSet<>();
+
     publications.add(
         new Publication.Builder().doi("10.1093/nar/gkt1081").pubmed_id("24265224").build());
 
@@ -423,8 +502,8 @@ public class RestIntegration extends AbstractIntegration {
     final String name = "RestIntegration_sample_1";
     final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     final Instant release = Instant.parse("2116-04-01T11:36:57.00Z");
-
     final SortedSet<Attribute> attributes = new TreeSet<>();
+
     attributes.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
@@ -443,9 +522,11 @@ public class RestIntegration extends AbstractIntegration {
 
     final SortedSet<Relationship> relationships = new TreeSet<>();
     final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+
     externalReferences.add(ExternalReference.build("http://www.google.com"));
 
     final SortedSet<Organization> organizations = new TreeSet<>();
+
     organizations.add(
         new Organization.Builder()
             .name("Jo Bloggs Inc")
@@ -455,6 +536,7 @@ public class RestIntegration extends AbstractIntegration {
             .build());
 
     final SortedSet<Contact> contacts = new TreeSet<>();
+
     contacts.add(
         new Contact.Builder()
             .name("Joe Bloggs")
@@ -463,6 +545,7 @@ public class RestIntegration extends AbstractIntegration {
             .build());
 
     final SortedSet<Publication> publications = new TreeSet<>();
+
     publications.add(
         new Publication.Builder().doi("10.1093/nar/gkt1081").pubmed_id("24265224").build());
 

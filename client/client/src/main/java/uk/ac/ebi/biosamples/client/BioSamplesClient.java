@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,9 +45,7 @@ import uk.ac.ebi.biosamples.service.SampleValidator;
  * @author faulcon
  */
 public class BioSamplesClient implements AutoCloseable {
-
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final SampleRetrievalService sampleRetrievalService;
   private final SampleRetrievalServiceV2 sampleRetrievalServiceV2;
   private final SamplePageRetrievalService samplePageRetrievalService;
@@ -57,11 +54,8 @@ public class BioSamplesClient implements AutoCloseable {
   private final SampleSubmissionServiceV2 sampleSubmissionServiceV2;
   private final CurationRetrievalService curationRetrievalService;
   private final CurationSubmissionService curationSubmissionService;
-  private final SampleCertificationService sampleCertificationService;
   private final StructuredDataSubmissionService structuredDataSubmissionService;
-
   private final SampleValidator sampleValidator;
-
   private final Optional<BioSamplesClient> publicClient;
 
   public BioSamplesClient(
@@ -103,11 +97,6 @@ public class BioSamplesClient implements AutoCloseable {
     sampleSubmissionServiceV2 = new SampleSubmissionServiceV2(restOperations, uriV2);
 
     sampleRetrievalServiceV2 = new SampleRetrievalServiceV2(restOperations, uriV2);
-
-    sampleCertificationService = new SampleCertificationService(restOperations, traverson);
-
-    /*sampleGroupSubmissionService =
-    new SampleGroupSubmissionService(restOperations, traverson, threadPoolExecutor);*/
 
     curationRetrievalService =
         new CurationRetrievalService(
@@ -219,10 +208,8 @@ public class BioSamplesClient implements AutoCloseable {
       final String accession, final Optional<List<String>> curationDomains)
       throws RestClientException {
     try {
-      return sampleRetrievalService.fetch(accession, curationDomains).get();
-    } catch (final InterruptedException e) {
-      throw new RuntimeException(e);
-    } catch (final ExecutionException e) {
+      return sampleRetrievalService.fetch(accession, curationDomains);
+    } catch (final Exception e) {
       throw new RuntimeException(e.getCause());
     }
   }
@@ -385,12 +372,6 @@ public class BioSamplesClient implements AutoCloseable {
     return results;
   }
 
-  public Collection<EntityModel<Sample>> certifySamples(final Collection<Sample> samples) {
-    return samples.stream()
-        .map(sample -> sampleCertificationService.submit(sample, null))
-        .collect(Collectors.toList());
-  }
-
   public Iterable<EntityModel<Curation>> fetchCurationResourceAll() {
     return curationRetrievalService.fetchAll();
   }
@@ -426,10 +407,8 @@ public class BioSamplesClient implements AutoCloseable {
       final String accession, final Optional<List<String>> curationDomains, final String jwt)
       throws RestClientException {
     try {
-      return sampleRetrievalService.fetch(accession, curationDomains, jwt).get();
-    } catch (final InterruptedException e) {
-      throw new RuntimeException(e);
-    } catch (final ExecutionException e) {
+      return sampleRetrievalService.fetch(accession, curationDomains, jwt);
+    } catch (final Exception e) {
       throw new RuntimeException(e.getCause());
     }
   }

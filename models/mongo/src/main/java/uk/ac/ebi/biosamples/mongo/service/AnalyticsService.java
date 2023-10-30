@@ -8,7 +8,7 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.utils.mongo;
+package uk.ac.ebi.biosamples.mongo.service;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;

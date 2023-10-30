@@ -12,6 +12,7 @@ package uk.ac.ebi.biosamples.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
@@ -19,6 +20,7 @@ import java.util.*;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExternalReference implements Comparable<ExternalReference> {
   private final String url;
   private final String hash;
@@ -40,7 +42,7 @@ public class ExternalReference implements Comparable<ExternalReference> {
   }
 
   public SortedSet<String> getDuo() {
-    return duo;
+    return duo != null ? duo : Collections.emptySortedSet();
   }
 
   @Override

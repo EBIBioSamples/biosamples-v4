@@ -42,12 +42,8 @@ public class EnaSampleXmlEnhancerTest {
     eraproSample.brokerName = null;
     eraproSample.biosampleId = "SAMN00001603";
     eraproSample.centreName = "1000G";
-    eraproSample.fixed = "N";
     eraproSample.taxId = Long.valueOf(9606);
     eraproSample.scientificName = "Homo sapiens";
-    eraproSample.fixedTaxId = null;
-    eraproSample.fixedCommonName = null;
-    eraproSample.fixedScientificName = null;
   }
 
   @Test
@@ -106,12 +102,8 @@ public class EnaSampleXmlEnhancerTest {
     eraproSample.brokerName = null;
     eraproSample.biosampleId = "";
     eraproSample.centreName = "1000G";
-    eraproSample.fixed = "N";
     eraproSample.taxId = Long.valueOf("9606");
     eraproSample.scientificName = "Homo sapiens";
-    eraproSample.fixedTaxId = null;
-    eraproSample.fixedCommonName = null;
-    eraproSample.fixedScientificName = null;
     assertEquals(
         pretty(exampleSampleXml),
         enaSampleXmlEnhancer.applyRules(
@@ -180,12 +172,8 @@ public class EnaSampleXmlEnhancerTest {
     eraproSample.brokerName = null;
     eraproSample.biosampleId = "'SAMEA749880'";
     eraproSample.centreName = "Wellcome Sanger Institute";
-    eraproSample.fixed = "N";
     eraproSample.taxId = Long.valueOf("580240");
     eraproSample.scientificName = "Saccharomyces cerevisiae W303";
-    eraproSample.fixedTaxId = null;
-    eraproSample.fixedCommonName = null;
-    eraproSample.fixedScientificName = null;
     assertEquals(
         exampleSampleWithTitleAddedXml,
         enaSampleXmlEnhancer.applyRules(
@@ -200,12 +188,8 @@ public class EnaSampleXmlEnhancerTest {
     eraproSample.brokerName = null;
     eraproSample.biosampleId = "'SAMN00014227'";
     eraproSample.centreName = "Baylor College of Medicine";
-    eraproSample.fixed = "Y";
     eraproSample.taxId = Long.valueOf("7227");
     eraproSample.scientificName = null;
-    eraproSample.fixedTaxId = "7227";
-    eraproSample.fixedCommonName = null;
-    eraproSample.fixedScientificName = "Drosophila melanogaster";
     assertEquals(
         exampleSampleThatHasBeenTaxonFixed,
         enaSampleXmlEnhancer.applyRules(
@@ -221,12 +205,8 @@ public class EnaSampleXmlEnhancerTest {
     eraproSample.brokerName = null;
     eraproSample.biosampleId = "'SAMN02356578'";
     eraproSample.centreName = "Broad Institute";
-    eraproSample.fixed = "Y";
     eraproSample.taxId = Long.valueOf("1400346");
     eraproSample.scientificName = "Acinetobacter lwoffii NIPH 512";
-    eraproSample.fixedTaxId = "981327";
-    eraproSample.fixedCommonName = null;
-    eraproSample.fixedScientificName = "Acinetobacter lwoffii NCTC 5866 = CIP 64.10 = NIPH 512";
     assertEquals(
         exampleSampleThatHasBeenTaxonFixedSAMN02356578,
         enaSampleXmlEnhancer.applyRules(

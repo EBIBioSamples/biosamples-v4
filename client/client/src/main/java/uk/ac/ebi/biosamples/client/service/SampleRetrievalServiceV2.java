@@ -38,12 +38,12 @@ public class SampleRetrievalServiceV2 {
 
   /** Accepts a accession and returns the sample */
   public Sample fetchSampleByAccession(final String accession) {
-    return new FetchAccessionCallable(accession, uriV2).call();
+    return new FetchV2(accession, uriV2).fetch();
   }
 
   /** Accepts a accession and returns the sample */
   public Sample fetchSampleByAccession(final String accession, final String jwt) {
-    return new FetchAccessionCallable(accession, jwt, uriV2).call();
+    return new FetchV2(accession, jwt, uriV2).fetch();
   }
 
   /**
@@ -53,7 +53,7 @@ public class SampleRetrievalServiceV2 {
    * @return
    */
   public Map<String, Sample> fetchSamplesByAccessions(final List<String> accessions) {
-    return new FetchAccessionsCallable(accessions, uriV2).call();
+    return new FetchSamplesV2(accessions, uriV2).fetchSamples();
   }
 
   /**
@@ -64,27 +64,27 @@ public class SampleRetrievalServiceV2 {
    */
   public Map<String, Sample> fetchSamplesByAccessions(
       final List<String> accessions, final String jwt) {
-    return new FetchAccessionsCallable(accessions, uriV2, jwt).call();
+    return new FetchSamplesV2(accessions, uriV2, jwt).fetchSamples();
   }
 
-  private class FetchAccessionsCallable {
+  private class FetchSamplesV2 {
     private final List<String> accessions;
     private final String jwt;
     private final URI uriV2;
 
-    FetchAccessionsCallable(final List<String> accessions, final URI uriV2) {
+    FetchSamplesV2(final List<String> accessions, final URI uriV2) {
       this.accessions = accessions;
       jwt = null;
       this.uriV2 = uriV2;
     }
 
-    FetchAccessionsCallable(final List<String> accessions, final URI uriV2, final String jwt) {
+    FetchSamplesV2(final List<String> accessions, final URI uriV2, final String jwt) {
       this.accessions = accessions;
       this.jwt = jwt;
       this.uriV2 = uriV2;
     }
 
-    public Map<String, Sample> call() {
+    public Map<String, Sample> fetchSamples() {
       final URI bulkFetchSamplesUri =
           UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples" + "/bulk-fetch"))
               .queryParam("accessions", String.join(",", accessions))
@@ -124,24 +124,24 @@ public class SampleRetrievalServiceV2 {
     }
   }
 
-  private class FetchAccessionCallable {
+  private class FetchV2 {
     private final String accession;
     private final String jwt;
     private final URI uriV2;
 
-    FetchAccessionCallable(final String accession, final String jwt, final URI uriV2) {
+    FetchV2(final String accession, final String jwt, final URI uriV2) {
       this.accession = accession;
       this.jwt = jwt;
       this.uriV2 = uriV2;
     }
 
-    FetchAccessionCallable(final String accession, final URI uriV2) {
+    FetchV2(final String accession, final URI uriV2) {
       this.accession = accession;
       jwt = null;
       this.uriV2 = uriV2;
     }
 
-    public Sample call() {
+    public Sample fetch() {
       final URI sampleGetUri =
           UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples" + "/" + accession))
               .build(true)

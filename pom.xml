@@ -5,18 +5,19 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>biosamples</artifactId>
-	<version>5.2.19-RC3</version>
+	<version>5.2.21-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.2.0.RELEASE</version>
+		<version>2.5.5</version>
 	</parent>
 	<properties>
 		<java.version>8</java.version>
 		<neo4j-ogm.version>2.1.4</neo4j-ogm.version>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<profiles>
 		<profile>
@@ -79,20 +80,16 @@
 			<version>1.1.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.sun.activation</groupId>
-			<artifactId>javax.activation</artifactId>
-			<version>1.2.0</version>
+			<groupId>org.thymeleaf.extras</groupId>
+			<artifactId>thymeleaf-extras-java8time</artifactId>
+			<version>3.0.0.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.thymeleaf.extras</groupId>
-				<artifactId>thymeleaf-extras-java8time</artifactId>
-				<version>3.0.0.RELEASE</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 	<repositories>
 		<repository>
 			<id>central</id>
@@ -156,8 +153,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.7.0</version>
+				<version>3.8.1</version>
 				<configuration>
+					<source>17</source>
+					<target>17</target>
 					<compilerArgument>-parameters</compilerArgument>
 				</configuration>
 			</plugin>
@@ -253,6 +252,11 @@
 						</licenseHeader>
 					</java>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.1.0</version>
 			</plugin>
 		</plugins>
 	</build>

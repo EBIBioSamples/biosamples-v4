@@ -30,6 +30,7 @@ import uk.ac.ebi.biosamples.mongo.model.MongoCurationLink;
 import uk.ac.ebi.biosamples.mongo.repo.MongoCurationLinkRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoCurationRepository;
 import uk.ac.ebi.biosamples.mongo.service.CurationLinkToMongoCurationLinkConverter;
+import uk.ac.ebi.biosamples.mongo.service.CurationReadService;
 import uk.ac.ebi.biosamples.mongo.service.MongoCurationLinkToCurationLinkConverter;
 import uk.ac.ebi.biosamples.mongo.service.MongoCurationToCurationConverter;
 

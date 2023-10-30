@@ -10,8 +10,11 @@
 */
 package uk.ac.ebi.biosamples.solr;
 
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.solr.repository.config.EnableSolrRepositories;
 
 @Configuration
-// do not use EnableSolrRepositories as it then disables spring boot config
+@EnableSolrRepositories(basePackages = "uk.ac.ebi.biosamples.solr.repo")
+@ComponentScan
 public class SolrConfig {}

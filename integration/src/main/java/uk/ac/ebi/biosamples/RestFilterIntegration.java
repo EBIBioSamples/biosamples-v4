@@ -51,10 +51,19 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
 
     EntityModel<Sample> resource = client.persistSampleResource(testSample1);
+
+    final Attribute sraAccessionAttribute1 =
+        resource.getContent().getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals("SRA accession"))
+            .findFirst()
+            .get();
+    testSample1.getAttributes().add(sraAccessionAttribute1);
+
     testSample1 =
         Sample.Builder.fromSample(testSample1)
             .withAccession(resource.getContent().getAccession())
             .build();
+
     if (!testSample1.equals(resource.getContent())) {
       throw new IntegrationTestFailException(
           "Expected response ("
@@ -66,10 +75,18 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
 
     resource = client.persistSampleResource(testSample2);
+
+    final Attribute sraAccessionAttribute2 =
+        resource.getContent().getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals("SRA accession"))
+            .findFirst()
+            .get();
+    testSample2.getAttributes().add(sraAccessionAttribute2);
     testSample2 =
         Sample.Builder.fromSample(testSample2)
             .withAccession(resource.getContent().getAccession())
             .build();
+
     if (!testSample2.equals(resource.getContent())) {
       throw new IntegrationTestFailException(
           "Expected response ("
@@ -81,10 +98,18 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
 
     resource = client.persistSampleResource(testSample3);
+
+    final Attribute sraAccessionAttribute3 =
+        resource.getContent().getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals("SRA accession"))
+            .findFirst()
+            .get();
+    testSample3.getAttributes().add(sraAccessionAttribute3);
     testSample3 =
         Sample.Builder.fromSample(testSample3)
             .withAccession(resource.getContent().getAccession())
             .build();
+
     if (!testSample3.equals(resource.getContent())) {
       throw new IntegrationTestFailException(
           "Expected response ("

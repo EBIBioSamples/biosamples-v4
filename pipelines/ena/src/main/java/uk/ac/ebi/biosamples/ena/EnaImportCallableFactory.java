@@ -16,19 +16,27 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
+import uk.ac.ebi.biosamples.service.EraProDao;
 
 @Service
 public class EnaImportCallableFactory {
   private final BioSamplesClient bioSamplesWebinClient;
+  private final BioSamplesClient bioSamplesAapClient;
   private final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
+
+  private final EraProDao eraProDao;
   private final EgaSampleExporter egaSampleExporter;
 
   public EnaImportCallableFactory(
       @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesWebinClient,
+      final BioSamplesClient bioSamplesAapClient,
       final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService,
+      final EraProDao eraProDao,
       final EgaSampleExporter egaSampleExporter) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
+    this.bioSamplesAapClient = bioSamplesAapClient;
     this.enaSampleToBioSampleConversionService = enaSampleToBioSampleConversionService;
+    this.eraProDao = eraProDao;
     this.egaSampleExporter = egaSampleExporter;
   }
 
@@ -43,8 +51,10 @@ public class EnaImportCallableFactory {
         accession,
         egaId,
         bioSamplesWebinClient,
+        bioSamplesAapClient,
         egaSampleExporter,
         enaSampleToBioSampleConversionService,
+        eraProDao,
         null);
   }
 
@@ -55,13 +65,15 @@ public class EnaImportCallableFactory {
    * @return the callable, {@link EnaImportCallable}
    */
   public Callable<Void> build(
-      final String accession, final String egaId, final SuppressedKilledType suppressedKilledType) {
+      final String accession, final String egaId, final SpecialTypes specialTypes) {
     return new EnaImportCallable(
         accession,
         egaId,
         bioSamplesWebinClient,
+        bioSamplesAapClient,
         egaSampleExporter,
         enaSampleToBioSampleConversionService,
-        suppressedKilledType);
+        eraProDao,
+        specialTypes);
   }
 }

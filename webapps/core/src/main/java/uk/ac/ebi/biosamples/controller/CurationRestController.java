@@ -24,10 +24,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.mongo.service.CurationReadService;
 import uk.ac.ebi.biosamples.service.CurationResourceAssembler;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
-import uk.ac.ebi.biosamples.utils.mongo.CurationReadService;
 
 @RestController
 @ExposesResourceFor(Curation.class)

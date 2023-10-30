@@ -40,7 +40,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.ShallowEtagHeaderFilter;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.mongo.MongoProperties;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
@@ -65,11 +64,6 @@ import uk.ac.ebi.tsc.aap.client.repo.*;
 @EnableCaching
 public class Application extends SpringBootServletInitializer {
   public static void main(final String[] args) {
-    System.setProperty("http.proxyHost", "hh-wwwcache.ebi.ac.uk");
-    System.setProperty("http.proxyPort", "3128");
-    System.setProperty("https.proxyHost", "hh-wwwcache.ebi.ac.uk");
-    System.setProperty("https.proxyPort", "3128");
-
     SpringApplication.run(Application.class, args);
   }
 
@@ -110,13 +104,11 @@ public class Application extends SpringBootServletInitializer {
       final MongoSampleRepository mongoSampleRepository,
       final SampleToMongoSampleConverter sampleToMongoSampleConverter,
       final MongoSampleToSampleConverter mongoSampleToSampleConverter,
-      final MongoProperties mongoProperties,
       final MongoOperations mongoOperations) {
     return new MongoAccessionService(
         mongoSampleRepository,
         sampleToMongoSampleConverter,
         mongoSampleToSampleConverter,
-        mongoProperties.getAccessionPrefix(),
         mongoOperations);
   }
 

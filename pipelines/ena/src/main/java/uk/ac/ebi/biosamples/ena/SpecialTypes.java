@@ -8,24 +8,10 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.model.auth;
+package uk.ac.ebi.biosamples.ena;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-
-@Getter
-@Setter
-@EqualsAndHashCode
-@ToString
-public class SubmissionContact {
-  private static final long serialVersionUID = 1L;
-  private String consortium;
-  private String emailAddress;
-  private String firstName;
-  private boolean mainContact;
-  private String middleInitials;
-  private String submissionAccountId;
-  private String surname;
+public enum SpecialTypes {
+  BSD_AUTHORITY,
+  SUPPRESSED,
+  KILLED
 }

@@ -81,13 +81,15 @@ public class EnaSampleToBioSampleConversionService {
         enaSampleToBioSampleConverter.convertEnaSampleXmlToBioSample(
             enaSampleRootElement, accession);
 
+    final SampleStatus status = handleStatus(eraproSample.getStatus());
+    final Long taxId = eraproSample.getTaxId();
+    final String webinId = eraproSample.getSubmissionAccountId();
+
     final SortedSet<Attribute> attributes = new TreeSet<>(sample.getCharacteristics());
     final SortedSet<Publication> publications = new TreeSet<>(sample.getPublications());
     final String lastUpdated = eraproSample.getLastUpdated();
     final String firstPublic = eraproSample.getFirstPublic();
     final String firstCreated = eraproSample.getFirstCreated();
-    final String status = handleStatus(eraproSample.getStatus());
-    final Long taxId = eraproSample.getTaxId();
     final Instant release;
     Instant update = null;
     Instant create = null;
@@ -104,7 +106,7 @@ public class EnaSampleToBioSampleConversionService {
       attributes.add(
           Attribute.build("INSDC first public", DateTimeFormatter.ISO_INSTANT.format(release)));
     } else {
-      if (status.equals("private")) {
+      if (status == SampleStatus.PRIVATE) {
         release =
             Instant.ofEpochSecond(
                 LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
@@ -118,7 +120,7 @@ public class EnaSampleToBioSampleConversionService {
       submitted = Instant.parse(firstCreated);
     }
 
-    attributes.add(Attribute.build("INSDC status", status));
+    attributes.add(Attribute.build("INSDC status", status.toString().toLowerCase()));
 
     // Although update date is passed here, its system generated to time now by
     // webapps-core
@@ -128,9 +130,9 @@ public class EnaSampleToBioSampleConversionService {
               sample.getName(),
               accession,
               null,
-              pipelinesProperties.getProxyWebinId(),
+              webinId,
               taxId,
-              null, // TODO: status update
+              status,
               release,
               update,
               create,
@@ -148,7 +150,7 @@ public class EnaSampleToBioSampleConversionService {
               pipelinesProperties.getEnaDomain(),
               null,
               taxId,
-              null, // TODO: status update
+              status,
               release,
               update,
               create,
@@ -168,25 +170,21 @@ public class EnaSampleToBioSampleConversionService {
         .build();
   }
 
-  private String handleStatus(final int statusId) {
+  private SampleStatus handleStatus(final int statusId) {
     if (1 == statusId) {
-      return "draft";
+      return SampleStatus.DRAFT;
     } else if (2 == statusId) {
-      return "private";
+      return SampleStatus.PRIVATE;
     } else if (3 == statusId) {
-      return "cancelled";
+      return SampleStatus.CANCELLED;
     } else if (4 == statusId) {
-      return "public";
-    } else if (5 == statusId) {
-      return "suppressed";
-    } else if (6 == statusId) {
-      return "killed";
-    } else if (7 == statusId) {
-      return "temporary_suppressed";
-    } else if (8 == statusId) {
-      return "temporary_killed";
+      return SampleStatus.PUBLIC;
+    } else if (5 == statusId || 7 == statusId) {
+      return SampleStatus.SUPPRESSED;
+    } else if (6 == statusId || 8 == statusId) {
+      return SampleStatus.KILLED;
+    } else {
+      throw new RuntimeException("Unrecognised STATUS_ID " + statusId);
     }
-
-    throw new RuntimeException("Unrecognised STATUS_ID " + statusId);
   }
 }

@@ -28,7 +28,7 @@ public interface SolrSampleRepositoryCustom {
    * @param facetPageable
    * @return
    */
-  public Page<FacetFieldEntry> getFacetFields(FacetQuery query, Pageable facetPageable);
+  Page<FacetFieldEntry> getFacetFields(FacetQuery query, Pageable facetPageable);
 
   /**
    * Return a result of facets over the provided fields with the provided facet paging information
@@ -39,7 +39,7 @@ public interface SolrSampleRepositoryCustom {
    * @param facetPageable
    * @return
    */
-  public FacetPage<?> getFacets(FacetQuery query, List<String> facetFields, Pageable facetPageable);
+  FacetPage<?> getFacets(FacetQuery query, List<String> facetFields, Pageable facetPageable);
 
   /**
    * Return a result of facets over the provided fields with the provided facet paging information
@@ -51,7 +51,7 @@ public interface SolrSampleRepositoryCustom {
    * @param facetPageable
    * @return
    */
-  public FacetPage<?> getFacets(
+  FacetPage<?> getFacets(
       FacetQuery query,
       List<String> facetFields,
       List<String> rangeFacetFields,
@@ -66,8 +66,7 @@ public interface SolrSampleRepositoryCustom {
    * @param facetPageable
    * @return
    */
-  public FacetPage<?> getRangeFacets(
-      FacetQuery query, List<String> facetFields, Pageable facetPageable);
+  FacetPage<?> getRangeFacets(FacetQuery query, List<String> facetFields, Pageable facetPageable);
 
   /**
    * Use a query object to get a page of results. This allows for more complicated query
@@ -76,7 +75,7 @@ public interface SolrSampleRepositoryCustom {
    * @param query
    * @return
    */
-  public Page<SolrSample> findByQuery(Query query);
+  Page<SolrSample> findByQuery(Query query);
 
   /**
    * Use a query object to get a page of results. This allows for more complicated query
@@ -85,10 +84,9 @@ public interface SolrSampleRepositoryCustom {
    * @param query
    * @return
    */
-  public FacetPage<SolrSample> findByFacetQuery(FacetQuery query);
+  FacetPage<SolrSample> findByFacetQuery(FacetQuery query);
 
-  public SolrSample saveWithoutCommit(SolrSample entity);
+  SolrSample saveWithoutCommit(SolrSample entity);
 
-  public CursorArrayList<SolrSample> findByQueryCursorMark(
-      Query query, String cursorMark, int size);
+  CursorArrayList<SolrSample> findByQueryCursorMark(Query query, String cursorMark, int size);
 }

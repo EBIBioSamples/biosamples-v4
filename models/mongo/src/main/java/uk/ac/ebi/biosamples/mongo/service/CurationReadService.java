@@ -8,7 +8,7 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.utils.mongo;
+package uk.ac.ebi.biosamples.mongo.service;
 
 import java.time.Instant;
 import java.util.*;
@@ -25,8 +25,6 @@ import uk.ac.ebi.biosamples.mongo.model.MongoCuration;
 import uk.ac.ebi.biosamples.mongo.model.MongoCurationLink;
 import uk.ac.ebi.biosamples.mongo.repo.MongoCurationLinkRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoCurationRepository;
-import uk.ac.ebi.biosamples.mongo.service.MongoCurationLinkToCurationLinkConverter;
-import uk.ac.ebi.biosamples.mongo.service.MongoCurationToCurationConverter;
 
 @Service
 public class CurationReadService {
@@ -78,7 +76,7 @@ public class CurationReadService {
    * <p>This needs a curation link rather than a curation object because the samples update date may
    * be modified if the curation link is newer.
    */
-  Sample applyCurationLinkToSample(final Sample sample, final CurationLink curationLink) {
+  public Sample applyCurationLinkToSample(final Sample sample, final CurationLink curationLink) {
     log.trace("Applying curation " + curationLink + " to sample " + sample.getAccession());
     final Curation curation = curationLink.getCuration();
 
@@ -150,7 +148,8 @@ public class CurationReadService {
         .build();
   }
 
-  Sample applyAllCurationToSample(Sample sample, final Optional<List<String>> curationDomains) {
+  public Sample applyAllCurationToSample(
+      Sample sample, final Optional<List<String>> curationDomains) {
     // short-circuit only if curationdomain=<blank represented by "">
     if (curationDomains.isPresent() && curationDomains.get().size() == 1) {
       final String curationDomain = curationDomains.get().get(0);

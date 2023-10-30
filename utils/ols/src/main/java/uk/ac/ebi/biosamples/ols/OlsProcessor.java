@@ -33,11 +33,8 @@ import uk.ac.ebi.biosamples.utils.ClientUtils;
 
 @Service
 public class OlsProcessor {
-
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final RestTemplate restTemplate;
-
   private final BioSamplesProperties bioSamplesProperties;
 
   public OlsProcessor(

@@ -12,6 +12,7 @@ package uk.ac.ebi.biosamples.service;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +30,12 @@ public class EraProDao {
   protected JdbcTemplate jdbcTemplate;
 
   private final Logger log = LoggerFactory.getLogger(getClass());
-  private static final String STATUS_CLAUSE = "STATUS_ID IN (3, 4, 5, 6, 7, 8)";
+  private static final String STATUS_CLAUSE = "STATUS_ID IN (4, 5, 6, 7, 8)";
   private static final String STATUS_CLAUSE_SUPPRESSED = "STATUS_ID IN (5, 7)";
   private static final String STATUS_CLAUSE_KILLED = "STATUS_ID IN (6, 8)";
 
-  public void doSampleCallback(
-      final LocalDate minDate, final LocalDate maxDate, final RowCallbackHandler rch) {
+  public List<SampleCallbackResult> doSampleCallback(
+      final LocalDate minDate, final LocalDate maxDate) {
     final String query =
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID, LAST_UPDATED FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' "
             + "AND "
@@ -44,7 +45,23 @@ public class EraProDao {
     final Date minDateOld = java.sql.Date.valueOf(minDate);
     final Date maxDateOld = java.sql.Date.valueOf(maxDate);
 
-    jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
+    return jdbcTemplate.query(
+        query, sampleCallbackResultRowMapper, minDateOld, maxDateOld, minDateOld, maxDateOld);
+  }
+
+  public List<SampleCallbackResult> doSampleCallbackForBsdAuthoritySamples(
+      final LocalDate minDate, final LocalDate maxDate) {
+    final String query =
+        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID, LAST_UPDATED FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'Y' "
+            + "AND "
+            + STATUS_CLAUSE
+            + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY LAST_UPDATED ASC";
+
+    final Date minDateOld = java.sql.Date.valueOf(minDate);
+    final Date maxDateOld = java.sql.Date.valueOf(maxDate);
+
+    return jdbcTemplate.query(
+        query, sampleCallbackResultRowMapper, minDateOld, maxDateOld, minDateOld, maxDateOld);
   }
 
   /**
@@ -87,10 +104,10 @@ public class EraProDao {
     jdbcTemplate.query(query, rch, bioSampleId);
   }
 
-  public void getNcbiCallback(
-      final LocalDate minDate, final LocalDate maxDate, final RowCallbackHandler rch) {
+  public List<SampleCallbackResult> doNcbiCallback(
+      final LocalDate minDate, final LocalDate maxDate) {
     final String query =
-        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, LAST_UPDATED FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND BIOSAMPLE_AUTHORITY= 'N' "
+        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID, LAST_UPDATED FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND BIOSAMPLE_AUTHORITY= 'N' "
             + "AND "
             + STATUS_CLAUSE
             + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY LAST_UPDATED ASC";
@@ -98,25 +115,23 @@ public class EraProDao {
     final Date minDateOld = java.sql.Date.valueOf(minDate);
     final Date maxDateOld = java.sql.Date.valueOf(maxDate);
 
-    jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
+    return jdbcTemplate.query(
+        query, sampleCallbackResultRowMapper, minDateOld, maxDateOld, minDateOld, maxDateOld);
   }
 
   public EraproSample getSampleDetailsByBioSampleId(final String bioSampleId) {
     try {
       final String sql =
-          "SELECT SAMPLE_XML, TAX_ID, "
+          "SELECT SAMPLE_XML, TAX_ID, SAMPLE_ID, "
               + "to_char(LAST_UPDATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS LAST_UPDATED, "
               + "to_char(FIRST_PUBLIC, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_PUBLIC,  "
               + "to_char(FIRST_CREATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_CREATED, "
               + "STATUS_ID, "
               + "SUBMISSION_ACCOUNT_ID, "
               + "BIOSAMPLE_ID, "
-              + "FIXED_TAX_ID, "
-              + "FIXED_SCIENTIFIC_NAME, "
-              + "FIXED_COMMON_NAME, "
-              + "FIXED, "
               + "TAX_ID, "
               + "SCIENTIFIC_NAME, "
+              + "COMMON_NAME, "
               + "to_char(first_public, 'yyyy-mm-dd')                                                as first_public,\n"
               + "to_char(last_updated, 'yyyy-mm-dd')                                                as last_updated,\n"
               + "(select nvl(cv_broker_name.description, T1.broker_name)\n"
@@ -130,7 +145,7 @@ public class EraProDao {
               + " FROM SAMPLE "
               + "WHERE BIOSAMPLE_ID = ? fetch first row only ";
       final EraproSample sampleData =
-          jdbcTemplate.queryForObject(sql, sampleRowMapper, bioSampleId);
+          jdbcTemplate.queryForObject(sql, eraproSampleRowMapper, bioSampleId);
 
       return sampleData;
     } catch (final IncorrectResultSizeDataAccessException e) {
@@ -141,11 +156,12 @@ public class EraProDao {
     return null;
   }
 
-  private final RowMapper<EraproSample> sampleRowMapper =
+  private final RowMapper<EraproSample> eraproSampleRowMapper =
       (rs, rowNum) -> {
         final EraproSample sampleBean = new EraproSample();
 
         sampleBean.setSampleXml(rs.getString("SAMPLE_XML"));
+        sampleBean.setSampleId(rs.getString("SAMPLE_ID"));
         sampleBean.setFirstPublic(rs.getString("FIRST_PUBLIC"));
         sampleBean.setLastUpdated(rs.getString("LAST_UPDATED"));
         sampleBean.setFirstCreated(rs.getString("FIRST_CREATED"));
@@ -155,12 +171,21 @@ public class EraProDao {
         sampleBean.setBiosampleId(rs.getString("BIOSAMPLE_ID"));
         sampleBean.setBrokerName(rs.getString("BROKER_NAME"));
         sampleBean.setCentreName(rs.getString("CENTER_NAME"));
-        sampleBean.setFixed(rs.getString("FIXED"));
         sampleBean.setScientificName(rs.getString("SCIENTIFIC_NAME"));
-        sampleBean.setFixedTaxId(rs.getString("FIXED_TAX_ID"));
-        sampleBean.setFixedCommonName(rs.getString("FIXED_COMMON_NAME"));
-        sampleBean.setFixedScientificName(rs.getString("FIXED_SCIENTIFIC_NAME"));
+        sampleBean.setCommonName(rs.getString("COMMON_NAME"));
 
         return sampleBean;
+      };
+
+  private final RowMapper<SampleCallbackResult> sampleCallbackResultRowMapper =
+      (rs, rowNum) -> {
+        final SampleCallbackResult sampleCallbackResult = new SampleCallbackResult();
+
+        sampleCallbackResult.setBiosampleId(rs.getString("BIOSAMPLE_ID"));
+        sampleCallbackResult.setEgaId(rs.getString("EGA_ID"));
+        sampleCallbackResult.setStatusId(rs.getInt("STATUS_ID"));
+        sampleCallbackResult.setLastUpdated(rs.getDate("LAST_UPDATED"));
+
+        return sampleCallbackResult;
       };
 }

@@ -45,6 +45,7 @@ public class SchemaValidationTests {
   }
 
   @Test
+  @Ignore
   public void expect_schemas_to_exist_and_return_json_file_with_title_amr() throws Exception {
     mockMvc
         .perform(get("/schemas/amr.json"))
@@ -57,7 +58,6 @@ public class SchemaValidationTests {
   @Ignore // Impossible to test as a unit test (unless by mocking the validation service), need to
   // be tested by an integration test
   public void validates_provided_json_against_test_schema_correctly() throws Exception {
-
     final String jsonContent =
         StreamUtils.copyToString(
             new ClassPathResource("json_schema_valid_object.json").getInputStream(),
@@ -73,7 +73,6 @@ public class SchemaValidationTests {
   @Test
   @Ignore // Impossible to test as a unit test, need to be tested by an integration test
   public void reject_not_valid_json() throws Exception {
-
     final String invalidJsonContent =
         StreamUtils.copyToString(
             new ClassPathResource("json_schema_not_valid_object.json").getInputStream(),

@@ -66,6 +66,7 @@ public class PhenopacketIntegration extends AbstractIntegration {
       throw new RuntimeException("Phenopacket test sample should not be available during phase 1");
     }
     final EntityModel<Sample> resource = client.persistSampleResource(testSample);
+
     if (!testSample.equals(resource.getContent())) {
       throw new RuntimeException(
           "Expected response ("

@@ -33,7 +33,6 @@ import uk.ac.ebi.biosamples.model.*;
 
 public class FileUploadUtils {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   public static final String WEBIN_AUTH = "WEBIN";
   public static final String AAP = "AAP";
 

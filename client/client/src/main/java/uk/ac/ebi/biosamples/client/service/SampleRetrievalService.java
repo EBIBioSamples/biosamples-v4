@@ -12,7 +12,6 @@ package uk.ac.ebi.biosamples.client.service;
 
 import java.net.URI;
 import java.util.*;
-import java.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -30,56 +29,47 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 public class SampleRetrievalService {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final Traverson traverson;
-  private final ExecutorService executor;
   private final RestOperations restOperations;
 
   public SampleRetrievalService(final RestOperations restOperations, final Traverson traverson) {
     this.restOperations = restOperations;
     this.traverson = traverson;
-    this.executor = Executors.newSingleThreadExecutor();
   }
 
-  /**
-   * This will get an existing sample from biosamples using the accession
-   *
-   * @param accession
-   * @return
-   */
-  public Future<Optional<EntityModel<Sample>>> fetch(
+  /** This will get an existing sample from biosamples using the accession */
+  public Optional<EntityModel<Sample>> fetch(
       final String accession, final Optional<List<String>> curationDomains) {
-    return executor.submit(new FetchCallable(accession, curationDomains));
+    return new FetchSample(accession, curationDomains).fetchSample();
   }
 
-  public Future<Optional<EntityModel<Sample>>> fetch(
+  public Optional<EntityModel<Sample>> fetch(
       final String accession, final Optional<List<String>> curationDomains, final String jwt) {
-    return executor.submit(new FetchCallable(accession, curationDomains, jwt));
+    return new FetchSample(accession, curationDomains, jwt).fetchSample();
   }
 
-  private class FetchCallable implements Callable<Optional<EntityModel<Sample>>> {
+  private class FetchSample {
     private final String accession;
     private final Optional<List<String>> curationDomains;
     private final String jwt;
 
-    FetchCallable(final String accession, final Optional<List<String>> curationDomains) {
+    FetchSample(final String accession, final Optional<List<String>> curationDomains) {
       this.accession = accession;
       this.curationDomains = curationDomains;
       jwt = null;
     }
 
-    FetchCallable(
+    FetchSample(
         final String accession, final Optional<List<String>> curationDomains, final String jwt) {
       this.accession = accession;
       this.curationDomains = curationDomains;
       this.jwt = jwt;
     }
 
-    @Override
-    public Optional<EntityModel<Sample>> call() {
+    public Optional<EntityModel<Sample>> fetchSample() {
       final URI uri;
 
-      if (!curationDomains.isPresent()) {
+      if (curationDomains.isEmpty()) {
         uri =
             URI.create(
                 traverson
@@ -139,7 +129,6 @@ public class SampleRetrievalService {
   }
 
   private class IterableResourceFetch implements Iterable<Optional<EntityModel<Sample>>> {
-
     private final Iterable<String> accessions;
     private final String jwt;
 
@@ -159,11 +148,8 @@ public class SampleRetrievalService {
     }
 
     private class IteratorResourceFetch implements Iterator<Optional<EntityModel<Sample>>> {
-
       private final Iterator<String> accessions;
-      private final Queue<Future<Optional<EntityModel<Sample>>>> queue = new LinkedList<>();
-      // TODO application property this
-      private final int queueMaxSize = 1000;
+      private final Queue<Optional<EntityModel<Sample>>> queue = new LinkedList<>();
 
       IteratorResourceFetch(final Iterator<String> accessions) {
         this.accessions = accessions;
@@ -185,26 +171,22 @@ public class SampleRetrievalService {
         }
 
         // fill up the queue if possible
+        final int queueMaxSize = 1000;
         while (queue.size() < queueMaxSize && accessions.hasNext()) {
           log.trace("Queue size is " + queue.size());
-          final String nextAccession = accessions.next();
-          queue.add(fetch(nextAccession, Optional.empty(), jwt));
+
+          queue.add(fetch(accessions.next(), Optional.empty(), jwt));
         }
 
         // get the end of the queue and wait for it to finish if needed
-        final Future<Optional<EntityModel<Sample>>> future = queue.poll();
+        final Optional<EntityModel<Sample>> pollingResult = queue.poll();
         // this shouldn't happen, but best to check
-        if (future == null) {
+
+        if (pollingResult == null && !pollingResult.isPresent()) {
           throw new NoSuchElementException();
         }
 
-        try {
-          return future.get();
-        } catch (final InterruptedException e) {
-          throw new RuntimeException(e);
-        } catch (final ExecutionException e) {
-          throw new RuntimeException(e.getCause());
-        }
+        return pollingResult;
       }
     }
   }

@@ -7,13 +7,13 @@
 <parent>
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>biosamples</artifactId>
-	<version>5.2.19-RC3</version>
+	<version>5.2.21-SNAPSHOT</version>
 </parent>
 
 	<properties>
-		<java.version>8</java.version>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+		<java.version>17</java.version>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 	</properties>
 
 <dependencies>
@@ -23,23 +23,13 @@
 	</dependency>
 	<dependency>
 	<groupId>uk.ac.ebi.biosamples</groupId>
-	<artifactId>properties</artifactId>
-	<version>5.2.19-RC3</version>
-	</dependency>
-	<dependency>
-	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>models-mongo</artifactId>
-	<version>5.2.19-RC3</version>
-	</dependency>
-	<dependency>
-	<groupId>uk.ac.ebi.biosamples</groupId>
-	<artifactId>utils-thread</artifactId>
-	<version>5.2.19-RC3</version>
+	<version>5.2.21-SNAPSHOT</version>
 	</dependency>
 	<dependency>
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>models-core</artifactId>
-	<version>5.2.19-RC3</version>
+	<version>5.2.21-SNAPSHOT</version>
 	</dependency>
 	<dependency>
 	<groupId>com.fasterxml.jackson.core</groupId>
@@ -62,5 +52,4 @@
 	<version>1.0.0</version>
 	</dependency>
 </dependencies>
-
 </project>

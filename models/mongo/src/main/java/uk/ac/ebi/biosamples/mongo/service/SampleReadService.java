@@ -8,7 +8,7 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.utils.mongo;
+package uk.ac.ebi.biosamples.mongo.service;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,15 +19,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoStructuredData;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoStructuredDataRepository;
-import uk.ac.ebi.biosamples.mongo.service.MongoInverseRelationshipService;
-import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
-import uk.ac.ebi.biosamples.mongo.service.MongoStructuredDataToStructuredDataConverter;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 
 /**
@@ -39,16 +37,14 @@ import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 @Service
 public class SampleReadService {
   private static final Logger LOGGER = LoggerFactory.getLogger(SampleReadService.class);
+  private static final String SRA_ACCESSION = "SRA accession";
   private final MongoSampleRepository mongoSampleRepository;
-
   private final MongoSampleToSampleConverter mongoSampleToSampleConverter;
-
   private final CurationReadService curationReadService;
   private final MongoInverseRelationshipService mongoInverseRelationshipService;
   private final MongoStructuredDataRepository mongoStructuredDataRepository;
   private final MongoStructuredDataToStructuredDataConverter
       mongoStructuredDataToStructuredDataConverter;
-
   private final ExecutorService executorService;
 
   public SampleReadService(
@@ -88,6 +84,49 @@ public class SampleReadService {
       LOGGER.warn(String.format("failed to retrieve sample with accession %s", accession));
       return Optional.empty();
     }
+
+    // add on inverse relationships
+    mongoSample = mongoInverseRelationshipService.addInverseRelationships(mongoSample);
+
+    // convert it into the format to return
+    Sample sample = mongoSampleToSampleConverter.apply(mongoSample);
+
+    // add curation from a set of users
+    sample = curationReadService.applyAllCurationToSample(sample, curationDomains);
+
+    // add structured data
+    final Optional<MongoStructuredData> mongoStructuredData =
+        mongoStructuredDataRepository.findById(accession);
+
+    if (mongoStructuredData.isPresent()) {
+      final StructuredData structuredData =
+          mongoStructuredDataToStructuredDataConverter.convert(mongoStructuredData.get());
+      sample =
+          Sample.Builder.fromSample(sample).withStructuredData(structuredData.getData()).build();
+    }
+
+    return Optional.of(sample);
+  }
+
+  /** Throws an IllegalArgumentException of no sample with that accession exists */
+  // can't use a sync cache because we need to use CacheEvict
+  // @Cacheable(cacheNames=WebappProperties.fetchUsing, key="#root.args[0]")
+  public Optional<Sample> fetchWithMissingSraAccessionsAdded(
+      final String accession, final Optional<List<String>> curationDomains)
+      throws IllegalArgumentException {
+    MongoSample mongoSample = mongoSampleRepository.findById(accession).orElse(null);
+
+    if (mongoSample == null) {
+      LOGGER.warn(String.format("failed to retrieve sample with accession %s", accession));
+      return Optional.empty();
+    }
+
+    final Optional<Attribute> sraAccessionOptional =
+        mongoSample.getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals(SRA_ACCESSION))
+            .findAny();
+
+    if (sraAccessionOptional.isEmpty()) {}
 
     // add on inverse relationships
     mongoSample = mongoInverseRelationshipService.addInverseRelationships(mongoSample);

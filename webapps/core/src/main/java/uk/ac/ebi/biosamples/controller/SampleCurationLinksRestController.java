@@ -30,12 +30,12 @@ import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
+import uk.ac.ebi.biosamples.mongo.service.CurationReadService;
 import uk.ac.ebi.biosamples.service.CurationLinkResourceAssembler;
 import uk.ac.ebi.biosamples.service.CurationPersistService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.utils.mongo.CurationReadService;
 
 @RestController
 @RequestMapping("/samples/{accession}/curationlinks")

@@ -11,8 +11,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>8</source>
-					<target>8</target>
+					<source>17</source>
+					<target>17</target>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -21,7 +21,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.2.19-RC3</version>
+		<version>5.2.21-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -29,22 +29,22 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-core</artifactId>
-			<version>5.2.19-RC3</version>
+			<version>5.2.21-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>properties</artifactId>
-			<version>5.2.19-RC3</version>
+			<version>5.2.21-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-thread</artifactId>
-			<version>5.2.19-RC3</version>
+			<version>5.2.21-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
-			<version>1.2.0</version>
+			<version>1.3.4</version>
 		</dependency>
 		<!-- unmentioned requirements of hateoas -->
 		<dependency>
@@ -71,7 +71,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.2</version>
+			<version>1.18.22</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

@@ -11,10 +11,7 @@
 package uk.ac.ebi.biosamples.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,10 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
-import uk.ac.ebi.biosamples.model.auth.AuthRealm;
-import uk.ac.ebi.biosamples.model.auth.AuthRequest;
-import uk.ac.ebi.biosamples.model.auth.AuthRequestWebin;
-import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
+import uk.ac.ebi.biosamples.model.auth.*;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
@@ -89,14 +83,24 @@ public class LoginController {
             bioSamplesWebinAuthenticationService
                 .getWebinAuthenticationToken(objectMapper.writeValueAsString(authRequestWebin))
                 .getBody();
-        final SubmissionAccount submissionAccount =
-            bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(token).getBody();
+        final Optional<AuthToken> authToken = accessControlService.extractToken(token);
+        final String webinSubmissionAccountId;
+
+        if (authToken.isPresent()) {
+          webinSubmissionAccountId = authToken.get().getUser();
+        } else {
+          throw new GlobalExceptions.WebinTokenInvalidException();
+        }
+
+        if (webinSubmissionAccountId == null) {
+          throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
+        }
 
         log.info("WEBIN token is " + token);
 
         model.addAttribute("loginmethod", "WEBIN");
         model.addAttribute("certificates", checklists);
-        model.addAttribute("webinAccount", submissionAccount.getId());
+        model.addAttribute("webinId", webinSubmissionAccountId);
         model.addAttribute("token", token);
         model.remove("wrongCreds");
 
@@ -118,7 +122,7 @@ public class LoginController {
 
           model.addAttribute("loginmethod", null);
           model.addAttribute("domains", domains);
-          model.addAttribute("webinAccount", null);
+          model.addAttribute("webinId", null);
           model.addAttribute("certificates", checklists);
           model.addAttribute("token", token);
           model.remove("wrongCreds");

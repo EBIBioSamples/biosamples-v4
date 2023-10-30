@@ -20,7 +20,7 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
@@ -46,29 +46,6 @@ public class BioSamplesWebinAuthenticationService {
     this.bioSamplesProperties = bioSamplesProperties;
   }
 
-  public ResponseEntity<SubmissionAccount> getWebinSubmissionAccount(final String webinAuthToken) {
-    final HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-    headers.set("Authorization", "Bearer " + webinAuthToken);
-    final HttpEntity<String> entity = new HttpEntity<>(headers);
-
-    try {
-      final ResponseEntity<SubmissionAccount> responseEntity =
-          restTemplate.exchange(
-              bioSamplesProperties.getBiosamplesWebinAuthFetchSubmissionAccountUri(),
-              HttpMethod.GET,
-              entity,
-              SubmissionAccount.class);
-      if (responseEntity.getStatusCode() == HttpStatus.OK) {
-        return responseEntity;
-      } else {
-        return null;
-      }
-    } catch (final Exception e) {
-      throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
-    }
-  }
-
   public ResponseEntity<String> getWebinAuthenticationToken(final String authRequest) {
     final HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
@@ -92,82 +69,110 @@ public class BioSamplesWebinAuthenticationService {
   }
 
   public Sample handleWebinUserSubmission(
-      final Sample sample, final String webinId, final Optional<Sample> oldSample) {
+      final Sample sample, final String webinIdFromAuthToken, final Optional<Sample> oldSample) {
     final String proxyWebinId = bioSamplesProperties.getBiosamplesClientWebinUsername();
     final String webinIdInSample = sample.getWebinSubmissionAccountId();
+    final String domain = sample.getDomain();
 
-    if (webinId != null && !webinId.isEmpty()) { // webin id retrieval failure - throw Exception
-      final String webinIdToPickForClientSubmissions =
+    if (webinIdFromAuthToken != null
+        && !webinIdFromAuthToken.isEmpty()) { // webin id retrieval failure - throw Exception
+      final String webinIdToSetForSample =
           (webinIdInSample != null && !webinIdInSample.isEmpty()) ? webinIdInSample : proxyWebinId;
 
       if (sample.getAccession() != null) { // sample updates, where sample has an accession
         final boolean oldSamplePresent = oldSample.isPresent();
 
-        if (webinId.equalsIgnoreCase(
+        if (webinIdFromAuthToken.equalsIgnoreCase(
             proxyWebinId)) { // ENA pipeline submissions or super user submission
-          // (via FILE UPLOADER)
-          if (oldSamplePresent) {
-            final Sample oldSampleInDb = oldSample.get();
-            final String webinIdInOldSample = oldSampleInDb.getWebinSubmissionAccountId();
-
-            bioSamplesCrossSourceIngestAccessControlService.protectFileUploaderSampleAccess(
-                oldSampleInDb, sample);
-            bioSamplesCrossSourceIngestAccessControlService
-                .protectPipelineImportedAndFileUploaderSubmittedSampleAccess(oldSampleInDb, sample);
-            bioSamplesCrossSourceIngestAccessControlService.protectEnaPipelineImportedSampleAccess(
-                oldSampleInDb, sample);
-
-            if (webinIdInOldSample != null
-                && !webinIdInOldSample.isEmpty()) { // if old sample has user info, use it
-              if (webinIdInOldSample.equals(proxyWebinId)) {
-                return buildSampleWithWebinId(sample, webinIdToPickForClientSubmissions);
-              } else {
-                return buildSampleWithWebinId(sample, webinIdInOldSample);
-              }
-            } else {
-              final String oldSampleAapDomain = oldSampleInDb.getDomain();
-
-              if (sampleService.isAPipelineAapDomain(oldSampleAapDomain)
-                  || isOldRegistrationDomain(
-                      oldSampleAapDomain)) { // if old sample was a pipeline submission using AAP,
-                // or
-                // pre-registration, allow
-                // webin replacement
-                return buildSampleWithWebinId(sample, webinIdToPickForClientSubmissions);
-              } else {
-                throw new GlobalExceptions.SampleNotAccessibleException();
-              }
-            }
-          } else {
-            return buildSampleWithWebinId(sample, webinIdToPickForClientSubmissions);
-          }
-        } else { // normal sample update - not pipeline, check for old user, if mismatch throw
+          // (via FILE UPLOADER) or ENA posted samples
+          return handleWebinSuperUserSampleSubmission(
+              sample, oldSample, domain, webinIdToSetForSample, oldSamplePresent);
+        } else { // normal sample update - not pipeline, not super user check for old user, if
+          // mismatch throw
           // exception, else build the Sample
+          if (domain != null) {
+            throw new GlobalExceptions.AccessControlException(
+                "Sample submitted using WEBIN authentication must not have a domain");
+          }
+
           if (oldSamplePresent) {
             final Sample oldSampleInDb = oldSample.get();
 
             bioSamplesCrossSourceIngestAccessControlService.protectPipelineImportedSampleAccess(
                 oldSampleInDb, sample);
+            bioSamplesCrossSourceIngestAccessControlService.protectWebinSourcedSampleAccess(
+                oldSampleInDb, sample);
 
-            if (!webinId.equalsIgnoreCase(
+            if (!webinIdFromAuthToken.equalsIgnoreCase(
                 oldSampleInDb.getWebinSubmissionAccountId())) { // original submitter mismatch
-              throw new GlobalExceptions.SampleNotAccessibleException();
+              throw new GlobalExceptions.NotOriginalSubmitterException();
             } else {
-              return buildSampleWithWebinId(sample, webinId);
+              return buildSampleWithWebinId(sample, webinIdFromAuthToken);
             }
           } else {
-            return buildSampleWithWebinId(sample, webinId);
+            throw new GlobalExceptions.SampleAccessionDoesNotExistException();
           }
         }
       } else { // new submission
-        if (webinId.equalsIgnoreCase(proxyWebinId)) { // new submission by client program
-          return buildSampleWithWebinId(sample, webinIdToPickForClientSubmissions);
+        if (webinIdFromAuthToken.equalsIgnoreCase(
+            proxyWebinId)) { // new submission by client program
+          return buildSampleWithWebinId(sample, webinIdToSetForSample);
         } else {
-          return buildSampleWithWebinId(sample, webinId);
+          if (domain != null) {
+            throw new GlobalExceptions.AccessControlException(
+                "Sample submitted using WEBIN authentication must not have a domain");
+          }
+
+          return buildSampleWithWebinId(sample, webinIdFromAuthToken);
         }
       }
     } else {
       throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
+    }
+  }
+
+  private Sample handleWebinSuperUserSampleSubmission(
+      final Sample sample,
+      final Optional<Sample> oldSample,
+      final String domain,
+      final String webinIdToSetForSample,
+      final boolean oldSamplePresent) {
+    if (oldSamplePresent) {
+      final Sample oldSampleInDb = oldSample.get();
+      final String webinIdInOldSample = oldSampleInDb.getWebinSubmissionAccountId();
+
+      if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
+        bioSamplesCrossSourceIngestAccessControlService.protectFileUploaderSampleAccess(
+            webinIdInOldSample, sample);
+        bioSamplesCrossSourceIngestAccessControlService.protectPipelineImportedSampleAccess(
+            oldSampleInDb, sample);
+        bioSamplesCrossSourceIngestAccessControlService.protectWebinSourcedSampleAccess(
+            oldSampleInDb, sample);
+      }
+
+      if (webinIdInOldSample != null
+          && !webinIdInOldSample
+              .isEmpty()) { // old sample exists + webin id exists + submission from original
+        // source, i.e. ENA, accept it without validating
+        return buildSampleWithWebinId(sample, webinIdToSetForSample);
+      } else {
+        final String oldSampleAapDomain = oldSampleInDb.getDomain();
+
+        if (sampleService.isAPipelineAapDomain(oldSampleAapDomain)
+            || isOldRegistrationDomain(
+                oldSampleAapDomain)) { // if old sample was a pipeline submission using AAP,
+          // or
+          // pre-registration, allow
+          // webin replacement
+          return buildSampleWithWebinId(sample, domain);
+        } else if (domain != null) {
+          return sample;
+        } else {
+          throw new GlobalExceptions.SampleNotAccessibleException();
+        }
+      }
+    } else { // old sample doesn't exist
+      return buildSampleWithWebinId(sample, webinIdToSetForSample);
     }
   }
 

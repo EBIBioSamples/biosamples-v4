@@ -28,11 +28,11 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.mongo.service.AnalyticsService;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
-import uk.ac.ebi.biosamples.utils.mongo.AnalyticsService;
 
 @Component
 public class ZoomaApplicationRunner implements ApplicationRunner {

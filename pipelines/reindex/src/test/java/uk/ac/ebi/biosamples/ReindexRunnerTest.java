@@ -27,7 +27,7 @@ import org.springframework.data.util.CloseableIterator;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleStatus;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
-import uk.ac.ebi.biosamples.utils.mongo.SampleReadService;
+import uk.ac.ebi.biosamples.mongo.service.SampleReadService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ReindexRunnerTest {

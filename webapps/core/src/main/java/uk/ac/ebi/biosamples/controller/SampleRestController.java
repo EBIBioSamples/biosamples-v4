@@ -204,6 +204,7 @@ public class SampleRestController {
 
     final SortedSet<AbstractData> abstractData = sample.getData();
     boolean isWebinSuperUser = false;
+    final String webinIdFromAuthToken;
 
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
       throw new GlobalExceptions.SampleAccessionMismatchException();
@@ -224,14 +225,14 @@ public class SampleRestController {
     }
 
     if (authProvider == AuthorizationProvider.WEBIN) {
-      final String webinSubmissionAccountId = authToken.get().getUser();
+      webinIdFromAuthToken = authToken.get().getUser();
 
-      if (webinSubmissionAccountId == null) {
+      if (webinIdFromAuthToken == null) {
         throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
       isWebinSuperUser =
-          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
+          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinIdFromAuthToken);
 
       if (notExistingAccession && !isWebinSuperUser) {
         throw new GlobalExceptions.SampleAccessionDoesNotExistException();
@@ -239,11 +240,10 @@ public class SampleRestController {
 
       sample =
           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              sample, webinSubmissionAccountId, oldSample);
+              sample, webinIdFromAuthToken, oldSample);
 
       if (abstractData != null && abstractData.size() > 0) {
-        if (bioSamplesWebinAuthenticationService.isSampleSubmitter(
-            sample, webinSubmissionAccountId)) {
+        if (bioSamplesWebinAuthenticationService.isSampleSubmitter(sample, webinIdFromAuthToken)) {
           sample = Sample.Builder.fromSample(sample).build();
         } else {
           sample = Sample.Builder.fromSample(sample).withNoData().build();

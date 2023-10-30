@@ -23,6 +23,8 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.concurrent.Executor;
 import javax.servlet.Filter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -43,7 +45,6 @@ import org.springframework.web.filter.ShallowEtagHeaderFilter;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 import org.thymeleaf.templateresolver.UrlTemplateResolver;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.mongo.MongoProperties;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
@@ -67,16 +68,13 @@ import uk.ac.ebi.tsc.aap.client.repo.*;
 @EnableAsync
 @EnableCaching
 public class Application extends SpringBootServletInitializer {
-  public static void main(final String[] args) {
-    System.setProperty("http.proxyHost", "hh-wwwcache.ebi.ac.uk");
-    System.setProperty("http.proxyPort", "3128");
-    System.setProperty("https.proxyHost", "hh-wwwcache.ebi.ac.uk");
-    System.setProperty("https.proxyPort", "3128");
+  private static final Logger log = LoggerFactory.getLogger("WebappsCore");
 
+  public static void main(final String[] args) {
     SpringApplication.run(Application.class, args);
   }
 
-  @Value("${spring.cloud.gcp.project-id}")
+  @Value("${spring.cloud.gcp.project-id:no_project}")
   private String enaGcpProject;
 
   @Autowired private Environment environment;
@@ -184,13 +182,11 @@ public class Application extends SpringBootServletInitializer {
       final MongoSampleRepository mongoSampleRepository,
       final SampleToMongoSampleConverter sampleToMongoSampleConverter,
       final MongoSampleToSampleConverter mongoSampleToSampleConverter,
-      final MongoProperties mongoProperties,
       final MongoOperations mongoOperations) {
     return new MongoAccessionService(
         mongoSampleRepository,
         sampleToMongoSampleConverter,
         mongoSampleToSampleConverter,
-        mongoProperties.getAccessionPrefix(),
         mongoOperations);
   }
 

@@ -38,6 +38,7 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 @CrossOrigin
 public class SamplesRestControllerV2 {
   private final Logger log = LoggerFactory.getLogger(getClass());
+  private static final String SRA_ACCESSION = "SRA accession";
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
@@ -67,6 +68,17 @@ public class SamplesRestControllerV2 {
   @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Sample> postSamplesV2(
       @RequestBody Sample sample, @RequestHeader(name = "Authorization") final String token) {
+    log.debug("Received POST for submission " + sample);
+
+    final boolean sampleHasSRAAccessionInAttributes =
+        sample.getAttributes() != null
+            && sample.getAttributes().stream()
+                .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION));
+
+    if (sample.hasAccession() || sampleHasSRAAccessionInAttributes) {
+      throw new GlobalExceptions.SampleWithAccessionSubmissionException();
+    }
+
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final AuthorizationProvider authProvider =
         authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
@@ -89,7 +101,7 @@ public class SamplesRestControllerV2 {
               sample, webinSubmissionAccountId, Optional.empty());
       sample = buildSample(sample, isWebinSuperUser);
 
-      sampleService.validateSampleHasNoRelationshipsV2(sample);
+      sampleService.handleSampleRelationshipsV2(sample, Optional.empty(), isWebinSuperUser);
 
       if (!isWebinSuperUser) {
         sample = validateSample(sample, true);
@@ -100,9 +112,11 @@ public class SamplesRestControllerV2 {
       sample = bioSamplesAapService.handleSampleDomain(sample, Optional.empty());
       sample = buildSample(sample, false);
 
-      sampleService.validateSampleHasNoRelationshipsV2(sample);
+      final boolean isAAPSuperUser = bioSamplesAapService.isWriteSuperUser();
 
-      if (!bioSamplesAapService.isWriteSuperUser()) {
+      sampleService.handleSampleRelationshipsV2(sample, Optional.empty(), isAAPSuperUser);
+
+      if (!isAAPSuperUser) {
         sample = validateSample(sample, false);
       }
 
@@ -147,17 +161,21 @@ public class SamplesRestControllerV2 {
       @RequestBody Sample sample, @RequestHeader(name = "Authorization") final String token) {
     log.debug("Received POST for accessioning " + sample);
 
-    if (sample.hasAccession()) {
+    final boolean sampleHasSRAAccessionInAttributes =
+        sample.getAttributes() != null
+            && sample.getAttributes().stream()
+                .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION));
+
+    if (sample.hasAccession() || sampleHasSRAAccessionInAttributes) {
       throw new GlobalExceptions.SampleWithAccessionSubmissionException();
     }
-
-    boolean isWebinSuperUser = false;
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final AuthorizationProvider authProvider =
         authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
             ? AuthorizationProvider.WEBIN
             : AuthorizationProvider.AAP;
+    boolean isWebinSuperUser = false;
 
     if (authProvider == AuthorizationProvider.WEBIN) {
       final String webinSubmissionAccountId = authToken.get().getUser();
