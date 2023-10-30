@@ -403,7 +403,7 @@ public class SampleService {
     Set<AbstractData> structuredData = new HashSet<>();
     boolean applyOldSampleStructuredData = false;
 
-    // retain existing relationships for supre user submissions, pipelines, ENA POSTED, not for file
+    // retain existing relationships for super user submissions, pipelines, ENA POSTED, not for file
     // uploads though
     handleRelationships(newSample, existingRelationships);
     handleSRAAccession(newSample, oldSample, isWebinSuperUser);
