@@ -29,7 +29,6 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 public class SampleRetrievalService {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final Traverson traverson;
   private final RestOperations restOperations;
 
