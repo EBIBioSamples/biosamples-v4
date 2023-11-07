@@ -65,7 +65,7 @@ public class NcbiEnaLinkCallable implements Callable<Void> {
           }
         }
       } else {
-        log.info("NCBI sample exists " + accession + " adding ENA link");
+        log.info("NCBI sample exists " + accession + " doing nothing");
 
         /*final ExternalReference exRef =
             ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + accession);
