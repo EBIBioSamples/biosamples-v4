@@ -11,6 +11,7 @@
 package uk.ac.ebi.biosamples.validation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Set;
 import javax.validation.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +39,7 @@ public class SchemaValidationService {
     this.validator = validator;
   }
 
-  public String validate(final Sample sample) {
+  public Sample validate(final Sample sample) {
     final String schemaId =
         sample.getCharacteristics().stream()
             .filter(s -> s.getType().equalsIgnoreCase("checklist"))
@@ -49,7 +50,18 @@ public class SchemaValidationService {
 
     try {
       final String sampleString = objectMapper.writeValueAsString(sample);
-      return validator.validateById(schemaId, sampleString);
+      final Set<Attribute> sampleAttributes = sample.getAttributes();
+
+      validator.validateById(schemaId, sampleString);
+
+      /*if (sampleAttributes.stream()
+          .noneMatch(attribute -> attribute.getType().equalsIgnoreCase("checklist"))) {
+        sampleAttributes.add(Attribute.build("checklist", schemaId));
+
+        return Sample.Builder.fromSample(sample).withAttributes(sampleAttributes).build();
+      }*/
+
+      return sample;
     } catch (final ValidationException | GlobalExceptions.SampleValidationException e) {
       throw new GlobalExceptions.SchemaValidationException(
           "Checklist validation failed: " + e.getMessage(), e);

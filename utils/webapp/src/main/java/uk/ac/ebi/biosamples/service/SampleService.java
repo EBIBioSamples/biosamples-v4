@@ -458,47 +458,57 @@ public class SampleService {
 
   private void handleSRAAccession(
       final Sample newSample, final Sample oldSample, final boolean isWebinSuperUser) {
-    final List<Attribute> oldSampleSraAccessions =
-        oldSample.getAttributes().stream()
-            .filter(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))
-            .toList();
     final SortedSet<Attribute> newSampleAttributes = newSample.getAttributes();
     final List<Attribute> newSampleSraAccessions =
         newSampleAttributes.stream()
             .filter(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))
             .toList();
 
-    if (oldSampleSraAccessions.size() > 1) {
-      throw new GlobalExceptions.InvalidSampleException();
-    }
-
     if (newSampleSraAccessions.size() > 1) {
       throw new GlobalExceptions.InvalidSampleException();
     }
 
-    Attribute oldSampleSraAccession = null;
     Attribute newSampleSraAccession = null;
-
-    if (oldSampleSraAccessions.size() > 0) {
-      oldSampleSraAccession = oldSampleSraAccessions.get(0);
-    }
 
     if (newSampleSraAccessions.size() > 0) {
       newSampleSraAccession = newSampleSraAccessions.get(0);
     }
 
-    if (newSampleSraAccession == null) {
-      newSampleSraAccession =
-          Objects.requireNonNullElseGet(
-              oldSampleSraAccession,
-              () -> Attribute.build(SRA_ACCESSION, generateOneSRAAccession()));
-      newSampleAttributes.add(newSampleSraAccession);
-    }
+    if (oldSample != null) {
+      final List<Attribute> oldSampleSraAccessions =
+          oldSample.getAttributes().stream()
+              .filter(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))
+              .toList();
 
-    if (oldSampleSraAccession != null
-        && !oldSampleSraAccession.getValue().equals(newSampleSraAccession.getValue())) {
-      if (!isWebinSuperUser) {
-        throw new GlobalExceptions.ChangedSRAAccessionException();
+      if (oldSampleSraAccessions.size() > 1) {
+        throw new GlobalExceptions.InvalidSampleException();
+      }
+
+      Attribute oldSampleSraAccession = null;
+
+      if (oldSampleSraAccessions.size() > 0) {
+        oldSampleSraAccession = oldSampleSraAccessions.get(0);
+      }
+
+      if (newSampleSraAccession == null) {
+        newSampleSraAccession =
+            Objects.requireNonNullElseGet(
+                oldSampleSraAccession,
+                () -> Attribute.build(SRA_ACCESSION, generateOneSRAAccession()));
+        newSampleAttributes.add(newSampleSraAccession);
+      }
+
+      if (oldSampleSraAccession != null
+          && !oldSampleSraAccession.getValue().equals(newSampleSraAccession.getValue())) {
+        if (!isWebinSuperUser) {
+          throw new GlobalExceptions.ChangedSRAAccessionException();
+        }
+      }
+    } else { // old sample doesn't exist, super user submission with accession but no sample exists,
+      // example: new samples from NCBI pipeline
+      if (newSampleSraAccession == null) {
+        newSampleSraAccession = Attribute.build(SRA_ACCESSION, generateOneSRAAccession());
+        newSampleAttributes.add(newSampleSraAccession);
       }
     }
   }

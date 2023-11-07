@@ -33,19 +33,15 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.ShallowEtagHeaderFilter;
-import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
-import uk.ac.ebi.biosamples.service.SampleAsXMLHttpMessageConverter;
-import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
 import uk.ac.ebi.tsc.aap.client.repo.*;
 
 @SpringBootApplication(
@@ -72,11 +68,11 @@ public class Application extends SpringBootServletInitializer {
     return new ShallowEtagHeaderFilter();
   }
 
-  @Bean
+  /*@Bean
   public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter(
       final SampleToXmlConverter sampleToXmlConverter) {
     return new SampleAsXMLHttpMessageConverter(sampleToXmlConverter);
-  }
+  }*/
 
   @Bean(name = "threadPoolTaskExecutor")
   public Executor threadPoolTaskExecutor() {

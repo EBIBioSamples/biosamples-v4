@@ -219,7 +219,7 @@
             <label><h4>Export as:</h4>
                 <select onchange="goToPage(this.options[this.selectedIndex].value)">
                     <option selected value="">Choose one...</option>
-                    <option th:value="@{/samples/{xml}(xml=${sample.accession} + '.xml')}">XML</option>
+                    <<!--option th:value="@{/samples/{xml}(xml=${sample.accession} + '.xml')}">XML</option>-->
                     <option th:value="@{/samples/{json}(json=${sample.accession} + '.json')}">JSON</option>
                     <option th:value="@{/samples/{ldjson}(ldjson=${sample.accession} + '.ldjson')}">BioSchemas</option>
 					<option th:value="@{/samples/{phenopacket}(phenopacket=${sample.accession}+'.pxf')}">Phenopacket</option>
@@ -239,7 +239,7 @@
 	<section th:fragment="serialisationDropDownMenu">
 		<h5>Download as:</h5>
 		<ul class="vertical dropdown menu serialisation-menu">
-			<li><a th:href="@{/samples/{xml}(xml=${sample.accession} + '.xml')}" download>XML</a></li>
+			<!--<li><a th:href="@{/samples/{xml}(xml=${sample.accession} + '.xml')}" download>XML</a></li>-->
 			<li><a th:href="@{/samples/{json}(json=${sample.accession} + '.json')}" download>JSON</a></li>
 			<li><a th:href="@{/samples/{ldjson}(ldjson=${sample.accession} + '.ldjson')}" download>Bioschemas</a></li>
       <li th:if="${sample.taxId != null and sample.taxId == 9606}">

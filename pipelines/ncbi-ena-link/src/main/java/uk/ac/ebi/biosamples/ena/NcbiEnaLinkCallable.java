@@ -65,9 +65,9 @@ public class NcbiEnaLinkCallable implements Callable<Void> {
           }
         }
       } else {
-       /* log.info("NCBI sample exists " + accession + " adding ENA link");
+        log.info("NCBI sample exists " + accession + " doing nothing");
 
-        final ExternalReference exRef =
+        /*final ExternalReference exRef =
             ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + accession);
         final Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
 
@@ -78,6 +78,7 @@ public class NcbiEnaLinkCallable implements Callable<Void> {
         }*/
       }
     } catch (final Exception e) {
+      NcbiEnaLinkRunner.failures.put(accession, e.getMessage());
       log.info("Failed to handle NCBI sample with accession " + accession, e);
     }
 

@@ -443,6 +443,7 @@ public class Sample implements Comparable<Sample> {
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder();
+
     sb.append("Sample(");
     sb.append(name);
     sb.append(",");
@@ -480,6 +481,7 @@ public class Sample implements Comparable<Sample> {
     sb.append(",");
     sb.append(submittedVia);
     sb.append(")");
+
     return sb.toString();
   }
 

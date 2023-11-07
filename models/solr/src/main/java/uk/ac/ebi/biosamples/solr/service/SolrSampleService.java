@@ -130,8 +130,7 @@ public class SolrSampleService {
         solrFilterService.getPublicFilterQuery(domains, webinSubmissionAccountId);
     publicFilterQuery.ifPresent(query::addFilterQuery);
 
-    final Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
-    optionalFilter.ifPresent(query::addFilterQuery);
+    solrFilterService.getFilterQuery(filters).forEach(query::addFilterQuery);
 
     return query;
   }

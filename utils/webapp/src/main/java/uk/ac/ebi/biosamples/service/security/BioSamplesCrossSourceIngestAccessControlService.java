@@ -22,7 +22,14 @@ public class BioSamplesCrossSourceIngestAccessControlService {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private static final String ENA_CHECKLIST = "ENA-CHECKLIST";
 
-  public void protectFileUploaderSampleAccess(
+  public void protectWebinSampleAapOverride(final Sample oldSample) {
+    if (oldSample.getWebinSubmissionAccountId() != null) {
+      throw new GlobalExceptions.AccessControlException(
+          "AAP user cannot update a sample submitted by a WEBIN user");
+    }
+  }
+
+  public void protectFileUploaderWebinSample(
       final String webinIdInOldSample, final Sample newSample) {
     log.info("Super user and file upload submission");
 
@@ -32,7 +39,8 @@ public class BioSamplesCrossSourceIngestAccessControlService {
     }
   }
 
-  public void protectWebinSourcedSampleAccess(final Sample oldSample, final Sample newSample) {
+  public void protectWebinSourcedSampleAccessByValidatingENAChecklistAttribute(
+      final Sample oldSample, final Sample newSample) {
     /*
     Old sample has ENA-CHECKLIST attribute, hence it can be concluded that it is imported from ENA
     New sample has ENA-CHECKLIST attribute, means its updated by ENA pipeline or WEBIN, allow further computation
@@ -45,7 +53,10 @@ public class BioSamplesCrossSourceIngestAccessControlService {
         throw new GlobalExceptions.InvalidSubmissionSourceException();
       }
     }
+  }
 
+  public void protectWebinSourcedSampleAccessByValidatingSubmittedViaType(
+      final Sample oldSample, final Sample newSample) {
     /*
     Check for SubmittedViaType too
      */

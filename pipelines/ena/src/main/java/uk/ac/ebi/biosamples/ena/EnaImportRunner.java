@@ -121,32 +121,38 @@ public class EnaImportRunner implements ApplicationRunner {
 
       throw e;
     } finally {
-      final MongoPipeline mongoPipeline;
+      try {
+        final MongoPipeline mongoPipeline;
+        final String pipelineUniqueIdentifier =
+            PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.ENA);
 
-      if (isPassed) {
-        mongoPipeline =
-            new MongoPipeline(
-                PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.ENA),
-                new Date(),
-                PipelineName.ENA.name(),
-                PipelineCompletionStatus.COMPLETED,
-                String.join(",", failures),
-                null);
-      } else {
-        mongoPipeline =
-            new MongoPipeline(
-                PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.ENA),
-                new Date(),
-                PipelineName.ENA.name(),
-                PipelineCompletionStatus.FAILED,
-                String.join(",", failures),
-                pipelineFailureCause);
+        if (isPassed) {
+          mongoPipeline =
+              new MongoPipeline(
+                  pipelineUniqueIdentifier,
+                  new Date(),
+                  PipelineName.ENA.name(),
+                  PipelineCompletionStatus.COMPLETED,
+                  String.join(",", failures),
+                  null);
+        } else {
+          mongoPipeline =
+              new MongoPipeline(
+                  pipelineUniqueIdentifier,
+                  new Date(),
+                  PipelineName.ENA.name(),
+                  PipelineCompletionStatus.FAILED,
+                  String.join(",", failures),
+                  pipelineFailureCause);
+        }
+
+        mongoPipelineRepository.insert(mongoPipeline);
+
+        PipelineUtils.writeFailedSamplesToFile(failures, PipelineName.ENA);
+        PipelineUtils.writeToFile(todaysSuppressedSamples, PipelineName.ENA, "SUPPRESSED");
+      } catch (final Exception e) {
+        log.info("Error in persisting pipeline status to database " + e.getMessage());
       }
-
-      mongoPipelineRepository.insert(mongoPipeline);
-
-      PipelineUtils.writeFailedSamplesToFile(failures, PipelineName.ENA);
-      PipelineUtils.writeToFile(todaysSuppressedSamples, PipelineName.ENA, "SUPPRESSED");
     }
   }
 
@@ -281,6 +287,8 @@ public class EnaImportRunner implements ApplicationRunner {
         getAllEnaBsdAuthoritySamplesToHandle(fromDate, toDate);
     final EraRowHandler eraRowHandler = new EraRowHandler(enaImportCallableFactory);
 
+    log.info("Total number of samples to be handled is " + sampleCallbackResults.size());
+
     if (pipelinesProperties.getThreadCount() == 0) {
       sampleCallbackResults.forEach(
           sampleCallbackResult -> eraRowHandler.processRow(sampleCallbackResult, true));
@@ -363,6 +371,7 @@ public class EnaImportRunner implements ApplicationRunner {
     }
 
     private enum ENAStatus {
+      PRIVATE(2),
       CANCELLED(3),
       PUBLIC(4),
       SUPPRESSED(5),
@@ -398,6 +407,7 @@ public class EnaImportRunner implements ApplicationRunner {
 
       switch (enaStatus) {
         case PUBLIC:
+        case PRIVATE:
         case SUPPRESSED:
         case TEMPORARY_SUPPRESSED:
         case KILLED:

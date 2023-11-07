@@ -609,15 +609,15 @@ public class SamplesRestController {
     final boolean isWebinAuth = authorizationProvider == AuthorizationProvider.WEBIN;
 
     if (isWebinAuth && !isWebinSuperUser) {
-      schemaValidationService.validate(sample);
+      sample = schemaValidationService.validate(sample);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
     } else if (!isWebinAuth && !bioSamplesAapService.isWriteSuperUser()) {
-      schemaValidationService.validate(sample);
+      sample = schemaValidationService.validate(sample);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, false);
     }
 
     if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-      schemaValidationService.validate(sample);
+      sample = schemaValidationService.validate(sample);
     }
 
     return sample;

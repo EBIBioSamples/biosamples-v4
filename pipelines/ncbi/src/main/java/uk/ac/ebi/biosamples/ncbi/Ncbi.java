@@ -120,6 +120,7 @@ public class Ncbi implements ApplicationRunner {
 
       log.info("Processing samples from " + DateTimeFormatter.ISO_LOCAL_DATE.format(fromDate));
       log.info("Processing samples to " + DateTimeFormatter.ISO_LOCAL_DATE.format(toDate));
+
       sampleCallback.setFromDate(fromDate);
       sampleCallback.setToDate(toDate);
 
@@ -183,29 +184,35 @@ public class Ncbi implements ApplicationRunner {
 
       throw e;
     } finally {
-      final MongoPipeline mongoPipeline;
+      try {
+        final MongoPipeline mongoPipeline;
+        final String pipelineUniqueIdentifier =
+            PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.NCBI);
 
-      if (isPassed) {
-        mongoPipeline =
-            new MongoPipeline(
-                PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.NCBI),
-                new Date(),
-                PipelineName.NCBI.name(),
-                PipelineCompletionStatus.COMPLETED,
-                null,
-                null);
-      } else {
-        mongoPipeline =
-            new MongoPipeline(
-                PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.NCBI),
-                new Date(),
-                PipelineName.NCBI.name(),
-                PipelineCompletionStatus.FAILED,
-                null,
-                pipelineFailureCause);
+        if (isPassed) {
+          mongoPipeline =
+              new MongoPipeline(
+                  pipelineUniqueIdentifier,
+                  new Date(),
+                  PipelineName.NCBI.name(),
+                  PipelineCompletionStatus.COMPLETED,
+                  null,
+                  null);
+        } else {
+          mongoPipeline =
+              new MongoPipeline(
+                  pipelineUniqueIdentifier,
+                  new Date(),
+                  PipelineName.NCBI.name(),
+                  PipelineCompletionStatus.FAILED,
+                  null,
+                  pipelineFailureCause);
+        }
+
+        mongoPipelineRepository.insert(mongoPipeline);
+      } catch (final Exception e) {
+        log.info("Error in persisting pipeline status to database " + e.getMessage());
       }
-
-      mongoPipelineRepository.insert(mongoPipeline);
     }
   }
 

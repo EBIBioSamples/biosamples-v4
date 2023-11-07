@@ -76,13 +76,14 @@ public class SolrFilterService {
    * @param filters a collection of filters
    * @return the corresponding filter query
    */
-  Optional<FilterQuery> getFilterQuery(final Collection<Filter> filters) {
+  List<FilterQuery> getFilterQuery(final Collection<Filter> filters) {
     if (filters == null || filters.size() == 0) {
-      return Optional.empty();
+      return Collections.emptyList();
     }
 
     boolean filterActive = false;
     final FilterQuery filterQuery = new SimpleFilterQuery();
+    final List<FilterQuery> filterQueries = new ArrayList<>();
     final Collection<List<Filter>> filterGroups =
         filters.stream()
             .collect(
@@ -115,15 +116,9 @@ public class SolrFilterService {
                     return Optional.empty();
                   });
 
-      if (filterCriteria.isPresent()) {
-        filterActive = true;
-        filterQuery.addCriteria(filterCriteria.get());
-      }
+      filterCriteria.ifPresent(criteria -> filterQueries.add(new SimpleFilterQuery(criteria)));
     }
-    if (filterActive) {
-      return Optional.of(filterQuery);
-    }
-    return Optional.empty();
+    return filterQueries;
   }
 
   /**

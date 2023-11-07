@@ -86,8 +86,7 @@ public class SolrFacetService {
     domainAndPublicFilterQuery.ifPresent(query::addFilterQuery);
 
     // Add all the provided filters
-    final Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
-    optionalFilter.ifPresent(query::addFilterQuery);
+    solrFilterService.getFilterQuery(filters).forEach(query::addFilterQuery);
 
     final List<Entry<SolrSampleField, Long>> allFacetFields =
         getFacetFields(facetFieldPageInfo, query, isLandingPage, facetField);

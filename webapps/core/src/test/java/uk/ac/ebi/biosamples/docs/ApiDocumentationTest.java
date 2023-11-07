@@ -284,7 +284,7 @@ public class ApiDocumentationTest {
     when(sampleService.persistSample(
             any(Sample.class), eq(null), eq(AuthorizationProvider.AAP), eq(false)))
         .thenReturn(sampleWithDomain);
-    when(schemaValidationService.validate(any(Sample.class))).thenReturn("BSDC00001");
+    when(schemaValidationService.validate(any(Sample.class))).thenReturn(sampleWithDomain);
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
             any(Sample.class), eq(false)))
         .thenReturn(sampleWithDomain);
@@ -338,7 +338,7 @@ public class ApiDocumentationTest {
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
             any(Sample.class), eq(true)))
         .thenReturn(sampleWithWebinId);
-    when(schemaValidationService.validate(any(Sample.class))).thenReturn("BSDC00001");
+    when(schemaValidationService.validate(any(Sample.class))).thenReturn(sampleWithWebinId);
     when(accessControlService.extractToken(anyString()))
         .thenReturn(
             Optional.of(
@@ -388,7 +388,7 @@ public class ApiDocumentationTest {
     when(sampleService.persistSample(
             any(Sample.class), eq(null), eq(AuthorizationProvider.AAP), eq(false)))
         .thenReturn(sampleWithDomain);
-    when(schemaValidationService.validate(any(Sample.class))).thenReturn("BSDC00001");
+    when(schemaValidationService.validate(any(Sample.class))).thenReturn(sampleWithDomain);
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
             any(Sample.class), eq(false)))
         .thenReturn(sampleWithDomain);
