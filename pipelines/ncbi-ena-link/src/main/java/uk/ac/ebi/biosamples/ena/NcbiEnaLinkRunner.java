@@ -49,7 +49,7 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
   @Autowired private MongoPipelineRepository mongoPipelineRepository;
 
   private final Map<String, Future<Void>> futures = new LinkedHashMap<>();
-  private static final Map<String, String> failures = new HashMap<>();
+  public static final Map<String, String> failures = new HashMap<>();
 
   @Override
   public void run(final ApplicationArguments args) throws Exception {
@@ -90,31 +90,36 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
 
       throw e;
     } finally {
-      final MongoPipeline mongoPipeline;
+      try {
+        final MongoPipeline mongoPipeline;
+        final String pipelineUniqueIdentifier = PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.NCBIENALINK);
 
-      if (isPassed) {
-        mongoPipeline =
-            new MongoPipeline(
-                PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.ENA),
-                new Date(),
-                PipelineName.NCBIENALINK.name(),
-                PipelineCompletionStatus.COMPLETED,
-                String.join(",", failures.keySet()),
-                null);
-      } else {
-        mongoPipeline =
-            new MongoPipeline(
-                PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.ENA),
-                new Date(),
-                PipelineName.NCBIENALINK.name(),
-                PipelineCompletionStatus.FAILED,
-                String.join(",", failures.keySet()),
-                pipelineFailureCause);
+        if (isPassed) {
+          mongoPipeline =
+                  new MongoPipeline(
+                          pipelineUniqueIdentifier,
+                          new Date(),
+                          PipelineName.NCBIENALINK.name(),
+                          PipelineCompletionStatus.COMPLETED,
+                          String.join(",", failures.keySet()),
+                          null);
+        } else {
+          mongoPipeline =
+                  new MongoPipeline(
+                          pipelineUniqueIdentifier,
+                          new Date(),
+                          PipelineName.NCBIENALINK.name(),
+                          PipelineCompletionStatus.FAILED,
+                          String.join(",", failures.keySet()),
+                          pipelineFailureCause);
+        }
+
+        mongoPipelineRepository.insert(mongoPipeline);
+
+        PipelineUtils.writeFailedSamplesToFile(failures, PipelineName.ENA);
+      }  catch (final Exception e) {
+        log.info("Error in persisting pipeline status to database " + e.getMessage());
       }
-
-      mongoPipelineRepository.insert(mongoPipeline);
-
-      PipelineUtils.writeFailedSamplesToFile(failures, PipelineName.ENA);
     }
   }
 

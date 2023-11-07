@@ -242,47 +242,49 @@ public class MongoSample {
 
   @Override
   public String toString() {
-    final String sb =
-        "MongoSample("
-            + name
-            + ","
-            + accession
-            + ","
-            + domain
-            + ","
-            + webinSubmissionAccountId
-            + ","
-            + taxId
-            + ","
-            + status
-            + ","
-            + release
-            + ","
-            + update
-            + ","
-            + create
-            + ","
-            + submitted
-            + ","
-            + reviewed
-            + ","
-            + attributes
-            + ","
-            + relationships
-            + ","
-            + externalReferences
-            + ","
-            + organizations
-            + ","
-            + contacts
-            + ","
-            + publications
-            + ","
-            + data
-            + ","
-            + submittedVia
-            + ")";
-    return sb;
+    final StringBuilder sb = new StringBuilder();
+
+    sb.append("MongoSample(");
+    sb.append(name);
+    sb.append(",");
+    sb.append(accession);
+    sb.append(",");
+    sb.append(domain);
+    sb.append(",");
+    sb.append(webinSubmissionAccountId);
+    sb.append(",");
+    sb.append(taxId);
+    sb.append(",");
+    sb.append(status);
+    sb.append(",");
+    sb.append(release);
+    sb.append(",");
+    sb.append(update);
+    sb.append(",");
+    sb.append(create);
+    sb.append(",");
+    sb.append(submitted);
+    sb.append(",");
+    sb.append(reviewed);
+    sb.append(",");
+    sb.append(attributes);
+    sb.append(",");
+    sb.append(relationships);
+    sb.append(",");
+    sb.append(externalReferences);
+    sb.append(",");
+    sb.append(organizations);
+    sb.append(",");
+    sb.append(contacts);
+    sb.append(",");
+    sb.append(publications);
+    sb.append(",");
+    sb.append(data);
+    sb.append(",");
+    sb.append(submittedVia);
+    sb.append(")");
+
+    return sb.toString();
   }
 
   @JsonCreator
@@ -374,8 +376,10 @@ public class MongoSample {
 
     // split accession into prefix & number, if possible
     final Pattern r = Pattern.compile("^(\\D+)(\\d+)$");
+
     if (accession != null) {
       final Matcher m = r.matcher(accession);
+
       if (m.matches() && m.groupCount() == 2) {
         mongoSample.accessionPrefix = m.group(1);
         mongoSample.accessionNumber = Integer.parseInt(m.group(2));

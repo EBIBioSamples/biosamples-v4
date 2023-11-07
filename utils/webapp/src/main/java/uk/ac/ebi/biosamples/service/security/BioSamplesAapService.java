@@ -130,54 +130,79 @@ public class BioSamplesAapService {
    * <p>May return a different version of the sample, so return needs to be stored in future for
    * that sample.
    */
-  public Sample handleSampleDomain(final Sample sample, final Optional<Sample> oldSampleOptional)
+  public Sample handleSampleDomain(Sample sample, final Optional<Sample> oldSampleOptional)
       throws GlobalExceptions.SampleNotAccessibleException,
           GlobalExceptions.DomainMissingException {
     // Get the domains the current user has access to
     final Set<String> usersDomains = getDomains();
-    final String domain = sample.getDomain();
-    final boolean oldSampleExistsInDb = oldSampleOptional.isPresent();
-    Sample oldSampleInDb = null;
-
-    if (oldSampleExistsInDb) {
-      oldSampleInDb = oldSampleOptional.get();
-
-      if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-        bioSamplesCrossSourceIngestAccessControlService.protectPipelineImportedSampleAccess(
-            oldSampleInDb, sample);
-        bioSamplesCrossSourceIngestAccessControlService.protectWebinSourcedSampleAccess(
-            oldSampleInDb, sample);
-      }
-
-      return sample;
-    }
+    String domain = sample.getDomain();
 
     if (domain == null || domain.length() == 0) {
       // if the sample doesn't have a domain, and the user has one domain, then they must be
       // submitting to that domain
       if (usersDomains.size() > 0) {
-        return Sample.Builder.fromSample(sample)
-            .withDomain(usersDomains.iterator().next())
-            .withNoWebinSubmissionAccountId()
-            .build();
+        final String nextDomain = usersDomains.iterator().next();
+
+        domain = domain != null ? domain : nextDomain;
+
+        sample =
+            Sample.Builder.fromSample(sample)
+                .withDomain(nextDomain)
+                .withNoWebinSubmissionAccountId()
+                .build();
       } else {
         throw new GlobalExceptions.DomainMissingException();
       }
     }
 
-    // file uploader domains check
-    bioSamplesCrossSourceIngestAccessControlService.protectFileUploaderAapSample(
-        oldSampleInDb, sample, domain);
-
     if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
       // Super user submission
+      accessChecks(sample, domain, oldSampleOptional, true);
+
       return sample;
     } else if (usersDomains.contains(domain)) {
+      accessChecks(sample, domain, oldSampleOptional, false);
+
       return sample;
     } else {
       log.warn(
           "User asked to submit sample to domain " + domain + " but has access to " + usersDomains);
       throw new GlobalExceptions.SampleNotAccessibleException();
+    }
+  }
+
+  private void accessChecks(
+      final Sample sample,
+      final String domain,
+      final Optional<Sample> oldSampleOptional,
+      final boolean isSuperuser) {
+    final Sample oldSample;
+
+    if (oldSampleOptional.isPresent()) {
+      oldSample = oldSampleOptional.get();
+
+      if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
+        bioSamplesCrossSourceIngestAccessControlService.protectWebinSampleAapOverride(oldSample);
+        bioSamplesCrossSourceIngestAccessControlService.protectPipelineImportedSampleAccess(
+            oldSample, sample);
+        bioSamplesCrossSourceIngestAccessControlService
+            .protectWebinSourcedSampleAccessByValidatingENAChecklistAttribute(oldSample, sample);
+        bioSamplesCrossSourceIngestAccessControlService
+            .protectWebinSourcedSampleAccessByValidatingSubmittedViaType(oldSample, sample);
+        bioSamplesCrossSourceIngestAccessControlService.protectFileUploaderAapSample(
+            oldSample, sample, domain);
+      } else {
+        if (isSuperuser) {
+          bioSamplesCrossSourceIngestAccessControlService
+              .protectWebinSourcedSampleAccessByValidatingENAChecklistAttribute(oldSample, sample);
+        } else {
+          bioSamplesCrossSourceIngestAccessControlService.protectWebinSampleAapOverride(oldSample);
+          bioSamplesCrossSourceIngestAccessControlService
+              .protectWebinSourcedSampleAccessByValidatingENAChecklistAttribute(oldSample, sample);
+          bioSamplesCrossSourceIngestAccessControlService
+              .protectWebinSourcedSampleAccessByValidatingSubmittedViaType(oldSample, sample);
+        }
+      }
     }
   }
 

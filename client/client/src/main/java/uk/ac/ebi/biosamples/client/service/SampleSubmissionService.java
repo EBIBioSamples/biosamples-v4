@@ -128,9 +128,7 @@ public class SampleSubmissionService {
         // this will cause an error. So instead manually de-template the link without
         // getting it.
         final PagedModel<EntityModel<Sample>> pagedSamples =
-            traverson
-                .follow("samples")
-                .toObject(new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {});
+            traverson.follow("samples").toObject(new ParameterizedTypeReference<>() {});
 
         Link sampleLink = pagedSamples.getLink("sample").get();
         sampleLink = sampleLink.expand(sample.getAccession());
