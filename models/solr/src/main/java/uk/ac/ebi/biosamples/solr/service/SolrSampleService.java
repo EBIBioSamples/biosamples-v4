@@ -11,6 +11,7 @@
 package uk.ac.ebi.biosamples.solr.service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.util.ClientUtils;
@@ -130,8 +131,7 @@ public class SolrSampleService {
         solrFilterService.getPublicFilterQuery(domains, webinSubmissionAccountId);
     publicFilterQuery.ifPresent(query::addFilterQuery);
 
-    final Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
-    optionalFilter.ifPresent(query::addFilterQuery);
+    solrFilterService.getFilterQuery(filters).forEach(query::addFilterQuery);
 
     return query;
   }
