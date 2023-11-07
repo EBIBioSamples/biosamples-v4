@@ -87,7 +87,7 @@ public class BioSamplesWebinAuthenticationService {
           // (via FILE UPLOADER) or ENA posted samples
           return handleWebinSuperUserSampleSubmission(
               sample, oldSample, domain, webinIdToSetForSample, oldSamplePresent);
-        } else { // normal sample update - not pipeline, not super user check for old user, if
+        } else { // normal sample update - not pipeline, not superuser check for old user, if
           // mismatch throw
           // exception, else build the Sample
           if (domain != null) {
@@ -100,8 +100,11 @@ public class BioSamplesWebinAuthenticationService {
 
             bioSamplesCrossSourceIngestAccessControlService.protectPipelineImportedSampleAccess(
                 oldSampleInDb, sample);
-            bioSamplesCrossSourceIngestAccessControlService.protectWebinSourcedSampleAccess(
-                oldSampleInDb, sample);
+            bioSamplesCrossSourceIngestAccessControlService
+                .protectWebinSourcedSampleAccessByValidatingENAChecklistAttribute(
+                    oldSampleInDb, sample);
+            bioSamplesCrossSourceIngestAccessControlService
+                .protectWebinSourcedSampleAccessByValidatingSubmittedViaType(oldSampleInDb, sample);
 
             if (!webinIdFromAuthToken.equalsIgnoreCase(
                 oldSampleInDb.getWebinSubmissionAccountId())) { // original submitter mismatch
@@ -142,12 +145,15 @@ public class BioSamplesWebinAuthenticationService {
       final String webinIdInOldSample = oldSampleInDb.getWebinSubmissionAccountId();
 
       if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-        bioSamplesCrossSourceIngestAccessControlService.protectFileUploaderSampleAccess(
+        bioSamplesCrossSourceIngestAccessControlService.protectFileUploaderWebinSample(
             webinIdInOldSample, sample);
         bioSamplesCrossSourceIngestAccessControlService.protectPipelineImportedSampleAccess(
             oldSampleInDb, sample);
-        bioSamplesCrossSourceIngestAccessControlService.protectWebinSourcedSampleAccess(
-            oldSampleInDb, sample);
+        bioSamplesCrossSourceIngestAccessControlService
+            .protectWebinSourcedSampleAccessByValidatingENAChecklistAttribute(
+                oldSampleInDb, sample);
+        bioSamplesCrossSourceIngestAccessControlService
+            .protectWebinSourcedSampleAccessByValidatingSubmittedViaType(oldSampleInDb, sample);
       }
 
       if (webinIdInOldSample != null

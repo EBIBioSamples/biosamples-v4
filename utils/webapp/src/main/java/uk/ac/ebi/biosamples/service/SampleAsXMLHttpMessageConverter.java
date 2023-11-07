@@ -27,7 +27,6 @@ import org.springframework.http.converter.HttpMessageNotWritableException;
 import uk.ac.ebi.biosamples.model.Sample;
 
 public class SampleAsXMLHttpMessageConverter extends AbstractHttpMessageConverter<Sample> {
-
   private final SampleToXmlConverter sampleToXmlConverter;
   private final OutputFormat format = OutputFormat.createCompactFormat();
 

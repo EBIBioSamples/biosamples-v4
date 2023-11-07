@@ -25,11 +25,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class EraProDao {
+  private final Logger log = LoggerFactory.getLogger(getClass());
+
   @Autowired
   @Qualifier("eraJdbcTemplate")
   protected JdbcTemplate jdbcTemplate;
 
-  private final Logger log = LoggerFactory.getLogger(getClass());
   private static final String STATUS_CLAUSE = "STATUS_ID IN (4, 5, 6, 7, 8)";
   private static final String STATUS_CLAUSE_SUPPRESSED = "STATUS_ID IN (5, 7)";
   private static final String STATUS_CLAUSE_KILLED = "STATUS_ID IN (6, 8)";
@@ -55,7 +56,7 @@ public class EraProDao {
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID, LAST_UPDATED FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'Y' "
             + "AND "
             + STATUS_CLAUSE
-            + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY LAST_UPDATED ASC";
+            + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) AND EGA_ID IS NULL ORDER BY LAST_UPDATED ASC";
 
     final Date minDateOld = java.sql.Date.valueOf(minDate);
     final Date maxDateOld = java.sql.Date.valueOf(maxDate);

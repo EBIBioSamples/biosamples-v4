@@ -41,7 +41,6 @@ import uk.ac.ebi.biosamples.mongo.service.AnalyticsService;
 @Component
 public class TaxonImportApplicationRunner implements ApplicationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonImportApplicationRunner.class);
-
   private final BioSamplesClient bioSamplesAapClient;
 
   @Qualifier("WEBINCLIENT")
@@ -139,7 +138,6 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
       }
 
       final Sample sample = getSampleUncurated(entry.getBioSampleAccession());
-
       Long oldTaxId = sample.getTaxId();
       final Optional<Attribute> oldOrganism =
           sample.getCharacteristics().stream()
@@ -234,7 +232,6 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
       final TaxonEntry entry) {
     final Sample newSample;
     final Attribute newOrganism = Attribute.build("organism", entry.getNcbiTaxonName());
-
     final Set<Attribute> sampleAttributes = sample.getAttributes();
 
     if (oldOrganism.isPresent()) {

@@ -19,9 +19,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.ExposesResourceFor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -52,7 +54,6 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 @CrossOrigin
 public class SampleRestController {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
@@ -174,7 +175,7 @@ public class SampleRestController {
   public Sample getSampleXml(
       @PathVariable final String accession,
       @RequestHeader(name = "Authorization", required = false) final String token) {
-    Sample sample = getSampleHal(accession, "true", null, token).getContent();
+    /*Sample sample = getSampleHal(accession, "true", null, token).getContent();
 
     assert sample != null;
 
@@ -187,7 +188,9 @@ public class SampleRestController {
               .build();
     }
 
-    return sample;
+    return sample;*/
+
+    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Deprecated");
   }
 
   @PreAuthorize("isAuthenticated()")

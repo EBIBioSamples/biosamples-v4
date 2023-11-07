@@ -81,6 +81,7 @@ public class GlobalExceptions {
     private static final long serialVersionUID = -6250819256457895445L;
   }
 
+  @ResponseStatus(value = HttpStatus.FORBIDDEN)
   public static class AccessControlException extends RuntimeException {
     public AccessControlException() {
       super();

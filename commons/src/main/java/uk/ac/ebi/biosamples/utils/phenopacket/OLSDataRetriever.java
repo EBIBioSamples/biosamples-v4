@@ -41,7 +41,7 @@ public class OLSDataRetriever {
    * @param iri
    */
   void readOntologyJsonFromUrl(final String iri) {
-    String linkToTerm = null;
+    final String linkToTerm;
     try {
       // TODO move to application properties
       linkToTerm = "https://www.ebi.ac.uk/ols/api/terms?iri=" + URLEncoder.encode(iri, "UTF-8");
