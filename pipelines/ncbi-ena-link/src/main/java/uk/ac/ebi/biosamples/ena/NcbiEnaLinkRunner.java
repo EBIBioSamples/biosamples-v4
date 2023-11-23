@@ -186,7 +186,6 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
         }
 
         log.info("waiting for futures"); // wait for anything to finish
-        ThreadUtils.checkFutures(futures, 0);
       }
     }
   }

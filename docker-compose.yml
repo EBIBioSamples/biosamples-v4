@@ -64,6 +64,8 @@ services:
     # show error messages
     - server.error.include-binding-errors=always
     - server.error.include-message=always
+    # server session timeout
+    - server.servlet.session.timeout=1m
     #Improve logging
     - LOGGING_FILE=/logs/webapps-core.log
     - server.tomcat.accesslog.enabled=true

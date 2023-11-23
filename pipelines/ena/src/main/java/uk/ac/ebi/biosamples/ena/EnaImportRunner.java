@@ -26,6 +26,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
@@ -101,10 +102,10 @@ public class EnaImportRunner implements ApplicationRunner {
           "Suppression Runner and killed runner is to be executed: " + importSuppressedAndKilled);
 
       // Import ENA samples
-      // importEraSamples(fromDate, toDate);
+      importEraSamples(fromDate, toDate);
 
       // Import BSD authority samples to update SRA accession
-      importEraBsdAuthoritySamples(fromDate, toDate);
+      // importEraBsdAuthoritySamples(fromDate, toDate);
 
       if (importSuppressedAndKilled) {
         try {
@@ -181,7 +182,8 @@ public class EnaImportRunner implements ApplicationRunner {
       eraProDao.doGetSuppressedEnaSamples(enaSuppressedAndKilledSamplesCallbackHandler);
 
       log.info("waiting for futures"); // wait for anything to finish
-      ThreadUtils.checkFutures(futures, 0);
+
+      checkFutures(100);
     }
   }
 
@@ -261,22 +263,25 @@ public class EnaImportRunner implements ApplicationRunner {
                       Objects.requireNonNull(
                           eraRowHandler.processRow(sampleCallbackResult, false))));
             });
-        checkFutures();
+
+        checkFutures(100);
       }
     }
   }
 
-  private void checkFutures() throws InterruptedException, ExecutionException {
+  private void checkFutures(final int maxSize) {
     try {
-      ThreadUtils.checkFutures(futures, 100);
+      ThreadUtils.checkFutures(futures, maxSize);
+    } catch (final HttpClientErrorException e) {
+      log.error("HTTP Client error body : " + e.getResponseBodyAsString());
+      throw e;
+    } catch (final RuntimeException e) {
+      throw e;
     } catch (final ExecutionException e) {
       throw new RuntimeException(e.getCause());
     } catch (final InterruptedException e) {
       throw new RuntimeException(e);
     }
-
-    log.info("waiting for futures"); // wait for anything to finish
-    ThreadUtils.checkFutures(futures, 0);
   }
 
   private void importEraBsdAuthoritySamples(final LocalDate fromDate, final LocalDate toDate)
@@ -302,15 +307,14 @@ public class EnaImportRunner implements ApplicationRunner {
               pipelinesProperties.getThreadCountMax())) {
 
         sampleCallbackResults.forEach(
-            sampleCallbackResult -> {
-              futures.put(
-                  sampleCallbackResult.getBiosampleId(),
-                  executorService.submit(
-                      Objects.requireNonNull(
-                          eraRowHandler.processRow(sampleCallbackResult, true))));
-            });
+            sampleCallbackResult ->
+                futures.put(
+                    sampleCallbackResult.getBiosampleId(),
+                    executorService.submit(
+                        Objects.requireNonNull(
+                            eraRowHandler.processRow(sampleCallbackResult, true)))));
 
-        checkFutures();
+        checkFutures(100);
       }
     }
   }

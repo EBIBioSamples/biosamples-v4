@@ -181,7 +181,7 @@ public class BioSamplesEbiSearchDataDumpRunner implements ApplicationRunner {
 
           final File extractFile =
               new File(
-                  "C://Users//dgupta//COVID//"
+                  "/lts/production/tburdett/biosamples/ebeye_search/bsd_covid_19/"
                       + "biosd-dump_cv_19_"
                       + fileNameSpec
                       + fromDate
