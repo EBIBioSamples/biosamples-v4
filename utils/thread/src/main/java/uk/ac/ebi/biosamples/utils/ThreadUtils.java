@@ -22,19 +22,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ThreadUtils {
-
   private static final Logger log = LoggerFactory.getLogger(ThreadUtils.class);
 
   public static <T> void checkFutures(
       final Map<? extends Object, Future<T>> futures, final int maxSize)
       throws InterruptedException, ExecutionException {
+    int count = 0;
+    log.info("Checking futures. max size is " + maxSize);
+    log.info("Number of futures to be checked is " + futures.size());
+
     while (futures.size() > maxSize) {
       for (final Iterator<? extends Object> i = futures.keySet().iterator(); i.hasNext(); ) {
+        count++;
         final Object key = i.next();
+
         futures.get(key).get();
         i.remove();
       }
     }
+
+    log.info("Number of futures checked is " + count);
   }
 
   public static <T> void checkAndCallbackFutures(
@@ -43,6 +50,7 @@ public class ThreadUtils {
     while (futures.size() > maxSize) {
       for (final Iterator<? extends Object> i = futures.keySet().iterator(); i.hasNext(); ) {
         final Object key = i.next();
+
         callback.call(futures.get(key).get());
         i.remove();
       }
@@ -61,8 +69,10 @@ public class ThreadUtils {
       throws InterruptedException {
     while (futures.size() > maxSize) {
       final List<T> toReRun = new ArrayList<>();
+
       for (final Iterator<T> i = futures.keySet().iterator(); i.hasNext(); ) {
         final T key = i.next();
+
         try {
           futures.get(key).get();
         } catch (final ExecutionException e) {
@@ -70,6 +80,7 @@ public class ThreadUtils {
         }
         i.remove();
       }
+
       for (final T key : toReRun) {
         log.info("Re-executing " + key);
         futures.put(key, executionService.submit(callables.get(key)));

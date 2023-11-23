@@ -86,7 +86,7 @@ public class SamplePostReleaseActionApplicationRunner implements ApplicationRunn
 
       LOG.info("waiting for futures");
       // wait for anything to finish
-      ThreadUtils.checkFutures(futures, 0);
+      ThreadUtils.checkFutures(futures, 100);
     } catch (final Exception e) {
       LOG.error("Pipeline failed to finish successfully", e);
 

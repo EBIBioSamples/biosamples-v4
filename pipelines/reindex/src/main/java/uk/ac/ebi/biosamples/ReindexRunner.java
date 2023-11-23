@@ -44,13 +44,9 @@ import uk.ac.ebi.biosamples.utils.ThreadUtils;
  */
 @Component
 public class ReindexRunner implements ApplicationRunner {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationRunner.class);
-
   private final AmqpTemplate amqpTemplate;
-
   private final SampleReadService sampleReadService;
-
   private final MongoOperations mongoOperations;
 
   @Autowired
@@ -99,13 +95,17 @@ public class ReindexRunner implements ApplicationRunner {
         while (it.hasNext()) {
           final MongoSample mongoSample = it.next();
           final String accession = mongoSample.getAccession();
+
           LOGGER.info("Handling sample " + accession);
+
           futures.put(
               accession,
               executor.submit(new AccessionCallable(accession, sampleReadService, amqpTemplate)));
+
           ThreadUtils.checkFutures(futures, 1000);
         }
       }
+
       ThreadUtils.checkFutures(futures, 0);
     } finally {
       executor.shutdown();
@@ -114,7 +114,6 @@ public class ReindexRunner implements ApplicationRunner {
   }
 
   private static class AccessionCallable implements Callable<Void> {
-
     private final String accession;
     private final SampleReadService sampleReadService;
     private final AmqpTemplate amqpTemplate;
@@ -146,6 +145,7 @@ public class ReindexRunner implements ApplicationRunner {
           Thread.currentThread().interrupt();
         }
       }
+
       final Optional<Sample> opt = sampleReadService.fetch(accession, Optional.empty());
 
       if (opt.isPresent()) {

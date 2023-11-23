@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements AutoCloseable {
-  private final Logger log = LoggerFactory.getLogger(getClass());
   private final AtomicInteger completedJobs = new AtomicInteger(0);
 
   private AdaptiveThreadPoolExecutor(

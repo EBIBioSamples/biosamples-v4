@@ -28,7 +28,6 @@ import uk.ac.ebi.biosamples.solr.model.SolrSample;
 
 @Service
 public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample> {
-
   private final ExternalReferenceService externalReferenceService;
 
   public SampleToSolrSampleConverter(final ExternalReferenceService externalReferenceService) {

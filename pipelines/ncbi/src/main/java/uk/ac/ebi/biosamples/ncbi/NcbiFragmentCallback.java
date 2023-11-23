@@ -100,9 +100,11 @@ public class NcbiFragmentCallback implements ElementCallback {
       }
     } else {
       final Future<Void> future = executorService.submit(callable);
+
       if (futures != null) {
         futures.put(element, future);
       }
+
       ThreadUtils.checkFutures(futures, 100);
     }
   }
