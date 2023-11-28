@@ -143,7 +143,8 @@ public class SampleReleaseRunner implements ApplicationRunner {
                 });
 
         log.info("waiting for futures");
-        ThreadUtils.checkFutures(futures, 0);
+
+        ThreadUtils.checkFutures(futures, 100);
 
         log.info(
             "Pipeline completed, samples failed are -> \n"

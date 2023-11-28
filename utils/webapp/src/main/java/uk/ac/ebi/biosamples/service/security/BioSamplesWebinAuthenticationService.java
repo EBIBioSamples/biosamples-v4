@@ -169,9 +169,9 @@ public class BioSamplesWebinAuthenticationService {
                 oldSampleAapDomain)) { // if old sample was a pipeline submission using AAP,
           // or
           // pre-registration, allow
-          // webin replacement
-          return buildSampleWithWebinId(sample, domain);
-        } else if (domain != null) {
+          // webin superuser replacement
+          return buildSampleWithWebinId(sample, webinIdToSetForSample);
+        } else if (domain != null && domain.equalsIgnoreCase(oldSampleAapDomain)) {
           return sample;
         } else {
           throw new GlobalExceptions.SampleNotAccessibleException();
@@ -189,7 +189,8 @@ public class BioSamplesWebinAuthenticationService {
           || sampleDomain.equals("3fa5e19ccafc88187d437f92cf29c3b6694c6c6f98efa236c8aa0aeaf5b23f15")
           || sampleDomain.equals("self.BiosampleImportAcccession")
           || sampleDomain.equals("self.BioSamplesMigration")
-          || sampleDomain.startsWith("self.BioSamples");
+          || sampleDomain.startsWith("self.BioSamples")
+          || sampleDomain.startsWith("self.BiosampleSyntheticData");
     } else {
       return false;
     }

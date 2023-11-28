@@ -16,11 +16,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.CurationLink;
@@ -32,6 +34,7 @@ import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
 
 @Service
 public class BioSamplesAapService {
+  private static final List<String> blacklistedDomains = List.of("self.BiosampleSyntheticData");
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final BioSamplesProperties bioSamplesProperties;
   private final AapTokenService tokenService;
@@ -136,6 +139,13 @@ public class BioSamplesAapService {
     // Get the domains the current user has access to
     final Set<String> usersDomains = getDomains();
     String domain = sample.getDomain();
+
+    if (blacklistedDomains.contains(domain)
+        || usersDomains.stream().anyMatch(blacklistedDomains::contains)) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN,
+          "Domain not authorized to submit to BioSamples/ user having access to this domain is rendered unauthorized");
+    }
 
     if (domain == null || domain.length() == 0) {
       // if the sample doesn't have a domain, and the user has one domain, then they must be

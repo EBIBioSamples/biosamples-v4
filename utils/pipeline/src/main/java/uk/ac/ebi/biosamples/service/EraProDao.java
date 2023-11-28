@@ -133,16 +133,8 @@ public class EraProDao {
               + "TAX_ID, "
               + "SCIENTIFIC_NAME, "
               + "COMMON_NAME, "
-              + "to_char(first_public, 'yyyy-mm-dd')                                                as first_public,\n"
-              + "to_char(last_updated, 'yyyy-mm-dd')                                                as last_updated,\n"
-              + "(select nvl(cv_broker_name.description, T1.broker_name)\n"
-              + "    from XMLTable('/SAMPLE_SET[ 1 ]/SAMPLE/@broker_name' passing sample.sample_xml\n"
-              + "               columns broker_name varchar(1000) path '.') T1\n"
-              + "    left join cv_broker_name on (cv_broker_name.broker_name = T1.broker_name)) as broker_name,\n"
-              + "(select nvl(cv_center_name.description, T2.center_name)\n"
-              + "    from XMLTable('/SAMPLE_SET[ 1 ]/SAMPLE/@center_name' passing sample.sample_xml\n"
-              + "                columns center_name varchar(1000) path '.') T2\n"
-              + "     left join cv_center_name on (cv_center_name.center_name = T2.center_name)) as center_name\n"
+              + "to_char(first_public, 'yyyy-mm-dd') as first_public,\n"
+              + "to_char(last_updated, 'yyyy-mm-dd') as last_updated \n"
               + " FROM SAMPLE "
               + "WHERE BIOSAMPLE_ID = ? fetch first row only ";
       final EraproSample sampleData =
@@ -170,8 +162,6 @@ public class EraProDao {
         sampleBean.setSubmissionAccountId(rs.getString("SUBMISSION_ACCOUNT_ID"));
         sampleBean.setTaxId(rs.getLong("TAX_ID"));
         sampleBean.setBiosampleId(rs.getString("BIOSAMPLE_ID"));
-        sampleBean.setBrokerName(rs.getString("BROKER_NAME"));
-        sampleBean.setCentreName(rs.getString("CENTER_NAME"));
         sampleBean.setScientificName(rs.getString("SCIENTIFIC_NAME"));
         sampleBean.setCommonName(rs.getString("COMMON_NAME"));
 
