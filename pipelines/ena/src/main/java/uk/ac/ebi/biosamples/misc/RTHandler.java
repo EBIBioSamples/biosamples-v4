@@ -10,25 +10,12 @@
 */
 package uk.ac.ebi.biosamples.misc;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
 public class RTHandler {
-  private static final Logger log = LoggerFactory.getLogger(RTHandler.class);
-  public static final String WEBIN_58957 = "Webin-58957";
+  /*private static final Logger log = LoggerFactory.getLogger(RTHandler.class);
+  public static final String WEBIN_58957 = "Webin-XXXXX";
   public static final String BIOSAMPLE_SYNTHETIC_DATA = "self.BiosampleSyntheticData";
   public static final String GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA =
       "geographic location (country and/or sea)";
@@ -114,29 +101,31 @@ public class RTHandler {
         log.info("geo_loc_name attribute not present in " + accession);
       }
 
-      /* final Sample sample = optionalSampleEntityModel.get().getContent();
-      final String sampleDomain = sample.getDomain();
+      */
+  /* final Sample sample = optionalSampleEntityModel.get().getContent();
+  final String sampleDomain = sample.getDomain();
 
-      if (sampleDomain != null && sampleDomain.equals(BIOSAMPLE_SYNTHETIC_DATA)) {
-        log.info(
-            "Sample authority is incorrect for " + accession + " updating to correct authority");
+  if (sampleDomain != null && sampleDomain.equals(BIOSAMPLE_SYNTHETIC_DATA)) {
+    log.info(
+        "Sample authority is incorrect for " + accession + " updating to correct authority");
 
-        final Sample updatedSample =
-            Sample.Builder.fromSample(sample)
-                .withWebinSubmissionAccountId(WEBIN_58957)
-                .withNoDomain()
-                .build();
-        final EntityModel<Sample> sampleEntityModel =
-            bioSamplesWebinClient.persistSampleResource(updatedSample);
+    final Sample updatedSample =
+        Sample.Builder.fromSample(sample)
+            .withWebinSubmissionAccountId(WEBIN_58957)
+            .withNoDomain()
+            .build();
+    final EntityModel<Sample> sampleEntityModel =
+        bioSamplesWebinClient.persistSampleResource(updatedSample);
 
-        if (sampleEntityModel.getContent().getWebinSubmissionAccountId().equals(WEBIN_58957)) {
-          log.info("Sample " + accession + " updated");
-        } else {
-          log.info("Sample " + accession + " failed to be updated");
-        }
-      } else {
-        log.info("Sample authority is correct " + accession);
-      }*/
+    if (sampleEntityModel.getContent().getWebinSubmissionAccountId().equals(WEBIN_58957)) {
+      log.info("Sample " + accession + " updated");
+    } else {
+      log.info("Sample " + accession + " failed to be updated");
+    }
+  } else {
+    log.info("Sample authority is correct " + accession);
+  }*/
+  /*
     }
   }
 
@@ -231,5 +220,5 @@ public class RTHandler {
 
       return null;
     }
-  }
+  }*/
 }
