@@ -138,14 +138,10 @@ public class BioSamplesAapService {
           GlobalExceptions.DomainMissingException {
     // Get the domains the current user has access to
     final Set<String> usersDomains = getDomains();
+
     String domain = sample.getDomain();
 
-    if (blacklistedDomains.contains(domain)
-        || usersDomains.stream().anyMatch(blacklistedDomains::contains)) {
-      throw new ResponseStatusException(
-          HttpStatus.FORBIDDEN,
-          "Domain not authorized to submit to BioSamples/ user having access to this domain is rendered unauthorized");
-    }
+    blacklistedDomainsCheck(usersDomains, domain);
 
     if (domain == null || domain.length() == 0) {
       // if the sample doesn't have a domain, and the user has one domain, then they must be
@@ -165,53 +161,74 @@ public class BioSamplesAapService {
       }
     }
 
-    if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
-      // Super user submission
-      accessChecks(sample, domain, oldSampleOptional, true);
-
-      return sample;
-    } else if (usersDomains.contains(domain)) {
-      accessChecks(sample, domain, oldSampleOptional, false);
+    if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())
+        || usersDomains.contains(domain)) {
+      accessibilityChecks(sample, domain, oldSampleOptional);
 
       return sample;
     } else {
       log.warn(
           "User asked to submit sample to domain " + domain + " but has access to " + usersDomains);
+
       throw new GlobalExceptions.SampleNotAccessibleException();
     }
   }
 
-  private void accessChecks(
+  /*
+  User domains for uploader submissions are populated calling the getDomains of AAP client, hence user definitely has access to the domain selected
+   */
+  public Sample handleFileUploaderSampleDomain(
       final Sample sample,
-      final String domain,
       final Optional<Sample> oldSampleOptional,
-      final boolean isSuperuser) {
+      final String submissionDomain) {
     final Sample oldSample;
 
     if (oldSampleOptional.isPresent()) {
       oldSample = oldSampleOptional.get();
 
+      bioSamplesCrossSourceIngestAccessControlService.checkAndPreventWebinUserSampleUpdateByAapUser(
+          oldSample);
+      bioSamplesCrossSourceIngestAccessControlService
+          .accessControlWebinSourcedSampleByCheckingEnaChecklistAttribute(oldSample, sample);
+      bioSamplesCrossSourceIngestAccessControlService
+          .accessControlWebinSourcedSampleByCheckingSubmittedViaType(oldSample, sample);
+      bioSamplesCrossSourceIngestAccessControlService.accessControlPipelineImportedSamples(
+          oldSample, sample);
+      bioSamplesCrossSourceIngestAccessControlService
+          .preventAapDomainChangeForFileUploadSampleSubmissions(oldSample, submissionDomain);
+    }
+
+    return sample;
+  }
+
+  private static void blacklistedDomainsCheck(final Set<String> usersDomains, final String domain) {
+    if (blacklistedDomains.contains(domain)
+        || usersDomains.stream().anyMatch(blacklistedDomains::contains)) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN,
+          "Domain not authorized to submit to BioSamples/ user having access to this domain is rendered unauthorized");
+    }
+  }
+
+  private void accessibilityChecks(
+      final Sample sample, final String domain, final Optional<Sample> oldSampleOptional) {
+    final Sample oldSample;
+
+    if (oldSampleOptional.isPresent()) {
+      oldSample = oldSampleOptional.get();
+
+      bioSamplesCrossSourceIngestAccessControlService.checkAndPreventWebinUserSampleUpdateByAapUser(
+          oldSample);
+      bioSamplesCrossSourceIngestAccessControlService
+          .accessControlWebinSourcedSampleByCheckingEnaChecklistAttribute(oldSample, sample);
+      bioSamplesCrossSourceIngestAccessControlService
+          .accessControlWebinSourcedSampleByCheckingSubmittedViaType(oldSample, sample);
+
       if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-        bioSamplesCrossSourceIngestAccessControlService.protectWebinSampleAapOverride(oldSample);
-        bioSamplesCrossSourceIngestAccessControlService.protectPipelineImportedSampleAccess(
+        bioSamplesCrossSourceIngestAccessControlService.accessControlPipelineImportedSamples(
             oldSample, sample);
         bioSamplesCrossSourceIngestAccessControlService
-            .protectWebinSourcedSampleAccessByValidatingENAChecklistAttribute(oldSample, sample);
-        bioSamplesCrossSourceIngestAccessControlService
-            .protectWebinSourcedSampleAccessByValidatingSubmittedViaType(oldSample, sample);
-        bioSamplesCrossSourceIngestAccessControlService.protectFileUploaderAapSample(
-            oldSample, sample, domain);
-      } else {
-        if (isSuperuser) {
-          bioSamplesCrossSourceIngestAccessControlService
-              .protectWebinSourcedSampleAccessByValidatingENAChecklistAttribute(oldSample, sample);
-        } else {
-          bioSamplesCrossSourceIngestAccessControlService.protectWebinSampleAapOverride(oldSample);
-          bioSamplesCrossSourceIngestAccessControlService
-              .protectWebinSourcedSampleAccessByValidatingENAChecklistAttribute(oldSample, sample);
-          bioSamplesCrossSourceIngestAccessControlService
-              .protectWebinSourcedSampleAccessByValidatingSubmittedViaType(oldSample, sample);
-        }
+            .preventAapDomainChangeForFileUploadSampleSubmissions(oldSample, domain);
       }
     }
   }

@@ -41,15 +41,15 @@
                                             </select>
                                         </div>
                                         <div>
-                                            <select class="required" id="certificate" name="certificate">
+                                            <select class="required" id="checklist" name="checklist">
                                                 <option th:value="0" selected disabled><b>Select checklist for validation</b></option>
-                                                <option th:each="certificate : ${certificates}" th:value="${certificate.getKey()}"
-                                                        th:text="${certificate.getValue()}"></option>
+                                                <option th:each="checklist : ${checklists}" th:value="${checklist.getKey()}"
+                                                        th:text="${checklist.getValue()}"></option>
                                             </select>
                                         </div>
                                         <form th:action="@{/upload}" enctype="multipart/form-data" class="dropzone" id="data-upload">
                                             <input type="hidden" id="hiddenAapDomain" name="hiddenAapDomain">
-                                            <input type="hidden" id="hiddenCertificate" name="hiddenCertificate">
+                                            <input type="hidden" id="hiddenChecklist" name="hiddenChecklist">
                                             <input type="hidden" th:value="${webinId}" name="webinId"/>
                                             <input type="hidden" id="uploadToken" th:value="${token}" name="token"/>
                                             <div>
@@ -162,15 +162,15 @@
         $("#hiddenAapDomain").val(e.target.value);
     });
 
-    $("#certificate").change(function (e) {
-        $("#hiddenCertificate").val(e.target.value);
+    $("#checklist").change(function (e) {
+        $("#hiddenChecklist").val(e.target.value);
     });
 
     $(document).on('change keyup', '.required', function (e) {
         let Disabled = true;
         $(".required").each(function () {
             let value = this.value
-            if ((value) && (value.trim() != '0')) {
+            if ((value) && (value.trim() !== '0')) {
                 Disabled = false
             } else {
                 Disabled = true

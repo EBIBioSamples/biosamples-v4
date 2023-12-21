@@ -229,7 +229,7 @@ public class SampleService {
         log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
 
         bioSamplesCrossSourceIngestAccessControlService
-            .validateFileUploaderSampleAccessionWhileSampleUpdate(sample);
+            .validateFileUploaderSampleUpdateHasAlwaysExistingAccession(sample);
       }
 
       MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);

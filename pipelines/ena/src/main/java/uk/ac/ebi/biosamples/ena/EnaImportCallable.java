@@ -71,10 +71,10 @@ public class EnaImportCallable implements Callable<Void> {
       return egaSampleExporter.populateAndSubmitEgaData(egaId);
     } else {
       try {
-        Sample bsdAuthoritySampleWithSraAccession = null;
+        SampleToUpdateRequiredPair sampleToUpdateRequiredPair = null;
 
         if (specialTypes == SpecialTypes.BSD_AUTHORITY) {
-          bsdAuthoritySampleWithSraAccession = buildBsdAuthoritySampleWithSraAccession(accession);
+          sampleToUpdateRequiredPair = buildBsdAuthoritySampleWithSraAccession(accession);
         } else {
           enaSampleConvertedToBioSample =
               enaSampleToBioSampleConversionService.enrichSample(accession, false);
@@ -86,19 +86,23 @@ public class EnaImportCallable implements Callable<Void> {
         while (!success) {
           try {
             if (specialTypes == SpecialTypes.BSD_AUTHORITY) {
-              if (bsdAuthoritySampleWithSraAccession != null) {
-                if (bsdAuthoritySampleWithSraAccession.getDomain() != null) {
-                  bioSamplesAapClient.persistSampleResource(bsdAuthoritySampleWithSraAccession);
-                } else if (bsdAuthoritySampleWithSraAccession.getWebinSubmissionAccountId()
-                    != null) {
-                  bioSamplesWebinClient.persistSampleResource(bsdAuthoritySampleWithSraAccession);
+              if (sampleToUpdateRequiredPair.updateRequired) {
+                final Sample bsdAuthoritySampleWithSraAccession = sampleToUpdateRequiredPair.sample;
+
+                if (bsdAuthoritySampleWithSraAccession != null) {
+                  if (bsdAuthoritySampleWithSraAccession.getDomain() != null) {
+                    bioSamplesAapClient.persistSampleResource(bsdAuthoritySampleWithSraAccession);
+                  } else if (bsdAuthoritySampleWithSraAccession.getWebinSubmissionAccountId()
+                      != null) {
+                    bioSamplesWebinClient.persistSampleResource(bsdAuthoritySampleWithSraAccession);
+                  } else {
+                    throw new RuntimeException(
+                        "Couldn't determine authentication of sample: " + accession);
+                  }
                 } else {
                   throw new RuntimeException(
-                      "Couldn't determine authentication of sample: " + accession);
+                      "Failed to fetch BioSample authority sample from BioSamples: " + accession);
                 }
-              } else {
-                throw new RuntimeException(
-                    "Failed to fetch BioSample authority sample from BioSamples: " + accession);
               }
             } else {
               if (enaSampleConvertedToBioSample != null) {
@@ -129,13 +133,16 @@ public class EnaImportCallable implements Callable<Void> {
     }
   }
 
-  private Sample buildBsdAuthoritySampleWithSraAccession(final String accession) {
+  private SampleToUpdateRequiredPair buildBsdAuthoritySampleWithSraAccession(
+      final String accession) {
     final Optional<EntityModel<Sample>> sampleOptionalInBioSamples =
         bioSamplesWebinClient.fetchSampleResource(
             accession, Optional.of(Collections.singletonList("")));
     final Sample sampleInBioSamples =
         sampleOptionalInBioSamples.map(EntityModel::getContent).orElse(null);
     final EraproSample eraproSample = eraProDao.getSampleDetailsByBioSampleId(accession);
+    final String eraproSampleSampleId = eraproSample.getSampleId();
+    boolean sampleSaveRequired = false;
 
     assert sampleInBioSamples != null;
 
@@ -143,12 +150,47 @@ public class EnaImportCallable implements Callable<Void> {
 
     if (attributesInBioSample.stream()
         .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION))) {
-      attributesInBioSample.add(Attribute.build(SRA_ACCESSION, eraproSample.getSampleId()));
+      log.info(
+          "Sample "
+              + accession
+              + " doesn't have SRA accession, creating new SRA accession attribute with SAMPLE_ID from ENA");
+
+      sampleSaveRequired = true;
+      attributesInBioSample.add(Attribute.build(SRA_ACCESSION, eraproSampleSampleId));
+    } else {
+      final Attribute sraAccessionAttribute =
+          attributesInBioSample.stream()
+              .filter(attribute -> attribute.getType().equals(SRA_ACCESSION))
+              .findFirst()
+              .get();
+
+      if (!Objects.equals(sraAccessionAttribute.getValue(), eraproSampleSampleId)) {
+        log.info(
+            "Sample "
+                + accession
+                + " has SRA accession mismatch with ENA, updating SRA accession attribute with SAMPLE_ID from ENA");
+
+        sampleSaveRequired = true;
+        attributesInBioSample.removeIf(attribute -> attribute.getType().equals(SRA_ACCESSION));
+        attributesInBioSample.add(Attribute.build(SRA_ACCESSION, eraproSampleSampleId));
+      } else {
+        log.info("Sample " + accession + " has SRA accession match with ENA, no action required");
+      }
     }
 
-    return Sample.Builder.fromSample(sampleInBioSamples)
-        .withAttributes(attributesInBioSample)
-        .build();
+    return new SampleToUpdateRequiredPair(
+        Sample.Builder.fromSample(sampleInBioSamples).withAttributes(attributesInBioSample).build(),
+        sampleSaveRequired);
+  }
+
+  private static class SampleToUpdateRequiredPair {
+    private final Sample sample;
+    private final boolean updateRequired;
+
+    private SampleToUpdateRequiredPair(final Sample sample, final boolean updateRequired) {
+      this.sample = sample;
+      this.updateRequired = updateRequired;
+    }
   }
 
   private Void handleSuppressedKilledSample(final SpecialTypes specialTypes)
