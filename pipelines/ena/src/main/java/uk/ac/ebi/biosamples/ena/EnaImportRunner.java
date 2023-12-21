@@ -104,10 +104,10 @@ public class EnaImportRunner implements ApplicationRunner {
       // importSuppressedAndKilled);
 
       // Import ENA samples
-      importEraSamples(fromDate, toDate);
+      // importEraSamples(fromDate, toDate);
 
       // Import BSD authority samples to update SRA accession
-      // importEraBsdAuthoritySamples(fromDate, toDate);
+      importEraBsdAuthoritySamples(fromDate, toDate);
 
       // rtHandler.samnSampleGeographicLocationAttributeUpdate();
 
