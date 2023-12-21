@@ -25,8 +25,8 @@ maven-package:
     - cp webapps/core-v2/target/webapps-core-v2*.jar deployment/webapps-core-v2.jar
     - cp agents/solr/target/agents-solr-*.jar deployment/agents-solr.jar
     - cp agents/uploadworkers/target/agents-uploadworkers-*.jar deployment/agents-uploadworkers.jar
-    - cp pipelines/curation/target/pipelines-curation-*.jar deployment/pipelines-curation.jar
-    - cp pipelines/ena/target/pipelines-ena-*.jar deployment/pipelines-ena.jar
+    # - cp pipelines/curation/target/pipelines-curation-*.jar deployment/pipelines-curation.jar
+    # - cp pipelines/ena/target/pipelines-ena-*.jar deployment/pipelines-ena.jar
     - cp pipelines/ncbi-ena-link/target/pipelines-ncbi-ena-link-*.jar deployment/pipelines-ncbi-ena-link.jar
     - cp pipelines/sample-release/target/pipelines-sample-release-*.jar deployment/pipelines-sample-release.jar
     - cp pipelines/sample-post-release-action/target/pipelines-sample-post-release-action*.jar deployment/pipelines-sample-post-release-action.jar
