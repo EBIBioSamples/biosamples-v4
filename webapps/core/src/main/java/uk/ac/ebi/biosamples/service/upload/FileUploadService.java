@@ -60,34 +60,32 @@ public class FileUploadService {
       final String webinId,
       final FileUploadUtils fileUploadUtils) {
     final ValidationResult validationResult = new ValidationResult();
-    final boolean isWebin = isWebinIdUsedToAuthenticate(webinId);
+    final boolean isWebin = webinId != null && webinId.toUpperCase().startsWith("WEBIN");
     final String uniqueUploadId = UUID.randomUUID().toString();
 
     this.fileUploadUtils = fileUploadUtils;
 
     try {
-      final MongoFileUpload mongoFileUploadInitial =
-          new MongoFileUpload(
-              uniqueUploadId,
-              BioSamplesFileUploadSubmissionStatus.ACTIVE,
-              isWebin ? webinId : aapDomain,
-              checklist,
-              isWebin,
-              new ArrayList<>(),
-              null);
-
-      mongoFileUploadRepository.insert(mongoFileUploadInitial);
+      persistSubmissionState(
+          aapDomain,
+          checklist,
+          webinId,
+          isWebin,
+          uniqueUploadId,
+          BioSamplesFileUploadSubmissionStatus.ACTIVE,
+          null,
+          null,
+          false);
 
       final Path temp = Files.createTempFile("upload", ".tsv");
-
       final File fileToBeUploaded = temp.toFile();
+
       file.transferTo(fileToBeUploaded);
 
       log.info("Input file name " + fileToBeUploaded.getName());
 
       final FileReader fr = new FileReader(fileToBeUploaded);
       final BufferedReader reader = new BufferedReader(fr);
-
       final CSVParser csvParser = this.fileUploadUtils.buildParser(reader);
       final List<String> headers = csvParser.getHeaderNames();
 
@@ -101,6 +99,7 @@ public class FileUploadService {
 
       if (numSamples > 200) {
         log.info("File sample count exceeds limits - queueing file for async submission");
+
         final String submissionId =
             fileQueueService.queueFileinMongoAndSendMessageToRabbitMq(
                 file, aapDomain, checklist, webinId);
@@ -142,23 +141,20 @@ public class FileUploadService {
             BioSamplesFileUploadSubmissionStatus.COMPLETED_WITH_ERRORS;
       }
 
-      final String joinedValidationMessage =
+      persistSubmissionState(
+          aapDomain,
+          checklist,
+          webinId,
+          isWebin,
+          uniqueUploadId,
+          bioSamplesFileUploadSubmissionStatus,
           validationResult.getValidationMessagesList().stream()
               .map(
                   validationMessage ->
                       validationMessage.getMessageKey() + ":" + validationMessage.getMessageValue())
-              .collect(Collectors.joining(" -- "));
-      final MongoFileUpload mongoFileUploadCompleted =
-          new MongoFileUpload(
-              uniqueUploadId,
-              bioSamplesFileUploadSubmissionStatus,
-              isWebin ? webinId : aapDomain,
-              checklist,
-              isWebin,
-              accessionsList,
-              joinedValidationMessage);
-
-      mongoFileUploadRepository.save(mongoFileUploadCompleted);
+              .collect(Collectors.joining(" -- ")),
+          accessionsList,
+          true);
 
       return fileUploadUtils.writeToFile(fileToBeUploaded, headers, samples, validationResult);
     } catch (final Exception e) {
@@ -176,6 +172,33 @@ public class FileUploadService {
               .collect(Collectors.joining("\n")));
     } finally {
       validationResult.clear();
+    }
+  }
+
+  private void persistSubmissionState(
+      final String aapDomain,
+      final String checklist,
+      final String webinId,
+      final boolean isWebin,
+      final String uniqueUploadId,
+      final BioSamplesFileUploadSubmissionStatus bioSamplesFileUploadSubmissionStatus,
+      final String validationResult,
+      final List<SampleNameAccessionPair> accessionPairs,
+      final boolean isUpdate) {
+    final MongoFileUpload mongoFileUpload =
+        new MongoFileUpload(
+            uniqueUploadId,
+            bioSamplesFileUploadSubmissionStatus,
+            isWebin ? webinId : aapDomain,
+            checklist,
+            isWebin,
+            accessionPairs,
+            validationResult);
+
+    if (isUpdate) {
+      mongoFileUploadRepository.save(mongoFileUpload);
+    } else {
+      mongoFileUploadRepository.insert(mongoFileUpload);
     }
   }
 
@@ -223,10 +246,6 @@ public class FileUploadService {
         sampleNameToAccessionMap, sampleToMappedSample, validationResult, isWebin);
   }
 
-  private boolean isWebinIdUsedToAuthenticate(final String webinId) {
-    return webinId != null && webinId.toUpperCase().startsWith("WEBIN");
-  }
-
   private List<Sample> addRelationshipsAndThenBuildSamples(
       final Map<String, String> sampleNameToAccessionMap,
       final Map<Sample, Multimap<String, String>> sampleToMappedSample,
@@ -263,7 +282,9 @@ public class FileUploadService {
 
       sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
       try {
-        sample = storeSample(sample, oldSample, isWebin(isWebin));
+        sample =
+            storeSample(
+                sample, oldSample, isWebin ? FileUploadUtils.WEBIN_AUTH : FileUploadUtils.AAP);
       } catch (final Exception e) {
         final String sampleName = sample.getName();
 
@@ -312,7 +333,9 @@ public class FileUploadService {
 
       if (isValidatedAgainstChecklist) {
         try {
-          sample = storeSample(sample, oldSample, isWebin(isWebin));
+          sample =
+              storeSample(
+                  sample, oldSample, isWebin ? FileUploadUtils.WEBIN_AUTH : FileUploadUtils.AAP);
 
           if (sample != null) {
             if (sampleWithAccession) {
@@ -360,7 +383,7 @@ public class FileUploadService {
                 sample, webinId, oldSample);
       } else {
         sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
-        sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
+        sample = bioSamplesAapService.handleFileUploaderSampleDomain(sample, oldSample, aapDomain);
       }
 
       return sample;
@@ -401,10 +424,6 @@ public class FileUploadService {
 
       return null;
     }
-  }
-
-  private String isWebin(final boolean isWebin) {
-    return isWebin ? FileUploadUtils.WEBIN_AUTH : FileUploadUtils.AAP;
   }
 
   private Sample storeSample(
@@ -466,18 +485,17 @@ public class FileUploadService {
             ? mongoFileUploadRepository.findById(submissionId).get()
             : null;
 
-    if (mongoFileUpload != null) {
-      return mongoFileUpload;
-    } else {
-      return new MongoFileUpload(
-          submissionId,
-          BioSamplesFileUploadSubmissionStatus.NOT_FOUND,
-          null,
-          null,
-          false,
-          Collections.emptyList(),
-          "Submission not found, please enter a valid submission ID.");
-    }
+    return Objects.requireNonNullElseGet(
+        mongoFileUpload,
+        () ->
+            new MongoFileUpload(
+                submissionId,
+                BioSamplesFileUploadSubmissionStatus.NOT_FOUND,
+                null,
+                null,
+                false,
+                Collections.emptyList(),
+                "Submission not found, please enter a valid submission ID."));
   }
 
   public List<MongoFileUpload> getUserSubmissions(final List<String> userRoles) {

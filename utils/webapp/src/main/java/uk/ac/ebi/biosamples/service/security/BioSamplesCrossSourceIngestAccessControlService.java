@@ -22,14 +22,14 @@ public class BioSamplesCrossSourceIngestAccessControlService {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private static final String ENA_CHECKLIST = "ENA-CHECKLIST";
 
-  public void protectWebinSampleAapOverride(final Sample oldSample) {
+  public void checkAndPreventWebinUserSampleUpdateByAapUser(final Sample oldSample) {
     if (oldSample.getWebinSubmissionAccountId() != null) {
       throw new GlobalExceptions.AccessControlException(
-          "AAP user cannot update a sample submitted by a WEBIN user");
+          "An AAP submitter cannot update a sample submitted by a WEBIN submitter");
     }
   }
 
-  public void protectFileUploaderWebinSample(
+  public void isOriginalSubmitterInSampleMetadata(
       final String webinIdInOldSample, final Sample newSample) {
     log.info("Super user and file upload submission");
 
@@ -39,7 +39,7 @@ public class BioSamplesCrossSourceIngestAccessControlService {
     }
   }
 
-  public void protectWebinSourcedSampleAccessByValidatingENAChecklistAttribute(
+  public void accessControlWebinSourcedSampleByCheckingEnaChecklistAttribute(
       final Sample oldSample, final Sample newSample) {
     /*
     Old sample has ENA-CHECKLIST attribute, hence it can be concluded that it is imported from ENA
@@ -55,11 +55,8 @@ public class BioSamplesCrossSourceIngestAccessControlService {
     }
   }
 
-  public void protectWebinSourcedSampleAccessByValidatingSubmittedViaType(
+  public void accessControlWebinSourcedSampleByCheckingSubmittedViaType(
       final Sample oldSample, final Sample newSample) {
-    /*
-    Check for SubmittedViaType too
-     */
     if (oldSample.getSubmittedVia() == SubmittedViaType.WEBIN_SERVICES) {
       if (newSample.getSubmittedVia() != SubmittedViaType.WEBIN_SERVICES) {
         throw new GlobalExceptions.InvalidSubmissionSourceException();
@@ -67,7 +64,7 @@ public class BioSamplesCrossSourceIngestAccessControlService {
     }
   }
 
-  public void protectPipelineImportedSampleAccess(final Sample oldSample, final Sample newSample) {
+  public void accessControlPipelineImportedSamples(final Sample oldSample, final Sample newSample) {
     if (oldSample.getSubmittedVia()
         == SubmittedViaType.PIPELINE_IMPORT) { // pipeline imports access protection
       if (newSample.getSubmittedVia() != SubmittedViaType.PIPELINE_IMPORT) {
@@ -76,7 +73,7 @@ public class BioSamplesCrossSourceIngestAccessControlService {
     }
   }
 
-  public void validateFileUploaderSampleAccessionWhileSampleUpdate(final Sample newSample) {
+  public void validateFileUploaderSampleUpdateHasAlwaysExistingAccession(final Sample newSample) {
     if (newSample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
       log.error(
           "Not permitted to update sample not in database using the file uploader, accession: {}",
@@ -86,12 +83,10 @@ public class BioSamplesCrossSourceIngestAccessControlService {
     }
   }
 
-  public void protectFileUploaderAapSample(
-      final Sample oldSample, final Sample newSample, final String submissionDomain) {
-    if (newSample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-      if (!submissionDomain.equals(oldSample.getDomain())) {
-        throw new GlobalExceptions.SampleDomainMismatchException();
-      }
+  public void preventAapDomainChangeForFileUploadSampleSubmissions(
+      final Sample oldSample, final String newSampleSubmissionDomain) {
+    if (!newSampleSubmissionDomain.equals(oldSample.getDomain())) {
+      throw new GlobalExceptions.SampleDomainMismatchException();
     }
   }
 }

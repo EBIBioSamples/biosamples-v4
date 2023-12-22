@@ -66,7 +66,7 @@ public class FileUploadController {
   public ResponseEntity<byte[]> upload(
       @RequestParam("file") final MultipartFile file,
       @Valid final String hiddenAapDomain,
-      @Valid final String hiddenCertificate,
+      @Valid final String hiddenChecklist,
       @Valid final String webinId)
       throws IOException {
     final FileUploadUtils fileUploadUtils = new FileUploadUtils();
@@ -77,7 +77,7 @@ public class FileUploadController {
       try {
         final File downloadableFile =
             fileUploadService.upload(
-                file, hiddenAapDomain, hiddenCertificate, webinId, fileUploadUtils);
+                file, hiddenAapDomain, hiddenChecklist, webinId, fileUploadUtils);
         final byte[] bytes = FileUtils.readFileToByteArray(downloadableFile);
         final HttpHeaders headers = setResponseHeadersSuccess(downloadableFile);
 
@@ -118,7 +118,7 @@ public class FileUploadController {
       try {
         final String fileId =
             fileQueueService.queueFileinMongoAndSendMessageToRabbitMq(
-                file, hiddenAapDomain, hiddenCertificate, webinId);
+                file, hiddenAapDomain, hiddenChecklist, webinId);
         final File queuedUploadMessageFile = fileUploadUtils.writeQueueMessageToFile(fileId);
         final byte[] bytes = FileUtils.readFileToByteArray(queuedUploadMessageFile);
         final HttpHeaders headers = setResponseHeadersFailure(queuedUploadMessageFile);

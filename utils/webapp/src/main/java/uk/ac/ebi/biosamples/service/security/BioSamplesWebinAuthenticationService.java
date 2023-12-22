@@ -98,13 +98,7 @@ public class BioSamplesWebinAuthenticationService {
           if (oldSamplePresent) {
             final Sample oldSampleInDb = oldSample.get();
 
-            bioSamplesCrossSourceIngestAccessControlService.protectPipelineImportedSampleAccess(
-                oldSampleInDb, sample);
-            bioSamplesCrossSourceIngestAccessControlService
-                .protectWebinSourcedSampleAccessByValidatingENAChecklistAttribute(
-                    oldSampleInDb, sample);
-            bioSamplesCrossSourceIngestAccessControlService
-                .protectWebinSourcedSampleAccessByValidatingSubmittedViaType(oldSampleInDb, sample);
+            existingSampleAccessibilityChecks(sample, oldSampleInDb);
 
             if (!webinIdFromAuthToken.equalsIgnoreCase(
                 oldSampleInDb.getWebinSubmissionAccountId())) { // original submitter mismatch
@@ -134,6 +128,15 @@ public class BioSamplesWebinAuthenticationService {
     }
   }
 
+  private void existingSampleAccessibilityChecks(final Sample sample, final Sample oldSampleInDb) {
+    bioSamplesCrossSourceIngestAccessControlService.accessControlPipelineImportedSamples(
+        oldSampleInDb, sample);
+    bioSamplesCrossSourceIngestAccessControlService
+        .accessControlWebinSourcedSampleByCheckingEnaChecklistAttribute(oldSampleInDb, sample);
+    bioSamplesCrossSourceIngestAccessControlService
+        .accessControlWebinSourcedSampleByCheckingSubmittedViaType(oldSampleInDb, sample);
+  }
+
   private Sample handleWebinSuperUserSampleSubmission(
       final Sample sample,
       final Optional<Sample> oldSample,
@@ -145,15 +148,7 @@ public class BioSamplesWebinAuthenticationService {
       final String webinIdInOldSample = oldSampleInDb.getWebinSubmissionAccountId();
 
       if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-        bioSamplesCrossSourceIngestAccessControlService.protectFileUploaderWebinSample(
-            webinIdInOldSample, sample);
-        bioSamplesCrossSourceIngestAccessControlService.protectPipelineImportedSampleAccess(
-            oldSampleInDb, sample);
-        bioSamplesCrossSourceIngestAccessControlService
-            .protectWebinSourcedSampleAccessByValidatingENAChecklistAttribute(
-                oldSampleInDb, sample);
-        bioSamplesCrossSourceIngestAccessControlService
-            .protectWebinSourcedSampleAccessByValidatingSubmittedViaType(oldSampleInDb, sample);
+        fileUploaderSampleSubmissionAccessibilityChecks(sample, oldSampleInDb, webinIdInOldSample);
       }
 
       if (webinIdInOldSample != null
@@ -180,6 +175,13 @@ public class BioSamplesWebinAuthenticationService {
     } else { // old sample doesn't exist
       return buildSampleWithWebinId(sample, webinIdToSetForSample);
     }
+  }
+
+  private void fileUploaderSampleSubmissionAccessibilityChecks(
+      final Sample sample, final Sample oldSampleInDb, final String webinIdInOldSample) {
+    bioSamplesCrossSourceIngestAccessControlService.isOriginalSubmitterInSampleMetadata(
+        webinIdInOldSample, sample);
+    existingSampleAccessibilityChecks(sample, oldSampleInDb);
   }
 
   /*Only used for sample migration purposes*/

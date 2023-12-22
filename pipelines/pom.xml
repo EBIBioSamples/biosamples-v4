@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.3.0-RC1</version>
+		<version>5.3.1-SNAPSHOT</version>
 	</parent>
 
 	<profiles>
@@ -18,8 +18,8 @@
 			<!-- i.e. oracle drivers that cannot be redistributed in public -->
 			<id>embl-ebi</id>
 			<modules>
-				<module>ena</module>
-				<module>ncbi-ena-link</module>
+				<!--<module>ena</module>
+				<module>ncbi-ena-link</module>-->
 			</modules>
 		</profile>
 	</profiles>
@@ -32,7 +32,7 @@
 		<module>curami</module>
 		<module>clearinghouse</module>
 		<module>sample-transformation-dtol</module>
-		<module>ena</module>
+		<!--<module>ena</module>-->
 		<module>ncbi</module>
 		<module>sample-release</module>
 		<module>sample-post-release-action</module>
