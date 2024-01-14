@@ -74,57 +74,80 @@ public class BioSamplesWebinAuthenticationService {
     final String webinIdInSample = sample.getWebinSubmissionAccountId();
     final String domain = sample.getDomain();
 
-    if (webinIdFromAuthToken != null
-        && !webinIdFromAuthToken.isEmpty()) { // webin id retrieval failure - throw Exception
+    if (webinIdFromAuthToken != null && !webinIdFromAuthToken.isEmpty()) {
       final String webinIdToSetForSample =
           (webinIdInSample != null && !webinIdInSample.isEmpty()) ? webinIdInSample : proxyWebinId;
 
-      if (sample.getAccession() != null) { // sample updates, where sample has an accession
-        final boolean oldSamplePresent = oldSample.isPresent();
-
-        if (webinIdFromAuthToken.equalsIgnoreCase(
-            proxyWebinId)) { // ENA pipeline submissions or super user submission
-          // (via FILE UPLOADER) or ENA posted samples
-          return handleWebinSuperUserSampleSubmission(
-              sample, oldSample, domain, webinIdToSetForSample, oldSamplePresent);
-        } else { // normal sample update - not pipeline, not superuser check for old user, if
-          // mismatch throw
-          // exception, else build the Sample
-          if (domain != null) {
-            throw new GlobalExceptions.AccessControlException(
-                "Sample submitted using WEBIN authentication must not have a domain");
-          }
-
-          if (oldSamplePresent) {
-            final Sample oldSampleInDb = oldSample.get();
-
-            existingSampleAccessibilityChecks(sample, oldSampleInDb);
-
-            if (!webinIdFromAuthToken.equalsIgnoreCase(
-                oldSampleInDb.getWebinSubmissionAccountId())) { // original submitter mismatch
-              throw new GlobalExceptions.NotOriginalSubmitterException();
-            } else {
-              return buildSampleWithWebinId(sample, webinIdFromAuthToken);
-            }
-          } else {
-            throw new GlobalExceptions.SampleAccessionDoesNotExistException();
-          }
-        }
-      } else { // new submission
-        if (webinIdFromAuthToken.equalsIgnoreCase(
-            proxyWebinId)) { // new submission by client program
-          return buildSampleWithWebinId(sample, webinIdToSetForSample);
-        } else {
-          if (domain != null) {
-            throw new GlobalExceptions.AccessControlException(
-                "Sample submitted using WEBIN authentication must not have a domain");
-          }
-
-          return buildSampleWithWebinId(sample, webinIdFromAuthToken);
-        }
+      if (sample.getAccession() != null) {
+        return handleSampleUpdate(
+            sample, oldSample, webinIdFromAuthToken, proxyWebinId, webinIdToSetForSample, domain);
+      } else {
+        return handleNewSubmission(
+            sample, webinIdFromAuthToken, proxyWebinId, webinIdToSetForSample, domain);
       }
     } else {
       throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
+    }
+  }
+
+  private Sample handleSampleUpdate(
+      final Sample sample,
+      final Optional<Sample> oldSample,
+      final String webinIdFromAuthToken,
+      final String proxyWebinId,
+      final String webinIdToSetForSample,
+      final String domain) {
+    final boolean oldSamplePresent = oldSample.isPresent();
+
+    if (webinIdFromAuthToken.equalsIgnoreCase(proxyWebinId)) {
+      return handleWebinSuperUserSampleSubmission(
+          sample, oldSample, domain, webinIdToSetForSample, oldSamplePresent);
+    } else {
+      return handleNormalSampleUpdate(
+          sample, oldSample, webinIdFromAuthToken, domain, oldSamplePresent);
+    }
+  }
+
+  private Sample handleNewSubmission(
+      final Sample sample,
+      final String webinIdFromAuthToken,
+      final String proxyWebinId,
+      final String webinIdToSetForSample,
+      final String domain) {
+    if (webinIdFromAuthToken.equalsIgnoreCase(proxyWebinId)) {
+      return buildSampleWithWebinId(sample, webinIdToSetForSample);
+    } else {
+      if (domain != null) {
+        throw new GlobalExceptions.AccessControlException(
+            "Sample submitted using WEBIN authentication must not have a domain");
+      }
+
+      return buildSampleWithWebinId(sample, webinIdFromAuthToken);
+    }
+  }
+
+  private Sample handleNormalSampleUpdate(
+      final Sample sample,
+      final Optional<Sample> oldSample,
+      final String webinIdFromAuthToken,
+      final String domain,
+      final boolean oldSamplePresent) {
+    if (domain != null) {
+      throw new GlobalExceptions.AccessControlException(
+          "Sample submitted using WEBIN authentication must not have a domain");
+    }
+
+    if (oldSamplePresent) {
+      final Sample oldSampleInDb = oldSample.get();
+      existingSampleAccessibilityChecks(sample, oldSampleInDb);
+
+      if (!webinIdFromAuthToken.equalsIgnoreCase(oldSampleInDb.getWebinSubmissionAccountId())) {
+        throw new GlobalExceptions.NotOriginalSubmitterException();
+      } else {
+        return buildSampleWithWebinId(sample, webinIdFromAuthToken);
+      }
+    } else {
+      throw new GlobalExceptions.SampleAccessionDoesNotExistException();
     }
   }
 
@@ -151,30 +174,32 @@ public class BioSamplesWebinAuthenticationService {
         fileUploaderSampleSubmissionAccessibilityChecks(sample, oldSampleInDb, webinIdInOldSample);
       }
 
-      if (webinIdInOldSample != null
-          && !webinIdInOldSample
-              .isEmpty()) { // old sample exists + webin id exists + submission from original
-        // source, i.e. ENA, accept it without validating
+      if (webinIdInOldSample != null && !webinIdInOldSample.isEmpty()) {
         return buildSampleWithWebinId(sample, webinIdToSetForSample);
       } else {
         final String oldSampleAapDomain = oldSampleInDb.getDomain();
 
-        if (sampleService.isAPipelineAapDomain(oldSampleAapDomain)
-            || isOldRegistrationDomain(
-                oldSampleAapDomain)) { // if old sample was a pipeline submission using AAP,
-          // or
-          // pre-registration, allow
-          // webin superuser replacement
+        if (isAcceptableDomain(oldSampleAapDomain, domain)) {
           return buildSampleWithWebinId(sample, webinIdToSetForSample);
-        } else if (domain != null && domain.equalsIgnoreCase(oldSampleAapDomain)) {
+        } else if (isSameDomain(domain, oldSampleAapDomain)) {
           return sample;
         } else {
           throw new GlobalExceptions.SampleNotAccessibleException();
         }
       }
-    } else { // old sample doesn't exist
+    } else {
       return buildSampleWithWebinId(sample, webinIdToSetForSample);
     }
+  }
+
+  private boolean isAcceptableDomain(final String oldSampleAapDomain, final String domain) {
+    return sampleService.isAPipelineAapDomain(oldSampleAapDomain)
+        || isOldRegistrationDomain(oldSampleAapDomain)
+        || (domain != null && domain.equalsIgnoreCase(oldSampleAapDomain));
+  }
+
+  private boolean isSameDomain(final String domain, final String oldSampleAapDomain) {
+    return domain != null && domain.equalsIgnoreCase(oldSampleAapDomain);
   }
 
   private void fileUploaderSampleSubmissionAccessibilityChecks(

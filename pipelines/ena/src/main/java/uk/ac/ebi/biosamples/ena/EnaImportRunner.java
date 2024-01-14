@@ -104,10 +104,10 @@ public class EnaImportRunner implements ApplicationRunner {
       // importSuppressedAndKilled);
 
       // Import ENA samples
-      // importEraSamples(fromDate, toDate);
+      importEraSamples(fromDate, toDate);
 
       // Import BSD authority samples to update SRA accession
-      importEraBsdAuthoritySamples(fromDate, toDate);
+      // importEraBsdAuthoritySamples(fromDate, toDate);
 
       // rtHandler.samnSampleGeographicLocationAttributeUpdate();
 
@@ -423,7 +423,7 @@ public class EnaImportRunner implements ApplicationRunner {
         case CANCELLED:
           log.info(
               String.format(
-                  "%s is being handled as status is %s and last updated is %s",
+                  "%s is being handled as status is %s and last updated is %s (searched by first public and last updated)",
                   biosampleId, enaStatus.name(), lastUpdated));
           // update if sample already exists else import
           if (bsdAuthority) {

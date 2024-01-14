@@ -10,16 +10,17 @@
 */
 package uk.ac.ebi.biosamples.mongo.service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -27,6 +28,7 @@ import uk.ac.ebi.biosamples.mongo.model.MongoStructuredData;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoStructuredDataRepository;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.BioSamplesConstants;
 
 /**
  * Service layer business logic for centralising repository access and conversions between different
@@ -37,7 +39,6 @@ import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 @Service
 public class SampleReadService {
   private static final Logger LOGGER = LoggerFactory.getLogger(SampleReadService.class);
-  private static final String SRA_ACCESSION = "SRA accession";
   private final MongoSampleRepository mongoSampleRepository;
   private final MongoSampleToSampleConverter mongoSampleToSampleConverter;
   private final CurationReadService curationReadService;
@@ -72,83 +73,49 @@ public class SampleReadService {
             bioSamplesProperties.getBiosamplesCorePageThreadCountMax());
   }
 
-  /** Throws an IllegalArgumentException of no sample with that accession exists */
-  // can't use a sync cache because we need to use CacheEvict
-  // @Cacheable(cacheNames=WebappProperties.fetchUsing, key="#root.args[0]")
   public Optional<Sample> fetch(
-      final String accession, final Optional<List<String>> curationDomains)
-      throws IllegalArgumentException {
-    MongoSample mongoSample = mongoSampleRepository.findById(accession).orElse(null);
+      final String accession, final Optional<List<String>> curationDomains) {
+    final MongoSample mongoSample = getMongoSample(accession);
 
     if (mongoSample == null) {
-      LOGGER.warn(String.format("failed to retrieve sample with accession %s", accession));
+      LOGGER.warn(String.format("Failed to retrieve sample with accession %s", accession));
       return Optional.empty();
     }
 
-    // add on inverse relationships
-    mongoSample = mongoInverseRelationshipService.addInverseRelationships(mongoSample);
+    final MongoSample updatedMongoSample =
+        mongoInverseRelationshipService.addInverseRelationships(mongoSample);
+    final AtomicReference<Sample> sample =
+        new AtomicReference<>(mongoSampleToSampleConverter.apply(updatedMongoSample));
 
-    // convert it into the format to return
-    Sample sample = mongoSampleToSampleConverter.apply(mongoSample);
+    sample.set(curationReadService.applyAllCurationToSample(sample.get(), curationDomains));
 
-    // add curation from a set of users
-    sample = curationReadService.applyAllCurationToSample(sample, curationDomains);
-
-    // add structured data
     final Optional<MongoStructuredData> mongoStructuredData =
         mongoStructuredDataRepository.findById(accession);
 
-    if (mongoStructuredData.isPresent()) {
-      final StructuredData structuredData =
-          mongoStructuredDataToStructuredDataConverter.convert(mongoStructuredData.get());
-      sample =
-          Sample.Builder.fromSample(sample).withStructuredData(structuredData.getData()).build();
-    }
+    mongoStructuredData.ifPresent(
+        data -> {
+          final StructuredData structuredData =
+              mongoStructuredDataToStructuredDataConverter.convert(data);
+          sample.set(
+              Sample.Builder.fromSample(sample.get())
+                  .withStructuredData(structuredData.getData())
+                  .build());
+        });
 
-    return Optional.of(sample);
+    return Optional.of(sample.get());
   }
 
-  /** Throws an IllegalArgumentException of no sample with that accession exists */
-  // can't use a sync cache because we need to use CacheEvict
-  // @Cacheable(cacheNames=WebappProperties.fetchUsing, key="#root.args[0]")
-  public Optional<Sample> fetchWithMissingSraAccessionsAdded(
-      final String accession, final Optional<List<String>> curationDomains)
-      throws IllegalArgumentException {
-    MongoSample mongoSample = mongoSampleRepository.findById(accession).orElse(null);
-
-    if (mongoSample == null) {
-      LOGGER.warn(String.format("failed to retrieve sample with accession %s", accession));
-      return Optional.empty();
+  private MongoSample getMongoSample(final String accession) {
+    if (startsWithSraPrefix(accession)) {
+      return mongoSampleRepository.findBySraAccession(accession);
+    } else {
+      return mongoSampleRepository.findById(accession).orElse(null);
     }
+  }
 
-    final Optional<Attribute> sraAccessionOptional =
-        mongoSample.getAttributes().stream()
-            .filter(attribute -> attribute.getType().equals(SRA_ACCESSION))
-            .findAny();
-
-    if (sraAccessionOptional.isEmpty()) {}
-
-    // add on inverse relationships
-    mongoSample = mongoInverseRelationshipService.addInverseRelationships(mongoSample);
-
-    // convert it into the format to return
-    Sample sample = mongoSampleToSampleConverter.apply(mongoSample);
-
-    // add curation from a set of users
-    sample = curationReadService.applyAllCurationToSample(sample, curationDomains);
-
-    // add structured data
-    final Optional<MongoStructuredData> mongoStructuredData =
-        mongoStructuredDataRepository.findById(accession);
-
-    if (mongoStructuredData.isPresent()) {
-      final StructuredData structuredData =
-          mongoStructuredDataToStructuredDataConverter.convert(mongoStructuredData.get());
-      sample =
-          Sample.Builder.fromSample(sample).withStructuredData(structuredData.getData()).build();
-    }
-
-    return Optional.of(sample);
+  private boolean startsWithSraPrefix(final String accession) {
+    return Arrays.stream(BioSamplesConstants.sraSampleAccessionPrefixesString)
+        .anyMatch(accession::startsWith);
   }
 
   public Future<Optional<Sample>> fetchAsync(

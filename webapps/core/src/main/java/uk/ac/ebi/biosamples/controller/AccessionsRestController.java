@@ -49,8 +49,8 @@ public class AccessionsRestController {
   public ResponseEntity<CollectionModel<Accession>> getAccessions(
       @RequestParam(name = "text", required = false) final String text,
       @RequestParam(name = "filter", required = false) final String[] filter,
-      @RequestParam(name = "page", required = false) final Integer page,
-      @RequestParam(name = "size", required = false) final Integer size,
+      @RequestParam(name = "page", required = false, defaultValue = "0") final Integer page,
+      @RequestParam(name = "size", required = false, defaultValue = "100") final Integer size,
       @RequestHeader(name = "Authorization", required = false) final String token) {
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
@@ -58,37 +58,23 @@ public class AccessionsRestController {
         authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
     final AuthorizationProvider authProvider =
         webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
-
-    String webinSubmissionAccountId = null;
-    Collection<String> domains = null;
-
-    if (webinAuth) {
-      webinSubmissionAccountId = authToken.get().getUser();
-    } else {
-      domains = bioSamplesAapService.getDomains();
-    }
-
-    final int effectiveSize = size == null ? 100 : size;
-    final int effectivePage = page == null ? 0 : page;
-
+    final String webinSubmissionAccountId = webinAuth ? authToken.get().getUser() : null;
+    final Collection<String> domains = webinAuth ? null : bioSamplesAapService.getDomains();
     final Page<String> pageAccessions =
         accessionsService.getAccessions(
-            text, filter, domains, webinSubmissionAccountId, effectivePage, effectiveSize);
-
+            text, filter, domains, webinSubmissionAccountId, page, size);
     final PagedModel.PageMetadata pageMetadata =
         new PagedModel.PageMetadata(
-            effectiveSize,
+            size,
             pageAccessions.getNumber(),
             pageAccessions.getTotalElements(),
             pageAccessions.getTotalPages());
-
     final CollectionModel<Accession> resources =
         PagedModel.of(
             pageAccessions.getContent().stream().map(Accession::build).collect(Collectors.toList()),
             pageMetadata);
 
-    addRelLinks(
-        pageAccessions, resources, text, filter, effectivePage, effectiveSize, authProvider.name());
+    addRelLinks(pageAccessions, resources, text, filter, page, size, authProvider.name());
 
     return ResponseEntity.ok().body(resources);
   }
@@ -98,8 +84,8 @@ public class AccessionsRestController {
       final CollectionModel<Accession> resources,
       final String text,
       final String[] filter,
-      final Integer effectivePage,
-      final Integer effectiveSize,
+      final Integer page,
+      final Integer size,
       final String authProvider) {
     resources.add(
         SamplesRestController.getPageLink(
@@ -107,13 +93,12 @@ public class AccessionsRestController {
             filter,
             authProvider,
             Optional.empty(),
-            effectivePage,
-            effectiveSize,
+            page,
+            size,
             null,
             IanaLinkRelations.SELF.value(),
             getClass()));
 
-    // if theres more than one page, link to first and last
     if (pageAccessions.getTotalPages() > 1) {
       resources.add(
           SamplesRestController.getPageLink(
@@ -122,7 +107,7 @@ public class AccessionsRestController {
               authProvider,
               Optional.empty(),
               0,
-              effectiveSize,
+              size,
               null,
               IanaLinkRelations.FIRST.value(),
               getClass()));
@@ -133,36 +118,35 @@ public class AccessionsRestController {
               authProvider,
               Optional.empty(),
               pageAccessions.getTotalPages(),
-              effectiveSize,
+              size,
               null,
               IanaLinkRelations.LAST.value(),
               getClass()));
     }
-    // if there was a previous page, link to it
-    if (effectivePage > 0) {
+
+    if (page > 0) {
       resources.add(
           SamplesRestController.getPageLink(
               text,
               filter,
               authProvider,
               Optional.empty(),
-              effectivePage - 1,
-              effectiveSize,
+              page - 1,
+              size,
               null,
               IanaLinkRelations.PREVIOUS.value(),
               getClass()));
     }
 
-    // if there is a next page, link to it
-    if (effectivePage < pageAccessions.getTotalPages() - 1) {
+    if (page < pageAccessions.getTotalPages() - 1) {
       resources.add(
           SamplesRestController.getPageLink(
               text,
               filter,
               authProvider,
               Optional.empty(),
-              effectivePage + 1,
-              effectiveSize,
+              page + 1,
+              size,
               null,
               IanaLinkRelations.NEXT.value(),
               getClass()));

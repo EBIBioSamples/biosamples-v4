@@ -12,11 +12,17 @@ package uk.ac.ebi.biosamples.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Objects;
+import lombok.*;
 
+@Data
 public class Certificate implements Comparable<Certificate> {
+  @JsonProperty("name")
   private String name;
+
+  @JsonProperty("version")
   private String version;
+
+  @JsonProperty("fileName")
   private String fileName;
 
   public Certificate(final String name, final String version, final String fileName) {
@@ -26,67 +32,6 @@ public class Certificate implements Comparable<Certificate> {
   }
 
   public Certificate() {}
-
-  @JsonProperty("name")
-  public String getName() {
-    return name;
-  }
-
-  public void setName(final String name) {
-    this.name = name;
-  }
-
-  @JsonProperty("version")
-  public String getVersion() {
-    return version;
-  }
-
-  public void setVersion(final String version) {
-    this.version = version;
-  }
-
-  @JsonProperty("fileName")
-  public String getFileName() {
-    return fileName;
-  }
-
-  public void setFileName(final String fileName) {
-    this.fileName = fileName;
-  }
-
-  @Override
-  public String toString() {
-    return "Certificate{"
-        + "name='"
-        + name
-        + '\''
-        + ", version='"
-        + version
-        + '\''
-        + ", fileName='"
-        + fileName
-        + '\''
-        + '}';
-  }
-
-  @Override
-  public boolean equals(final Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof Certificate)) {
-      return false;
-    }
-    final Certificate that = (Certificate) o;
-    return Objects.equals(getName(), that.getName())
-        && Objects.equals(getVersion(), that.getVersion())
-        && Objects.equals(getFileName(), that.getFileName());
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(getName(), getVersion(), getFileName());
-  }
 
   @Override
   public int compareTo(final Certificate cert) {
@@ -141,12 +86,8 @@ public class Certificate implements Comparable<Certificate> {
       throw new IllegalArgumentException("Certificate file name must not be null");
     }
 
-    if (name != null) {
-      name = name.trim();
-    }
-    if (version != null) {
-      version = version.trim();
-    }
+    name = name.trim();
+    version = version.trim();
 
     final Certificate cert = new Certificate();
     cert.name = name;

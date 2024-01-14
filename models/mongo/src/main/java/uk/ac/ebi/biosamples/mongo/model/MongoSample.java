@@ -20,9 +20,12 @@ import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import uk.ac.ebi.biosamples.model.*;
@@ -30,8 +33,15 @@ import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
 import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
+@Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Document
+@CompoundIndexes({
+  @CompoundIndex(
+      name = "sra_accession_index",
+      def = "{'attributes.type': 1}",
+      partialFilter = "{ 'attributes.type': 'SRA accession' }")
+})
 public class MongoSample {
   @Transient public static final String SEQUENCE_NAME = "accession_sequence";
   @Transient public static final String SRA_SEQUENCE_NAME = "sra_accession_sequence";
@@ -84,7 +94,6 @@ public class MongoSample {
   protected SortedSet<Attribute> attributes;
   protected SortedSet<MongoRelationship> relationships;
   protected SortedSet<MongoExternalReference> externalReferences;
-
   private SortedSet<Organization> organizations;
   protected SortedSet<Contact> contacts;
   protected SortedSet<Publication> publications;
@@ -100,191 +109,6 @@ public class MongoSample {
     } else {
       return false;
     }
-  }
-
-  public String getAccession() {
-    return accession;
-  }
-
-  public String getAccessionPrefix() {
-    return accessionPrefix;
-  }
-
-  public Integer getAccessionNumber() {
-    return accessionNumber;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public String getDomain() {
-    return domain;
-  }
-
-  public String getWebinSubmissionAccountId() {
-    return webinSubmissionAccountId;
-  }
-
-  public Long getTaxId() {
-    return taxId;
-  }
-
-  public SampleStatus getStatus() {
-    return status;
-  }
-
-  public Instant getRelease() {
-    return release;
-  }
-
-  public Instant getSubmitted() {
-    return submitted;
-  }
-
-  public Instant getReviewed() {
-    return reviewed;
-  }
-
-  public Instant getUpdate() {
-    return update;
-  }
-
-  public Instant getCreate() {
-    return create;
-  }
-
-  public SortedSet<Attribute> getAttributes() {
-    return attributes;
-  }
-
-  public SortedSet<MongoRelationship> getRelationships() {
-    return relationships;
-  }
-
-  public SortedSet<MongoExternalReference> getExternalReferences() {
-    return externalReferences;
-  }
-
-  public SortedSet<Organization> getOrganizations() {
-    return organizations;
-  }
-
-  public SortedSet<Contact> getContacts() {
-    return contacts;
-  }
-
-  public SortedSet<Publication> getPublications() {
-    return publications;
-  }
-
-  public SortedSet<MongoCertificate> getCertificates() {
-    return certificates;
-  }
-
-  public Set<AbstractData> getData() {
-    return data;
-  }
-
-  public SubmittedViaType getSubmittedVia() {
-    return submittedVia;
-  }
-
-  @Override
-  public boolean equals(final Object o) {
-
-    if (o == this) {
-      return true;
-    }
-    if (!(o instanceof MongoSample)) {
-      return false;
-    }
-    final MongoSample other = (MongoSample) o;
-    return Objects.equals(name, other.name)
-        && Objects.equals(accession, other.accession)
-        && Objects.equals(domain, other.domain)
-        && Objects.equals(webinSubmissionAccountId, other.webinSubmissionAccountId)
-        && Objects.equals(taxId, other.taxId)
-        && Objects.equals(status, other.status)
-        && Objects.equals(release, other.release)
-        && Objects.equals(update, other.update)
-        && Objects.equals(create, other.create)
-        && Objects.equals(submitted, other.submitted)
-        && Objects.equals(attributes, other.attributes)
-        && Objects.equals(relationships, other.relationships)
-        && Objects.equals(externalReferences, other.externalReferences)
-        && Objects.equals(organizations, other.organizations)
-        && Objects.equals(contacts, other.contacts)
-        && Objects.equals(publications, other.publications)
-        && Objects.equals(submittedVia, other.submittedVia);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(
-        name,
-        accession,
-        domain,
-        webinSubmissionAccountId,
-        taxId,
-        status,
-        release,
-        update,
-        create,
-        submitted,
-        attributes,
-        relationships,
-        externalReferences,
-        organizations,
-        contacts,
-        publications);
-  }
-
-  @Override
-  public String toString() {
-    final StringBuilder sb = new StringBuilder();
-
-    sb.append("MongoSample(");
-    sb.append(name);
-    sb.append(",");
-    sb.append(accession);
-    sb.append(",");
-    sb.append(domain);
-    sb.append(",");
-    sb.append(webinSubmissionAccountId);
-    sb.append(",");
-    sb.append(taxId);
-    sb.append(",");
-    sb.append(status);
-    sb.append(",");
-    sb.append(release);
-    sb.append(",");
-    sb.append(update);
-    sb.append(",");
-    sb.append(create);
-    sb.append(",");
-    sb.append(submitted);
-    sb.append(",");
-    sb.append(reviewed);
-    sb.append(",");
-    sb.append(attributes);
-    sb.append(",");
-    sb.append(relationships);
-    sb.append(",");
-    sb.append(externalReferences);
-    sb.append(",");
-    sb.append(organizations);
-    sb.append(",");
-    sb.append(contacts);
-    sb.append(",");
-    sb.append(publications);
-    sb.append(",");
-    sb.append(data);
-    sb.append(",");
-    sb.append(submittedVia);
-    sb.append(")");
-
-    return sb.toString();
   }
 
   @JsonCreator

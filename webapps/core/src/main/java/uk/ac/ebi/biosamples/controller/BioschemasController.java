@@ -57,7 +57,7 @@ public class BioschemasController {
     final Sample sample =
         sampleService
             .fetch(accession, Optional.empty())
-            .orElseThrow(() -> new GlobalExceptions.SampleNotFoundException());
+            .orElseThrow(GlobalExceptions.SampleNotFoundException::new);
     bioSamplesAapService.isSampleAccessible(sample);
     return jsonLDService.sampleToJsonLD(sample);
   }

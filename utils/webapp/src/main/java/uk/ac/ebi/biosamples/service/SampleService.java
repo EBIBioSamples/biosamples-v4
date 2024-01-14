@@ -11,6 +11,7 @@
 package uk.ac.ebi.biosamples.service;
 
 import static java.util.stream.Collectors.toSet;
+import static uk.ac.ebi.biosamples.utils.BioSamplesConstants.*;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -30,9 +31,11 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.mongo.model.MongoAccessionMapping;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSampleMessage;
+import uk.ac.ebi.biosamples.mongo.repo.MongoAccessionMappingRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleMessageRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.*;
@@ -47,30 +50,49 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesCrossSourceIngestAccessCo
 @Service
 public class SampleService {
   private static final Logger log = LoggerFactory.getLogger(SampleService.class);
-  private static final String NCBI_IMPORT_DOMAIN = "self.BiosampleImportNCBI";
-  private static final String ENA_IMPORT_DOMAIN = "self.BiosampleImportENA";
-  private static final String SRA_ACCESSION = "SRA accession";
-
-  @Qualifier("SampleAccessionService")
-  @Autowired
-  private MongoAccessionService mongoAccessionService;
-
-  @Autowired private MongoSampleRepository mongoSampleRepository;
-  @Autowired private MongoSampleMessageRepository mongoSampleMessageRepository;
-  @Autowired private MongoSampleToSampleConverter mongoSampleToSampleConverter;
-  @Autowired private SampleToMongoSampleConverter sampleToMongoSampleConverter;
-
-  @Autowired
-  private MongoRelationshipToRelationshipConverter mongoRelationshipToRelationshipConverter;
-
-  @Autowired private SampleValidator sampleValidator;
-  @Autowired private SampleReadService sampleReadService;
-  @Autowired private MessagingService messagingService;
-  @Autowired private BioSamplesProperties bioSamplesProperties;
-
-  @Autowired
-  private BioSamplesCrossSourceIngestAccessControlService
+  private final MongoAccessionService mongoAccessionService;
+  private final MongoSampleRepository mongoSampleRepository;
+  private final MongoAccessionMappingRepository mongoAccessionMappingRepository;
+  private final MongoSampleMessageRepository mongoSampleMessageRepository;
+  private final MongoSampleToSampleConverter mongoSampleToSampleConverter;
+  private final SampleToMongoSampleConverter sampleToMongoSampleConverter;
+  private final MongoRelationshipToRelationshipConverter mongoRelationshipToRelationshipConverter;
+  private final SampleValidator sampleValidator;
+  private final SampleReadService sampleReadService;
+  private final MessagingService messagingService;
+  private final BioSamplesProperties bioSamplesProperties;
+  private final BioSamplesCrossSourceIngestAccessControlService
       bioSamplesCrossSourceIngestAccessControlService;
+
+  @Autowired
+  public SampleService(
+      @Qualifier("SampleAccessionService") final MongoAccessionService mongoAccessionService,
+      final MongoSampleRepository mongoSampleRepository,
+      final MongoAccessionMappingRepository mongoAccessionMappingRepository,
+      final MongoSampleMessageRepository mongoSampleMessageRepository,
+      final MongoSampleToSampleConverter mongoSampleToSampleConverter,
+      final SampleToMongoSampleConverter sampleToMongoSampleConverter,
+      final MongoRelationshipToRelationshipConverter mongoRelationshipToRelationshipConverter,
+      final SampleValidator sampleValidator,
+      final SampleReadService sampleReadService,
+      final MessagingService messagingService,
+      final BioSamplesProperties bioSamplesProperties,
+      final BioSamplesCrossSourceIngestAccessControlService
+          bioSamplesCrossSourceIngestAccessControlService) {
+    this.mongoAccessionService = mongoAccessionService;
+    this.mongoSampleRepository = mongoSampleRepository;
+    this.mongoAccessionMappingRepository = mongoAccessionMappingRepository;
+    this.mongoSampleMessageRepository = mongoSampleMessageRepository;
+    this.mongoSampleToSampleConverter = mongoSampleToSampleConverter;
+    this.sampleToMongoSampleConverter = sampleToMongoSampleConverter;
+    this.mongoRelationshipToRelationshipConverter = mongoRelationshipToRelationshipConverter;
+    this.sampleValidator = sampleValidator;
+    this.sampleReadService = sampleReadService;
+    this.messagingService = messagingService;
+    this.bioSamplesProperties = bioSamplesProperties;
+    this.bioSamplesCrossSourceIngestAccessControlService =
+        bioSamplesCrossSourceIngestAccessControlService;
+  }
 
   /** Throws an IllegalArgumentException of no sample with that accession exists */
   public Optional<Sample> fetch(
@@ -79,17 +101,17 @@ public class SampleService {
   }
 
   /*
-  Checks if the current sample that exists has no metadata, returns true if empty
+  Checks if the current newSample that exists has no metadata, returns true if empty
    */
   private boolean isSavedSampleEmpty(
-      final Sample sample, final boolean isWebinSuperUser, final Sample oldSample) {
-    final String domain = sample.getDomain();
+      final Sample newSample, final boolean isWebinSuperUser, final Sample oldSample) {
+    final String domain = newSample.getDomain();
 
     if (isWebinSuperUser) {
-      if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
+      if (newSample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
         // file uploader submissions are done via super-user, but they are non imported samples,
         // needs to be handled safely
-        if (sample.hasAccession()) {
+        if (newSample.hasAccession()) {
           return isSavedSampleEmpty(oldSample);
         }
 
@@ -99,15 +121,15 @@ public class SampleService {
         return false;
       }
     } else {
-      if (sample.hasAccession()) {
+      if (newSample.hasAccession()) {
         return isSavedSampleEmpty(oldSample);
       }
     }
 
     if (isAPipelineAapDomain(domain)) {
-      return false; // imported sample - never submitted first time to BSD, always has metadata
+      return false; // imported newSample - never submitted first time to BSD, always has metadata
     } else {
-      if (sample.hasAccession()) {
+      if (newSample.hasAccession()) {
         return isSavedSampleEmpty(oldSample);
       }
 
@@ -158,175 +180,206 @@ public class SampleService {
     return oldSample.getStructuredData().size() == 0;
   }
 
-  // because the fetchUsing caches the sample, if an updated version is stored, we need to make
+  // because the fetchUsing caches the newSample, if an updated version is stored, we need to make
   // sure
   // that any cached version
   // is removed.
-  // Note, pages of samples will not be cache busted, only single-accession sample retrieval
+  // Note, pages of samples will not be cache busted, only single-accession newSample retrieval
   // @CacheEvict(cacheNames=WebappProperties.fetchUsing, key="#result.accession")
   /*
   Called by V1 endpoints to persist samples
    */
   public Sample persistSample(
-      Sample sample,
+      Sample newSample,
       final Sample oldSample,
       final AuthorizationProvider authProvider,
       final boolean isWebinSuperUser) {
-    final Collection<String> errors = sampleValidator.validate(sample);
+    validateSample(newSample);
 
-    boolean isSampleTaxIdUpdated = false;
+    if (newSample.hasAccession()) {
+      if (oldSample != null) {
+        newSample = updateSampleWithExisting(newSample, oldSample, authProvider, isWebinSuperUser);
+      } else {
+        handleSampleNotInDatabase(newSample);
+      }
+
+      MongoSample mongoSample = sampleToMongoSampleConverter.convert(newSample);
+      mongoSample = mongoSampleRepository.save(mongoSample);
+
+      if (isSampleTaxIdUpdated(oldSample, newSample)) {
+        mongoSampleMessageRepository.save(
+            new MongoSampleMessage(newSample.getAccession(), Instant.now(), newSample.getTaxId()));
+      }
+
+      newSample = mongoSampleToSampleConverter.apply(mongoSample);
+
+      registerAccessionToSraAccessionMapping(newSample);
+      sendMessageToRabbitForIndexingToSolr(
+          newSample.getAccession(), getExistingRelationshipTargetsForindesinginSolr(oldSample));
+
+    } else {
+      newSample = handleSampleNotAccessioned(newSample);
+    }
+
+    final Optional<Sample> sampleOptional = fetch(newSample.getAccession(), Optional.empty());
+
+    return sampleOptional.orElseThrow(
+        () ->
+            new RuntimeException(
+                "Failed to create newSample. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk"));
+  }
+
+  private void validateSample(final Sample sample) {
+    final Collection<String> errors = sampleValidator.validate(sample);
 
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
+
       throw new GlobalExceptions.SampleValidationControllerException(String.join("|", errors));
     }
+  }
 
-    if (sample.hasAccession()) {
-      final Long taxId = sample.getTaxId();
-      final List<String> existingRelationshipTargets = new ArrayList<>();
+  private Sample updateSampleWithExisting(
+      Sample newSample,
+      final Sample oldSample,
+      final AuthorizationProvider authProvider,
+      final boolean isWebinSuperUser) {
+    final boolean savedSampleEmpty = isSavedSampleEmpty(newSample, isWebinSuperUser, oldSample);
 
-      if (oldSample != null) {
-        final boolean savedSampleEmpty = isSavedSampleEmpty(sample, isWebinSuperUser, oldSample);
-
-        if (savedSampleEmpty) {
-          sample = Sample.Builder.fromSample(sample).withSubmitted(Instant.now()).build();
-        }
-
-        final Sample finalSample = sample;
-
-        final List<Relationship> existingRelationships =
-            getExistingRelationshipTargets(
-                sample.getAccession(),
-                Objects.requireNonNull(sampleToMongoSampleConverter.convert(oldSample)));
-
-        existingRelationshipTargets.addAll(
-            existingRelationships.stream()
-                .map(
-                    relationship -> {
-                      if (relationship.getSource().equals(finalSample.getAccession())) {
-                        return relationship.getTarget();
-                      }
-
-                      return null;
-                    })
-                .toList());
-
-        sample =
-            compareWithExistingAndUpdateSample(
-                sample,
-                oldSample,
-                existingRelationships,
-                savedSampleEmpty,
-                authProvider,
-                isWebinSuperUser);
-
-        final Long oldSampleTaxId = oldSample.getTaxId();
-
-        if (oldSampleTaxId != null && !oldSampleTaxId.equals(taxId)) {
-          isSampleTaxIdUpdated = true;
-        }
-      } else {
-        log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
-
-        bioSamplesCrossSourceIngestAccessControlService
-            .validateFileUploaderSampleUpdateHasAlwaysExistingAccession(sample);
-      }
-
-      MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
-
-      assert mongoSample != null;
-      mongoSample = mongoSampleRepository.save(mongoSample);
-
-      if (isSampleTaxIdUpdated) {
-        mongoSampleMessageRepository.save(
-            new MongoSampleMessage(sample.getAccession(), Instant.now(), taxId));
-      }
-
-      sample = mongoSampleToSampleConverter.apply(mongoSample);
-
-      // send a message for storage and further processing, send relationship targets to
-      // identify
-      // deleted relationships
-      sendMessageToRabbitForIndexingToSolr(sample.getAccession(), existingRelationshipTargets);
-    } else {
-      final boolean sampleNotSraAccessioned =
-          sample.getAttributes().stream()
-              .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION));
-
-      sample = mongoAccessionService.generateAccession(sample, sampleNotSraAccessioned);
-      sendMessageToRabbitForIndexingToSolr(sample.getAccession(), Collections.emptyList());
+    if (savedSampleEmpty) {
+      newSample = Sample.Builder.fromSample(newSample).withSubmitted(Instant.now()).build();
     }
 
-    // do a fetch to return it with accession, curation objects, inverse relationships
-    final Optional<Sample> sampleOptional = fetch(sample.getAccession(), Optional.empty());
+    final List<Relationship> existingRelationships =
+        getExistingRelationshipTargetsForindesinginSolr(
+            newSample.getAccession(),
+            Objects.requireNonNull(sampleToMongoSampleConverter.convert(oldSample)));
 
-    if (sampleOptional.isPresent()) {
-      final Sample fetchedSample = sampleOptional.get();
+    return compareWithExistingAndUpdateSample(
+        newSample,
+        oldSample,
+        existingRelationships,
+        savedSampleEmpty,
+        authProvider,
+        isWebinSuperUser);
+  }
 
-      if (fetchedSample.getAccession() != null) {
-        return fetchedSample;
-      } else {
-        throw new RuntimeException(
-            "Failed to create sample. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
-      }
+  private void handleSampleNotInDatabase(final Sample sample) {
+    log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
+
+    bioSamplesCrossSourceIngestAccessControlService
+        .validateFileUploaderSampleUpdateHasAlwaysExistingAccession(sample);
+  }
+
+  private Sample handleSampleNotAccessioned(Sample sample) {
+    final boolean sampleNotSraAccessioned =
+        sample.getAttributes().stream()
+            .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION));
+
+    sample = mongoAccessionService.generateAccession(sample, sampleNotSraAccessioned);
+    registerAccessionToSraAccessionMapping(sample);
+    sendMessageToRabbitForIndexingToSolr(sample.getAccession(), Collections.emptyList());
+
+    return sample;
+  }
+
+  private boolean isSampleTaxIdUpdated(final Sample oldSample, final Sample sample) {
+    return oldSample != null
+        && oldSample.getTaxId() != null
+        && !oldSample.getTaxId().equals(sample.getTaxId());
+  }
+
+  private List<String> getExistingRelationshipTargetsForindesinginSolr(final Sample oldSample) {
+    final List<String> existingRelationshipTargets = new ArrayList<>();
+
+    if (oldSample != null) {
+      final List<Relationship> existingRelationships =
+          getExistingRelationshipTargetsForindesinginSolr(
+              oldSample.getAccession(),
+              Objects.requireNonNull(sampleToMongoSampleConverter.convert(oldSample)));
+
+      existingRelationshipTargets.addAll(
+          existingRelationships.stream()
+              .map(
+                  relationship -> {
+                    if (relationship.getSource().equals(oldSample.getAccession())) {
+                      return relationship.getTarget();
+                    }
+
+                    return null;
+                  })
+              .toList());
     }
 
-    return null;
+    return existingRelationshipTargets;
+  }
+
+  private void registerAccessionToSraAccessionMapping(final Sample sample) {
+    final Optional<Attribute> sraAccessionAttributeOptional =
+        sample.getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals(SRA_ACCESSION))
+            .findFirst();
+
+    sraAccessionAttributeOptional.ifPresent(
+        attribute ->
+            mongoAccessionMappingRepository.save(
+                new MongoAccessionMapping(sample.getAccession(), attribute.getValue())));
   }
 
   /*
   Called by V2 endpoints to persist samples
    */
   public Sample persistSampleV2(
-      Sample sample,
+      Sample newSample,
       final Sample oldSample,
       final AuthorizationProvider authProvider,
       final boolean isWebinSuperUser) {
-    final Collection<String> errors = sampleValidator.validate(sample);
+    final Collection<String> errors = sampleValidator.validate(newSample);
 
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
       throw new GlobalExceptions.SampleValidationControllerException(String.join("|", errors));
     }
 
-    if (sample.hasAccession()) {
+    if (newSample.hasAccession()) {
       if (oldSample != null) {
         log.info(
-            "Trying to update sample that exists in database, accession: {}",
-            sample.getAccession());
+            "Trying to update newSample that exists in database, accession: {}",
+            newSample.getAccession());
 
-        final boolean savedSampleEmpty = isSavedSampleEmpty(sample, isWebinSuperUser, oldSample);
+        final boolean savedSampleEmpty = isSavedSampleEmpty(newSample, isWebinSuperUser, oldSample);
 
         if (savedSampleEmpty) {
-          sample = Sample.Builder.fromSample(sample).withSubmitted(Instant.now()).build();
+          newSample = Sample.Builder.fromSample(newSample).withSubmitted(Instant.now()).build();
         }
 
-        sample =
+        newSample =
             compareWithExistingAndUpdateSample(
-                sample, oldSample, null, savedSampleEmpty, authProvider, isWebinSuperUser);
+                newSample, oldSample, null, savedSampleEmpty, authProvider, isWebinSuperUser);
       } else {
-        log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
+        log.error(
+            "Trying to update newSample not in database, accession: {}", newSample.getAccession());
       }
 
-      MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
+      MongoSample mongoSample = sampleToMongoSampleConverter.convert(newSample);
 
       assert mongoSample != null;
 
       mongoSample = mongoSampleRepository.save(mongoSample);
-      sample = mongoSampleToSampleConverter.apply(mongoSample);
+      newSample = mongoSampleToSampleConverter.apply(mongoSample);
 
-      sendMessageToRabbitForIndexingToSolr(sample.getAccession(), Collections.emptyList());
     } else {
       final boolean sampleNotSraAccessioned =
-          sample.getAttributes().stream()
+          newSample.getAttributes().stream()
               .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION));
 
-      sample = mongoAccessionService.generateAccession(sample, sampleNotSraAccessioned);
-
-      sendMessageToRabbitForIndexingToSolr(sample.getAccession(), Collections.emptyList());
+      newSample = mongoAccessionService.generateAccession(newSample, sampleNotSraAccessioned);
     }
 
-    return sample;
+    registerAccessionToSraAccessionMapping(newSample);
+    sendMessageToRabbitForIndexingToSolr(newSample.getAccession(), Collections.emptyList());
+
+    return newSample;
   }
 
   private void sendMessageToRabbitForIndexingToSolr(
@@ -339,28 +392,34 @@ public class SampleService {
   }
 
   /*
-  Called by V2 endpoints to build a sample with a newly generated sample accession
+  Called by V2 endpoints to build a newSample with a newly generated newSample accession
    */
-  public Sample accessionSample(Sample sample) {
-    final Collection<String> errors = sampleValidator.validate(sample);
+  public Sample accessionSample(Sample newSample) {
+    final Collection<String> errors = sampleValidator.validate(newSample);
 
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
       throw new GlobalExceptions.SampleValidationControllerException(String.join("|", errors));
     }
 
-    if (sample
+    if (newSample
         .getWebinSubmissionAccountId()
         .equalsIgnoreCase(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
-      // accessioning from ENA, sample name is the SRA accession here
-      final Attribute sraAccessionAttribute = Attribute.build(SRA_ACCESSION, sample.getName());
+      // accessioning from ENA, newSample name is the SRA accession here
+      final Attribute sraAccessionAttribute = Attribute.build(SRA_ACCESSION, newSample.getName());
 
-      sample.getAttributes().add(sraAccessionAttribute);
-      sample = Sample.Builder.fromSample(sample).build();
+      newSample.getAttributes().add(sraAccessionAttribute);
+      newSample = Sample.Builder.fromSample(newSample).build();
 
-      return mongoAccessionService.generateAccession(sample, false);
+      final Sample accessionedSample = mongoAccessionService.generateAccession(newSample, false);
+
+      registerAccessionToSraAccessionMapping(newSample);
+      return accessionedSample;
     } else {
-      return mongoAccessionService.generateAccession(sample, true);
+      final Sample accessionedSample = mongoAccessionService.generateAccession(newSample, true);
+
+      registerAccessionToSraAccessionMapping(newSample);
+      return accessionedSample;
     }
   }
 
@@ -379,7 +438,7 @@ public class SampleService {
     }
   }
 
-  private List<Relationship> getExistingRelationshipTargets(
+  private List<Relationship> getExistingRelationshipTargetsForindesinginSolr(
       final String accession, final MongoSample mongoOldSample) {
     final List<Relationship> oldRelationshipTargets = new ArrayList<>();
 

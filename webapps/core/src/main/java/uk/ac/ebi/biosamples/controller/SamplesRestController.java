@@ -476,9 +476,9 @@ public class SamplesRestController {
 
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
-      consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE})
-  @RequestMapping("/accession")
+      path = "/accession",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<EntityModel<Sample>> accession(
       @RequestBody Sample sample, @RequestHeader(name = "Authorization") final String token) {
     final boolean sampleHasSRAAccessionInAttributes =
@@ -486,37 +486,31 @@ public class SamplesRestController {
             && sample.getAttributes().stream()
                 .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION));
 
-    boolean isWebinSuperUser = false;
-
     if (sample.hasAccession() || sampleHasSRAAccessionInAttributes) {
       throw new GlobalExceptions.SampleWithAccessionSubmissionException();
     }
 
-    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
+    final AuthToken authToken =
+        accessControlService
+            .extractToken(token)
+            .orElseThrow(GlobalExceptions.WebinTokenInvalidException::new);
     final AuthorizationProvider authProvider =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
+        (authToken.getAuthority() == AuthorizationProvider.WEBIN)
             ? AuthorizationProvider.WEBIN
             : AuthorizationProvider.AAP;
+    final boolean isWebinSuperUser =
+        (authProvider == AuthorizationProvider.WEBIN)
+            && bioSamplesWebinAuthenticationService.isWebinSuperUser(authToken.getUser());
 
-    if (authProvider == AuthorizationProvider.WEBIN) {
-      final String webinSubmissionAccountId = authToken.get().getUser();
-
-      if (webinSubmissionAccountId == null) {
-        throw new GlobalExceptions.WebinTokenInvalidException();
-      }
-
-      isWebinSuperUser =
-          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
-
-      sample =
-          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              sample, webinSubmissionAccountId, Optional.empty());
-    } else {
-      sample = bioSamplesAapService.handleSampleDomain(sample, Optional.empty());
-    }
+    sample =
+        (authProvider == AuthorizationProvider.WEBIN)
+            ? bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+                sample, authToken.getUser(), Optional.empty())
+            : bioSamplesAapService.handleSampleDomain(sample, Optional.empty());
 
     sample = sampleService.buildPrivateSample(sample);
     sample = sampleService.persistSample(sample, null, authProvider, isWebinSuperUser);
+
     final EntityModel<Sample> sampleResource = sampleResourceAssembler.toModel(sample);
 
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").get().getHref()))
@@ -524,63 +518,50 @@ public class SamplesRestController {
   }
 
   @PreAuthorize("isAuthenticated()")
-  @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<EntityModel<Sample>> post(
       @RequestBody Sample sample,
       @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
           final boolean setFullDetails,
       @RequestHeader(name = "Authorization") final String token) {
-    log.debug("Received POST for " + sample);
+    log.debug("Received POST for {}", sample);
 
-    // can't submit structured data with the sample
     final Set<AbstractData> structuredData = sample.getData();
-    final Optional<Sample> oldSample;
 
     if (structuredData != null && !structuredData.isEmpty()) {
       throw new GlobalExceptions.SampleValidationException(
           "Sample contains structured data. Please submit structured data separately using the sample update PUT endpoint");
     }
 
-    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
+    final AuthToken authToken =
+        accessControlService
+            .extractToken(token)
+            .orElseThrow(GlobalExceptions.WebinTokenInvalidException::new);
     final AuthorizationProvider authProvider =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
+        (authToken.getAuthority() == AuthorizationProvider.WEBIN)
             ? AuthorizationProvider.WEBIN
             : AuthorizationProvider.AAP;
-    boolean isWebinSuperUser = false;
+    final boolean isWebinSuperUser =
+        (authProvider == AuthorizationProvider.WEBIN)
+            && bioSamplesWebinAuthenticationService.isWebinSuperUser(authToken.getUser());
+    final Optional<Sample> oldSample =
+        sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
+            sample, isWebinSuperUser);
+    final Instant now = Instant.now();
 
-    if (authProvider == AuthorizationProvider.WEBIN) {
-      final String webinSubmissionAccountId = authToken.get().getUser();
+    sample =
+        (authProvider == AuthorizationProvider.WEBIN)
+            ? bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+                sample, authToken.getUser(), oldSample)
+            : bioSamplesAapService.handleSampleDomain(sample, oldSample);
 
-      if (webinSubmissionAccountId == null) {
-        throw new GlobalExceptions.WebinTokenInvalidException();
-      }
-
-      isWebinSuperUser =
-          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
-
-      oldSample =
-          sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
-              sample, isWebinSuperUser);
-
-      sample =
-          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              sample, webinSubmissionAccountId, oldSample);
-    } else {
-      oldSample =
-          sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
-              sample, bioSamplesAapService.isWriteSuperUser());
-
-      sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
-    }
-
-    // update, create date are system generated fields
     sample =
         Sample.Builder.fromSample(sample)
             .withCreate(sampleService.defineCreateDate(sample, isWebinSuperUser))
             .withSubmitted(sampleService.defineSubmittedDate(sample, isWebinSuperUser))
-            .withUpdate(Instant.now())
+            .withUpdate(now)
             .withSubmittedVia(
-                sample.getSubmittedVia() == null
+                (sample.getSubmittedVia() == null)
                     ? SubmittedViaType.JSON_API
                     : sample.getSubmittedVia())
             .build();
@@ -594,9 +575,8 @@ public class SamplesRestController {
     sample =
         sampleService.persistSample(sample, oldSample.orElse(null), authProvider, isWebinSuperUser);
 
-    // assemble a resource to return
     final EntityModel<Sample> sampleResource = sampleResourceAssembler.toModel(sample, getClass());
-    // create the response object with the appropriate status
+
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").get().getHref()))
         .body(sampleResource);
   }
