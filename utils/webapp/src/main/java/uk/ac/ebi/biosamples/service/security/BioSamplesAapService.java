@@ -202,8 +202,7 @@ public class BioSamplesAapService {
   }
 
   private static void blacklistedDomainsCheck(final Set<String> usersDomains, final String domain) {
-    if (blacklistedDomains.contains(domain)
-        || usersDomains.stream().anyMatch(blacklistedDomains::contains)) {
+    if (blacklistedDomains.contains(domain)) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN,
           "Domain not authorized to submit to BioSamples/ user having access to this domain is rendered unauthorized");

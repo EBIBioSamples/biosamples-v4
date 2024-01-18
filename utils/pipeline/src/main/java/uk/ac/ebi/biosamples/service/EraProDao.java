@@ -31,7 +31,7 @@ public class EraProDao {
   @Qualifier("eraJdbcTemplate")
   protected JdbcTemplate jdbcTemplate;
 
-  private static final String STATUS_CLAUSE = "STATUS_ID IN (4, 5, 6, 7, 8)";
+  private static final String STATUS_CLAUSE = "STATUS_ID IN (2, 4, 5, 6, 7, 8)";
   private static final String STATUS_CLAUSE_SUPPRESSED = "STATUS_ID IN (5, 7)";
   private static final String STATUS_CLAUSE_KILLED = "STATUS_ID IN (6, 8)";
 

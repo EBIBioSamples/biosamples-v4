@@ -200,7 +200,18 @@ public class SampleService {
       if (oldSample != null) {
         newSample = updateSampleWithExisting(newSample, oldSample, authProvider, isWebinSuperUser);
       } else {
-        handleSampleNotInDatabase(newSample);
+        log.error(
+            "Trying to update sample not in database, accession: {}", newSample.getAccession());
+
+        bioSamplesCrossSourceIngestAccessControlService
+            .validateFileUploaderSampleUpdateHasAlwaysExistingAccession(newSample);
+
+        final SortedSet<Attribute> newSampleAttributes = newSample.getAttributes();
+
+        if (newSampleAttributes.stream()
+            .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION))) {
+          newSampleAttributes.add(Attribute.build(SRA_ACCESSION, generateOneSRAAccession()));
+        }
       }
 
       MongoSample mongoSample = sampleToMongoSampleConverter.convert(newSample);
@@ -262,13 +273,6 @@ public class SampleService {
         savedSampleEmpty,
         authProvider,
         isWebinSuperUser);
-  }
-
-  private void handleSampleNotInDatabase(final Sample sample) {
-    log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
-
-    bioSamplesCrossSourceIngestAccessControlService
-        .validateFileUploaderSampleUpdateHasAlwaysExistingAccession(sample);
   }
 
   private Sample handleSampleNotAccessioned(Sample sample) {

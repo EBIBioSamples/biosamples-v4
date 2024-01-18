@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.model.Sample.Builder;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiAmrConversionService.AmrParsingException;
@@ -121,8 +120,10 @@ public class NcbiSampleConversionService {
         // INSDC SRA IDs get special treatment
         // BSD-1747 - PRIMARY_ID will be mapped to characteristics/SRA accession for
         // NCBI/DDBJ samples, in sync with ENA samples
-        attrs.add(Attribute.build(SRA_ACCESSION, idElem.getTextTrim()));
-        attrs.add(Attribute.build(INSDC_SECONDARY_ACCESSION, idElem.getTextTrim()));
+        if (!SAMPLE_NAME.equals(idElem.attributeValue(DB_LABEL))) {
+          attrs.add(Attribute.build(SRA_ACCESSION, idElem.getTextTrim()));
+          attrs.add(Attribute.build(INSDC_SECONDARY_ACCESSION, idElem.getTextTrim()));
+        }
       } else if (GENBANK.equalsIgnoreCase(attributeValueIdElementDb)) {
         attrs.add(Attribute.build(COMMON_NAME, idElem.getTextTrim()));
       } else if (SAMPLE_NAME.equals(idElem.attributeValue(DB_LABEL))) {
@@ -331,7 +332,7 @@ public class NcbiSampleConversionService {
       }
     }
 
-    return new Builder(alias, accession)
+    return new Sample.Builder(alias, accession)
         .withRelease(publicationDate)
         .withUpdate(lastUpdate)
         .withCreate(submissionDate)

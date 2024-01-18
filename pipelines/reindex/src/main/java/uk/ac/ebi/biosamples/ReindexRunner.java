@@ -152,8 +152,10 @@ public class ReindexRunner implements ApplicationRunner {
         try {
           final Sample sample = opt.get();
           final MessageContent messageContent = MessageContent.build(sample, null, related, false);
+
           amqpTemplate.convertAndSend(
               Messaging.REINDEXING_EXCHANGE, Messaging.REINDEXING_QUEUE, messageContent);
+
           return true;
         } catch (final Exception e) {
           LOGGER.error(

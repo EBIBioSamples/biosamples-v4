@@ -22,7 +22,6 @@ import uk.ac.ebi.biosamples.model.*;
 @Component
 public class XmlSearchIntegration extends AbstractIntegration {
   private final XmlSearchTester xmlSearchTester;
-
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   public XmlSearchIntegration(final BioSamplesClient client) {
@@ -32,13 +31,11 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseOne() {
-
     xmlSearchTester.registerTestSamplesInBioSamples();
   }
 
   @Override
   protected void phaseTwo() {
-
     xmlSearchTester.triesToFindSampleUsingClient();
   }
 
@@ -55,7 +52,6 @@ public class XmlSearchIntegration extends AbstractIntegration {
   protected void phaseSix() {}
 
   private static class XmlSearchTester {
-
     private final Logger log;
     private final BioSamplesClient client;
 
@@ -65,7 +61,6 @@ public class XmlSearchIntegration extends AbstractIntegration {
     }
 
     void registerTestSamplesInBioSamples() {
-
       final List<Sample> baseSampleList =
           Arrays.asList(
               TestSampleGenerator.getRegularSample(),

@@ -22,10 +22,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.zip.GZIPInputStream;
 import javax.xml.parsers.ParserConfigurationException;
 import org.dom4j.Element;
@@ -46,7 +43,6 @@ import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
 import uk.ac.ebi.biosamples.mongo.repo.MongoPipelineRepository;
 import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
-import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.PipelineUniqueIdentifierGenerator;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.XmlFragmenter;
@@ -136,40 +132,39 @@ public class Ncbi implements ApplicationRunner {
 
       try (final InputStream is =
           new GZIPInputStream(new BufferedInputStream(Files.newInputStream(inputPath)))) {
-        if (pipelinesProperties.getThreadCount() > 0) {
-          ExecutorService executorService = null;
-          try {
-            executorService =
-                AdaptiveThreadPoolExecutor.create(
-                    100,
-                    10000,
-                    true,
-                    pipelinesProperties.getThreadCount(),
-                    pipelinesProperties.getThreadCountMax());
-            final Map<Element, Future<Void>> futures = new LinkedHashMap<>();
+        /*if (pipelinesProperties.getThreadCount() > 0) {*/
+        final ExecutorService executorService = Executors.newFixedThreadPool(100);
+        try {
+          /* executorService =
+          AdaptiveThreadPoolExecutor.create(
+              100,
+              10000,
+              true,
+              pipelinesProperties.getThreadCount(),
+              pipelinesProperties.getThreadCountMax());*/
+          final Map<Element, Future<Void>> futures = new LinkedHashMap<>();
 
-            sampleCallback.setExecutorService(executorService);
-            sampleCallback.setFutures(futures);
-            sampleCallback.setSampleToAmrMap(sampleToAmrMap);
+          sampleCallback.setExecutorService(executorService);
+          sampleCallback.setFutures(futures);
+          sampleCallback.setSampleToAmrMap(sampleToAmrMap);
 
-            // this does the actual processing
-            xmlFragmenter.handleStream(is, "UTF-8", sampleCallback);
+          // this does the actual processing
+          xmlFragmenter.handleStream(is, "UTF-8", sampleCallback);
 
-            log.info("waiting for futures");
+          log.info("waiting for futures");
 
-            // wait for anything to finish
-            ThreadUtils.checkFutures(futures, 0);
-          } finally {
-            log.info("shutting down");
-            assert executorService != null;
-            executorService.shutdown();
-            executorService.awaitTermination(1, TimeUnit.MINUTES);
-          }
-        } else {
+          // wait for anything to finish
+          ThreadUtils.checkFutures(futures, 0);
+        } finally {
+          log.info("shutting down");
+          executorService.shutdown();
+          executorService.awaitTermination(1, TimeUnit.MINUTES);
+        }
+        /*} else {
           // do all on master thread
           // this does the actual processing
           xmlFragmenter.handleStream(is, "UTF-8", sampleCallback);
-        }
+        }*/
       }
       log.info("Handled new and updated NCBI samples");
       log.info("Number of accession from NCBI = " + sampleCallback.getAccessions().size());
