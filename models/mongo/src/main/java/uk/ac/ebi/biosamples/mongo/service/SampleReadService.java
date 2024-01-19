@@ -23,8 +23,10 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
+import uk.ac.ebi.biosamples.mongo.model.MongoAccessionMapping;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoStructuredData;
+import uk.ac.ebi.biosamples.mongo.repo.MongoAccessionMappingRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoStructuredDataRepository;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
@@ -40,6 +42,7 @@ import uk.ac.ebi.biosamples.utils.BioSamplesConstants;
 public class SampleReadService {
   private static final Logger LOGGER = LoggerFactory.getLogger(SampleReadService.class);
   private final MongoSampleRepository mongoSampleRepository;
+  private final MongoAccessionMappingRepository mongoAccessionMappingRepository;
   private final MongoSampleToSampleConverter mongoSampleToSampleConverter;
   private final CurationReadService curationReadService;
   private final MongoInverseRelationshipService mongoInverseRelationshipService;
@@ -50,6 +53,7 @@ public class SampleReadService {
 
   public SampleReadService(
       final MongoSampleRepository mongoSampleRepository,
+      final MongoAccessionMappingRepository mongoAccessionMappingRepository,
       final MongoSampleToSampleConverter mongoSampleToSampleConverter,
       final CurationReadService curationReadService,
       final MongoInverseRelationshipService mongoInverseRelationshipService,
@@ -58,6 +62,7 @@ public class SampleReadService {
           mongoStructuredDataToStructuredDataConverter,
       final BioSamplesProperties bioSamplesProperties) {
     this.mongoSampleRepository = mongoSampleRepository;
+    this.mongoAccessionMappingRepository = mongoAccessionMappingRepository;
     this.mongoSampleToSampleConverter = mongoSampleToSampleConverter;
     this.curationReadService = curationReadService;
     this.mongoInverseRelationshipService = mongoInverseRelationshipService;
@@ -107,7 +112,16 @@ public class SampleReadService {
 
   private MongoSample getMongoSample(final String accession) {
     if (startsWithSraPrefix(accession)) {
-      return mongoSampleRepository.findBySraAccession(accession);
+      final Optional<MongoAccessionMapping> biosampleAccession =
+          mongoAccessionMappingRepository.findById(accession);
+
+      return biosampleAccession
+          .map(
+              mongoAccessionMapping ->
+                  mongoSampleRepository
+                      .findById(mongoAccessionMapping.getBiosampleAccession())
+                      .orElse(null))
+          .orElse(null);
     } else {
       return mongoSampleRepository.findById(accession).orElse(null);
     }

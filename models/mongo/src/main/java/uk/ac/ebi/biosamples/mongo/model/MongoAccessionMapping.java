@@ -10,25 +10,16 @@
 */
 package uk.ac.ebi.biosamples.mongo.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "mongoAccessionMapping")
+@Getter
+@AllArgsConstructor
 public class MongoAccessionMapping {
-  @Id @Indexed private final String biosampleAccession;
-  private final String sraAccession;
-
-  public MongoAccessionMapping(final String biosampleAccession, final String sraAccession) {
-    this.biosampleAccession = biosampleAccession;
-    this.sraAccession = sraAccession;
-  }
-
-  public String getBiosampleAccession() {
-    return biosampleAccession;
-  }
-
-  public String getSraAccession() {
-    return sraAccession;
-  }
+  @Id @Indexed private final String sraAccession;
+  private final String biosampleAccession;
 }

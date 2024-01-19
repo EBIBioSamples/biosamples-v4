@@ -17,15 +17,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.time.Instant;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Transient;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import uk.ac.ebi.biosamples.model.*;
@@ -36,12 +37,12 @@ import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Document
-@CompoundIndexes({
+/*@CompoundIndexes({
   @CompoundIndex(
       name = "sra_accession_index",
       def = "{'attributes.type': 1}",
       partialFilter = "{ 'attributes.type': 'SRA accession' }")
-})
+}) -- unused compound index */
 public class MongoSample {
   @Transient public static final String SEQUENCE_NAME = "accession_sequence";
   @Transient public static final String SRA_SEQUENCE_NAME = "sra_accession_sequence";
@@ -104,7 +105,7 @@ public class MongoSample {
 
   @JsonIgnore
   public boolean hasAccession() {
-    if (accession != null && accession.trim().length() != 0) {
+    if (accession != null && !accession.trim().isEmpty()) {
       return true;
     } else {
       return false;

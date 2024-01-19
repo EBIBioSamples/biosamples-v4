@@ -27,6 +27,7 @@ import org.springframework.data.util.CloseableIterator;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleStatus;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+import uk.ac.ebi.biosamples.mongo.repo.MongoAccessionMappingRepository;
 import uk.ac.ebi.biosamples.mongo.service.SampleReadService;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -36,6 +37,7 @@ public class ReindexRunnerTest {
   @Mock private AmqpTemplate amqpTemplate;
   @Mock private MongoOperations mongoOperations;
   @Mock private SampleReadService sampleReadService;
+  @Mock private MongoAccessionMappingRepository mongoAccessionMappingRepository;
 
   private final List<String> accessions = Arrays.asList("ACCESSION1", "ACCESSION2", "ACCESSION3");
 
@@ -104,7 +106,8 @@ public class ReindexRunnerTest {
         .thenReturn(Optional.empty())
         .thenReturn(Optional.of(sample3));
     final ReindexRunner reindexRunner =
-        new ReindexRunner(amqpTemplate, sampleReadService, mongoOperations);
+        new ReindexRunner(
+            amqpTemplate, sampleReadService, mongoOperations, mongoAccessionMappingRepository);
     reindexRunner.run(applicationArguments);
   }
 }
