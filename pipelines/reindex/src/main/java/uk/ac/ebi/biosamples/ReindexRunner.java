@@ -115,7 +115,7 @@ public class ReindexRunner implements ApplicationRunner {
           futures.put(
               accession,
               executor.submit(
-                  new AsyncAccessionMapperAndIndexer(
+                  new AccessionMapperAndIndexerCallable(
                       accession,
                       sraAccessions,
                       mongoAccessionMappingRepository,
@@ -133,7 +133,7 @@ public class ReindexRunner implements ApplicationRunner {
     }
   }
 
-  private static class AsyncAccessionMapperAndIndexer implements Callable<Void> {
+  private static class AccessionMapperAndIndexerCallable implements Callable<Void> {
     private static final List<Sample> related = new ArrayList<>();
     private final String accession;
     private final List<Attribute> sraAccessions;
@@ -141,7 +141,7 @@ public class ReindexRunner implements ApplicationRunner {
     private final SampleReadService sampleReadService;
     private final AmqpTemplate amqpTemplate;
 
-    public AsyncAccessionMapperAndIndexer(
+    public AccessionMapperAndIndexerCallable(
         final String accession,
         final List<Attribute> sraAccessions,
         final MongoAccessionMappingRepository mongoAccessionMappingRepository,
