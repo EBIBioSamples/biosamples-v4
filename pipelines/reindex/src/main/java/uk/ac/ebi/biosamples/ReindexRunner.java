@@ -207,15 +207,14 @@ public class ReindexRunner implements ApplicationRunner {
         }
       }
 
-      final Optional<Sample> opt = sampleReadService.fetch(accession, Optional.empty());
+      final Optional<Sample> sampleOptional = sampleReadService.fetch(accession, Optional.empty());
 
-      if (opt.isPresent()) {
-        final Sample sample = opt.get();
+      if (sampleOptional.isPresent()) {
         try {
-          final MessageContent messageContent = MessageContent.build(sample, null, related, false);
-
           amqpTemplate.convertAndSend(
-              Messaging.REINDEXING_EXCHANGE, Messaging.REINDEXING_QUEUE, messageContent);
+              Messaging.REINDEXING_EXCHANGE,
+              Messaging.REINDEXING_QUEUE,
+              MessageContent.build(sampleOptional.get(), null, related, false));
 
           return true;
         } catch (final Exception e) {

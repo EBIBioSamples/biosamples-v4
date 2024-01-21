@@ -21,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
+import lombok.Data;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.service.CharacteristicDeserializer;
@@ -28,6 +29,7 @@ import uk.ac.ebi.biosamples.service.CharacteristicSerializer;
 import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
 import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
+@Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonPropertyOrder({
   "name",
@@ -48,94 +50,74 @@ import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
   "submittedVia"
 })
 public class Sample implements Comparable<Sample> {
+  @JsonProperty("accession")
   protected String accession;
+
+  @JsonProperty("name")
   protected String name;
 
-  /** This is the unique permanent ID of the AAP domain/team that owns this sample. */
+  @JsonProperty("domain")
   protected String domain;
 
+  @JsonProperty("webinSubmissionAccountId")
   protected String webinSubmissionAccountId;
 
+  @JsonProperty(value = "taxId")
   protected Long taxId;
 
+  @JsonProperty(value = "status")
   protected SampleStatus status;
 
+  @JsonSerialize(using = CustomInstantSerializer.class)
   protected Instant release;
+
+  @JsonSerialize(using = CustomInstantSerializer.class)
   protected Instant update;
+
+  @JsonSerialize(using = CustomInstantSerializer.class)
   protected Instant create;
+
+  @JsonSerialize(using = CustomInstantSerializer.class)
   protected Instant submitted;
+
+  @JsonSerialize(using = CustomInstantSerializer.class)
+  @JsonIgnore
   protected Instant reviewed;
 
-  protected SortedSet<Attribute> attributes;
+  @JsonIgnore protected SortedSet<Attribute> attributes;
+
+  @JsonProperty("data")
   protected SortedSet<AbstractData> data;
+
+  @JsonProperty("structuredData")
   protected Set<StructuredDataTable> structuredData;
+
+  @JsonProperty("relationships")
   protected SortedSet<Relationship> relationships;
+
+  @JsonProperty("externalReferences")
   protected SortedSet<ExternalReference> externalReferences;
 
+  @JsonProperty("organization")
   protected SortedSet<Organization> organizations;
+
+  @JsonProperty("contact")
   protected SortedSet<Contact> contacts;
+
+  @JsonProperty("publications")
   protected SortedSet<Publication> publications;
+
+  @JsonProperty("certificates")
   protected SortedSet<Certificate> certificates;
 
+  @JsonProperty("submittedVia")
   private SubmittedViaType submittedVia;
 
   protected Sample() {}
 
-  @JsonProperty("accession")
-  public String getAccession() {
-    return accession;
-  }
-
   @JsonIgnore
   public boolean hasAccession() {
-    if (accession != null && accession.trim().length() != 0) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  @JsonProperty("name")
-  public String getName() {
-    return name;
-  }
-
-  @JsonProperty("domain")
-  public String getDomain() {
-    return domain;
-  }
-
-  @JsonProperty("webinSubmissionAccountId")
-  public String getWebinSubmissionAccountId() {
-    return webinSubmissionAccountId;
-  }
-
-  // DO NOT specify the JSON property value manually, must be autoinferred or errors
-  @JsonSerialize(using = CustomInstantSerializer.class)
-  public Instant getRelease() {
-    return release;
-  }
-
-  // DO NOT specify the JSON property value manually, must be autoinferred or errors
-  @JsonSerialize(using = CustomInstantSerializer.class)
-  public Instant getUpdate() {
-    return update;
-  }
-
-  @JsonSerialize(using = CustomInstantSerializer.class)
-  public Instant getCreate() {
-    return create;
-  }
-
-  @JsonSerialize(using = CustomInstantSerializer.class)
-  public Instant getSubmitted() {
-    return submitted;
-  }
-
-  @JsonSerialize(using = CustomInstantSerializer.class)
-  @JsonIgnore
-  public Instant getReviewed() {
-    return reviewed;
+    return accession != null && !accession.trim().isEmpty();
   }
 
   @JsonProperty(value = "releaseDate", access = JsonProperty.Access.READ_ONLY)
@@ -170,28 +152,6 @@ public class Sample implements Comparable<Sample> {
         : null;
   }
 
-  @JsonProperty(value = "taxId")
-  public Long getTaxId() {
-    if (taxId != null) {
-      return taxId;
-    }
-
-    Optional<Long> taxon = Optional.empty();
-
-    for (final Attribute attribute : attributes) {
-      if ("organism".equalsIgnoreCase(attribute.getType()) && !attribute.getIri().isEmpty()) {
-        taxon =
-            attribute.getIri().stream()
-                .map(this::extractTaxIdFromIri)
-                .filter(i -> i > 0)
-                .findFirst();
-        break;
-      }
-    }
-
-    return taxon.orElse(null);
-  }
-
   private long extractTaxIdFromIri(final String iri) {
     if (iri.isEmpty()) {
       return 0;
@@ -204,98 +164,10 @@ public class Sample implements Comparable<Sample> {
     }
   }
 
-  @JsonProperty(value = "status")
-  public SampleStatus getStatus() {
-    if (status != null) {
-      return status;
-    }
-
-    return null;
-  }
-
-  @JsonIgnore
-  public SortedSet<Attribute> getAttributes() {
-    return attributes;
-  }
-
   // DO NOT specify the JSON property value manually, must be autoinferred or errors
   @JsonSerialize(using = CharacteristicSerializer.class)
   public SortedSet<Attribute> getCharacteristics() {
     return attributes;
-  }
-
-  @JsonProperty("data")
-  public SortedSet<AbstractData> getData() {
-    return data;
-  }
-
-  @JsonProperty("structuredData")
-  public Set<StructuredDataTable> getStructuredData() {
-    return structuredData;
-  }
-
-  @JsonProperty("relationships")
-  public SortedSet<Relationship> getRelationships() {
-    return relationships;
-  }
-
-  @JsonProperty("externalReferences")
-  public SortedSet<ExternalReference> getExternalReferences() {
-    return externalReferences;
-  }
-
-  @JsonProperty("organization")
-  public SortedSet<Organization> getOrganizations() {
-    return organizations;
-  }
-
-  @JsonProperty("contact")
-  public SortedSet<Contact> getContacts() {
-    return contacts;
-  }
-
-  @JsonProperty("publications")
-  public SortedSet<Publication> getPublications() {
-    return publications;
-  }
-
-  @JsonProperty("certificates")
-  public SortedSet<Certificate> getCertificates() {
-    return certificates;
-  }
-
-  @JsonProperty("submittedVia")
-  public SubmittedViaType getSubmittedVia() {
-    return submittedVia;
-  }
-
-  @Override
-  public boolean equals(final Object o) {
-    if (o == this) {
-      return true;
-    }
-    if (!(o instanceof Sample)) {
-      return false;
-    }
-    final Sample other = (Sample) o;
-
-    // dont use update date for comparisons, too volatile. SubmittedVia doesnt contain information
-    // for comparison
-
-    return Objects.equals(name, other.name)
-        && Objects.equals(accession, other.accession)
-        && Objects.equals(domain, other.domain)
-        && Objects.equals(webinSubmissionAccountId, other.webinSubmissionAccountId)
-        && Objects.equals(taxId, other.taxId)
-        && Objects.equals(status, other.status)
-        && Objects.equals(release, other.release)
-        && Objects.equals(attributes, other.attributes)
-        && Objects.equals(data, other.data)
-        && Objects.equals(relationships, other.relationships)
-        && Objects.equals(externalReferences, other.externalReferences)
-        && Objects.equals(organizations, other.organizations)
-        && Objects.equals(contacts, other.contacts)
-        && Objects.equals(publications, other.publications);
   }
 
   @Override
@@ -421,68 +293,6 @@ public class Sample implements Comparable<Sample> {
       }
     }
     return 0;
-  }
-
-  @Override
-  public int hashCode() {
-    // dont put update date in the hash because its not in comparison
-    return Objects.hash(
-        name,
-        accession,
-        taxId,
-        status,
-        release,
-        attributes,
-        data,
-        relationships,
-        externalReferences,
-        organizations,
-        publications);
-  }
-
-  @Override
-  public String toString() {
-    final StringBuilder sb = new StringBuilder();
-
-    sb.append("Sample(");
-    sb.append(name);
-    sb.append(",");
-    sb.append(accession);
-    sb.append(",");
-    sb.append(domain);
-    sb.append(",");
-    sb.append(webinSubmissionAccountId);
-    sb.append(",");
-    sb.append(taxId);
-    sb.append(",");
-    sb.append(status);
-    sb.append(",");
-    sb.append(release);
-    sb.append(",");
-    sb.append(update);
-    sb.append(",");
-    sb.append(create);
-    sb.append(",");
-    sb.append(submitted);
-    sb.append(",");
-    sb.append(attributes);
-    sb.append(",");
-    sb.append(relationships);
-    sb.append(",");
-    sb.append(externalReferences);
-    sb.append(",");
-    sb.append(organizations);
-    sb.append(",");
-    sb.append(contacts);
-    sb.append(",");
-    sb.append(publications);
-    sb.append(",");
-    sb.append(certificates);
-    sb.append(",");
-    sb.append(submittedVia);
-    sb.append(")");
-
-    return sb.toString();
   }
 
   public static Sample build(
@@ -685,11 +495,7 @@ public class Sample implements Comparable<Sample> {
       sample.structuredData.addAll(structuredData);
     }
 
-    if (submittedVia != null) {
-      sample.submittedVia = submittedVia;
-    } else {
-      sample.submittedVia = SubmittedViaType.JSON_API;
-    }
+    sample.submittedVia = Objects.requireNonNullElse(submittedVia, SubmittedViaType.JSON_API);
 
     return sample;
   }
@@ -763,7 +569,7 @@ public class Sample implements Comparable<Sample> {
     }
 
     public Builder withRelease(final String release) {
-      this.release = parseDateTime(release).toInstant();
+      this.release = Objects.requireNonNull(parseDateTime(release)).toInstant();
       return this;
     }
 
@@ -778,7 +584,7 @@ public class Sample implements Comparable<Sample> {
     }
 
     public Builder withUpdate(final String update) {
-      this.update = parseDateTime(update).toInstant();
+      this.update = Objects.requireNonNull(parseDateTime(update)).toInstant();
       return this;
     }
 
@@ -788,7 +594,7 @@ public class Sample implements Comparable<Sample> {
     }
 
     public Builder withCreate(final String create) {
-      this.create = parseDateTime(create).toInstant();
+      this.create = Objects.requireNonNull(parseDateTime(create)).toInstant();
       return this;
     }
 
@@ -798,7 +604,7 @@ public class Sample implements Comparable<Sample> {
     }
 
     public Builder withSubmitted(final String submitted) {
-      this.submitted = parseDateTime(submitted).toInstant();
+      this.submitted = Objects.requireNonNull(parseDateTime(submitted)).toInstant();
       return this;
     }
 
@@ -813,7 +619,7 @@ public class Sample implements Comparable<Sample> {
     }
 
     public Builder withReviewed(final String reviewed) {
-      this.reviewed = parseDateTime(reviewed).toInstant();
+      this.reviewed = Objects.requireNonNull(parseDateTime(reviewed)).toInstant();
       return this;
     }
 
@@ -827,12 +633,7 @@ public class Sample implements Comparable<Sample> {
       return this;
     }
 
-    /**
-     * Replace builder's attributes with the provided attribute collection
-     *
-     * @param attributes
-     * @return
-     */
+    /** Replace builder's attributes with the provided attribute collection */
     public Builder withAttributes(final Collection<Attribute> attributes) {
       this.attributes = new TreeSet<>(attributes);
       return this;
@@ -848,12 +649,7 @@ public class Sample implements Comparable<Sample> {
       return this;
     }
 
-    /**
-     * Replace builder structuredData with the provided structuredData collection
-     *
-     * @param data
-     * @return
-     */
+    /** Replace builder structuredData with the provided structuredData collection */
     public Builder withData(final Collection<AbstractData> data) {
       if (data != null) {
         this.data = new TreeSet<>(data);
@@ -864,11 +660,7 @@ public class Sample implements Comparable<Sample> {
     }
 
     public Builder withStructuredData(final Set<StructuredDataTable> structuredData) {
-      if (structuredData != null) {
-        this.structuredData = structuredData;
-      } else {
-        this.structuredData = new HashSet<>();
-      }
+      this.structuredData = Objects.requireNonNullElseGet(structuredData, HashSet::new);
       return this;
     }
 
@@ -882,12 +674,7 @@ public class Sample implements Comparable<Sample> {
       return this;
     }
 
-    /**
-     * Replace builder's relationships with the provided relationships collection
-     *
-     * @param relationships
-     * @return
-     */
+    /** Replace builder's relationships with the provided relationships collection */
     public Builder withRelationships(final Collection<Relationship> relationships) {
       if (relationships != null) {
         this.relationships = new TreeSet<>(relationships);
@@ -905,14 +692,9 @@ public class Sample implements Comparable<Sample> {
       return this;
     }
 
-    /**
-     * Replace builder's externalReferences with the provided external references collection
-     *
-     * @param externalReferences
-     * @return
-     */
+    /** Replace builder's externalReferences with the provided external references collection */
     public Builder withExternalReferences(final Collection<ExternalReference> externalReferences) {
-      if (externalReferences != null && externalReferences.size() > 0) {
+      if (externalReferences != null && !externalReferences.isEmpty()) {
         this.externalReferences = new TreeSet<>(externalReferences);
       }
       return this;
@@ -929,14 +711,9 @@ public class Sample implements Comparable<Sample> {
       return this;
     }
 
-    /**
-     * Replace builder's organisations with the provided organisation collection
-     *
-     * @param organizations
-     * @return
-     */
+    /** Replace builder's organisations with the provided organisation collection */
     public Builder withOrganizations(final Collection<Organization> organizations) {
-      if (organizations != null && organizations.size() > 0) {
+      if (organizations != null && !organizations.isEmpty()) {
         this.organizations = new TreeSet<>(organizations);
       }
       return this;
@@ -952,14 +729,9 @@ public class Sample implements Comparable<Sample> {
       return this;
     }
 
-    /**
-     * Replace builder's contacts with the provided contact collection
-     *
-     * @param contacts
-     * @return
-     */
+    /** Replace builder's contacts with the provided contact collection */
     public Builder withContacts(final Collection<Contact> contacts) {
-      if (contacts != null && contacts.size() > 0) {
+      if (contacts != null && !contacts.isEmpty()) {
         this.contacts = new TreeSet<>(contacts);
       }
       return this;
@@ -975,43 +747,28 @@ public class Sample implements Comparable<Sample> {
       return this;
     }
 
-    /**
-     * Replace the publications with the provided collections
-     *
-     * @param publications
-     * @return
-     */
+    /** Replace the publications with the provided collections */
     public Builder withPublications(final Collection<Publication> publications) {
-      if (publications != null && publications.size() > 0) {
+      if (publications != null && !publications.isEmpty()) {
         this.publications = new TreeSet<>(publications);
       }
       return this;
     }
 
-    /**
-     * Add a publication to the list of builder publications
-     *
-     * @param publication
-     * @return
-     */
+    /** Add a publication to the list of builder publications */
     public Builder addPublication(final Publication publication) {
       publications.add(publication);
       return this;
     }
 
-    /**
-     * Add all publications in the provided collection to the builder publications
-     *
-     * @param publications
-     * @return
-     */
+    /** Add all publications in the provided collection to the builder publications */
     public Builder addAllPublications(final Collection<Publication> publications) {
       this.publications.addAll(publications);
       return this;
     }
 
     public Builder withCertificates(final Collection<Certificate> certificates) {
-      if (certificates != null && certificates.size() > 0) {
+      if (certificates != null && !certificates.isEmpty()) {
         this.certificates = new TreeSet<>(certificates);
       }
       return this;

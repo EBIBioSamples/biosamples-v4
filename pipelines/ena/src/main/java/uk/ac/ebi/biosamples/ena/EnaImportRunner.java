@@ -10,14 +10,6 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +20,7 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.biosamples.PipelinesProperties;
-import uk.ac.ebi.biosamples.misc.RTHandler;
+import uk.ac.ebi.biosamples.misc.RTHandler2;
 import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
 import uk.ac.ebi.biosamples.mongo.repo.MongoPipelineRepository;
@@ -39,6 +31,15 @@ import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.PipelineUniqueIdentifierGenerator;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @Component
 @ConditionalOnProperty(
@@ -52,7 +53,7 @@ public class EnaImportRunner implements ApplicationRunner {
   @Autowired private EraProDao eraProDao;
   @Autowired private EnaImportCallableFactory enaImportCallableFactory;
   @Autowired private MongoPipelineRepository mongoPipelineRepository;
-  @Autowired private RTHandler rtHandler;
+  @Autowired private RTHandler2 rtHandler;
 
   private final Map<String, Future<Void>> futures = new LinkedHashMap<>();
   static final Set<String> failures = new HashSet<>();
@@ -104,12 +105,13 @@ public class EnaImportRunner implements ApplicationRunner {
       // importSuppressedAndKilled);
 
       // Import ENA samples
-      importEraSamples(fromDate, toDate);
+      // importEraSamples(fromDate, toDate);
 
       // Import BSD authority samples to update SRA accession
       // importEraBsdAuthoritySamples(fromDate, toDate);
 
       // rtHandler.samnSampleGeographicLocationAttributeUpdate();
+      rtHandler.parseFileAndAddRelationshipCurationToSample();
 
       if (importSuppressedAndKilled) {
         try {

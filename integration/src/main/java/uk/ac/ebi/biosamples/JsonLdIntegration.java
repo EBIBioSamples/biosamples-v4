@@ -116,8 +116,8 @@ public class JsonLdIntegration extends AbstractIntegration {
     final String name = "JsonLdIntegration_sample_1";
     final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-
     final SortedSet<Attribute> attributes = new TreeSet<>();
+
     attributes.add(Attribute.build("organism", "Homo Sapiens"));
     attributes.add(
         Attribute.build(
@@ -136,6 +136,7 @@ public class JsonLdIntegration extends AbstractIntegration {
             null));
 
     final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+
     externalReferences.add(
         ExternalReference.build(
             "www.google.com",

@@ -17,10 +17,7 @@ import static org.junit.Assert.assertThat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import org.hamcrest.CoreMatchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,12 +33,12 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.utils.BioSamplesConstants;
 
 @Component
 // @Order(1)
 // @Profile({"default", "rest"})
 public class PhenopacketIntegration extends AbstractIntegration {
-
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final RestTemplate restTemplate;
   private final BioSamplesProperties clientProperties;
@@ -52,8 +49,9 @@ public class PhenopacketIntegration extends AbstractIntegration {
       final RestTemplateBuilder restTemplateBuilder,
       final BioSamplesProperties clientProperties) {
     super(client);
-    restTemplate = restTemplateBuilder.build();
+
     this.clientProperties = clientProperties;
+    restTemplate = restTemplateBuilder.build();
     mapper = new ObjectMapper();
   }
 
@@ -62,10 +60,19 @@ public class PhenopacketIntegration extends AbstractIntegration {
     final Sample testSample = getTestSample();
     final Optional<EntityModel<Sample>> optionalSample =
         client.fetchSampleResource(testSample.getAccession());
+
     if (optionalSample.isPresent()) {
       throw new RuntimeException("Phenopacket test sample should not be available during phase 1");
     }
+
     final EntityModel<Sample> resource = client.persistSampleResource(testSample);
+    final Attribute sraAccessionAttribute =
+        Objects.requireNonNull(resource.getContent()).getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals(BioSamplesConstants.SRA_ACCESSION))
+            .findFirst()
+            .get();
+
+    testSample.getAttributes().add(sraAccessionAttribute);
 
     if (!testSample.equals(resource.getContent())) {
       throw new RuntimeException(
@@ -84,17 +91,19 @@ public class PhenopacketIntegration extends AbstractIntegration {
 
   private void checkSampleWithOrphanetLinkWorks() {
     final Sample testSample = getTestSample();
-
     final Optional<EntityModel<Sample>> sampleResource =
         client.fetchSampleResource(testSample.getAccession());
 
     assertThat(sampleResource.isPresent(), CoreMatchers.is(true));
-    final URI sampleURI = URI.create(sampleResource.get().getLink("self").get().getHref());
 
+    final URI sampleURI = URI.create(sampleResource.get().getLink("self").get().getHref());
     final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+
     headers.add("Accept", "application/phenopacket+json");
+
     final RequestEntity request = new RequestEntity<>(headers, HttpMethod.GET, sampleURI);
     final ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+
     if (!response.getStatusCode().is2xxSuccessful()) {
       throw new RuntimeException(
           "Impossible to retrieve correctly phenopacket sample with name " + testSample.getName());
@@ -102,8 +111,11 @@ public class PhenopacketIntegration extends AbstractIntegration {
 
     final List<LinkedHashMap> allMetadata =
         JsonPath.read(response.getBody(), "$.metaData.resources[?(@.id==\"ordo\")]");
+
     assertThat(allMetadata.size(), is(1));
+
     final LinkedHashMap<String, String> ordoMetadata = allMetadata.get(0);
+
     assertThat(ordoMetadata.get("namespacePrefix"), equalTo("ORDO"));
     assertThat(ordoMetadata.get("name"), equalTo("Orphanet Rare Disease Ontology"));
     assertThat(
@@ -125,11 +137,12 @@ public class PhenopacketIntegration extends AbstractIntegration {
   private Sample getTestSample() {
     final Sample.Builder sampleBuilder =
         new Sample.Builder("Phenopacket_ERS1790018", "Phenopacket_ERS1790018");
+
     sampleBuilder
         .withDomain(defaultIntegrationSubmissionDomain)
         .withRelease("2017-01-01T12:00:00")
         .withUpdate("2017-01-01T12:00:00")
-        .withTaxId(Long.valueOf(9606))
+        .withTaxId(9606L)
         .withAttributes(
             Arrays.asList(
                 Attribute.build(
