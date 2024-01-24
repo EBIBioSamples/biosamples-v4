@@ -18,6 +18,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component
 public class XmlSearchIntegration extends AbstractIntegration {
@@ -75,11 +76,25 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
         final EntityModel<Sample> resource = client.persistSampleResource(sample);
         final Sample sampleContent = resource.getContent();
+        final Attribute sraAccessionAttribute =
+            sampleContent.getAttributes().stream()
+                .filter(attribute -> attribute.getType().equals("SRA accession"))
+                .findFirst()
+                .get();
 
-        sample = Sample.Builder.fromSample(sample).withStatus(sampleContent.getStatus()).build();
+        sample.getAttributes().add(sraAccessionAttribute);
 
-        if (!sample.equals(sampleContent)) {
-          throw new RuntimeException("Expected response to equal submission");
+        sample =
+            Sample.Builder.fromSample(sample)
+                .withStatus(sampleContent.getStatus())
+                .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
+                .withSraAccession(Objects.requireNonNull(resource.getContent()).getSraAccession())
+                .build();
+
+        if (!sampleContent.equals(sample)) {
+          throw new IntegrationTestFailException(
+              "Expected response (" + sampleContent + ") to equal submission (" + sample + ")",
+              Phase.ONE);
         }
       }
 
@@ -100,13 +115,16 @@ public class XmlSearchIntegration extends AbstractIntegration {
       if (!sampleWithinGroup
           .getAccession()
           .equals(Objects.requireNonNull(sampleWithinGroupResource.getContent()).getAccession())) {
-        throw new RuntimeException("Expected response to equal submission");
+        throw new RuntimeException("Expected response to equal submission - accession mismatch");
       }
 
       final Sample sampleWithContactInformations =
           TestSampleGenerator.getSampleWithContactInformations();
+
       log.info(String.format("Persisting %s", sampleWithContactInformations.getAccession()));
+
       optional = client.fetchSampleResource(sampleWithContactInformations.getAccession());
+
       if (optional.isPresent()) {
         throw new RuntimeException(
             "Found existing " + sampleWithContactInformations.getAccession());
@@ -122,12 +140,16 @@ public class XmlSearchIntegration extends AbstractIntegration {
           .equals(Objects.requireNonNull(sampleWithContactResource.getContent()).getAccession())) {
         throw new RuntimeException("Expected response to equal submission");
       }
+
       log.info(
           String.format("Successfully persisted %s", sampleWithContactInformations.getAccession()));
 
       final Sample groupWithMsiData = TestSampleGenerator.getGroupWithFullMsiDetails();
+
       log.info(String.format("Persisting %s", groupWithMsiData.getAccession()));
+
       optional = client.fetchSampleResource(groupWithMsiData.getAccession());
+
       if (optional.isPresent()) {
         throw new RuntimeException("Found existing " + groupWithMsiData.getAccession());
       }
@@ -143,6 +165,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
               Objects.requireNonNull(groupWithMsiDetailsResource.getContent()).getAccession())) {
         throw new RuntimeException("Expected response to equal submission");
       }
+
       log.info(String.format("Successfully persisted %s", groupWithMsiData.getAccession()));
     }
 
@@ -153,6 +176,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
       final Optional<EntityModel<Sample>> optional =
           client.fetchSampleResource(test1.getAccession());
+
       if (!optional.isPresent()) {
         throw new RuntimeException("Expected sample not found " + test1.getAccession());
       }
@@ -162,15 +186,14 @@ public class XmlSearchIntegration extends AbstractIntegration {
   }
 
   private static class TestSampleGenerator {
-
     static Sample getRegularSample() {
       final String name = "Test XML Sample";
       final String accession = "SAMEA999999";
       final String domain = "self.BiosampleIntegrationTest";
       final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
       final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-
       final SortedSet<Attribute> attributes = new TreeSet<>();
+
       attributes.add(
           Attribute.build(
               "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
@@ -192,8 +215,8 @@ public class XmlSearchIntegration extends AbstractIntegration {
       final String domain = "self.BiosampleIntegrationTest";
       final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
       final Instant release = Instant.parse("2116-04-01T11:36:57.00Z");
-
       final SortedSet<Attribute> attributes = new TreeSet<>();
+
       attributes.add(
           Attribute.build(
               "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
@@ -222,7 +245,6 @@ public class XmlSearchIntegration extends AbstractIntegration {
       //            return Sample.build(name, accession, "self.BiosampleIntegrationTest",
       // release,
       // update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
-
       return new Sample.Builder(name, accession)
           .withDomain(domain)
           .withRelease(release)
@@ -237,8 +259,8 @@ public class XmlSearchIntegration extends AbstractIntegration {
       final String domain = "self.BiosampleIntegrationTest";
       final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
       final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-
       final SortedSet<Relationship> relationships = new TreeSet<>();
+
       relationships.add(
           Relationship.build(accession, "has member", getSampleWithinGroup().getAccession()));
 
@@ -260,7 +282,6 @@ public class XmlSearchIntegration extends AbstractIntegration {
       final String domain = "self.BiosampleIntegrationTest";
       final Instant update = Instant.now();
       final Instant release = Instant.parse("1980-08-02T00:30:00Z");
-
       //            return Sample.build(name, accession, submissionDomain, release, update,
       // null,
       //                    null, null, null, null,
@@ -279,8 +300,8 @@ public class XmlSearchIntegration extends AbstractIntegration {
       final String domain = "self.BiosampleIntegrationTest";
       final Instant update = Instant.now();
       final Instant release = Instant.parse("1980-08-02T00:30:00Z");
-
       final SortedSet<Contact> contacts = new TreeSet<>();
+
       contacts.add(new Contact.Builder().firstName("Loca").lastName("Lol").build());
 
       //            return Sample.build(name, accession, submissionDomain, release, update,
@@ -301,11 +322,12 @@ public class XmlSearchIntegration extends AbstractIntegration {
       final String domain = "self.BiosampleIntegrationTest";
       final Instant update = Instant.now();
       final Instant release = Instant.parse("1980-08-02T00:30:00Z");
-
       final SortedSet<Contact> contacts = new TreeSet<>();
+
       contacts.add(new Contact.Builder().firstName("Loca").lastName("Lol").build());
 
       final SortedSet<Organization> organizations = new TreeSet<>();
+
       organizations.add(
           new Organization.Builder()
               .name("testOrg")
@@ -316,6 +338,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
               .build());
 
       final SortedSet<Publication> publications = new TreeSet<>();
+
       publications.add(new Publication.Builder().doi("123123").pubmed_id("someID").build());
 
       //            return Sample.build(name, accession, submissionDomain, release, update,
@@ -356,8 +379,8 @@ public class XmlSearchIntegration extends AbstractIntegration {
       final String domain = "self.BiosampleIntegrationTest";
       final Instant update = Instant.now();
       final Instant release = Instant.parse("2016-08-03T00:00:00Z");
-
       final SortedSet<Attribute> attributes = new TreeSet<>();
+
       attributes.add(
           new Attribute.Builder(
                   "description",

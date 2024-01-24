@@ -209,7 +209,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
         webinClient.fetchSampleResourcesByAccessionsV2(
             Arrays.asList(webinSampleAccession, "SAMEA1", "SAMEA8"));
 
-    if (sampleResourcesV2Map1 == null || sampleResourcesV2Map1.size() == 0) {
+    if (sampleResourcesV2Map1 == null || sampleResourcesV2Map1.isEmpty()) {
       throw new IntegrationTestFailException("Multi sample fetch is not working - V2", Phase.SIX);
     }
 

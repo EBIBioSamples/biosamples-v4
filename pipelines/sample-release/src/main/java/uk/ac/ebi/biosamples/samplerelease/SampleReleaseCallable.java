@@ -12,7 +12,10 @@ package uk.ac.ebi.biosamples.samplerelease;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
@@ -36,7 +39,6 @@ public class SampleReleaseCallable implements Callable<Void> {
   private final BioSamplesClient bioSamplesAapClient;
   private final RestTemplate restTemplate;
   private final String accession;
-  private final List<String> curationDomainBlankList;
   private final LocalDate localDate;
   static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
@@ -53,9 +55,6 @@ public class SampleReleaseCallable implements Callable<Void> {
     this.pipelinesProperties = pipelinesProperties;
     this.accession = accession;
     this.localDate = fromDate;
-
-    curationDomainBlankList = new ArrayList<>();
-    curationDomainBlankList.add("");
   }
 
   @Override
@@ -68,12 +67,12 @@ public class SampleReleaseCallable implements Callable<Void> {
 
       Optional<EntityModel<Sample>> optionalSampleResource =
           bioSamplesWebinClient.fetchSampleResource(
-              accession, Optional.of(curationDomainBlankList));
+              accession, Optional.of(Collections.singletonList("")));
 
       if (optionalSampleResource.isEmpty()) {
         optionalSampleResource =
             bioSamplesAapClient.fetchSampleResource(
-                accession, Optional.of(curationDomainBlankList));
+                accession, Optional.of(Collections.singletonList("")));
         isAap = true;
       }
 

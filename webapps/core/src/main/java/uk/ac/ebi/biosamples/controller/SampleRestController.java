@@ -153,94 +153,63 @@ public class SampleRestController {
       @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
           final boolean setFullDetails,
       @RequestHeader("Authorization") final String token) {
-    if (sample == null) {
-      throw new RuntimeException("No sample provided");
-    }
-
-    final SortedSet<AbstractData> abstractData = sample.getData();
-    boolean isWebinSuperUser = false;
-    final String webinIdFromAuthToken;
-
-    if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
-      throw new GlobalExceptions.SampleAccessionMismatchException();
-    }
+    validateRequest(sample, accession);
 
     log.debug("Received PUT for " + accession);
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final AuthorizationProvider authProvider =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
-            ? AuthorizationProvider.WEBIN
-            : AuthorizationProvider.AAP;
-    final boolean notExistingAccession = sampleService.isNotExistingAccession(accession);
-    Optional<Sample> oldSample = Optional.empty();
+        authToken
+            .filter(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+            .map(t -> AuthorizationProvider.WEBIN)
+            .orElse(AuthorizationProvider.AAP);
 
-    if (!notExistingAccession) {
-      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
-    }
+    boolean isWebinSuperUser = false;
+    Optional<Sample> oldSample;
 
     if (authProvider == AuthorizationProvider.WEBIN) {
-      webinIdFromAuthToken = authToken.get().getUser();
+      final String webinIdFromAuthToken = authToken.get().getUser();
 
       if (webinIdFromAuthToken == null) {
         throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
-      isWebinSuperUser =
-          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinIdFromAuthToken);
-
-      if (notExistingAccession && !isWebinSuperUser) {
+      if (sampleService.isNotExistingAccession(accession)
+          && !bioSamplesWebinAuthenticationService.isWebinSuperUser(webinIdFromAuthToken)) {
         throw new GlobalExceptions.SampleAccessionDoesNotExistException();
       }
+
+      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
 
       sample =
           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
               sample, webinIdFromAuthToken, oldSample);
-
-      if (abstractData != null && abstractData.size() > 0) {
-        if (bioSamplesWebinAuthenticationService.isSampleSubmitter(sample, webinIdFromAuthToken)) {
-          sample = Sample.Builder.fromSample(sample).build();
-        } else {
-          sample = Sample.Builder.fromSample(sample).withNoData().build();
-        }
-      }
+      sample = handleAbstractDataForWebinSubmission(sample, webinIdFromAuthToken);
     } else {
-      if (notExistingAccession
+      if (sampleService.isNotExistingAccession(accession)
           && !(bioSamplesAapService.isWriteSuperUser()
               || bioSamplesAapService.isIntegrationTestUser())) {
         throw new GlobalExceptions.SampleAccessionDoesNotExistException();
       }
 
+      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
       sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
-
-      if (abstractData != null && abstractData.size() > 0) {
-        if (bioSamplesAapService.isStructuredDataSubmittedBySampleSubmitter(sample)) {
-          sample = Sample.Builder.fromSample(sample).build();
-        } else if (bioSamplesAapService.isWriteSuperUser()
-            || bioSamplesAapService.isIntegrationTestUser()) {
-          sample = Sample.Builder.fromSample(sample).build();
-        } else {
-          sample = Sample.Builder.fromSample(sample).withNoData().build();
-        }
-      }
+      sample = handleAbstractDataForAapSubmission(sample);
     }
-
-    // now date is system generated field
-    final Instant now = Instant.now();
 
     sample =
         Sample.Builder.fromSample(sample)
-            .withUpdate(now)
+            .withUpdate(Instant.now())
             .withSubmittedVia(
                 sample.getSubmittedVia() == null
                     ? SubmittedViaType.JSON_API
                     : sample.getSubmittedVia())
             .build();
-
     sample = validateSample(sample, authProvider, isWebinSuperUser);
 
     if (!setFullDetails) {
       log.trace("Removing contact legacy fields for " + accession);
+
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
@@ -250,6 +219,46 @@ public class SampleRestController {
     // assemble a resource to return
     // create the response object with the appropriate status
     return sampleResourceAssembler.toModel(sample);
+  }
+
+  private Sample handleAbstractDataForAapSubmission(Sample sample) {
+    final SortedSet<AbstractData> abstractData = sample.getData();
+
+    if (abstractData != null && !abstractData.isEmpty()) {
+      if (bioSamplesAapService.isStructuredDataSubmittedBySampleSubmitter(sample)) {
+        sample = Sample.Builder.fromSample(sample).build();
+      } else if (bioSamplesAapService.isWriteSuperUser()
+          || bioSamplesAapService.isIntegrationTestUser()) {
+        sample = Sample.Builder.fromSample(sample).build();
+      } else {
+        sample = Sample.Builder.fromSample(sample).withNoData().build();
+      }
+    }
+    return sample;
+  }
+
+  private Sample handleAbstractDataForWebinSubmission(
+      Sample sample, final String webinIdFromAuthToken) {
+    final SortedSet<AbstractData> abstractData = sample.getData();
+
+    if (abstractData != null && !abstractData.isEmpty()) {
+      if (bioSamplesWebinAuthenticationService.isSampleSubmitter(sample, webinIdFromAuthToken)) {
+        sample = Sample.Builder.fromSample(sample).build();
+      } else {
+        sample = Sample.Builder.fromSample(sample).withNoData().build();
+      }
+    }
+    return sample;
+  }
+
+  private void validateRequest(final Sample sample, final String accession) {
+    if (sample == null) {
+      throw new RuntimeException("No sample provided");
+    }
+
+    if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
+      throw new GlobalExceptions.SampleAccessionMismatchException();
+    }
   }
 
   private Sample validateSample(

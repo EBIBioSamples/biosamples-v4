@@ -486,7 +486,7 @@ public class SamplesRestController {
             && sample.getAttributes().stream()
                 .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION));
 
-    if (sample.hasAccession() || sampleHasSRAAccessionInAttributes) {
+    if (sample.hasAccession() || sample.hasSraAccession() || sampleHasSRAAccessionInAttributes) {
       throw new GlobalExceptions.SampleWithAccessionSubmissionException();
     }
 

@@ -13,7 +13,6 @@ package uk.ac.ebi.biosamples.ncbi.service;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
 import org.dom4j.Element;
@@ -95,6 +94,7 @@ public class NcbiSampleConversionService {
 
   public Sample convertNcbiXmlElementToSample(final Element sampleElem) {
     final String accession = sampleElem.attributeValue(ACCESSION);
+    String sraAccession = null;
 
     log.info("Handling " + accession);
 
@@ -121,8 +121,11 @@ public class NcbiSampleConversionService {
         // BSD-1747 - PRIMARY_ID will be mapped to characteristics/SRA accession for
         // NCBI/DDBJ samples, in sync with ENA samples
         if (!SAMPLE_NAME.equals(idElem.attributeValue(DB_LABEL))) {
-          attrs.add(Attribute.build(SRA_ACCESSION, idElem.getTextTrim()));
-          attrs.add(Attribute.build(INSDC_SECONDARY_ACCESSION, idElem.getTextTrim()));
+          String idElemTextTrim = idElem.getTextTrim();
+
+          sraAccession = idElemTextTrim;
+          attrs.add(Attribute.build(SRA_ACCESSION, idElemTextTrim));
+          attrs.add(Attribute.build(INSDC_SECONDARY_ACCESSION, idElemTextTrim));
         }
       } else if (GENBANK.equalsIgnoreCase(attributeValueIdElementDb)) {
         attrs.add(Attribute.build(COMMON_NAME, idElem.getTextTrim()));
@@ -166,7 +169,7 @@ public class NcbiSampleConversionService {
 
     // override any existing centre name with this, if present
     if (XmlPathBuilder.of(sampleElem).path(OWNER, NAME).exists()) {
-      if (XmlPathBuilder.of(sampleElem).path(OWNER, NAME).text().trim().length() > 0) {
+      if (!XmlPathBuilder.of(sampleElem).path(OWNER, NAME).text().trim().isEmpty()) {
         centreName = XmlPathBuilder.of(sampleElem).path(OWNER, NAME).text().trim();
       }
     }
@@ -224,7 +227,7 @@ public class NcbiSampleConversionService {
         XmlPathBuilder.of(sampleElem).path(ATTRIBUTES).elements(ATTRIBUTE)) {
       String key = attrElem.attributeValue(ATTRIBUTE_NAME);
 
-      if (key == null || key.length() == 0) {
+      if (key == null || key.isEmpty()) {
         key = attrElem.attributeValue(DISPLAY_NAME);
       }
 
@@ -326,13 +329,12 @@ public class NcbiSampleConversionService {
       if (!nonHiddenStatuses.contains(status.toLowerCase())) {
         // not a live or suppressed sample, hide
         if (publicationDate != null) {
-          publicationDate =
-              publicationDate.atZone(ZoneOffset.UTC).plus(1000, ChronoUnit.YEARS).toInstant();
+          publicationDate = publicationDate.atZone(ZoneOffset.UTC).plusYears(1000).toInstant();
         }
       }
     }
 
-    return new Sample.Builder(alias, accession)
+    return new Sample.Builder(alias, accession, sraAccession)
         .withRelease(publicationDate)
         .withUpdate(lastUpdate)
         .withCreate(submissionDate)
@@ -347,7 +349,6 @@ public class NcbiSampleConversionService {
   public Set<StructuredDataTable> convertNcbiXmlElementToStructuredData(
       final Element sampleElem, final Set<StructuredDataTable> amrData) {
     final String accession = sampleElem.attributeValue(ACCESSION);
-    final Set<StructuredDataTable> structuredData = new HashSet<>();
     final Set<StructuredDataTable> structuredDataTableSet = new HashSet<>();
 
     // handle AMR data
@@ -372,9 +373,6 @@ public class NcbiSampleConversionService {
 
     if (!structuredDataTableSet.isEmpty()) {
       log.info("Structured data already added from NCBI source " + accession);
-    } else if (amrData != null && amrData.size() > 0) { // todo is this path still useful?
-      log.info("Structured data not added from NCBI source - adding from ENA source" + accession);
-      structuredData.addAll(amrData);
     }
 
     return structuredDataTableSet;
@@ -388,6 +386,7 @@ public class NcbiSampleConversionService {
     if (value == null) {
       throw new RuntimeException("Unable to extract tax id from a null value");
     }
+
     return Integer.parseInt(value.trim());
   }
 }

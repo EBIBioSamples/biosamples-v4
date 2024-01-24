@@ -14,7 +14,6 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 
 public class MongoSampleRepositoryImpl implements MongoSampleRepositoryCustom {
-
   private final MongoOperations mongoOperations;
 
   public MongoSampleRepositoryImpl(MongoOperations mongoOperations) {

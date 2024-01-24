@@ -52,6 +52,7 @@ public class MongoAccessionService {
     MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
 
     mongoSample = accessionAndInsert(mongoSample, generateSAMEAndSRAAccession);
+
     return mongoSampleToSampleConverter.apply(mongoSample);
   }
 
@@ -100,9 +101,9 @@ public class MongoAccessionService {
     final SortedSet<MongoRelationship> relationships = sample.getRelationships();
     final SortedSet<MongoRelationship> newRelationships = new TreeSet<>();
     for (final MongoRelationship relationship : relationships) {
-      // this relationship could not specify a source because the sample is unaccessioned
+      // this relationship could not specify a source because the sample is un-accessioned
       // now we are assigning an accession, set the source to the accession
-      if (relationship.getSource() == null || relationship.getSource().trim().length() == 0) {
+      if (relationship.getSource() == null || relationship.getSource().trim().isEmpty()) {
         newRelationships.add(
             MongoRelationship.build(
                 accessions.accession, relationship.getType(), relationship.getTarget()));
@@ -121,6 +122,7 @@ public class MongoAccessionService {
         MongoSample.build(
             sample.getName(),
             accessions.accession,
+            accessions.sraAccession != null ? accessions.sraAccession : sample.getSraAccession(),
             sample.getDomain(),
             sample.getWebinSubmissionAccountId(),
             sample.getTaxId(),

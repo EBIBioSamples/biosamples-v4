@@ -81,6 +81,7 @@ public class EnaSampleToBioSampleConversionService {
         enaSampleToBioSampleConverter.convertEnaSampleXmlToBioSample(
             enaSampleRootElement, accession);
 
+    final String sraAccession = eraproSample.getSampleId();
     final SampleStatus status = handleStatus(eraproSample.getStatus());
     final Long taxId = eraproSample.getTaxId();
     final String webinId = eraproSample.getSubmissionAccountId();
@@ -129,6 +130,7 @@ public class EnaSampleToBioSampleConversionService {
           Sample.build(
               sample.getName(),
               accession,
+              sraAccession,
               null,
               webinId,
               taxId,
@@ -147,6 +149,7 @@ public class EnaSampleToBioSampleConversionService {
           Sample.build(
               sample.getName(),
               accession,
+              sraAccession,
               pipelinesProperties.getEnaDomain(),
               null,
               taxId,

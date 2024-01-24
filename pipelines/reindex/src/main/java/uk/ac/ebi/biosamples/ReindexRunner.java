@@ -12,7 +12,6 @@ package uk.ac.ebi.biosamples;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 import org.apache.commons.lang.IncompleteArgumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,15 +24,11 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.util.CloseableIterator;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.mongo.model.MongoAccessionMapping;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
-import uk.ac.ebi.biosamples.mongo.repo.MongoAccessionMappingRepository;
 import uk.ac.ebi.biosamples.mongo.service.SampleReadService;
-import uk.ac.ebi.biosamples.utils.BioSamplesConstants;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
@@ -53,18 +48,15 @@ public class ReindexRunner implements ApplicationRunner {
   private final AmqpTemplate amqpTemplate;
   private final SampleReadService sampleReadService;
   private final MongoOperations mongoOperations;
-  private final MongoAccessionMappingRepository mongoAccessionMappingRepository;
 
   @Autowired
   public ReindexRunner(
       final AmqpTemplate amqpTemplate,
       final SampleReadService sampleReadService,
-      final MongoOperations mongoOperations,
-      final MongoAccessionMappingRepository mongoAccessionMappingRepository) {
+      final MongoOperations mongoOperations) {
     this.amqpTemplate = amqpTemplate;
     this.sampleReadService = sampleReadService;
     this.mongoOperations = mongoOperations;
-    this.mongoAccessionMappingRepository = mongoAccessionMappingRepository;
   }
 
   @Override
@@ -106,21 +98,10 @@ public class ReindexRunner implements ApplicationRunner {
 
           LOGGER.info("Handling sample " + accession);
 
-          final List<Attribute> sraAccessions =
-              mongoSample.getAttributes().stream()
-                  .filter(
-                      attribute -> attribute.getType().equals(BioSamplesConstants.SRA_ACCESSION))
-                  .collect(Collectors.toList());
-
           futures.put(
               accession,
               executor.submit(
-                  new AccessionMappingAndIndexingCallable(
-                      accession,
-                      sraAccessions,
-                      mongoAccessionMappingRepository,
-                      sampleReadService,
-                      amqpTemplate)));
+                  new SampleIndexingCallable(accession, sampleReadService, amqpTemplate)));
 
           ThreadUtils.checkFutures(futures, 1000);
         }
@@ -133,69 +114,28 @@ public class ReindexRunner implements ApplicationRunner {
     }
   }
 
-  private static class AccessionMappingAndIndexingCallable implements Callable<Void> {
+  private static class SampleIndexingCallable implements Callable<Void> {
     private static final List<Sample> related = new ArrayList<>();
     private final String accession;
-    private final List<Attribute> sraAccessions;
-    private final MongoAccessionMappingRepository mongoAccessionMappingRepository;
     private final SampleReadService sampleReadService;
     private final AmqpTemplate amqpTemplate;
 
-    public AccessionMappingAndIndexingCallable(
+    public SampleIndexingCallable(
         final String accession,
-        final List<Attribute> sraAccessions,
-        final MongoAccessionMappingRepository mongoAccessionMappingRepository,
         final SampleReadService sampleReadService,
         final AmqpTemplate amqpTemplate) {
       this.accession = accession;
-      this.sraAccessions = sraAccessions;
-      this.mongoAccessionMappingRepository = mongoAccessionMappingRepository;
       this.sampleReadService = sampleReadService;
       this.amqpTemplate = amqpTemplate;
     }
 
     @Override
     public Void call() {
-      // additional feature to map SRA and SAME accessions while reindexing BioSamples database
-      mapSRAAndSAMEAccession();
-
       if (!fetchSampleAndSendMessage(false)) {
         fetchSampleAndSendMessage(true);
       }
 
       return null;
-    }
-
-    private void mapSRAAndSAMEAccession() {
-      if (sraAccessions.isEmpty()) {
-        LOGGER.info("SRA accession doesn't exist for sample " + accession);
-        return;
-      }
-
-      LOGGER.info("SRA accession exists for sample " + accession);
-
-      if (sraAccessions.size() == 1) {
-        mongoAccessionMappingRepository.save(
-            new MongoAccessionMapping(sraAccessions.get(0).getValue(), accession));
-      } else {
-        Optional<Attribute> validSraAccessionAttribute =
-            sraAccessions.stream()
-                .filter(
-                    sraAccessionAttribute -> isValidAccessionType(sraAccessionAttribute.getType()))
-                .findFirst();
-
-        validSraAccessionAttribute.ifPresent(
-            attribute ->
-                mongoAccessionMappingRepository.save(
-                    new MongoAccessionMapping(attribute.getValue(), accession)));
-      }
-    }
-
-    private boolean isValidAccessionType(String attributeType) {
-      return attributeType != null
-          && (attributeType.startsWith("ERS")
-              || attributeType.startsWith("SRS")
-              || attributeType.startsWith("DRS"));
     }
 
     private boolean fetchSampleAndSendMessage(final boolean isRetry) {

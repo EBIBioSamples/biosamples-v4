@@ -34,6 +34,9 @@ public interface MongoSampleRepository
   Stream<MongoSample> findByAccessionPrefixIsAndAccessionNumberGreaterThanEqual(
       String accessionPrefix, int accessionNumber, Sort sort);
 
-  @Query("{ 'attributes': { $elemMatch: { 'type': 'SRA accession', 'value': ?0 } } }")
-  MongoSample findBySraAccession(String sraAccession);
+  @Query("{ 'sraAccession' : ?0 }")
+  List<MongoSample> findBySraAccession(String sraAccession);
+
+  @Query("{'attributes.type': 'SRA accession', 'attributes.value': ?0}")
+  List<MongoSample> findUsingSraAccessionIndex(String sraAccession);
 }

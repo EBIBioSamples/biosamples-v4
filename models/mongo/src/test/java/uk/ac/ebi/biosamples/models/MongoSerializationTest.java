@@ -51,6 +51,7 @@ public class MongoSerializationTest {
   private static MongoSample getMongoSample() {
     final String name = "Test Sample";
     final String accession = "TEST1";
+    final String sraAccession = "ERS01";
     final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     final Instant create = Instant.parse("2016-05-05T11:36:57.00Z");
     final Instant submitted = Instant.parse("2016-05-05T11:36:57.00Z");
@@ -104,6 +105,7 @@ public class MongoSerializationTest {
     return MongoSample.build(
         name,
         accession,
+        sraAccession,
         "foozit",
         "",
         Long.valueOf(9606),

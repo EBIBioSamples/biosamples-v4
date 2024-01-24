@@ -27,8 +27,12 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
@@ -37,17 +41,22 @@ import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Document
-/*@CompoundIndexes({
+@CompoundIndexes({
   @CompoundIndex(
       name = "sra_accession_index",
-      def = "{'attributes.type': 1}",
-      partialFilter = "{ 'attributes.type': 'SRA accession' }")
-}) -- unused compound index */
+      def = "{'attributes.value': 1}",
+      partialFilter = "{'attributes.type': 'SRA accession'}",
+      background = true)
+})
 public class MongoSample {
   @Transient public static final String SEQUENCE_NAME = "accession_sequence";
   @Transient public static final String SRA_SEQUENCE_NAME = "sra_accession_sequence";
 
   @Id protected String accession;
+
+  @Field(targetType = FieldType.STRING, name = "sraAccession")
+  @Indexed(background = true)
+  private String sraAccession;
 
   @Indexed(background = true)
   private String accessionPrefix;
@@ -116,6 +125,7 @@ public class MongoSample {
   public static MongoSample build(
       @JsonProperty("name") final String name,
       @JsonProperty("accession") final String accession,
+      @JsonProperty("sraAccession") final String sraAccession,
       @JsonProperty("domain") final String domain,
       @JsonProperty("webinSubmissionAccountId") final String webinSubmissionAccountId,
       @JsonProperty("taxId") final Long taxId,
@@ -139,6 +149,7 @@ public class MongoSample {
     final MongoSample mongoSample = new MongoSample();
 
     mongoSample.accession = accession;
+    mongoSample.sraAccession = sraAccession;
     mongoSample.name = name;
     mongoSample.domain = domain;
     mongoSample.webinSubmissionAccountId = webinSubmissionAccountId;
@@ -151,49 +162,49 @@ public class MongoSample {
     mongoSample.reviewed = reviewed;
     mongoSample.attributes = new TreeSet<>();
 
-    if (attributes != null && attributes.size() > 0) {
+    if (attributes != null && !attributes.isEmpty()) {
       mongoSample.attributes.addAll(attributes);
     }
 
     mongoSample.data = new HashSet<>();
 
-    if (structuredData != null && structuredData.size() > 0) {
+    if (structuredData != null && !structuredData.isEmpty()) {
       mongoSample.data.addAll(structuredData);
     }
 
     mongoSample.relationships = new TreeSet<>();
 
-    if (relationships != null && relationships.size() > 0) {
+    if (relationships != null && !relationships.isEmpty()) {
       mongoSample.relationships.addAll(relationships);
     }
 
     mongoSample.externalReferences = new TreeSet<>();
 
-    if (externalReferences != null && externalReferences.size() > 0) {
+    if (externalReferences != null && !externalReferences.isEmpty()) {
       mongoSample.externalReferences.addAll(externalReferences);
     }
 
     mongoSample.organizations = new TreeSet<>();
 
-    if (organizations != null && organizations.size() > 0) {
+    if (organizations != null && !organizations.isEmpty()) {
       mongoSample.organizations.addAll(organizations);
     }
 
     mongoSample.contacts = new TreeSet<>();
 
-    if (contacts != null && contacts.size() > 0) {
+    if (contacts != null && !contacts.isEmpty()) {
       mongoSample.contacts.addAll(contacts);
     }
 
     mongoSample.publications = new TreeSet<>();
 
-    if (publications != null && publications.size() > 0) {
+    if (publications != null && !publications.isEmpty()) {
       mongoSample.publications.addAll(publications);
     }
 
     mongoSample.certificates = new TreeSet<>();
 
-    if (certificates != null && certificates.size() > 0) {
+    if (certificates != null && !certificates.isEmpty()) {
       mongoSample.certificates.addAll(certificates);
     }
 

@@ -31,11 +31,9 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
-import uk.ac.ebi.biosamples.mongo.model.MongoAccessionMapping;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSampleMessage;
-import uk.ac.ebi.biosamples.mongo.repo.MongoAccessionMappingRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleMessageRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.*;
@@ -52,7 +50,6 @@ public class SampleService {
   private static final Logger log = LoggerFactory.getLogger(SampleService.class);
   private final MongoAccessionService mongoAccessionService;
   private final MongoSampleRepository mongoSampleRepository;
-  private final MongoAccessionMappingRepository mongoAccessionMappingRepository;
   private final MongoSampleMessageRepository mongoSampleMessageRepository;
   private final MongoSampleToSampleConverter mongoSampleToSampleConverter;
   private final SampleToMongoSampleConverter sampleToMongoSampleConverter;
@@ -68,7 +65,6 @@ public class SampleService {
   public SampleService(
       @Qualifier("SampleAccessionService") final MongoAccessionService mongoAccessionService,
       final MongoSampleRepository mongoSampleRepository,
-      final MongoAccessionMappingRepository mongoAccessionMappingRepository,
       final MongoSampleMessageRepository mongoSampleMessageRepository,
       final MongoSampleToSampleConverter mongoSampleToSampleConverter,
       final SampleToMongoSampleConverter sampleToMongoSampleConverter,
@@ -81,7 +77,6 @@ public class SampleService {
           bioSamplesCrossSourceIngestAccessControlService) {
     this.mongoAccessionService = mongoAccessionService;
     this.mongoSampleRepository = mongoSampleRepository;
-    this.mongoAccessionMappingRepository = mongoAccessionMappingRepository;
     this.mongoSampleMessageRepository = mongoSampleMessageRepository;
     this.mongoSampleToSampleConverter = mongoSampleToSampleConverter;
     this.sampleToMongoSampleConverter = sampleToMongoSampleConverter;
@@ -149,35 +144,35 @@ public class SampleService {
       return false;
     }
 
-    if (oldSample.getAttributes().size() > 0) {
+    if (!oldSample.getAttributes().isEmpty()) {
       return false;
     }
 
-    if (oldSample.getRelationships().size() > 0) {
+    if (!oldSample.getRelationships().isEmpty()) {
       return false;
     }
 
-    if (oldSample.getPublications().size() > 0) {
+    if (!oldSample.getPublications().isEmpty()) {
       return false;
     }
 
-    if (oldSample.getContacts().size() > 0) {
+    if (!oldSample.getContacts().isEmpty()) {
       return false;
     }
 
-    if (oldSample.getOrganizations().size() > 0) {
+    if (!oldSample.getOrganizations().isEmpty()) {
       return false;
     }
 
-    if (oldSample.getData().size() > 0) {
+    if (!oldSample.getData().isEmpty()) {
       return false;
     }
 
-    if (oldSample.getExternalReferences().size() > 0) {
+    if (!oldSample.getExternalReferences().isEmpty()) {
       return false;
     }
 
-    return oldSample.getStructuredData().size() == 0;
+    return oldSample.getStructuredData().isEmpty();
   }
 
   // because the fetchUsing caches the newSample, if an updated version is stored, we need to make
@@ -200,18 +195,7 @@ public class SampleService {
       if (oldSample != null) {
         newSample = updateSampleWithExisting(newSample, oldSample, authProvider, isWebinSuperUser);
       } else {
-        log.error(
-            "Trying to update sample not in database, accession: {}", newSample.getAccession());
-
-        bioSamplesCrossSourceIngestAccessControlService
-            .validateFileUploaderSampleUpdateHasAlwaysExistingAccession(newSample);
-
-        final SortedSet<Attribute> newSampleAttributes = newSample.getAttributes();
-
-        if (newSampleAttributes.stream()
-            .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION))) {
-          newSampleAttributes.add(Attribute.build(SRA_ACCESSION, generateOneSRAAccession()));
-        }
+        newSample = handleUpdateWhereNoOldSampleExists(newSample);
       }
 
       MongoSample mongoSample = sampleToMongoSampleConverter.convert(newSample);
@@ -223,8 +207,6 @@ public class SampleService {
       }
 
       newSample = mongoSampleToSampleConverter.apply(mongoSample);
-
-      registerAccessionToSraAccessionMapping(newSample);
       sendMessageToRabbitForIndexingToSolr(
           newSample.getAccession(), getExistingRelationshipTargetsForindesinginSolr(oldSample));
 
@@ -238,6 +220,38 @@ public class SampleService {
         () ->
             new RuntimeException(
                 "Failed to create newSample. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk"));
+  }
+
+  private Sample handleUpdateWhereNoOldSampleExists(Sample newSample) {
+    log.error("Trying to update sample not in database, accession: {}", newSample.getAccession());
+
+    bioSamplesCrossSourceIngestAccessControlService
+        .validateFileUploaderSampleUpdateHasAlwaysExistingAccession(newSample);
+
+    final SortedSet<Attribute> newSampleAttributes = newSample.getAttributes();
+
+    if (newSampleAttributes.stream()
+        .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION))) {
+      final String sraAccession = generateOneSRAAccession();
+
+      newSampleAttributes.add(Attribute.build(SRA_ACCESSION, sraAccession));
+      newSample = Sample.Builder.fromSample(newSample).withSraAccession(sraAccession).build();
+    } else {
+      final List<Attribute> sraAccessionAttributeList =
+          newSampleAttributes.stream()
+              .filter(attribute -> attribute.getType().equals(SRA_ACCESSION))
+              .toList();
+
+      if (sraAccessionAttributeList.size() > 1) {
+        throw new GlobalExceptions.InvalidSampleException();
+      }
+
+      final String sraAccession = sraAccessionAttributeList.get(0).getValue();
+
+      newSample = Sample.Builder.fromSample(newSample).withSraAccession(sraAccession).build();
+    }
+
+    return newSample;
   }
 
   private void validateSample(final Sample sample) {
@@ -275,16 +289,16 @@ public class SampleService {
         isWebinSuperUser);
   }
 
-  private Sample handleSampleNotAccessioned(Sample sample) {
+  private Sample handleSampleNotAccessioned(Sample newSample) {
     final boolean sampleNotSraAccessioned =
-        sample.getAttributes().stream()
+        newSample.getAttributes().stream()
             .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION));
 
-    sample = mongoAccessionService.generateAccession(sample, sampleNotSraAccessioned);
-    registerAccessionToSraAccessionMapping(sample);
-    sendMessageToRabbitForIndexingToSolr(sample.getAccession(), Collections.emptyList());
+    validateAndPromoteSRAAccessionAttributeToField(newSample);
+    newSample = mongoAccessionService.generateAccession(newSample, sampleNotSraAccessioned);
+    sendMessageToRabbitForIndexingToSolr(newSample.getAccession(), Collections.emptyList());
 
-    return sample;
+    return newSample;
   }
 
   private boolean isSampleTaxIdUpdated(final Sample oldSample, final Sample sample) {
@@ -318,18 +332,6 @@ public class SampleService {
     return existingRelationshipTargets;
   }
 
-  private void registerAccessionToSraAccessionMapping(final Sample sample) {
-    final Optional<Attribute> sraAccessionAttributeOptional =
-        sample.getAttributes().stream()
-            .filter(attribute -> attribute.getType().equals(SRA_ACCESSION))
-            .findFirst();
-
-    sraAccessionAttributeOptional.ifPresent(
-        attribute ->
-            mongoAccessionMappingRepository.save(
-                new MongoAccessionMapping(sample.getAccession(), attribute.getValue())));
-  }
-
   /*
   Called by V2 endpoints to persist samples
    */
@@ -348,7 +350,7 @@ public class SampleService {
     if (newSample.hasAccession()) {
       if (oldSample != null) {
         log.info(
-            "Trying to update newSample that exists in database, accession: {}",
+            "Trying to update sample that exists in database, accession: {}",
             newSample.getAccession());
 
         final boolean savedSampleEmpty = isSavedSampleEmpty(newSample, isWebinSuperUser, oldSample);
@@ -362,7 +364,8 @@ public class SampleService {
                 newSample, oldSample, null, savedSampleEmpty, authProvider, isWebinSuperUser);
       } else {
         log.error(
-            "Trying to update newSample not in database, accession: {}", newSample.getAccession());
+            "Trying to update sample not in database, accession: {}", newSample.getAccession());
+        newSample = handleUpdateWhereNoOldSampleExists(newSample);
       }
 
       MongoSample mongoSample = sampleToMongoSampleConverter.convert(newSample);
@@ -377,10 +380,16 @@ public class SampleService {
           newSample.getAttributes().stream()
               .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION));
 
+      if (!sampleNotSraAccessioned) {
+        log.info(
+            "Sample SRA accessioned, promoting SRA accession to field " + newSample.getAccession());
+        newSample = validateAndPromoteSRAAccessionAttributeToField(newSample);
+        log.info("SRA accession promoted " + newSample.getSraAccession());
+      }
+
       newSample = mongoAccessionService.generateAccession(newSample, sampleNotSraAccessioned);
     }
 
-    registerAccessionToSraAccessionMapping(newSample);
     sendMessageToRabbitForIndexingToSolr(newSample.getAccession(), Collections.emptyList());
 
     return newSample;
@@ -415,15 +424,9 @@ public class SampleService {
       newSample.getAttributes().add(sraAccessionAttribute);
       newSample = Sample.Builder.fromSample(newSample).build();
 
-      final Sample accessionedSample = mongoAccessionService.generateAccession(newSample, false);
-
-      registerAccessionToSraAccessionMapping(newSample);
-      return accessionedSample;
+      return mongoAccessionService.generateAccession(newSample, false);
     } else {
-      final Sample accessionedSample = mongoAccessionService.generateAccession(newSample, true);
-
-      registerAccessionToSraAccessionMapping(newSample);
-      return accessionedSample;
+      return mongoAccessionService.generateAccession(newSample, true);
     }
   }
 
@@ -457,7 +460,7 @@ public class SampleService {
   }
 
   private Sample compareWithExistingAndUpdateSample(
-      final Sample newSample,
+      Sample newSample,
       final Sample oldSample,
       final List<Relationship> existingRelationships,
       final boolean isEmptySample,
@@ -466,15 +469,16 @@ public class SampleService {
     Set<AbstractData> structuredData = new HashSet<>();
     boolean applyOldSampleStructuredData = false;
 
-    // retain existing relationships for super user submissions, pipelines, ENA POSTED, not for file
+    // retain existing relationships for superuser submissions, pipelines, ENA POSTED, not for file
     // uploads though
     handleRelationships(newSample, existingRelationships);
     handleSRAAccession(newSample, oldSample, isWebinSuperUser);
+    newSample = validateAndPromoteSRAAccessionAttributeToField(newSample);
 
-    if (newSample.getData().size() < 1) {
+    if (newSample.getData().isEmpty()) {
       log.info("No structured data in new sample");
 
-      if (oldSample.getData() != null && oldSample.getData().size() > 0) {
+      if (oldSample.getData() != null && !oldSample.getData().isEmpty()) {
         structuredData = oldSample.getData();
         // Check if old sample has structured data, if yes, retain
         applyOldSampleStructuredData = true;
@@ -502,9 +506,48 @@ public class SampleService {
     }
   }
 
+  private Sample validateAndPromoteSRAAccessionAttributeToField(final Sample newSample) {
+    log.info("Sample accession is " + newSample.getAccession());
+    // Retrieve SRA accession attribute from new sample
+    final Optional<Attribute> newSampleSraAccessionOptional =
+        newSample.getAttributes().stream()
+            .filter(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))
+            .findFirst();
+
+    // Retrieve SRA accession field from new sample
+    final String sraAccessionField = newSample.getSraAccession();
+
+    log.info("Sample SRA accession field is " + sraAccessionField);
+
+    // Check if SRA accession field and attribute are both present
+    if (sraAccessionField != null && newSampleSraAccessionOptional.isPresent()) {
+      log.info("Here!");
+      // Check for SRA accession mismatch
+      if (!sraAccessionField.equals(newSampleSraAccessionOptional.get().getValue())) {
+        throw new GlobalExceptions.InvalidSampleException();
+      } else {
+        log.info("Here!!");
+        // If they match, return the new sample
+        return newSample;
+      }
+    }
+
+    // Check if SRA accession field is null but attribute is present
+    if (sraAccessionField == null && newSampleSraAccessionOptional.isPresent()) {
+      log.info("Here!!!");
+      // Promote SRA accession attribute to the field and return the modified sample
+      return Sample.Builder.fromSample(newSample)
+          .withSraAccession(newSampleSraAccessionOptional.get().getValue())
+          .build();
+    }
+
+    // Return the original new sample if no promotion or validation is needed
+    return newSample;
+  }
+
   private void handleRelationships(
       final Sample newSample, final List<Relationship> existingRelationships) {
-    if (existingRelationships != null && existingRelationships.size() > 0) {
+    if (existingRelationships != null && !existingRelationships.isEmpty()) {
       final String webinId = newSample.getWebinSubmissionAccountId();
       final String domain = newSample.getDomain();
 
@@ -521,56 +564,76 @@ public class SampleService {
 
   private void handleSRAAccession(
       final Sample newSample, final Sample oldSample, final boolean isWebinSuperUser) {
+    // Step 1: Initialization
+    final String newSampleSraAccessionField = newSample.getSraAccession();
     final SortedSet<Attribute> newSampleAttributes = newSample.getAttributes();
     final List<Attribute> newSampleSraAccessions =
         newSampleAttributes.stream()
             .filter(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))
             .toList();
 
+    // Step 2: Validation of SRA Accessions in New Sample
     if (newSampleSraAccessions.size() > 1) {
       throw new GlobalExceptions.InvalidSampleException();
     }
 
-    Attribute newSampleSraAccession = null;
+    Attribute newSampleSraAccession =
+        newSampleSraAccessions.isEmpty() ? null : newSampleSraAccessions.get(0);
 
-    if (newSampleSraAccessions.size() > 0) {
-      newSampleSraAccession = newSampleSraAccessions.get(0);
+    // Step 3: Validation of SRA Accession Field in New Sample
+    if (newSampleSraAccessionField != null && !newSampleSraAccessionField.isEmpty()) {
+      if (oldSample != null) {
+        // Check if the SRA accession field has changed in the new sample
+        final String oldSampleSraAccessionField = oldSample.getSraAccession();
+
+        if (oldSampleSraAccessionField != null
+            && !oldSampleSraAccessionField.isEmpty()
+            && !newSampleSraAccessionField.equals(oldSampleSraAccessionField)
+            && !isWebinSuperUser) {
+          throw new GlobalExceptions.ChangedSRAAccessionException();
+        }
+      }
     }
 
+    // Step 4: Validation of SRA Accessions in Old Sample
     if (oldSample != null) {
       final List<Attribute> oldSampleSraAccessions =
           oldSample.getAttributes().stream()
               .filter(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))
               .toList();
 
+      // Check if there are more than one SRA accession attributes in the old sample
       if (oldSampleSraAccessions.size() > 1) {
         throw new GlobalExceptions.InvalidSampleException();
       }
 
-      Attribute oldSampleSraAccession = null;
+      final Attribute oldSampleSraAccession =
+          oldSampleSraAccessions.isEmpty() ? null : oldSampleSraAccessions.get(0);
 
-      if (oldSampleSraAccessions.size() > 0) {
-        oldSampleSraAccession = oldSampleSraAccessions.get(0);
-      }
-
+      // Step 5: Handling SRA Accessions in New Sample and Old Sample
       if (newSampleSraAccession == null) {
+        // If newSampleSraAccession is null, use oldSampleSraAccession or generate a new one
         newSampleSraAccession =
             Objects.requireNonNullElseGet(
                 oldSampleSraAccession,
                 () -> Attribute.build(SRA_ACCESSION, generateOneSRAAccession()));
+        // Add newSampleSraAccession to the attributes of the new sample
         newSampleAttributes.add(newSampleSraAccession);
       }
 
+      // Step 6: Validation of Changed SRA Accession (if Old Sample exists)
       if (oldSampleSraAccession != null
-          && !oldSampleSraAccession.getValue().equals(newSampleSraAccession.getValue())) {
-        if (!isWebinSuperUser) {
-          throw new GlobalExceptions.ChangedSRAAccessionException();
-        }
+          && !oldSampleSraAccession.getValue().equals(newSampleSraAccession.getValue())
+          && !isWebinSuperUser) {
+        throw new GlobalExceptions.ChangedSRAAccessionException();
       }
-    } else { // old sample doesn't exist, super user submission with accession but no sample exists,
-      // example: new samples from NCBI pipeline
-      if (newSampleSraAccession == null) {
+    } else {
+      // Step 7: Handling New Samples without Old Samples (Old Sample doesn't exist)
+      if (newSampleSraAccession == null
+          && (isWebinSuperUser || isPipelineNcbiDomain(newSample.getDomain()))) {
+        // If oldSample doesn't exist, and newSampleSraAccession is still null, create a new one
         newSampleSraAccession = Attribute.build(SRA_ACCESSION, generateOneSRAAccession());
+        // Add newSampleSraAccession to the attributes of the new sample
         newSampleAttributes.add(newSampleSraAccession);
       }
     }
@@ -690,7 +753,7 @@ public class SampleService {
     final SortedSet<Relationship> sampleRelationships = sample.getRelationships();
 
     if (!isSuperUserSubmission) {
-      if (sampleRelationships != null && sampleRelationships.size() > 0) {
+      if (sampleRelationships != null && !sampleRelationships.isEmpty()) {
         throw new GlobalExceptions.SampleWithRelationshipSubmissionExceptionV2();
       }
     }
@@ -699,7 +762,7 @@ public class SampleService {
       if (oldSampleOptional.isPresent()) {
         final Sample oldSample = oldSampleOptional.get();
 
-        if (oldSample.getRelationships() != null && oldSample.getRelationships().size() > 0) {
+        if (oldSample.getRelationships() != null && !oldSample.getRelationships().isEmpty()) {
           return Stream.of(oldSample.getRelationships(), sampleRelationships)
               .filter(Objects::nonNull)
               .flatMap(Set::stream)
@@ -709,7 +772,7 @@ public class SampleService {
         return sampleRelationships;
       }
     } else {
-      if (sampleRelationships != null && sampleRelationships.size() > 0) {
+      if (sampleRelationships != null && !sampleRelationships.isEmpty()) {
         throw new GlobalExceptions.SampleWithRelationshipSubmissionExceptionV2();
       }
     }
@@ -721,6 +784,10 @@ public class SampleService {
       final Sample sample, final boolean anySuperUser) {
     if (!anySuperUser) {
       if (sample.hasAccession()) {
+        throw new GlobalExceptions.SampleWithAccessionSubmissionException();
+      }
+
+      if (sample.hasSraAccession()) {
         throw new GlobalExceptions.SampleWithAccessionSubmissionException();
       }
 

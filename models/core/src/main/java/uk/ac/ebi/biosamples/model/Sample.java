@@ -21,7 +21,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.ToString;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.service.CharacteristicDeserializer;
@@ -29,11 +30,13 @@ import uk.ac.ebi.biosamples.service.CharacteristicSerializer;
 import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
 import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
-@Data
+@Getter
+@ToString
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonPropertyOrder({
   "name",
   "accession",
+  "sraAccession",
   "domain",
   "webinSubmissionAccountId",
   "taxId",
@@ -53,6 +56,9 @@ public class Sample implements Comparable<Sample> {
   @JsonProperty("accession")
   protected String accession;
 
+  @JsonProperty("sraAccession")
+  protected String sraAccession;
+
   @JsonProperty("name")
   protected String name;
 
@@ -62,10 +68,7 @@ public class Sample implements Comparable<Sample> {
   @JsonProperty("webinSubmissionAccountId")
   protected String webinSubmissionAccountId;
 
-  @JsonProperty(value = "taxId")
   protected Long taxId;
-
-  @JsonProperty(value = "status")
   protected SampleStatus status;
 
   @JsonSerialize(using = CustomInstantSerializer.class)
@@ -115,9 +118,20 @@ public class Sample implements Comparable<Sample> {
 
   protected Sample() {}
 
+  @JsonSerialize(using = CustomInstantSerializer.class)
+  @JsonIgnore
+  public Instant getReviewed() {
+    return reviewed;
+  }
+
   @JsonIgnore
   public boolean hasAccession() {
     return accession != null && !accession.trim().isEmpty();
+  }
+
+  @JsonIgnore
+  public boolean hasSraAccession() {
+    return sraAccession != null && !sraAccession.trim().isEmpty();
   }
 
   @JsonProperty(value = "releaseDate", access = JsonProperty.Access.READ_ONLY)
@@ -152,6 +166,37 @@ public class Sample implements Comparable<Sample> {
         : null;
   }
 
+  @JsonProperty(value = "taxId")
+  public Long getTaxId() {
+    if (taxId != null) {
+      return taxId;
+    }
+
+    Optional<Long> taxon = Optional.empty();
+
+    for (final Attribute attribute : attributes) {
+      if ("organism".equalsIgnoreCase(attribute.getType()) && !attribute.getIri().isEmpty()) {
+        taxon =
+            attribute.getIri().stream()
+                .map(this::extractTaxIdFromIri)
+                .filter(i -> i > 0)
+                .findFirst();
+        break;
+      }
+    }
+
+    return taxon.orElse(null);
+  }
+
+  @JsonProperty(value = "status")
+  public SampleStatus getStatus() {
+    if (status != null) {
+      return status;
+    }
+
+    return null;
+  }
+
   private long extractTaxIdFromIri(final String iri) {
     if (iri.isEmpty()) {
       return 0;
@@ -171,6 +216,54 @@ public class Sample implements Comparable<Sample> {
   }
 
   @Override
+  public boolean equals(final Object o) {
+    if (o == this) {
+      return true;
+    }
+
+    if (!(o instanceof Sample)) {
+      return false;
+    }
+
+    final Sample other = (Sample) o;
+
+    // dont use update date for comparisons, too volatile. SubmittedVia doesnt contain information
+    // for comparison
+
+    return Objects.equals(name, other.name)
+        && Objects.equals(accession, other.accession)
+        && Objects.equals(domain, other.domain)
+        && Objects.equals(webinSubmissionAccountId, other.webinSubmissionAccountId)
+        && Objects.equals(taxId, other.taxId)
+        && Objects.equals(status, other.status)
+        && Objects.equals(release, other.release)
+        && Objects.equals(attributes, other.attributes)
+        && Objects.equals(data, other.data)
+        && Objects.equals(relationships, other.relationships)
+        && Objects.equals(externalReferences, other.externalReferences)
+        && Objects.equals(organizations, other.organizations)
+        && Objects.equals(contacts, other.contacts)
+        && Objects.equals(publications, other.publications);
+  }
+
+  @Override
+  public int hashCode() {
+    // don't put update date in the hash because it's not in comparison
+    return Objects.hash(
+        name,
+        accession,
+        taxId,
+        status,
+        release,
+        attributes,
+        data,
+        relationships,
+        externalReferences,
+        organizations,
+        publications);
+  }
+
+  @Override
   public int compareTo(final Sample other) {
     if (other == null) {
       return 1;
@@ -178,6 +271,10 @@ public class Sample implements Comparable<Sample> {
 
     if (!accession.equals(other.accession)) {
       return accession.compareTo(other.accession);
+    }
+
+    if (!sraAccession.equals(other.sraAccession)) {
+      return sraAccession.compareTo(other.sraAccession);
     }
 
     if (!name.equals(other.name)) {
@@ -298,6 +395,7 @@ public class Sample implements Comparable<Sample> {
   public static Sample build(
       final String name,
       final String accession,
+      final String sraAccession,
       final String domain,
       final String webinSubmissionAccountId,
       final Long taxId,
@@ -313,6 +411,7 @@ public class Sample implements Comparable<Sample> {
     return build(
         name,
         accession,
+        sraAccession,
         domain,
         webinSubmissionAccountId,
         taxId,
@@ -337,6 +436,7 @@ public class Sample implements Comparable<Sample> {
   public static Sample build(
       final String name,
       final String accession,
+      final String sraAccession,
       final String domain,
       final String webinSubmissionAccountId,
       final Long taxId,
@@ -353,6 +453,7 @@ public class Sample implements Comparable<Sample> {
     return build(
         name,
         accession,
+        sraAccession,
         domain,
         webinSubmissionAccountId,
         taxId,
@@ -379,6 +480,7 @@ public class Sample implements Comparable<Sample> {
   public static Sample build(
       @JsonProperty("name") final String name,
       @JsonProperty("accession") final String accession,
+      @JsonProperty("sraAccession") final String sraAccession,
       @JsonProperty("domain") final String domain,
       @JsonProperty("webinSubmissionAccountId") final String webinSubmissionAccountId,
       @JsonProperty("taxId") final Long taxId,
@@ -411,9 +513,14 @@ public class Sample implements Comparable<Sample> {
       sample.accession = accession.trim();
     }
 
+    if (sraAccession != null) {
+      sample.sraAccession = sraAccession.trim();
+    }
+
     if (name == null) {
       throw new IllegalArgumentException("Sample name must be provided");
     }
+
     sample.name = name.trim();
 
     if (domain != null) {
@@ -452,45 +559,55 @@ public class Sample implements Comparable<Sample> {
     }
 
     sample.attributes = new TreeSet<>();
+
     if (attributes != null) {
       sample.attributes.addAll(attributes);
     }
 
     sample.relationships = new TreeSet<>();
+
     if (relationships != null) {
       sample.relationships.addAll(relationships);
     }
 
     sample.externalReferences = new TreeSet<>();
+
     if (externalReferences != null) {
       sample.externalReferences.addAll(externalReferences);
     }
 
     sample.organizations = new TreeSet<>();
+
     if (organizations != null) {
       sample.organizations.addAll(organizations);
     }
 
     sample.contacts = new TreeSet<>();
+
     if (contacts != null) {
       sample.contacts.addAll(contacts);
     }
 
     sample.publications = new TreeSet<>();
+
     if (publications != null) {
       sample.publications.addAll(publications);
     }
 
     sample.certificates = new TreeSet<>();
+
     if (certificates != null) {
       sample.certificates.addAll(certificates);
     }
 
     sample.data = new TreeSet<>();
+
     if (data != null) {
       sample.data.addAll(data);
     }
+
     sample.structuredData = new HashSet<>();
+
     if (structuredData != null) {
       sample.structuredData.addAll(structuredData);
     }
@@ -503,6 +620,7 @@ public class Sample implements Comparable<Sample> {
   public static class Builder {
     protected String name;
     protected String accession = null;
+    protected String sraAccession = null;
     protected String domain = null;
     protected String webinSubmissionAccountId = null;
     protected Long taxId = null;
@@ -528,6 +646,23 @@ public class Sample implements Comparable<Sample> {
       this.accession = accession;
     }
 
+    public Builder(final String name, final String accession, final String sraAccession) {
+      this.name = name;
+      this.accession = accession;
+      this.sraAccession = sraAccession;
+    }
+
+    public Builder(
+        final String name,
+        final String accession,
+        final String sraAccession,
+        final SampleStatus status) {
+      this.name = name;
+      this.accession = accession;
+      this.sraAccession = sraAccession;
+      this.status = status;
+    }
+
     public Builder(final String name, final String accession, final SampleStatus status) {
       this.name = name;
       this.accession = accession;
@@ -545,6 +680,11 @@ public class Sample implements Comparable<Sample> {
 
     public Builder withAccession(final String accession) {
       this.accession = accession;
+      return this;
+    }
+
+    public Builder withSraAccession(final String sraAccession) {
+      this.sraAccession = sraAccession;
       return this;
     }
 
@@ -656,6 +796,7 @@ public class Sample implements Comparable<Sample> {
       } else {
         this.data = new TreeSet<>();
       }
+
       return this;
     }
 
@@ -842,6 +983,7 @@ public class Sample implements Comparable<Sample> {
       return Sample.build(
           name,
           accession,
+          sraAccession,
           domain,
           webinSubmissionAccountId,
           taxId,
@@ -886,7 +1028,7 @@ public class Sample implements Comparable<Sample> {
      * @return the Builder
      */
     public static Builder fromSample(final Sample sample) {
-      return new Builder(sample.getName(), sample.getAccession())
+      return new Builder(sample.getName(), sample.getAccession(), sample.getSraAccession())
           .withDomain(sample.getDomain())
           .withWebinSubmissionAccountId(sample.getWebinSubmissionAccountId())
           .withTaxId(sample.getTaxId())

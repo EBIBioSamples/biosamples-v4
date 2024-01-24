@@ -101,11 +101,33 @@ public class CurationReadServiceTest {
   }
 
   @Test
-  public void applyAllCurationToSample_test_dont_add_new_curation_attribute() {
+  public void
+      applyAllCurationToSample_test_dont_add_new_curation_attribute_pass_double_quotes_as_single_elem_in_curation_domain_list() {
     final Sample originalSample = getSampleForTest();
     final Sample curatedSample =
         curationReadService.applyAllCurationToSample(
             originalSample, Optional.of(Collections.singletonList("")));
+
+    if (curatedSample
+        .getAttributes()
+        .contains(Attribute.build("NewCuration", "new value", "iri", "unit"))) {
+      Assert.fail("Un-curated view contains curation object");
+    }
+
+    if (curatedSample
+        .getExternalReferences()
+        .contains(ExternalReference.build("www.ebi.ac.uk/test/new"))) {
+      Assert.fail("Un-curated view contains curation object");
+    }
+  }
+
+  @Test
+  public void
+      applyAllCurationToSample_test_dont_add_new_curation_attribute_pass_single_empty_optional_in_curation_domain_list() {
+    final Sample originalSample = getSampleForTest();
+    final Sample curatedSample =
+        curationReadService.applyAllCurationToSample(
+            originalSample, Optional.of(new ArrayList<>()));
 
     if (curatedSample
         .getAttributes()
@@ -276,6 +298,7 @@ public class CurationReadServiceTest {
     return Sample.build(
         "SAMN0001_NAME",
         "SAMN0001",
+        "SRS01",
         "self.TestDomain",
         "",
         Long.valueOf(9606),
