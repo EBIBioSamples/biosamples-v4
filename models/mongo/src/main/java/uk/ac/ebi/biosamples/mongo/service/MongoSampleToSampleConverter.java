@@ -10,6 +10,10 @@
 */
 package uk.ac.ebi.biosamples.mongo.service;
 
+import java.time.Instant;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +26,6 @@ import uk.ac.ebi.biosamples.mongo.model.MongoCertificate;
 import uk.ac.ebi.biosamples.mongo.model.MongoExternalReference;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
-
-import java.time.Instant;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.function.Function;
 
 @Service
 public class MongoSampleToSampleConverter implements Function<MongoSample, Sample> {
