@@ -67,6 +67,7 @@ public class CurationApplicationService {
     return Sample.build(
         sample.getName(),
         sample.getAccession(),
+        sample.getSraAccession(),
         sample.getDomain(),
         sample.getWebinSubmissionAccountId(),
         sample.getTaxId(),

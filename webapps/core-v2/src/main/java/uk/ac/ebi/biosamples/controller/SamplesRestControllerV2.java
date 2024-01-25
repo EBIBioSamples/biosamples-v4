@@ -62,11 +62,11 @@ public class SamplesRestControllerV2 {
   }
 
   /*
-  Submit multiple samples, without any relationship information
+  Submit single sample, without any relationship information
    */
   @PreAuthorize("isAuthenticated()")
   @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<Sample> postSamplesV2(
+  public ResponseEntity<Sample> postSampleV2(
       @RequestBody Sample sample, @RequestHeader(name = "Authorization") final String token) {
     log.debug("Received POST for submission " + sample);
 
@@ -154,9 +154,9 @@ public class SamplesRestControllerV2 {
    */
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
-      consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE})
-  @RequestMapping("/accession")
+      value = "/accession",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Sample> accessionSampleV2(
       @RequestBody Sample sample, @RequestHeader(name = "Authorization") final String token) {
     log.debug("Received POST for accessioning " + sample);

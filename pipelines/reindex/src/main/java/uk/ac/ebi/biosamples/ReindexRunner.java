@@ -100,7 +100,8 @@ public class ReindexRunner implements ApplicationRunner {
 
           futures.put(
               accession,
-              executor.submit(new AccessionCallable(accession, sampleReadService, amqpTemplate)));
+              executor.submit(
+                  new SampleIndexingCallable(accession, sampleReadService, amqpTemplate)));
 
           ThreadUtils.checkFutures(futures, 1000);
         }
@@ -113,13 +114,13 @@ public class ReindexRunner implements ApplicationRunner {
     }
   }
 
-  private static class AccessionCallable implements Callable<Void> {
+  private static class SampleIndexingCallable implements Callable<Void> {
+    private static final List<Sample> related = new ArrayList<>();
     private final String accession;
     private final SampleReadService sampleReadService;
     private final AmqpTemplate amqpTemplate;
-    private static final List<Sample> related = new ArrayList<>();
 
-    public AccessionCallable(
+    public SampleIndexingCallable(
         final String accession,
         final SampleReadService sampleReadService,
         final AmqpTemplate amqpTemplate) {
@@ -146,29 +147,32 @@ public class ReindexRunner implements ApplicationRunner {
         }
       }
 
-      final Optional<Sample> opt = sampleReadService.fetch(accession, Optional.empty());
+      final Optional<Sample> sampleOptional = sampleReadService.fetch(accession, Optional.empty());
 
-      if (opt.isPresent()) {
+      if (sampleOptional.isPresent()) {
         try {
-          final Sample sample = opt.get();
-          final MessageContent messageContent = MessageContent.build(sample, null, related, false);
           amqpTemplate.convertAndSend(
-              Messaging.REINDEXING_EXCHANGE, Messaging.REINDEXING_QUEUE, messageContent);
+              Messaging.REINDEXING_EXCHANGE,
+              Messaging.REINDEXING_QUEUE,
+              MessageContent.build(sampleOptional.get(), null, related, false));
+
           return true;
         } catch (final Exception e) {
           LOGGER.error(
               String.format(
-                  "failed to convert sample to message and send to queue for %s", accession));
-          return false;
+                  "Failed to convert sample to message and send to queue for %s", accession),
+              e);
         }
       } else {
-        if (isRetry) {
-          LOGGER.error(String.format("failed to fetch sample after retrying for %s", accession));
-        } else {
-          LOGGER.warn(String.format("failed to fetch sample for %s", accession));
-        }
-        return false;
+        final String errorMessage =
+            isRetry
+                ? String.format("Failed to fetch sample after retrying for %s", accession)
+                : String.format("Failed to fetch sample for %s", accession);
+
+        LOGGER.warn(errorMessage);
       }
+
+      return false;
     }
   }
 }

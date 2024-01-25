@@ -45,7 +45,7 @@ public class MongoSampleToSampleConverter implements Function<MongoSample, Sampl
     final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 
     if (mongoSample.getExternalReferences() != null
-        && mongoSample.getExternalReferences().size() > 0) {
+        && !mongoSample.getExternalReferences().isEmpty()) {
       for (final MongoExternalReference mongoExternalReference :
           mongoSample.getExternalReferences()) {
         if (mongoExternalReference != null) {
@@ -57,7 +57,7 @@ public class MongoSampleToSampleConverter implements Function<MongoSample, Sampl
 
     final SortedSet<Relationship> relationships = new TreeSet<>();
 
-    if (mongoSample.getRelationships() != null && mongoSample.getRelationships().size() > 0) {
+    if (mongoSample.getRelationships() != null && !mongoSample.getRelationships().isEmpty()) {
       for (final MongoRelationship mongoRelationship : mongoSample.getRelationships()) {
         if (mongoRelationship != null) {
           relationships.add(mongoRelationshipToRelationshipConverter.convert(mongoRelationship));
@@ -67,7 +67,7 @@ public class MongoSampleToSampleConverter implements Function<MongoSample, Sampl
 
     final SortedSet<Certificate> certificates = new TreeSet<>();
 
-    if (mongoSample.getCertificates() != null && mongoSample.getCertificates().size() > 0) {
+    if (mongoSample.getCertificates() != null && !mongoSample.getCertificates().isEmpty()) {
       for (final MongoCertificate certificate : mongoSample.getCertificates()) {
         if (certificate != null) {
           certificates.add(mongoCertificateToCertificateConverter.convert(certificate));
@@ -88,7 +88,8 @@ public class MongoSampleToSampleConverter implements Function<MongoSample, Sampl
 
     if (submitted == null) {
       convertedSample =
-          new Sample.Builder(mongoSample.getName(), mongoSample.getAccession())
+          new Sample.Builder(
+                  mongoSample.getName(), mongoSample.getAccession(), mongoSample.getSraAccession())
               .withDomain(mongoSample.getDomain())
               .withTaxId(mongoSample.getTaxId())
               .withStatus(mongoSample.getStatus())
@@ -109,7 +110,8 @@ public class MongoSampleToSampleConverter implements Function<MongoSample, Sampl
               .build();
     } else {
       convertedSample =
-          new Sample.Builder(mongoSample.getName(), mongoSample.getAccession())
+          new Sample.Builder(
+                  mongoSample.getName(), mongoSample.getAccession(), mongoSample.getSraAccession())
               .withDomain(mongoSample.getDomain())
               .withTaxId(mongoSample.getTaxId())
               .withStatus(mongoSample.getStatus())

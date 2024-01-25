@@ -14,33 +14,18 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import java.util.Objects;
+import lombok.Data;
 import uk.ac.ebi.biosamples.service.AccessionSerializer;
 
+@Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonSerialize(using = AccessionSerializer.class)
 public class Accession implements Comparable<Accession> {
-  protected String id;
-
   @JsonProperty("id")
-  public String getId() {
-    return id;
-  }
+  protected String id;
 
   private Accession(final String id) {
     this.id = id;
-  }
-
-  @Override
-  public boolean equals(final Object o) {
-    if (o == this) {
-      return true;
-    }
-    if (!(o instanceof Accession)) {
-      return false;
-    }
-    final Accession other = (Accession) o;
-    return id.equalsIgnoreCase(other.id);
   }
 
   @Override
@@ -54,16 +39,6 @@ public class Accession implements Comparable<Accession> {
     }
 
     return 0;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(id);
-  }
-
-  @Override
-  public String toString() {
-    return id;
   }
 
   @JsonCreator

@@ -10,8 +10,7 @@
 */
 package uk.ac.ebi.biosamples.curation;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -31,7 +30,6 @@ public class TransformationCallable implements Callable<PipelineResult> {
   private final Sample sample;
   private final BioSamplesClient bioSamplesClientWebin;
   private final BioSamplesClient bioSamplesClientAap;
-  private final List<String> curationDomainBlankList = new ArrayList<>();
 
   TransformationCallable(
       final Sample sample,
@@ -40,8 +38,6 @@ public class TransformationCallable implements Callable<PipelineResult> {
     this.sample = sample;
     this.bioSamplesClientWebin = bioSamplesClientWebin;
     this.bioSamplesClientAap = bioSamplesClientAap;
-
-    curationDomainBlankList.add("");
   }
 
   @Override
@@ -50,7 +46,7 @@ public class TransformationCallable implements Callable<PipelineResult> {
 
     final Optional<EntityModel<Sample>> optionalSampleResource =
         bioSamplesClientWebin.fetchSampleResource(
-            sample.getAccession(), Optional.of(curationDomainBlankList));
+            sample.getAccession(), Optional.of(Collections.singletonList("")));
 
     if (optionalSampleResource.isPresent()) {
       final Sample uncuratedSample = optionalSampleResource.get().getContent();

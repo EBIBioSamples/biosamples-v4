@@ -17,26 +17,46 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.time.Instant;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
 import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
+@Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Document
+@CompoundIndexes({
+  @CompoundIndex(
+      name = "sra_accession_index",
+      def = "{'attributes.value': 1}",
+      partialFilter = "{'attributes.type': 'SRA accession'}",
+      background = true)
+})
 public class MongoSample {
   @Transient public static final String SEQUENCE_NAME = "accession_sequence";
   @Transient public static final String SRA_SEQUENCE_NAME = "sra_accession_sequence";
 
   @Id protected String accession;
+
+  @Field(targetType = FieldType.STRING, name = "sraAccession")
+  @Indexed(background = true)
+  private String sraAccession;
 
   @Indexed(background = true)
   private String accessionPrefix;
@@ -84,7 +104,6 @@ public class MongoSample {
   protected SortedSet<Attribute> attributes;
   protected SortedSet<MongoRelationship> relationships;
   protected SortedSet<MongoExternalReference> externalReferences;
-
   private SortedSet<Organization> organizations;
   protected SortedSet<Contact> contacts;
   protected SortedSet<Publication> publications;
@@ -95,202 +114,18 @@ public class MongoSample {
 
   @JsonIgnore
   public boolean hasAccession() {
-    if (accession != null && accession.trim().length() != 0) {
+    if (accession != null && !accession.trim().isEmpty()) {
       return true;
     } else {
       return false;
     }
   }
 
-  public String getAccession() {
-    return accession;
-  }
-
-  public String getAccessionPrefix() {
-    return accessionPrefix;
-  }
-
-  public Integer getAccessionNumber() {
-    return accessionNumber;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public String getDomain() {
-    return domain;
-  }
-
-  public String getWebinSubmissionAccountId() {
-    return webinSubmissionAccountId;
-  }
-
-  public Long getTaxId() {
-    return taxId;
-  }
-
-  public SampleStatus getStatus() {
-    return status;
-  }
-
-  public Instant getRelease() {
-    return release;
-  }
-
-  public Instant getSubmitted() {
-    return submitted;
-  }
-
-  public Instant getReviewed() {
-    return reviewed;
-  }
-
-  public Instant getUpdate() {
-    return update;
-  }
-
-  public Instant getCreate() {
-    return create;
-  }
-
-  public SortedSet<Attribute> getAttributes() {
-    return attributes;
-  }
-
-  public SortedSet<MongoRelationship> getRelationships() {
-    return relationships;
-  }
-
-  public SortedSet<MongoExternalReference> getExternalReferences() {
-    return externalReferences;
-  }
-
-  public SortedSet<Organization> getOrganizations() {
-    return organizations;
-  }
-
-  public SortedSet<Contact> getContacts() {
-    return contacts;
-  }
-
-  public SortedSet<Publication> getPublications() {
-    return publications;
-  }
-
-  public SortedSet<MongoCertificate> getCertificates() {
-    return certificates;
-  }
-
-  public Set<AbstractData> getData() {
-    return data;
-  }
-
-  public SubmittedViaType getSubmittedVia() {
-    return submittedVia;
-  }
-
-  @Override
-  public boolean equals(final Object o) {
-
-    if (o == this) {
-      return true;
-    }
-    if (!(o instanceof MongoSample)) {
-      return false;
-    }
-    final MongoSample other = (MongoSample) o;
-    return Objects.equals(name, other.name)
-        && Objects.equals(accession, other.accession)
-        && Objects.equals(domain, other.domain)
-        && Objects.equals(webinSubmissionAccountId, other.webinSubmissionAccountId)
-        && Objects.equals(taxId, other.taxId)
-        && Objects.equals(status, other.status)
-        && Objects.equals(release, other.release)
-        && Objects.equals(update, other.update)
-        && Objects.equals(create, other.create)
-        && Objects.equals(submitted, other.submitted)
-        && Objects.equals(attributes, other.attributes)
-        && Objects.equals(relationships, other.relationships)
-        && Objects.equals(externalReferences, other.externalReferences)
-        && Objects.equals(organizations, other.organizations)
-        && Objects.equals(contacts, other.contacts)
-        && Objects.equals(publications, other.publications)
-        && Objects.equals(submittedVia, other.submittedVia);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(
-        name,
-        accession,
-        domain,
-        webinSubmissionAccountId,
-        taxId,
-        status,
-        release,
-        update,
-        create,
-        submitted,
-        attributes,
-        relationships,
-        externalReferences,
-        organizations,
-        contacts,
-        publications);
-  }
-
-  @Override
-  public String toString() {
-    final StringBuilder sb = new StringBuilder();
-
-    sb.append("MongoSample(");
-    sb.append(name);
-    sb.append(",");
-    sb.append(accession);
-    sb.append(",");
-    sb.append(domain);
-    sb.append(",");
-    sb.append(webinSubmissionAccountId);
-    sb.append(",");
-    sb.append(taxId);
-    sb.append(",");
-    sb.append(status);
-    sb.append(",");
-    sb.append(release);
-    sb.append(",");
-    sb.append(update);
-    sb.append(",");
-    sb.append(create);
-    sb.append(",");
-    sb.append(submitted);
-    sb.append(",");
-    sb.append(reviewed);
-    sb.append(",");
-    sb.append(attributes);
-    sb.append(",");
-    sb.append(relationships);
-    sb.append(",");
-    sb.append(externalReferences);
-    sb.append(",");
-    sb.append(organizations);
-    sb.append(",");
-    sb.append(contacts);
-    sb.append(",");
-    sb.append(publications);
-    sb.append(",");
-    sb.append(data);
-    sb.append(",");
-    sb.append(submittedVia);
-    sb.append(")");
-
-    return sb.toString();
-  }
-
   @JsonCreator
   public static MongoSample build(
       @JsonProperty("name") final String name,
       @JsonProperty("accession") final String accession,
+      @JsonProperty("sraAccession") final String sraAccession,
       @JsonProperty("domain") final String domain,
       @JsonProperty("webinSubmissionAccountId") final String webinSubmissionAccountId,
       @JsonProperty("taxId") final Long taxId,
@@ -314,6 +149,7 @@ public class MongoSample {
     final MongoSample mongoSample = new MongoSample();
 
     mongoSample.accession = accession;
+    mongoSample.sraAccession = sraAccession;
     mongoSample.name = name;
     mongoSample.domain = domain;
     mongoSample.webinSubmissionAccountId = webinSubmissionAccountId;
@@ -326,49 +162,49 @@ public class MongoSample {
     mongoSample.reviewed = reviewed;
     mongoSample.attributes = new TreeSet<>();
 
-    if (attributes != null && attributes.size() > 0) {
+    if (attributes != null && !attributes.isEmpty()) {
       mongoSample.attributes.addAll(attributes);
     }
 
     mongoSample.data = new HashSet<>();
 
-    if (structuredData != null && structuredData.size() > 0) {
+    if (structuredData != null && !structuredData.isEmpty()) {
       mongoSample.data.addAll(structuredData);
     }
 
     mongoSample.relationships = new TreeSet<>();
 
-    if (relationships != null && relationships.size() > 0) {
+    if (relationships != null && !relationships.isEmpty()) {
       mongoSample.relationships.addAll(relationships);
     }
 
     mongoSample.externalReferences = new TreeSet<>();
 
-    if (externalReferences != null && externalReferences.size() > 0) {
+    if (externalReferences != null && !externalReferences.isEmpty()) {
       mongoSample.externalReferences.addAll(externalReferences);
     }
 
     mongoSample.organizations = new TreeSet<>();
 
-    if (organizations != null && organizations.size() > 0) {
+    if (organizations != null && !organizations.isEmpty()) {
       mongoSample.organizations.addAll(organizations);
     }
 
     mongoSample.contacts = new TreeSet<>();
 
-    if (contacts != null && contacts.size() > 0) {
+    if (contacts != null && !contacts.isEmpty()) {
       mongoSample.contacts.addAll(contacts);
     }
 
     mongoSample.publications = new TreeSet<>();
 
-    if (publications != null && publications.size() > 0) {
+    if (publications != null && !publications.isEmpty()) {
       mongoSample.publications.addAll(publications);
     }
 
     mongoSample.certificates = new TreeSet<>();
 
-    if (certificates != null && certificates.size() > 0) {
+    if (certificates != null && !certificates.isEmpty()) {
       mongoSample.certificates.addAll(certificates);
     }
 

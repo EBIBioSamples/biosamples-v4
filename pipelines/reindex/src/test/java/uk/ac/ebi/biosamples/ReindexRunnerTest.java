@@ -68,6 +68,7 @@ public class ReindexRunnerTest {
         Sample.build(
             "",
             "ACCESSION1",
+            "ERS01",
             "",
             "",
             Long.valueOf(9606),
@@ -84,6 +85,7 @@ public class ReindexRunnerTest {
         Sample.build(
             "",
             "ACCESSION3",
+            "ERS02",
             "",
             "",
             Long.valueOf(9606),

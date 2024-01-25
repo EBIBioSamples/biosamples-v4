@@ -204,6 +204,7 @@ public class ApiDocumentationTest {
             null,
             null,
             null,
+            null,
             Long.valueOf(9606),
             SampleStatus.PUBLIC,
             null,

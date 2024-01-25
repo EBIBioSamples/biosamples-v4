@@ -84,11 +84,10 @@ public class SampleTaxIdTest {
   }
 
   private Sample generateTestSample(final List<Attribute> attributes) {
-    final Set<Attribute> attributeSet = new HashSet<>();
-    for (final Attribute attribute : attributes) {
-      attributeSet.add(attribute);
-    }
+    final Set<Attribute> attributeSet = new HashSet<>(attributes);
+
     return Sample.build(
+        "",
         "",
         "",
         "",

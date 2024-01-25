@@ -60,11 +60,11 @@ public class FileDownloadController {
       final HttpServletRequest request) {
     LOG.info(
         "Sample bulk download request: text = {}, filters = {}", text, Arrays.toString(filter));
+
     final String decodedText = LinkUtils.decodeText(text);
     final Collection<Filter> filters =
         filterService.getFiltersCollection(LinkUtils.decodeTexts(filter));
     final Collection<String> domains = bioSamplesAapService.getDomains();
-
     final String outputFormat = getDownloadFormat(format, request.getHeader("Accept"));
     setResponseHeaders(response, zip, outputFormat);
     final InputStream in =
@@ -79,7 +79,9 @@ public class FileDownloadController {
     if (format == null || format.isEmpty()) {
       format = acceptHeader != null && acceptHeader.contains("xml") ? "xml" : "json";
     }
+
     format = "accessions".equalsIgnoreCase(format) ? "txt" : format;
+
     return format;
   }
 

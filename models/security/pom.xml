@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.3.1-RC1</version>
+		<version>5.3.2-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -16,13 +16,7 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-core</artifactId>
-			<version>5.3.1-RC1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>1.18.22</version>
-			<scope>provided</scope>
+			<version>5.3.2-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 </project>

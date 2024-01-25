@@ -54,50 +54,83 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
 
   @Override
   protected void phaseSix() throws ExecutionException, InterruptedException {
+    // Log the start of SRA accession related tests
     log.info("Starting SRA accession related tests");
 
+    // Retrieve and persist the first sample for testing
     final Sample webinSampleTest1 = getWebinSampleTest1();
     final Sample webinSampleTest2 = getWebinSampleTest2();
     final Sample sample1Content = persistAndFetch(webinSampleTest1);
 
+    // Check if the new sample contains an SRA accession attribute
     if (sample1Content.getAttributes().stream()
         .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION))) {
       throw new IntegrationTestFailException(
           "New sample doesn't contain a SRA accession attribute - check 1", Phase.SIX);
     }
 
+    // Retrieve SRA accession from the first sample
+    final String sample1ContentSraAccession = sample1Content.getSraAccession();
+
+    // Check if the SRA accession field is not null
+    if (sample1ContentSraAccession == null) {
+      throw new IntegrationTestFailException(
+          "New sample doesn't contain a SRA accession field - check 1", Phase.SIX);
+    }
+
+    // Retrieve the SRA accession attribute for the first sample
     final Optional<Attribute> optionalSraAccessionAttributeForSampleTest1 =
         sample1Content.getAttributes().stream()
             .filter(attribute -> attribute.getType().equals(SRA_ACCESSION))
             .findFirst();
 
+    // Check if the SRA accession attribute is present
     if (optionalSraAccessionAttributeForSampleTest1.isEmpty()) {
       throw new IntegrationTestFailException(
           "New sample doesn't contain a SRA accession attribute - check 2", Phase.SIX);
     }
 
+    // Retrieve the SRA accession attribute for the first sample
     final Attribute sraAccessionAttributeForSampleTest1 =
         optionalSraAccessionAttributeForSampleTest1.get();
 
-    // re-post the first sample with accession, fetch and test
+    // Re-post the first sample with accession, fetch, and test
     final Sample sample1RePostContent = persistAndFetch(sample1Content);
     final Optional<Attribute> optionalSraAccessionAttributeForSampleTestAfterRePost =
         sample1RePostContent.getAttributes().stream()
             .filter(attribute -> attribute.getType().equals(SRA_ACCESSION))
             .findFirst();
 
+    // Check if the SRA accession attribute is present after re-post
     if (optionalSraAccessionAttributeForSampleTestAfterRePost.isEmpty()) {
       throw new IntegrationTestFailException(
           "New sample doesn't contain a SRA accession attribute after Re-POST", Phase.SIX);
     }
 
+    // Retrieve the SRA accession from the re-posted sample
+    final String sample1RePostContentSraAccession = sample1RePostContent.getSraAccession();
+
+    // Check if the SRA accession field is not null after re-post
+    if (sample1RePostContentSraAccession == null) {
+      throw new IntegrationTestFailException(
+          "New sample doesn't contain a SRA accession field after Re-POST", Phase.SIX);
+    }
+
+    // Retrieve the SRA accession attribute for the re-posted first sample
     final Attribute sraAccessionAttributeForSampleTest1AfterRePost =
         optionalSraAccessionAttributeForSampleTestAfterRePost.get();
 
+    // Check for SRA accession mismatch after sample post and re-post
     if (!sraAccessionAttributeForSampleTest1.equals(
         sraAccessionAttributeForSampleTest1AfterRePost)) {
       throw new IntegrationTestFailException(
           "SRA accession mismatch after sample post and re-post", Phase.SIX);
+    }
+
+    // Check for SRA accession field mismatch after sample post and re-post
+    if (!sample1ContentSraAccession.equals(sample1RePostContentSraAccession)) {
+      throw new IntegrationTestFailException(
+          "SRA accession field mismatch after sample post and re-post", Phase.SIX);
     }
 
     // submit sample 2 that already has an SRA accession
@@ -107,7 +140,9 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
         sample2Content.getAttributes();
     final Set<Attribute> sample2ContentAttributesBeforePersistence =
         webinSampleTest2.getAttributes();
+    final String sample2ContentSraAccession = sample2Content.getSraAccession();
 
+    // Check if the new sample-2 contains an SRA accession attribute
     if (sample2ContentAttributesAfterPersistence.stream()
         .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION))) {
       throw new IntegrationTestFailException(
@@ -115,20 +150,30 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
           Phase.SIX);
     }
 
+    // Check if the SRA accession field is not null for sample-2
+    if (sample2ContentSraAccession == null) {
+      throw new IntegrationTestFailException(
+          "New sample-2 doesn't contain a SRA accession field - check 1", Phase.SIX);
+    }
+
+    // Retrieve the SRA accession attribute for sample-2 after persistence
     final Optional<Attribute> optionalSraAccessionAttributeForSampleTest2 =
         sample2ContentAttributesAfterPersistence.stream()
             .filter(attribute -> attribute.getType().equals(SRA_ACCESSION))
             .findFirst();
 
+    // Check if the SRA accession attribute is present for sample-2 after persistence
     if (optionalSraAccessionAttributeForSampleTest2.isEmpty()) {
       throw new IntegrationTestFailException(
           "New sample-2 doesn't contain a SRA accession attribute, even if it was in submission sample - check 2",
           Phase.SIX);
     }
 
+    // Retrieve the SRA accession attribute for sample-2 after persistence
     final Attribute sraAccessionAttributeForSampleTest2 =
         optionalSraAccessionAttributeForSampleTest2.get();
 
+    // Check for SRA accession mismatch with sample state before persistence for sample-2
     if (!sraAccessionAttributeForSampleTest2.equals(
         sample2ContentAttributesBeforePersistence.stream()
             .filter(attribute -> attribute.getType().equals(SRA_ACCESSION))
@@ -138,6 +183,15 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
           "New sample-2 SRA accession mismatch with sample state before persistence", Phase.SIX);
     }
 
+    // Check for SRA accession field and attribute mismatch with sample state before persistence for
+    // sample-2
+    if (!sample2ContentSraAccession.equals(sraAccessionAttributeForSampleTest2.getValue())) {
+      throw new IntegrationTestFailException(
+          "New sample-2 SRA accession field and attribute mismatch with sample state after persistence",
+          Phase.SIX);
+    }
+
+    // Check for SRA accession mismatch with sample state after persistence for sample-2
     if (!sraAccessionAttributeForSampleTest2.equals(
         sample2ContentAttributesAfterPersistence.stream()
             .filter(attribute -> attribute.getType().equals(SRA_ACCESSION))
@@ -148,7 +202,7 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
     }
 
     // remove SRA accession and add a different one
-    sample2ContentAttributesBeforePersistence.removeIf(
+    sample2ContentAttributesAfterPersistence.removeIf(
         attribute -> attribute.getType().equals(SRA_ACCESSION));
     sample2ContentAttributesAfterPersistence.add(Attribute.build(SRA_ACCESSION, "ERS100002"));
 
@@ -169,15 +223,24 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
 
     sample2Content =
         Sample.Builder.fromSample(sample2Content)
+            .withSraAccession(null)
             .withAttributes(sample2ContentAttributesBeforePersistence)
             .build();
 
+    // Check if the attempt to remove SRA accession attribute didn't work
     if (sample2Content.getAttributes().stream()
         .anyMatch(attribute -> attribute.getType().equals(SRA_ACCESSION))) {
       throw new IntegrationTestFailException(
-          "Attempt to remove SRA accesion attribute didn't work", Phase.SIX);
+          "Attempt to remove SRA accession attribute didn't work", Phase.SIX);
     }
 
+    // Check if the attempt to remove SRA accession field didn't work
+    if (sample2Content.getSraAccession() != null) {
+      throw new IntegrationTestFailException(
+          "Attempt to remove SRA accession attribute didn't work", Phase.SIX);
+    }
+
+    // Persist sample-2 again and check if old SRA accession is retained
     final Sample sample2ContentAfterRePersistWithSRAAccessionRemoved =
         webinClient.persistSampleResourceV2(Collections.singletonList(sample2Content)).get(0);
 
@@ -187,10 +250,14 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
                 .filter(attribute -> attribute.getType().equals(SRA_ACCESSION))
                 .findFirst();
 
+    // Check if SRA accession is retained after persistence with SRA accession removed
     if (!optionalSraAccessionAttributeForSample2ContentAfterRePersistWithSRAAccessionRemoved
-        .get()
-        .getValue()
-        .equals("ERS100001")) {
+            .get()
+            .getValue()
+            .equals("ERS100001")
+        || !sample2ContentAfterRePersistWithSRAAccessionRemoved
+            .getSraAccession()
+            .equals("ERS100001")) {
       throw new IntegrationTestFailException(
           "New sample-2 SRA accession mismatch with sample state after persistence with SRA accession removed",
           Phase.SIX);

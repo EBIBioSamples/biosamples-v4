@@ -143,10 +143,10 @@ public class BioSamplesAapService {
 
     blacklistedDomainsCheck(usersDomains, domain);
 
-    if (domain == null || domain.length() == 0) {
+    if (domain == null || domain.isEmpty()) {
       // if the sample doesn't have a domain, and the user has one domain, then they must be
       // submitting to that domain
-      if (usersDomains.size() > 0) {
+      if (!usersDomains.isEmpty()) {
         final String nextDomain = usersDomains.iterator().next();
 
         domain = domain != null ? domain : nextDomain;
@@ -202,8 +202,7 @@ public class BioSamplesAapService {
   }
 
   private static void blacklistedDomainsCheck(final Set<String> usersDomains, final String domain) {
-    if (blacklistedDomains.contains(domain)
-        || usersDomains.stream().anyMatch(blacklistedDomains::contains)) {
+    if (blacklistedDomains.contains(domain)) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN,
           "Domain not authorized to submit to BioSamples/ user having access to this domain is rendered unauthorized");

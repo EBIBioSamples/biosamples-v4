@@ -27,13 +27,10 @@ import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSequence;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
+import uk.ac.ebi.biosamples.utils.BioSamplesConstants;
 
 // this needs to be the spring exception, not the mongo one
 public class MongoAccessionService {
-  private static final int MAX_RETRIES = 5;
-  private static final String SRA_ACCESSION_PREFIX = "ERS";
-  private static final String ACCESSION_PREFIX = "SAMEA";
-  private static final String SRA_ACCESSION = "SRA accession";
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final MongoSampleRepository mongoSampleRepository;
   private final SampleToMongoSampleConverter sampleToMongoSampleConverter;
@@ -55,6 +52,7 @@ public class MongoAccessionService {
     MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
 
     mongoSample = accessionAndInsert(mongoSample, generateSAMEAndSRAAccession);
+
     return mongoSampleToSampleConverter.apply(mongoSample);
   }
 
@@ -81,7 +79,7 @@ public class MongoAccessionService {
         sample = mongoSampleRepository.insertNew(sample);
         success = true;
       } catch (final Exception e) {
-        if (++numRetry == MAX_RETRIES) {
+        if (++numRetry == BioSamplesConstants.MAX_RETRIES) {
           throw new RuntimeException(
               "Cannot generate a new BioSample accession. please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
         }
@@ -103,9 +101,9 @@ public class MongoAccessionService {
     final SortedSet<MongoRelationship> relationships = sample.getRelationships();
     final SortedSet<MongoRelationship> newRelationships = new TreeSet<>();
     for (final MongoRelationship relationship : relationships) {
-      // this relationship could not specify a source because the sample is unaccessioned
+      // this relationship could not specify a source because the sample is un-accessioned
       // now we are assigning an accession, set the source to the accession
-      if (relationship.getSource() == null || relationship.getSource().trim().length() == 0) {
+      if (relationship.getSource() == null || relationship.getSource().trim().isEmpty()) {
         newRelationships.add(
             MongoRelationship.build(
                 accessions.accession, relationship.getType(), relationship.getTarget()));
@@ -115,13 +113,16 @@ public class MongoAccessionService {
     }
 
     if (accessions.sraAccession != null) {
-      sample.getAttributes().add(Attribute.build(SRA_ACCESSION, accessions.sraAccession));
+      sample
+          .getAttributes()
+          .add(Attribute.build(BioSamplesConstants.SRA_ACCESSION, accessions.sraAccession));
     }
 
     sample =
         MongoSample.build(
             sample.getName(),
             accessions.accession,
+            accessions.sraAccession != null ? accessions.sraAccession : sample.getSraAccession(),
             sample.getDomain(),
             sample.getWebinSubmissionAccountId(),
             sample.getTaxId(),
@@ -162,15 +163,15 @@ public class MongoAccessionService {
 
       if (!Objects.isNull(accessionSeq) && !Objects.isNull(sraAccessionSeq)) {
         return new Accessions(
-            ACCESSION_PREFIX + accessionSeq.getSeq(),
-            SRA_ACCESSION_PREFIX + sraAccessionSeq.getSeq());
+            BioSamplesConstants.ACCESSION_PREFIX + accessionSeq.getSeq(),
+            BioSamplesConstants.SRA_ACCESSION_PREFIX + sraAccessionSeq.getSeq());
       } else {
         throw new RuntimeException(
             "Cannot generate a new BioSample and SRA accession. please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
       }
     } else {
       if (!Objects.isNull(accessionSeq)) {
-        return new Accessions(ACCESSION_PREFIX + accessionSeq.getSeq(), null);
+        return new Accessions(BioSamplesConstants.ACCESSION_PREFIX + accessionSeq.getSeq(), null);
       } else {
         throw new RuntimeException(
             "Cannot generate a new BioSample accession. please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
@@ -187,7 +188,7 @@ public class MongoAccessionService {
             MongoSequence.class);
 
     if (!Objects.isNull(sraAccessionSeq)) {
-      return SRA_ACCESSION_PREFIX + sraAccessionSeq.getSeq();
+      return BioSamplesConstants.SRA_ACCESSION_PREFIX + sraAccessionSeq.getSeq();
     } else {
       throw new RuntimeException(
           "Cannot generate a new SRA accession number. please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk");
