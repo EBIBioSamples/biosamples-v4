@@ -7,7 +7,7 @@
 <parent>
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>biosamples</artifactId>
-	<version>5.3.2-SNAPSHOT</version>
+	<version>5.3.2-RC1</version>
 </parent>
 
 	<properties>
@@ -24,12 +24,12 @@
 	<dependency>
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>models-mongo</artifactId>
-	<version>5.3.2-SNAPSHOT</version>
+	<version>5.3.2-RC1</version>
 	</dependency>
 	<dependency>
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>models-core</artifactId>
-	<version>5.3.2-SNAPSHOT</version>
+	<version>5.3.2-RC1</version>
 	</dependency>
 	<dependency>
 	<groupId>com.fasterxml.jackson.core</groupId>
