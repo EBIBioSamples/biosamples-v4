@@ -134,8 +134,6 @@ public class MongoSampleToSampleConverter implements Function<MongoSample, Sampl
 
     final Instant reviewed = mongoSample.getReviewed();
 
-    LOGGER.info("Converted sample is " + convertedSample);
-
     if (reviewed == null) {
       return Sample.Builder.fromSample(convertedSample).withNoReviewed().build();
     } else {
