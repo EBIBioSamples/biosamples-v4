@@ -139,6 +139,7 @@ public class BioSamplesWebinAuthenticationService {
 
     if (oldSamplePresent) {
       final Sample oldSampleInDb = oldSample.get();
+
       existingSampleAccessibilityChecks(sample, oldSampleInDb);
 
       if (!webinIdFromAuthToken.equalsIgnoreCase(oldSampleInDb.getWebinSubmissionAccountId())) {

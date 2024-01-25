@@ -381,10 +381,7 @@ public class SampleService {
               .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION));
 
       if (!sampleNotSraAccessioned) {
-        log.info(
-            "Sample SRA accessioned, promoting SRA accession to field " + newSample.getAccession());
         newSample = validateAndPromoteSRAAccessionAttributeToField(newSample);
-        log.info("SRA accession promoted " + newSample.getSraAccession());
       }
 
       newSample = mongoAccessionService.generateAccession(newSample, sampleNotSraAccessioned);
@@ -507,7 +504,6 @@ public class SampleService {
   }
 
   private Sample validateAndPromoteSRAAccessionAttributeToField(final Sample newSample) {
-    log.info("Sample accession is " + newSample.getAccession());
     // Retrieve SRA accession attribute from new sample
     final Optional<Attribute> newSampleSraAccessionOptional =
         newSample.getAttributes().stream()
@@ -517,16 +513,12 @@ public class SampleService {
     // Retrieve SRA accession field from new sample
     final String sraAccessionField = newSample.getSraAccession();
 
-    log.info("Sample SRA accession field is " + sraAccessionField);
-
     // Check if SRA accession field and attribute are both present
     if (sraAccessionField != null && newSampleSraAccessionOptional.isPresent()) {
-      log.info("Here!");
       // Check for SRA accession mismatch
       if (!sraAccessionField.equals(newSampleSraAccessionOptional.get().getValue())) {
         throw new GlobalExceptions.InvalidSampleException();
       } else {
-        log.info("Here!!");
         // If they match, return the new sample
         return newSample;
       }
@@ -534,7 +526,6 @@ public class SampleService {
 
     // Check if SRA accession field is null but attribute is present
     if (sraAccessionField == null && newSampleSraAccessionOptional.isPresent()) {
-      log.info("Here!!!");
       // Promote SRA accession attribute to the field and return the modified sample
       return Sample.Builder.fromSample(newSample)
           .withSraAccession(newSampleSraAccessionOptional.get().getValue())
