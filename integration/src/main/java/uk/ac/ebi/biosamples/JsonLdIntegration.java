@@ -33,17 +33,14 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 public class JsonLdIntegration extends AbstractIntegration {
   private final Environment env;
   private final RestOperations restTemplate;
-  private final IntegrationProperties integrationProperties;
   private final BioSamplesProperties bioSamplesProperties;
 
   public JsonLdIntegration(
       final RestTemplateBuilder templateBuilder,
       final BioSamplesClient client,
-      final IntegrationProperties integrationProperties,
       final BioSamplesProperties bioSamplesProperties,
       final Environment env) {
     super(client);
-    this.integrationProperties = integrationProperties;
     restTemplate = templateBuilder.build();
     this.env = env;
     this.bioSamplesProperties = bioSamplesProperties;
@@ -71,12 +68,17 @@ public class JsonLdIntegration extends AbstractIntegration {
       final Sample testSampleWithAccession =
           Sample.Builder.fromSample(testSample)
               .withAccession(Objects.requireNonNull(sampleContent).getAccession())
+              .withSraAccession(Objects.requireNonNull(sampleContent).getSraAccession())
               .withStatus(sampleContent.getStatus())
               .build();
 
-      if (!testSampleWithAccession.equals(sampleContent)) {
+      if (!sampleContent.equals(testSampleWithAccession)) {
         throw new IntegrationTestFailException(
-            "Expected response (" + sampleContent + ") to equal submission (" + testSample + ")");
+            "Expected response ("
+                + sampleContent
+                + ") to equal submission ("
+                + testSampleWithAccession
+                + ")");
       }
     }
   }
@@ -116,8 +118,8 @@ public class JsonLdIntegration extends AbstractIntegration {
     final String name = "JsonLdIntegration_sample_1";
     final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-
     final SortedSet<Attribute> attributes = new TreeSet<>();
+
     attributes.add(Attribute.build("organism", "Homo Sapiens"));
     attributes.add(
         Attribute.build(
@@ -136,6 +138,7 @@ public class JsonLdIntegration extends AbstractIntegration {
             null));
 
     final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+
     externalReferences.add(
         ExternalReference.build(
             "www.google.com",
@@ -173,12 +176,15 @@ public class JsonLdIntegration extends AbstractIntegration {
     uriBuilder.pathSegment("samples", sample.getAccession() + ".ldjson");
     final ResponseEntity<JsonLDDataRecord> responseEntity =
         restTemplate.getForEntity(uriBuilder.toUriString(), JsonLDDataRecord.class);
+
     if (!responseEntity.getStatusCode().is2xxSuccessful()) {
       throw new RuntimeException(
           "Error retrieving sample in application/ld+json format from the webapp");
     }
+
     final JsonLDDataRecord jsonLDDataRecord = responseEntity.getBody();
     final JsonLDSample jsonLDSample = jsonLDDataRecord.getMainEntity();
+
     assert Stream.of(jsonLDSample.getIdentifiers())
         .anyMatch(s -> s.equals("biosamples:" + sample.getAttributes()));
 
@@ -186,6 +192,7 @@ public class JsonLdIntegration extends AbstractIntegration {
         UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri())
             .pathSegment("samples", sample.getAccession())
             .toUriString();
+
     assert jsonLDSample.getUrl().equals(checkingUrl);
   }
 

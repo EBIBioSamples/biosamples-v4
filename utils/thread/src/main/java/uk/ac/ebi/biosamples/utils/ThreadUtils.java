@@ -28,8 +28,6 @@ public class ThreadUtils {
       final Map<? extends Object, Future<T>> futures, final int maxSize)
       throws InterruptedException, ExecutionException {
     int count = 0;
-    log.info("Checking futures. max size is " + maxSize);
-    log.info("Number of futures to be checked is " + futures.size());
 
     while (futures.size() > maxSize) {
       for (final Iterator<? extends Object> i = futures.keySet().iterator(); i.hasNext(); ) {
@@ -40,8 +38,6 @@ public class ThreadUtils {
         i.remove();
       }
     }
-
-    log.info("Number of futures checked is " + count);
   }
 
   public static <T> void checkAndCallbackFutures(

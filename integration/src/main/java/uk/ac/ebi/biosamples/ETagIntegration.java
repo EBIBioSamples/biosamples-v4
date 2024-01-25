@@ -11,6 +11,7 @@
 package uk.ac.ebi.biosamples;
 
 import java.net.URI;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.utils.BioSamplesConstants;
 
 @Component
 public class ETagIntegration extends AbstractIntegration {
@@ -55,7 +57,13 @@ public class ETagIntegration extends AbstractIntegration {
     log.info("Submitting sample for ETAG check");
 
     final EntityModel<Sample> resource = client.persistSampleResource(testSample);
+    final Attribute sraAccessionAttribute =
+        Objects.requireNonNull(resource.getContent()).getAttributes().stream()
+            .filter(attribute -> attribute.getType().equals(BioSamplesConstants.SRA_ACCESSION))
+            .findFirst()
+            .get();
 
+    testSample.getAttributes().add(sraAccessionAttribute);
     testSample =
         Sample.Builder.fromSample(testSample).withStatus(resource.getContent().getStatus()).build();
 
@@ -73,8 +81,8 @@ public class ETagIntegration extends AbstractIntegration {
   protected void phaseTwo() {
     log.info(
         "Verifying that retrieving ETAG for a sample multiple times doesn't change the ETAG value");
-    final Sample testSample = getTestSample();
 
+    final Sample testSample = getTestSample();
     final RequestEntity request = prepareGetRequestForSample(testSample);
 
     ResponseEntity<String> response = restTemplate.exchange(request, String.class);
@@ -87,6 +95,7 @@ public class ETagIntegration extends AbstractIntegration {
 
     // Fetch the sample another time and check the ETAG
     response = restTemplate.exchange(request, String.class);
+
     if (!etag.equalsIgnoreCase(response.getHeaders().getETag())) {
       throw new RuntimeException(
           "ETAG for the same object are not identical: "
@@ -113,9 +122,10 @@ public class ETagIntegration extends AbstractIntegration {
   protected void phaseThree() {
     // Verify a put request produces a different ETAG
     log.info("Verifying ETAG of a sample pre and post update are different");
-    final Sample testSample = getTestSample();
 
+    final Sample testSample = getTestSample();
     final RequestEntity request = prepareGetRequestForSample(testSample);
+
     ResponseEntity response = restTemplate.exchange(request, String.class);
 
     if (response.getStatusCode() != HttpStatus.OK) {
@@ -124,7 +134,6 @@ public class ETagIntegration extends AbstractIntegration {
     }
 
     final String etag = response.getHeaders().getETag();
-
     final Sample updatedSample =
         Sample.Builder.fromSample(testSample)
             .addAttribute(Attribute.build("Organism part", "liver"))
@@ -133,12 +142,14 @@ public class ETagIntegration extends AbstractIntegration {
     client.persistSampleResource(updatedSample);
 
     response = restTemplate.exchange(request, String.class);
+
     if (response.getStatusCode() != HttpStatus.OK) {
       throw new RuntimeException(
           "Sample with accession " + testSample.getAccession() + " not found");
     }
 
     final String newEtag = response.getHeaders().getETag();
+
     if (etag.equalsIgnoreCase(newEtag)) {
       throw new RuntimeException("A different ETag is expected after a sample update");
     }
@@ -148,6 +159,7 @@ public class ETagIntegration extends AbstractIntegration {
   protected void phaseFour() {
     log.info(
         "Verifying ETAG of a sample pre and post curation are different, but ETAG of the raw sample remains the same");
+
     final Sample testSample = getTestSample();
 
     ResponseEntity<String> rawSampleResponse =

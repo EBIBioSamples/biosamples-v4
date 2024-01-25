@@ -401,7 +401,7 @@ services:
       - elixirValidator.hostUrl=http://json-schema-validator:3020/validate
 
   mongo:
-    image: mongo:3.2
+    image: mongo:4.4.22
     mem_limit: 2g
     volumes:
     - mongo_data:/data/db

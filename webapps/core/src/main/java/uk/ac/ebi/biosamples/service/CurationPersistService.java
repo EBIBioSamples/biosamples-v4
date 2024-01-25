@@ -55,7 +55,7 @@ public class CurationPersistService {
         // check if its a true duplicate and not an accidental hash collision
         final Optional<MongoCuration> byId =
             mongoCurationRepository.findById(mongoCuration.getHash());
-        final MongoCuration existingMongoCuration = byId.isPresent() ? byId.get() : null;
+        final MongoCuration existingMongoCuration = byId.orElse(null);
 
         if (!existingMongoCuration.equals(mongoCuration)) {
           // if it is a different curation with an hash collision, then throw an exception
@@ -75,8 +75,8 @@ public class CurationPersistService {
 
     // for each relationship curation create reverse relationship curation
     createReverseRelationshipCurations(curationLink);
-
     messagingSerivce.fetchThenSendMessage(curationLink.getSample());
+
     return curationLink;
   }
 

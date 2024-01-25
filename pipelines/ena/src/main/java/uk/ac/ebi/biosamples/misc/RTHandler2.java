@@ -10,134 +10,152 @@
 */
 package uk.ac.ebi.biosamples.misc;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import lombok.Data;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.PipelinesProperties;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.Relationship;
 
 @Component
 public class RTHandler2 {
-  /*private static final Logger log = LoggerFactory.getLogger(RTHandler2.class);
-    public static final String RELS_DERIVED_FROM = "derived from";
-    private final BioSamplesClient bioSamplesWebinClient;
-    private final PipelinesProperties pipelinesProperties;
+  private static final Logger log = LoggerFactory.getLogger(RTHandler2.class);
+  public static final String RELS_DERIVED_FROM = "derived from";
+  private final BioSamplesClient bioSamplesWebinClient;
+  private final PipelinesProperties pipelinesProperties;
 
-    public RTHandler2(
-        @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesWebinClient,
-        final PipelinesProperties pipelinesProperties) {
-      this.bioSamplesWebinClient = bioSamplesWebinClient;
-      this.pipelinesProperties = pipelinesProperties;
-    }
+  public RTHandler2(
+      @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesWebinClient,
+      final PipelinesProperties pipelinesProperties) {
+    this.bioSamplesWebinClient = bioSamplesWebinClient;
+    this.pipelinesProperties = pipelinesProperties;
+  }
 
-    public void parseFileAndAddRelationshipCurationToSample() {
-      final String filePath = "C:\\Users\\dgupta\\DIME_BSD.xlsx";
-      final List<String> curationDomainBlankList = new ArrayList<>();
+  public void parseFileAndAddRelationshipCurationToSample() {
+    final String filePath = "C:\\Users\\dgupta\\DIME_BSD.xlsx";
+    final List<String> curationDomainBlankList = new ArrayList<>();
 
-      curationDomainBlankList.add("");
+    curationDomainBlankList.add("");
 
-      try {
-        final List<SampleObject> samples = parseSpreadsheet(filePath);
+    try {
+      final List<SampleObject> samples = parseSpreadsheet(filePath);
 
-        // Now, 'samples' list contains objects for each row.
-        for (final SampleObject sample : samples) {
-          final String accession = sample.getAccession();
+      // Now, 'samples' list contains objects for each row.
+      for (final SampleObject sample : samples) {
+        final String accession = sample.getAccession();
 
-          log.info("Processing Sample: " + accession);
+        log.info("Processing Sample: " + accession);
 
-          final Curation curation =
-              Curation.build(
-                  null,
-                  null,
-                  null,
-                  null,
-                  null,
-                  List.of(Relationship.build(accession, RELS_DERIVED_FROM, sample.getDerivedFrom())));
+        final Curation curation =
+            Curation.build(
+                null,
+                null,
+                null,
+                null,
+                null,
+                List.of(Relationship.build(accession, RELS_DERIVED_FROM, sample.getDerivedFrom())));
 
-          bioSamplesWebinClient.persistCuration(
-              sample.getAccession(), curation, pipelinesProperties.getProxyWebinId(), true);
-        }
-      } catch (final IOException e) {
-        e.printStackTrace();
+        bioSamplesWebinClient.persistCuration(
+            sample.getAccession(), curation, pipelinesProperties.getProxyWebinId(), true);
       }
-    }
-
-    public static List<SampleObject> parseSpreadsheet(final String filePath) throws IOException {
-      final List<SampleObject> samples = new ArrayList<>();
-      final FileInputStream file = new FileInputStream(new File(filePath));
-      final XSSFWorkbook workbook = new XSSFWorkbook(file);
-      final Iterator<Row> rowIterator = workbook.getSheetAt(0).iterator();
-
-      // Skip header row
-      if (rowIterator.hasNext()) {
-        rowIterator.next();
-      }
-
-      while (rowIterator.hasNext()) {
-        final Row row = rowIterator.next();
-
-        // Check if all cells in the row are blank
-        if (isRowBlank(row)) {
-          continue; // Skip this row
-        }
-
-        final SampleObject sample = createSampleObjectFromRow(row);
-        samples.add(sample);
-      }
-
-      workbook.close();
-      file.close();
-
-      return samples;
-    }
-
-    public static boolean isRowBlank(final Row row) {
-      final Iterator<Cell> cellIterator = row.iterator();
-      while (cellIterator.hasNext()) {
-        final Cell cell = cellIterator.next();
-        if (cell.getCellType() != CellType.BLANK) {
-          return false; // The row is not blank if any cell is not blank
-        }
-      }
-
-      return true; // All cells are blank
-    }
-
-    public static SampleObject createSampleObjectFromRow(final Row row) {
-      final SampleObject sample = new SampleObject();
-
-      sample.setSourceName(getStringValue(row.getCell(0)));
-      sample.setSampleName(getStringValue(row.getCell(1)));
-      sample.setAccession(getStringValue(row.getCell(6)));
-      sample.setDerivedFrom(getStringValue(row.getCell(7)));
-      // Continue setting other properties based on column index
-
-      return sample;
-    }
-
-    public static String getStringValue(final Cell cell) {
-      return cell == null ? null : cell.getStringCellValue();
+    } catch (final IOException e) {
+      e.printStackTrace();
     }
   }
 
-  @Data
-  class SampleObject {
-    private String sourceName;
-    private String sampleName;
-    private String accession;
-    private String derivedFrom;
+  public static List<SampleObject> parseSpreadsheet(final String filePath) throws IOException {
+    final List<SampleObject> samples = new ArrayList<>();
+    final FileInputStream file = new FileInputStream(new File(filePath));
+    final XSSFWorkbook workbook = new XSSFWorkbook(file);
+    final Iterator<Row> rowIterator = workbook.getSheetAt(0).iterator();
 
-    @Override
-    public String toString() {
-      return "SampleObject{"
-          + "sourceName='"
-          + sourceName
-          + '\''
-          + ", sampleName='"
-          + sampleName
-          + '\''
-          + ", accession='"
-          + accession
-          + '\''
-          + ", derivedFrom='"
-          + derivedFrom
-          + '\''
-          + '}';
-    }*/
+    // Skip header row
+    if (rowIterator.hasNext()) {
+      rowIterator.next();
+    }
+
+    while (rowIterator.hasNext()) {
+      final Row row = rowIterator.next();
+
+      // Check if all cells in the row are blank
+      if (isRowBlank(row)) {
+        continue; // Skip this row
+      }
+
+      final SampleObject sample = createSampleObjectFromRow(row);
+      samples.add(sample);
+    }
+
+    workbook.close();
+    file.close();
+
+    return samples;
+  }
+
+  public static boolean isRowBlank(final Row row) {
+    final Iterator<Cell> cellIterator = row.iterator();
+    while (cellIterator.hasNext()) {
+      final Cell cell = cellIterator.next();
+      if (cell.getCellType() != CellType.BLANK) {
+        return false; // The row is not blank if any cell is not blank
+      }
+    }
+
+    return true; // All cells are blank
+  }
+
+  public static SampleObject createSampleObjectFromRow(final Row row) {
+    final SampleObject sample = new SampleObject();
+
+    sample.setSourceName(getStringValue(row.getCell(0)));
+    sample.setSampleName(getStringValue(row.getCell(1)));
+    sample.setAccession(getStringValue(row.getCell(6)));
+    sample.setDerivedFrom(getStringValue(row.getCell(7)));
+    // Continue setting other properties based on column index
+
+    return sample;
+  }
+
+  public static String getStringValue(final Cell cell) {
+    return cell == null ? null : cell.getStringCellValue();
+  }
+}
+
+@Data
+class SampleObject {
+  private String sourceName;
+  private String sampleName;
+  private String accession;
+  private String derivedFrom;
+
+  @Override
+  public String toString() {
+    return "SampleObject{"
+        + "sourceName='"
+        + sourceName
+        + '\''
+        + ", sampleName='"
+        + sampleName
+        + '\''
+        + ", accession='"
+        + accession
+        + '\''
+        + ", derivedFrom='"
+        + derivedFrom
+        + '\''
+        + '}';
+  }
 }

@@ -104,6 +104,7 @@ public class MessageHandlerSolrTest {
     return Sample.build(
         "",
         accession,
+        "ERS01",
         "",
         "",
         Long.valueOf(9606),

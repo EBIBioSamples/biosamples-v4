@@ -10,6 +10,8 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
+import static uk.ac.ebi.biosamples.utils.BioSamplesConstants.SRA_ACCESSION;
+
 import java.util.*;
 import java.util.concurrent.Callable;
 import org.dom4j.DocumentException;
@@ -24,10 +26,9 @@ import uk.ac.ebi.biosamples.model.SampleStatus;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 import uk.ac.ebi.biosamples.service.EraProDao;
 import uk.ac.ebi.biosamples.service.EraproSample;
+import uk.ac.ebi.biosamples.utils.BioSamplesConstants;
 
 public class EnaImportCallable implements Callable<Void> {
-  private static final String SRA_ACCESSION = "SRA accession";
-  private static final int MAX_RETRIES = 5;
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final BioSamplesClient bioSamplesWebinClient;
   private final BioSamplesClient bioSamplesAapClient;
@@ -115,7 +116,7 @@ public class EnaImportCallable implements Callable<Void> {
 
             success = true;
           } catch (final Exception e) {
-            if (++numRetry == MAX_RETRIES) {
+            if (++numRetry == BioSamplesConstants.MAX_RETRIES) {
               EnaImportRunner.failures.add(accession);
 
               throw new RuntimeException(
@@ -279,7 +280,7 @@ public class EnaImportCallable implements Callable<Void> {
 
             success = true;
           } catch (final Exception e) {
-            if (++numRetry == MAX_RETRIES) {
+            if (++numRetry == BioSamplesConstants.MAX_RETRIES) {
               EnaImportRunner.failures.add(accession);
 
               throw new RuntimeException(

@@ -383,10 +383,8 @@ public class BioSamplesClient implements AutoCloseable {
       final boolean isWebin) {
     log.trace("Persisting curation " + curation + " on " + accession + " using " + webinIdOrDomain);
 
-    final CurationLink curationLink =
-        buildCurationLink(accession, curation, webinIdOrDomain, isWebin);
-
-    return curationSubmissionService.submit(curationLink);
+    return curationSubmissionService.submit(
+        buildCurationLink(accession, curation, webinIdOrDomain, isWebin));
   }
 
   public Iterable<EntityModel<CurationLink>> fetchCurationLinksOfSample(final String accession) {

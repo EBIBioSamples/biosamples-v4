@@ -21,7 +21,6 @@ import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 
 public interface MongoSampleRepository
     extends MongoRepository<MongoSample, String>, MongoSampleRepositoryCustom {
-
   Page<MongoSample> findByExternalReferences_Hash(String urlHash, Pageable pageable);
 
   @Query("{ $and : [{ 'domain' : ?0 },{'name' : ?1 }]}")
@@ -34,4 +33,10 @@ public interface MongoSampleRepository
   @Query("{ $and : [{ accessionPrefix : ?0 },{accessionNumber : { $gte : ?1 }}]}")
   Stream<MongoSample> findByAccessionPrefixIsAndAccessionNumberGreaterThanEqual(
       String accessionPrefix, int accessionNumber, Sort sort);
+
+  @Query("{ 'sraAccession' : ?0 }")
+  List<MongoSample> findBySraAccession(String sraAccession);
+
+  @Query("{'attributes.type': 'SRA accession', 'attributes.value': ?0}")
+  List<MongoSample> findUsingSraAccessionIndex(String sraAccession);
 }

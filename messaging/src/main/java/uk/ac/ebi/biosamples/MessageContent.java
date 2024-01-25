@@ -17,10 +17,12 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import lombok.Getter;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Getter
 public class MessageContent {
   private final Sample sample;
   private final CurationLink curationLink;
@@ -37,23 +39,8 @@ public class MessageContent {
     this.curationLink = curationLink;
     this.related = related;
     this.delete = delete;
+
     creationTime = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
-  }
-
-  public Sample getSample() {
-    return sample;
-  }
-
-  public List<Sample> getRelated() {
-    return related;
-  }
-
-  public CurationLink getCurationLink() {
-    return curationLink;
-  }
-
-  public String getCreationTime() {
-    return creationTime;
   }
 
   @Override

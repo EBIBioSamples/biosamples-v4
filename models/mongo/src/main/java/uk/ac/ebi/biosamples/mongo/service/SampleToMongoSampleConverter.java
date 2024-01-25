@@ -62,6 +62,7 @@ public class SampleToMongoSampleConverter implements Converter<Sample, MongoSamp
     return MongoSample.build(
         sample.getName(),
         sample.getAccession(),
+        sample.getSraAccession(),
         sample.getDomain(),
         sample.getWebinSubmissionAccountId(),
         sample.getTaxId(),

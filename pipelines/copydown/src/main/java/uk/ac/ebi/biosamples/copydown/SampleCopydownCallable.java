@@ -13,28 +13,27 @@ package uk.ac.ebi.biosamples.copydown;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 
 public class SampleCopydownCallable implements Callable<PipelineResult> {
   private static final Logger LOG = LoggerFactory.getLogger(SampleCopydownCallable.class);
-
+  private static final String ORGANISM = "organism";
   private static final Attribute mixedAttribute =
       Attribute.build(
-          "organism", "mixed sample", "http://purl.obolibrary.org/obo/NCBITaxon_1427524", null);
+          ORGANISM, "mixed sample", "http://purl.obolibrary.org/obo/NCBITaxon_1427524", null);
+  private static final String DERIVED_FROM = "derived from";
   private final Sample sample;
   private final BioSamplesClient bioSamplesClient;
   private final String domain;
   private int curationCount;
   static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
-  SampleCopydownCallable(
+  public SampleCopydownCallable(
       final BioSamplesClient bioSamplesClient, final Sample sample, final String domain) {
     this.bioSamplesClient = bioSamplesClient;
     this.sample = sample;
@@ -52,51 +51,8 @@ public class SampleCopydownCallable implements Callable<PipelineResult> {
     try {
       final SortedSet<Attribute> attributes = sample.getAttributes();
 
-      final boolean hasDerivedFrom =
-          sample.getRelationships().stream()
-              .anyMatch(
-                  relationship ->
-                      "derived from".equalsIgnoreCase(relationship.getType())
-                          && accession.equals(relationship.getSource()));
-
-      if (hasDerivedFrom) {
-        final boolean hasOrganism =
-            attributes.stream()
-                .anyMatch(attribute -> "organism".equalsIgnoreCase(attribute.getType()));
-        final Set<Attribute> attributesOfAllParentSamples = getAttributesOfParentSamples(sample);
-        final Set<Attribute> qualifyingCopyDownAttributes =
-            getQualifyingCopyDownAttributes(attributesOfAllParentSamples, attributes);
-
-        if (hasOrganism) {
-          // if child sample has organism, use it, don't copy down organism(s) from parent
-          qualifyingCopyDownAttributes.removeIf(
-              attribute -> attribute.getType().equalsIgnoreCase("organism"));
-        } else {
-          // get parent samples organisms
-          final Set<Attribute> organisms = getOrganismsForSample(sample);
-
-          if (organisms.size() > 1) {
-            // if there are multiple organisms, use a "mixed sample" taxonomy reference
-            // some users expect one taxonomy reference, no more, no less
-            qualifyingCopyDownAttributes.removeIf(
-                attribute -> attribute.getType().equalsIgnoreCase("organism"));
-            qualifyingCopyDownAttributes.add(mixedAttribute);
-          }
-        }
-
-        final int qualifyingCopyDownAttributesCount = qualifyingCopyDownAttributes.size();
-
-        if (qualifyingCopyDownAttributesCount > 0) {
-          LOG.info(
-              "Adding "
-                  + qualifyingCopyDownAttributesCount
-                  + " copy-down curations for sample "
-                  + accession);
-
-          qualifyingCopyDownAttributes.forEach(this::applyCuration);
-        } else {
-          LOG.info("No copy-down curations for sample " + accession);
-        }
+      if (hasDerivedFromRelationship()) {
+        processDerivedFromAttributes(attributes);
       }
     } catch (final Exception e) {
       success = false;
@@ -105,12 +61,32 @@ public class SampleCopydownCallable implements Callable<PipelineResult> {
     return new PipelineResult(accession, curationCount, success);
   }
 
-  private static Set<Attribute> getQualifyingCopyDownAttributes(
-      final Set<Attribute> attributesOfAllParentSamples,
+  private boolean hasDerivedFromRelationship() {
+    return sample.getRelationships().stream()
+        .anyMatch(
+            relationship ->
+                DERIVED_FROM.equalsIgnoreCase(relationship.getType())
+                    && sample.getAccession().equals(relationship.getSource()));
+  }
+
+  private void processDerivedFromAttributes(final SortedSet<Attribute> childAttributes) {
+    final Map<String, Set<Attribute>> sampleAccessionToAttributeMap =
+        getAttributesOfParentSamples(sample);
+    final Set<Attribute> qualifyingCopyDownAttributes =
+        getQualifyingCopyDownAttributes(sampleAccessionToAttributeMap, childAttributes);
+
+    qualifyingCopyDownAttributes.removeIf(
+        attribute -> ORGANISM.equalsIgnoreCase(attribute.getType()));
+    applyCopyDownCuration(qualifyingCopyDownAttributes);
+  }
+
+  private Set<Attribute> getQualifyingCopyDownAttributes(
+      final Map<String, Set<Attribute>> sampleAccessionToAttributeMap,
       final SortedSet<Attribute> attributesOfTheChildSample) {
     final Set<Attribute> qualifyingCopyDownAttributes = new TreeSet<>();
+    final Set<Attribute> uniqueParentSamplesAttributes = mergeSets(sampleAccessionToAttributeMap);
 
-    attributesOfAllParentSamples.forEach(
+    uniqueParentSamplesAttributes.forEach(
         parentAttr -> {
           if (attributesOfTheChildSample.stream()
               .noneMatch(childAttr -> childAttr.getType().equalsIgnoreCase(parentAttr.getType()))) {
@@ -119,6 +95,45 @@ public class SampleCopydownCallable implements Callable<PipelineResult> {
         });
 
     return qualifyingCopyDownAttributes;
+  }
+
+  public static Set<Attribute> mergeSets(final Map<String, Set<Attribute>> map) {
+    final Set<Attribute> mergedSet = new TreeSet<>(); // Using TreeSet to keep elements sorted
+    final Set<Attribute> uniqueElements = new HashSet<>(); // Elements appearing in only one set
+
+    for (final Set<Attribute> set : map.values()) {
+      final Set<String> duplicateCheck = new HashSet<>();
+
+      for (final Attribute element : set) {
+        // Add to uniqueElements if it hasn't been added before
+        if (!duplicateCheck.contains(element.getType()) && !uniqueElements.contains(element)) {
+          uniqueElements.add(element);
+        } else {
+          // If element already exists in uniqueElements, remove it
+          uniqueElements.remove(element);
+          // Add to duplicateCheck to avoid adding it again
+          duplicateCheck.add(element.getType());
+        }
+      }
+    }
+
+    mergedSet.addAll(uniqueElements);
+
+    return mergedSet;
+  }
+
+  private void applyCopyDownCuration(final Set<Attribute> attributes) {
+    if (!attributes.isEmpty()) {
+      LOG.info(
+          "Adding "
+              + attributes.size()
+              + " copy-down curations for sample "
+              + sample.getAccession());
+
+      attributes.forEach(this::applyCuration);
+    } else {
+      LOG.info("No copy-down curations for sample " + sample.getAccession());
+    }
   }
 
   private void applyCuration(final Attribute attribute) {
@@ -132,62 +147,63 @@ public class SampleCopydownCallable implements Callable<PipelineResult> {
     curationCount++;
   }
 
-  private Set<Attribute> getOrganismsForSample(final Sample sample) {
-    final Set<Attribute> organisms = new HashSet<>();
-
-    for (final Attribute attribute : sample.getAttributes()) {
-      if ("organism".equalsIgnoreCase(attribute.getType())) {
-        organisms.add(attribute);
-      }
-    }
-
-    // if there are no organisms directly, check derived from relationships
-    if (organisms.size() == 0) {
-      LOG.trace("" + sample.getAccession() + " has no organism");
-
-      for (final Relationship relationship : sample.getRelationships()) {
-        if ("derived from".equalsIgnoreCase(relationship.getType())
-            && sample.getAccession().equals(relationship.getSource())) {
-          LOG.trace("checking derived from " + relationship.getTarget());
-
-          // recursion ahoy!
-          bioSamplesClient
-              .fetchSampleResource(relationship.getTarget())
-              .ifPresent(
-                  sampleResource ->
-                      organisms.addAll(
-                          getOrganismsForSample(
-                              Objects.requireNonNull(sampleResource.getContent()))));
-        }
-      }
-    }
-
-    return organisms;
-  }
-
-  private Set<Attribute> getAttributesOfParentSamples(final Sample sample) {
-    final Set<Attribute> parentSampleAttributes = new HashSet<>();
+  private Map<String, Set<Attribute>> getAttributesOfParentSamples(final Sample sample) {
+    final Map<String, Set<Attribute>> sampleAccessionToAttributeMap = new HashMap<>();
 
     for (final Relationship relationship : sample.getRelationships()) {
-      if ("derived from".equalsIgnoreCase(relationship.getType())
+      if (DERIVED_FROM.equalsIgnoreCase(relationship.getType())
           && sample.getAccession().equals(relationship.getSource())) {
         final String parentSample = relationship.getTarget();
+
         LOG.trace("checking derived from " + parentSample);
 
         bioSamplesClient
             .fetchSampleResource(parentSample)
             .ifPresent(
-                sampleResource ->
-                    parentSampleAttributes.addAll(
-                        getAttributesOfParentSample(
-                            Objects.requireNonNull(sampleResource.getContent()))));
+                sampleResource -> {
+                  final Sample parent = sampleResource.getContent();
+
+                  if (parent != null) {
+                    if (parent.getSubmittedVia() == SubmittedViaType.PIPELINE_IMPORT) {
+                      sampleAccessionToAttributeMap.put(
+                          parent.getAccession(),
+                          parent.getAttributes().stream()
+                              .filter(
+                                  attribute ->
+                                      attribute.getTag().equals("attribute")
+                                          && isAttributeEligibleForCopydown(attribute.getType()))
+                              .collect(Collectors.toSet()));
+                    } else {
+                      sampleAccessionToAttributeMap.put(
+                          parent.getAccession(),
+                          parent.getAttributes().stream()
+                              .filter(
+                                  attribute ->
+                                      !attribute.getType().startsWith("ENA")
+                                          && isAttributeEligibleForCopydown(attribute.getType()))
+                              .collect(Collectors.toSet()));
+                    }
+                  }
+                });
       }
     }
 
-    return parentSampleAttributes;
+    return sampleAccessionToAttributeMap;
   }
 
-  private Collection<? extends Attribute> getAttributesOfParentSample(final Sample sample) {
-    return sample.getAttributes();
+  private boolean isAttributeEligibleForCopydown(final String type) {
+    return !type.startsWith("SRA accession")
+        && !type.startsWith("broker name")
+        && !type.startsWith("INSDC")
+        && !type.startsWith("title")
+        && !type.startsWith("description")
+        && !type.startsWith("Submitter Id")
+        && !type.startsWith("Secondary Id")
+        && !type.startsWith("organism")
+        && !type.startsWith("uuid")
+        && !type.startsWith("individual_name")
+        && !type.startsWith("anonymized_name")
+        && !type.startsWith("common name")
+        && !type.startsWith("ENA");
   }
 }

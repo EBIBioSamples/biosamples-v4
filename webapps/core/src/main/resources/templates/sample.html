@@ -22,7 +22,8 @@
     <th:block th:include="fragments/header :: masterhead"></th:block>
     <div id="main-content-area" class="row padding-top-xlarge padding-right-xlarge padding-left-xlarge sample">
         <div class="columns medium-12 large-10 s__header">
-            <h2 class="sh__title" th:text="${sample.accession}">TEST</h2>
+            <h2 class="sh__title" th:text="${sample.accession}">accession</h2>
+            <h2 class="sh__title_sra" th:if="${sample.sraAccession}" th:text="${sample.sraAccession}">SRA Accession</h2>
             <h3 class="sh__subtitle" th:text="${sample.name}">name</h3>
 
         </div>

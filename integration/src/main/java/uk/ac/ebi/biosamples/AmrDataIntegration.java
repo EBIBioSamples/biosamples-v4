@@ -179,8 +179,8 @@ public class AmrDataIntegration extends AbstractIntegration {
     final String name = "AMR_Data_Integration_sample_1";
     final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-
     final SortedSet<Attribute> attributes = new TreeSet<>();
+
     attributes.add(Attribute.build("organism", "Chicken", null, null));
     attributes.add(Attribute.build("age", "3", null, Collections.emptyList(), "year"));
     attributes.add(Attribute.build("organism part", "heart"));

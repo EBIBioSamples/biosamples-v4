@@ -10,11 +10,21 @@
 */
 package uk.ac.ebi.biosamples.misc;
 
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
 public class RTHandler {
-  /*private static final Logger log = LoggerFactory.getLogger(RTHandler.class);
+  private static final Logger log = LoggerFactory.getLogger(RTHandler.class);
   public static final String WEBIN_58957 = "Webin-XXXXX";
   public static final String BIOSAMPLE_SYNTHETIC_DATA = "self.BiosampleSyntheticData";
   public static final String GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA =
@@ -31,7 +41,7 @@ public class RTHandler {
     this.bioSamplesAapClient = bioSamplesAapClient;
   }
 
-  public void parseIdentifiersFromFileAndFixAuth() {
+  /*public void parseIdentifiersFromFileAndFixAuth() {
     final String filePath = "C:\\Users\\dgupta\\biosamples.list";
     final List<String> curationDomainBlankList = new ArrayList<>();
 
@@ -50,18 +60,17 @@ public class RTHandler {
     } catch (final IOException e) {
       e.printStackTrace();
     }
-  }
+  }*/
 
-  private void processSample(final String accession, final List<String> curationDomainBlankList) {
+  private void processSample(final String accession, final List<String> curationDomainList) {
     log.info("Processing Sample: " + accession);
 
     Optional<EntityModel<Sample>> optionalSampleEntityModel =
-        bioSamplesAapClient.fetchSampleResource(accession, Optional.of(curationDomainBlankList));
+        bioSamplesAapClient.fetchSampleResource(accession, Optional.of(curationDomainList));
 
     if (optionalSampleEntityModel.isEmpty()) {
       optionalSampleEntityModel =
-          bioSamplesWebinClient.fetchSampleResource(
-              accession, Optional.of(curationDomainBlankList));
+          bioSamplesWebinClient.fetchSampleResource(accession, Optional.of(curationDomainList));
     }
 
     if (optionalSampleEntityModel.isPresent()) {
@@ -93,6 +102,14 @@ public class RTHandler {
                 Collections.emptyList(),
                 getLocAttributeUnit));
 
+        attributeSet.add(
+            Attribute.build(
+                GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA,
+                extractedCountryName,
+                getLocAttributeTag,
+                Collections.emptyList(),
+                getLocAttributeUnit));
+
         final Sample updateSample =
             Sample.Builder.fromSample(sample).withAttributes(attributeSet).build();
 
@@ -100,10 +117,11 @@ public class RTHandler {
       } else {
         log.info("geo_loc_name attribute not present in " + accession);
       }
+    }
+  }
 
-      */
-  /* final Sample sample = optionalSampleEntityModel.get().getContent();
-  final String sampleDomain = sample.getDomain();
+  /*final Sample sample = optionalSampleEntityModel.get().getContent();
+   final  String sampleDomain = sample.getDomain();
 
   if (sampleDomain != null && sampleDomain.equals(BIOSAMPLE_SYNTHETIC_DATA)) {
     log.info(
@@ -124,73 +142,135 @@ public class RTHandler {
     }
   } else {
     log.info("Sample authority is correct " + accession);
-  }*/
-  /*
-    }
   }
+    }
+  }*/
 
   public void samnSampleGeographicLocationAttributeUpdate() {
-    final List<String> curationDomainBlankList = new ArrayList<>();
-
-    curationDomainBlankList.add("");
-
     final List<String> sampleStrings =
         List.of(
-            "https://www.ebi.ac.uk/ena/browser/view/SAMN37286570\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286571\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286572\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286573\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286574\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286575\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286576\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286577\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286578\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286579\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286580\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286581\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286582\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286583\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286584\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286585\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286586\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286587\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286588\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286589\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286590\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286591\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286592\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286593\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286594\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286595\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286596\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286597\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286598\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286599\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286600\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286601\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286602\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286603\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286604\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286605\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286606\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286607\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286608\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286609\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286610\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286611\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286612\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286613\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286614\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286615\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286616\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286617\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286618\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286619\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286620\n"
-                + "https://www.ebi.ac.uk/ena/browser/view/SAMN37286621");
+            "SAMN38658779\n"
+                + "SAMN38658780\n"
+                + "SAMN38658781\n"
+                + "SAMN38658782\n"
+                + "SAMN38658783\n"
+                + "SAMN38658784\n"
+                + "SAMN38658785\n"
+                + "SAMN38658786\n"
+                + "SAMN38658787\n"
+                + "SAMN38658788\n"
+                + "SAMN38658789\n"
+                + "SAMN38658790\n"
+                + "SAMN38658791\n"
+                + "SAMN38658792\n"
+                + "SAMN38658793\n"
+                + "SAMN38658794\n"
+                + "SAMN38658795\n"
+                + "SAMN38658796\n"
+                + "SAMN38658797\n"
+                + "SAMN38658798\n"
+                + "SAMN38658799\n"
+                + "SAMN38658800\n"
+                + "SAMN38658801\n"
+                + "SAMN38658802\n"
+                + "SAMN38658803\n"
+                + "SAMN38658804\n"
+                + "SAMN38658805\n"
+                + "SAMN38658806\n"
+                + "SAMN38658807\n"
+                + "SAMN38658808\n"
+                + "SAMN38658809\n"
+                + "SAMN38658810\n"
+                + "SAMN38658811\n"
+                + "SAMN38658812\n"
+                + "SAMN38658813\n"
+                + "SAMN38658814\n"
+                + "SAMN38658815\n"
+                + "SAMN38658816\n"
+                + "SAMN38658817\n"
+                + "SAMN38658818\n"
+                + "SAMN38658819\n"
+                + "SAMN38658820\n"
+                + "SAMN38658821\n"
+                + "SAMN38658822\n"
+                + "SAMN38658823\n"
+                + "SAMN38658824\n"
+                + "SAMN38658825\n"
+                + "SAMN38658826\n"
+                + "SAMN38658827\n"
+                + "SAMN38658828\n"
+                + "SAMN38658829\n"
+                + "SAMN38658830\n"
+                + "SAMN38658831\n"
+                + "SAMN38658832\n"
+                + "SAMN38658833\n"
+                + "SAMN38658834\n"
+                + "SAMN38658835\n"
+                + "SAMN38658836\n"
+                + "SAMN38658837\n"
+                + "SAMN38658838\n"
+                + "SAMN38658839\n"
+                + "SAMN38658840\n"
+                + "SAMN38658841\n"
+                + "SAMN38658842\n"
+                + "SAMN38658843\n"
+                + "SAMN38658844\n"
+                + "SAMN38658845\n"
+                + "SAMN38658846\n"
+                + "SAMN38658847\n"
+                + "SAMN38658848\n"
+                + "SAMN38658849\n"
+                + "SAMN38658850\n"
+                + "SAMN38658851\n"
+                + "SAMN38658852\n"
+                + "SAMN38658853\n"
+                + "SAMN38658854\n"
+                + "SAMN38658855\n"
+                + "SAMN38658856\n"
+                + "SAMN38658857\n"
+                + "SAMN38658858\n"
+                + "SAMN38658859\n"
+                + "SAMN38658860\n"
+                + "SAMN38658861\n"
+                + "SAMN38658862\n"
+                + "SAMN38658863\n"
+                + "SAMN38658864\n"
+                + "SAMN38658865\n"
+                + "SAMN38658866\n"
+                + "SAMN38658867\n"
+                + "SAMN38658868\n"
+                + "SAMN38658869\n"
+                + "SAMN38658870\n"
+                + "SAMN38658871\n"
+                + "SAMN38658872\n"
+                + "SAMN38658873\n"
+                + "SAMN38658874\n"
+                + "SAMN38658875\n"
+                + "SAMN38658876\n"
+                + "SAMN38658877\n"
+                + "SAMN38658878\n"
+                + "SAMN38658879\n"
+                + "SAMN38658880\n"
+                + "SAMN38658881\n"
+                + "SAMN38658882\n"
+                + "SAMN38658883\n"
+                + "SAMN38658884\n"
+                + "SAMN38658885\n"
+                + "SAMN38658886\n"
+                + "SAMN38658887\n"
+                + "SAMN38658888\n"
+                + "SAMN38658889\n"
+                + "SAMN38658890\n"
+                + "SAMN38658891\n"
+                + "SAMN38658892\n"
+                + "SAMN38658893\n"
+                + "SAMN38658894\n"
+                + "SAMN38658895\n"
+                + "SAMN38658896\n"
+                + "SAMN38658897\n"
+                + "SAMN38658898");
 
     final Pattern pattern = Pattern.compile("SAMN\\d+");
-
     final List<String> samnAccessions = new ArrayList<>();
 
     for (final String sampleString : sampleStrings) {
@@ -202,7 +282,7 @@ public class RTHandler {
     }
 
     for (final String accession : samnAccessions) {
-      processSample(accession, curationDomainBlankList);
+      processSample(accession, Collections.singletonList(""));
     }
   }
 
@@ -220,5 +300,5 @@ public class RTHandler {
 
       return null;
     }
-  }*/
+  }
 }

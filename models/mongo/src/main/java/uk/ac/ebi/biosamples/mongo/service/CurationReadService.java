@@ -78,8 +78,8 @@ public class CurationReadService {
    */
   public Sample applyCurationLinkToSample(final Sample sample, final CurationLink curationLink) {
     log.trace("Applying curation " + curationLink + " to sample " + sample.getAccession());
-    final Curation curation = curationLink.getCuration();
 
+    final Curation curation = curationLink.getCuration();
     final SortedSet<Attribute> attributes = new TreeSet<>(sample.getAttributes());
     final SortedSet<ExternalReference> externalReferences =
         new TreeSet<>(sample.getExternalReferences());
@@ -90,6 +90,7 @@ public class CurationReadService {
         throw new IllegalArgumentException(
             "Failed to apply curation " + curation + " to sample " + sample);
       }
+
       attributes.remove(attribute);
     }
     for (final ExternalReference externalReference : curation.getExternalReferencesPre()) {
@@ -97,6 +98,7 @@ public class CurationReadService {
         throw new IllegalArgumentException(
             "Failed to apply curation " + curation + " to sample " + sample);
       }
+
       externalReferences.remove(externalReference);
     }
     for (final Relationship relationship : curation.getRelationshipsPre()) {
@@ -104,6 +106,7 @@ public class CurationReadService {
         throw new IllegalArgumentException(
             "Failed to apply curation " + curation + " to sample " + sample);
       }
+
       relationships.remove(relationship);
     }
     // add post-curation things
@@ -112,6 +115,7 @@ public class CurationReadService {
         throw new IllegalArgumentException(
             "Failed to apply curation " + curation + " to sample " + sample);
       }
+
       attributes.add(attribute);
     }
     for (final ExternalReference externalReference : curation.getExternalReferencesPost()) {
@@ -119,6 +123,7 @@ public class CurationReadService {
         throw new IllegalArgumentException(
             "Failed to apply curation " + curation + " to sample " + sample);
       }
+
       externalReferences.add(externalReference);
     }
     for (final Relationship relationship : curation.getRelationshipsPost()) {
@@ -126,6 +131,7 @@ public class CurationReadService {
         throw new IllegalArgumentException(
             "Failed to apply curation " + curation + " to sample " + sample);
       }
+
       relationships.add(relationship);
     }
 
@@ -149,13 +155,21 @@ public class CurationReadService {
   }
 
   public Sample applyAllCurationToSample(
-      Sample sample, final Optional<List<String>> curationDomains) {
-    // short-circuit only if curationdomain=<blank represented by "">
-    if (curationDomains.isPresent() && curationDomains.get().size() == 1) {
-      final String curationDomain = curationDomains.get().get(0);
+      Sample sample, final Optional<List<String>> curationDomainsOptional) {
+    // short-circuit only if curationdomain=<blank represented by "" or empty list>
+    if (curationDomainsOptional.isPresent()) {
+      final List<String> curationDomainList = curationDomainsOptional.get();
 
-      if (curationDomain.trim().isEmpty()) {
+      if (curationDomainList.isEmpty()) {
         return sample;
+      }
+
+      if (curationDomainList.size() == 1) {
+        final String curationDomain = curationDomainList.get(0);
+
+        if (curationDomain.trim().isEmpty()) {
+          return sample;
+        }
       }
     }
 
@@ -170,9 +184,9 @@ public class CurationReadService {
       page = getCurationLinksForSample(sample.getAccession(), pageable);
 
       for (final CurationLink curationLink : page) {
-        if (curationDomains.isPresent()) {
+        if (curationDomainsOptional.isPresent()) {
           // curation domains restricted, curation must be part of that domain
-          if (curationDomains.get().contains(curationLink.getDomain())) {
+          if (curationDomainsOptional.get().contains(curationLink.getDomain())) {
             curationLinks.add(curationLink);
           }
         } else {
