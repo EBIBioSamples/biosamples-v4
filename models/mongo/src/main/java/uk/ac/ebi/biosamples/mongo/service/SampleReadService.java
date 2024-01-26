@@ -107,11 +107,12 @@ public class SampleReadService {
 
   private MongoSample getMongoSample(final String accession) {
     if (startsWithSraPrefix(accession)) {
-      List<MongoSample> samples = mongoSampleRepository.findBySraAccession(accession);
+      final List<MongoSample> samples = /*mongoSampleRepository.findBySraAccession(accession);*/
+          mongoSampleRepository.findUsingSraAccessionIndex(accession);
 
-      if (samples == null || samples.isEmpty()) {
+      /*if (samples == null || samples.isEmpty()) {
         samples = mongoSampleRepository.findUsingSraAccessionIndex(accession);
-      }
+      }*/
 
       return samples.isEmpty() ? null : samples.get(0);
     } else {

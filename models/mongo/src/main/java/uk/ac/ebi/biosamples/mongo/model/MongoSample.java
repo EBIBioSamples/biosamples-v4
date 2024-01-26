@@ -27,8 +27,6 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Transient;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -41,13 +39,13 @@ import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Document
-@CompoundIndexes({
+/*@CompoundIndexes({
   @CompoundIndex(
       name = "sra_accession_index",
       def = "{'attributes.value': 1}",
       partialFilter = "{'attributes.type': 'SRA accession'}",
       background = true)
-})
+})*/
 public class MongoSample {
   @Transient public static final String SEQUENCE_NAME = "accession_sequence";
   @Transient public static final String SRA_SEQUENCE_NAME = "sra_accession_sequence";
