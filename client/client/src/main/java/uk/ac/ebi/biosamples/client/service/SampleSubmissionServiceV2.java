@@ -37,51 +37,34 @@ public class SampleSubmissionServiceV2 {
     this.uriV2 = uriV2;
   }
 
-  /**
-   * This will POST a list of samples to BioSamples
-   *
-   * <p>This will use a thread-pool within the client to do this asynchronously
-   *
-   * @param samples samples to be submitted
-   * @return sample wrapped in resource
-   */
-  public List<Sample> postAsync(final List<Sample> samples) throws RestClientException {
-    return new PostSamplesV2(samples).postSamples();
+  public List<Sample> submit(final List<Sample> samples) throws RestClientException {
+    return new SampleSubmitterV2(samples).postSamples();
   }
 
-  /**
-   * This will POST a list of samples to BioSamples
-   *
-   * <p>This will use a thread-pool within the client to do this asynchronously
-   *
-   * @param samples samples to be submitted
-   * @return sample wrapped in resource
-   */
-  public List<Sample> postAsync(final List<Sample> samples, final String jwt)
+  public List<Sample> submit(final List<Sample> samples, final String jwt)
       throws RestClientException {
-    return new PostSamplesV2(samples, jwt).postSamples();
+    return new SampleSubmitterV2(samples, jwt).postSamples();
   }
 
-  public Map<String, String> bulkAccessionAsync(final List<Sample> samples)
+  public Map<String, String> accession(final List<Sample> samples) throws RestClientException {
+    return new SampleAccessionerV2(samples).accessionSamples();
+  }
+
+  public Map<String, String> accession(final List<Sample> samples, final String jwt)
       throws RestClientException {
-    return new AccessionSamplesV2(samples).accessionSamples();
+    return new SampleAccessionerV2(samples, jwt).accessionSamples();
   }
 
-  public Map<String, String> bulkAccessionAsync(final List<Sample> samples, final String jwt)
-      throws RestClientException {
-    return new AccessionSamplesV2(samples, jwt).accessionSamples();
-  }
-
-  private class PostSamplesV2 {
+  private class SampleSubmitterV2 {
     private final List<Sample> samples;
     private final String jwt;
 
-    PostSamplesV2(final List<Sample> samples) {
+    SampleSubmitterV2(final List<Sample> samples) {
       this.samples = samples;
       jwt = null;
     }
 
-    PostSamplesV2(final List<Sample> samples, final String jwt) {
+    SampleSubmitterV2(final List<Sample> samples, final String jwt) {
       this.samples = samples;
       this.jwt = jwt;
     }
@@ -91,7 +74,7 @@ public class SampleSubmissionServiceV2 {
           UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples/bulk-submit"))
               .build(true)
               .toUri();
-      log.info("POSTing " + samples.size() + " samples " + v2PostUri);
+      log.info("POSTing {} samples {}", samples.size(), v2PostUri);
 
       final RequestEntity<List<Sample>> requestEntity =
           buildRequestEntityWithAuthHeader(v2PostUri, jwt, samples);
@@ -101,8 +84,8 @@ public class SampleSubmissionServiceV2 {
         responseEntity =
             restOperations.exchange(requestEntity, new ParameterizedTypeReference<>() {});
       } catch (final RestClientResponseException e) {
-        log.error(
-            "Unable to POST to " + v2PostUri + " got response " + e.getResponseBodyAsString());
+        log.error("Unable to POST to {} got response {}", v2PostUri, e.getResponseBodyAsString());
+
         throw e;
       }
 
@@ -110,16 +93,16 @@ public class SampleSubmissionServiceV2 {
     }
   }
 
-  private class AccessionSamplesV2 {
+  private class SampleAccessionerV2 {
     private final List<Sample> samples;
     private final String jwt;
 
-    AccessionSamplesV2(final List<Sample> samples) {
+    SampleAccessionerV2(final List<Sample> samples) {
       this.samples = samples;
       jwt = null;
     }
 
-    AccessionSamplesV2(final List<Sample> samples, final String jwt) {
+    SampleAccessionerV2(final List<Sample> samples, final String jwt) {
       this.samples = samples;
       this.jwt = jwt;
     }
@@ -129,7 +112,7 @@ public class SampleSubmissionServiceV2 {
           UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples" + "/bulk-accession"))
               .build(true)
               .toUri();
-      log.info("Accessioning " + samples.size() + " samples " + v2BulkAccessionUri);
+      log.info("Accessioning {} samples {}", samples.size(), v2BulkAccessionUri);
 
       final RequestEntity<List<Sample>> requestEntity =
           buildRequestEntityWithAuthHeader(v2BulkAccessionUri, jwt, samples);
@@ -142,10 +125,10 @@ public class SampleSubmissionServiceV2 {
                 requestEntity, new ParameterizedTypeReference<Map<String, String>>() {});
       } catch (final RestClientResponseException e) {
         log.error(
-            "Unable to accession samples from "
-                + v2BulkAccessionUri
-                + " got response "
-                + e.getResponseBodyAsString());
+            "Unable to accession samples from {} got response {}",
+            v2BulkAccessionUri,
+            e.getResponseBodyAsString());
+
         throw e;
       }
 

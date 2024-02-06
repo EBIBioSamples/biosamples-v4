@@ -45,6 +45,7 @@ public class XmlFragmenter {
       throws ParserConfigurationException, SAXException, IOException {
 
     final InputSource isource = new InputSource(inputStream);
+
     isource.setEncoding(encoding);
 
     final DefaultHandler handler = new FragmentationHandler(callback);
@@ -87,7 +88,7 @@ public class XmlFragmenter {
         if (inRegion.get(i)) {
           addTextIfNeeded(i);
           final Element el;
-          if (elementStack.get(i).size() == 0) {
+          if (elementStack.get(i).isEmpty()) {
             el = doc.get(i).addElement(qName);
           } else {
             el = elementStack.get(i).peek().addElement(qName);
@@ -133,7 +134,7 @@ public class XmlFragmenter {
 
     // Outputs text accumulated under the current node
     private void addTextIfNeeded(final int i) {
-      if (textBuffer.get(i).length() > 0) {
+      if (!textBuffer.get(i).isEmpty()) {
         final Element el = elementStack.get(i).peek();
         el.addText(textBuffer.get(i).toString());
         textBuffer.get(i).delete(0, textBuffer.get(i).length());

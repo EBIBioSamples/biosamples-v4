@@ -27,11 +27,9 @@ public class ThreadUtils {
   public static <T> void checkFutures(
       final Map<? extends Object, Future<T>> futures, final int maxSize)
       throws InterruptedException, ExecutionException {
-    int count = 0;
 
     while (futures.size() > maxSize) {
       for (final Iterator<? extends Object> i = futures.keySet().iterator(); i.hasNext(); ) {
-        count++;
         final Object key = i.next();
 
         futures.get(key).get();

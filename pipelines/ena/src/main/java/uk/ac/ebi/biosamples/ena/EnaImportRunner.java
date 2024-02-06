@@ -259,13 +259,12 @@ public class EnaImportRunner implements ApplicationRunner {
               pipelinesProperties.getThreadCountMax())) {
 
         sampleCallbackResults.forEach(
-            sampleCallbackResult -> {
-              futures.put(
-                  sampleCallbackResult.getBiosampleId(),
-                  executorService.submit(
-                      Objects.requireNonNull(
-                          eraRowHandler.processRow(sampleCallbackResult, false))));
-            });
+            sampleCallbackResult ->
+                futures.put(
+                    sampleCallbackResult.getBiosampleId(),
+                    executorService.submit(
+                        Objects.requireNonNull(
+                            eraRowHandler.processRow(sampleCallbackResult, false)))));
 
         checkFutures(100);
       }
@@ -332,6 +331,8 @@ public class EnaImportRunner implements ApplicationRunner {
     while (!success) {
       try {
         sampleCallbackResults = eraProDao.doSampleCallback(fromDate, toDate);
+
+        log.info("Total number of samples to be handled is " + sampleCallbackResults.size());
 
         success = true;
       } catch (final Exception e) {
@@ -424,7 +425,7 @@ public class EnaImportRunner implements ApplicationRunner {
               String.format(
                   "%s is being handled as status is %s and last updated is %s (searched by first public and last updated)",
                   biosampleId, enaStatus.name(), lastUpdated));
-          // update if sample already exists else import
+
           if (bsdAuthority) {
             return enaImportCallableFactory.build(biosampleId, egaId, SpecialTypes.BSD_AUTHORITY);
           } else {

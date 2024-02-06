@@ -27,10 +27,8 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
 public class SampleCursorRetrievalService {
-
   private static final ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>
       parameterizedTypeReferencePagedResourcesSample = new ParameterizedTypeReference<>() {};
-
   private final Traverson traverson;
   private final ExecutorService executor;
   private final RestOperations restOperations;
@@ -64,7 +62,6 @@ public class SampleCursorRetrievalService {
       final Collection<Filter> filterCollection,
       final String jwt,
       final boolean addCurations) {
-
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
     params.add("text", text);
     for (final Filter filter : filterCollection) {
@@ -92,6 +89,7 @@ public class SampleCursorRetrievalService {
   private MultiValueMap<String, String> encodePlusInQueryParameters(
       final MultiValueMap<String, String> queryParameters) {
     final MultiValueMap<String, String> encodedQueryParameters = new LinkedMultiValueMap<>();
+
     for (final Map.Entry<String, List<String>> param : queryParameters.entrySet()) {
       final String key = param.getKey();
       param

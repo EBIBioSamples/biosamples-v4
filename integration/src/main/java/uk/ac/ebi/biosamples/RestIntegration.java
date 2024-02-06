@@ -187,8 +187,7 @@ public class RestIntegration extends AbstractIntegration {
     }
 
     // put the second sample in
-    final EntityModel<Sample> sampleTest2Resource =
-        client.persistSampleResource(sampleTest2, false, true);
+    final EntityModel<Sample> sampleTest2Resource = client.persistSampleResource(sampleTest2);
 
     // get the accession and sra accession of test sample 2
     final Sample sampleTest2ResourceContent = sampleTest2Resource.getContent();
@@ -284,7 +283,7 @@ public class RestIntegration extends AbstractIntegration {
     // test private sample create and fetch using webin auth
     final Sample webinSampleTest1 = getWebinSampleTest1();
     final EntityModel<Sample> webinSampleResource =
-        webinClient.persistSampleResource(webinSampleTest1, false, true);
+        webinClient.persistSampleResource(webinSampleTest1);
     final String webinSampleAccession =
         Objects.requireNonNull(webinSampleResource.getContent()).getAccession();
     final Optional<EntityModel<Sample>> webinSamplePostPersistance =

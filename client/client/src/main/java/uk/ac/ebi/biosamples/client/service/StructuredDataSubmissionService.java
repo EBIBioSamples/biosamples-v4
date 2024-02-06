@@ -27,7 +27,6 @@ import uk.ac.ebi.biosamples.model.structured.StructuredData;
 
 public class StructuredDataSubmissionService {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final Traverson traverson;
   private final RestOperations restOperations;
 
@@ -63,11 +62,12 @@ public class StructuredDataSubmissionService {
 
     final RequestEntity.BodyBuilder bodyBuilder =
         RequestEntity.put(target).contentType(MediaType.APPLICATION_JSON);
+
     if (jwt != null) {
       bodyBuilder.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
     }
-    final RequestEntity<StructuredData> requestEntity = bodyBuilder.body(structuredData);
 
+    final RequestEntity<StructuredData> requestEntity = bodyBuilder.body(structuredData);
     final ResponseEntity<EntityModel<StructuredData>> responseEntity =
         restOperations.exchange(
             requestEntity, new ParameterizedTypeReference<EntityModel<StructuredData>>() {});

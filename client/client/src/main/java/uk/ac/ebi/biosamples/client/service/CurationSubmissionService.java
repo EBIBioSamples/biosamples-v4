@@ -44,7 +44,6 @@ public class CurationSubmissionService {
   public EntityModel<CurationLink> persistCuration(
       final CurationLink curationLink, final String jwt) throws RestClientException {
     final String addWebinRequestParam = "";
-
     final URI target =
         URI.create(
             traverson
@@ -61,11 +60,12 @@ public class CurationSubmissionService {
         RequestEntity.post(target)
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaTypes.HAL_JSON);
+
     if (jwt != null) {
       bodyBuilder.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
     }
-    final RequestEntity<CurationLink> requestEntity = bodyBuilder.body(curationLink);
 
+    final RequestEntity<CurationLink> requestEntity = bodyBuilder.body(curationLink);
     final ResponseEntity<EntityModel<CurationLink>> responseEntity =
         restOperations.exchange(
             requestEntity, new ParameterizedTypeReference<EntityModel<CurationLink>>() {});
@@ -78,7 +78,6 @@ public class CurationSubmissionService {
   }
 
   public void deleteCurationLink(final String sample, final String hash, final String jwt) {
-
     final URI target =
         URI.create(
             traverson
@@ -87,6 +86,7 @@ public class CurationSubmissionService {
                 .follow(Hop.rel("curationLink").withParameter("hash", hash))
                 .asLink()
                 .getHref());
+
     log.trace("DELETEing " + target);
 
     final RequestEntity requestEntity;

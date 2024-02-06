@@ -71,51 +71,45 @@ public class SampleRestControllerV2 {
       @PathVariable final String accession,
       @RequestBody Sample sample,
       @RequestHeader(name = "Authorization") final String token) {
-    if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
-      throw new GlobalExceptions.SampleAccessionMismatchException();
-    }
-
-    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final AuthorizationProvider authProvider =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
-            ? AuthorizationProvider.WEBIN
-            : AuthorizationProvider.AAP;
-    final boolean notExistingAccession = sampleService.isNotExistingAccession(accession);
-
-    Optional<Sample> oldSample = Optional.empty();
-
-    if (!notExistingAccession) {
-      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
-    }
+    validateRequest(sample, accession);
 
     log.debug("Received PUT for " + accession);
 
+    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
+    final AuthorizationProvider authProvider =
+        authToken
+            .filter(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
+            .map(t -> AuthorizationProvider.WEBIN)
+            .orElse(AuthorizationProvider.AAP);
     boolean isWebinSuperUser = false;
+    Optional<Sample> oldSample;
 
     if (authProvider == AuthorizationProvider.WEBIN) {
-      final String webinSubmissionAccountId = authToken.get().getUser();
+      final String webinIdFromAuthToken = authToken.get().getUser();
 
-      if (webinSubmissionAccountId == null) {
+      if (webinIdFromAuthToken == null) {
         throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
       isWebinSuperUser =
-          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
+          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinIdFromAuthToken);
 
-      if (notExistingAccession && !isWebinSuperUser) {
+      if (sampleService.isNotExistingAccession(accession) && !isWebinSuperUser) {
         throw new GlobalExceptions.SampleAccessionDoesNotExistException();
       }
 
+      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
       sample =
           bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              sample, webinSubmissionAccountId, oldSample);
+              sample, webinIdFromAuthToken, oldSample);
     } else {
-      if (notExistingAccession
+      if (sampleService.isNotExistingAccession(accession)
           && !(bioSamplesAapService.isWriteSuperUser()
               || bioSamplesAapService.isIntegrationTestUser())) {
         throw new GlobalExceptions.SampleAccessionDoesNotExistException();
       }
 
+      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
       sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
     }
 
@@ -130,7 +124,9 @@ public class SampleRestControllerV2 {
                     : sample.getSubmittedVia())
             .build();
 
-    if (!isWebinSuperUser) {
+    if (!isWebinSuperUser
+        || !(bioSamplesAapService.isWriteSuperUser()
+            || bioSamplesAapService.isIntegrationTestUser())) {
       sample = validateSample(sample, authProvider == AuthorizationProvider.WEBIN);
     }
 
@@ -139,6 +135,16 @@ public class SampleRestControllerV2 {
             sample, oldSample.orElse(null), authProvider, isWebinSuperUser);
 
     return ResponseEntity.status(HttpStatus.OK).body(sample);
+  }
+
+  private void validateRequest(final Sample sample, final String accession) {
+    if (sample == null) {
+      throw new RuntimeException("No sample provided");
+    }
+
+    if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
+      throw new GlobalExceptions.SampleAccessionMismatchException();
+    }
   }
 
   private Sample validateSample(Sample sample, final boolean isWebinSubmission) {
