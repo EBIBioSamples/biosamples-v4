@@ -16,12 +16,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.csv.CSVParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -44,14 +44,28 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 @Service
 public class FileUploadService {
   private final Logger log = LoggerFactory.getLogger(getClass());
-  private FileUploadUtils fileUploadUtils;
 
-  @Autowired private SampleService sampleService;
-  @Autowired private SchemaValidationService schemaValidationService;
-  @Autowired private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
-  @Autowired private BioSamplesAapService bioSamplesAapService;
-  @Autowired private MongoFileUploadRepository mongoFileUploadRepository;
-  @Autowired private FileQueueService fileQueueService;
+  private final SampleService sampleService;
+  private final SchemaValidationService schemaValidationService;
+  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
+  private final BioSamplesAapService bioSamplesAapService;
+  private final MongoFileUploadRepository mongoFileUploadRepository;
+  private final FileQueueService fileQueueService;
+  private final FileUploadUtils fileUploadUtils;
+
+  public FileUploadService(SampleService sampleService, SchemaValidationService schemaValidationService,
+                           BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+                           BioSamplesAapService bioSamplesAapService,
+                           MongoFileUploadRepository mongoFileUploadRepository, FileQueueService fileQueueService,
+                           FileUploadUtils fileUploadUtils) {
+    this.fileUploadUtils = fileUploadUtils;
+    this.sampleService = sampleService;
+    this.schemaValidationService = schemaValidationService;
+    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
+    this.bioSamplesAapService = bioSamplesAapService;
+    this.mongoFileUploadRepository = mongoFileUploadRepository;
+    this.fileQueueService = fileQueueService;
+  }
 
   public synchronized File upload(
       final MultipartFile file,
@@ -62,8 +76,7 @@ public class FileUploadService {
     final ValidationResult validationResult = new ValidationResult();
     final boolean isWebin = webinId != null && webinId.toUpperCase().startsWith("WEBIN");
     final String uniqueUploadId = UUID.randomUUID().toString();
-
-    this.fileUploadUtils = fileUploadUtils;
+    String submissionDate = FileUploadUtils.formatDateString(LocalDateTime.now());
 
     try {
       persistSubmissionState(
@@ -73,6 +86,7 @@ public class FileUploadService {
           isWebin,
           uniqueUploadId,
           BioSamplesFileUploadSubmissionStatus.ACTIVE,
+          submissionDate,
           null,
           null,
           false);
@@ -91,8 +105,7 @@ public class FileUploadService {
 
       fileUploadUtils.validateHeaderPositions(headers, validationResult);
 
-      final List<Multimap<String, String>> csvDataMap =
-          fileUploadUtils.getISATABDataInMap(csvParser);
+      final List<Multimap<String, String>> csvDataMap = fileUploadUtils.getISATABDataInMap(csvParser);
       final int numSamples = csvDataMap.size();
 
       log.info("CSV data size: " + numSamples);
@@ -101,8 +114,7 @@ public class FileUploadService {
         log.info("File sample count exceeds limits - queueing file for async submission");
 
         final String submissionId =
-            fileQueueService.queueFileinMongoAndSendMessageToRabbitMq(
-                file, aapDomain, checklist, webinId);
+            fileQueueService.queueFileinMongoAndSendMessageToRabbitMq(file, aapDomain, checklist, webinId);
 
         return fileUploadUtils.writeQueueMessageToFile(submissionId);
       }
@@ -148,6 +160,7 @@ public class FileUploadService {
           isWebin,
           uniqueUploadId,
           bioSamplesFileUploadSubmissionStatus,
+          submissionDate,
           validationResult.getValidationMessagesList().stream()
               .map(
                   validationMessage ->
@@ -182,6 +195,7 @@ public class FileUploadService {
       final boolean isWebin,
       final String uniqueUploadId,
       final BioSamplesFileUploadSubmissionStatus bioSamplesFileUploadSubmissionStatus,
+      final String submissionDate,
       final String validationResult,
       final List<SampleNameAccessionPair> accessionPairs,
       final boolean isUpdate) {
@@ -189,6 +203,8 @@ public class FileUploadService {
         new MongoFileUpload(
             uniqueUploadId,
             bioSamplesFileUploadSubmissionStatus,
+            submissionDate,
+            FileUploadUtils.formatDateString(LocalDateTime.now()),
             isWebin ? webinId : aapDomain,
             checklist,
             isWebin,
@@ -217,9 +233,7 @@ public class FileUploadService {
           Sample sample = null;
 
           try {
-            sample =
-                buildAndPersistSample(
-                    csvRecordMap, aapDomain, webinId, checklist, validationResult, isWebin);
+            sample = buildAndPersistSample(csvRecordMap, aapDomain, webinId, checklist, validationResult, isWebin);
 
             if (sample == null) {
               validationResult.addValidationMessage(
@@ -491,6 +505,8 @@ public class FileUploadService {
             new MongoFileUpload(
                 submissionId,
                 BioSamplesFileUploadSubmissionStatus.NOT_FOUND,
+                null,
+                null,
                 null,
                 null,
                 false,

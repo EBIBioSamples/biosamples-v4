@@ -18,6 +18,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -28,9 +29,11 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.*;
 
+@Service
 public class FileUploadUtils {
   private final Logger log = LoggerFactory.getLogger(getClass());
   public static final String WEBIN_AUTH = "WEBIN";
@@ -692,5 +695,9 @@ public class FileUploadUtils {
                 .collect(Collectors.joining("\n")));
       }
     }
+  }
+
+  public static String formatDateString(LocalDateTime dateTime) {
+    return dateTime.toString();
   }
 }

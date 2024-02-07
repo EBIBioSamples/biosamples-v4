@@ -17,10 +17,8 @@ import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.csv.CSVParser;
 import org.slf4j.Logger;
@@ -31,6 +29,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmissionFile;
@@ -67,7 +66,9 @@ public class FileUploadSubmissionService {
   private void handleMessage(final String submissionId) {
     final Optional<MongoFileUpload> fileUploadOptional =
         mongoFileUploadRepository.findById(submissionId);
-    final MongoFileUpload mongoFileUpload = fileUploadOptional.orElse(null);
+    final MongoFileUpload mongoFileUpload = fileUploadOptional.orElseThrow(
+        () -> new GlobalExceptions.UploadInvalidException(
+            "Could not find file upload record for submissionId: " + submissionId));
 
     try {
       validationResult = new ValidationResult();
@@ -144,6 +145,8 @@ public class FileUploadSubmissionService {
           new MongoFileUpload(
               submissionId,
               bioSamplesFileUploadSubmissionStatus,
+              mongoFileUpload.getSubmissionDate(),
+              FileUploadUtils.formatDateString(LocalDateTime.now()),
               mongoFileUpload.getSubmitterDetails(),
               mongoFileUpload.getChecklist(),
               isWebin,
@@ -163,6 +166,8 @@ public class FileUploadSubmissionService {
           new MongoFileUpload(
               submissionId,
               BioSamplesFileUploadSubmissionStatus.FAILED,
+              mongoFileUpload.getSubmissionDate(),
+              FileUploadUtils.formatDateString(LocalDateTime.now()),
               mongoFileUpload.getSubmitterDetails(),
               mongoFileUpload.getChecklist(),
               mongoFileUpload.isWebin(),
@@ -190,6 +195,8 @@ public class FileUploadSubmissionService {
           new MongoFileUpload(
               mongoFileUpload.getSubmissionId(),
               mongoFileUpload.getSubmissionStatus(),
+              mongoFileUpload.getSubmissionDate(),
+              FileUploadUtils.formatDateString(LocalDateTime.now()),
               mongoFileUpload.getSubmitterDetails(),
               mongoFileUpload.getChecklist(),
               mongoFileUpload.isWebin(),

@@ -81,12 +81,14 @@
                                         <th>Submission ID</th>
                                         <th>Submission Status</th>
                                         <th>Submission Date</th>
+                                        <th>Last Updated</th>
                                         <th>Download Link</th>
                                     </tr>
                                     <tr th:each="submission : ${submissions}">
                                         <td th:text="${submission.submissionId}"></td>
                                         <td th:text="${submission.submissionStatus}"></td>
-                                        <td></td>
+                                        <td th:text="${submission.submissionDate}"></td>
+                                        <td th:text="${submission.lastUpdateDate}"></td>
                                         <td><form th:action="@{/upload/poll}">
                                             <input type="hidden" th:value="${submission.submissionId}" th:name="searchSubmissionId">
                                             <input type="hidden" th:value="${token}" name="token"/>
