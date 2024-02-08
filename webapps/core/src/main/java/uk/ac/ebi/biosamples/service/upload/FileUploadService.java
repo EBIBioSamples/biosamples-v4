@@ -317,7 +317,7 @@ public class FileUploadService {
       final String checklist,
       final ValidationResult validationResult,
       final boolean isWebin) {
-    final String sampleName = fileUploadUtils.getSampleName(multiMap);
+    final String sampleName = FileUploadUtils.getSampleName(multiMap);
     final boolean isValidatedAgainstChecklist;
     boolean sampleWithAccession = false;
 

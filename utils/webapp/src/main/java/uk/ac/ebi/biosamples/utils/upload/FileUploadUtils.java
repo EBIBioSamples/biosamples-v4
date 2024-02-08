@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -36,6 +37,7 @@ import uk.ac.ebi.biosamples.model.*;
 @Service
 public class FileUploadUtils {
   private final Logger log = LoggerFactory.getLogger(getClass());
+  private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd LLL yyyy HH:mm");
   public static final String WEBIN_AUTH = "WEBIN";
   public static final String AAP = "AAP";
 
@@ -64,16 +66,15 @@ public class FileUploadUtils {
     return csvDataMap;
   }
 
-  public Sample buildSample(
-      final Multimap<String, String> multiMap, final ValidationResult validationResult) {
-    final String sampleName = getSampleName(multiMap);
-    final String sampleReleaseDate = getReleaseDate(multiMap);
-    final String accession = getSampleAccession(multiMap);
-    final List<Characteristics> characteristicsList = handleCharacteristics(multiMap);
-    final List<ExternalReference> externalReferenceList = handleExternalReferences(multiMap);
-    final List<Contact> contactsList = handleContacts(multiMap);
-    final List<Publication> publicationsList = handlePublications(multiMap);
-    final List<Organization> organizationList = handleOrganizations(multiMap);
+  public Sample buildSample(final Multimap<String, String> multiMap, final ValidationResult validationResult) {
+    String sampleName = getSampleName(multiMap);
+    String sampleReleaseDate = getReleaseDate(multiMap);
+    String accession = getSampleAccession(multiMap);
+    List<Characteristics> characteristicsList = handleCharacteristics(multiMap);
+    List<ExternalReference> externalReferenceList = handleExternalReferences(multiMap);
+    List<Contact> contactsList = handleContacts(multiMap);
+    List<Publication> publicationsList = handlePublications(multiMap);
+    List<Organization> organizationList = handleOrganizations(multiMap);
 
     if (isValidSample(sampleName, sampleReleaseDate, validationResult)) {
       return buildSample(
@@ -142,7 +143,9 @@ public class FileUploadUtils {
           iter >= organizationAddresses.size() ? null : organizationAddresses.get(iter));
       organizationBuilder.url(iter >= organizationUrls.size() ? null : organizationUrls.get(iter));
 
-      organizationsList.add(organizationBuilder.build());
+      if (organizationBuilder.isNotEmpty()) {
+        organizationsList.add(organizationBuilder.build());
+      }
     }
 
     return organizationsList;
@@ -249,7 +252,9 @@ public class FileUploadUtils {
       contactBuilder.role(iter >= contactRoles.size() ? null : contactRoles.get(iter));
       contactBuilder.url(iter >= contactUrls.size() ? null : contactUrls.get(iter));
 
-      contactList.add(contactBuilder.build());
+      if (contactBuilder.isNotEmpty()) {
+        contactList.add(contactBuilder.build());
+      }
     }
 
     return contactList;
@@ -336,9 +341,7 @@ public class FileUploadUtils {
   }
 
   public String getSampleAccession(final Multimap<String, String> multiMap) {
-    final Optional<String> sampleAccession = multiMap.get("sample identifier").stream().findFirst();
-
-    return sampleAccession.orElse(null);
+    return multiMap.get("sample identifier").stream().findFirst().orElse(null);
   }
 
   private List<ExternalReference> handleExternalReferences(
@@ -510,16 +513,12 @@ public class FileUploadUtils {
     return characteristicsList;
   }
 
-  public String getSampleName(final Multimap<String, String> multiMap) {
-    final Optional<String> sampleName = multiMap.get("sample name").stream().findFirst();
-
-    return sampleName.orElse(null);
+  public static String getSampleName(final Multimap<String, String> multiMap) {
+    return multiMap.get("sample name").stream().findFirst().orElse(null);
   }
 
-  private String getReleaseDate(final Multimap<String, String> multiMap) {
-    final Optional<String> sampleReleaseDate = multiMap.get("release date").stream().findFirst();
-
-    return sampleReleaseDate.orElse(null);
+  private static String getReleaseDate(final Multimap<String, String> multiMap) {
+    return multiMap.get("release date").stream().findFirst().orElse(null);
   }
 
   public Sample addChecklistAttributeAndBuildSample(final String checklist, Sample sample) {
@@ -698,6 +697,6 @@ public class FileUploadUtils {
   }
 
   public static String formatDateString(LocalDateTime dateTime) {
-    return dateTime.toString();
+    return dateTime.format(DATE_TIME_FORMATTER);
   }
 }
