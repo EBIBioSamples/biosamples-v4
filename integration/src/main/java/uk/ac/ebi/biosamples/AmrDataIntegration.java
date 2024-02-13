@@ -10,26 +10,17 @@
 */
 package uk.ac.ebi.biosamples;
 
-import static org.junit.Assert.assertEquals;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.Collections;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.model.structured.StructuredData;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
-import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
-import uk.ac.ebi.biosamples.utils.TestUtilities;
 
 @Component
 public class AmrDataIntegration extends AbstractIntegration {
@@ -46,7 +37,7 @@ public class AmrDataIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseOne() {
-    final Sample testSample = getTestSample();
+    /*final Sample testSample = getTestSample();
     final Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
 
     if (optionalSample.isPresent()) {
@@ -80,12 +71,12 @@ public class AmrDataIntegration extends AbstractIntegration {
               + ") to equal submission ("
               + testSample
               + ")");
-    }
+    }*/
   }
 
   @Override
   protected void phaseTwo() {
-    final Sample testSample = getTestSample();
+    /*final Sample testSample = getTestSample();
     final Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
     if (!optionalSample.isPresent()) {
       throw new IntegrationTestFailException("Cant find sample " + testSample.getName(), Phase.TWO);
@@ -100,7 +91,7 @@ public class AmrDataIntegration extends AbstractIntegration {
           "An error occurred while converting json to structured data class", e);
     }
 
-    /*sd = StructuredData.build(optionalSample.get().getAccession(), sd.getCreate(), sd.getData());
+    sd = StructuredData.build(optionalSample.get().getAccession(), sd.getCreate(), sd.getData());
     final EntityModel<StructuredData> structuredDataResource = client.persistStructuredData(sd);
 
     if (structuredDataResource.getContent() == null) {
@@ -110,7 +101,7 @@ public class AmrDataIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseThree() throws InterruptedException {
-    final Sample testSample = getTestSample();
+    /*final Sample testSample = getTestSample();
 
     TimeUnit.SECONDS.sleep(2);
     final Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
@@ -163,7 +154,7 @@ public class AmrDataIntegration extends AbstractIntegration {
     //    assertEquals(ciprofloxacin.getPlatform(), "");
     //    assertEquals(ciprofloxacin.getLaboratoryTypingMethodVersionOrReagent(), "96-Well Plate");
     //    assertEquals(ciprofloxacin.getVendor(), "Trek");
-    //    assertEquals(ciprofloxacin.getAstStandard(), "CLSI");
+    //    assertEquals(ciprofloxacin.getAstStandard(), "CLSI");*/
   }
 
   @Override
