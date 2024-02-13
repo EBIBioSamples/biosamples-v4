@@ -22,6 +22,7 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.XmlSitemap;
 import uk.ac.ebi.biosamples.model.XmlSitemapIndex;
@@ -30,9 +31,7 @@ import uk.ac.ebi.biosamples.model.XmlUrlSet;
 @Order
 @Component
 public class SitemapIntegration extends AbstractIntegration {
-
   private final URI biosamplesSubmissionUri;
-
   private final RestOperations restTemplate;
 
   @Value("${model.page.size:10}")

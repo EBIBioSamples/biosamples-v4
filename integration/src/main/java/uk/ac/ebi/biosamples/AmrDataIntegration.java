@@ -100,12 +100,12 @@ public class AmrDataIntegration extends AbstractIntegration {
           "An error occurred while converting json to structured data class", e);
     }
 
-    sd = StructuredData.build(optionalSample.get().getAccession(), sd.getCreate(), sd.getData());
+    /*sd = StructuredData.build(optionalSample.get().getAccession(), sd.getCreate(), sd.getData());
     final EntityModel<StructuredData> structuredDataResource = client.persistStructuredData(sd);
 
     if (structuredDataResource.getContent() == null) {
       throw new RuntimeException("Should return submitted structured data");
-    }
+    }*/
   }
 
   @Override

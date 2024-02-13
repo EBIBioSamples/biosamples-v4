@@ -31,6 +31,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
@@ -40,27 +41,27 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 public class RestIntegration extends AbstractIntegration {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final RestTemplate restTemplate;
-  private final BioSamplesProperties clientProperties;
+  private final BioSamplesProperties bioSamplesProperties;
   private final BioSamplesClient annonymousClient;
   private final BioSamplesClient webinClient;
 
   public RestIntegration(
       final BioSamplesClient client,
       final RestTemplateBuilder restTemplateBuilder,
-      final BioSamplesProperties clientProperties,
+      final BioSamplesProperties bioSamplesProperties,
       @Qualifier("WEBINCLIENT") final BioSamplesClient webinClient) {
     super(client, webinClient);
     restTemplate = restTemplateBuilder.build();
-    this.clientProperties = clientProperties;
+    this.bioSamplesProperties = bioSamplesProperties;
     this.webinClient = webinClient;
     annonymousClient =
         new BioSamplesClient(
-            this.clientProperties.getBiosamplesClientUri(),
-            this.clientProperties.getBiosamplesClientUriV2(),
+            this.bioSamplesProperties.getBiosamplesClientUri(),
+            this.bioSamplesProperties.getBiosamplesClientUriV2(),
             restTemplateBuilder,
             null,
             null,
-            clientProperties);
+            bioSamplesProperties);
   }
 
   @Override
@@ -592,7 +593,7 @@ public class RestIntegration extends AbstractIntegration {
 
   private void postSampleWithAccessionShouldReturnABadRequestResponse() {
     final Traverson traverson =
-        new Traverson(clientProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON);
+        new Traverson(bioSamplesProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON);
     final Traverson.TraversalBuilder builder = traverson.follow("samples");
     log.info("POSTing sample with accession from " + builder.asLink().getHref());
 

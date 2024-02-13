@@ -23,6 +23,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
@@ -36,18 +37,18 @@ public class RestIntegrationV2 extends AbstractIntegration {
   public RestIntegrationV2(
       final BioSamplesClient client,
       final RestTemplateBuilder restTemplateBuilder,
-      final BioSamplesProperties clientProperties,
+      final BioSamplesProperties bioSamplesProperties,
       @Qualifier("WEBINCLIENT") final BioSamplesClient webinClient) {
     super(client, webinClient);
     this.webinClient = webinClient;
     annonymousClient =
         new BioSamplesClient(
-            clientProperties.getBiosamplesClientUri(),
-            clientProperties.getBiosamplesClientUriV2(),
+            bioSamplesProperties.getBiosamplesClientUri(),
+            bioSamplesProperties.getBiosamplesClientUriV2(),
             restTemplateBuilder,
             null,
             null,
-            clientProperties);
+            bioSamplesProperties);
   }
 
   @Override

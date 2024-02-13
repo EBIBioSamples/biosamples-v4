@@ -1,7 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
 	<artifactId>utils-pipeline</artifactId>
 	<packaging>jar</packaging>
 
@@ -32,12 +31,6 @@
 			<version>${httpclient.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>xmlunit</groupId>
-			<artifactId>xmlunit</artifactId>
-			<version>1.4</version>
-		</dependency>
-
-		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jdbc</artifactId>
 			<exclusions>
@@ -47,7 +40,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
 		<!-- AMR processing -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -59,6 +51,27 @@
 			<artifactId>utils-thread</artifactId>
 			<version>5.3.3-SNAPSHOT</version>
 			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>properties</artifactId>
+			<version>5.3.3-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<!-- use Dom4J for XML conversions -->
+		<dependency>
+			<groupId>xmlunit</groupId>
+			<artifactId>xmlunit</artifactId>
+			<version>1.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aop</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>dom4j</groupId>
+			<artifactId>dom4j</artifactId>
+			<version>1.6.1</version>
 		</dependency>
 	</dependencies>
 </project>

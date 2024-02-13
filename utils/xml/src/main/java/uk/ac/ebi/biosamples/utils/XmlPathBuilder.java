@@ -23,7 +23,6 @@ import org.dom4j.Element;
  * @author faulcon
  */
 public class XmlPathBuilder {
-
   private final List<String> pathParts = new ArrayList<>();
   private Element root = null;
 

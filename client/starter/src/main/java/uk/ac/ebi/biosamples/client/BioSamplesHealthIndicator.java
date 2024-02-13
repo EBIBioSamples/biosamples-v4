@@ -22,13 +22,11 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.client.utils.BioSamplesProperties;
 
 public class BioSamplesHealthIndicator implements HealthIndicator {
-
   private final RestTemplate restTemplate;
   private final URI uri;
-
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   BioSamplesHealthIndicator(

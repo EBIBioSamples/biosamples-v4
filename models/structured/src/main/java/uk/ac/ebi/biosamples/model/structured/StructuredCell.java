@@ -11,8 +11,8 @@
 package uk.ac.ebi.biosamples.model.structured;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
-import uk.ac.ebi.biosamples.utils.StringUtils;
 
 public class StructuredCell implements Comparable<StructuredCell> {
   private String value;

@@ -31,6 +31,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Relationship;
@@ -42,7 +43,6 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 // @Profile({ "default", "rest" })
 public class RestCurationIntegration extends AbstractIntegration {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final BioSamplesProperties bioSamplesProperties;
   private final RestOperations restTemplate;
 

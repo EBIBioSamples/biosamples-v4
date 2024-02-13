@@ -23,10 +23,9 @@ import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
 import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
-import uk.ac.ebi.biosamples.ols.OlsProcessor;
+import uk.ac.ebi.biosamples.client.utils.BioSamplesProperties;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
@@ -66,10 +65,10 @@ public class TestApplication {
     return new BioSamplesProperties();
   }
 
-  @Bean
+  /* @Bean
   public OlsProcessor olsProcessor() {
     return new OlsProcessor(restTemplate(), bioSamplesProperties());
-  }
+  }*/
 
   @Bean
   public CurationApplicationService curationApplicationService() {

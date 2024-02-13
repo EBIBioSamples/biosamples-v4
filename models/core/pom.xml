@@ -30,12 +30,6 @@
 	</parent>
 
 	<dependencies>
-		<!--<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>utils-xml</artifactId>
-			<version>5.3.3-SNAPSHOT</version>
-		</dependency>-->
-
 		<!-- need this for Jackson2ObjectMapperBuilder -->
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -53,11 +47,6 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>models-structured</artifactId>
-			<version>5.3.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
