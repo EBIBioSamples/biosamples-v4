@@ -79,7 +79,9 @@ public class SampleSubmissionService {
 
     private EntityModel<Sample> submitExistingAccession() {
       final PagedModel<EntityModel<Sample>> pagedSamples =
-          traverson.follow("samples").toObject(new ParameterizedTypeReference<>() {});
+          traverson
+              .follow("samples")
+              .toObject(new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {});
 
       Link sampleLink = pagedSamples.getLink("sample").orElseThrow();
       sampleLink = sampleLink.expand(sample.getAccession());
@@ -125,7 +127,8 @@ public class SampleSubmissionService {
     private ResponseEntity<EntityModel<Sample>> exchangeRequest(
         final RequestEntity<Sample> requestEntity, final URI uri) {
       try {
-        return restOperations.exchange(requestEntity, new ParameterizedTypeReference<>() {});
+        return restOperations.exchange(
+            requestEntity, new ParameterizedTypeReference<EntityModel<Sample>>() {});
       } catch (final RestClientResponseException e) {
         log.error(
             "Unable to {} to {} body {} got response {}",

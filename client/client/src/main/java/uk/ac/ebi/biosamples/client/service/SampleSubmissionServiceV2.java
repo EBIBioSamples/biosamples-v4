@@ -82,7 +82,8 @@ public class SampleSubmissionServiceV2 {
 
       try {
         responseEntity =
-            restOperations.exchange(requestEntity, new ParameterizedTypeReference<>() {});
+            restOperations.exchange(
+                requestEntity, new ParameterizedTypeReference<List<Sample>>() {});
       } catch (final RestClientResponseException e) {
         log.error("Unable to POST to {} got response {}", v2PostUri, e.getResponseBodyAsString());
 

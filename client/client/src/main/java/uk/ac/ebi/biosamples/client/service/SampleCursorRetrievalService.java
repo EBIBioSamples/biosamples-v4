@@ -28,7 +28,8 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 
 public class SampleCursorRetrievalService {
   private static final ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>
-      parameterizedTypeReferencePagedResourcesSample = new ParameterizedTypeReference<>() {};
+      parameterizedTypeReferencePagedResourcesSample =
+          new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {};
   private final Traverson traverson;
   private final ExecutorService executor;
   private final RestOperations restOperations;
