@@ -41,6 +41,6 @@
 		<module>export</module>
 		<module>neoexport</module>
 		<module>template</module>
-		<module>ena</module>
+		<!--<module>ena</module>-->
 	</modules>
 </project>
