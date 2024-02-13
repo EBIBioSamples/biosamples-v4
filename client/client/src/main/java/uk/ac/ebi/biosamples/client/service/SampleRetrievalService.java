@@ -69,7 +69,7 @@ public class SampleRetrievalService {
     public Optional<EntityModel<Sample>> fetchSample() {
       final URI uri;
 
-      if (curationDomains.isEmpty()) {
+      if (!curationDomains.isPresent()) {
         uri =
             URI.create(
                 traverson

@@ -11,6 +11,7 @@
 package uk.ac.ebi.biosamples.client.service;
 
 import java.net.URI;
+import java.util.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -83,7 +84,11 @@ public class SampleSubmissionService {
               .follow("samples")
               .toObject(new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {});
 
-      Link sampleLink = pagedSamples.getLink("sample").orElseThrow();
+      Link sampleLink =
+          pagedSamples
+              .getLink("sample")
+              .orElseThrow(() -> new NoSuchElementException("Sample link not found"));
+
       sampleLink = sampleLink.expand(sample.getAccession());
 
       final URI uri = getSamplePersistURI(sampleLink);
