@@ -107,7 +107,7 @@ public class EnaImportRunner implements ApplicationRunner {
       // Import BSD authority samples to update SRA accession
       // importEraBsdAuthoritySamples(fromDate, toDate);
 
-      // rtHandler.samnSampleGeographicLocationAttributeUpdate();
+      // rtHandler.parseIdentifiersFromFileAndFixAuth();
       // rtHandler.samnSampleGeographicLocationAttributeUpdate();
 
       if (importSuppressedAndKilled) {
