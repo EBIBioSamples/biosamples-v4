@@ -170,25 +170,26 @@ public class SampleRestControllerV2 {
       @PathVariable final String accession,
       @RequestHeader(name = "Authorization", required = false) final String token) {
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final Optional<Sample> sample =
+    final Optional<Sample> optionalSample =
         sampleService.fetch(accession, Optional.of(Collections.singletonList("")));
 
-    if (sample.isPresent()) {
+    if (optionalSample.isPresent()) {
       final AuthorizationProvider authProvider =
           authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
               ? AuthorizationProvider.WEBIN
               : AuthorizationProvider.AAP;
 
+      final Sample sample = optionalSample.get();
+
       if (authProvider == AuthorizationProvider.WEBIN) {
         final String webinSubmissionAccountId = authToken.get().getUser();
 
-        bioSamplesWebinAuthenticationService.isSampleAccessible(
-            sample.get(), webinSubmissionAccountId);
+        bioSamplesWebinAuthenticationService.isSampleAccessible(sample, webinSubmissionAccountId);
       } else {
-        bioSamplesAapService.isSampleAccessible(sample.get());
+        bioSamplesAapService.isSampleAccessible(sample);
       }
 
-      return sample.get();
+      return sample;
     } else {
       throw new GlobalExceptions.SampleNotFoundException();
     }
