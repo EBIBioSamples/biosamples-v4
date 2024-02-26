@@ -18,7 +18,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -28,16 +27,9 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 @Order(3)
 // @Profile({"default","rest"})
 public class RestFacetIntegration extends AbstractIntegration {
-  private final IntegrationProperties integrationProperties;
-  private final ClientProperties clientProperties;
 
-  public RestFacetIntegration(
-      final BioSamplesClient client,
-      final IntegrationProperties integrationProperties,
-      final ClientProperties clientProperties) {
+  public RestFacetIntegration(final BioSamplesClient client) {
     super(client);
-    this.integrationProperties = integrationProperties;
-    this.clientProperties = clientProperties;
   }
 
   @Override

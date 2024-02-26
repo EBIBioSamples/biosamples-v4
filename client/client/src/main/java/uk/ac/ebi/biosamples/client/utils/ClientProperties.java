@@ -11,9 +11,11 @@
 package uk.ac.ebi.biosamples.client.utils;
 
 import java.net.URI;
+import lombok.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+@Data
 @Component
 public class ClientProperties {
   @Value("${biosamples.agent.solr.stayalive:false}")
@@ -124,34 +126,6 @@ public class ClientProperties {
   @Value("${biosamples.schema.default:BSDC00001}")
   private String biosamplesDefaultSchema;
 
-  public String getBiosamplesClientWebinUsername() {
-    return biosamplesClientWebinUsername;
-  }
-
-  public String getBiosamplesClientWebinPassword() {
-    return biosamplesClientWebinPassword;
-  }
-
-  public URI getBiosamplesClientUri() {
-    return biosamplesClientUri;
-  }
-
-  public URI getBiosamplesClientUriV2() {
-    return biosamplesClientUriV2;
-  }
-
-  public URI getBiosamplesWebinAuthTokenUri() {
-    return biosamplesWebinAuthTokenUri;
-  }
-
-  public int getBiosamplesClientPagesize() {
-    return biosamplesClientPagesize;
-  }
-
-  public int getBiosamplesClientTimeout() {
-    return biosamplesClientTimeout;
-  }
-
   public int getBiosamplesClientConnectionCountMax() {
     return connectionCountMax;
   }
@@ -168,46 +142,6 @@ public class ClientProperties {
     return connectionCountDefault;
   }
 
-  public URI getBiosamplesClientAapUri() {
-    return biosamplesClientAapUri;
-  }
-
-  public URI getBiosamplesWebinAuthFetchSubmissionAccountUri() {
-    return biosamplesWebinAuthFetchSubmissionAccountUri;
-  }
-
-  public String getBiosamplesClientAapUsername() {
-    return biosamplesClientAapUsername;
-  }
-
-  public String getBiosamplesClientAapPassword() {
-    return biosamplesClientAapPassword;
-  }
-
-  public int getBiosamplesClientCacheMaxEntries() {
-    return biosamplesClientCacheMaxEntries;
-  }
-
-  public int getBiosamplesClientCacheMaxObjectSize() {
-    return biosamplesClientCacheMaxObjectSize;
-  }
-
-  public String getBiosamplesAapSuperRead() {
-    return biosamplesAapSuperRead;
-  }
-
-  public String getBiosamplesAapSuperWrite() {
-    return biosamplesAapSuperWrite;
-  }
-
-  public boolean getAgentSolrStayalive() {
-    return agentSolrStayalive;
-  }
-
-  public String getOls() {
-    return ols;
-  }
-
   public int getBiosamplesCorePageThreadCount() {
     return webappCorePageThreadCount;
   }
@@ -222,39 +156,5 @@ public class ClientProperties {
 
   public int getBiosamplesCoreFacetCacheMaxAge() {
     return webappCoreFacetCacheMaxAge;
-  }
-
-  public URI getBiosamplesWebappCoreUri() {
-    return biosamplesWebappCoreUri;
-  }
-
-  public URI getUsiCoreUri() {
-    return usiCoreUri;
-  }
-
-  public URI getBiosamplesSchemaValidatorServiceUri() {
-    return biosamplesSchemaValidatorServiceUri;
-  }
-
-  public String getSchemaValidator() {
-    return schemaValidator;
-  }
-
-  public String getSchemaStore() {
-    return schemaStore;
-  }
-
-  public String getBiosamplesDefaultSchema() {
-    return biosamplesDefaultSchema;
-  }
-
-  public long getBiosamplesFileUploaderMaxSameTimeUploadFileSize() {
-    return biosamplesFileUploaderMaxSameTimeUploadFileSize;
-  }
-
-  public void setBiosamplesFileUploaderMaxSameTimeUploadFileSize(
-      final long biosamplesFileUploaderMaxSameTimeUploadFileSize) {
-    this.biosamplesFileUploaderMaxSameTimeUploadFileSize =
-        biosamplesFileUploaderMaxSameTimeUploadFileSize;
   }
 }
