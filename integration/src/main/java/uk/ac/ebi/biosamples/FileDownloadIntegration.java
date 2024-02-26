@@ -23,18 +23,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.client.utils.BioSamplesProperties;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component
 public class FileDownloadIntegration extends AbstractIntegration {
   private final Logger log = LoggerFactory.getLogger(getClass());
-  private final BioSamplesProperties bioSamplesProperties;
+  private final ClientProperties clientProperties;
 
   public FileDownloadIntegration(
-      final BioSamplesClient client, final BioSamplesProperties bioSamplesProperties) {
+      final BioSamplesClient client, final ClientProperties clientProperties) {
     super(client);
-    this.bioSamplesProperties = bioSamplesProperties;
+    this.clientProperties = clientProperties;
   }
 
   @Override
@@ -49,7 +49,7 @@ public class FileDownloadIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseThree() {
-    final String sampleDownloadUrl = bioSamplesProperties.getBiosamplesClientUri() + "/download";
+    final String sampleDownloadUrl = clientProperties.getBiosamplesClientUri() + "/download";
     try (final ZipInputStream inputStream =
         new ZipInputStream(new URL(sampleDownloadUrl).openStream())) {
       final ZipEntry entry = inputStream.getNextEntry();

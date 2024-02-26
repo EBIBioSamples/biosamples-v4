@@ -22,7 +22,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import uk.ac.ebi.biosamples.client.utils.BioSamplesProperties;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 
 public class BioSamplesHealthIndicator implements HealthIndicator {
   private final RestTemplate restTemplate;
@@ -30,14 +30,12 @@ public class BioSamplesHealthIndicator implements HealthIndicator {
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   BioSamplesHealthIndicator(
-      final RestTemplateBuilder restTemplateBuilder,
-      final BioSamplesProperties bioSamplesProperties) {
+      final RestTemplateBuilder restTemplateBuilder, final ClientProperties clientProperties) {
     restTemplate = restTemplateBuilder.build();
 
-    // TODO use HAL for this
     uri =
-        UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri())
-            .pathSegment("health")
+        UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri())
+            .pathSegment("actuator/health")
             .build()
             .toUri();
   }
@@ -47,9 +45,10 @@ public class BioSamplesHealthIndicator implements HealthIndicator {
     log.trace("Checking health...");
     // .accept(MediaType.parseMediaType("application/vnd.spring-boot.actuator.v1+json"))
     final RequestEntity<Void> request = RequestEntity.get(uri).build();
-    ResponseEntity<?> response = null;
+    ResponseEntity<?> response;
+
     try {
-      // by default, Health doesn't deseralize appropriately due to lack of builder
+      // by default, Health doesn't deserialize appropriately due to lack of builder
       // however, as its information is reflected in the http status code, we can use that
       // instead
       // therefore we use void here to ignore the body of the response
@@ -62,12 +61,7 @@ public class BioSamplesHealthIndicator implements HealthIndicator {
       return Health.down().withDetail("connection", "unable to connect").build();
     }
 
-    if (response == null) {
-      log.trace("health down response null");
-      return Health.down().withDetail("connection", "unable to connect").build();
-    } else {
-      log.trace("health up response up");
-      return Health.up().withDetail("connection", "" + response.getStatusCodeValue()).build();
-    }
+    log.trace("health up response up");
+    return Health.up().withDetail("connection", "" + response.getStatusCodeValue()).build();
   }
 }

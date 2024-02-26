@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class BioSamplesProperties {
+public class ClientProperties {
   @Value("${biosamples.agent.solr.stayalive:false}")
   private Boolean agentSolrStayalive;
 

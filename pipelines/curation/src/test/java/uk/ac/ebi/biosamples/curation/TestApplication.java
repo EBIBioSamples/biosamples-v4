@@ -25,7 +25,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
-import uk.ac.ebi.biosamples.client.utils.BioSamplesProperties;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
@@ -61,8 +61,8 @@ public class TestApplication {
   }
 
   @Bean
-  public BioSamplesProperties bioSamplesProperties() {
-    return new BioSamplesProperties();
+  public ClientProperties bioSamplesProperties() {
+    return new ClientProperties();
   }
 
   /* @Bean

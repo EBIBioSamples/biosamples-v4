@@ -61,6 +61,7 @@ public class MessageHandlerSolr {
   private void handle(final MessageContent messageContent) {
     if (messageContent.getSample() == null) {
       LOGGER.warn("received message without sample");
+
       return;
     }
 
@@ -104,23 +105,8 @@ public class MessageHandlerSolr {
                 solrSample.getExternalReferencesData(),
                 solrSample.getKeywords());
 
-        // expand ontology terms from OLS // todo move this expansion somewhere else
-        //      Set<String> expandedTerms = new HashSet<>();
-        //      for (List<String> iris : solrSample.getAttributeIris().values()) {
-        //        for (String iri : iris) {
-        //          expandedTerms.addAll(
-        //              olsProcessor.ancestorsAndSynonyms("efo", iri).stream()
-        //                          .map(String::toLowerCase)
-        //                          .collect(Collectors.toSet()));
-        //          expandedTerms.addAll(olsProcessor.ancestorsAndSynonyms("NCBITaxon",
-        // iri).stream()
-        //                                                      .map(String::toLowerCase)
-        //                                                      .collect(Collectors.toSet()));
-        //        }
-        //      }
-        //      solrSample.getKeywords().addAll(expandedTerms);
-
         repository.saveWithoutCommit(solrSample);
+
         LOGGER.info(String.format("added %s to index", accession));
       } catch (final Exception e) {
         LOGGER.error("failed to index " + accession, e);

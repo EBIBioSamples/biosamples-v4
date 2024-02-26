@@ -30,7 +30,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.service.*;
-import uk.ac.ebi.biosamples.client.utils.BioSamplesProperties;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -64,7 +64,7 @@ public class BioSamplesClient implements AutoCloseable {
    * @param restTemplateBuilder the RestTemplateBuilder
    * @param sampleValidator the SampleValidator
    * @param clientService the ClientService
-   * @param bioSamplesProperties the BioSamplesProperties
+   * @param clientProperties the BioSamplesProperties
    */
   public BioSamplesClient(
       final URI uri,
@@ -72,7 +72,7 @@ public class BioSamplesClient implements AutoCloseable {
       final RestTemplateBuilder restTemplateBuilder,
       final SampleValidator sampleValidator,
       final ClientService clientService,
-      final BioSamplesProperties bioSamplesProperties) {
+      final ClientProperties clientProperties) {
     if (uriV2 == null) {
       uriV2 = UriComponentsBuilder.fromUri(URI.create(uri + "/v2")).build().toUri();
     }
@@ -98,7 +98,7 @@ public class BioSamplesClient implements AutoCloseable {
     samplePageRetrievalService = new SamplePageRetrievalService(restOperations, traverson);
     sampleCursorRetrievalService =
         new SampleCursorRetrievalService(
-            restOperations, traverson, bioSamplesProperties.getBiosamplesClientPagesize());
+            restOperations, traverson, clientProperties.getBiosamplesClientPagesize());
 
     sampleSubmissionService = new SampleSubmissionService(restOperations, traverson);
 
@@ -108,7 +108,7 @@ public class BioSamplesClient implements AutoCloseable {
 
     curationRetrievalService =
         new CurationRetrievalService(
-            restOperations, traverson, bioSamplesProperties.getBiosamplesClientPagesize());
+            restOperations, traverson, clientProperties.getBiosamplesClientPagesize());
 
     /*TODO: In CurationSubmissionService and StructuredDataSubmissionService webin auth is handled more elegantly, replicate it in all other services*/
     curationSubmissionService = new CurationSubmissionService(restOperations, traverson);
@@ -124,7 +124,7 @@ public class BioSamplesClient implements AutoCloseable {
       publicClient =
           Optional.of(
               new BioSamplesClient(
-                  uri, uriV2, restTemplateBuilder, sampleValidator, null, bioSamplesProperties));
+                  uri, uriV2, restTemplateBuilder, sampleValidator, null, clientProperties));
     }
   }
 

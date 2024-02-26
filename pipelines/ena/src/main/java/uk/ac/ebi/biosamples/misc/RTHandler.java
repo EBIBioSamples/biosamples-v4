@@ -23,8 +23,8 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SubmittedViaType;
 
 @Component
 public class RTHandler {
@@ -38,7 +38,6 @@ public class RTHandler {
   private static final String ENA_CHECKLIST = "ENA-CHECKLIST";
   private final BioSamplesClient bioSamplesWebinClient;
   private final BioSamplesClient bioSamplesAapClient;
-
   private final PipelinesProperties pipelinesProperties;
 
   public RTHandler(
@@ -82,51 +81,51 @@ public class RTHandler {
           bioSamplesWebinClient.fetchSampleResource(accession, Optional.of(curationDomainList));
     }
 
-    if (optionalSampleEntityModel.isPresent()) {
-      final Sample sample = optionalSampleEntityModel.get().getContent();
-      assert sample != null;
-      final String sampleDomain = sample.getDomain();
-      final String sampleWebinId = sample.getWebinSubmissionAccountId();
+    /*if (optionalSampleEntityModel.isPresent()) {
+        final Sample sample = optionalSampleEntityModel.get().getContent();
+        assert sample != null;
+        final String sampleDomain = sample.getDomain();
+        final String sampleWebinId = sample.getWebinSubmissionAccountId();
 
-      if (sampleDomain != null) {
-        log.info("Sample authority is correct for " + accession + " no updates required");
-      } else if (!sampleWebinId.equals(pipelinesProperties.getProxyWebinId())) {
-        log.info("Sample authority is correct for " + accession + " no updates required");
-      } else {
-        if (sample.getAttributes().stream()
-            .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(ENA_CHECKLIST))) {
-          log.info("Sample not BioSample authority " + accession + " no updates required");
-        }
-
-        if (sample.getSubmittedVia() == SubmittedViaType.PIPELINE_IMPORT
-            || sample.getSubmittedVia() == SubmittedViaType.WEBIN_SERVICES) {
-          log.info("Sample is an imported sample " + accession + " no updates required");
-        }
-
-        log.info("Sample authority is incorrect for " + accession + " setting to " + WEBIN_161);
-
-        final Sample updatedSample =
-            Sample.Builder.fromSample(sample)
-                .withWebinSubmissionAccountId(WEBIN_161)
-                .withNoDomain()
-                .build();
-        final EntityModel<Sample> sampleEntityModel =
-            bioSamplesWebinClient.persistSampleResource(updatedSample);
-
-        if (Objects.requireNonNull(sampleEntityModel.getContent())
-            .getWebinSubmissionAccountId()
-            .equals(WEBIN_161)) {
-          log.info("Sample " + accession + " updated");
+        if (sampleDomain != null) {
+          log.info("Sample authority is correct for " + accession + " no updates required");
+        } else if (!sampleWebinId.equals(pipelinesProperties.getProxyWebinId())) {
+          log.info("Sample authority is correct for " + accession + " no updates required");
         } else {
-          log.info("Sample " + accession + " failed to be updated");
-        }
-      }
-    } else {
-      log.info("Sample not found " + accession);
-    }
-  }
+          if (sample.getAttributes().stream()
+              .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(ENA_CHECKLIST))) {
+            log.info("Sample not BioSample authority " + accession + " no updates required");
+          }
 
-  /*final Sample sample = optionalSampleEntityModel.get().getContent();
+          if (sample.getSubmittedVia() == SubmittedViaType.PIPELINE_IMPORT
+              || sample.getSubmittedVia() == SubmittedViaType.WEBIN_SERVICES) {
+            log.info("Sample is an imported sample " + accession + " no updates required");
+          }
+
+          log.info("Sample authority is incorrect for " + accession + " setting to " + WEBIN_161);
+
+          final Sample updatedSample =
+              Sample.Builder.fromSample(sample)
+                  .withWebinSubmissionAccountId(WEBIN_161)
+                  .withNoDomain()
+                  .build();
+          final EntityModel<Sample> sampleEntityModel =
+              bioSamplesWebinClient.persistSampleResource(updatedSample);
+
+          if (Objects.requireNonNull(sampleEntityModel.getContent())
+              .getWebinSubmissionAccountId()
+              .equals(WEBIN_161)) {
+            log.info("Sample " + accession + " updated");
+          } else {
+            log.info("Sample " + accession + " failed to be updated");
+          }
+        }
+      } else {
+        log.info("Sample not found " + accession);
+      }
+    }*/
+
+    final Sample sample = optionalSampleEntityModel.get().getContent();
 
     assert sample != null;
 
@@ -169,134 +168,13 @@ public class RTHandler {
     } else {
       log.info("geo_loc_name attribute not present in " + accession);
     }
-  }*/
+  }
 
   public void samnSampleGeographicLocationAttributeUpdate() {
-    final List<String> sampleStrings =
-        List.of(
-            "SAMN38658779\n"
-                + "SAMN38658780\n"
-                + "SAMN38658781\n"
-                + "SAMN38658782\n"
-                + "SAMN38658783\n"
-                + "SAMN38658784\n"
-                + "SAMN38658785\n"
-                + "SAMN38658786\n"
-                + "SAMN38658787\n"
-                + "SAMN38658788\n"
-                + "SAMN38658789\n"
-                + "SAMN38658790\n"
-                + "SAMN38658791\n"
-                + "SAMN38658792\n"
-                + "SAMN38658793\n"
-                + "SAMN38658794\n"
-                + "SAMN38658795\n"
-                + "SAMN38658796\n"
-                + "SAMN38658797\n"
-                + "SAMN38658798\n"
-                + "SAMN38658799\n"
-                + "SAMN38658800\n"
-                + "SAMN38658801\n"
-                + "SAMN38658802\n"
-                + "SAMN38658803\n"
-                + "SAMN38658804\n"
-                + "SAMN38658805\n"
-                + "SAMN38658806\n"
-                + "SAMN38658807\n"
-                + "SAMN38658808\n"
-                + "SAMN38658809\n"
-                + "SAMN38658810\n"
-                + "SAMN38658811\n"
-                + "SAMN38658812\n"
-                + "SAMN38658813\n"
-                + "SAMN38658814\n"
-                + "SAMN38658815\n"
-                + "SAMN38658816\n"
-                + "SAMN38658817\n"
-                + "SAMN38658818\n"
-                + "SAMN38658819\n"
-                + "SAMN38658820\n"
-                + "SAMN38658821\n"
-                + "SAMN38658822\n"
-                + "SAMN38658823\n"
-                + "SAMN38658824\n"
-                + "SAMN38658825\n"
-                + "SAMN38658826\n"
-                + "SAMN38658827\n"
-                + "SAMN38658828\n"
-                + "SAMN38658829\n"
-                + "SAMN38658830\n"
-                + "SAMN38658831\n"
-                + "SAMN38658832\n"
-                + "SAMN38658833\n"
-                + "SAMN38658834\n"
-                + "SAMN38658835\n"
-                + "SAMN38658836\n"
-                + "SAMN38658837\n"
-                + "SAMN38658838\n"
-                + "SAMN38658839\n"
-                + "SAMN38658840\n"
-                + "SAMN38658841\n"
-                + "SAMN38658842\n"
-                + "SAMN38658843\n"
-                + "SAMN38658844\n"
-                + "SAMN38658845\n"
-                + "SAMN38658846\n"
-                + "SAMN38658847\n"
-                + "SAMN38658848\n"
-                + "SAMN38658849\n"
-                + "SAMN38658850\n"
-                + "SAMN38658851\n"
-                + "SAMN38658852\n"
-                + "SAMN38658853\n"
-                + "SAMN38658854\n"
-                + "SAMN38658855\n"
-                + "SAMN38658856\n"
-                + "SAMN38658857\n"
-                + "SAMN38658858\n"
-                + "SAMN38658859\n"
-                + "SAMN38658860\n"
-                + "SAMN38658861\n"
-                + "SAMN38658862\n"
-                + "SAMN38658863\n"
-                + "SAMN38658864\n"
-                + "SAMN38658865\n"
-                + "SAMN38658866\n"
-                + "SAMN38658867\n"
-                + "SAMN38658868\n"
-                + "SAMN38658869\n"
-                + "SAMN38658870\n"
-                + "SAMN38658871\n"
-                + "SAMN38658872\n"
-                + "SAMN38658873\n"
-                + "SAMN38658874\n"
-                + "SAMN38658875\n"
-                + "SAMN38658876\n"
-                + "SAMN38658877\n"
-                + "SAMN38658878\n"
-                + "SAMN38658879\n"
-                + "SAMN38658880\n"
-                + "SAMN38658881\n"
-                + "SAMN38658882\n"
-                + "SAMN38658883\n"
-                + "SAMN38658884\n"
-                + "SAMN38658885\n"
-                + "SAMN38658886\n"
-                + "SAMN38658887\n"
-                + "SAMN38658888\n"
-                + "SAMN38658889\n"
-                + "SAMN38658890\n"
-                + "SAMN38658891\n"
-                + "SAMN38658892\n"
-                + "SAMN38658893\n"
-                + "SAMN38658894\n"
-                + "SAMN38658895\n"
-                + "SAMN38658896\n"
-                + "SAMN38658897\n"
-                + "SAMN38658898");
+    final List<String> sampleStrings = List.of("");
 
     final Pattern pattern = Pattern.compile("SAMN\\d+");
-    final List<String> samnAccessions = new ArrayList<>();
+    final Set<String> samnAccessions = new HashSet<>();
 
     for (final String sampleString : sampleStrings) {
       final Matcher matcher = pattern.matcher(sampleString);
@@ -312,7 +190,7 @@ public class RTHandler {
   }
 
   private String countryAndRegionExtractor(final String getLocAttrValue, final int i) {
-    final Pattern pattern = Pattern.compile("^([a-zA-Z]+):\\s*([a-zA-Z]+)$");
+    final Pattern pattern = Pattern.compile("^([a-zA-Z]+):\\s*(.+)$");
     final Matcher matcher = pattern.matcher(getLocAttrValue);
 
     if (matcher.find()) {

@@ -22,7 +22,7 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.client.utils.BioSamplesProperties;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.XmlSitemap;
 import uk.ac.ebi.biosamples.model.XmlSitemapIndex;
@@ -40,9 +40,9 @@ public class SitemapIntegration extends AbstractIntegration {
   public SitemapIntegration(
       final BioSamplesClient client,
       final RestTemplateBuilder restTemplateBuilder,
-      final BioSamplesProperties bioSamplesProperties) {
+      final ClientProperties clientProperties) {
     super(client);
-    biosamplesSubmissionUri = bioSamplesProperties.getBiosamplesClientUri();
+    biosamplesSubmissionUri = clientProperties.getBiosamplesClientUri();
     restTemplate = restTemplateBuilder.build();
   }
 

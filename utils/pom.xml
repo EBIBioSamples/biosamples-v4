@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.3.4-SNAPSHOT</version>
+		<version>5.3.5-SNAPSHOT</version>
 	</parent>
 
 	<modules>
@@ -19,7 +19,6 @@
 		<module>ols</module>
 		<module>xml</module>
 		<module>client</module>
-		<module>utils-core</module>
 		<module>validation</module>
 	</modules>
 </project>

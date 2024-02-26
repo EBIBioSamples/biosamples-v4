@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.client.utils.BioSamplesProperties;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
@@ -34,17 +34,17 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 public class JsonLdIntegration extends AbstractIntegration {
   private final Environment env;
   private final RestOperations restTemplate;
-  private final BioSamplesProperties bioSamplesProperties;
+  private final ClientProperties clientProperties;
 
   public JsonLdIntegration(
       final RestTemplateBuilder templateBuilder,
       final BioSamplesClient client,
-      final BioSamplesProperties bioSamplesProperties,
+      final ClientProperties clientProperties,
       final Environment env) {
     super(client);
     restTemplate = templateBuilder.build();
     this.env = env;
-    this.bioSamplesProperties = bioSamplesProperties;
+    this.clientProperties = clientProperties;
   }
 
   @Override
@@ -173,7 +173,7 @@ public class JsonLdIntegration extends AbstractIntegration {
     }
 
     final UriComponentsBuilder uriBuilder =
-        UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri());
+        UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri());
     uriBuilder.pathSegment("samples", sample.getAccession() + ".ldjson");
     final ResponseEntity<JsonLDDataRecord> responseEntity =
         restTemplate.getForEntity(uriBuilder.toUriString(), JsonLDDataRecord.class);
@@ -190,7 +190,7 @@ public class JsonLdIntegration extends AbstractIntegration {
         .anyMatch(s -> s.equals("biosamples:" + sample.getAttributes()));
 
     final String checkingUrl =
-        UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri())
+        UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri())
             .pathSegment("samples", sample.getAccession())
             .toUriString();
 

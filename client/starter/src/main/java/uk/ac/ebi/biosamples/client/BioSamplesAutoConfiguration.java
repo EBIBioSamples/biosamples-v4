@@ -49,7 +49,7 @@ import uk.ac.ebi.biosamples.client.model.auth.AuthRealm;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
 import uk.ac.ebi.biosamples.client.service.ClientService;
 import uk.ac.ebi.biosamples.client.service.WebinAuthClientService;
-import uk.ac.ebi.biosamples.client.utils.BioSamplesProperties;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.service.AttributeValidator;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
@@ -70,23 +70,22 @@ public class BioSamplesAutoConfiguration {
   }
 
   @Bean
-  @ConditionalOnMissingBean(BioSamplesProperties.class)
-  public BioSamplesProperties bioSamplesProperties() {
-    return new BioSamplesProperties();
+  @ConditionalOnMissingBean(ClientProperties.class)
+  public ClientProperties clientProperties() {
+    return new ClientProperties();
   }
 
   @Bean("AAP")
   @ConditionalOnMissingBean(AapClientService.class)
   public AapClientService aapClientService(
-      final RestTemplateBuilder restTemplateBuilder,
-      final BioSamplesProperties bioSamplesProperties) {
-    if (bioSamplesProperties.getBiosamplesClientAapUsername() != null
-        && bioSamplesProperties.getBiosamplesClientAapPassword() != null) {
+      final RestTemplateBuilder restTemplateBuilder, final ClientProperties clientProperties) {
+    if (clientProperties.getBiosamplesClientAapUsername() != null
+        && clientProperties.getBiosamplesClientAapPassword() != null) {
       return new AapClientService(
           restTemplateBuilder,
-          bioSamplesProperties.getBiosamplesClientAapUri(),
-          bioSamplesProperties.getBiosamplesClientAapUsername(),
-          bioSamplesProperties.getBiosamplesClientAapPassword());
+          clientProperties.getBiosamplesClientAapUri(),
+          clientProperties.getBiosamplesClientAapUsername(),
+          clientProperties.getBiosamplesClientAapPassword());
     } else {
       return null;
     }
@@ -95,15 +94,14 @@ public class BioSamplesAutoConfiguration {
   @Bean("WEBIN")
   @ConditionalOnMissingBean(WebinAuthClientService.class)
   public WebinAuthClientService webinAuthClientService(
-      final RestTemplateBuilder restTemplateBuilder,
-      final BioSamplesProperties bioSamplesProperties) {
-    if (bioSamplesProperties.getBiosamplesClientWebinUsername() != null
-        && bioSamplesProperties.getBiosamplesClientWebinPassword() != null) {
+      final RestTemplateBuilder restTemplateBuilder, final ClientProperties clientProperties) {
+    if (clientProperties.getBiosamplesClientWebinUsername() != null
+        && clientProperties.getBiosamplesClientWebinPassword() != null) {
       return new WebinAuthClientService(
           restTemplateBuilder,
-          bioSamplesProperties.getBiosamplesWebinAuthTokenUri(),
-          bioSamplesProperties.getBiosamplesClientWebinUsername(),
-          bioSamplesProperties.getBiosamplesClientWebinPassword(),
+          clientProperties.getBiosamplesWebinAuthTokenUri(),
+          clientProperties.getBiosamplesClientWebinUsername(),
+          clientProperties.getBiosamplesClientWebinPassword(),
           Arrays.asList(AuthRealm.ENA, AuthRealm.EGA)); // pass the realm
     } else {
       return null;
@@ -112,50 +110,50 @@ public class BioSamplesAutoConfiguration {
 
   @Bean("WEBINCLIENT")
   public BioSamplesClient bioSamplesWebinClient(
-      final BioSamplesProperties bioSamplesProperties,
+      final ClientProperties clientProperties,
       RestTemplateBuilder restTemplateBuilder,
       final SampleValidator sampleValidator) {
     restTemplateBuilder =
         restTemplateBuilder.additionalCustomizers(
-            new BioSampleClientRestTemplateCustomizer(bioSamplesProperties));
+            new BioSampleClientRestTemplateCustomizer(clientProperties));
     final ClientService clientService =
-        webinAuthClientService(restTemplateBuilder, bioSamplesProperties);
+        webinAuthClientService(restTemplateBuilder, clientProperties);
 
     return new BioSamplesClient(
-        bioSamplesProperties.getBiosamplesClientUri(),
-        bioSamplesProperties.getBiosamplesClientUriV2(),
+        clientProperties.getBiosamplesClientUri(),
+        clientProperties.getBiosamplesClientUriV2(),
         restTemplateBuilder,
         sampleValidator,
         clientService,
-        bioSamplesProperties);
+        clientProperties);
   }
 
   @Bean("AAPCLIENT")
   @Primary
   public BioSamplesClient bioSamplesAapClient(
-      final BioSamplesProperties bioSamplesProperties,
+      final ClientProperties clientProperties,
       RestTemplateBuilder restTemplateBuilder,
       final SampleValidator sampleValidator) {
     restTemplateBuilder =
         restTemplateBuilder.additionalCustomizers(
-            new BioSampleClientRestTemplateCustomizer(bioSamplesProperties));
-    final ClientService clientService = aapClientService(restTemplateBuilder, bioSamplesProperties);
+            new BioSampleClientRestTemplateCustomizer(clientProperties));
+    final ClientService clientService = aapClientService(restTemplateBuilder, clientProperties);
 
     return new BioSamplesClient(
-        bioSamplesProperties.getBiosamplesClientUri(),
-        bioSamplesProperties.getBiosamplesClientUriV2(),
+        clientProperties.getBiosamplesClientUri(),
+        clientProperties.getBiosamplesClientUriV2(),
         restTemplateBuilder,
         sampleValidator,
         clientService,
-        bioSamplesProperties);
+        clientProperties);
   }
 
   private static class BioSampleClientRestTemplateCustomizer implements RestTemplateCustomizer {
 
-    private final BioSamplesProperties bioSamplesProperties;
+    private final ClientProperties clientProperties;
 
-    BioSampleClientRestTemplateCustomizer(final BioSamplesProperties bioSamplesProperties) {
-      this.bioSamplesProperties = bioSamplesProperties;
+    BioSampleClientRestTemplateCustomizer(final ClientProperties clientProperties) {
+      this.clientProperties = clientProperties;
     }
 
     @Override
@@ -187,23 +185,23 @@ public class BioSamplesAutoConfiguration {
       final PoolingHttpClientConnectionManager poolingHttpClientConnectionManager =
           new PoolingHttpClientConnectionManager();
       poolingHttpClientConnectionManager.setMaxTotal(
-          bioSamplesProperties.getBiosamplesClientConnectionCountMax());
+          clientProperties.getBiosamplesClientConnectionCountMax());
       poolingHttpClientConnectionManager.setDefaultMaxPerRoute(
-          bioSamplesProperties.getBiosamplesClientConnectionCountDefault());
+          clientProperties.getBiosamplesClientConnectionCountDefault());
 
       // set a local cache for cacheable responses
       final CacheConfig cacheConfig =
           CacheConfig.custom()
-              .setMaxCacheEntries(bioSamplesProperties.getBiosamplesClientCacheMaxEntries())
+              .setMaxCacheEntries(clientProperties.getBiosamplesClientCacheMaxEntries())
               .setMaxObjectSize(
-                  bioSamplesProperties.getBiosamplesClientCacheMaxObjectSize()) // max size of
+                  clientProperties.getBiosamplesClientCacheMaxObjectSize()) // max size of
               // 1Mb
               // number of entries x size of entries = 1Gb total cache size
               .setSharedCache(false) // act like a browser cache not a middle-hop cache
               .build();
 
       // set a timeout limit
-      final int timeout = bioSamplesProperties.getBiosamplesClientTimeout();
+      final int timeout = clientProperties.getBiosamplesClientTimeout();
       final RequestConfig config =
           RequestConfig.custom()
               .setConnectTimeout(timeout) // time to establish the connection with the remote

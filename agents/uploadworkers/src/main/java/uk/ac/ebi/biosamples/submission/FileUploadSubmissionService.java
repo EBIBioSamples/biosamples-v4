@@ -58,7 +58,7 @@ public class FileUploadSubmissionService {
   @Autowired MongoSampleRepository mongoSampleRepository;
 
   @RabbitListener(
-      queues = Messaging.fileUploadQueue,
+      queues = Messaging.UPLOAD_QUEUE,
       containerFactory = "biosamplesFileUploadSubmissionContainerFactory")
   public void receiveMessageFromBioSamplesFileUploaderQueue(final String mongoFileId) {
     handleMessage(mongoFileId);

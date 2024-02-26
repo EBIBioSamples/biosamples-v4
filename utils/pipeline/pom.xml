@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.3.4-SNAPSHOT</version>
+		<version>5.3.5-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -15,7 +15,7 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>biosamples-spring-boot-starter</artifactId>
-			<version>5.3.4-SNAPSHOT</version>
+			<version>5.3.5-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
@@ -49,13 +49,13 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-thread</artifactId>
-			<version>5.3.4-SNAPSHOT</version>
+			<version>5.3.5-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>properties</artifactId>
-			<version>5.3.4-SNAPSHOT</version>
+			<version>5.3.5-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<!-- use Dom4J for XML conversions -->

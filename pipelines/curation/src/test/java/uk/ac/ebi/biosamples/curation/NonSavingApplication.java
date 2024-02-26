@@ -15,24 +15,24 @@ import org.springframework.context.annotation.Bean;
 import uk.ac.ebi.biosamples.Application;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
-import uk.ac.ebi.biosamples.client.utils.BioSamplesProperties;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
 public class NonSavingApplication extends Application {
 
   @Bean
   public BioSamplesClient bioSamplesClient(
-      BioSamplesProperties bioSamplesProperties,
+      ClientProperties clientProperties,
       RestTemplateBuilder restTemplateBuilder,
       SampleValidator sampleValidator,
       AapClientService aapClientService) {
     return new MockBioSamplesClient(
-        bioSamplesProperties.getBiosamplesClientUri(),
-        bioSamplesProperties.getBiosamplesClientUriV2(),
+        clientProperties.getBiosamplesClientUri(),
+        clientProperties.getBiosamplesClientUriV2(),
         restTemplateBuilder,
         sampleValidator,
         aapClientService,
-        bioSamplesProperties,
+        clientProperties,
         true);
   }
 }

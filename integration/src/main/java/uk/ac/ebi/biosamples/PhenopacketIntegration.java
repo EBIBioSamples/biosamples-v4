@@ -31,10 +31,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.client.utils.BioSamplesProperties;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.utils.BioSamplesConstants;
 
 @Component
 // @Order(1)
@@ -42,16 +41,16 @@ import uk.ac.ebi.biosamples.utils.BioSamplesConstants;
 public class PhenopacketIntegration extends AbstractIntegration {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final RestTemplate restTemplate;
-  private final BioSamplesProperties bioSamplesProperties;
+  private final ClientProperties clientProperties;
   private final ObjectMapper mapper;
 
   public PhenopacketIntegration(
       final BioSamplesClient client,
       final RestTemplateBuilder restTemplateBuilder,
-      final BioSamplesProperties bioSamplesProperties) {
+      final ClientProperties clientProperties) {
     super(client);
 
-    this.bioSamplesProperties = bioSamplesProperties;
+    this.clientProperties = clientProperties;
     restTemplate = restTemplateBuilder.build();
     mapper = new ObjectMapper();
   }
