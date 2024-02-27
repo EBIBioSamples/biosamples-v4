@@ -14,6 +14,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.springframework.util.StringUtils;
+
 import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -194,6 +196,14 @@ public class Organization implements Comparable<Organization> {
     public Builder role(final String role) {
       this.role = role;
       return this;
+    }
+
+    public boolean isNotEmpty() {
+      // only check fields that could be meaningful alone
+      return StringUtils.hasText(name) ||
+          StringUtils.hasText(url) ||
+          StringUtils.hasText(email) ||
+          StringUtils.hasText(address);
     }
 
     public Organization build() {
