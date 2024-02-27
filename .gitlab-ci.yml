@@ -61,11 +61,13 @@ clone-config-production:
     - cp -r biosamples-internal/script/* deployment/
     - cp -r biosamples-internal/www/* config/
     - cp biosamples-internal/deployment/deploy.sh ./
+    - cp biosamples-internal/deployment/deploy_agents_solr.sh ./
   artifacts:
     paths:
       - deployment
       - config
       - deploy.sh
+      - deploy_agents_solr.sh
   when: manual
   only:
     - master
@@ -89,6 +91,7 @@ deploy-production-p2m-servers:
     - chmod +x deploy.sh
     - ./deploy.sh bsd_prod wp-p2m-40
     - ./deploy.sh bsd_prod wp-p2m-41
+    - ./deploy_agents_solr.sh bsd_prod wp-p2m-42
   when: manual
   only:
     - master
@@ -100,6 +103,7 @@ deploy-production-p1m-servers:
     - chmod +x deploy.sh
     - ./deploy.sh bsd_prod wp-p1m-40
     - ./deploy.sh bsd_prod wp-p1m-41
+    - ./deploy_agents_solr.sh bsd_prod wp-p1m-42
   when: manual
   only:
     - master
