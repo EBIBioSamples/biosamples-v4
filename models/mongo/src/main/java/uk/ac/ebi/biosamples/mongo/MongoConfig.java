@@ -23,7 +23,7 @@ import uk.ac.ebi.biosamples.mongo.service.CustomWriteConcernResolver;
 @Configuration
 @EnableMongoRepositories(basePackageClasses = MongoConfig.class)
 public class MongoConfig {
-  @Value("${spring.data.mongodb.uri}")
+  @Value("${spring.data.mongodb.uri:mongodb://localhost:27017/biosamples}")
   private String mongoDbUrl;
 
   @Bean
