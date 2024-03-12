@@ -15,7 +15,6 @@ import java.util.AbstractList;
 import java.util.List;
 
 public class RangeCountListContent extends AbstractList<RangeCountEntry> implements FacetContent {
-
   private final List<RangeCountEntry> rangeCountEntryList;
 
   @JsonCreator
@@ -36,9 +35,11 @@ public class RangeCountListContent extends AbstractList<RangeCountEntry> impleme
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder();
+
     sb.append("RangeCountListContent(");
     sb.append(rangeCountEntryList);
     sb.append(")");
+
     return sb.toString();
   }
 }

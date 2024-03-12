@@ -21,6 +21,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleStatus;
@@ -34,7 +35,7 @@ public class RestSampleStatusIntegration extends AbstractIntegration {
   public RestSampleStatusIntegration(
       final BioSamplesClient client,
       final RestTemplateBuilder restTemplateBuilder,
-      final BioSamplesProperties clientProperties,
+      final ClientProperties clientProperties,
       @Qualifier("WEBINCLIENT") final BioSamplesClient webinClient) {
     super(client, webinClient);
     anonymousClient =

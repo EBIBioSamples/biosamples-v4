@@ -34,6 +34,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -44,7 +45,7 @@ public class BigIntegration extends AbstractIntegration {
 
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final RestOperations restOperations;
-  private final BioSamplesProperties bioSamplesProperties;
+  private final ClientProperties clientProperties;
 
   // must be over 1000
   private final int firstInteger = 10000000;
@@ -55,7 +56,7 @@ public class BigIntegration extends AbstractIntegration {
   public BigIntegration(
       final BioSamplesClient client,
       final RestTemplateBuilder restTemplateBuilder,
-      final BioSamplesProperties bioSamplesProperties) {
+      final ClientProperties clientProperties) {
     super(client);
     final RestTemplate restTemplate = restTemplateBuilder.build();
 
@@ -77,7 +78,7 @@ public class BigIntegration extends AbstractIntegration {
 
     restOperations = restTemplate;
 
-    this.bioSamplesProperties = bioSamplesProperties;
+    this.clientProperties = clientProperties;
   }
 
   @Override
@@ -163,7 +164,7 @@ public class BigIntegration extends AbstractIntegration {
     // TODO check HAL links for search term and facets are persistent over paging etc
 
     final URI uri =
-        UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri())
+        UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri())
             .pathSegment("samples")
             .queryParam("text", "Sample")
             .queryParam("filter", "attr:organism:Homo sapiens")

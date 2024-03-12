@@ -27,7 +27,6 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 public class SampleRetrievalServiceV2 {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final RestOperations restOperations;
   private final URI uriV2;
 
@@ -38,12 +37,12 @@ public class SampleRetrievalServiceV2 {
 
   /** Accepts a accession and returns the sample */
   public Sample fetchSampleByAccession(final String accession) {
-    return new FetchV2(accession, uriV2).fetch();
+    return new SampleRetrieverV2(accession, uriV2).fetch();
   }
 
   /** Accepts a accession and returns the sample */
   public Sample fetchSampleByAccession(final String accession, final String jwt) {
-    return new FetchV2(accession, jwt, uriV2).fetch();
+    return new SampleRetrieverV2(accession, jwt, uriV2).fetch();
   }
 
   /**
@@ -53,7 +52,7 @@ public class SampleRetrievalServiceV2 {
    * @return
    */
   public Map<String, Sample> fetchSamplesByAccessions(final List<String> accessions) {
-    return new FetchSamplesV2(accessions, uriV2).fetchSamples();
+    return new SamplesRetrieverV2(accessions, uriV2).fetchSamples();
   }
 
   /**
@@ -64,21 +63,21 @@ public class SampleRetrievalServiceV2 {
    */
   public Map<String, Sample> fetchSamplesByAccessions(
       final List<String> accessions, final String jwt) {
-    return new FetchSamplesV2(accessions, uriV2, jwt).fetchSamples();
+    return new SamplesRetrieverV2(accessions, uriV2, jwt).fetchSamples();
   }
 
-  private class FetchSamplesV2 {
+  private class SamplesRetrieverV2 {
     private final List<String> accessions;
     private final String jwt;
     private final URI uriV2;
 
-    FetchSamplesV2(final List<String> accessions, final URI uriV2) {
+    SamplesRetrieverV2(final List<String> accessions, final URI uriV2) {
       this.accessions = accessions;
       jwt = null;
       this.uriV2 = uriV2;
     }
 
-    FetchSamplesV2(final List<String> accessions, final URI uriV2, final String jwt) {
+    SamplesRetrieverV2(final List<String> accessions, final URI uriV2, final String jwt) {
       this.accessions = accessions;
       this.jwt = jwt;
       this.uriV2 = uriV2;
@@ -124,18 +123,18 @@ public class SampleRetrievalServiceV2 {
     }
   }
 
-  private class FetchV2 {
+  private class SampleRetrieverV2 {
     private final String accession;
     private final String jwt;
     private final URI uriV2;
 
-    FetchV2(final String accession, final String jwt, final URI uriV2) {
+    SampleRetrieverV2(final String accession, final String jwt, final URI uriV2) {
       this.accession = accession;
       this.jwt = jwt;
       this.uriV2 = uriV2;
     }
 
-    FetchV2(final String accession, final URI uriV2) {
+    SampleRetrieverV2(final String accession, final URI uriV2) {
       this.accession = accession;
       jwt = null;
       this.uriV2 = uriV2;

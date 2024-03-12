@@ -131,7 +131,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
       }
 
       final EntityModel<Sample> sampleWithContactResource =
-          client.persistSampleResource(sampleWithContactInformations, false, true);
+          client.persistSampleResource(sampleWithContactInformations);
       // The result and the submitted will not be equal because of the new inverse relation
       // created
       // automatically
@@ -155,7 +155,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
       }
 
       final EntityModel<Sample> groupWithMsiDetailsResource =
-          client.persistSampleResource(groupWithMsiData, false, true);
+          client.persistSampleResource(groupWithMsiData);
       // The result and the submitted will not be equal because of the new inverse relation
       // created
       // automatically

@@ -50,11 +50,13 @@ public class RangeCountEntry implements Comparable<RangeCountEntry> {
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder();
+
     sb.append("LabelCountEntry(");
     sb.append(getLabel());
     sb.append(",");
     sb.append(count);
     sb.append(")");
+
     return sb.toString();
   }
 
@@ -64,11 +66,12 @@ public class RangeCountEntry implements Comparable<RangeCountEntry> {
       @JsonProperty("label") final String endLabel,
       @JsonProperty("count") final long count) {
     if (startLabel == null
-        || startLabel.trim().length() == 0
+        || startLabel.trim().isEmpty()
         || endLabel == null
-        || endLabel.trim().length() == 0) {
+        || endLabel.trim().isEmpty()) {
       throw new IllegalArgumentException("start/end label must not be blank");
     }
+
     return new RangeCountEntry(startLabel.trim(), endLabel.trim(), count);
   }
 

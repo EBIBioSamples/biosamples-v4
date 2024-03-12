@@ -34,7 +34,6 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 
 public class SamplePageRetrievalService {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final Traverson traverson;
   private final RestOperations restOperations;
 
@@ -82,8 +81,8 @@ public class SamplePageRetrievalService {
     if (jwt != null) {
       headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
     }
-    final RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
 
+    final RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
     final ResponseEntity<PagedModel<EntityModel<Sample>>> responseEntity =
         restOperations.exchange(
             requestEntity, new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {});
@@ -101,8 +100,10 @@ public class SamplePageRetrievalService {
   private MultiValueMap<String, String> encodePlusInQueryParameters(
       final MultiValueMap<String, String> queryParameters) {
     final MultiValueMap<String, String> encodedQueryParameters = new LinkedMultiValueMap<>();
+
     for (final Map.Entry<String, List<String>> param : queryParameters.entrySet()) {
       final String key = param.getKey();
+
       param
           .getValue()
           .forEach(
@@ -114,6 +115,7 @@ public class SamplePageRetrievalService {
                 }
               });
     }
+
     return encodedQueryParameters;
   }
 }

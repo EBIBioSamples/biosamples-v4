@@ -25,7 +25,6 @@ import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 
 public class CurationRetrievalService {
-
   private final Traverson traverson;
   private final ExecutorService executor;
   private final RestOperations restOperations;
@@ -45,7 +44,9 @@ public class CurationRetrievalService {
 
   public Iterable<EntityModel<Curation>> fetchAll(final String jwt) {
     final MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+
     params.add("size", Integer.toString(pageSize));
+
     return new IterableResourceFetchAll<>(
         executor,
         traverson,
@@ -63,7 +64,9 @@ public class CurationRetrievalService {
   public Iterable<EntityModel<CurationLink>> fetchCurationLinksOfSample(
       final String accession, final String jwt) {
     final MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+
     params.add("size", Integer.toString(pageSize));
+
     return new IterableResourceFetchAll<>(
         executor,
         traverson,

@@ -11,7 +11,7 @@
 package uk.ac.ebi.biosamples.service;
 
 import static java.util.stream.Collectors.toSet;
-import static uk.ac.ebi.biosamples.utils.BioSamplesConstants.*;
+import static uk.ac.ebi.biosamples.BioSamplesConstants.*;
 
 import java.time.Instant;
 import java.time.LocalDateTime;

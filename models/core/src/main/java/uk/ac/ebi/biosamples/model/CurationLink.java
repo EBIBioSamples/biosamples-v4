@@ -16,17 +16,19 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.hash.Hashing;
 import java.time.Instant;
-import java.util.Objects;
+import lombok.Data;
 import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
 import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
+@Data
 public class CurationLink implements Comparable<CurationLink> {
-
   private final Curation curation;
   private final String sample;
   private final String domain;
   private final String webinSubmissionAccountId;
   private final String hash;
+
+  @JsonSerialize(using = CustomInstantSerializer.class)
   protected final Instant created;
 
   private CurationLink(
@@ -42,52 +44,6 @@ public class CurationLink implements Comparable<CurationLink> {
     this.curation = curation;
     this.hash = hash;
     this.created = created;
-  }
-
-  public String getSample() {
-    return sample;
-  }
-
-  public String getDomain() {
-    return domain;
-  }
-
-  public String getWebinSubmissionAccountId() {
-    return webinSubmissionAccountId;
-  }
-
-  public Curation getCuration() {
-    return curation;
-  }
-
-  public String getHash() {
-    return hash;
-  }
-
-  @JsonSerialize(using = CustomInstantSerializer.class)
-  public Instant getCreated() {
-    return created;
-  }
-
-  @Override
-  public boolean equals(final Object o) {
-    if (o == this) {
-      return true;
-    }
-    if (!(o instanceof CurationLink)) {
-      return false;
-    }
-    final CurationLink other = (CurationLink) o;
-
-    return Objects.equals(curation, other.curation)
-        && Objects.equals(sample, other.sample)
-        && Objects.equals(domain, other.domain)
-        && Objects.equals(webinSubmissionAccountId, other.webinSubmissionAccountId);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(sample, domain, webinSubmissionAccountId, curation);
   }
 
   @Override
@@ -109,21 +65,6 @@ public class CurationLink implements Comparable<CurationLink> {
       return curation.compareTo(other.curation);
     }
     return 0;
-  }
-
-  @Override
-  public String toString() {
-    final StringBuilder sb = new StringBuilder();
-    sb.append("CurationLink(");
-    sb.append(sample);
-    sb.append(",");
-    sb.append(domain);
-    sb.append(",");
-    sb.append(webinSubmissionAccountId);
-    sb.append(",");
-    sb.append(curation);
-    sb.append(")");
-    return sb.toString();
   }
 
   // Used for deserializtion (JSON -> Java)

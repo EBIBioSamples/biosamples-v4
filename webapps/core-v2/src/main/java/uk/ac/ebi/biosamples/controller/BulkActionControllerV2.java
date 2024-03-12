@@ -12,6 +12,7 @@ package uk.ac.ebi.biosamples.controller;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -161,9 +162,9 @@ public class BulkActionControllerV2 {
   @PreAuthorize("isAuthenticated()")
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(
+      value = "/bulk-fetch",
       produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE},
-      params = "accessions",
-      value = "/bulk-fetch")
+      params = "accessions")
   public ResponseEntity<Map<String, Sample>> getV2(
       @RequestParam final List<String> accessions,
       @RequestHeader(name = "Authorization", required = false) final String token) {
@@ -187,7 +188,7 @@ public class BulkActionControllerV2 {
                     final boolean webinAuth =
                         authToken
                             .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
-                            .orElse(Boolean.FALSE);
+                            .orElse(false);
                     final Sample sample = sampleOptional.get();
 
                     try {
@@ -201,7 +202,6 @@ public class BulkActionControllerV2 {
                       }
                     } catch (final Exception e) {
                       log.info("Bulk-fetch forbidden sample: " + sample.getAccession());
-
                       return null;
                     }
 
@@ -226,7 +226,7 @@ public class BulkActionControllerV2 {
         samples.stream()
             .collect(
                 Collectors.toMap(
-                    sample -> Objects.requireNonNull(sample).getAccession(), sample -> sample)));
+                    sample -> Objects.requireNonNull(sample).getAccession(), Function.identity())));
   }
 
   /*

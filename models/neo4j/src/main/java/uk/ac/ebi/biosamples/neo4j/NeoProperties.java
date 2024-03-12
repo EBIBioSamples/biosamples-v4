@@ -10,12 +10,13 @@
 */
 package uk.ac.ebi.biosamples.neo4j;
 
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+@Data
 @Component
 public class NeoProperties {
-
   @Value("${biosamples.neo.url:neo4j://localhost:7687}")
   private String neoUrl;
 
@@ -24,16 +25,4 @@ public class NeoProperties {
 
   @Value("${biosamples.neo.password:neo5j}")
   private String neoPassword;
-
-  public String getNeoUrl() {
-    return neoUrl;
-  }
-
-  public String getNeoUsername() {
-    return neoUsername;
-  }
-
-  public String getNeoPassword() {
-    return neoPassword;
-  }
 }

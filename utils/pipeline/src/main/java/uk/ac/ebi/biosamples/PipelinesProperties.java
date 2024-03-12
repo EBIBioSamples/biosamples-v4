@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PipelinesProperties {
-
   @Value("${biosamples.pipelines.ncbi.file:/ncbi/biosample_set.xml.gz}")
   private String ncbiFile;
 

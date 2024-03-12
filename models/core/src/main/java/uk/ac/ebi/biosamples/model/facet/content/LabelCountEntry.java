@@ -51,9 +51,10 @@ public class LabelCountEntry implements Comparable<LabelCountEntry> {
   @JsonCreator
   public static LabelCountEntry build(
       @JsonProperty("label") final String label, @JsonProperty("count") final long count) {
-    if (label == null || label.trim().length() == 0) {
+    if (label == null || label.trim().isEmpty()) {
       throw new IllegalArgumentException("label must not be blank");
     }
+
     return new LabelCountEntry(label.trim(), count);
   }
 
@@ -62,6 +63,7 @@ public class LabelCountEntry implements Comparable<LabelCountEntry> {
     if (isValidLabelCount(entryMap)) {
       return new LabelCountEntry(entryMap.get("label"), Long.parseLong(entryMap.get("count")));
     }
+
     throw new RuntimeException(
         "Provided object is not suitable to be converted to LabelCountEntry");
   }

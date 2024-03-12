@@ -26,7 +26,6 @@ import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
 public class PipelinesHelper {
-
   public RestTemplateCustomizer getRestTemplateCustomizer(
       BioSamplesProperties bioSamplesProperties, PipelinesProperties pipelinesProperties) {
     return restTemplate -> {

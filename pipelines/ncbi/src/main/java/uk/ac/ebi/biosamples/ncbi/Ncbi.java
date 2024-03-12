@@ -22,7 +22,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 import javax.xml.parsers.ParserConfigurationException;
 import org.dom4j.Element;
@@ -43,6 +46,7 @@ import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
 import uk.ac.ebi.biosamples.mongo.repo.MongoPipelineRepository;
 import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
+import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.PipelineUniqueIdentifierGenerator;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.XmlFragmenter;
@@ -69,7 +73,7 @@ public class Ncbi implements ApplicationRunner {
     this.sampleCallback = sampleCallback;
     this.bioSamplesClient = bioSamplesClient;
     this.mongoPipelineRepository = mongoPipelineRepository;
-    sampleToAmrMap = new HashMap<>();
+    this.sampleToAmrMap = new HashMap<>();
   }
 
   @Override
@@ -98,6 +102,7 @@ public class Ncbi implements ApplicationRunner {
       log.info("Processing NCBI pipeline...");
 
       final LocalDate fromDate;
+
       if (args.getOptionNames().contains("from")) {
         fromDate =
             LocalDate.parse(
@@ -105,7 +110,9 @@ public class Ncbi implements ApplicationRunner {
       } else {
         fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
       }
+
       final LocalDate toDate;
+
       if (args.getOptionNames().contains("until")) {
         toDate =
             LocalDate.parse(
@@ -121,6 +128,7 @@ public class Ncbi implements ApplicationRunner {
       sampleCallback.setToDate(toDate);
 
       final String ncbiFile;
+
       if (args.getOptionNames().contains("ncbi_file")) {
         ncbiFile = args.getOptionValues("ncbi_file").get(0);
       } else {
@@ -132,39 +140,41 @@ public class Ncbi implements ApplicationRunner {
 
       try (final InputStream is =
           new GZIPInputStream(new BufferedInputStream(Files.newInputStream(inputPath)))) {
-        /*if (pipelinesProperties.getThreadCount() > 0) {*/
-        final ExecutorService executorService = Executors.newFixedThreadPool(100);
-        try {
-          /* executorService =
-          AdaptiveThreadPoolExecutor.create(
-              100,
-              10000,
-              true,
-              pipelinesProperties.getThreadCount(),
-              pipelinesProperties.getThreadCountMax());*/
-          final Map<Element, Future<Void>> futures = new LinkedHashMap<>();
+        if (pipelinesProperties.getThreadCount() > 0) {
+          ExecutorService executorService = null;
 
-          sampleCallback.setExecutorService(executorService);
-          sampleCallback.setFutures(futures);
-          sampleCallback.setSampleToAmrMap(sampleToAmrMap);
+          // final ExecutorService executorService = Executors.newFixedThreadPool(100);
+          try {
+            executorService =
+                AdaptiveThreadPoolExecutor.create(
+                    100,
+                    10000,
+                    true,
+                    pipelinesProperties.getThreadCount(),
+                    pipelinesProperties.getThreadCountMax());
+            final Map<Element, Future<Void>> futures = new LinkedHashMap<>();
 
-          // this does the actual processing
-          xmlFragmenter.handleStream(is, "UTF-8", sampleCallback);
+            sampleCallback.setExecutorService(executorService);
+            sampleCallback.setFutures(futures);
+            sampleCallback.setSampleToAmrMap(sampleToAmrMap);
 
-          log.info("waiting for futures");
+            // this does the actual processing
+            xmlFragmenter.handleStream(is, "UTF-8", sampleCallback);
 
-          // wait for anything to finish
-          ThreadUtils.checkFutures(futures, 0);
-        } finally {
-          log.info("shutting down");
-          executorService.shutdown();
-          executorService.awaitTermination(1, TimeUnit.MINUTES);
-        }
-        /*} else {
+            log.info("waiting for futures");
+
+            // wait for anything to finish
+            ThreadUtils.checkFutures(futures, 0);
+          } finally {
+            log.info("shutting down");
+            executorService.shutdown();
+            executorService.awaitTermination(1, TimeUnit.MINUTES);
+          }
+        } else {
           // do all on master thread
           // this does the actual processing
           xmlFragmenter.handleStream(is, "UTF-8", sampleCallback);
-        }*/
+        }
       }
       log.info("Handled new and updated NCBI samples");
       log.info("Number of accession from NCBI = " + sampleCallback.getAccessions().size());
@@ -219,6 +229,7 @@ public class Ncbi implements ApplicationRunner {
       toRemoveAccessions.removeAll(sampleCallback.getAccessions());
       // remove those samples that are left
       log.info("Number of samples to make private = " + toRemoveAccessions.size());
+
       makePrivate(toRemoveAccessions);
     }
   }
@@ -242,7 +253,7 @@ public class Ncbi implements ApplicationRunner {
               .get()
               .fetchSampleResourceAll(
                   Collections.singleton(FilterBuilder.create().onAccession("SAM[^E].*").build()))) {
-        existingAccessions.add(sample.getContent().getAccession());
+        existingAccessions.add(Objects.requireNonNull(sample.getContent()).getAccession());
       }
       final long endTime = System.nanoTime();
       final double intervalSec = ((double) (endTime - startTime)) / 1000000000.0;
@@ -281,6 +292,7 @@ public class Ncbi implements ApplicationRunner {
                   .build();
           // persist the now private sample
           log.info("Making private " + sample.getAccession());
+
           bioSamplesClient.persistSampleResource(newSample);
         }
       }

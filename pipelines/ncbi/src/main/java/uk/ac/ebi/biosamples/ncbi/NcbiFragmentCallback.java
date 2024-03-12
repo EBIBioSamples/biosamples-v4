@@ -127,6 +127,7 @@ public class NcbiFragmentCallback implements ElementCallback {
     }
     // its an EBI biosample, or has no accession, skip
     final String accession = attributes.getValue("", "accession");
+
     if (accession == null || accession.startsWith("SAME")) {
       return false;
     }

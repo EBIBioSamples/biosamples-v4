@@ -15,7 +15,6 @@ import java.util.AbstractList;
 import java.util.List;
 
 public class LabelCountListContent extends AbstractList<LabelCountEntry> implements FacetContent {
-
   private final List<LabelCountEntry> labelCountEntryList;
 
   @JsonCreator
@@ -36,9 +35,11 @@ public class LabelCountListContent extends AbstractList<LabelCountEntry> impleme
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder();
+
     sb.append("LabelCountListContent(");
     sb.append(labelCountEntryList);
     sb.append(")");
+
     return sb.toString();
   }
 }

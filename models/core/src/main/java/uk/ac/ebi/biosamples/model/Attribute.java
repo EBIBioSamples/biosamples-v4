@@ -15,69 +15,32 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import java.util.*;
+import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Attribute implements Comparable<Attribute> {
   // TODO: This needs to be public static otherwise spring-data-mongo goes crazy
   public static Logger log = LoggerFactory.getLogger(Attribute.class);
+
+  @JsonProperty("type")
   private String type;
+
+  @JsonProperty("value")
   private String value;
+
+  @JsonProperty("iri")
   private SortedSet<String> iri;
+
+  @JsonProperty("unit")
   private String unit;
+
+  @JsonProperty("tag")
   private String tag;
 
   private Attribute() {}
-
-  @JsonProperty("type")
-  public String getType() {
-    return type;
-  }
-
-  @JsonProperty("value")
-  public String getValue() {
-    return value;
-  }
-
-  @JsonProperty("tag")
-  public String getTag() {
-    return tag;
-  }
-
-  @JsonProperty("iri")
-  public SortedSet<String> getIri() {
-    return iri;
-  }
-
-  @JsonProperty("unit")
-  public String getUnit() {
-    return unit;
-  }
-
-  @Override
-  public boolean equals(final Object o) {
-    if (o == this) {
-      return true;
-    }
-
-    if (!(o instanceof Attribute)) {
-      return false;
-    }
-
-    final Attribute other = (Attribute) o;
-
-    return Objects.equals(type, other.type)
-        && Objects.equals(value, other.value)
-        && Objects.equals(tag, other.tag)
-        && Objects.equals(iri, other.iri)
-        && Objects.equals(unit, other.unit);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(type, value, tag, iri, unit);
-  }
 
   @Override
   public int compareTo(final Attribute other) {
@@ -85,23 +48,20 @@ public class Attribute implements Comparable<Attribute> {
       return 1;
     }
 
-    //		if (!this.type.equals(other.type)) {
-    //			return this.type.compareTo(other.type);
-    //		}
     int comparison = nullSafeStringComparison(type, other.type);
+
     if (comparison != 0) {
       return comparison;
     }
 
-    //		if (!this.value.equals(other.value)) {
-    //			return this.value.compareTo(other.value);
-    //		}
     comparison = nullSafeStringComparison(value, other.value);
+
     if (comparison != 0) {
       return comparison;
     }
 
     comparison = nullSafeStringComparison(tag, other.tag);
+
     if (comparison != 0) {
       return comparison;
     }
@@ -109,9 +69,13 @@ public class Attribute implements Comparable<Attribute> {
     if (iri == null && other.iri != null) {
       return -1;
     }
+
     if (iri != null && other.iri == null) {
       return 1;
     }
+
+    assert iri != null;
+
     if (!iri.equals(other.iri)) {
       if (iri.size() < other.iri.size()) {
         return -1;
@@ -120,8 +84,10 @@ public class Attribute implements Comparable<Attribute> {
       } else {
         final Iterator<String> thisIt = iri.iterator();
         final Iterator<String> otherIt = other.iri.iterator();
+
         while (thisIt.hasNext() && otherIt.hasNext()) {
           final int val = thisIt.next().compareTo(otherIt.next());
+
           if (val != 0) {
             return val;
           }
@@ -129,18 +95,6 @@ public class Attribute implements Comparable<Attribute> {
       }
     }
 
-    //		if (this.unit == null && other.unit != null) {
-    //			return -1;
-    //		}
-    //		if (this.unit != null && other.unit == null) {
-    //			return 1;
-    //		}
-    //		if (this.unit != null && other.unit != null
-    //				&& !this.unit.equals(other.unit)) {
-    //			return this.unit.compareTo(other.unit);
-    //		}
-    //
-    //		return 0;
     return nullSafeStringComparison(unit, other.unit);
   }
 
@@ -148,31 +102,16 @@ public class Attribute implements Comparable<Attribute> {
     if (one == null && two != null) {
       return -1;
     }
+
     if (one != null && two == null) {
       return 1;
     }
+
     if (one != null && !one.equals(two)) {
       return one.compareTo(two);
     }
 
     return 0;
-  }
-
-  @Override
-  public String toString() {
-    final StringBuilder sb = new StringBuilder();
-    sb.append("Attribute(");
-    sb.append(type);
-    sb.append(",");
-    sb.append(value);
-    sb.append(",");
-    sb.append(tag);
-    sb.append(",");
-    sb.append(iri);
-    sb.append(",");
-    sb.append(unit);
-    sb.append(")");
-    return sb.toString();
   }
 
   public static Attribute build(final String type, final String value) {
@@ -184,6 +123,7 @@ public class Attribute implements Comparable<Attribute> {
     if (iri == null) {
       iri = "";
     }
+
     return build(type, value, null, Lists.newArrayList(iri), unit);
   }
 

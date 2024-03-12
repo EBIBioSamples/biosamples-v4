@@ -21,7 +21,6 @@ import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 
 @ControllerAdvice
 public class SampleNotFoundControllerAdvice extends ResponseEntityExceptionHandler {
-
   @ExceptionHandler(value = {GlobalExceptions.SampleNotFoundException.class})
   protected ResponseEntity<Object> handleConflict(RuntimeException ex, WebRequest request) {
     return handleExceptionInternal(ex, null, new HttpHeaders(), HttpStatus.NOT_FOUND, request);

@@ -612,7 +612,7 @@ public class Sample implements Comparable<Sample> {
       sample.structuredData.addAll(structuredData);
     }
 
-    sample.submittedVia = Objects.requireNonNullElse(submittedVia, SubmittedViaType.JSON_API);
+    sample.submittedVia = submittedVia != null ? submittedVia : SubmittedViaType.JSON_API;
 
     return sample;
   }
@@ -801,7 +801,8 @@ public class Sample implements Comparable<Sample> {
     }
 
     public Builder withStructuredData(final Set<StructuredDataTable> structuredData) {
-      this.structuredData = Objects.requireNonNullElseGet(structuredData, HashSet::new);
+      this.structuredData = structuredData != null ? structuredData : new HashSet<>();
+
       return this;
     }
 

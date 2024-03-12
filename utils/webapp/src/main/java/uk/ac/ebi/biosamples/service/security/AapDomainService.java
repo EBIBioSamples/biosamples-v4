@@ -18,7 +18,7 @@ import uk.ac.ebi.tsc.aap.client.model.Domain;
 
 @Component
 @Primary
-class AapDomainService {
+public class AapDomainService {
   @Autowired private AapDomainRepositoryRest repo;
   /**
    * Gets the current user membership domains

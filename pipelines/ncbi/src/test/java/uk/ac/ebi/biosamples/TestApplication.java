@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.ncbi.MockBioSamplesClient;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
@@ -23,17 +24,17 @@ import uk.ac.ebi.biosamples.service.SampleValidator;
 public class TestApplication {
   @Bean
   public BioSamplesClient bioSamplesClient(
-      BioSamplesProperties bioSamplesProperties,
+      ClientProperties clientProperties,
       RestTemplateBuilder restTemplateBuilder,
       SampleValidator sampleValidator,
       ObjectMapper objectMapper) {
     return new MockBioSamplesClient(
-        bioSamplesProperties.getBiosamplesClientUri(),
-        bioSamplesProperties.getBiosamplesClientUriV2(),
+        clientProperties.getBiosamplesClientUri(),
+        clientProperties.getBiosamplesClientUriV2(),
         restTemplateBuilder,
         sampleValidator,
         aapClientService(),
-        bioSamplesProperties,
+        clientProperties,
         objectMapper);
   }
 

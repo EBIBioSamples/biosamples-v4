@@ -37,11 +37,13 @@ public class EraProDao {
 
   public List<SampleCallbackResult> doSampleCallback(
       final LocalDate minDate, final LocalDate maxDate) {
+    log.info("Getting ENA samples");
+
     final String query =
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID, LAST_UPDATED FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' "
             + "AND "
             + STATUS_CLAUSE
-            + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY LAST_UPDATED ASC";
+            + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) AND EGA_ID IS NULL ORDER BY LAST_UPDATED ASC";
 
     final Date minDateOld = java.sql.Date.valueOf(minDate);
     final Date maxDateOld = java.sql.Date.valueOf(maxDate);

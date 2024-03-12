@@ -10,7 +10,7 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import static uk.ac.ebi.biosamples.utils.BioSamplesConstants.SRA_ACCESSION;
+import static uk.ac.ebi.biosamples.BioSamplesConstants.SRA_ACCESSION;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -18,6 +18,7 @@ import org.dom4j.DocumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
+import uk.ac.ebi.biosamples.BioSamplesConstants;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.Attribute;
@@ -26,7 +27,6 @@ import uk.ac.ebi.biosamples.model.SampleStatus;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 import uk.ac.ebi.biosamples.service.EraProDao;
 import uk.ac.ebi.biosamples.service.EraproSample;
-import uk.ac.ebi.biosamples.utils.BioSamplesConstants;
 
 public class EnaImportCallable implements Callable<Void> {
   private final Logger log = LoggerFactory.getLogger(getClass());

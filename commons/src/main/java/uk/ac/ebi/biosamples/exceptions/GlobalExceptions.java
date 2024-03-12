@@ -10,6 +10,7 @@
 */
 package uk.ac.ebi.biosamples.exceptions;
 
+import java.io.Serial;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -40,7 +41,7 @@ public class GlobalExceptions {
   public static class SampleAccessionDoesNotExistException extends RuntimeException {}
 
   public static class SampleNotFoundException extends RuntimeException {
-    private static final long serialVersionUID = 1376682660925892995L;
+    @Serial private static final long serialVersionUID = 1376682660925892995L;
   }
 
   public static class SampleValidationException extends RuntimeException {
@@ -78,7 +79,7 @@ public class GlobalExceptions {
   public static class NotOriginalSubmitterException extends RuntimeException {}
 
   public static class SampleNotAccessibleAdviceException extends RuntimeException {
-    private static final long serialVersionUID = -6250819256457895445L;
+    @Serial private static final long serialVersionUID = -6250819256457895445L;
   }
 
   @ResponseStatus(value = HttpStatus.FORBIDDEN)
@@ -94,7 +95,7 @@ public class GlobalExceptions {
 
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public static class SampleValidationControllerException extends RuntimeException {
-    private static final long serialVersionUID = -7937033504537036300L;
+    @Serial private static final long serialVersionUID = -7937033504537036300L;
 
     public SampleValidationControllerException(final String message) {
       super(message);

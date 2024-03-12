@@ -31,6 +31,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Relationship;
@@ -42,17 +43,16 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 // @Profile({ "default", "rest" })
 public class RestCurationIntegration extends AbstractIntegration {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
-  private final BioSamplesProperties bioSamplesProperties;
+  private final ClientProperties clientProperties;
   private final RestOperations restTemplate;
 
   public RestCurationIntegration(
       final RestTemplateBuilder restTemplateBuilder,
-      final BioSamplesProperties bioSamplesProperties,
+      final ClientProperties clientProperties,
       final BioSamplesClient client) {
     super(client);
     restTemplate = restTemplateBuilder.build();
-    this.bioSamplesProperties = bioSamplesProperties;
+    this.clientProperties = clientProperties;
   }
 
   @Override
@@ -297,7 +297,7 @@ public class RestCurationIntegration extends AbstractIntegration {
   private void testSampleCurations(final Sample sample) {
     // TODO use client
     final URI uri =
-        UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri())
+        UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri())
             .pathSegment("samples")
             .pathSegment(sample.getAccession())
             .pathSegment("curationlinks")
@@ -322,7 +322,7 @@ public class RestCurationIntegration extends AbstractIntegration {
       final String accession, final String expected, final MultiValueMap<String, String> params) {
     // TODO use client
     final URI uri =
-        UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri())
+        UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri())
             .pathSegment("samples")
             .pathSegment(accession)
             .queryParams(params)
