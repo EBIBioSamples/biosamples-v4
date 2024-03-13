@@ -337,13 +337,9 @@ public class BulkActionControllerV2 {
 
   private Sample validateSample(Sample sample, final boolean isWebinSubmission) {
     schemaValidationService.validate(sample);
-    sample =
-        taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
-            sample, isWebinSubmission);
-
-    if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-      schemaValidationService.validate(sample);
-    }
+    /*sample =
+    taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
+        sample, isWebinSubmission);*/
 
     return sample;
   }

@@ -236,6 +236,7 @@ public class SampleRestController {
         sample = Sample.Builder.fromSample(sample).withNoData().build();
       }
     }
+
     return sample;
   }
 
@@ -250,6 +251,7 @@ public class SampleRestController {
         sample = Sample.Builder.fromSample(sample).withNoData().build();
       }
     }
+
     return sample;
   }
 

@@ -143,24 +143,33 @@ public class RTHandler {
       final String getLocAttributeTag = geoLocAttribute.getTag();
       final String getLocAttributeUnit = geoLocAttribute.getUnit();
       final String extractedCountryName = countryAndRegionExtractor(getLocAttrValue, 1);
-      final String extractedRegionName = countryAndRegionExtractor(getLocAttrValue, 2);
+      /*final String extractedRegionName = countryAndRegionExtractor(getLocAttrValue, 2);
 
-      attributeSet.add(
-          Attribute.build(
-              GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY,
-              extractedRegionName,
-              getLocAttributeTag,
-              Collections.emptyList(),
-              getLocAttributeUnit));
+      if (extractedRegionName != null && !extractedRegionName.isEmpty()) {
+        attributeSet.removeIf(attribute -> attribute.getType().equals(GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY));
+        attributeSet.add(
+                Attribute.build(
+                        GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY,
+                        extractedRegionName,
+                        getLocAttributeTag,
+                        Collections.emptyList(),
+                        getLocAttributeUnit));
+      }*/
 
-      attributeSet.add(
-          Attribute.build(
-              GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA,
-              extractedCountryName,
-              getLocAttributeTag,
-              Collections.emptyList(),
-              getLocAttributeUnit));
+      attributeSet.removeIf(
+          attribute -> attribute.getType().equals(GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY));
 
+      if (extractedCountryName != null && !extractedCountryName.isEmpty()) {
+        attributeSet.removeIf(
+            attribute -> attribute.getType().equals(GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA));
+        attributeSet.add(
+            Attribute.build(
+                GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA,
+                extractedCountryName,
+                getLocAttributeTag,
+                Collections.emptyList(),
+                getLocAttributeUnit));
+      }
       final Sample updateSample =
           Sample.Builder.fromSample(sample).withAttributes(attributeSet).build();
 
@@ -171,7 +180,63 @@ public class RTHandler {
   }
 
   public void samnSampleGeographicLocationAttributeUpdate() {
-    final List<String> sampleStrings = List.of("");
+    final List<String> sampleStrings =
+        List.of(
+            "existing sample accession SAMN15298114 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298115 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298083 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298102 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298097 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298095 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298111 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298110 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298088 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298098 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298101 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298107 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298106 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231944 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231957 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231940 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231961 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231955 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231937 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231953 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231936 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231947 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231954 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298116 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298117 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298118 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298132 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298091 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298089 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298090 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298131 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298086 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298127 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298128 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15298125 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231891 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231892 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231893 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231890 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231918 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231922 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231897 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231900 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231926 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231919 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231887 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231888 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231885 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231881 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231880 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231882 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231884 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231878 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231883 does not have a valid geographic location\n"
+                + "existing sample accession SAMN15231889 does not have a valid geographic location");
 
     final Pattern pattern = Pattern.compile("SAMN\\d+");
     final Set<String> samnAccessions = new HashSet<>();
@@ -190,11 +255,12 @@ public class RTHandler {
   }
 
   private String countryAndRegionExtractor(final String getLocAttrValue, final int i) {
-    final Pattern pattern = Pattern.compile("^([a-zA-Z]+):\\s*(.+)$");
+    /*
+    final Pattern pattern = Pattern.compile("^[a-zA-Z]+:\\s*(.+)$");
     final Matcher matcher = pattern.matcher(getLocAttrValue);
 
     if (matcher.find()) {
-      final String countryOrRegionName = matcher.group(i);
+      final String countryOrRegionName = matcher.group(1);
       System.out.println("Extracted country/ region is: " + countryOrRegionName);
 
       return countryOrRegionName;
@@ -202,6 +268,8 @@ public class RTHandler {
       System.out.println("Country/ Region not found in the input string.");
 
       return null;
-    }
+    }*/
+
+    return getLocAttrValue;
   }
 }

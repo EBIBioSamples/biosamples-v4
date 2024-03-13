@@ -17,7 +17,6 @@
 		<module>pipeline</module>
 		<module>thread</module>
 		<module>ols</module>
-		<module>xml</module>
 		<module>client</module>
 		<module>validation</module>
 	</modules>
