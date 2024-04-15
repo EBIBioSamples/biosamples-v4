@@ -35,6 +35,7 @@ import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
 /**
@@ -600,7 +601,7 @@ public class BioSamplesClient implements AutoCloseable {
     curationSubmissionService.deleteCurationLink(content.getSample(), content.getHash(), jwt);
   }
 
-  /*public EntityModel<StructuredData> persistStructuredData(final StructuredData structuredData) {
+  public EntityModel<StructuredData> persistStructuredData(final StructuredData structuredData) {
     return structuredDataSubmissionService.persistStructuredData(structuredData, null);
-  }*/
+  }
 }

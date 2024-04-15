@@ -277,7 +277,7 @@ public class FileUploadService {
       oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
     }
 
-    if (relationships != null && relationships.size() > 0) {
+    if (relationships != null && !relationships.isEmpty()) {
       relationships.forEach(relationship -> log.info(relationship.toString()));
 
       sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
@@ -388,7 +388,7 @@ public class FileUploadService {
 
       return sample;
     } catch (final Exception e) {
-      e.printStackTrace();
+      log.info(e.getMessage(), e);
 
       if (e instanceof GlobalExceptions.SampleNotAccessibleException) {
         validationResult.addValidationMessage(

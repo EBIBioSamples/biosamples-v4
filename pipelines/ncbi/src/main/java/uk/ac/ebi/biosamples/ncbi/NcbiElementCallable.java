@@ -102,7 +102,7 @@ public class NcbiElementCallable implements Callable<Void> {
       if (!structuredDataTableSet.isEmpty()) {
         final StructuredData structuredData =
             StructuredData.build(accession, sample.getCreate(), structuredDataTableSet);
-        /*bioSamplesClient.persistStructuredData(structuredData);*/
+        bioSamplesClient.persistStructuredData(structuredData);
       }
 
       log.trace("Element callable finished");
