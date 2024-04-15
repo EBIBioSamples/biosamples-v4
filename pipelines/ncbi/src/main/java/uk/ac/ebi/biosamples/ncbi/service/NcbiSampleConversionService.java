@@ -28,6 +28,7 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
 public class NcbiSampleConversionService {
+  private static final Logger log = LoggerFactory.getLogger(NcbiSampleConversionService.class);
   private static final String SUBMISSION_DATE = "submission_date";
   private static final String COMMON_NAME = "common name";
   private static final String GENBANK = "GenBank";
@@ -81,9 +82,6 @@ public class NcbiSampleConversionService {
   private static final Pattern ANTIBIOGRAM_PATTERN = Pattern.compile("^Antibiogram.*");
   private static final String TARGET = "target";
   private static final String PUBMED = "pubmed";
-
-  private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final TaxonomyService taxonomyService;
   private final NcbiAmrConversionService amrConversionService;
 

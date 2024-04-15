@@ -13,7 +13,6 @@ package uk.ac.ebi.biosamples.client;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
-import java.util.concurrent.*;
 import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +29,8 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.service.*;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -58,13 +57,23 @@ public class BioSamplesClient implements AutoCloseable {
   private final SampleValidator sampleValidator;
   private final Optional<BioSamplesClient> publicClient;
 
+  /**
+   * Constructs a BioSamplesClient with the given parameters.
+   *
+   * @param uri the URI for BioSamples
+   * @param uriV2 the URI for BioSamples V2
+   * @param restTemplateBuilder the RestTemplateBuilder
+   * @param sampleValidator the SampleValidator
+   * @param clientService the ClientService
+   * @param clientProperties the BioSamplesProperties
+   */
   public BioSamplesClient(
       final URI uri,
       URI uriV2,
       final RestTemplateBuilder restTemplateBuilder,
       final SampleValidator sampleValidator,
       final ClientService clientService,
-      final BioSamplesProperties bioSamplesProperties) {
+      final ClientProperties clientProperties) {
     if (uriV2 == null) {
       uriV2 = UriComponentsBuilder.fromUri(URI.create(uri + "/v2")).build().toUri();
     }
@@ -90,7 +99,7 @@ public class BioSamplesClient implements AutoCloseable {
     samplePageRetrievalService = new SamplePageRetrievalService(restOperations, traverson);
     sampleCursorRetrievalService =
         new SampleCursorRetrievalService(
-            restOperations, traverson, bioSamplesProperties.getBiosamplesClientPagesize());
+            restOperations, traverson, clientProperties.getBiosamplesClientPagesize());
 
     sampleSubmissionService = new SampleSubmissionService(restOperations, traverson);
 
@@ -100,9 +109,9 @@ public class BioSamplesClient implements AutoCloseable {
 
     curationRetrievalService =
         new CurationRetrievalService(
-            restOperations, traverson, bioSamplesProperties.getBiosamplesClientPagesize());
+            restOperations, traverson, clientProperties.getBiosamplesClientPagesize());
 
-    /*In CurationSubmissionService and StructuredDataSubmissionService webin auth is handled more elegantly, replicate it in all other services*/
+    /*TODO: In CurationSubmissionService and StructuredDataSubmissionService webin auth is handled more elegantly, replicate it in all other services*/
     curationSubmissionService = new CurationSubmissionService(restOperations, traverson);
 
     structuredDataSubmissionService =
@@ -116,16 +125,20 @@ public class BioSamplesClient implements AutoCloseable {
       publicClient =
           Optional.of(
               new BioSamplesClient(
-                  uri, uriV2, restTemplateBuilder, sampleValidator, null, bioSamplesProperties));
+                  uri, uriV2, restTemplateBuilder, sampleValidator, null, clientProperties));
     }
   }
 
+  /**
+   * Gets the public client.
+   *
+   * @return the public client
+   */
   public Optional<BioSamplesClient> getPublicClient() {
     return publicClient;
   }
 
   private static class BsdClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
-
     private final ClientService clientService;
 
     BsdClientHttpRequestInterceptor(final ClientService clientService) {
@@ -149,7 +162,6 @@ public class BioSamplesClient implements AutoCloseable {
   }
 
   // TODO: we can think of using an interceptor to remove the cache from the biosamples client
-
   @Override
   @PreDestroy
   public void close() {
@@ -164,6 +176,13 @@ public class BioSamplesClient implements AutoCloseable {
     }
   }
 
+  /**
+   * Fetches sample resources by accessions using BioSamples V2.
+   *
+   * @param accessions the list of accessions
+   * @return a map of sample accessions to samples
+   * @throws RestClientException if there is an error while fetching samples
+   */
   public Map<String, Sample> fetchSampleResourcesByAccessionsV2(final List<String> accessions)
       throws RestClientException {
     try {
@@ -173,6 +192,14 @@ public class BioSamplesClient implements AutoCloseable {
     }
   }
 
+  /**
+   * Fetches sample resources by accessions using BioSamples V2 with JWT authentication.
+   *
+   * @param accessions the list of accessions
+   * @param jwt the JWT token
+   * @return a map of sample accessions to samples
+   * @throws RestClientException if there is an error while fetching samples
+   */
   public Map<String, Sample> fetchSampleResourcesByAccessionsV2(
       final List<String> accessions, final String jwt) throws RestClientException {
     try {
@@ -182,6 +209,13 @@ public class BioSamplesClient implements AutoCloseable {
     }
   }
 
+  /**
+   * Fetches a sample resource by accession using BioSamples V2.
+   *
+   * @param accession the accession of the sample
+   * @return the sample
+   * @throws RestClientException if there is an error while fetching the sample
+   */
   public Sample fetchSampleResourceV2(final String accession) throws RestClientException {
     try {
       return sampleRetrievalServiceV2.fetchSampleByAccession(accession);
@@ -190,6 +224,14 @@ public class BioSamplesClient implements AutoCloseable {
     }
   }
 
+  /**
+   * Fetches a sample resource by accession using BioSamples V2 with JWT authentication.
+   *
+   * @param accession the accession of the sample
+   * @param jwt the JWT token
+   * @return the sample
+   * @throws RestClientException if there is an error while fetching the sample
+   */
   public Sample fetchSampleResourceV2(final String accession, final String jwt)
       throws RestClientException {
     try {
@@ -199,11 +241,26 @@ public class BioSamplesClient implements AutoCloseable {
     }
   }
 
+  /**
+   * Fetches a sample resource by accession using BioSamples.
+   *
+   * @param accession the accession of the sample
+   * @return the optional sample resource
+   * @throws RestClientException if there is an error while fetching the sample
+   */
   public Optional<EntityModel<Sample>> fetchSampleResource(final String accession)
       throws RestClientException {
     return fetchSampleResource(accession, Optional.empty());
   }
 
+  /**
+   * Fetches a sample resource by accession using BioSamples with optional curation domains.
+   *
+   * @param accession the accession of the sample
+   * @param curationDomains the optional list of curation domains
+   * @return the optional sample resource
+   * @throws RestClientException if there is an error while fetching the sample
+   */
   public Optional<EntityModel<Sample>> fetchSampleResource(
       final String accession, final Optional<List<String>> curationDomains)
       throws RestClientException {
@@ -214,58 +271,126 @@ public class BioSamplesClient implements AutoCloseable {
     }
   }
 
+  /**
+   * Fetches all sample resources using BioSamples.
+   *
+   * @return an iterable of sample resources
+   * @throws RestClientException if there is an error while fetching samples
+   */
   public Iterable<EntityModel<Sample>> fetchSampleResourceAll() throws RestClientException {
     return sampleCursorRetrievalService.fetchAll("", Collections.emptyList());
   }
 
+  /**
+   * Fetches all sample resources using BioSamples with curation inclusion.
+   *
+   * @param addCurations true if curations should be included
+   * @return an iterable of sample resources
+   * @throws RestClientException if there is an error while fetching samples
+   */
   public Iterable<EntityModel<Sample>> fetchSampleResourceAll(final boolean addCurations)
       throws RestClientException {
     return sampleCursorRetrievalService.fetchAll("", Collections.emptyList(), null, addCurations);
   }
 
+  /**
+   * Fetches all sample resources using BioSamples with a text query.
+   *
+   * @param text the text query
+   * @return an iterable of sample resources
+   * @throws RestClientException if there is an error while fetching samples
+   */
   public Iterable<EntityModel<Sample>> fetchSampleResourceAll(final String text)
       throws RestClientException {
     return sampleCursorRetrievalService.fetchAll(text, Collections.emptyList());
   }
 
+  /**
+   * Fetches all sample resources using BioSamples with specified filters.
+   *
+   * @param filters the collection of filters
+   * @return an iterable of sample resources
+   */
   public Iterable<EntityModel<Sample>> fetchSampleResourceAll(final Collection<Filter> filters) {
     return sampleCursorRetrievalService.fetchAll("", filters);
   }
 
+  /**
+   * Fetches all sample resources using BioSamples with a text query and specified filters.
+   *
+   * @param text the text query
+   * @param filters the collection of filters
+   * @return an iterable of sample resources
+   */
   public Iterable<EntityModel<Sample>> fetchSampleResourceAll(
       final String text, final Collection<Filter> filters) {
     return sampleCursorRetrievalService.fetchAll(text, filters);
   }
 
+  /**
+   * Fetches all sample resources using BioSamples with a text query and specified filters excluding
+   * curations.
+   *
+   * @param text the text query
+   * @param filters the collection of filters
+   * @return an iterable of sample resources
+   */
   public Iterable<EntityModel<Sample>> fetchSampleResourceAllWithoutCuration(
       final String text, final Collection<Filter> filters) {
     return sampleCursorRetrievalService.fetchAllWithoutCurations(text, filters);
   }
 
+  /**
+   * Fetches sample resources by accessions using BioSamples.
+   *
+   * @param accessions the iterable of accessions
+   * @return an iterable of optional sample resources
+   * @throws RestClientException if there is an error while fetching samples
+   */
   public Iterable<Optional<EntityModel<Sample>>> fetchSampleResourceAll(
       final Iterable<String> accessions) throws RestClientException {
     return sampleRetrievalService.fetchAll(accessions);
   }
 
   /**
-   * Search for samples using pagination. This method should be used for specific pagination needs.
-   * When in need for all results from a search, prefer the iterator implementation.
+   * Searches for samples using pagination. This method should be used for specific pagination
+   * needs. When in need for all results from a search, prefer the iterator implementation.
    *
-   * @param text
-   * @param page
-   * @param size
-   * @return a paginated results of samples relative to the search term
+   * @param text the text query
+   * @param page the page number
+   * @param size the page size
+   * @return a paged model of sample resources
    */
   public PagedModel<EntityModel<Sample>> fetchPagedSampleResource(
       final String text, final int page, final int size) {
     return samplePageRetrievalService.search(text, Collections.emptyList(), page, size);
   }
 
+  /**
+   * Searches for samples using pagination with specified filters. This method should be used for
+   * specific pagination needs. When in need for all results from a search, prefer the iterator
+   * implementation.
+   *
+   * @param text the text query
+   * @param filters the collection of filters
+   * @param page the page number
+   * @param size the page size
+   * @return a paged model of sample resources
+   */
   public PagedModel<EntityModel<Sample>> fetchPagedSampleResource(
       final String text, final Collection<Filter> filters, final int page, final int size) {
     return samplePageRetrievalService.search(text, filters, page, size);
   }
 
+  /**
+   * Deprecated method: Fetches a sample by accession using BioSamples.
+   *
+   * @param accession the accession of the sample
+   * @return the optional sample
+   * @throws RestClientException if there is an error while fetching the sample
+   * @deprecated This method has been deprecated. Use {@link #fetchSampleResource(String)} or {@link
+   *     #fetchSampleResource(String, Optional)} instead.
+   */
   @Deprecated
   public Optional<Sample> fetchSample(final String accession) throws RestClientException {
     final Optional<EntityModel<Sample>> resource = fetchSampleResource(accession);
@@ -273,59 +398,62 @@ public class BioSamplesClient implements AutoCloseable {
   }
 
   /**
-   * @deprecated This has been deprecated use instead {@link #persistSampleResource(Sample)} or
-   *     {@link #persistSampleResource(Sample, Boolean, Boolean)}
+   * Deprecated method: Persists a sample using BioSamples.
+   *
+   * @param sample the sample to persist
+   * @return the persisted sample
+   * @deprecated This method has been deprecated. Use {@link #persistSampleResource(Sample)}
+   *     instead.
    */
   @Deprecated
   public Sample persistSample(final Sample sample) {
     return persistSampleResource(sample).getContent();
   }
 
-  public EntityModel<Sample> persistSampleResource(final Sample sample) {
-    return persistSampleResource(sample, null, null);
-  }
-
+  /**
+   * Persists multiple sample resources using BioSamples V2.
+   *
+   * @param samples the list of samples to persist
+   * @return the list of persisted samples
+   */
   public List<Sample> persistSampleResourceV2(final List<Sample> samples) {
-    return persistSampleResourceAsyncV2(samples);
+    return sampleSubmissionServiceV2.submit(samples);
   }
 
+  /**
+   * Persists multiple sample resources using BioSamples V2 with JWT authentication.
+   *
+   * @param samples the list of samples to persist
+   * @param jwt the JWT token
+   * @return the list of persisted samples
+   */
   public List<Sample> persistSampleResourceV2(final List<Sample> samples, final String jwt) {
-    return persistSampleResourceAsyncV2(samples, jwt);
+    return sampleSubmissionServiceV2.submit(samples, jwt);
   }
 
+  /**
+   * Accessions multiple sample resources using BioSamples V2.
+   *
+   * @param samples the list of samples to accession
+   * @return a map of original accession to new accession
+   */
   public Map<String, String> bulkAccessionV2(final List<Sample> samples) {
-    return bulkAccessionAsyncV2(samples);
+    return sampleSubmissionServiceV2.accession(samples);
   }
 
+  /**
+   * Accessions multiple sample resources asynchronously using BioSamples V2 with JWT
+   * authentication.
+   *
+   * @param samples the list of samples to accession
+   * @param jwt the JWT token
+   * @return a map of original accession to new accession
+   */
   public Map<String, String> bulkAccessionV2(final List<Sample> samples, final String jwt) {
-    return bulkAccessionAsyncV2(samples, jwt);
+    return sampleSubmissionServiceV2.accession(samples, jwt);
   }
 
-  private Map<String, String> bulkAccessionAsyncV2(final List<Sample> samples) {
-    return sampleSubmissionServiceV2.bulkAccessionAsync(samples);
-  }
-
-  private Map<String, String> bulkAccessionAsyncV2(final List<Sample> samples, final String jwt) {
-    return sampleSubmissionServiceV2.bulkAccessionAsync(samples, jwt);
-  }
-
-  public EntityModel<Sample> persistSampleResource(
-      final Sample sample, final Boolean setUpdateDate, final Boolean setFullDetails) {
-    try {
-      return persistSampleResourceAsync(sample, setUpdateDate, setFullDetails).get();
-    } catch (final InterruptedException e) {
-      throw new RuntimeException(e);
-    } catch (final ExecutionException e) {
-      throw new RuntimeException(e.getCause());
-    }
-  }
-
-  public Future<EntityModel<Sample>> persistSampleResourceAsync(final Sample sample) {
-    return persistSampleResourceAsync(sample, null, null);
-  }
-
-  private Future<EntityModel<Sample>> persistSampleResourceAsync(
-      final Sample sample, final Boolean setUpdateDate, final Boolean setFullDetails) {
+  public EntityModel<Sample> persistSampleResource(final Sample sample) {
     // validate client-side before submission
     final Collection<String> errors = sampleValidator.validate(sample);
 
@@ -334,41 +462,16 @@ public class BioSamplesClient implements AutoCloseable {
       throw new IllegalArgumentException("Sample not valid: " + String.join(", ", errors));
     }
 
-    return sampleSubmissionService.submitAsync(sample, setFullDetails);
-  }
-
-  private List<Sample> persistSampleResourceAsyncV2(final List<Sample> samples) {
-    return sampleSubmissionServiceV2.postAsync(samples);
-  }
-
-  private List<Sample> persistSampleResourceAsyncV2(final List<Sample> samples, final String jwt) {
-    return sampleSubmissionServiceV2.postAsync(samples, jwt);
+    return sampleSubmissionService.submit(sample);
   }
 
   public Collection<EntityModel<Sample>> persistSamples(final Collection<Sample> samples) {
-    return persistSamples(samples, null, null);
-  }
-
-  private Collection<EntityModel<Sample>> persistSamples(
-      final Collection<Sample> samples, final Boolean setUpdateDate, final Boolean setFullDetails) {
     final List<EntityModel<Sample>> results = new ArrayList<>();
-    final List<Future<EntityModel<Sample>>> futures = new ArrayList<>();
 
     for (final Sample sample : samples) {
-      futures.add(persistSampleResourceAsync(sample, setUpdateDate, setFullDetails));
+      results.add(persistSampleResource(sample));
     }
 
-    for (final Future<EntityModel<Sample>> future : futures) {
-      final EntityModel<Sample> sample;
-      try {
-        sample = future.get();
-      } catch (final InterruptedException e) {
-        throw new RuntimeException(e);
-      } catch (final ExecutionException e) {
-        throw new RuntimeException(e.getCause());
-      }
-      results.add(sample);
-    }
     return results;
   }
 
@@ -431,23 +534,14 @@ public class BioSamplesClient implements AutoCloseable {
   }
 
   public EntityModel<Sample> persistSampleResource(final Sample sample, final String jwt) {
-    try {
-      return persistSampleResourceAsync(sample, jwt, false).get();
-    } catch (final InterruptedException e) {
-      throw new RuntimeException(e);
-    } catch (final Exception e) {
-      throw new RuntimeException(e.getCause());
-    }
-  }
-
-  private Future<EntityModel<Sample>> persistSampleResourceAsync(
-      final Sample sample, final String jwt, final boolean setFullDetails) {
     final Collection<String> errors = sampleValidator.validate(sample);
+
     if (!errors.isEmpty()) {
       log.error("Sample failed validation : {}", errors);
       throw new IllegalArgumentException("Sample not valid: " + String.join(", ", errors));
     }
-    return sampleSubmissionService.submitAsync(sample, jwt, setFullDetails);
+
+    return sampleSubmissionService.submit(sample, jwt);
   }
 
   public Iterable<EntityModel<Curation>> fetchCurationResourceAll(final String jwt) {
@@ -494,6 +588,7 @@ public class BioSamplesClient implements AutoCloseable {
               + webinIdOrDomain);
       curationLink = CurationLink.build(accession, curation, webinIdOrDomain, null, null);
     }
+
     return curationLink;
   }
 

@@ -93,6 +93,7 @@ public class AmrDataIntegration extends AbstractIntegration {
 
     final String json = TestUtilities.readFileAsString("structured_data_amr.json");
     StructuredData sd;
+
     try {
       sd = mapper.readValue(json, StructuredData.class);
     } catch (final IOException e) {

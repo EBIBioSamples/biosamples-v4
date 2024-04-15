@@ -72,7 +72,7 @@ public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, Js
       final JsonLDPropertyValue pv = new JsonLDPropertyValue();
       pv.setName(attr.getType());
       pv.setValue(attr.getValue());
-      if (attr.getIri().size() > 0) {
+      if (!attr.getIri().isEmpty()) {
         // this only puts the first IRI in
         //                JsonLDMedicalCode medicalCode = new JsonLDMedicalCode();
         //                medicalCode.setTermCode(attr.getIri().iterator().next());

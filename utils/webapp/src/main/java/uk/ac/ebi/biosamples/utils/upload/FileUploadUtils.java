@@ -478,7 +478,7 @@ public class FileUploadUtils {
                   }
                 })
             .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            .toList();
 
     final List<String> unitList =
         multiMap.entries().stream()
@@ -493,7 +493,7 @@ public class FileUploadUtils {
                   }
                 })
             .filter(Objects::nonNull)
-            .collect(Collectors.toList()); // handle units
+            .toList(); // handle units
 
     final AtomicInteger i = new AtomicInteger(0);
 

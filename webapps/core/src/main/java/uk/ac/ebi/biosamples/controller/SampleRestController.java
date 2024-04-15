@@ -174,8 +174,10 @@ public class SampleRestController {
         throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
-      if (sampleService.isNotExistingAccession(accession)
-          && !bioSamplesWebinAuthenticationService.isWebinSuperUser(webinIdFromAuthToken)) {
+      isWebinSuperUser =
+          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinIdFromAuthToken);
+
+      if (sampleService.isNotExistingAccession(accession) && !isWebinSuperUser) {
         throw new GlobalExceptions.SampleAccessionDoesNotExistException();
       }
 
@@ -234,6 +236,7 @@ public class SampleRestController {
         sample = Sample.Builder.fromSample(sample).withNoData().build();
       }
     }
+
     return sample;
   }
 
@@ -248,6 +251,7 @@ public class SampleRestController {
         sample = Sample.Builder.fromSample(sample).withNoData().build();
       }
     }
+
     return sample;
   }
 

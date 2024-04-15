@@ -14,13 +14,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import java.net.URI;
 import java.util.*;
 import org.hamcrest.CoreMatchers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpMethod;
@@ -33,26 +30,18 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.utils.BioSamplesConstants;
 
 @Component
 // @Order(1)
 // @Profile({"default", "rest"})
 public class PhenopacketIntegration extends AbstractIntegration {
-  private final Logger log = LoggerFactory.getLogger(getClass());
   private final RestTemplate restTemplate;
-  private final BioSamplesProperties clientProperties;
-  private final ObjectMapper mapper;
 
   public PhenopacketIntegration(
-      final BioSamplesClient client,
-      final RestTemplateBuilder restTemplateBuilder,
-      final BioSamplesProperties clientProperties) {
+      final BioSamplesClient client, final RestTemplateBuilder restTemplateBuilder) {
     super(client);
 
-    this.clientProperties = clientProperties;
     restTemplate = restTemplateBuilder.build();
-    mapper = new ObjectMapper();
   }
 
   @Override

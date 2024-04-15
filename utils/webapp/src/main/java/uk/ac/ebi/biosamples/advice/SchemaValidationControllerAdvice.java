@@ -21,7 +21,6 @@ import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 
 @ControllerAdvice
 public class SchemaValidationControllerAdvice extends ResponseEntityExceptionHandler {
-
   @ExceptionHandler(value = {GlobalExceptions.SchemaValidationException.class})
   protected ResponseEntity<Object> handleConflict(RuntimeException e, WebRequest request) {
     return handleExceptionInternal(

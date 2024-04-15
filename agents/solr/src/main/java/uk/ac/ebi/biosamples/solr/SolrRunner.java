@@ -23,9 +23,7 @@ import uk.ac.ebi.biosamples.Messaging;
 @Component
 public class SolrRunner implements ApplicationRunner {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   @Autowired private MessageUtils messageUtils;
-
   @Autowired private BioSamplesProperties biosamplesProperties;
 
   @Override
@@ -33,11 +31,13 @@ public class SolrRunner implements ApplicationRunner {
     // as long as there are messages to read, keep this thread alive
     // that will also keep the async message client alive too?
     Long messageCount = null;
+
     while (biosamplesProperties.getAgentSolrStayalive()
         || messageCount == null
         || messageCount > 0) {
       Thread.sleep(1000);
       messageCount = messageUtils.getQueueCount(Messaging.INDEXING_QUEUE);
+
       log.trace("Messages remaining in " + Messaging.INDEXING_QUEUE + " " + messageCount);
     }
   }

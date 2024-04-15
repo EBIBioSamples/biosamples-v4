@@ -17,7 +17,6 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 
 @ControllerAdvice
 public class ModelAttributeControllerAdvice {
-
   private final BioSamplesProperties bioSamplesProperties;
 
   public ModelAttributeControllerAdvice(final BioSamplesProperties bioSamplesProperties) {

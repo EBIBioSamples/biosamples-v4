@@ -30,9 +30,9 @@ public class FileUploadMessageQueueRunner implements ApplicationRunner {
     while (true) {
       log.trace(
           "Messages remaining in "
-              + Messaging.fileUploadQueue
+              + Messaging.UPLOAD_QUEUE
               + " "
-              + messageUtils.getQueueCount(Messaging.fileUploadQueue));
+              + messageUtils.getQueueCount(Messaging.UPLOAD_QUEUE));
     }
   }
 }

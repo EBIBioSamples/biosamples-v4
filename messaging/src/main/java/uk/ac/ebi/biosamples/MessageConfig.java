@@ -21,78 +21,59 @@ import org.springframework.context.annotation.Configuration;
 @EnableRabbit
 public class MessageConfig {
   // declare queues
-  @Bean(name = "solrQueue")
-  public Queue getQueueToBeIndexedSolr() {
-    return QueueBuilder.durable(Messaging.INDEXING_QUEUE)
-        .withArgument("x-dead-letter-exchange", Messaging.exchangeDeadLetter)
-        .build();
+  @Bean(name = "indexingQueue")
+  public Queue indexingQueue() {
+    return QueueBuilder.durable(Messaging.INDEXING_QUEUE).build();
   }
 
-  @Bean(name = "reindxingQueue")
-  public Queue getReindexingQueue() {
+  @Bean(name = "reindexingQueue")
+  public Queue reindexingQueue() {
     return QueueBuilder.durable(Messaging.REINDEXING_QUEUE).build();
   }
 
   @Bean(name = "uploaderQueue")
-  public Queue getFileUploaderQueue() {
-    return QueueBuilder.durable(Messaging.fileUploadQueue).build();
-  }
-
-  // this queue sets up a delay before messages are requeued on the original solr indexing queue
-  // do not consume from this queue
-  // instead, allow all messages to reach the end of their "lifetime" (time-to-live) and then
-  // requeue them as if they were being sent to a dead-letter queue
-  @Bean(name = "deadLetterQueue")
-  public Queue getQueueRetryDeadLetter() {
-    return QueueBuilder.durable(Messaging.queueRetryDeadLetter)
-        .withArgument("x-message-ttl", 30000) // 60 seconds
-        .withArgument("x-dead-letter-exchange", Messaging.INDEXING_EXCHANGE)
-        .build();
+  public Queue uploaderQueue() {
+    return QueueBuilder.durable(Messaging.UPLOAD_QUEUE).build();
   }
 
   // declare exchanges
-  @Bean(name = "solrExchange")
-  public Exchange getExchangeForIndexingSolr() {
+  @Bean(name = "indexingExchange")
+  public Exchange indexingExchange() {
     return ExchangeBuilder.directExchange(Messaging.INDEXING_EXCHANGE).durable(true).build();
   }
 
-  @Bean(name = "reindxingEchange")
-  public Exchange getReIndexingExcahnge() {
+  @Bean(name = "reindexingExchange")
+  public Exchange reindexingExchange() {
     return ExchangeBuilder.directExchange(Messaging.REINDEXING_EXCHANGE).durable(true).build();
   }
 
-  @Bean(name = "uploaderExchange")
-  public Exchange getFileUploaderExchange() {
-    return ExchangeBuilder.fanoutExchange(Messaging.fileUploadExchange).durable(true).build();
-  }
-
-  @Bean(name = "deadLetterExchange")
-  public Exchange getExchangeDeadLetter() {
-    return ExchangeBuilder.directExchange(Messaging.exchangeDeadLetter).durable(true).build();
+  @Bean(name = "uploadExchange")
+  public Exchange uploadExchange() {
+    return ExchangeBuilder.fanoutExchange(Messaging.UPLOAD_EXCHANGE).durable(true).build();
   }
 
   // bind queues to exchanges
-  @Bean(name = "solrBindings")
-  public Binding bindingForIndexingSolr() {
-    return BindingBuilder.bind(getQueueToBeIndexedSolr())
-        .to(getExchangeForIndexingSolr())
+  @Bean(name = "indexBinding")
+  public Binding indexBinding() {
+    return BindingBuilder.bind(indexingQueue())
+        .to(indexingExchange())
         .with(Messaging.INDEXING_QUEUE)
         .noargs();
   }
 
   @Bean(name = "reindexingBinding")
-  public Binding getReIndexingBinding() {
-    return BindingBuilder.bind(getReindexingQueue())
-        .to(getReIndexingExcahnge())
+  public Binding reindexBinding() {
+    return BindingBuilder.bind(reindexingQueue())
+        .to(reindexingExchange())
         .with(Messaging.REINDEXING_QUEUE)
         .noargs();
   }
 
   @Bean(name = "uploaderBindings")
-  public Binding bindingForFileUploaderQueues() {
-    return BindingBuilder.bind(getFileUploaderQueue())
-        .to(getFileUploaderExchange())
-        .with(Messaging.fileUploadQueue)
+  public Binding uploadBinding() {
+    return BindingBuilder.bind(uploaderQueue())
+        .to(uploadExchange())
+        .with(Messaging.UPLOAD_QUEUE)
         .noargs();
   }
 

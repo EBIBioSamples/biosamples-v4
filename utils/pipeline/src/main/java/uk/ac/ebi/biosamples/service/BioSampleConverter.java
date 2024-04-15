@@ -283,21 +283,21 @@ public class BioSampleConverter {
         String tag = null;
         final XmlPathBuilder tagPathBuilder = XmlPathBuilder.of(attributeElement).path("TAG");
 
-        if (tagPathBuilder.exists() && tagPathBuilder.text().trim().length() > 0) {
+        if (tagPathBuilder.exists() && !tagPathBuilder.text().trim().isEmpty()) {
           tag = tagPathBuilder.text().trim();
         }
 
         String value = null;
         final XmlPathBuilder valuePathBuilder = XmlPathBuilder.of(attributeElement).path("VALUE");
 
-        if (valuePathBuilder.exists() && valuePathBuilder.text().trim().length() > 0) {
+        if (valuePathBuilder.exists() && !valuePathBuilder.text().trim().isEmpty()) {
           value = valuePathBuilder.text().trim();
         }
 
         String unit = null;
         final XmlPathBuilder unitPathBuilder = XmlPathBuilder.of(attributeElement).path("UNITS");
 
-        if (unitPathBuilder.exists() && unitPathBuilder.text().trim().length() > 0) {
+        if (unitPathBuilder.exists() && !unitPathBuilder.text().trim().isEmpty()) {
           unit = unitPathBuilder.text().trim();
         }
 

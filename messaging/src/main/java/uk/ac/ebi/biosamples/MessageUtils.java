@@ -23,7 +23,9 @@ public class MessageUtils {
 
   public long getQueueCount(final String queue) {
     final long count = rabbitTemplate.execute(channel -> channel.messageCount(queue));
+
     log.trace("Number of messages in " + queue + " = " + count);
+
     return count;
   }
 }

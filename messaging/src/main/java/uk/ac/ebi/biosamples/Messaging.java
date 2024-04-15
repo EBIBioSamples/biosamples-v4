@@ -15,8 +15,6 @@ public class Messaging {
   public static final String INDEXING_QUEUE = "biosamples.tobeindexed.solr";
   static final String REINDEXING_EXCHANGE = "biosamples.reindex.solr";
   public static final String REINDEXING_QUEUE = "biosamples.reindex.solr";
-  public static final String fileUploadQueue = "biosamples.uploaded.files";
-  public static final String fileUploadExchange = "biosamples.uploaded.files.exchange";
-  static final String queueRetryDeadLetter = "biosamples.deadletter.retry";
-  static final String exchangeDeadLetter = "biosamples.deadletter";
+  public static final String UPLOAD_QUEUE = "biosamples.uploaded.files";
+  public static final String UPLOAD_EXCHANGE = "biosamples.uploaded.files.exchange";
 }
