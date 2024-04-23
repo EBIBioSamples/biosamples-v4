@@ -48,18 +48,12 @@ import uk.ac.ebi.biosamples.service.CurationApplicationService;
     properties = {"job.autorun.enabled=false"})
 @AutoConfigureWebClient
 public class SampleCurationCallableTest {
-
   @Autowired private ObjectMapper objectMapper;
-
   @Autowired private OlsProcessor olsProcessor;
-
-  private MockRestServiceServer mockServer;
-
   @Autowired private RestTemplate restTemplate;
-
   @Autowired private MockBioSamplesClient mockBioSamplesClient;
-
   @Autowired private CurationApplicationService curationApplicationService;
+  private MockRestServiceServer mockServer;
 
   @Before
   public void setUp() {

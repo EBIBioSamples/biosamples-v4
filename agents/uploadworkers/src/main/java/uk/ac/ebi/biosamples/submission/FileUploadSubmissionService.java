@@ -66,9 +66,11 @@ public class FileUploadSubmissionService {
   private void handleMessage(final String submissionId) {
     final Optional<MongoFileUpload> fileUploadOptional =
         mongoFileUploadRepository.findById(submissionId);
-    final MongoFileUpload mongoFileUpload = fileUploadOptional.orElseThrow(
-        () -> new GlobalExceptions.UploadInvalidException(
-            "Could not find file upload record for submissionId: " + submissionId));
+    final MongoFileUpload mongoFileUpload =
+        fileUploadOptional.orElseThrow(
+            () ->
+                new GlobalExceptions.UploadInvalidException(
+                    "Could not find file upload record for submissionId: " + submissionId));
 
     try {
       validationResult = new ValidationResult();

@@ -37,7 +37,8 @@ import uk.ac.ebi.biosamples.model.*;
 @Service
 public class FileUploadUtils {
   private final Logger log = LoggerFactory.getLogger(getClass());
-  private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd LLL yyyy HH:mm");
+  private static final DateTimeFormatter DATE_TIME_FORMATTER =
+      DateTimeFormatter.ofPattern("dd LLL yyyy HH:mm");
   public static final String WEBIN_AUTH = "WEBIN";
   public static final String AAP = "AAP";
 
@@ -66,7 +67,8 @@ public class FileUploadUtils {
     return csvDataMap;
   }
 
-  public Sample buildSample(final Multimap<String, String> multiMap, final ValidationResult validationResult) {
+  public Sample buildSample(
+      final Multimap<String, String> multiMap, final ValidationResult validationResult) {
     String sampleName = getSampleName(multiMap);
     String sampleReleaseDate = getReleaseDate(multiMap);
     String accession = getSampleAccession(multiMap);

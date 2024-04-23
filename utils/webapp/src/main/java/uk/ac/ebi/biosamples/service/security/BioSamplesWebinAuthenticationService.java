@@ -181,6 +181,7 @@ public class BioSamplesWebinAuthenticationService {
         final String oldSampleAapDomain = oldSampleInDb.getDomain();
 
         if (isAcceptableDomain(oldSampleAapDomain, domain)) {
+          // TODO: broken
           return buildSampleWithWebinId(sample, webinIdToSetForSample);
         } else if (isSameDomain(domain, oldSampleAapDomain)) {
           return sample;
@@ -195,8 +196,7 @@ public class BioSamplesWebinAuthenticationService {
 
   private boolean isAcceptableDomain(final String oldSampleAapDomain, final String domain) {
     return sampleService.isAPipelineAapDomain(oldSampleAapDomain)
-        || isOldRegistrationDomain(oldSampleAapDomain)
-        || (domain != null && domain.equalsIgnoreCase(oldSampleAapDomain));
+        || isOldRegistrationDomain(oldSampleAapDomain);
   }
 
   private boolean isSameDomain(final String domain, final String oldSampleAapDomain) {

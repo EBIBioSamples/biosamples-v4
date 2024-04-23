@@ -14,9 +14,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.springframework.util.StringUtils;
-
 import java.util.Objects;
+import org.springframework.util.StringUtils;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonDeserialize(builder = Contact.Builder.class)
@@ -269,11 +268,11 @@ public class Contact implements Comparable<Contact> {
 
     public boolean isNotEmpty() {
       // only check fields that could be meaningful alone
-      return StringUtils.hasText(firstName) ||
-          StringUtils.hasText(lastName) ||
-          StringUtils.hasText(email) ||
-          StringUtils.hasText(name) ||
-          StringUtils.hasText(url);
+      return StringUtils.hasText(firstName)
+          || StringUtils.hasText(lastName)
+          || StringUtils.hasText(email)
+          || StringUtils.hasText(name)
+          || StringUtils.hasText(url);
     }
 
     private String composedName() {

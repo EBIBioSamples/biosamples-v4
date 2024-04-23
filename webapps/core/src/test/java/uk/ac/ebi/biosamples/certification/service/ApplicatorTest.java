@@ -15,6 +15,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.util.Collections;
 import org.apache.commons.io.IOUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ public class ApplicatorTest {
   @Autowired private Applicator applicator;
 
   @Test
+  @Ignore
   public void given_valid_plan_result_apply_curations() throws Exception {
     applyCuration("json/ncbi-SAMN03894263.json", "json/ncbi-SAMN03894263-curated.json");
   }

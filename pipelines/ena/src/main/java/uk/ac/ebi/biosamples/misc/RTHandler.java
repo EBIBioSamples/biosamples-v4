@@ -21,10 +21,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 
 @Component
 public class RTHandler {
@@ -39,18 +42,23 @@ public class RTHandler {
   private final BioSamplesClient bioSamplesWebinClient;
   private final BioSamplesClient bioSamplesAapClient;
   private final PipelinesProperties pipelinesProperties;
+  private final MongoSampleRepository mongoSampleRepository;
+  private final RestTemplate restTemplate;
 
   public RTHandler(
       @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesWebinClient,
       @Qualifier("AAPCLIENT") final BioSamplesClient bioSamplesAapClient,
-      final PipelinesProperties pipelinesProperties) {
+      final PipelinesProperties pipelinesProperties,
+      final MongoSampleRepository mongoSampleRepository) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
     this.bioSamplesAapClient = bioSamplesAapClient;
     this.pipelinesProperties = pipelinesProperties;
+    this.mongoSampleRepository = mongoSampleRepository;
+    this.restTemplate = new RestTemplate();
   }
 
   public void parseIdentifiersFromFileAndFixAuth() {
-    final String filePath = "C:\\Users\\dgupta\\biosamples.list";
+    final String filePath = "C:\\Users\\dgupta\\biosamples_1.list";
     final List<String> curationDomainBlankList = new ArrayList<>();
 
     curationDomainBlankList.add("");
@@ -61,13 +69,49 @@ public class RTHandler {
       String line;
 
       while ((line = reader.readLine()) != null) {
-        processSample(line, curationDomainBlankList);
+        processSampleAlterAuth(line);
       }
 
       reader.close();
     } catch (final IOException e) {
       e.printStackTrace();
     }
+  }
+
+  private void processSampleAlterAuth(final String accession) {
+    log.info("Handling " + accession);
+
+    final Optional<MongoSample> mongoSampleOptional = mongoSampleRepository.findById(accession);
+
+    if (mongoSampleOptional.isPresent()) {
+      final MongoSample mongoSample = mongoSampleOptional.get();
+
+      log.info("Webin ID is " + mongoSample.getWebinSubmissionAccountId());
+      log.info("Domain is " + mongoSample.getDomain());
+
+      final String domainOfSampleInDev =
+          getSampleByAccessionFromDevToCheckDomain(accession).getDomain();
+
+      if (domainOfSampleInDev != null) {
+        log.info("Sample in dev, the domain is " + domainOfSampleInDev);
+
+        mongoSample.setWebinSubmissionAccountId(null);
+        mongoSample.setDomain(domainOfSampleInDev);
+
+        log.info(
+            "Updating sample "
+                + mongoSample.getAccession()
+                + " to domain "
+                + mongoSample.getDomain());
+        mongoSampleRepository.save(mongoSample);
+      }
+    }
+  }
+
+  public Sample getSampleByAccessionFromDevToCheckDomain(String accession) {
+    final String url = "https://wwwdev.ebi.ac.uk/biosamples/samples/" + accession;
+
+    return restTemplate.getForObject(url, Sample.class);
   }
 
   private void processSample(final String accession, final List<String> curationDomainList) {

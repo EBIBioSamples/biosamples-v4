@@ -53,11 +53,14 @@ public class FileUploadService {
   private final FileQueueService fileQueueService;
   private final FileUploadUtils fileUploadUtils;
 
-  public FileUploadService(SampleService sampleService, SchemaValidationService schemaValidationService,
-                           BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-                           BioSamplesAapService bioSamplesAapService,
-                           MongoFileUploadRepository mongoFileUploadRepository, FileQueueService fileQueueService,
-                           FileUploadUtils fileUploadUtils) {
+  public FileUploadService(
+      SampleService sampleService,
+      SchemaValidationService schemaValidationService,
+      BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+      BioSamplesAapService bioSamplesAapService,
+      MongoFileUploadRepository mongoFileUploadRepository,
+      FileQueueService fileQueueService,
+      FileUploadUtils fileUploadUtils) {
     this.fileUploadUtils = fileUploadUtils;
     this.sampleService = sampleService;
     this.schemaValidationService = schemaValidationService;
@@ -105,7 +108,8 @@ public class FileUploadService {
 
       fileUploadUtils.validateHeaderPositions(headers, validationResult);
 
-      final List<Multimap<String, String>> csvDataMap = fileUploadUtils.getISATABDataInMap(csvParser);
+      final List<Multimap<String, String>> csvDataMap =
+          fileUploadUtils.getISATABDataInMap(csvParser);
       final int numSamples = csvDataMap.size();
 
       log.info("CSV data size: " + numSamples);
@@ -114,7 +118,8 @@ public class FileUploadService {
         log.info("File sample count exceeds limits - queueing file for async submission");
 
         final String submissionId =
-            fileQueueService.queueFileinMongoAndSendMessageToRabbitMq(file, aapDomain, checklist, webinId);
+            fileQueueService.queueFileinMongoAndSendMessageToRabbitMq(
+                file, aapDomain, checklist, webinId);
 
         return fileUploadUtils.writeQueueMessageToFile(submissionId);
       }
@@ -233,7 +238,9 @@ public class FileUploadService {
           Sample sample = null;
 
           try {
-            sample = buildAndPersistSample(csvRecordMap, aapDomain, webinId, checklist, validationResult, isWebin);
+            sample =
+                buildAndPersistSample(
+                    csvRecordMap, aapDomain, webinId, checklist, validationResult, isWebin);
 
             if (sample == null) {
               validationResult.addValidationMessage(
