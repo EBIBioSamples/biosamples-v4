@@ -11,7 +11,6 @@
 package uk.ac.ebi.biosamples.ena;
 
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 
@@ -19,15 +18,12 @@ import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 public class NcbiEnaLinkCallableFactory {
   private final BioSamplesClient bioSamplesClient;
   private final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
-  private final String domain;
 
   public NcbiEnaLinkCallableFactory(
       final BioSamplesClient bioSamplesClient,
-      final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService,
-      final PipelinesProperties pipelinesProperties) {
+      final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService) {
     this.bioSamplesClient = bioSamplesClient;
     this.enaSampleToBioSampleConversionService = enaSampleToBioSampleConversionService;
-    domain = pipelinesProperties.getEnaDomain();
   }
 
   /**

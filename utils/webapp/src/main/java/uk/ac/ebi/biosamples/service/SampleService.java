@@ -626,7 +626,8 @@ public class SampleService {
       }
     } else {
       // Step 7: Handling New Samples without Old Samples (Old Sample doesn't exist)
-      if (newSampleSraAccessionAttribute == null && isWebinSuperUser) {
+      if (newSampleSraAccessionAttribute == null
+          && (isWebinSuperUser || isPipelineNcbiDomain(newSample.getDomain()))) {
         // If oldSample doesn't exist, and newSampleSraAccession is still null, create a new one
         newSampleSraAccessionAttribute = Attribute.build(SRA_ACCESSION, generateOneSRAAccession());
         // Add newSampleSraAccession to the attributes of the new sample

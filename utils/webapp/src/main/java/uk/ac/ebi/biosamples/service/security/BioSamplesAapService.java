@@ -183,7 +183,7 @@ public class BioSamplesAapService {
       oldSample = oldSampleOptional.get();
 
       bioSamplesCrossSourceIngestAccessControlService.checkAndPreventWebinUserSampleUpdateByAapUser(
-          oldSample);
+          oldSample, sample);
       bioSamplesCrossSourceIngestAccessControlService
           .accessControlWebinSourcedSampleByCheckingEnaChecklistAttribute(oldSample, sample);
       bioSamplesCrossSourceIngestAccessControlService
@@ -215,7 +215,7 @@ public class BioSamplesAapService {
       oldSample = oldSampleOptional.get();
 
       bioSamplesCrossSourceIngestAccessControlService.checkAndPreventWebinUserSampleUpdateByAapUser(
-          oldSample);
+          oldSample, sample);
       bioSamplesCrossSourceIngestAccessControlService
           .accessControlWebinSourcedSampleByCheckingEnaChecklistAttribute(oldSample, sample);
       bioSamplesCrossSourceIngestAccessControlService

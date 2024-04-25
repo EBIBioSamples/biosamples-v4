@@ -10,24 +10,18 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import java.util.Collections;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 
 public class NcbiEnaLinkCallable implements Callable<Void> {
   private static final int MAX_RETRIES = 5;
-
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final String accession;
   private final BioSamplesClient bioSamplesClient;
-
   private final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
 
   /** Construction */

@@ -20,7 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -55,6 +57,46 @@ public class RTHandler {
     this.pipelinesProperties = pipelinesProperties;
     this.mongoSampleRepository = mongoSampleRepository;
     this.restTemplate = new RestTemplate();
+  }
+
+  public void parseIdentifiersFromFileAndCheckSampleExistence() {
+    final String filePath = "C:\\Users\\dgupta\\ncbi_samples.list";
+
+    try {
+      final BufferedReader reader = new BufferedReader(new FileReader(filePath));
+
+      String line;
+
+      while ((line = reader.readLine()) != null) {
+        checkExistence(line);
+      }
+
+      reader.close();
+    } catch (final IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void checkExistence(final String accession) {
+    String url = "https://www.ebi.ac.uk/biosamples/samples/" + accession;
+
+    try {
+      ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+
+      // Check if the response status is not 2XX
+      if (response.getStatusCode().isError()) {
+        throw new HttpClientErrorException(response.getStatusCode());
+      }
+
+      // If successful, you can handle the response here
+      log.info("Response Code: " + response.getStatusCode());
+    } catch (HttpClientErrorException e) {
+      // Handle exceptions caused by non-2XX responses
+      log.error("HTTP Error: " + e.getStatusCode() + " - " + e.getStatusText());
+    } catch (Exception e) {
+      // Handle other exceptions
+      log.error("An error occurred: " + e.getMessage());
+    }
   }
 
   public void parseIdentifiersFromFileAndFixAuth() {
