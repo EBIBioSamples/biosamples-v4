@@ -232,10 +232,12 @@ public class SampleService {
 
     if (newSampleAttributes.stream()
         .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION))) {
-      final String sraAccession = generateOneSRAAccession();
+      if (!isPipelineNcbiDomain(newSample.getDomain())) {
+        final String sraAccession = generateOneSRAAccession();
 
-      newSampleAttributes.add(Attribute.build(SRA_ACCESSION, sraAccession));
-      newSample = Sample.Builder.fromSample(newSample).withSraAccession(sraAccession).build();
+        newSampleAttributes.add(Attribute.build(SRA_ACCESSION, sraAccession));
+        newSample = Sample.Builder.fromSample(newSample).withSraAccession(sraAccession).build();
+      }
     } else {
       final List<Attribute> sraAccessionAttributeList =
           newSampleAttributes.stream()
@@ -567,8 +569,7 @@ public class SampleService {
         if (oldSampleSraAccessionField != null
             && !oldSampleSraAccessionField.isEmpty()
             && !newSampleSraAccessionField.equals(oldSampleSraAccessionField)
-            && !isWebinSuperUser
-            && !isPipelineNcbiDomain(newSample.getDomain())) {
+            && !isWebinSuperUser) {
           throw new GlobalExceptions.ChangedSRAAccessionException();
         }
       }
@@ -626,7 +627,8 @@ public class SampleService {
       }
     } else {
       // Step 7: Handling New Samples without Old Samples (Old Sample doesn't exist)
-      if (newSampleSraAccessionAttribute == null && isWebinSuperUser) {
+      if (newSampleSraAccessionAttribute == null
+          && (isWebinSuperUser || isPipelineNcbiDomain(newSample.getDomain()))) {
         // If oldSample doesn't exist, and newSampleSraAccession is still null, create a new one
         newSampleSraAccessionAttribute = Attribute.build(SRA_ACCESSION, generateOneSRAAccession());
         // Add newSampleSraAccession to the attributes of the new sample
@@ -654,7 +656,7 @@ public class SampleService {
     }
   }
 
-  private boolean isPipelineEnaDomain(final String domain) {
+  public boolean isPipelineEnaDomain(final String domain) {
     if (domain == null) {
       return false;
     }
@@ -662,7 +664,7 @@ public class SampleService {
     return domain.equalsIgnoreCase(ENA_IMPORT_DOMAIN);
   }
 
-  private boolean isPipelineNcbiDomain(final String domain) {
+  public boolean isPipelineNcbiDomain(final String domain) {
     if (domain == null) {
       return false;
     }
@@ -779,30 +781,35 @@ public class SampleService {
   public Optional<Sample> validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
       final Sample sample, final boolean anySuperUser) {
     if (!anySuperUser) {
-      if (sample.hasAccession()) {
-        throw new GlobalExceptions.SampleWithAccessionSubmissionException();
-      }
-
-      if (sample.hasSraAccession()) {
-        throw new GlobalExceptions.SampleWithAccessionSubmissionException();
-      }
-
-      if (sample.getAttributes() != null
-          && sample.getAttributes().stream()
-              .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))) {
+      if (sample.hasAccession()
+          || sample.hasSraAccession()
+          || sample.getAttributes() != null
+              && sample.getAttributes().stream()
+                  .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))) {
         throw new GlobalExceptions.SampleWithAccessionSubmissionException();
       }
     } else {
-      if (sample.hasAccession()) {
-        final boolean nonExistingAccession = isNotExistingAccession(sample.getAccession());
+      final List<Attribute> sraAccessionAttributeList =
+          sample.getAttributes().stream()
+              .filter(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))
+              .toList();
+      if (!sraAccessionAttributeList.isEmpty()) {
+        throw new GlobalExceptions.InvalidSampleException();
+      } else {
+        final String sraAccession = sraAccessionAttributeList.get(0).getValue();
 
-        if (!nonExistingAccession) {
-          // fetch old sample if sample exists
-          return fetch(sample.getAccession(), Optional.empty());
+        if (sraAccession != null
+            && sample.getSraAccession() != null
+            && !Objects.equals(sraAccession, sample.getSraAccession())) {
+          throw new GlobalExceptions.InvalidSampleException();
         }
       }
-    }
 
+      if (sample.hasAccession() && !isNotExistingAccession(sample.getAccession())) {
+        // fetch old sample if sample exists
+        return fetch(sample.getAccession(), Optional.empty());
+      }
+    }
     return Optional.empty();
   }
 }

@@ -30,7 +30,6 @@ import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
 public class MockBioSamplesClient extends BioSamplesClient {
-
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final Map<String, List<Curation>> curations = new HashMap<>();

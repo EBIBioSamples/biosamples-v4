@@ -19,6 +19,7 @@
 			<id>embl-ebi</id>
 			<modules>
 				<module>ena</module>
+				<module>ncbi-ena-link</module>
 			</modules>
 		</profile>
 	</profiles>
@@ -42,5 +43,6 @@
 		<module>neoexport</module>
 		<module>template</module>
 		<module>ena</module>
+		<module>ncbi-ena-link</module>
 	</modules>
 </project>

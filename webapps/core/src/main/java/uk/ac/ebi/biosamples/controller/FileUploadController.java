@@ -76,7 +76,8 @@ public class FileUploadController {
 
       try {
         final File downloadableFile =
-            fileUploadService.upload(file, hiddenAapDomain, hiddenChecklist, webinId, fileUploadUtils);
+            fileUploadService.upload(
+                file, hiddenAapDomain, hiddenChecklist, webinId, fileUploadUtils);
         final byte[] bytes = FileUtils.readFileToByteArray(downloadableFile);
         final HttpHeaders headers = setResponseHeadersSuccess(downloadableFile);
 
@@ -116,7 +117,8 @@ public class FileUploadController {
 
       try {
         final String fileId =
-            fileQueueService.queueFileinMongoAndSendMessageToRabbitMq(file, hiddenAapDomain, hiddenChecklist, webinId);
+            fileQueueService.queueFileinMongoAndSendMessageToRabbitMq(
+                file, hiddenAapDomain, hiddenChecklist, webinId);
         final File queuedUploadMessageFile = fileUploadUtils.writeQueueMessageToFile(fileId);
         final byte[] bytes = FileUtils.readFileToByteArray(queuedUploadMessageFile);
         final HttpHeaders headers = setResponseHeadersFailure(queuedUploadMessageFile);
