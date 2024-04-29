@@ -793,10 +793,14 @@ public class SampleService {
           sample.getAttributes().stream()
               .filter(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))
               .toList();
-      if (!sraAccessionAttributeList.isEmpty()) {
+      if (sraAccessionAttributeList.size() > 1) {
         throw new GlobalExceptions.InvalidSampleException();
       } else {
-        final String sraAccession = sraAccessionAttributeList.get(0).getValue();
+        String sraAccession = null;
+
+        if (!sraAccessionAttributeList.isEmpty()) {
+          sraAccession = sraAccessionAttributeList.get(0).getValue();
+        }
 
         if (sraAccession != null
             && sample.getSraAccession() != null
