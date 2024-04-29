@@ -180,9 +180,10 @@ public class BioSamplesWebinAuthenticationService {
       } else {
         final String oldSampleAapDomain = oldSampleInDb.getDomain();
 
-        if (isAcceptableDomain(oldSampleAapDomain, domain)) {
-          // TODO: broken
+        if (isOwnershipChangeFromAapToWebinAllowed(oldSampleAapDomain)) {
           return buildSampleWithWebinId(sample, webinIdToSetForSample);
+        } else if (sampleService.isPipelineNcbiDomain(oldSampleAapDomain)) {
+          return sample;
         } else if (isSameDomain(domain, oldSampleAapDomain)) {
           return sample;
         } else {
@@ -194,8 +195,8 @@ public class BioSamplesWebinAuthenticationService {
     }
   }
 
-  private boolean isAcceptableDomain(final String oldSampleAapDomain, final String domain) {
-    return sampleService.isAPipelineAapDomain(oldSampleAapDomain)
+  private boolean isOwnershipChangeFromAapToWebinAllowed(final String oldSampleAapDomain) {
+    return sampleService.isPipelineEnaDomain(oldSampleAapDomain)
         || isOldRegistrationDomain(oldSampleAapDomain);
   }
 

@@ -110,7 +110,7 @@ public class EnaImportRunner implements ApplicationRunner {
       // importEraBsdAuthoritySamples(fromDate, toDate);
 
       // rtHandler.parseIdentifiersFromFileAndFixAuth();
-      rtHandler.parseIdentifiersFromFileAndCheckSampleExistence();
+      rtHandler.samnSampleGeographicLocationAttributeUpdate();
 
       if (importSuppressedAndKilled) {
         try {
