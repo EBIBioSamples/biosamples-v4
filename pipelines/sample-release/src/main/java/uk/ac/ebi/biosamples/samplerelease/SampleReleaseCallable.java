@@ -12,10 +12,7 @@ package uk.ac.ebi.biosamples.samplerelease;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
@@ -29,6 +26,7 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleStatus;
 
@@ -88,6 +86,7 @@ public class SampleReleaseCallable implements Callable<Void> {
           // private sample, make it public
           if (isAap) {
             handleInsdcStatusAttribute(sampleWithoutCurations);
+            handleExternalReference(sampleWithoutCurations);
 
             bioSamplesAapClient
                 .persistSampleResource(
@@ -98,6 +97,7 @@ public class SampleReleaseCallable implements Callable<Void> {
                 .getContent();
           } else {
             handleInsdcStatusAttribute(sampleWithoutCurations);
+            handleExternalReference(sampleWithoutCurations);
 
             bioSamplesWebinClient
                 .persistSampleResource(
@@ -131,6 +131,22 @@ public class SampleReleaseCallable implements Callable<Void> {
       failedQueue.add("Exception in processing " + accession);
 
       return null;
+    }
+  }
+
+  private void handleExternalReference(final Sample sampleWithoutCurations) {
+    final Set<ExternalReference> externalReferences =
+        sampleWithoutCurations.getExternalReferences();
+    final String expectedExternalReference =
+        "https://www.ebi.ac.uk/ena/browser/view/" + sampleWithoutCurations.getAccession();
+
+    if (externalReferences.stream()
+        .noneMatch(
+            externalReference ->
+                externalReference.getUrl().equalsIgnoreCase(expectedExternalReference))) {
+      externalReferences.add(ExternalReference.build(expectedExternalReference));
+
+      sampleWithoutCurations.getExternalReferences().addAll(externalReferences);
     }
   }
 
