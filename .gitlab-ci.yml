@@ -16,7 +16,7 @@ stages:
   - deploy
 
 maven-package:
-  image: eclipse-temurin:17-jdk-alpine
+  image: eclipse-temurin:17-jdk
   stage: package
   script:
     - './mvnw -q deploy -P embl-ebi -s ci_settings.xml -Dmaven.source.skip=true'
