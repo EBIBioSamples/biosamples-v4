@@ -11,6 +11,7 @@
 package uk.ac.ebi.biosamples.model;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.io.UnsupportedEncodingException;
@@ -48,19 +49,18 @@ public class AttributeTest {
     assertThat(
         httpOlsUrlResolutionService.getIriOls(testAttribute.getIri()),
         allOf(
-            endsWith("NCBITaxon_291302"),
-            startsWith("http://www.ebi.ac.uk/ols/terms?iri="),
-            containsString(URLEncoder.encode(iri, StandardCharsets.UTF_8.toString()))));
+            endsWith("NCBITaxon:291302"),
+            startsWith("https://www.ebi.ac.uk/ols4?termId=")));
   }
 
   @Test
-  public void test_getIriOls_method_returns_null_for_a_query() {
+  public void test_getIriOls_method_returns_correctly_formatted_curie() {
     final String curie = "CL:0000451";
     final Attribute testAttribute = Attribute.build("Cell type", "dendritic cell", curie, null);
 
     final HttpOlsUrlResolutionService httpOlsUrlResolutionService =
         new HttpOlsUrlResolutionService();
 
-    assertThat(httpOlsUrlResolutionService.getIriOls(testAttribute.getIri()), nullValue());
+    assertEquals("CL:0000451", httpOlsUrlResolutionService.getIriOls(testAttribute.getIri()));
   }
 }
