@@ -32,7 +32,13 @@ public class MessageHandlerSolr {
   private static final Logger LOGGER = LoggerFactory.getLogger(MessageHandlerSolr.class);
   private static final List<String> INDEXABLE_STATUSES =
       Arrays.asList(
-          "public", "live", "suppressed", "killed", "temporary_suppressed", "temporary_killed");
+          "private",
+          "public",
+          "live",
+          "suppressed",
+          "killed",
+          "temporary_suppressed",
+          "temporary_killed");
 
   private final SolrSampleRepository repository;
   private final SampleToSolrSampleConverter sampleToSolrSampleConverter;

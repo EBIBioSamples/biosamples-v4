@@ -45,7 +45,8 @@ public class BioSamplesCrossSourceIngestAccessControlService {
           .equalsIgnoreCase(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
         // Get the domain of the new sample
         final String domain = sample.getDomain();
-        // If the domain is not null and is not "ncbi"
+        // If the domain is not null and is not "ncbi" (NCBI import domain can update WEBIN
+        // super-user samples)
         if (domain != null && !domain.equalsIgnoreCase(BioSamplesConstants.NCBI_IMPORT_DOMAIN)) {
           // Throw an exception as AAP users cannot update WEBIN user samples
           throw new GlobalExceptions.AccessControlException(
