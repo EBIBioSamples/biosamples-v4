@@ -53,7 +53,7 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
 
   @Override
   public void run(final ApplicationArguments args) throws Exception {
-    log.info("Processing ENA pipeline...");
+    log.info("Processing NCBI-ENA-Link pipeline...");
 
     boolean isPassed = true;
     String pipelineFailureCause = null;

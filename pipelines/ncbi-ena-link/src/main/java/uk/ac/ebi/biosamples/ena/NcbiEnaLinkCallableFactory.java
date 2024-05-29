@@ -13,17 +13,21 @@ package uk.ac.ebi.biosamples.ena;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
+import uk.ac.ebi.biosamples.service.EraProDao;
 
 @Service
 public class NcbiEnaLinkCallableFactory {
   private final BioSamplesClient bioSamplesClient;
   private final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
+  private final EraProDao eraProDao;
 
   public NcbiEnaLinkCallableFactory(
       final BioSamplesClient bioSamplesClient,
-      final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService) {
+      final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService,
+      final EraProDao eraProDao) {
     this.bioSamplesClient = bioSamplesClient;
     this.enaSampleToBioSampleConversionService = enaSampleToBioSampleConversionService;
+    this.eraProDao = eraProDao;
   }
 
   /**
@@ -34,6 +38,6 @@ public class NcbiEnaLinkCallableFactory {
    */
   public NcbiEnaLinkCallable build(final String accession) {
     return new NcbiEnaLinkCallable(
-        accession, bioSamplesClient, enaSampleToBioSampleConversionService);
+        accession, bioSamplesClient, enaSampleToBioSampleConversionService, eraProDao);
   }
 }

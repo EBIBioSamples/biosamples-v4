@@ -232,7 +232,8 @@ public class SampleService {
 
     if (newSampleAttributes.stream()
         .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION))) {
-      if (!isPipelineNcbiDomain(newSample.getDomain())) {
+      // Don't generate SRA accession (ERS sample accessions) for NCBI samples
+      if (!isNcbiSampleAndNcbiSuperUserDomain(newSample)) {
         final String sraAccession = generateOneSRAAccession();
 
         newSampleAttributes.add(Attribute.build(SRA_ACCESSION, sraAccession));
@@ -566,10 +567,20 @@ public class SampleService {
         // Check if the SRA accession field has changed in the new sample
         final String oldSampleSraAccessionField = oldSample.getSraAccession();
 
+        /*
+         * <p>This logic performs the following checks:
+         * <ul>
+         *   <li>If the old SRA accession field is not null and not empty.</li>
+         *   <li>If the new SRA accession field is different from the old SRA accession field.</li>
+         *   <li>If the user is not a Webin Super User.</li>
+         *   <li>If the sample is not an NCBI sample in an NCBI Super User domain.</li>
+         * </ul>
+         */
         if (oldSampleSraAccessionField != null
             && !oldSampleSraAccessionField.isEmpty()
             && !newSampleSraAccessionField.equals(oldSampleSraAccessionField)
-            && !isWebinSuperUser) {
+            && !isWebinSuperUser
+            && !isNcbiSampleAndNcbiSuperUserDomain(newSample)) {
           throw new GlobalExceptions.ChangedSRAAccessionException();
         }
       }
@@ -622,19 +633,27 @@ public class SampleService {
               .getValue()
               .equals(newSampleSraAccessionAttribute.getValue())
           && !isWebinSuperUser
-          && !isPipelineNcbiDomain(newSample.getDomain())) {
+          && !isNcbiSampleAndNcbiSuperUserDomain(newSample)) {
         throw new GlobalExceptions.ChangedSRAAccessionException();
       }
     } else {
       // Step 7: Handling New Samples without Old Samples (Old Sample doesn't exist)
       if (newSampleSraAccessionAttribute == null
-          && (isWebinSuperUser || isPipelineNcbiDomain(newSample.getDomain()))) {
+          && isWebinSuperUser
+          && !isNcbiSampleAndNcbiSuperUserDomain(newSample)) {
         // If oldSample doesn't exist, and newSampleSraAccession is still null, create a new one
+        // Don't generate SRA accession (ERS sample accessions) for NCBI samples
         newSampleSraAccessionAttribute = Attribute.build(SRA_ACCESSION, generateOneSRAAccession());
         // Add newSampleSraAccession to the attributes of the new sample
         newSampleAttributes.add(newSampleSraAccessionAttribute);
       }
     }
+  }
+
+  private boolean isNcbiSampleAndNcbiSuperUserDomain(final Sample newSample) {
+    return (newSample.getAccession().startsWith(NCBI_ACCESSION_PREFIX)
+            || newSample.getAccession().startsWith(DDBJ_ACCESSION_PREFIX))
+        && isPipelineNcbiDomain(newSample.getDomain());
   }
 
   private Instant defineCreateDate(
