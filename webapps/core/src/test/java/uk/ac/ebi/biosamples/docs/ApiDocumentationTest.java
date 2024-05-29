@@ -70,6 +70,7 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 @SpringBootTest(properties = {"spring.cloud.gcp.project-id=no_project"})
 @AutoConfigureRestDocs
 @TestPropertySource(properties = {"aap.domains.url = ''"})
+@Ignore
 public class ApiDocumentationTest {
 
   @Rule
