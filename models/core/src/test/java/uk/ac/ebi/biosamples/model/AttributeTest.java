@@ -15,8 +15,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import org.junit.Test;
 import uk.ac.ebi.biosamples.service.HttpOlsUrlResolutionService;
 
@@ -48,9 +46,7 @@ public class AttributeTest {
     System.out.println(httpOlsUrlResolutionService.getIriOls(testAttribute.getIri()));
     assertThat(
         httpOlsUrlResolutionService.getIriOls(testAttribute.getIri()),
-        allOf(
-            endsWith("NCBITaxon:291302"),
-            startsWith("https://www.ebi.ac.uk/ols4?termId=")));
+        allOf(endsWith("NCBITaxon:291302"), startsWith("https://www.ebi.ac.uk/ols4?termId=")));
   }
 
   @Test
