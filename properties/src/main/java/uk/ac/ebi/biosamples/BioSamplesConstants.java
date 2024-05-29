@@ -15,6 +15,8 @@ public class BioSamplesConstants {
   public static final int MAX_RETRIES = 5;
   public static final String SRA_ACCESSION_PREFIX = "ERS";
   public static final String ACCESSION_PREFIX = "SAMEA";
+  public static final String NCBI_ACCESSION_PREFIX = "SAMN";
+  public static final String DDBJ_ACCESSION_PREFIX = "SAMD";
   public static final String SRA_ACCESSION = "SRA accession";
   public static final String NCBI_IMPORT_DOMAIN = "self.BiosampleImportNCBI";
   public static final String ENA_IMPORT_DOMAIN = "self.BiosampleImportENA";

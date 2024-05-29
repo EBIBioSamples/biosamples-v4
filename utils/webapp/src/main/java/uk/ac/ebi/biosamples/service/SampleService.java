@@ -567,6 +567,15 @@ public class SampleService {
         // Check if the SRA accession field has changed in the new sample
         final String oldSampleSraAccessionField = oldSample.getSraAccession();
 
+        /*
+         * <p>This logic performs the following checks:
+         * <ul>
+         *   <li>If the old SRA accession field is not null and not empty.</li>
+         *   <li>If the new SRA accession field is different from the old SRA accession field.</li>
+         *   <li>If the user is not a Webin Super User.</li>
+         *   <li>If the sample is not an NCBI sample in an NCBI Super User domain.</li>
+         * </ul>
+         */
         if (oldSampleSraAccessionField != null
             && !oldSampleSraAccessionField.isEmpty()
             && !newSampleSraAccessionField.equals(oldSampleSraAccessionField)
@@ -642,7 +651,8 @@ public class SampleService {
   }
 
   private boolean isNcbiSampleAndNcbiSuperUserDomain(final Sample newSample) {
-    return newSample.getAccession().startsWith("SAMN")
+    return (newSample.getAccession().startsWith(NCBI_ACCESSION_PREFIX)
+            || newSample.getAccession().startsWith(DDBJ_ACCESSION_PREFIX))
         && isPipelineNcbiDomain(newSample.getDomain());
   }
 

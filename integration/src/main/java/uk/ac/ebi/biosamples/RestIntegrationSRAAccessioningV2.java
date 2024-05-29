@@ -30,11 +30,13 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
   public static final String SRA_ACCESSION = "SRA accession";
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final BioSamplesClient webinClient;
+  private final BioSamplesClient aapClient;
 
   public RestIntegrationSRAAccessioningV2(
       final BioSamplesClient client, @Qualifier("WEBINCLIENT") final BioSamplesClient webinClient) {
     super(client, webinClient);
     this.webinClient = webinClient;
+    this.aapClient = client;
   }
 
   @Override
