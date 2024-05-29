@@ -26,6 +26,7 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.service.SampleValidator;
@@ -62,6 +63,11 @@ public class TestApplication {
   }
 
   @Bean
+  public ClientProperties clientProperties() {
+    return new ClientProperties();
+  }
+
+  @Bean
   public BioSamplesProperties bioSamplesProperties() {
     return new BioSamplesProperties();
   }
@@ -84,7 +90,7 @@ public class TestApplication {
         restTemplateBuilder,
         sampleValidator(),
         aapClientService(),
-        bioSamplesProperties(),
+        clientProperties(),
         true);
   }
 }

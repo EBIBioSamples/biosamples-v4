@@ -32,12 +32,15 @@ public class SampleValidator {
 
   public Collection<String> validate(final Sample sample) {
     final Collection<String> errors = new ArrayList<>();
+
     validate(sample, errors);
+
     return errors;
   }
 
   public List<String> validate(final Map sampleAsMap) {
     final List<String> errors = new ArrayList<>();
+
     if (sampleAsMap.get("release") == null) {
       errors.add("Must provide release date in format YYYY-MM-DDTHH:MM:SS");
     }
@@ -47,6 +50,7 @@ public class SampleValidator {
     }
 
     final ObjectMapper mapper = new ObjectMapper();
+
     try {
       final Sample sample = mapper.convertValue(sampleAsMap, Sample.class);
       validate(sample, errors);

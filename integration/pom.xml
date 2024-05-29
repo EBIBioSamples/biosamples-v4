@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.3.2-RC1</version>
+		<version>5.3.5-SNAPSHOT</version>
 		<relativePath>../</relativePath>
 	</parent>
 
@@ -14,33 +14,35 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>biosamples-spring-boot-starter</artifactId>
-			<version>5.3.2-RC1</version>
+			<version>5.3.5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-sitemap</artifactId>
-			<version>5.3.2-RC1</version>
+			<version>5.3.5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-jsonld</artifactId>
-			<version>5.3.2-RC1</version>
+			<version>5.3.5-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>properties</artifactId>
+			<version>5.3.5-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>models-neo4j</artifactId>
+			<version>5.3.5-SNAPSHOT</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
 			<version>1.3.4</version>
 		</dependency>
-		<!--<dependency> -->
-		<!--<groupId>org.seleniumhq.selenium</groupId> -->
-		<!--<artifactId>selenium-java</artifactId> -->
-		<!--<version>3.4.0</version> -->
-		<!--</dependency> -->
-		<!--<dependency> -->
-		<!--<groupId>org.seleniumhq.selenium</groupId> -->
-		<!--<artifactId>selenium-server</artifactId> -->
-		<!--<version>3.4.0</version> -->
-		<!--</dependency> -->
 		<dependency>
 			<groupId>org.xmlunit</groupId>
 			<artifactId>xmlunit-core</artifactId>
@@ -76,12 +78,6 @@
 			<version>2.7</version>
 		</dependency>
 		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>models-neo4j</artifactId>
-			<version>5.3.2-RC1</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy</artifactId>
 			<version>3.0.8</version>
@@ -89,11 +85,19 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<version>4.13.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<version>4.13.2</version>
+		</dependency>
+		<dependency>
+			<groupId>dom4j</groupId>
+			<artifactId>dom4j</artifactId>
+			<version>1.6.1</version>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 

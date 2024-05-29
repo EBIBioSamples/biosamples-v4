@@ -20,15 +20,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FacetContentDeserializer extends JsonDeserializer<FacetContent> {
-
   @Override
   public FacetContent deserialize(final JsonParser p, final DeserializationContext ctxt)
-      throws IOException, JsonParseException {
+      throws IOException {
     final JsonNode root = p.readValueAsTree();
     if (root.isArray()) {
       // If the json is an array, I'm assuming it to be a LabelCountListContent facet content
       return parseLabelCountListContent(root);
     }
+
     throw new JsonParseException(p, "Unable to parse facet content");
   }
 
@@ -43,8 +43,10 @@ public class FacetContentDeserializer extends JsonDeserializer<FacetContent> {
     for (final JsonNode labelCountJsonEntry : jsonArray) {
       final String label = labelCountJsonEntry.get("label").asText();
       final Long count = labelCountJsonEntry.get("count").asLong();
+
       labelCountList.add(LabelCountEntry.build(label, count));
     }
+
     return new LabelCountListContent(labelCountList);
   }
 }

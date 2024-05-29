@@ -48,7 +48,7 @@ public class EnaSampleToBioSampleConversionService {
     this.pipelinesProperties = pipelinesProperties;
   }
 
-  /** Handles one ENA sample */
+  /** Handles one ENA/ NCBI sample */
   public Sample enrichSample(final String accession, final boolean isNcbiSample)
       throws DocumentException {
     final EraproSample eraproSample = eraProDao.getSampleDetailsByBioSampleId(accession);
@@ -71,7 +71,29 @@ public class EnaSampleToBioSampleConversionService {
     return null;
   }
 
-  /** Enriches one ENA sample */
+  /** Handles one ENA/ NCBI sample */
+  public Sample enrichSample(
+      final String accession, final boolean isNcbiSample, final EraproSample eraproSample)
+      throws DocumentException {
+    if (eraproSample != null) {
+      final String xmlString = eraproSample.getSampleXml();
+      final SAXReader reader = new SAXReader();
+      final Document xml = reader.read(new StringReader(xmlString));
+      final Element enaSampleRootElement =
+          enaSampleXmlEnhancer.applyAllRules(xml.getRootElement(), eraproSample);
+
+      // check that we got some content
+      if (XmlPathBuilder.of(enaSampleRootElement).path("SAMPLE").exists()) {
+        return enrichSample(eraproSample, enaSampleRootElement, accession, isNcbiSample);
+      } else {
+        log.warn("Unable to find SAMPLE element for " + accession);
+      }
+    }
+
+    return null;
+  }
+
+  /** Enriches one ENA/ NCBI sample */
   private Sample enrichSample(
       final EraproSample eraproSample,
       final Element enaSampleRootElement,

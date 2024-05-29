@@ -14,8 +14,6 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
@@ -30,18 +28,8 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 // @Profile({"default","rest"})
 public class RestFacetIntegration extends AbstractIntegration {
 
-  private final Logger log = LoggerFactory.getLogger(getClass());
-
-  private final IntegrationProperties integrationProperties;
-  private final BioSamplesProperties bioSamplesProperties;
-
-  public RestFacetIntegration(
-      final BioSamplesClient client,
-      final IntegrationProperties integrationProperties,
-      final BioSamplesProperties bioSamplesProperties) {
+  public RestFacetIntegration(final BioSamplesClient client) {
     super(client);
-    this.integrationProperties = integrationProperties;
-    this.bioSamplesProperties = bioSamplesProperties;
   }
 
   @Override

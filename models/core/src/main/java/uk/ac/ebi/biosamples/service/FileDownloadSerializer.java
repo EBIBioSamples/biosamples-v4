@@ -13,7 +13,6 @@ package uk.ac.ebi.biosamples.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.IOException;
-import java.util.Objects;
 import uk.ac.ebi.biosamples.model.Sample;
 
 public interface FileDownloadSerializer {
@@ -64,12 +63,9 @@ public interface FileDownloadSerializer {
   }
 
   class FileDownloadXmlSerializer implements FileDownloadSerializer {
-    private final SampleToXmlConverter converter =
-        new SampleToXmlConverter(new ExternalReferenceService());
-
     @Override
     public String asString(final Sample sample) {
-      return Objects.requireNonNull(converter.convert(sample)).getRootElement().asXML();
+      throw new RuntimeException("XML not a supported format");
     }
 
     @Override

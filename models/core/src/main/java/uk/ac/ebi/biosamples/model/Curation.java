@@ -15,16 +15,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import java.util.*;
+import lombok.Data;
 
+@Data
 public class Curation implements Comparable<Curation> {
-
+  @JsonProperty("attributesPre")
   private final SortedSet<Attribute> attributesPre;
+
+  @JsonProperty("attributesPost")
   private final SortedSet<Attribute> attributesPost;
 
   private final SortedSet<ExternalReference> externalPre;
   private final SortedSet<ExternalReference> externalPost;
 
+  @JsonProperty("relationshipsPre")
   private final SortedSet<Relationship> relationshipsPre;
+
+  @JsonProperty("relationshipsPost")
   private final SortedSet<Relationship> relationshipsPost;
 
   private final String hash;
@@ -52,16 +59,6 @@ public class Curation implements Comparable<Curation> {
     this.hash = hash;
   }
 
-  @JsonProperty("attributesPre")
-  public SortedSet<Attribute> getAttributesPre() {
-    return attributesPre;
-  }
-
-  @JsonProperty("attributesPost")
-  public SortedSet<Attribute> getAttributesPost() {
-    return attributesPost;
-  }
-
   @JsonProperty("externalReferencesPre")
   public SortedSet<ExternalReference> getExternalReferencesPre() {
     return externalPre;
@@ -70,43 +67,6 @@ public class Curation implements Comparable<Curation> {
   @JsonProperty("externalReferencesPost")
   public SortedSet<ExternalReference> getExternalReferencesPost() {
     return externalPost;
-  }
-
-  @JsonProperty("relationshipsPre")
-  public SortedSet<Relationship> getRelationshipsPre() {
-    return relationshipsPre;
-  }
-
-  @JsonProperty("relationshipsPost")
-  public SortedSet<Relationship> getRelationshipsPost() {
-    return relationshipsPost;
-  }
-
-  public String getHash() {
-    return hash;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(hash);
-  }
-
-  @Override
-  public boolean equals(final Object o) {
-
-    if (o == this) {
-      return true;
-    }
-    if (!(o instanceof Curation)) {
-      return false;
-    }
-    final Curation other = (Curation) o;
-    return Objects.equals(attributesPre, other.attributesPre)
-        && Objects.equals(attributesPost, other.attributesPost)
-        && Objects.equals(externalPre, other.externalPre)
-        && Objects.equals(externalPost, other.externalPost)
-        && Objects.equals(relationshipsPre, other.relationshipsPre)
-        && Objects.equals(relationshipsPost, other.relationshipsPost);
   }
 
   @Override
@@ -214,25 +174,6 @@ public class Curation implements Comparable<Curation> {
       }
     }
     return 0;
-  }
-
-  @Override
-  public String toString() {
-    final StringBuilder sb = new StringBuilder();
-    sb.append("Curation(");
-    sb.append(attributesPre);
-    sb.append(",");
-    sb.append(attributesPost);
-    sb.append(",");
-    sb.append(externalPre);
-    sb.append(",");
-    sb.append(externalPost);
-    sb.append(",");
-    sb.append(relationshipsPre);
-    sb.append(",");
-    sb.append(relationshipsPost);
-    sb.append(")");
-    return sb.toString();
   }
 
   @JsonCreator

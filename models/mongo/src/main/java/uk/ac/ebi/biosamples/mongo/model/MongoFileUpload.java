@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
 import java.util.Objects;
+import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -21,13 +22,16 @@ import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
 import uk.ac.ebi.biosamples.mongo.util.SampleNameAccessionPair;
 
 @Document(collection = "mongoFileUpload")
+@Getter
 public class MongoFileUpload {
   @Id @JsonIgnore @Indexed private final String submissionId;
   private final BioSamplesFileUploadSubmissionStatus submissionStatus;
+  private final String submissionDate;
+  private final String lastUpdateDate;
   private final String submitterDetails;
   private final String checklist;
-  @JsonIgnore private final boolean isWebin;
   private final List<SampleNameAccessionPair> sampleNameAccessionPairs;
+  @JsonIgnore private final boolean isWebin;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private final String validationMessage;
@@ -35,6 +39,8 @@ public class MongoFileUpload {
   public MongoFileUpload(
       final String submissionId,
       final BioSamplesFileUploadSubmissionStatus submissionStatus,
+      final String submissionDate,
+      final String lastUpdateDate,
       final String submitterDetails,
       final String checklist,
       final boolean isWebin,
@@ -42,39 +48,13 @@ public class MongoFileUpload {
       final String validationMessage) {
     this.submissionId = submissionId;
     this.submissionStatus = submissionStatus;
+    this.submissionDate = submissionDate;
+    this.lastUpdateDate = lastUpdateDate;
     this.submitterDetails = submitterDetails;
     this.checklist = checklist;
     this.isWebin = isWebin;
     this.sampleNameAccessionPairs = sampleNameAccessionPairs;
     this.validationMessage = validationMessage;
-  }
-
-  public String getChecklist() {
-    return checklist;
-  }
-
-  public String getSubmissionId() {
-    return submissionId;
-  }
-
-  public BioSamplesFileUploadSubmissionStatus getSubmissionStatus() {
-    return submissionStatus;
-  }
-
-  public String getSubmitterDetails() {
-    return submitterDetails;
-  }
-
-  public boolean isWebin() {
-    return isWebin;
-  }
-
-  public List<SampleNameAccessionPair> getSampleNameAccessionPairs() {
-    return sampleNameAccessionPairs;
-  }
-
-  private String getValidationMessage() {
-    return validationMessage;
   }
 
   @Override

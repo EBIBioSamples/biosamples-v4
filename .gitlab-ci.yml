@@ -16,10 +16,10 @@ stages:
   - deploy
 
 maven-package:
-  image: eclipse-temurin:17-jdk-alpine
+  image: eclipse-temurin:17-jdk
   stage: package
   script:
-    - './mvnw -q deploy -P embl-ebi -s ci_settings.xml -Dmaven.source.skip=true'
+    - './mvnw -q deploy -P embl-ebi -s ci_settings.xml -DskipTests -Dmaven.source.skip=true'
     - mkdir deployment
     - cp webapps/core/target/webapps-core-*.war deployment/webapps-core.war
     - cp webapps/core-v2/target/webapps-core-v2*.jar deployment/webapps-core-v2.jar
@@ -61,11 +61,13 @@ clone-config-production:
     - cp -r biosamples-internal/script/* deployment/
     - cp -r biosamples-internal/www/* config/
     - cp biosamples-internal/deployment/deploy.sh ./
+    - cp biosamples-internal/deployment/deploy_agents_solr.sh ./
   artifacts:
     paths:
       - deployment
       - config
       - deploy.sh
+      - deploy_agents_solr.sh
   when: manual
   only:
     - master
@@ -89,6 +91,7 @@ deploy-production-p2m-servers:
     - chmod +x deploy.sh
     - ./deploy.sh bsd_prod wp-p2m-40
     - ./deploy.sh bsd_prod wp-p2m-41
+    - ./deploy_agents_solr.sh bsd_prod wp-p2m-42
   when: manual
   only:
     - master
@@ -100,6 +103,7 @@ deploy-production-p1m-servers:
     - chmod +x deploy.sh
     - ./deploy.sh bsd_prod wp-p1m-40
     - ./deploy.sh bsd_prod wp-p1m-41
+    - ./deploy_agents_solr.sh bsd_prod wp-p1m-42
   when: manual
   only:
     - master

@@ -22,15 +22,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.hateoas.EntityModel;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
 public class MockBioSamplesClient extends BioSamplesClient {
-
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final Map<String, List<Curation>> curations = new HashMap<>();
@@ -49,9 +48,9 @@ public class MockBioSamplesClient extends BioSamplesClient {
       final RestTemplateBuilder restTemplateBuilder,
       final SampleValidator sampleValidator,
       final AapClientService aapClientService,
-      final BioSamplesProperties bioSamplesProperties,
+      final ClientProperties clientProperties,
       final boolean logCurations) {
-    super(uri, uriV2, restTemplateBuilder, sampleValidator, aapClientService, bioSamplesProperties);
+    super(uri, uriV2, restTemplateBuilder, sampleValidator, aapClientService, clientProperties);
     this.logCurations = logCurations;
     if (logCurations) {
       try {

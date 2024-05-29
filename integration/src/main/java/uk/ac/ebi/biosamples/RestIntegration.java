@@ -31,6 +31,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
@@ -40,14 +41,14 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 public class RestIntegration extends AbstractIntegration {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final RestTemplate restTemplate;
-  private final BioSamplesProperties clientProperties;
+  private final ClientProperties clientProperties;
   private final BioSamplesClient annonymousClient;
   private final BioSamplesClient webinClient;
 
   public RestIntegration(
       final BioSamplesClient client,
       final RestTemplateBuilder restTemplateBuilder,
-      final BioSamplesProperties clientProperties,
+      final ClientProperties clientProperties,
       @Qualifier("WEBINCLIENT") final BioSamplesClient webinClient) {
     super(client, webinClient);
     restTemplate = restTemplateBuilder.build();
@@ -187,8 +188,7 @@ public class RestIntegration extends AbstractIntegration {
     }
 
     // put the second sample in
-    final EntityModel<Sample> sampleTest2Resource =
-        client.persistSampleResource(sampleTest2, false, true);
+    final EntityModel<Sample> sampleTest2Resource = client.persistSampleResource(sampleTest2);
 
     // get the accession and sra accession of test sample 2
     final Sample sampleTest2ResourceContent = sampleTest2Resource.getContent();
@@ -284,7 +284,7 @@ public class RestIntegration extends AbstractIntegration {
     // test private sample create and fetch using webin auth
     final Sample webinSampleTest1 = getWebinSampleTest1();
     final EntityModel<Sample> webinSampleResource =
-        webinClient.persistSampleResource(webinSampleTest1, false, true);
+        webinClient.persistSampleResource(webinSampleTest1);
     final String webinSampleAccession =
         Objects.requireNonNull(webinSampleResource.getContent()).getAccession();
     final Optional<EntityModel<Sample>> webinSamplePostPersistance =

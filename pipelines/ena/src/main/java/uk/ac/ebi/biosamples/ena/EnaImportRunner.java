@@ -28,6 +28,7 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.biosamples.PipelinesProperties;
+import uk.ac.ebi.biosamples.misc.RTHandler;
 import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
 import uk.ac.ebi.biosamples.mongo.repo.MongoPipelineRepository;
@@ -51,6 +52,7 @@ public class EnaImportRunner implements ApplicationRunner {
   @Autowired private EraProDao eraProDao;
   @Autowired private EnaImportCallableFactory enaImportCallableFactory;
   @Autowired private MongoPipelineRepository mongoPipelineRepository;
+  @Autowired private RTHandler rtHandler;
 
   private final Map<String, Future<Void>> futures = new LinkedHashMap<>();
   static final Set<String> failures = new HashSet<>();
@@ -102,13 +104,13 @@ public class EnaImportRunner implements ApplicationRunner {
       // importSuppressedAndKilled);
 
       // Import ENA samples
-      importEraSamples(fromDate, toDate);
+      // importEraSamples(fromDate, toDate);
 
       // Import BSD authority samples to update SRA accession
       // importEraBsdAuthoritySamples(fromDate, toDate);
 
-      // rtHandler.samnSampleGeographicLocationAttributeUpdate();
-      // rtHandler.samnSampleGeographicLocationAttributeUpdate();
+      // rtHandler.parseIdentifiersFromFileAndFixAuth();
+      rtHandler.samnSampleGeographicLocationAttributeUpdate();
 
       if (importSuppressedAndKilled) {
         try {
@@ -259,13 +261,12 @@ public class EnaImportRunner implements ApplicationRunner {
               pipelinesProperties.getThreadCountMax())) {
 
         sampleCallbackResults.forEach(
-            sampleCallbackResult -> {
-              futures.put(
-                  sampleCallbackResult.getBiosampleId(),
-                  executorService.submit(
-                      Objects.requireNonNull(
-                          eraRowHandler.processRow(sampleCallbackResult, false))));
-            });
+            sampleCallbackResult ->
+                futures.put(
+                    sampleCallbackResult.getBiosampleId(),
+                    executorService.submit(
+                        Objects.requireNonNull(
+                            eraRowHandler.processRow(sampleCallbackResult, false)))));
 
         checkFutures(100);
       }
@@ -332,6 +333,8 @@ public class EnaImportRunner implements ApplicationRunner {
     while (!success) {
       try {
         sampleCallbackResults = eraProDao.doSampleCallback(fromDate, toDate);
+
+        log.info("Total number of samples to be handled is " + sampleCallbackResults.size());
 
         success = true;
       } catch (final Exception e) {
@@ -424,7 +427,7 @@ public class EnaImportRunner implements ApplicationRunner {
               String.format(
                   "%s is being handled as status is %s and last updated is %s (searched by first public and last updated)",
                   biosampleId, enaStatus.name(), lastUpdated));
-          // update if sample already exists else import
+
           if (bsdAuthority) {
             return enaImportCallableFactory.build(biosampleId, egaId, SpecialTypes.BSD_AUTHORITY);
           } else {

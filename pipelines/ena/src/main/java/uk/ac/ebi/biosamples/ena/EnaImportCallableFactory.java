@@ -23,7 +23,6 @@ public class EnaImportCallableFactory {
   private final BioSamplesClient bioSamplesWebinClient;
   private final BioSamplesClient bioSamplesAapClient;
   private final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
-
   private final EraProDao eraProDao;
   private final EgaSampleExporter egaSampleExporter;
 

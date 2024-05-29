@@ -1,5 +1,6 @@
 {
 	"accession": "TEST1",
+	"sraAccession": "ERS01",
 	"name": "Test Sample",
 	"domain": "foozit",
 	"webinSubmissionAccountId": "",

@@ -53,7 +53,7 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
 
   @Override
   public void run(final ApplicationArguments args) throws Exception {
-    log.info("Processing ENA pipeline...");
+    log.info("Processing NCBI-ENA-Link pipeline...");
 
     boolean isPassed = true;
     String pipelineFailureCause = null;
@@ -92,39 +92,40 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
     } finally {
       try {
         final MongoPipeline mongoPipeline;
-        final String pipelineUniqueIdentifier = PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.NCBIENALINK);
+        final String pipelineUniqueIdentifier =
+            PipelineUniqueIdentifierGenerator.getPipelineUniqueIdentifier(PipelineName.NCBIENALINK);
 
         if (isPassed) {
           mongoPipeline =
-                  new MongoPipeline(
-                          pipelineUniqueIdentifier,
-                          new Date(),
-                          PipelineName.NCBIENALINK.name(),
-                          PipelineCompletionStatus.COMPLETED,
-                          String.join(",", failures.keySet()),
-                          null);
+              new MongoPipeline(
+                  pipelineUniqueIdentifier,
+                  new Date(),
+                  PipelineName.NCBIENALINK.name(),
+                  PipelineCompletionStatus.COMPLETED,
+                  String.join(",", failures.keySet()),
+                  null);
         } else {
           mongoPipeline =
-                  new MongoPipeline(
-                          pipelineUniqueIdentifier,
-                          new Date(),
-                          PipelineName.NCBIENALINK.name(),
-                          PipelineCompletionStatus.FAILED,
-                          String.join(",", failures.keySet()),
-                          pipelineFailureCause);
+              new MongoPipeline(
+                  pipelineUniqueIdentifier,
+                  new Date(),
+                  PipelineName.NCBIENALINK.name(),
+                  PipelineCompletionStatus.FAILED,
+                  String.join(",", failures.keySet()),
+                  pipelineFailureCause);
         }
 
         mongoPipelineRepository.insert(mongoPipeline);
 
         PipelineUtils.writeFailedSamplesToFile(failures, PipelineName.ENA);
-      }  catch (final Exception e) {
+      } catch (final Exception e) {
         log.info("Error in persisting pipeline status to database " + e.getMessage());
       }
     }
   }
 
   private List<SampleCallbackResult> getAllNcbiSamplesToHandle(
-          final LocalDate fromDate, final LocalDate toDate) {
+      final LocalDate fromDate, final LocalDate toDate) {
     final int MAX_RETRIES = 5;
     List<SampleCallbackResult> sampleCallbackResults = new ArrayList<>();
     boolean success = false;
@@ -147,15 +148,15 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
     return sampleCallbackResults;
   }
 
-  private void importMissingNcbiSamples(final LocalDate fromDate, final LocalDate toDate) throws Exception {
+  private void importMissingNcbiSamples(final LocalDate fromDate, final LocalDate toDate)
+      throws Exception {
     log.info("Handling NCBI Samples");
 
     final List<SampleCallbackResult> sampleCallbackResults =
-            getAllNcbiSamplesToHandle(fromDate, toDate);
+        getAllNcbiSamplesToHandle(fromDate, toDate);
 
     if (pipelinesProperties.getThreadCount() == 0) {
-      final NcbiRowHandler ncbiRowHandler =
-          new NcbiRowHandler(ncbiEnaLinkCallableFactory);
+      final NcbiRowHandler ncbiRowHandler = new NcbiRowHandler(ncbiEnaLinkCallableFactory);
 
       sampleCallbackResults.forEach(ncbiRowHandler::processRow);
     } else {
@@ -166,16 +167,15 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
               false,
               pipelinesProperties.getThreadCount(),
               pipelinesProperties.getThreadCountMax())) {
-        final NcbiRowHandler ncbiRowHandler =
-            new NcbiRowHandler(ncbiEnaLinkCallableFactory);
+        final NcbiRowHandler ncbiRowHandler = new NcbiRowHandler(ncbiEnaLinkCallableFactory);
 
         sampleCallbackResults.forEach(
-                sampleCallbackResult -> {
-                  futures.put(
-                          sampleCallbackResult.getBiosampleId(),
-                          executorService.submit(
-                                  Objects.requireNonNull(ncbiRowHandler.processRow(sampleCallbackResult))));
-                });
+            sampleCallbackResult -> {
+              futures.put(
+                  sampleCallbackResult.getBiosampleId(),
+                  executorService.submit(
+                      Objects.requireNonNull(ncbiRowHandler.processRow(sampleCallbackResult))));
+            });
 
         try {
           ThreadUtils.checkFutures(futures, 100);
@@ -194,8 +194,7 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
     private final NcbiEnaLinkCallableFactory ncbiEnaLinkCallableFactory;
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    NcbiRowHandler(
-        final NcbiEnaLinkCallableFactory ncbiEnaLinkCallableFactory) {
+    NcbiRowHandler(final NcbiEnaLinkCallableFactory ncbiEnaLinkCallableFactory) {
       this.ncbiEnaLinkCallableFactory = ncbiEnaLinkCallableFactory;
     }
 

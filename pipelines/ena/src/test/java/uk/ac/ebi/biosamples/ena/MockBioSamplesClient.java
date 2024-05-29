@@ -22,9 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.hateoas.EntityModel;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.ClientService;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
@@ -45,7 +45,7 @@ public class MockBioSamplesClient extends BioSamplesClient {
       final RestTemplateBuilder restTemplateBuilder,
       final SampleValidator sampleValidator,
       final ClientService aapClientService,
-      final BioSamplesProperties bioSamplesProperties,
+      final ClientProperties bioSamplesProperties,
       final ObjectMapper objectMapper) {
     super(uri, uriV2, restTemplateBuilder, sampleValidator, aapClientService, bioSamplesProperties);
     this.objectMapper = objectMapper;

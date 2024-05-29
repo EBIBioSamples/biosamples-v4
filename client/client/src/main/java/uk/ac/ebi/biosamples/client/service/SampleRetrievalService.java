@@ -69,7 +69,7 @@ public class SampleRetrievalService {
     public Optional<EntityModel<Sample>> fetchSample() {
       final URI uri;
 
-      if (curationDomains.isEmpty()) {
+      if (!curationDomains.isPresent()) {
         uri =
             URI.create(
                 traverson
@@ -82,10 +82,12 @@ public class SampleRetrievalService {
             traverson
                 .follow("samples")
                 .follow(Hop.rel("sample").withParameter("accession", accession));
+
         for (final String curationDomain : curationDomains.get()) {
           traversalBuilder.follow(
               Hop.rel("curationDomain").withParameter("curationdomain", curationDomain));
         }
+
         uri = URI.create(traversalBuilder.asLink().getHref());
       }
 
@@ -94,11 +96,12 @@ public class SampleRetrievalService {
       final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
 
       headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
+
       if (jwt != null) {
         headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
       }
-      final RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
 
+      final RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
       final ResponseEntity<EntityModel<Sample>> responseEntity;
 
       try {
@@ -113,6 +116,7 @@ public class SampleRetrievalService {
           throw e;
         }
       }
+
       log.trace("GETted " + uri);
 
       return Optional.ofNullable(responseEntity.getBody());
@@ -172,6 +176,7 @@ public class SampleRetrievalService {
 
         // fill up the queue if possible
         final int queueMaxSize = 1000;
+
         while (queue.size() < queueMaxSize && accessions.hasNext()) {
           log.trace("Queue size is " + queue.size());
 

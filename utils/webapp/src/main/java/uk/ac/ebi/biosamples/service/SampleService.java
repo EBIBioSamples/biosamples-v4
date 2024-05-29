@@ -11,7 +11,7 @@
 package uk.ac.ebi.biosamples.service;
 
 import static java.util.stream.Collectors.toSet;
-import static uk.ac.ebi.biosamples.utils.BioSamplesConstants.*;
+import static uk.ac.ebi.biosamples.BioSamplesConstants.*;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -232,10 +232,13 @@ public class SampleService {
 
     if (newSampleAttributes.stream()
         .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION))) {
-      final String sraAccession = generateOneSRAAccession();
+      // Don't generate SRA accession (ERS sample accessions) for NCBI samples
+      if (!isNcbiSampleAndNcbiSuperUserDomain(newSample)) {
+        final String sraAccession = generateOneSRAAccession();
 
-      newSampleAttributes.add(Attribute.build(SRA_ACCESSION, sraAccession));
-      newSample = Sample.Builder.fromSample(newSample).withSraAccession(sraAccession).build();
+        newSampleAttributes.add(Attribute.build(SRA_ACCESSION, sraAccession));
+        newSample = Sample.Builder.fromSample(newSample).withSraAccession(sraAccession).build();
+      }
     } else {
       final List<Attribute> sraAccessionAttributeList =
           newSampleAttributes.stream()
@@ -557,19 +560,6 @@ public class SampleService {
       final Sample newSample, final Sample oldSample, final boolean isWebinSuperUser) {
     // Step 1: Initialization
     final String newSampleSraAccessionField = newSample.getSraAccession();
-    final SortedSet<Attribute> newSampleAttributes = newSample.getAttributes();
-    final List<Attribute> newSampleSraAccessions =
-        newSampleAttributes.stream()
-            .filter(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))
-            .toList();
-
-    // Step 2: Validation of SRA Accessions in New Sample
-    if (newSampleSraAccessions.size() > 1) {
-      throw new GlobalExceptions.InvalidSampleException();
-    }
-
-    Attribute newSampleSraAccession =
-        newSampleSraAccessions.isEmpty() ? null : newSampleSraAccessions.get(0);
 
     // Step 3: Validation of SRA Accession Field in New Sample
     if (newSampleSraAccessionField != null && !newSampleSraAccessionField.isEmpty()) {
@@ -577,57 +567,93 @@ public class SampleService {
         // Check if the SRA accession field has changed in the new sample
         final String oldSampleSraAccessionField = oldSample.getSraAccession();
 
+        /*
+         * <p>This logic performs the following checks:
+         * <ul>
+         *   <li>If the old SRA accession field is not null and not empty.</li>
+         *   <li>If the new SRA accession field is different from the old SRA accession field.</li>
+         *   <li>If the user is not a Webin Super User.</li>
+         *   <li>If the sample is not an NCBI sample in an NCBI Super User domain.</li>
+         * </ul>
+         */
         if (oldSampleSraAccessionField != null
             && !oldSampleSraAccessionField.isEmpty()
             && !newSampleSraAccessionField.equals(oldSampleSraAccessionField)
-            && !isWebinSuperUser) {
+            && !isWebinSuperUser
+            && !isNcbiSampleAndNcbiSuperUserDomain(newSample)) {
           throw new GlobalExceptions.ChangedSRAAccessionException();
         }
       }
     }
 
-    // Step 4: Validation of SRA Accessions in Old Sample
+    final SortedSet<Attribute> newSampleAttributes = newSample.getAttributes();
+    final List<Attribute> newSampleSraAccessionAttributes =
+        newSampleAttributes.stream()
+            .filter(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))
+            .toList();
+
+    // Step 2: Validation of SRA Accession attributes in New Sample
+    if (newSampleSraAccessionAttributes.size() > 1) {
+      throw new GlobalExceptions.InvalidSampleException();
+    }
+
+    Attribute newSampleSraAccessionAttribute =
+        newSampleSraAccessionAttributes.isEmpty() ? null : newSampleSraAccessionAttributes.get(0);
+
+    // Step 4: Validation of SRA Accession attributes in Old Sample
     if (oldSample != null) {
-      final List<Attribute> oldSampleSraAccessions =
+      final List<Attribute> oldSampleSraAccessionAttributes =
           oldSample.getAttributes().stream()
               .filter(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))
               .toList();
 
       // Check if there are more than one SRA accession attributes in the old sample
-      if (oldSampleSraAccessions.size() > 1) {
+      if (oldSampleSraAccessionAttributes.size() > 1) {
         throw new GlobalExceptions.InvalidSampleException();
       }
 
-      final Attribute oldSampleSraAccession =
-          oldSampleSraAccessions.isEmpty() ? null : oldSampleSraAccessions.get(0);
+      final Attribute oldSampleSraAccessionAttribute =
+          oldSampleSraAccessionAttributes.isEmpty() ? null : oldSampleSraAccessionAttributes.get(0);
 
       // Step 5: Handling SRA Accessions in New Sample and Old Sample
-      if (newSampleSraAccession == null) {
-        // If newSampleSraAccession is null, use oldSampleSraAccession or generate a new one
-        newSampleSraAccession =
+      if (newSampleSraAccessionAttribute == null) {
+        // If newSampleSraAccessionAttribute is null, use oldSampleSraAccession or generate a new
+        // one
+        newSampleSraAccessionAttribute =
             Objects.requireNonNullElseGet(
-                oldSampleSraAccession,
+                oldSampleSraAccessionAttribute,
                 () -> Attribute.build(SRA_ACCESSION, generateOneSRAAccession()));
-        // Add newSampleSraAccession to the attributes of the new sample
-        newSampleAttributes.add(newSampleSraAccession);
+        // Add newSampleSraAccessionAttribute to the attributes of the new sample
+        newSampleAttributes.add(newSampleSraAccessionAttribute);
       }
 
       // Step 6: Validation of Changed SRA Accession (if Old Sample exists)
-      if (oldSampleSraAccession != null
-          && !oldSampleSraAccession.getValue().equals(newSampleSraAccession.getValue())
-          && !isWebinSuperUser) {
+      if (oldSampleSraAccessionAttribute != null
+          && !oldSampleSraAccessionAttribute
+              .getValue()
+              .equals(newSampleSraAccessionAttribute.getValue())
+          && !isWebinSuperUser
+          && !isNcbiSampleAndNcbiSuperUserDomain(newSample)) {
         throw new GlobalExceptions.ChangedSRAAccessionException();
       }
     } else {
       // Step 7: Handling New Samples without Old Samples (Old Sample doesn't exist)
-      if (newSampleSraAccession == null
-          && (isWebinSuperUser || isPipelineNcbiDomain(newSample.getDomain()))) {
+      if (newSampleSraAccessionAttribute == null
+          && isWebinSuperUser
+          && !isNcbiSampleAndNcbiSuperUserDomain(newSample)) {
         // If oldSample doesn't exist, and newSampleSraAccession is still null, create a new one
-        newSampleSraAccession = Attribute.build(SRA_ACCESSION, generateOneSRAAccession());
+        // Don't generate SRA accession (ERS sample accessions) for NCBI samples
+        newSampleSraAccessionAttribute = Attribute.build(SRA_ACCESSION, generateOneSRAAccession());
         // Add newSampleSraAccession to the attributes of the new sample
-        newSampleAttributes.add(newSampleSraAccession);
+        newSampleAttributes.add(newSampleSraAccessionAttribute);
       }
     }
+  }
+
+  private boolean isNcbiSampleAndNcbiSuperUserDomain(final Sample newSample) {
+    return (newSample.getAccession().startsWith(NCBI_ACCESSION_PREFIX)
+            || newSample.getAccession().startsWith(DDBJ_ACCESSION_PREFIX))
+        && isPipelineNcbiDomain(newSample.getDomain());
   }
 
   private Instant defineCreateDate(
@@ -649,7 +675,7 @@ public class SampleService {
     }
   }
 
-  private boolean isPipelineEnaDomain(final String domain) {
+  public boolean isPipelineEnaDomain(final String domain) {
     if (domain == null) {
       return false;
     }
@@ -657,7 +683,7 @@ public class SampleService {
     return domain.equalsIgnoreCase(ENA_IMPORT_DOMAIN);
   }
 
-  private boolean isPipelineNcbiDomain(final String domain) {
+  public boolean isPipelineNcbiDomain(final String domain) {
     if (domain == null) {
       return false;
     }
@@ -774,30 +800,39 @@ public class SampleService {
   public Optional<Sample> validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
       final Sample sample, final boolean anySuperUser) {
     if (!anySuperUser) {
-      if (sample.hasAccession()) {
-        throw new GlobalExceptions.SampleWithAccessionSubmissionException();
-      }
-
-      if (sample.hasSraAccession()) {
-        throw new GlobalExceptions.SampleWithAccessionSubmissionException();
-      }
-
-      if (sample.getAttributes() != null
-          && sample.getAttributes().stream()
-              .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))) {
+      if (sample.hasAccession()
+          || sample.hasSraAccession()
+          || sample.getAttributes() != null
+              && sample.getAttributes().stream()
+                  .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))) {
         throw new GlobalExceptions.SampleWithAccessionSubmissionException();
       }
     } else {
-      if (sample.hasAccession()) {
-        final boolean nonExistingAccession = isNotExistingAccession(sample.getAccession());
+      final List<Attribute> sraAccessionAttributeList =
+          sample.getAttributes().stream()
+              .filter(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))
+              .toList();
+      if (sraAccessionAttributeList.size() > 1) {
+        throw new GlobalExceptions.InvalidSampleException();
+      } else {
+        String sraAccession = null;
 
-        if (!nonExistingAccession) {
-          // fetch old sample if sample exists
-          return fetch(sample.getAccession(), Optional.empty());
+        if (!sraAccessionAttributeList.isEmpty()) {
+          sraAccession = sraAccessionAttributeList.get(0).getValue();
+        }
+
+        if (sraAccession != null
+            && sample.getSraAccession() != null
+            && !Objects.equals(sraAccession, sample.getSraAccession())) {
+          throw new GlobalExceptions.InvalidSampleException();
         }
       }
-    }
 
+      if (sample.hasAccession() && !isNotExistingAccession(sample.getAccession())) {
+        // fetch old sample if sample exists
+        return fetch(sample.getAccession(), Optional.empty());
+      }
+    }
     return Optional.empty();
   }
 }

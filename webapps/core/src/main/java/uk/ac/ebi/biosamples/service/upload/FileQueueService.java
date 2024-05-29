@@ -13,12 +13,12 @@ package uk.ac.ebi.biosamples.service.upload;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,13 +26,23 @@ import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.mongo.repo.MongoFileUploadRepository;
 import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
 import uk.ac.ebi.biosamples.service.MessagingService;
+import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
 
 @Service
 public class FileQueueService {
   private static final Logger log = LoggerFactory.getLogger(FileQueueService.class);
-  @Autowired private GridFsTemplate gridFsTemplate;
-  @Autowired private MessagingService messagingService;
-  @Autowired private MongoFileUploadRepository mongoFileUploadRepository;
+  private final GridFsTemplate gridFsTemplate;
+  private final MessagingService messagingService;
+  private final MongoFileUploadRepository mongoFileUploadRepository;
+
+  public FileQueueService(
+      GridFsTemplate gridFsTemplate,
+      MessagingService messagingService,
+      MongoFileUploadRepository mongoFileUploadRepository) {
+    this.gridFsTemplate = gridFsTemplate;
+    this.messagingService = messagingService;
+    this.mongoFileUploadRepository = mongoFileUploadRepository;
+  }
 
   public String queueFileinMongoAndSendMessageToRabbitMq(
       final MultipartFile file,
@@ -42,10 +52,13 @@ public class FileQueueService {
     try {
       final String fileId = persistUploadedFileInMongo(file);
       final boolean isWebin = webinId != null && !webinId.isEmpty();
+      final LocalDateTime submissionDate = LocalDateTime.now();
       final MongoFileUpload mongoFileUpload =
           new MongoFileUpload(
               fileId,
               BioSamplesFileUploadSubmissionStatus.ACTIVE,
+              FileUploadUtils.formatDateString(submissionDate),
+              FileUploadUtils.formatDateString(submissionDate),
               isWebin ? webinId : aapDomain,
               checklist,
               isWebin,
@@ -58,7 +71,6 @@ public class FileQueueService {
       return fileId;
     } catch (final Exception e) {
       final String message = "Failed to save Submission";
-
       log.error(message, e);
       throw new RuntimeException(message, e);
     }
@@ -66,13 +78,10 @@ public class FileQueueService {
 
   private String persistUploadedFileInMongo(final MultipartFile file) throws IOException {
     final DBObject metaData = new BasicDBObject();
-
     metaData.put("upload_timestamp", new Date());
-
     final ObjectId gridFSFileId =
         gridFsTemplate.store(
             file.getInputStream(), file.getOriginalFilename(), file.getContentType(), metaData);
-
     return gridFSFileId.toString();
   }
 }

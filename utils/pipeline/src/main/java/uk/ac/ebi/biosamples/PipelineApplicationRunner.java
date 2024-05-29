@@ -37,12 +37,10 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
 
   protected final BioSamplesClient bioSamplesClient;
   private final PipelinesProperties pipelinesProperties;
-  //    private final AnalyticsService analyticsService;
   private final PipelineFutureCallback pipelineFutureCallback;
 
   public PipelineApplicationRunner(
-      final BioSamplesClient bioSamplesClient, final PipelinesProperties pipelinesProperties /*,
-                                     AnalyticsService analyticsService*/) {
+      final BioSamplesClient bioSamplesClient, final PipelinesProperties pipelinesProperties) {
     this.bioSamplesClient = bioSamplesClient;
     this.pipelinesProperties = pipelinesProperties;
     //        this.analyticsService = analyticsService;

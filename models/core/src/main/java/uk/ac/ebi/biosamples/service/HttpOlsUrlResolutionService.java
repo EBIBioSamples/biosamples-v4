@@ -10,8 +10,6 @@
 */
 package uk.ac.ebi.biosamples.service;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.SortedSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,12 +19,29 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 public class HttpOlsUrlResolutionService {
-  private static final String OLS_PREFIX = "http://www.ebi.ac.uk/ols/terms?iri=";
-  private static final String OBO = "purl.obolibrary.org/obo";
-  private static final String EBIUK = "www.ebi.ac.uk";
+  private static final String OLS_PREFIX = "https://www.ebi.ac.uk/ols4?termId=";
+  private static final String OBO_URL_SEGMENT = "purl.obolibrary.org/obo";
+  private static final String EBI_URL_SEGMENT = "www.ebi.ac.uk";
   public static Logger log = LoggerFactory.getLogger(HttpOlsUrlResolutionService.class);
 
   public HttpOlsUrlResolutionService() {}
+
+  public static boolean isCurie(String term) {
+    String[] segments;
+    if (term.contains(":")) {
+      segments = term.split(":");
+    } else if (term.contains("_")) {
+      segments = term.split("_");
+    } else {
+      return false;
+    }
+
+    return segments.length == 2 && segments[0].matches("[a-zA-Z]+") && segments[1].matches("\\d+");
+  }
+
+  private static String formatCurie(String displayIri) {
+    return displayIri.trim().replace("_", ":");
+  }
 
   /**
    * This returns a string representation of the URL to lookup the associated ontology term iri in
@@ -42,6 +57,10 @@ public class HttpOlsUrlResolutionService {
 
     final String displayIri = iri.first();
 
+    if (isCurie(displayIri)) {
+      return formatCurie(displayIri);
+    }
+
     // check this is a sane iri
     try {
       final UriComponents iriComponents =
@@ -54,12 +73,11 @@ public class HttpOlsUrlResolutionService {
         return null;
       }
 
-      // TODO application.properties this
-      // TODO use https
-      final String iriUrl = URLEncoder.encode(displayIri, StandardCharsets.UTF_8.toString());
+      String[] segments = displayIri.split("/");
+      String curie = segments[segments.length - 1].replace("_", ":");
 
       if (checkUrlForPattern(displayIri)) {
-        return OLS_PREFIX + iriUrl;
+        return OLS_PREFIX + curie;
       } else {
         return displayIri;
       }
@@ -71,10 +89,6 @@ public class HttpOlsUrlResolutionService {
   }
 
   private boolean checkUrlForPattern(final String displayIri) {
-    if (displayIri.contains(OBO) || displayIri.contains(EBIUK)) {
-      return true;
-    } else {
-      return false;
-    }
+    return displayIri.contains(OBO_URL_SEGMENT) || displayIri.contains(EBI_URL_SEGMENT);
   }
 }

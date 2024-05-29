@@ -25,10 +25,10 @@ import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2Http
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.client.RestTemplate;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
 import uk.ac.ebi.biosamples.client.service.WebinAuthClientService;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
@@ -72,8 +72,8 @@ public class TestApplication {
   }
 
   @Bean
-  public BioSamplesProperties bioSamplesProperties() {
-    return new BioSamplesProperties();
+  public ClientProperties clientProperties() {
+    return new ClientProperties();
   }
 
   @Bean
@@ -84,12 +84,12 @@ public class TestApplication {
   @Bean("MOCKCLIENT")
   public BioSamplesClient bioSamplesClient() {
     return new MockBioSamplesClient(
-        bioSamplesProperties().getBiosamplesClientUri(),
-        bioSamplesProperties().getBiosamplesClientUriV2(),
+        clientProperties().getBiosamplesClientUri(),
+        clientProperties().getBiosamplesClientUriV2(),
         restTemplateBuilder(),
         sampleValidator(),
         webinAuthClientService(),
-        bioSamplesProperties(),
+        clientProperties(),
         objectMapper());
   }
 

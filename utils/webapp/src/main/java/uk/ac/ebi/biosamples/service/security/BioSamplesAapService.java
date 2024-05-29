@@ -141,19 +141,15 @@ public class BioSamplesAapService {
 
     String domain = sample.getDomain();
 
-    blacklistedDomainsCheck(usersDomains, domain);
+    blacklistedDomainsCheck(domain);
 
     if (domain == null || domain.isEmpty()) {
       // if the sample doesn't have a domain, and the user has one domain, then they must be
       // submitting to that domain
       if (!usersDomains.isEmpty()) {
-        final String nextDomain = usersDomains.iterator().next();
-
-        domain = domain != null ? domain : nextDomain;
-
         sample =
             Sample.Builder.fromSample(sample)
-                .withDomain(nextDomain)
+                .withDomain(usersDomains.iterator().next())
                 .withNoWebinSubmissionAccountId()
                 .build();
       } else {
@@ -187,7 +183,7 @@ public class BioSamplesAapService {
       oldSample = oldSampleOptional.get();
 
       bioSamplesCrossSourceIngestAccessControlService.checkAndPreventWebinUserSampleUpdateByAapUser(
-          oldSample);
+          oldSample, sample);
       bioSamplesCrossSourceIngestAccessControlService
           .accessControlWebinSourcedSampleByCheckingEnaChecklistAttribute(oldSample, sample);
       bioSamplesCrossSourceIngestAccessControlService
@@ -201,11 +197,13 @@ public class BioSamplesAapService {
     return sample;
   }
 
-  private static void blacklistedDomainsCheck(final Set<String> usersDomains, final String domain) {
-    if (blacklistedDomains.contains(domain)) {
-      throw new ResponseStatusException(
-          HttpStatus.FORBIDDEN,
-          "Domain not authorized to submit to BioSamples/ user having access to this domain is rendered unauthorized");
+  private static void blacklistedDomainsCheck(final String domain) {
+    if (domain != null) {
+      if (blacklistedDomains.contains(domain)) {
+        throw new ResponseStatusException(
+            HttpStatus.FORBIDDEN,
+            "Domain not authorized to submit to BioSamples/ user having access to this domain is rendered unauthorized");
+      }
     }
   }
 
@@ -217,7 +215,7 @@ public class BioSamplesAapService {
       oldSample = oldSampleOptional.get();
 
       bioSamplesCrossSourceIngestAccessControlService.checkAndPreventWebinUserSampleUpdateByAapUser(
-          oldSample);
+          oldSample, sample);
       bioSamplesCrossSourceIngestAccessControlService
           .accessControlWebinSourcedSampleByCheckingEnaChecklistAttribute(oldSample, sample);
       bioSamplesCrossSourceIngestAccessControlService
@@ -300,7 +298,7 @@ public class BioSamplesAapService {
     // get the domains the current user has access to
     final Set<String> usersDomains = getDomains();
 
-    if (curationLink.getDomain() == null || curationLink.getDomain().length() == 0) {
+    if (curationLink.getDomain() == null || curationLink.getDomain().isEmpty()) {
       // if the sample doesn't have a domain, and the user has one domain, then they must be
       // submitting to that domain
       if (usersDomains.size() == 1) {
@@ -342,15 +340,20 @@ public class BioSamplesAapService {
 
   public void isSampleAccessible(final Sample sample)
       throws GlobalExceptions.SampleNotAccessibleException {
-    // TODO throw different exceptions in different situations
-    if (sample.getRelease().isBefore(Instant.now())) {
-      // release date in past, accessible
-    } else if (getDomains().contains(bioSamplesProperties.getBiosamplesAapSuperRead())) {
-      // if the current user belongs to a super read domain, accessible
-    } else if (getDomains().contains(sample.getDomain())) {
-      // if the current user belongs to a domain that owns the sample, accessible
-    } else {
+    if (!isReleaseDatePast(sample) && !isSuperReadDomainUser() && !isDomainOwner(sample)) {
       throw new GlobalExceptions.SampleNotAccessibleException();
     }
+  }
+
+  private boolean isReleaseDatePast(Sample sample) {
+    return sample.getRelease().isBefore(Instant.now());
+  }
+
+  private boolean isSuperReadDomainUser() {
+    return getDomains().contains(bioSamplesProperties.getBiosamplesAapSuperRead());
+  }
+
+  private boolean isDomainOwner(Sample sample) {
+    return getDomains().contains(sample.getDomain());
   }
 }

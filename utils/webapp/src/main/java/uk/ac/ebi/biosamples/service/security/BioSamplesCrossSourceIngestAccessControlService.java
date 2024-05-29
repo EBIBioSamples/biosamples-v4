@@ -10,9 +10,13 @@
 */
 package uk.ac.ebi.biosamples.service.security;
 
+import static uk.ac.ebi.biosamples.BioSamplesConstants.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
@@ -22,11 +26,51 @@ public class BioSamplesCrossSourceIngestAccessControlService {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private static final String ENA_CHECKLIST = "ENA-CHECKLIST";
 
-  public void checkAndPreventWebinUserSampleUpdateByAapUser(final Sample oldSample) {
+  @Autowired BioSamplesProperties bioSamplesProperties;
+
+  /**
+   * Checks if a sample update by an AAP user is allowed based on the submitter type. AAP users
+   * cannot update samples submitted by WEBIN users.
+   *
+   * @param oldSample The old sample object.
+   * @param sample The new sample object.
+   * @throws GlobalExceptions.AccessControlException if the update is not allowed.
+   */
+  public void checkAndPreventWebinUserSampleUpdateByAapUser(
+      final Sample oldSample, final Sample sample) {
+    // Check if the old sample was submitted by a WEBIN user
     if (oldSample.getWebinSubmissionAccountId() != null) {
-      throw new GlobalExceptions.AccessControlException(
-          "An AAP submitter cannot update a sample submitted by a WEBIN submitter");
+      // If the old sample was submitted by a WEBIN super-user
+      if (oldSample
+          .getWebinSubmissionAccountId()
+          .equalsIgnoreCase(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
+        // If the domain is not null and is not "ncbi" (NCBI import domain can update WEBIN
+        // super-user samples)
+        if (!isNcbiSampleAndNcbiSuperUserDomain(sample)) {
+          // Throw an exception as AAP users cannot update WEBIN user samples
+          throw new GlobalExceptions.AccessControlException(
+              "An AAP submitter cannot update a sample submitted by a WEBIN submitter");
+        }
+      } else {
+        // Throw an exception as AAP users cannot update WEBIN user samples
+        throw new GlobalExceptions.AccessControlException(
+            "An AAP submitter cannot update a sample submitted by a WEBIN submitter");
+      }
     }
+  }
+
+  private boolean isNcbiSampleAndNcbiSuperUserDomain(final Sample newSample) {
+    return (newSample.getAccession().startsWith(NCBI_ACCESSION_PREFIX)
+            || newSample.getAccession().startsWith(DDBJ_ACCESSION_PREFIX))
+        && isPipelineNcbiDomain(newSample.getDomain());
+  }
+
+  public boolean isPipelineNcbiDomain(final String domain) {
+    if (domain == null) {
+      return false;
+    }
+
+    return domain.equalsIgnoreCase(NCBI_IMPORT_DOMAIN);
   }
 
   public void isOriginalSubmitterInSampleMetadata(

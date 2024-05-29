@@ -14,8 +14,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -25,9 +23,6 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 
 public class ClientUtils {
-
-  private final Logger log = LoggerFactory.getLogger(getClass());
-
   public static <U, V> ResponseEntity<V> doRetryQuery(
       final RequestEntity<U> requestEntity,
       final RestOperations restOperations,

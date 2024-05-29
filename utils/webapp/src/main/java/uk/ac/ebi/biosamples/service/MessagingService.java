@@ -30,7 +30,6 @@ import uk.ac.ebi.biosamples.mongo.service.SampleReadService;
 @Service
 public class MessagingService {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final SampleReadService sampleReadService;
   private final AmqpTemplate amqpTemplate;
 
@@ -43,7 +42,7 @@ public class MessagingService {
   public void sendFileUploadedMessage(final String fileId) {
     log.info("Uploaded file queued " + fileId);
 
-    amqpTemplate.convertAndSend(Messaging.fileUploadExchange, "", fileId);
+    amqpTemplate.convertAndSend(Messaging.UPLOAD_EXCHANGE, "", fileId);
   }
 
   void fetchThenSendMessage(final String accession) {
@@ -55,11 +54,13 @@ public class MessagingService {
     if (accession == null) {
       throw new IllegalArgumentException("accession cannot be null");
     }
-    if (accession.trim().length() == 0) {
+
+    if (accession.trim().isEmpty()) {
       throw new IllegalArgumentException("accession cannot be empty");
     }
 
     final Optional<Sample> sample = sampleReadService.fetch(accession, Optional.empty());
+
     if (sample.isPresent()) {
       // for each sample we have a relationship to, update it to index this sample as an
       // inverse

@@ -28,25 +28,25 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.utils.BioSamplesConstants;
 
 @Component
 public class ETagIntegration extends AbstractIntegration {
 
-  private final BioSamplesProperties bioSamplesProperties;
+  private final ClientProperties clientProperties;
   private final RestTemplate restTemplate;
 
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   public ETagIntegration(
       final BioSamplesClient client,
-      final BioSamplesProperties bioSamplesProperties,
+      final ClientProperties clientProperties,
       final RestTemplateBuilder restTemplateBuilder) {
     super(client);
-    this.bioSamplesProperties = bioSamplesProperties;
+    this.clientProperties = clientProperties;
     restTemplate = restTemplateBuilder.build();
   }
 
@@ -223,7 +223,7 @@ public class ETagIntegration extends AbstractIntegration {
 
   private RequestEntity prepareGetRequestForSample(final Sample sample) {
     final Link sampleLink =
-        new Traverson(bioSamplesProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON)
+        new Traverson(clientProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON)
             .follow("samples")
             .follow(Hop.rel("sample").withParameter("accession", sample.getAccession()))
             .asLink();
@@ -233,7 +233,7 @@ public class ETagIntegration extends AbstractIntegration {
 
   private RequestEntity.HeadersBuilder prepareGetRequestBuilder(final Sample sample) {
     final Link sampleLink =
-        new Traverson(bioSamplesProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON)
+        new Traverson(clientProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON)
             .follow("samples")
             .follow(Hop.rel("sample").withParameter("accession", sample.getAccession()))
             .asLink();
@@ -243,7 +243,7 @@ public class ETagIntegration extends AbstractIntegration {
 
   private RequestEntity prepareGetRequestForRawSample(final Sample sample) {
     final Link sampleLink =
-        new Traverson(bioSamplesProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON)
+        new Traverson(clientProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON)
             .follow("samples")
             .follow(Hop.rel("sample").withParameter("accession", sample.getAccession()))
             .follow(Hop.rel("curationDomain").withParameter("curationdomain", ""))
