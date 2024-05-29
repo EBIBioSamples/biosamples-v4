@@ -10,61 +10,12 @@
 */
 package uk.ac.ebi.biosamples.docs;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.*;
-import org.springframework.hateoas.MediaTypes;
-import org.springframework.http.MediaType;
-import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
-import uk.ac.ebi.biosamples.model.certification.*;
-import uk.ac.ebi.biosamples.model.structured.StructuredData;
-import uk.ac.ebi.biosamples.mongo.service.CurationReadService;
-import uk.ac.ebi.biosamples.service.CurationPersistService;
-import uk.ac.ebi.biosamples.service.SamplePageService;
-import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.StructuredDataService;
-import uk.ac.ebi.biosamples.service.certification.CertifyService;
-import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
-import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
-import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = {"spring.cloud.gcp.project-id=no_project"})
@@ -73,7 +24,7 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 @Ignore
 public class ApiDocumentationTest {
 
-  @Rule
+  /*@Rule
   public final JUnitRestDocumentation restDocumentation =
       new JUnitRestDocumentation("target/generated-snippets");
 
@@ -122,11 +73,13 @@ public class ApiDocumentationTest {
             .build();
   }
 
+  */
   /**
    * Generate the snippets for the API root
    *
    * @throws Exception
    */
+  /*
   @Test
   public void getIndex() throws Exception {
     mockMvc
@@ -137,11 +90,13 @@ public class ApiDocumentationTest {
                 "get-index", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
   }
 
+  */
   /**
    * Generate the snippets for the samples root page
    *
    * @throws Exception
    */
+  /*
   @Test
   public void getSamples() throws Exception {
     final Sample fakeSample = faker.getExampleSample();
@@ -188,11 +143,13 @@ public class ApiDocumentationTest {
                         .optional())));
   }
 
+  */
   /**
    * Describe what's the minimal information necessary to submit a sample
    *
    * @throws Exception
    */
+  /*
   @Test
   @Ignore
   public void postSampleMinimalInfo() throws Exception {
@@ -236,11 +193,13 @@ public class ApiDocumentationTest {
                 preprocessResponse(prettyPrint())));
   }
 
+  */
   /**
    * Describes what's the error when curationLink minimal information is not provided
    *
    * @throws Exception
    */
+  /*
   @Test
   public void postCurationLinkMinimalInfo() throws Exception {
 
@@ -260,11 +219,13 @@ public class ApiDocumentationTest {
                 preprocessResponse(prettyPrint())));
   }
 
+  */
   /**
    * Generate the snippets for Sample submission to BioSamples
    *
    * @throws Exception
    */
+  /*
   @Test
   public void postSample() throws Exception {
     final Sample sample = faker.getExampleSample();
@@ -310,11 +271,13 @@ public class ApiDocumentationTest {
                 preprocessResponse(prettyPrint())));
   }
 
+  */
   /**
    * Generate the snippets for Sample submission to BioSamples
    *
    * @throws Exception
    */
+  /*
   @Test
   public void postSampleWithWebinAuthentication() throws Exception {
     final Sample sample = faker.getExampleSample();
@@ -361,11 +324,13 @@ public class ApiDocumentationTest {
                 preprocessResponse(prettyPrint())));
   }
 
+  */
   /**
    * Generate the snippets for Sample submission to BioSamples with external references
    *
    * @throws Exception
    */
+  /*
   @Test
   public void postSampleWithExternalReferences() throws Exception {
     final Sample sample = faker.getExampleSample();
@@ -414,11 +379,13 @@ public class ApiDocumentationTest {
                 preprocessResponse(prettyPrint())));
   }
 
+  */
   /**
    * Generate the snippets for submitting structured data to BioSamples
    *
    * @throws Exception
    */
+  /*
   @Test
   public void putStructuredData() throws Exception {
     final StructuredData structuredData = faker.getExampleStructuredData();
@@ -449,7 +416,9 @@ public class ApiDocumentationTest {
                 preprocessResponse(prettyPrint())));
   }
 
+  */
   /** Accessioning service to generate accession */
+  /*
   @Test
   public void postToGenerateAccession() throws Exception {
     final Sample sample = faker.getExampleSample();
@@ -548,7 +517,9 @@ public class ApiDocumentationTest {
                 preprocessResponse(prettyPrint())));
   }
 
+  */
   /** Accessioning service to generate accession */
+  /*
   @Test
   public void post_for_accessioning_with_accession_should_get_error() throws Exception {
     final Sample sample = faker.getExampleSample();
@@ -585,7 +556,9 @@ public class ApiDocumentationTest {
         .andExpect(status().is4xxClientError());
   }
 
+  */
   /** validation service to validate basic fields */
+  /*
   @Test
   public void post_for_validation() throws Exception {
     final Sample sample = faker.getExampleSample();
@@ -630,7 +603,9 @@ public class ApiDocumentationTest {
                 preprocessResponse(prettyPrint())));
   }
 
+  */
   /** Recommendation service to suggest sample attributes */
+  /*
   @Test
   public void post_for_recommendation() throws Exception {
     final Sample sample = faker.getExampleSample();
@@ -750,11 +725,13 @@ public class ApiDocumentationTest {
                 preprocessResponse(prettyPrint())));
   }
 
+  */
   /**
    * Generate the snippets for Sample submission to BioSamples with relationships
    *
    * @throws Exception
    */
+  /*
   @Test
   public void putSampleWithRelationships() throws Exception {
     final Sample sampleWithDomain = faker.getExampleSampleWithRelationships();
@@ -924,5 +901,5 @@ public class ApiDocumentationTest {
 
   private String serialize(final Object obj) throws JsonProcessingException {
     return mapper.writeValueAsString(obj);
-  }
+  }*/
 }
