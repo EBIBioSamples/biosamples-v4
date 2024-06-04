@@ -18,8 +18,7 @@
 			<!-- i.e. oracle drivers that cannot be redistributed in public -->
 			<id>embl-ebi</id>
 			<modules>
-				<!--<module>ena</module>
-				<module>ncbi-ena-link</module>-->
+				<!--<module>ncbi-ena-link</module>-->
 			</modules>
 		</profile>
 	</profiles>
@@ -30,7 +29,6 @@
 		<module>zooma</module>
 		<module>copydown</module>
 		<module>curami</module>
-		<module>clearinghouse</module>
 		<module>sample-transformation-dtol</module>
 		<module>ncbi</module>
 		<module>sample-release</module>
@@ -38,11 +36,9 @@
 		<module>taxonimport</module>
 		<module>reindex</module>
 		<module>ebeye-search-export</module>
-		<module>curationundo</module>
 		<module>export</module>
 		<module>neoexport</module>
 		<module>template</module>
-		<!--<module>ena</module>
-		<module>ncbi-ena-link</module>-->
+		<!--<module>ncbi-ena-link</module>-->
 	</modules>
 </project>

@@ -52,7 +52,6 @@ public class EnaImportRunner implements ApplicationRunner {
   @Autowired private EraProDao eraProDao;
   @Autowired private EnaImportCallableFactory enaImportCallableFactory;
   @Autowired private MongoPipelineRepository mongoPipelineRepository;
-  @Autowired private RTHandler rtHandler;
 
   private final Map<String, Future<Void>> futures = new LinkedHashMap<>();
   static final Set<String> failures = new HashSet<>();
@@ -108,9 +107,6 @@ public class EnaImportRunner implements ApplicationRunner {
 
       // Import BSD authority samples to update SRA accession
       // importEraBsdAuthoritySamples(fromDate, toDate);
-
-      // rtHandler.parseIdentifiersFromFileAndFixAuth();
-      rtHandler.samnSampleGeographicLocationAttributeUpdate();
 
       if (importSuppressedAndKilled) {
         try {
