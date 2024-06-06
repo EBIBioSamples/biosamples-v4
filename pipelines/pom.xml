@@ -35,10 +35,9 @@
 		<module>sample-post-release-action</module>
 		<module>taxonimport</module>
 		<module>reindex</module>
-		<module>ebeye-search-export</module>
 		<module>export</module>
 		<module>neoexport</module>
-		<module>template</module>
+		<module>chain</module>
 		<!--<module>ncbi-ena-link</module>-->
 	</modules>
 </project>
