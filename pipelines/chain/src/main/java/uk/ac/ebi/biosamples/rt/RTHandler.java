@@ -231,7 +231,7 @@ public class RTHandler {
       final String getLocAttrValue = geoLocAttribute.getValue();
       final String getLocAttributeTag = geoLocAttribute.getTag();
       final String getLocAttributeUnit = geoLocAttribute.getUnit();
-      final String extractedCountryName = countryAndRegionExtractor(getLocAttrValue, 1);
+      final List<String> extractedCountryNameList = splitGeoLoc(getLocAttrValue);
       /*final String extractedRegionName = countryAndRegionExtractor(getLocAttrValue, 2);
 
       if (extractedRegionName != null && !extractedRegionName.isEmpty()) {
@@ -248,13 +248,13 @@ public class RTHandler {
       /*attributeSet.removeIf(
       attribute -> attribute.getType().equals(GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY));*/
 
-      if (extractedCountryName != null && !extractedCountryName.isEmpty()) {
+      if (extractedCountryNameList.get(0) != null && !extractedCountryNameList.get(0).isEmpty()) {
         attributeSet.removeIf(
             attribute -> attribute.getType().equals(GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA));
         attributeSet.add(
             Attribute.build(
                 GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA,
-                extractedCountryName,
+                extractedCountryNameList.get(0),
                 getLocAttributeTag,
                 Collections.emptyList(),
                 getLocAttributeUnit));
@@ -304,22 +304,7 @@ public class RTHandler {
   public void samnSampleGeographicLocationAttributeUpdate() {
     final List<String> sampleStrings =
         List.of(
-            "SAMN37299522 \n"
-                + "SAMN37299523\n"
-                + "SAMN37299524\n"
-                + "SAMN37299525\n"
-                + "SAMN37299526\n"
-                + "SAMN37299527\n"
-                + "SAMN37299528\n"
-                + "SAMN37299529\n"
-                + "SAMN37299530\n"
-                + "SAMN37299531\n"
-                + "SAMN37299532\n"
-                + "SAMN37299533\n"
-                + "SAMN37299534\n"
-                + "SAMN37299535\n"
-                + "SAMN37299536\n"
-                + "SAMN37299537");
+            "SAMN31710087, SAMN31710088, SAMN31710089, SAMN31710090, SAMN31710091, SAMN31710092, SAMN31710093, SAMN31710094, SAMN31710095, SAMN31710096, SAMN31710097, SAMN31710098, SAMN31710099, SAMN31710100, SAMN31710101, SAMN31710102, SAMN31710103, SAMN31710104, SAMN31710105, SAMN31710106, SAMN31710107, SAMN31710108, SAMN31710109, SAMN31710110, SAMN31710111, SAMN31710112, SAMN31710113, SAMN31710114, SAMN31710115, SAMN31710116, SAMN31710117, SAMN31710118, SAMN31710119, SAMN31710120, SAMN31710121, SAMN31710122, SAMN31710123, SAMN31710124, SAMN31710125, SAMN31710126, SAMN31710127, SAMN31710128, SAMN31710129, SAMN31710130, SAMN31710131, SAMN31710132, SAMN31710133, SAMN31710134, SAMN31710135, SAMN31710136, SAMN31710137, SAMN31710138, SAMN31710139, SAMN31710140, SAMN31710141, SAMN31710142, SAMN31710143, SAMN31710144, SAMN31710145, SAMN31710146\n");
 
     final Pattern pattern = Pattern.compile("SAMN\\d+");
     final Set<String> samnAccessions = new HashSet<>();
@@ -354,5 +339,23 @@ public class RTHandler {
     }*/
 
     return getLocAttrValue;
+  }
+
+  public static List<String> splitGeoLoc(final String input) {
+    List<String> parts = new ArrayList<>();
+    int index = input.indexOf(':');
+
+    if (index != -1) {
+      String country = input.substring(0, index).trim();
+      String city = input.substring(index + 1).trim();
+      parts.add(country);
+      parts.add(city);
+    } else {
+      // Handle case where ':' is not found
+      parts.add(input.trim());
+      parts.add(""); // or handle as needed, e.g., throw an exception
+    }
+
+    return parts;
   }
 }

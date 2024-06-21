@@ -15,7 +15,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 public class Relationship implements Comparable<Relationship> {
-
   private final String type;
   private final String target;
   private final String source;
@@ -73,9 +72,9 @@ public class Relationship implements Comparable<Relationship> {
     }
 
     if (!Objects.equals(source, other.source)) {
-      if (source == null && other.source != null) {
+      if (source == null) {
         return 1;
-      } else if (source != null && other.source == null) {
+      } else if (other.source == null) {
         return -1;
       } else {
         return source.compareTo(other.source);
@@ -102,10 +101,10 @@ public class Relationship implements Comparable<Relationship> {
       @JsonProperty("source") final String source,
       @JsonProperty("type") final String type,
       @JsonProperty("target") final String target) {
-    if (type == null || type.trim().length() == 0) {
+    if (type == null || type.trim().isEmpty()) {
       throw new IllegalArgumentException("type cannot be empty");
     }
-    if (target == null || target.trim().length() == 0) {
+    if (target == null || target.trim().isEmpty()) {
       throw new IllegalArgumentException("target cannot be empty");
     }
     return new Relationship(type, target, source);
