@@ -28,6 +28,7 @@ import org.springframework.web.client.RestOperations;
 import uk.ac.ebi.biosamples.model.Sample;
 
 public class SampleRetrievalService {
+  /*TODO: check if private sample fetch work - jwt not used*/
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final Traverson traverson;
   private final RestOperations restOperations;
@@ -40,26 +41,26 @@ public class SampleRetrievalService {
   /** This will get an existing sample from biosamples using the accession */
   public Optional<EntityModel<Sample>> fetch(
       final String accession, final Optional<List<String>> curationDomains) {
-    return new FetchSample(accession, curationDomains).fetchSample();
+    return new SampleRetriever(accession, curationDomains).fetchSample();
   }
 
   public Optional<EntityModel<Sample>> fetch(
       final String accession, final Optional<List<String>> curationDomains, final String jwt) {
-    return new FetchSample(accession, curationDomains, jwt).fetchSample();
+    return new SampleRetriever(accession, curationDomains, jwt).fetchSample();
   }
 
-  private class FetchSample {
+  private class SampleRetriever {
     private final String accession;
     private final Optional<List<String>> curationDomains;
     private final String jwt;
 
-    FetchSample(final String accession, final Optional<List<String>> curationDomains) {
+    SampleRetriever(final String accession, final Optional<List<String>> curationDomains) {
       this.accession = accession;
       this.curationDomains = curationDomains;
       jwt = null;
     }
 
-    FetchSample(
+    SampleRetriever(
         final String accession, final Optional<List<String>> curationDomains, final String jwt) {
       this.accession = accession;
       this.curationDomains = curationDomains;
@@ -187,7 +188,7 @@ public class SampleRetrievalService {
         final Optional<EntityModel<Sample>> pollingResult = queue.poll();
         // this shouldn't happen, but best to check
 
-        if (pollingResult == null && !pollingResult.isPresent()) {
+        if (!pollingResult.isPresent()) {
           throw new NoSuchElementException();
         }
 

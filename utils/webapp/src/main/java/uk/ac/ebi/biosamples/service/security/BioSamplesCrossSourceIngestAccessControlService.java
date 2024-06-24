@@ -78,7 +78,8 @@ public class BioSamplesCrossSourceIngestAccessControlService {
     log.info("Super user and file upload submission");
 
     // file uploader submission access protection
-    if (!webinIdInOldSample.equals(newSample.getWebinSubmissionAccountId())) {
+    if (webinIdInOldSample != null
+        && !webinIdInOldSample.equals(newSample.getWebinSubmissionAccountId())) {
       throw new GlobalExceptions.NotOriginalSubmitterException();
     }
   }

@@ -42,7 +42,7 @@ public class SampleSubmissionService {
 
   public EntityModel<Sample> submit(final Sample sample) throws RestClientException {
     try {
-      return new SubmitOperation(sample, null).submit();
+      return new SampleSubmitter(sample, null).submit();
     } catch (final RestClientException e) {
       throw e;
     } catch (final Exception e) {
@@ -53,7 +53,7 @@ public class SampleSubmissionService {
   public EntityModel<Sample> submit(final Sample sample, final String jwt)
       throws RestClientException {
     try {
-      return new SubmitOperation(sample, jwt).submit();
+      return new SampleSubmitter(sample, jwt).submit();
     } catch (final RestClientException e) {
       throw e;
     } catch (final Exception e) {
@@ -61,11 +61,11 @@ public class SampleSubmissionService {
     }
   }
 
-  private class SubmitOperation {
+  private class SampleSubmitter {
     private final Sample sample;
     private final String jwt;
 
-    SubmitOperation(final Sample sample, final String jwt) {
+    SampleSubmitter(final Sample sample, final String jwt) {
       this.sample = sample;
       this.jwt = jwt;
     }
