@@ -34,16 +34,27 @@
 					</p>
 				</div>-->
 				<p class="intro justify">
-					BioSamples stores and supplies descriptions and metadata about
-					biological samples used in research and development by academia and
-					industry. Samples are either 'reference' samples (e.g. from <a
+					BioSamples an ELIXIR Core Deposition Database,
+					stores and supplies descriptions and metadata
+					about biological samples used in research and
+					development by academia and industry.
+					Samples are either 'reference' samples  (e.g. from <a
 						href="http://www.internationalgenome.org">1000 Genomes</a>, <a
 						href="http://www.hipsci.org">HipSci</a>, <a
-						href="http://www.faang.org">FAANG</a>) or have been used in an
-					assay database such as the <a href="http://www.ebi.ac.uk/ena">European
+						href="http://www.faang.org">FAANG</a>) or experimental samples,
+					and have been used in an assay
+					that has generated publicly available data in the <a href="http://www.ebi.ac.uk/ena">European
 						Nucleotide Archive (ENA)</a> or <a
-						href="http://www.ebi.ac.uk/arrayexpress">ArrayExpress.
-				</a>.
+						href="http://www.ebi.ac.uk/arrayexpress">ArrayExpress </a>.
+					<br/>
+					BioSamples supports links between sample records and any sample-derived datasets,
+					including sequence-based datasets such as those held in the
+					European Nucleotide Archive (ENA)
+					or ArrayExpress, -omics-based datasets
+					such as those in PRIDE or MetaboLights,
+					and any other assay-based databases.
+					It provides links to assays and specific samples and accepts
+					direct submissions of sample information.
 				</p>
 			</div>
 
@@ -158,6 +169,26 @@
 							<div class="data-content-search">
 								<a th:href="@{/samples}+'?filter=attr%3Aproject%3AHipSci'"
 									 href="samples?filter=attr%3Aproject%3AHipSci">search for HipSci samples</a>
+							</div>
+						</div>
+					</div>
+
+					<div class="small-12 medium-3 large-3 data-content__entry">
+						<div class="home-example-card">
+							<div class="home-example-card-content">
+								<div class="data-logo">
+									<a href="//www.microbeproject.eu/">
+										<img src="images/logo_microbe_big.png" alt="MICROBE logo" title="MICROBE" class="data-content-img"/>
+									</a>
+								</div>
+								<div class="data-description padding-top-small">
+									MICROBE paves the way for an innovative microbiome biobanking in Europe
+									by combining scientific expertise with research infrastructures know-how.
+								</div>
+							</div>
+							<div class="data-content-search">
+								<a th:href="@{/samples}+'?filter=attr%3Aproject+name%3AMICROBE'"
+								   href="samples?filter=attr%3Aproject+name%3AMICROBE">search for MICROBE samples</a>
 							</div>
 						</div>
 					</div>

@@ -34,7 +34,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleAnalytics;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.model.MongoCurationRule;
-import uk.ac.ebi.biosamples.mongo.repo.MongoCurationRuleRepository;
+import uk.ac.ebi.biosamples.mongo.repository.MongoCurationRuleRepository;
 import uk.ac.ebi.biosamples.mongo.service.AnalyticsService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;

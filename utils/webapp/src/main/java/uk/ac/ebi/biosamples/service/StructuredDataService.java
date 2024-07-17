@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.mongo.model.MongoStructuredData;
-import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
-import uk.ac.ebi.biosamples.mongo.repo.MongoStructuredDataRepository;
+import uk.ac.ebi.biosamples.mongo.repository.MongoSampleRepository;
+import uk.ac.ebi.biosamples.mongo.repository.MongoStructuredDataRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoStructuredDataToStructuredDataConverter;
 import uk.ac.ebi.biosamples.mongo.service.StructuredDataToMongoStructuredDataConverter;
 

@@ -23,8 +23,8 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.mongo.model.MongoCuration;
 import uk.ac.ebi.biosamples.mongo.model.MongoCurationLink;
-import uk.ac.ebi.biosamples.mongo.repo.MongoCurationLinkRepository;
-import uk.ac.ebi.biosamples.mongo.repo.MongoCurationRepository;
+import uk.ac.ebi.biosamples.mongo.repository.MongoCurationLinkRepository;
+import uk.ac.ebi.biosamples.mongo.repository.MongoCurationRepository;
 
 @Service
 public class CurationReadService {

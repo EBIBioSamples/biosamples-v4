@@ -14,44 +14,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.PipelineSampleCallable;
-import uk.ac.ebi.biosamples.PipelinesProperties;
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.rt.RTHandler;
+import uk.ac.ebi.biosamples.auth.AuthChangeHandler;
+import uk.ac.ebi.biosamples.helpdesk.RTHandler;
 
 // import uk.ac.ebi.biosamples.service.AnalyticsService;
 
 @Component
 public class PipelineTemplateApplicationRunner implements ApplicationRunner {
-  private static final String PIPELINE_NAME = "SAMPLE_TEST";
-  private String domain;
-
   @Autowired RTHandler rtHandler;
-
-  public PipelineTemplateApplicationRunner(
-      BioSamplesClient bioSamplesClient, PipelinesProperties pipelinesProperties /*,
-                                             AnalyticsService*/) {
-    // super(bioSamplesClient, pipelinesProperties /*, analyticsService*/);
-  }
-
-  // @Override
-  public void loadPreConfiguration() {
-    this.domain = "self.testDomain";
-    // LOG.info("Loading pre configurations for {}", PIPELINE_NAME);
-  }
-
-  // @Override
-  public PipelineSampleCallable getNewCallableClassInstance() {
-    // return new SampleTemplateCallable(bioSamplesClient, domain);
-    return null;
-  }
-
-  protected String getPipelineName() {
-    return PIPELINE_NAME;
-  }
+  @Autowired AuthChangeHandler authChangeHandler;
 
   @Override
   public void run(ApplicationArguments args) {
-    rtHandler.samnSampleGeographicLocationAttributeUpdate();
+    authChangeHandler.parseCsvAndProcessSampleAuthentication();
   }
 }
