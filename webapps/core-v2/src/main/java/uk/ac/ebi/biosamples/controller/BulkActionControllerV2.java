@@ -23,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Relationship;
@@ -49,6 +50,7 @@ public class BulkActionControllerV2 {
   private final AccessControlService accessControlService;
   private final SchemaValidationService schemaValidationService;
   private final TaxonomyClientService taxonomyClientService;
+  private final BioSamplesProperties bioSamplesProperties;
 
   public BulkActionControllerV2(
       final SampleService sampleService,
@@ -56,13 +58,15 @@ public class BulkActionControllerV2 {
       final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       final AccessControlService accessControlService,
       final SchemaValidationService schemaValidationService,
-      final TaxonomyClientService taxonomyClientService) {
+      final TaxonomyClientService taxonomyClientService,
+      final BioSamplesProperties bioSamplesProperties) {
     this.sampleService = sampleService;
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.accessControlService = accessControlService;
     this.schemaValidationService = schemaValidationService;
     this.taxonomyClientService = taxonomyClientService;
+    this.bioSamplesProperties = bioSamplesProperties;
   }
 
   /*
@@ -259,6 +263,8 @@ public class BulkActionControllerV2 {
               .map(
                   sample ->
                       persistSampleV2WebinAuth(authProvider, webinSubmissionAccountId, sample))
+              .filter(Optional::isPresent)
+              .map(Optional::get)
               .collect(Collectors.toList());
     } else {
       createdSamples =
@@ -297,7 +303,7 @@ public class BulkActionControllerV2 {
     return sampleService.persistSampleV2(sample, oldSample.orElse(null), authProvider, false);
   }
 
-  private Sample persistSampleV2WebinAuth(
+  private Optional<Sample> persistSampleV2WebinAuth(
       final AuthorizationProvider authProvider,
       final String webinSubmissionAccountId,
       Sample sample) {
@@ -315,12 +321,25 @@ public class BulkActionControllerV2 {
 
     sample = buildSample(sample, relationships, isWebinSuperUser);
 
-    if (!isWebinSuperUser) {
-      sample = validateSample(sample, true);
+    Optional<Sample> persistedSample;
+
+
+    try {
+      if (bioSamplesProperties.isEnableBulkSubmissionWebinSuperuserValidation()) {
+        validateSample(sample, true);
+      }
+      persistedSample = Optional.of(sampleService.persistSampleV2(
+          sample, oldSample.orElse(null), authProvider, isWebinSuperUser));
+    } catch (GlobalExceptions.SchemaValidationException e) {
+      persistedSample = Optional.empty();
+      log.info("Sample validation failed: {}", sample.getAccession());
+    } catch (Exception e) {
+      persistedSample = Optional.empty();
+      log.error("Failed to validate sample", e);
     }
 
-    return sampleService.persistSampleV2(
-        sample, oldSample.orElse(null), authProvider, isWebinSuperUser);
+
+    return persistedSample;
   }
 
   private Sample buildSample(

@@ -126,6 +126,9 @@ public class BioSamplesProperties {
   @Value("${biosamples.schema.default:BSDC00001}")
   private String biosamplesDefaultSchema;
 
+  @Value("${biosamples.bulksubmisison.webin.superuser.validation:false}")
+  private boolean enableBulkSubmissionWebinSuperuserValidation;
+
   public int getBiosamplesClientConnectionCountMax() {
     return connectionCountMax;
   }
