@@ -43,7 +43,7 @@ import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
-import uk.ac.ebi.biosamples.mongo.repo.MongoPipelineRepository;
+import uk.ac.ebi.biosamples.mongo.repository.MongoPipelineRepository;
 import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;

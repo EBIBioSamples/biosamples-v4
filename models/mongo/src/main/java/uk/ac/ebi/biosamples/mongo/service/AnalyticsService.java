@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.model.SampleAnalytics;
 import uk.ac.ebi.biosamples.mongo.model.MongoAnalytics;
-import uk.ac.ebi.biosamples.mongo.repo.MongoAnalyticsRepository;
+import uk.ac.ebi.biosamples.mongo.repository.MongoAnalyticsRepository;
 
 @Service
 public class AnalyticsService {
