@@ -72,38 +72,54 @@ clone-config-production:
   only:
     - master
 
-deploy-preproduction:
+.deploy-template: &deploy-template
   image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/ubuntu:latest
   stage: deploy
   script:
     - chmod +x deploy.sh
-    - ./deploy.sh bsd_dev wp-np2-40
+    - ./deploy.sh $BSD_NODE_NAME $BSD_HOST_NAME
   when: manual
+  only:
+    - master
+
+deploy-preproduction:
+  <<: *deploy-template
   only:
     - refactoring_1_2024
     - dev
     - master
+  variables:
+    BSD_NODE_NAME: bsd_dev
+    BSD_HOST_NAME: wp-np2-40
+  environment:
+    name: dev-${BSD_HOST_NAME}
+    url: http://${BSD_HOST_NAME}:8081/biosamples/
 
-deploy-production-p2m-servers:
+deploy-production:
+  <<: *deploy-template
+  parallel:
+    matrix:
+      - BSD_NODE_NAME: bsd_prod
+        BSD_HOST_NAME: [wp-p2m-40, wp-p2m-41, wp-p1m-40, wp-p1m-41]
+  environment:
+    name: prod-${BSD_HOST_NAME}
+    url: http://${BSD_HOST_NAME}:8081/biosamples/
+
+deploy-production-solr:
   image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/ubuntu:latest
   stage: deploy
   script:
     - chmod +x deploy.sh
-    - ./deploy.sh bsd_prod wp-p2m-40
-    - ./deploy.sh bsd_prod wp-p2m-41
-    - ./deploy_agents_solr.sh bsd_prod wp-p2m-42
+    - ./deploy_agents_solr.sh ${BSD_NODE_NAME} ${BSD_SOLR_HOST_NAME}
   when: manual
   only:
     - master
-
-deploy-production-p1m-servers:
-  image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/ubuntu:latest
-  stage: deploy
-  script:
-    - chmod +x deploy.sh
-    - ./deploy.sh bsd_prod wp-p1m-40
-    - ./deploy.sh bsd_prod wp-p1m-41
-    - ./deploy_agents_solr.sh bsd_prod wp-p1m-42
-  when: manual
-  only:
-    - master
+  rules:
+    - if: $BSD_NODE_NAME == bsd_prod
+  parallel:
+    matrix:
+      - BSD_NODE_NAME: bsd_prod
+        BSD_SOLR_HOST_NAME: [wp-p1m-42, wp-p2m-42]
+  environment:
+    name: prod-solr-${BSD_HOST_NAME}
+    url: http://${BSD_SOLR_HOST_NAME}.ebi.ac.uk:8983/solr
