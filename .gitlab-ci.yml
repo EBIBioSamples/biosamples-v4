@@ -69,8 +69,8 @@ clone-config-production:
       - deploy.sh
       - deploy_agents_solr.sh
   when: manual
-  only:
-    - master
+  rules:
+    - if: $CI_COMMIT_REF_NAME == master
 
 .deploy-template: &deploy-template
   image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/ubuntu:latest
@@ -79,15 +79,15 @@ clone-config-production:
     - chmod +x deploy.sh
     - ./deploy.sh $BSD_NODE_NAME $BSD_HOST_NAME
   when: manual
-  only:
-    - master
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "master"
 
 deploy-preproduction:
   <<: *deploy-template
-  only:
-    - refactoring_1_2024
-    - dev
-    - master
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "refactoring_1_2024"
+    - if: $CI_COMMIT_REF_NAME == "dev"
+    - if: $CI_COMMIT_REF_NAME == "master"
   variables:
     BSD_NODE_NAME: bsd_dev
     BSD_HOST_NAME: wp-np2-40
@@ -112,10 +112,8 @@ deploy-production-solr:
     - chmod +x deploy.sh
     - ./deploy_agents_solr.sh ${BSD_NODE_NAME} ${BSD_SOLR_HOST_NAME}
   when: manual
-  only:
-    - master
   rules:
-    - if: $BSD_NODE_NAME == bsd_prod
+    - if: '$BSD_NODE_NAME == "bsd_prod" && $CI_COMMIT_REF_NAME == "master"'
   parallel:
     matrix:
       - BSD_NODE_NAME: bsd_prod
