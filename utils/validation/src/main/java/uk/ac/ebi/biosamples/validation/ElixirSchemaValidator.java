@@ -84,8 +84,7 @@ public class ElixirSchemaValidator implements ValidatorI {
         restTemplate.exchange(requestEntity, JsonNode.class).getBody();
 
     if (!validationResponse.isEmpty()) {
-      throw new GlobalExceptions.SampleValidationException(
-          "Sample validation failed: " + validationResponse);
+      throw new GlobalExceptions.SampleValidationException(validationResponse.toString());
     }
 
     return schemaAccession;

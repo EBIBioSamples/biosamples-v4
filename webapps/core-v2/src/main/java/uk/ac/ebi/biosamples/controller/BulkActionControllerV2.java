@@ -1,23 +1,20 @@
 /*
-* Copyright 2021 EMBL - European Bioinformatics Institute
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
-* file except in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0
-* Unless required by applicable law or agreed to in writing, software distributed under the
-* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-* CONDITIONS OF ANY KIND, either express or implied. See the License for the
-* specific language governing permissions and limitations under the License.
-*/
+ * Copyright 2021 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package uk.ac.ebi.biosamples.controller;
 
-import java.time.Instant;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.zookeeper.Op;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.MediaTypes;
@@ -38,13 +35,18 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationServic
 import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
+import java.time.Instant;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 @RestController
 @ExposesResourceFor(Sample.class)
 @RequestMapping("/samples")
 @CrossOrigin
 public class BulkActionControllerV2 {
-  private final Logger log = LoggerFactory.getLogger(getClass());
   private static final String SRA_ACCESSION = "SRA accession";
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
@@ -52,6 +54,7 @@ public class BulkActionControllerV2 {
   private final SchemaValidationService schemaValidationService;
   private final TaxonomyClientService taxonomyClientService;
   private final BioSamplesProperties bioSamplesProperties;
+  private final ObjectMapper objectMapper;
 
   public BulkActionControllerV2(
       final SampleService sampleService,
@@ -60,7 +63,7 @@ public class BulkActionControllerV2 {
       final AccessControlService accessControlService,
       final SchemaValidationService schemaValidationService,
       final TaxonomyClientService taxonomyClientService,
-      final BioSamplesProperties bioSamplesProperties) {
+      final BioSamplesProperties bioSamplesProperties, ObjectMapper objectMapper) {
     this.sampleService = sampleService;
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
@@ -68,6 +71,7 @@ public class BulkActionControllerV2 {
     this.schemaValidationService = schemaValidationService;
     this.taxonomyClientService = taxonomyClientService;
     this.bioSamplesProperties = bioSamplesProperties;
+    this.objectMapper = objectMapper;
   }
 
   /*
@@ -87,8 +91,8 @@ public class BulkActionControllerV2 {
         sample -> {
           if (sample.hasAccession()
               || sample.getAttributes() != null
-                  && sample.getAttributes().stream()
-                      .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))) {
+              && sample.getAttributes().stream()
+              .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))) {
             throw new GlobalExceptions.SampleWithAccessionSubmissionException();
           }
         });
@@ -265,13 +269,31 @@ public class BulkActionControllerV2 {
         Pair<Optional<Sample>, Optional<String>> sampleErrorPair =
             persistSampleV2WebinAuth(authProvider, webinSubmissionAccountId, sample);
         sampleErrorPair.getLeft().ifPresent(createdSamples::add);
-        sampleErrorPair.getRight().ifPresent(e -> errors.add(new SubmissionReceipt.ErrorReceipt(sample.getName(), e)));
+        sampleErrorPair.getRight().ifPresent(err -> {
+          List<SubmissionReceipt.ValidationError> validationErrors;
+          try {
+            validationErrors = objectMapper.readValue(err, new TypeReference<>() {});
+          } catch (JsonProcessingException e) {
+            validationErrors = Collections.singletonList(
+                new SubmissionReceipt.ValidationError("", Collections.singletonList(err)));
+          }
+          errors.add(new SubmissionReceipt.ErrorReceipt(sample.getName(), validationErrors));
+        });
       }
     } else {
       for (Sample sample : samples) {
         Pair<Optional<Sample>, Optional<String>> sampleErrorPair = persistSampleV2AapAuth(authProvider, sample);
         sampleErrorPair.getLeft().ifPresent(createdSamples::add);
-        sampleErrorPair.getRight().ifPresent(e -> errors.add(new SubmissionReceipt.ErrorReceipt(sample.getName(), e)));
+        sampleErrorPair.getRight().ifPresent(err -> {
+          List<SubmissionReceipt.ValidationError> validationErrors;
+          try {
+            validationErrors = objectMapper.readValue(err, new TypeReference<>() {});
+          } catch (JsonProcessingException e) {
+            validationErrors = Collections.singletonList(
+                new SubmissionReceipt.ValidationError("", Collections.singletonList(err)));
+          }
+          errors.add(new SubmissionReceipt.ErrorReceipt(sample.getName(), validationErrors));
+        });
       }
     }
 
@@ -301,7 +323,7 @@ public class BulkActionControllerV2 {
     Pair<Optional<Sample>, Optional<String>> sampleErrorPair;
     try {
       if (!isAapSuperUser) {
-        validateSample(sample, true);
+        validateSample(sample, false);
       }
       Optional<Sample> persistedSample = Optional.of(sampleService.persistSampleV2(
           sample, oldSample.orElse(null), authProvider, false));

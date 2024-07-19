@@ -65,12 +65,10 @@ public class SchemaValidationService {
 
       return sample;
     } catch (final ValidationException | GlobalExceptions.SampleValidationException e) {
-      throw new GlobalExceptions.SchemaValidationException(
-          "Checklist validation failed: " + e.getMessage(), e);
+      throw new GlobalExceptions.SchemaValidationException(e.getMessage(), e);
     } catch (final Exception e) {
       log.error("Schema validation error: " + e.getMessage(), e);
-      throw new GlobalExceptions.SchemaValidationException(
-          "Checklist validation error: " + e.getMessage(), e);
+      throw new GlobalExceptions.SchemaValidationException("Sample validation error: " + e.getMessage(), e);
     }
   }
 }

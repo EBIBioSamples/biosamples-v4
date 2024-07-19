@@ -18,8 +18,18 @@ public class SubmissionReceipt {
   @NoArgsConstructor
   public static class ErrorReceipt {
     private String sampleName;
-    private String error;
+    private List<ValidationError> errors;
   }
+
+  @Getter
+  @AllArgsConstructor
+  @NoArgsConstructor
+  public static class ValidationError {
+    private String dataPath;
+    private List <String> errors;
+  }
+
+
 }
 
 
