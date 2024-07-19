@@ -42,7 +42,9 @@ public class SchemaValidationService {
   public Sample validate(final Sample sample) {
     final String schemaId =
         sample.getCharacteristics().stream()
-            .filter(s -> s.getType().equalsIgnoreCase("checklist"))
+            .filter(s ->
+                s.getType().equalsIgnoreCase("checklist") ||
+                    s.getType().equalsIgnoreCase("ena-checklist"))
             // to search
             .findFirst()
             .map(Attribute::getValue)

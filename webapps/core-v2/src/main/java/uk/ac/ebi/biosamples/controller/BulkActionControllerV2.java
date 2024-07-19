@@ -14,6 +14,10 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.zookeeper.Op;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.MediaTypes;
@@ -25,10 +29,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
-import uk.ac.ebi.biosamples.model.AuthToken;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
@@ -239,12 +240,14 @@ public class BulkActionControllerV2 {
   @PreAuthorize("isAuthenticated()")
   @RequestMapping("/bulk-submit")
   @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<List<Sample>> postV2(
+  public ResponseEntity<SubmissionReceipt> postV2(
       @RequestBody final List<Sample> samples,
       @RequestHeader(name = "Authorization") final String token) {
     log.info("V2-Received POST for " + samples.size() + " samples");
 
-    final List<Sample> createdSamples;
+    final List<Sample> createdSamples = new ArrayList<>();
+    final List<SubmissionReceipt.ErrorReceipt> errors = new ArrayList<>();
+
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final AuthorizationProvider authProvider =
         authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
@@ -258,19 +261,18 @@ public class BulkActionControllerV2 {
         throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
-      createdSamples =
-          samples.stream()
-              .map(
-                  sample ->
-                      persistSampleV2WebinAuth(authProvider, webinSubmissionAccountId, sample))
-              .filter(Optional::isPresent)
-              .map(Optional::get)
-              .collect(Collectors.toList());
+      for (Sample sample : samples) {
+        Pair<Optional<Sample>, Optional<String>> sampleErrorPair =
+            persistSampleV2WebinAuth(authProvider, webinSubmissionAccountId, sample);
+        sampleErrorPair.getLeft().ifPresent(createdSamples::add);
+        sampleErrorPair.getRight().ifPresent(e -> errors.add(new SubmissionReceipt.ErrorReceipt(sample.getName(), e)));
+      }
     } else {
-      createdSamples =
-          samples.stream()
-              .map(sample -> persistSampleV2AapAuth(authProvider, sample))
-              .collect(Collectors.toList());
+      for (Sample sample : samples) {
+        Pair<Optional<Sample>, Optional<String>> sampleErrorPair = persistSampleV2AapAuth(authProvider, sample);
+        sampleErrorPair.getLeft().ifPresent(createdSamples::add);
+        sampleErrorPair.getRight().ifPresent(e -> errors.add(new SubmissionReceipt.ErrorReceipt(sample.getName(), e)));
+      }
     }
 
     log.info(
@@ -280,10 +282,10 @@ public class BulkActionControllerV2 {
             + createdSamples.size()
             + " samples.");
 
-    return ResponseEntity.status(HttpStatus.CREATED).body(createdSamples);
+    return ResponseEntity.status(HttpStatus.CREATED).body(new SubmissionReceipt(createdSamples, errors));
   }
 
-  private Sample persistSampleV2AapAuth(final AuthorizationProvider authProvider, Sample sample) {
+  private Pair<Optional<Sample>, Optional<String>> persistSampleV2AapAuth(final AuthorizationProvider authProvider, Sample sample) {
     final boolean isAapSuperUser = bioSamplesAapService.isWriteSuperUser();
     final Optional<Sample> oldSample =
         sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
@@ -296,14 +298,26 @@ public class BulkActionControllerV2 {
 
     sampleService.handleSampleRelationshipsV2(sample, oldSample, isAapSuperUser);
 
-    if (!isAapSuperUser) {
-      sample = validateSample(sample, false);
+    Pair<Optional<Sample>, Optional<String>> sampleErrorPair;
+    try {
+      if (!isAapSuperUser) {
+        validateSample(sample, true);
+      }
+      Optional<Sample> persistedSample = Optional.of(sampleService.persistSampleV2(
+          sample, oldSample.orElse(null), authProvider, false));
+      sampleErrorPair = new ImmutablePair<>(persistedSample, Optional.empty());
+    } catch (GlobalExceptions.SchemaValidationException e) {
+      sampleErrorPair = new ImmutablePair<>(Optional.empty(), Optional.of(e.getMessage()));
+      log.info("Sample validation failed: {}", sample.getAccession());
+    } catch (Exception e) {
+      sampleErrorPair = new ImmutablePair<>(Optional.empty(), Optional.of(e.getMessage()));
+      log.error("Failed to validate sample", e);
     }
 
-    return sampleService.persistSampleV2(sample, oldSample.orElse(null), authProvider, false);
+    return sampleErrorPair;
   }
 
-  private Optional<Sample> persistSampleV2WebinAuth(
+  private Pair<Optional<Sample>, Optional<String>> persistSampleV2WebinAuth(
       final AuthorizationProvider authProvider,
       final String webinSubmissionAccountId,
       Sample sample) {
@@ -321,25 +335,23 @@ public class BulkActionControllerV2 {
 
     sample = buildSample(sample, relationships, isWebinSuperUser);
 
-    Optional<Sample> persistedSample;
-
-
+    Pair<Optional<Sample>, Optional<String>> sampleErrorPair;
     try {
-      if (bioSamplesProperties.isEnableBulkSubmissionWebinSuperuserValidation()) {
+      if (bioSamplesProperties.isEnableBulkSubmissionWebinSuperuserValidation() || !isWebinSuperUser) {
         validateSample(sample, true);
       }
-      persistedSample = Optional.of(sampleService.persistSampleV2(
+      Optional<Sample> persistedSample = Optional.of(sampleService.persistSampleV2(
           sample, oldSample.orElse(null), authProvider, isWebinSuperUser));
+      sampleErrorPair = new ImmutablePair<>(persistedSample, Optional.empty());
     } catch (GlobalExceptions.SchemaValidationException e) {
-      persistedSample = Optional.empty();
+      sampleErrorPair = new ImmutablePair<>(Optional.empty(), Optional.of(e.getMessage()));
       log.info("Sample validation failed: {}", sample.getAccession());
     } catch (Exception e) {
-      persistedSample = Optional.empty();
+      sampleErrorPair = new ImmutablePair<>(Optional.empty(), Optional.of(e.getMessage()));
       log.error("Failed to validate sample", e);
     }
 
-
-    return persistedSample;
+    return sampleErrorPair;
   }
 
   private Sample buildSample(
