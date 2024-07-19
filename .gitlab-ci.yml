@@ -70,7 +70,7 @@ clone-config-production:
       - deploy_agents_solr.sh
   when: manual
   rules:
-    - if: $CI_COMMIT_REF_NAME == master
+    - if: $CI_COMMIT_REF_NAME == "master"
 
 .deploy-template: &deploy-template
   image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/ubuntu:latest
