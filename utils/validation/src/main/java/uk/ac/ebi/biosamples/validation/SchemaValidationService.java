@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.BioSamplesConstants;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.Attribute;
@@ -42,8 +43,7 @@ public class SchemaValidationService {
   public Sample validate(final Sample sample) {
     final String schemaId =
         sample.getCharacteristics().stream()
-            .filter(s -> s.getType().equalsIgnoreCase("checklist"))
-            // to search
+            .filter(s -> BioSamplesConstants.CHECKLIST_ATTRIBUTES.contains(s.getType().toLowerCase()))
             .findFirst()
             .map(Attribute::getValue)
             .orElse(bioSamplesProperties.getBiosamplesDefaultSchema());
@@ -63,12 +63,10 @@ public class SchemaValidationService {
 
       return sample;
     } catch (final ValidationException | GlobalExceptions.SampleValidationException e) {
-      throw new GlobalExceptions.SchemaValidationException(
-          "Checklist validation failed: " + e.getMessage(), e);
+      throw new GlobalExceptions.SchemaValidationException(e.getMessage(), e);
     } catch (final Exception e) {
       log.error("Schema validation error: " + e.getMessage(), e);
-      throw new GlobalExceptions.SchemaValidationException(
-          "Checklist validation error: " + e.getMessage(), e);
+      throw new GlobalExceptions.SchemaValidationException("Sample validation error: " + e.getMessage(), e);
     }
   }
 }

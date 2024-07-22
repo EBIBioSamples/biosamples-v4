@@ -26,6 +26,7 @@ import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmissionReceipt;
 
 public class SampleSubmissionServiceV2 {
   private final Logger log = LoggerFactory.getLogger(getClass());
@@ -37,11 +38,11 @@ public class SampleSubmissionServiceV2 {
     this.uriV2 = uriV2;
   }
 
-  public List<Sample> submit(final List<Sample> samples) throws RestClientException {
+  public SubmissionReceipt submit(final List<Sample> samples) throws RestClientException {
     return new SampleSubmitterV2(samples).postSamples();
   }
 
-  public List<Sample> submit(final List<Sample> samples, final String jwt)
+  public SubmissionReceipt submit(final List<Sample> samples, final String jwt)
       throws RestClientException {
     return new SampleSubmitterV2(samples, jwt).postSamples();
   }
@@ -69,7 +70,7 @@ public class SampleSubmissionServiceV2 {
       this.jwt = jwt;
     }
 
-    public List<Sample> postSamples() {
+    public SubmissionReceipt postSamples() {
       final URI v2PostUri =
           UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples/bulk-submit"))
               .build(true)
@@ -78,12 +79,10 @@ public class SampleSubmissionServiceV2 {
 
       final RequestEntity<List<Sample>> requestEntity =
           buildRequestEntityWithAuthHeader(v2PostUri, jwt, samples);
-      final ResponseEntity<List<Sample>> responseEntity;
+      final ResponseEntity<SubmissionReceipt> responseEntity;
 
       try {
-        responseEntity =
-            restOperations.exchange(
-                requestEntity, new ParameterizedTypeReference<List<Sample>>() {});
+        responseEntity = restOperations.exchange(requestEntity, SubmissionReceipt.class);
       } catch (final RestClientResponseException e) {
         log.error("Unable to POST to {} got response {}", v2PostUri, e.getResponseBodyAsString());
 
