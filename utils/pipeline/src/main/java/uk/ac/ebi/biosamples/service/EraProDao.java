@@ -11,8 +11,12 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +54,48 @@ public class EraProDao {
 
     return jdbcTemplate.query(
         query, sampleCallbackResultRowMapper, minDateOld, maxDateOld, minDateOld, maxDateOld);
+  }
+
+  public List<SampleCallbackResult> doSampleCallbackForAccessions(final List<String> accessions) {
+    log.info("Getting ENA samples");
+    final AtomicInteger counter = new AtomicInteger(0);
+    final int batchSize = 1000;
+    final List<SampleCallbackResult> sampleCallbackResults = new ArrayList<>();
+    final Collection<List<String>> accessionBatches =
+        accessions.stream()
+            .collect(Collectors.groupingBy(accession -> counter.getAndIncrement() / batchSize))
+            .values();
+
+    // Execute the query with the accessions as parameters
+    accessionBatches.forEach(
+        accessionBatch -> {
+          final String query = queryForAccessions(accessionBatch);
+
+          sampleCallbackResults.addAll(
+              jdbcTemplate.query(query, sampleCallbackResultRowMapper, accessionBatch.toArray()));
+        });
+
+    return sampleCallbackResults;
+  }
+
+  private String queryForAccessions(List<String> accessions) {
+    // Create placeholders for the IN clause
+    final String placeholders = accessions.stream().map(a -> "?").collect(Collectors.joining(", "));
+
+    // Build the query with the appropriate number of placeholders
+    final String query =
+        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID, LAST_UPDATED FROM SAMPLE "
+            + "WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' "
+            + "AND STATUS_ID IN (2, 4, 5, 6, 7, 8) AND EGA_ID IS NULL "
+            + "AND BIOSAMPLE_ID IN ("
+            + placeholders
+            + ") "
+            + "ORDER BY LAST_UPDATED ASC";
+
+    // Log the query for debugging
+    log.debug("Executing query: {}", query);
+
+    return query;
   }
 
   public List<SampleCallbackResult> doSampleCallbackForBsdAuthoritySamples(

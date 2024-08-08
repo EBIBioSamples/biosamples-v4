@@ -43,7 +43,8 @@ public class SchemaValidationService {
   public Sample validate(final Sample sample) {
     final String schemaId =
         sample.getCharacteristics().stream()
-            .filter(s -> BioSamplesConstants.CHECKLIST_ATTRIBUTES.contains(s.getType().toLowerCase()))
+            .filter(
+                s -> BioSamplesConstants.CHECKLIST_ATTRIBUTES.contains(s.getType().toLowerCase()))
             .findFirst()
             .map(Attribute::getValue)
             .orElse(bioSamplesProperties.getBiosamplesDefaultSchema());
@@ -66,7 +67,8 @@ public class SchemaValidationService {
       throw new GlobalExceptions.SchemaValidationException(e.getMessage(), e);
     } catch (final Exception e) {
       log.error("Schema validation error: " + e.getMessage(), e);
-      throw new GlobalExceptions.SchemaValidationException("Sample validation error: " + e.getMessage(), e);
+      throw new GlobalExceptions.SchemaValidationException(
+          "Sample validation error: " + e.getMessage(), e);
     }
   }
 }

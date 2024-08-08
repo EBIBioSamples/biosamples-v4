@@ -1,18 +1,22 @@
 /*
- * Copyright 2021 EMBL - European Bioinformatics Institute
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- */
+* Copyright 2021 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Instant;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -34,11 +38,6 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
-
-import java.time.Instant;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @RestController
 @ExposesResourceFor(Sample.class)
@@ -63,7 +62,8 @@ public class BulkActionControllerV2 {
       final AccessControlService accessControlService,
       final SchemaValidationService schemaValidationService,
       final TaxonomyClientService taxonomyClientService,
-      final BioSamplesProperties bioSamplesProperties, ObjectMapper objectMapper) {
+      final BioSamplesProperties bioSamplesProperties,
+      ObjectMapper objectMapper) {
     this.sampleService = sampleService;
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
@@ -91,8 +91,8 @@ public class BulkActionControllerV2 {
         sample -> {
           if (sample.hasAccession()
               || sample.getAttributes() != null
-              && sample.getAttributes().stream()
-              .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))) {
+                  && sample.getAttributes().stream()
+                      .anyMatch(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))) {
             throw new GlobalExceptions.SampleWithAccessionSubmissionException();
           }
         });
@@ -265,35 +265,52 @@ public class BulkActionControllerV2 {
         throw new GlobalExceptions.WebinTokenInvalidException();
       }
 
-      for (Sample sample : samples) {
-        Pair<Optional<Sample>, Optional<String>> sampleErrorPair =
+      for (final Sample sample : samples) {
+        final Pair<Optional<Sample>, Optional<String>> sampleErrorPair =
             persistSampleV2WebinAuth(authProvider, webinSubmissionAccountId, sample);
+
         sampleErrorPair.getLeft().ifPresent(createdSamples::add);
-        sampleErrorPair.getRight().ifPresent(err -> {
-          List<SubmissionReceipt.ValidationError> validationErrors;
-          try {
-            validationErrors = objectMapper.readValue(err, new TypeReference<>() {});
-          } catch (JsonProcessingException e) {
-            validationErrors = Collections.singletonList(
-                new SubmissionReceipt.ValidationError("", Collections.singletonList(err)));
-          }
-          errors.add(new SubmissionReceipt.ErrorReceipt(sample.getName(), validationErrors));
-        });
+        sampleErrorPair
+            .getRight()
+            .ifPresent(
+                err -> {
+                  List<SubmissionReceipt.ValidationError> validationErrors;
+
+                  try {
+                    validationErrors = objectMapper.readValue(err, new TypeReference<>() {});
+                  } catch (JsonProcessingException e) {
+                    validationErrors =
+                        Collections.singletonList(
+                            new SubmissionReceipt.ValidationError(
+                                "", Collections.singletonList(err)));
+                  }
+
+                  errors.add(
+                      new SubmissionReceipt.ErrorReceipt(sample.getName(), validationErrors));
+                });
       }
     } else {
-      for (Sample sample : samples) {
-        Pair<Optional<Sample>, Optional<String>> sampleErrorPair = persistSampleV2AapAuth(authProvider, sample);
+      for (final Sample sample : samples) {
+        final Pair<Optional<Sample>, Optional<String>> sampleErrorPair =
+            persistSampleV2AapAuth(authProvider, sample);
+
         sampleErrorPair.getLeft().ifPresent(createdSamples::add);
-        sampleErrorPair.getRight().ifPresent(err -> {
-          List<SubmissionReceipt.ValidationError> validationErrors;
-          try {
-            validationErrors = objectMapper.readValue(err, new TypeReference<>() {});
-          } catch (JsonProcessingException e) {
-            validationErrors = Collections.singletonList(
-                new SubmissionReceipt.ValidationError("", Collections.singletonList(err)));
-          }
-          errors.add(new SubmissionReceipt.ErrorReceipt(sample.getName(), validationErrors));
-        });
+        sampleErrorPair
+            .getRight()
+            .ifPresent(
+                err -> {
+                  List<SubmissionReceipt.ValidationError> validationErrors;
+                  try {
+                    validationErrors = objectMapper.readValue(err, new TypeReference<>() {});
+                  } catch (JsonProcessingException e) {
+                    validationErrors =
+                        Collections.singletonList(
+                            new SubmissionReceipt.ValidationError(
+                                "", Collections.singletonList(err)));
+                  }
+                  errors.add(
+                      new SubmissionReceipt.ErrorReceipt(sample.getName(), validationErrors));
+                });
       }
     }
 
@@ -304,10 +321,12 @@ public class BulkActionControllerV2 {
             + createdSamples.size()
             + " samples.");
 
-    return ResponseEntity.status(HttpStatus.CREATED).body(new SubmissionReceipt(createdSamples, errors));
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(new SubmissionReceipt(createdSamples, errors));
   }
 
-  private Pair<Optional<Sample>, Optional<String>> persistSampleV2AapAuth(final AuthorizationProvider authProvider, Sample sample) {
+  private Pair<Optional<Sample>, Optional<String>> persistSampleV2AapAuth(
+      final AuthorizationProvider authProvider, Sample sample) {
     final boolean isAapSuperUser = bioSamplesAapService.isWriteSuperUser();
     final Optional<Sample> oldSample =
         sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
@@ -325,8 +344,9 @@ public class BulkActionControllerV2 {
       if (!isAapSuperUser) {
         validateSample(sample, false);
       }
-      Optional<Sample> persistedSample = Optional.of(sampleService.persistSampleV2(
-          sample, oldSample.orElse(null), authProvider, false));
+      Optional<Sample> persistedSample =
+          Optional.of(
+              sampleService.persistSampleV2(sample, oldSample.orElse(null), authProvider, false));
       sampleErrorPair = new ImmutablePair<>(persistedSample, Optional.empty());
     } catch (GlobalExceptions.SchemaValidationException e) {
       sampleErrorPair = new ImmutablePair<>(Optional.empty(), Optional.of(e.getMessage()));
@@ -359,11 +379,14 @@ public class BulkActionControllerV2 {
 
     Pair<Optional<Sample>, Optional<String>> sampleErrorPair;
     try {
-      if (bioSamplesProperties.isEnableBulkSubmissionWebinSuperuserValidation() || !isWebinSuperUser) {
+      if (bioSamplesProperties.isEnableBulkSubmissionWebinSuperuserValidation()
+          || !isWebinSuperUser) {
         validateSample(sample, true);
       }
-      Optional<Sample> persistedSample = Optional.of(sampleService.persistSampleV2(
-          sample, oldSample.orElse(null), authProvider, isWebinSuperUser));
+      Optional<Sample> persistedSample =
+          Optional.of(
+              sampleService.persistSampleV2(
+                  sample, oldSample.orElse(null), authProvider, isWebinSuperUser));
       sampleErrorPair = new ImmutablePair<>(persistedSample, Optional.empty());
     } catch (GlobalExceptions.SchemaValidationException e) {
       sampleErrorPair = new ImmutablePair<>(Optional.empty(), Optional.of(e.getMessage()));
