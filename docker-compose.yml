@@ -21,6 +21,8 @@ services:
     - webapps-core-5.3.7-SNAPSHOT.war
     environment:
     - env=local
+    #application properties
+    - biosamples.bulksubmisison.webin.superuser.validation=true
     #AAP certificate
     - jwt.certificate=public.explore.der
     - security.basic.path=
@@ -33,7 +35,7 @@ services:
     - biosamples.mongo.sample.writeConcern=1
     - BIOSAMPLES_NEO_URL=bolt://neo4j:7687
     - biosamples.schemaValidator=http://json-schema-validator:3020/validate
-    - biosamples.schemaStore=http://schema-store:8085
+    - biosamples.schemaStore=https://www.ebi.ac.uk/biosamples/schema/store/
     - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
     - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
@@ -111,6 +113,8 @@ services:
       - -jar
       - webapps-core-v2-5.3.7-SNAPSHOT.jar
     environment:
+      #application properties
+      - biosamples.bulksubmisison.webin.superuser.validation=true
       #AAP certificate
       - jwt.certificate=public.explore.der
       - security.basic.path=
@@ -127,7 +131,7 @@ services:
       - SPRING_RABBITMQ_LISTENER_SIMPLE_TRANSACTION-SIZE=25
       - BIOSAMPLES_NEO_URL=bolt://neo4j:7687
       - biosamples.schemaValidator=http://json-schema-validator:3020/validate
-      - biosamples.schemaStore=http://schema-store:8085
+      - biosamples.schemaStore=https://www.ebi.ac.uk/biosamples/schema/store/
       - spring.jackson.serialization-inclusion=non_null
       - spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false
       - spring.jackson.serialization.indent_output=true

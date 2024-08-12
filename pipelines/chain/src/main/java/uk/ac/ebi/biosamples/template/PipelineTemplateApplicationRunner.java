@@ -15,17 +15,25 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.auth.AuthChangeHandler;
-import uk.ac.ebi.biosamples.helpdesk.RTHandler;
+import uk.ac.ebi.biosamples.helpdesk.SampleChecklistComplaintMaker;
+import uk.ac.ebi.biosamples.helpdesk.SampleStatusUpdater;
 
 // import uk.ac.ebi.biosamples.service.AnalyticsService;
 
 @Component
 public class PipelineTemplateApplicationRunner implements ApplicationRunner {
-  @Autowired RTHandler rtHandler;
+  @Autowired SampleChecklistComplaintMaker sampleChecklistComplaintMaker;
+  @Autowired SampleStatusUpdater sampleStatusUpdater;
   @Autowired AuthChangeHandler authChangeHandler;
 
   @Override
   public void run(ApplicationArguments args) {
-    authChangeHandler.parseCsvAndProcessSampleAuthentication();
+    // authChangeHandler.parseCsvAndProcessSampleAuthentication();
+    sampleChecklistComplaintMaker.samnSampleGeographicLocationAttributeUpdateFromFile();
+    /*final List<String> accessions =
+        sampleStatusUpdater.parseFileAndGetSampleAccessionList(
+            "C:\\Users\\dgupta\\AtlantECO-samples-to-suppress.txt");
+
+    sampleStatusUpdater.processSamples(accessions);*/
   }
 }

@@ -10,6 +10,9 @@
 */
 package uk.ac.ebi.biosamples.helpdesk;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,26 +20,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
-public class RTHandler {
-  private static final Logger log = LoggerFactory.getLogger(RTHandler.class);
+public class SampleChecklistComplaintMaker {
+  private static final Logger log = LoggerFactory.getLogger(SampleChecklistComplaintMaker.class);
   private static final String GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA =
       "geographic location (country and/or sea)";
   private static final String GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY =
       "geographic location (region and locality)";
+  public static final String NCBI_MIRRORING_WEBIN_ID = "Webin-842";
   private final BioSamplesClient bioSamplesWebinClient;
   private final BioSamplesClient bioSamplesAapClient;
+  private final PipelinesProperties pipelinesProperties;
 
-  public RTHandler(
+  public SampleChecklistComplaintMaker(
       @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesWebinClient,
-      @Qualifier("AAPCLIENT") final BioSamplesClient bioSamplesAapClient) {
+      @Qualifier("AAPCLIENT") final BioSamplesClient bioSamplesAapClient,
+      final PipelinesProperties pipelinesProperties) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
     this.bioSamplesAapClient = bioSamplesAapClient;
+    this.pipelinesProperties = pipelinesProperties;
   }
 
   private void processSample(final String accession, final List<String> curationDomainList) {
@@ -51,14 +61,16 @@ public class RTHandler {
     }
 
     if (optionalSampleEntityModel.isPresent()) {
-      handleGeoLoc(optionalSampleEntityModel);
+      handleGeoLocAndCollectionDate(optionalSampleEntityModel);
     } else {
       log.info("Sample not found: " + accession);
     }
   }
 
-  private void handleGeoLoc(Optional<EntityModel<Sample>> optionalSampleEntityModel) {
+  private void handleGeoLocAndCollectionDate(
+      Optional<EntityModel<Sample>> optionalSampleEntityModel) {
     final Sample sample = optionalSampleEntityModel.get().getContent();
+
     if (sample == null) {
       return;
     }
@@ -82,10 +94,13 @@ public class RTHandler {
       final String getLocAttrValue = geoLocAttribute.getValue();
       final String getLocAttributeTag = geoLocAttribute.getTag();
       final String getLocAttributeUnit = geoLocAttribute.getUnit();
-      final List<String> extractedCountryNameList = splitGeoLoc(getLocAttrValue);
+      // final List<String> splittedGeoLoc = splitGeoLoc(getLocAttrValue);
+      final String extractedCountryName = countryAndRegionExtractor(getLocAttrValue);
       final String extractedRegionName = countryAndRegionExtractor(getLocAttrValue);
 
       if (!extractedRegionName.isEmpty()) {
+        log.info("setting " + GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY + " for " + accession);
+
         attributeSet.removeIf(
             attribute -> attribute.getType().equals(GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY));
         attributeSet.add(
@@ -95,15 +110,19 @@ public class RTHandler {
                 getLocAttributeTag,
                 Collections.emptyList(),
                 getLocAttributeUnit));
+      } else {
+        attributeSet.add(Attribute.build(GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY, "not provided"));
       }
 
-      if (!extractedCountryNameList.get(0).isEmpty()) {
+      if (!extractedCountryName.isEmpty()) {
+        log.info("setting " + GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA + " for " + accession);
+
         attributeSet.removeIf(
             attribute -> attribute.getType().equals(GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA));
         attributeSet.add(
             Attribute.build(
                 GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA,
-                extractedCountryNameList.get(0),
+                extractedCountryName,
                 getLocAttributeTag,
                 Collections.emptyList(),
                 getLocAttributeUnit));
@@ -135,12 +154,32 @@ public class RTHandler {
                 + " but not set to not provided, setting now");
         attributeSet.remove(collectionDateAttribute);
         attributeSet.add(Attribute.build("collection_date", "not provided"));
+      } else {
+        log.info(
+            "collection_date attribute present in: "
+                + accession
+                + " and set to not provided, no action required");
       }
     }
 
     final Sample updateSample =
         Sample.Builder.fromSample(sample).withAttributes(attributeSet).build();
-    bioSamplesAapClient.persistSampleResource(updateSample);
+    try {
+      bioSamplesAapClient.persistSampleResource(updateSample);
+    } catch (final HttpClientErrorException e) {
+      if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+        log.info(
+            "Failed to persist using AAP client - UNAUTHORIZED, "
+                + "attempting persist using WEBIN client "
+                + accession);
+
+        if (sample.getWebinSubmissionAccountId().equals(NCBI_MIRRORING_WEBIN_ID)
+            || sample.getWebinSubmissionAccountId().equals(pipelinesProperties.getProxyWebinId()))
+          bioSamplesWebinClient.persistSampleResource(sample);
+
+        log.info("Persisted using WEBIN client " + accession);
+      }
+    }
   }
 
   public void samnSampleGeographicLocationAttributeUpdate() {
@@ -159,6 +198,32 @@ public class RTHandler {
     }
 
     for (final String accession : samnAccessions) {
+      processSample(accession, Collections.singletonList(""));
+    }
+  }
+
+  public void samnSampleGeographicLocationAttributeUpdateFromFile() {
+    final Pattern pattern = Pattern.compile("SAMN\\d+");
+    final Set<String> samnAccessions = new HashSet<>();
+
+    try (final BufferedReader bufferedReader =
+        new BufferedReader(new FileReader("C:\\Users\\dgupta\\samples.txt"))) {
+      String line;
+
+      while ((line = bufferedReader.readLine()) != null) {
+        final Matcher matcher = pattern.matcher(line);
+
+        while (matcher.find()) {
+          samnAccessions.add(matcher.group());
+        }
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    for (final String accession : samnAccessions) {
+      // log.info(accession);
+
       processSample(accession, Collections.singletonList(""));
     }
   }

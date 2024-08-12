@@ -244,7 +244,10 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
 
     // Persist sample-2 again and check if old SRA accession is retained
     final Sample sample2ContentAfterRePersistWithSRAAccessionRemoved =
-        webinClient.persistSampleResourceV2(Collections.singletonList(sample2Content)).getSamples().get(0);
+        webinClient
+            .persistSampleResourceV2(Collections.singletonList(sample2Content))
+            .getSamples()
+            .get(0);
 
     final Optional<Attribute>
         optionalSraAccessionAttributeForSample2ContentAfterRePersistWithSRAAccessionRemoved =
