@@ -126,22 +126,25 @@ public class EnaImportRunner implements ApplicationRunner {
       // importEraSamples(fromDate, toDate);
 
       // Import ERA and BSD authority samples from file
-      if (filePath != null) {
+      /*if (filePath != null) {
         if (fileType != null && fileType.equals("BSD_AUTHORITY")) {
           updateBSDAuthoritySamplesFromFile(filePath);
         } else {
           importEraSamplesFromFile(filePath);
         }
-      }
+      }*/
 
-      if (importSuppressedAndKilled) {
+      /*if (importSuppressedAndKilled) {
         try {
           // handler for suppressed and killed ENA samples
           // handleSuppressedAndKilledEnaSamples();
         } catch (final Exception e) {
           log.info("Suppression Runner failed");
         }
-      }
+      }*/
+
+      // Sync BSD authority samples from ERAPRO
+      importEraBsdAuthoritySamples(fromDate, toDate);
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);
       pipelineFailureCause = e.getMessage();
