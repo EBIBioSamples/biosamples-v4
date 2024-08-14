@@ -86,7 +86,9 @@ public class RestIntegrationV2 extends AbstractIntegration {
 
     // Submit with webin client, no jwt passed
     final List<Sample> webinSampleResource =
-        webinClient.persistSampleResourceV2(Collections.singletonList(webinSampleTest1));
+        webinClient
+            .persistSampleResourceV2(Collections.singletonList(webinSampleTest1))
+            .getSamples();
     final String webinSampleAccession =
         Objects.requireNonNull(webinSampleResource.get(0)).getAccession();
 
@@ -128,8 +130,9 @@ public class RestIntegrationV2 extends AbstractIntegration {
     try {
       final Sample webinTestSampleV2Submission = getWebinSampleTest1();
       final List<Sample> apiResponseSampleResourceList =
-          webinClient.persistSampleResourceV2(
-              Collections.singletonList(webinTestSampleV2Submission));
+          webinClient
+              .persistSampleResourceV2(Collections.singletonList(webinTestSampleV2Submission))
+              .getSamples();
       final String apiResponseSampleAccession1 =
           Objects.requireNonNull(apiResponseSampleResourceList.get(0)).getAccession();
       final Attribute attributePre = Attribute.build("organism part", "lung");

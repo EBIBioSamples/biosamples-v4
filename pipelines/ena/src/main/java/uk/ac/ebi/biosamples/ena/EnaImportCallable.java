@@ -12,7 +12,10 @@ package uk.ac.ebi.biosamples.ena;
 
 import static uk.ac.ebi.biosamples.BioSamplesConstants.SRA_ACCESSION;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import org.dom4j.DocumentException;
 import org.slf4j.Logger;
@@ -20,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.BioSamplesConstants;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleStatus;
@@ -32,27 +34,21 @@ public class EnaImportCallable implements Callable<Void> {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final BioSamplesClient bioSamplesWebinClient;
   private final BioSamplesClient bioSamplesAapClient;
-  private final EgaSampleExporter egaSampleExporter;
   private final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
   private final EraProDao eraProDao;
   private final SpecialTypes specialTypes;
   private final String accession;
-  private final String egaId;
 
   EnaImportCallable(
       final String accession,
-      final String egaId,
       final BioSamplesClient bioSamplesWebinClient,
       final BioSamplesClient bioSamplesAapClient,
-      final EgaSampleExporter egaSampleExporter,
       final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService,
       final EraProDao eraProDao,
       final SpecialTypes specialTypes) {
     this.accession = accession;
-    this.egaId = egaId;
     this.bioSamplesWebinClient = bioSamplesWebinClient;
     this.bioSamplesAapClient = bioSamplesAapClient;
-    this.egaSampleExporter = egaSampleExporter;
     this.enaSampleToBioSampleConversionService = enaSampleToBioSampleConversionService;
     this.eraProDao = eraProDao;
     this.specialTypes = specialTypes;
@@ -60,6 +56,8 @@ public class EnaImportCallable implements Callable<Void> {
 
   @Override
   public Void call() throws Exception {
+    log.info("Handling " + accession);
+
     if (specialTypes != null
         && (specialTypes.equals(SpecialTypes.SUPPRESSED)
             || specialTypes.equals(SpecialTypes.KILLED))) {
@@ -68,70 +66,64 @@ public class EnaImportCallable implements Callable<Void> {
 
     Sample enaSampleConvertedToBioSample = null;
 
-    if (egaId != null && !egaId.isEmpty()) {
-      return egaSampleExporter.populateAndSubmitEgaData(egaId);
-    } else {
-      try {
-        SampleToUpdateRequiredPair sampleToUpdateRequiredPair = null;
+    try {
+      SampleToUpdateRequiredPair sampleToUpdateRequiredPair = null;
 
-        if (specialTypes == SpecialTypes.BSD_AUTHORITY) {
-          sampleToUpdateRequiredPair = buildBsdAuthoritySampleWithSraAccession(accession);
-        } else {
-          enaSampleConvertedToBioSample =
-              enaSampleToBioSampleConversionService.enrichSample(accession, false);
-        }
-
-        boolean success = false;
-        int numRetry = 0;
-
-        while (!success) {
-          try {
-            if (specialTypes == SpecialTypes.BSD_AUTHORITY) {
-              if (sampleToUpdateRequiredPair.updateRequired) {
-                final Sample bsdAuthoritySampleWithSraAccession = sampleToUpdateRequiredPair.sample;
-
-                if (bsdAuthoritySampleWithSraAccession != null) {
-                  if (bsdAuthoritySampleWithSraAccession.getDomain() != null) {
-                    bioSamplesAapClient.persistSampleResource(bsdAuthoritySampleWithSraAccession);
-                  } else if (bsdAuthoritySampleWithSraAccession.getWebinSubmissionAccountId()
-                      != null) {
-                    bioSamplesWebinClient.persistSampleResource(bsdAuthoritySampleWithSraAccession);
-                  } else {
-                    throw new RuntimeException(
-                        "Couldn't determine authentication of sample: " + accession);
-                  }
-                } else {
-                  throw new RuntimeException(
-                      "Failed to fetch BioSample authority sample from BioSamples: " + accession);
-                }
-              }
-            } else {
-              if (enaSampleConvertedToBioSample != null) {
-                bioSamplesWebinClient.persistSampleResource(enaSampleConvertedToBioSample);
-              } else {
-                throw new RuntimeException(
-                    "ENA sample converted to BioSample is null: " + accession);
-              }
-            }
-
-            success = true;
-          } catch (final Exception e) {
-            if (++numRetry == BioSamplesConstants.MAX_RETRIES) {
-              EnaImportRunner.failures.add(accession);
-
-              throw new RuntimeException(
-                  "Failed to handle the sample with accession: " + accession);
-            }
-          }
-        }
-      } catch (final Exception e) {
-        log.info("Failed to handle ENA sample with accession: " + accession, e);
-
-        throw e;
+      if (specialTypes == SpecialTypes.BSD_AUTHORITY) {
+        sampleToUpdateRequiredPair = buildBsdAuthoritySampleWithSraAccession(accession);
+      } else {
+        enaSampleConvertedToBioSample =
+            enaSampleToBioSampleConversionService.enrichSample(accession, false);
       }
 
-      return null;
+      boolean success = false;
+      int numRetry = 0;
+
+      while (!success) {
+        try {
+          if (specialTypes == SpecialTypes.BSD_AUTHORITY) {
+            if (sampleToUpdateRequiredPair.updateRequired) {
+              final Sample bsdAuthoritySampleWithSraAccession = sampleToUpdateRequiredPair.sample;
+
+              if (bsdAuthoritySampleWithSraAccession != null) {
+                if (bsdAuthoritySampleWithSraAccession.getDomain() != null) {
+                  bioSamplesAapClient.persistSampleResource(bsdAuthoritySampleWithSraAccession);
+                } else if (bsdAuthoritySampleWithSraAccession.getWebinSubmissionAccountId()
+                    != null) {
+                  bioSamplesWebinClient.persistSampleResource(bsdAuthoritySampleWithSraAccession);
+                } else {
+                  throw new RuntimeException(
+                      "Couldn't determine authentication of sample: " + accession);
+                }
+              } else {
+                throw new RuntimeException(
+                    "Failed to fetch BioSample authority sample from BioSamples: " + accession);
+              }
+            }
+          } else {
+            if (enaSampleConvertedToBioSample != null) {
+              bioSamplesWebinClient.persistSampleResource(enaSampleConvertedToBioSample);
+            } else {
+              throw new RuntimeException("ENA sample converted to BioSample is null: " + accession);
+            }
+          }
+
+          success = true;
+        } catch (final Exception e) {
+          if (++numRetry == BioSamplesConstants.MAX_RETRIES) {
+            EnaImportRunner.failures.add(accession);
+
+            throw new RuntimeException("Failed to handle the sample with accession: " + accession);
+          }
+        }
+      }
+    } catch (final Exception e) {
+      log.info("Failed to handle ENA sample with accession: " + accession, e);
+
+      throw e;
     }
+
+    return null;
   }
 
   private SampleToUpdateRequiredPair buildBsdAuthoritySampleWithSraAccession(
@@ -171,9 +163,12 @@ public class EnaImportCallable implements Callable<Void> {
                 + accession
                 + " has SRA accession mismatch with ENA, updating SRA accession attribute with SAMPLE_ID from ENA");
 
-        sampleSaveRequired = true;
+        /*sampleSaveRequired = true;
         attributesInBioSample.removeIf(attribute -> attribute.getType().equals(SRA_ACCESSION));
-        attributesInBioSample.add(Attribute.build(SRA_ACCESSION, eraproSampleSampleId));
+        attributesInBioSample.add(Attribute.build(SRA_ACCESSION, eraproSampleSampleId));*/
+        // August 12, 2024: dont do anything to these samples, ENA and BSD auth samples shouldn't
+        // have this mismatch from the end of 2023
+        sampleSaveRequired = false;
       } else {
         log.info("Sample " + accession + " has SRA accession match with ENA, no action required");
       }

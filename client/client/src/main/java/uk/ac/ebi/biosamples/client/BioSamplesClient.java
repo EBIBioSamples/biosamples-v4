@@ -34,6 +34,7 @@ import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmissionReceipt;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.SampleValidator;
@@ -416,7 +417,7 @@ public class BioSamplesClient implements AutoCloseable {
    * @param samples the list of samples to persist
    * @return the list of persisted samples
    */
-  public List<Sample> persistSampleResourceV2(final List<Sample> samples) {
+  public SubmissionReceipt persistSampleResourceV2(final List<Sample> samples) {
     return sampleSubmissionServiceV2.submit(samples);
   }
 
@@ -427,7 +428,7 @@ public class BioSamplesClient implements AutoCloseable {
    * @param jwt the JWT token
    * @return the list of persisted samples
    */
-  public List<Sample> persistSampleResourceV2(final List<Sample> samples, final String jwt) {
+  public SubmissionReceipt persistSampleResourceV2(final List<Sample> samples, final String jwt) {
     return sampleSubmissionServiceV2.submit(samples, jwt);
   }
 

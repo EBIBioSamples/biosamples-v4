@@ -28,6 +28,7 @@ import uk.ac.ebi.biosamples.service.SampleService;
 
 @Service
 public class BioSamplesWebinAuthenticationService {
+  public static final String ATLANTICO_DOMAIN = "self.AtlantECO";
   private final RestTemplate restTemplate;
   private final SampleService sampleService;
   private final BioSamplesCrossSourceIngestAccessControlService
@@ -197,7 +198,8 @@ public class BioSamplesWebinAuthenticationService {
 
   private boolean isOwnershipChangeFromAapToWebinAllowed(final String oldSampleAapDomain) {
     return sampleService.isPipelineEnaDomain(oldSampleAapDomain)
-        || isOldRegistrationDomain(oldSampleAapDomain);
+        || isOldRegistrationDomain(oldSampleAapDomain)
+        || oldSampleAapDomain.equals(ATLANTICO_DOMAIN);
   }
 
   private boolean isSameDomain(final String domain, final String oldSampleAapDomain) {

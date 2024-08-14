@@ -18,9 +18,11 @@ services:
     command:
     - java
     - -jar
-    - webapps-core-5.3.6-RC1.war
+    - webapps-core-5.3.7-SNAPSHOT.war
     environment:
     - env=local
+    #application properties
+    - biosamples.bulksubmisison.webin.superuser.validation=true
     #AAP certificate
     - jwt.certificate=public.explore.der
     - security.basic.path=
@@ -33,7 +35,7 @@ services:
     - biosamples.mongo.sample.writeConcern=1
     - BIOSAMPLES_NEO_URL=bolt://neo4j:7687
     - biosamples.schemaValidator=http://json-schema-validator:3020/validate
-    - biosamples.schemaStore=http://schema-store:8085
+    - biosamples.schemaStore=https://www.ebi.ac.uk/biosamples/schema/store/
     - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
     - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
@@ -109,8 +111,10 @@ services:
     command:
       - java
       - -jar
-      - webapps-core-v2-5.3.6-RC1.jar
+      - webapps-core-v2-5.3.7-SNAPSHOT.jar
     environment:
+      #application properties
+      - biosamples.bulksubmisison.webin.superuser.validation=true
       #AAP certificate
       - jwt.certificate=public.explore.der
       - security.basic.path=
@@ -127,7 +131,7 @@ services:
       - SPRING_RABBITMQ_LISTENER_SIMPLE_TRANSACTION-SIZE=25
       - BIOSAMPLES_NEO_URL=bolt://neo4j:7687
       - biosamples.schemaValidator=http://json-schema-validator:3020/validate
-      - biosamples.schemaStore=http://schema-store:8085
+      - biosamples.schemaStore=https://www.ebi.ac.uk/biosamples/schema/store/
       - spring.jackson.serialization-inclusion=non_null
       - spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false
       - spring.jackson.serialization.indent_output=true
@@ -189,7 +193,7 @@ services:
     command:
     - java
     - -jar
-    - agents-solr-5.3.6-RC1.jar
+    - agents-solr-5.3.7-SNAPSHOT.jar
     environment:
     - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
@@ -214,7 +218,7 @@ services:
     command:
       - java
       - -jar
-      - agents-uploadworkers-5.3.6-RC1.jar
+      - agents-uploadworkers-5.3.7-SNAPSHOT.jar
     environment:
       #AAP certificate
       - jwt.certificate=public.explore.der
@@ -243,7 +247,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-ena-5.3.6-RC1.jar
+    - pipelines-ena-5.3.7-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ena.log
@@ -258,7 +262,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-ncbi-5.3.6-RC1.jar
+    - pipelines-ncbi-5.3.7-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ncbi.log
@@ -273,7 +277,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-accession-5.3.6-RC1.jar
+    - pipelines-accession-5.3.7-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-accession.log
@@ -288,7 +292,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-copydown-5.3.6-RC1.jar
+    - pipelines-copydown-5.3.7-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-copydown.log
@@ -303,7 +307,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-curation-5.3.6-RC1.jar
+    - pipelines-curation-5.3.7-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-curation.log
@@ -320,7 +324,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-zooma-5.3.6-RC1.jar
+    - pipelines-zooma-5.3.7-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-zooma.log
@@ -337,7 +341,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-reindex-5.3.6-RC1.jar
+    - pipelines-reindex-5.3.7-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-reindex.log
@@ -355,7 +359,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-export-5.3.6-RC1.jar
+    - pipelines-export-5.3.7-SNAPSHOT.jar
     - --gzip
     - /export/export.json.gzip
     environment:
@@ -373,7 +377,7 @@ services:
     command:
     - java
     - -jar
-    - integration-5.3.6-RC1.jar
+    - integration-5.3.7-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - BIOSAMPLES_CLIENT_URI_V2=http://biosamples-webapps-core-v2:8080/biosamples/v2

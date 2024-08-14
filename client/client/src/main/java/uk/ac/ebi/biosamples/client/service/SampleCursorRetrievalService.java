@@ -65,10 +65,13 @@ public class SampleCursorRetrievalService {
       final boolean addCurations) {
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
     params.add("text", text);
+
     for (final Filter filter : filterCollection) {
       params.add("filter", filter.getSerialization());
     }
+
     params.add("size", Integer.toString(pageSize));
+
     if (!addCurations) {
       params.add("curationdomain", "");
     }
@@ -93,6 +96,7 @@ public class SampleCursorRetrievalService {
 
     for (final Map.Entry<String, List<String>> param : queryParameters.entrySet()) {
       final String key = param.getKey();
+
       param
           .getValue()
           .forEach(
@@ -104,6 +108,7 @@ public class SampleCursorRetrievalService {
                 }
               });
     }
+
     return encodedQueryParameters;
   }
 }

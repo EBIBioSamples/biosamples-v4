@@ -34,8 +34,8 @@ import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSampleMessage;
-import uk.ac.ebi.biosamples.mongo.repo.MongoSampleMessageRepository;
-import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
+import uk.ac.ebi.biosamples.mongo.repository.MongoSampleMessageRepository;
+import uk.ac.ebi.biosamples.mongo.repository.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.*;
 import uk.ac.ebi.biosamples.service.security.BioSamplesCrossSourceIngestAccessControlService;
 
@@ -833,6 +833,7 @@ public class SampleService {
         return fetch(sample.getAccession(), Optional.empty());
       }
     }
+
     return Optional.empty();
   }
 }

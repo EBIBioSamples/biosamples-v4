@@ -24,7 +24,6 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.service.*;
 
 @Ignore
@@ -33,7 +32,6 @@ import uk.ac.ebi.biosamples.service.*;
     classes = {
       TestApplication.class,
       EraProDao.class,
-      EgaSampleExporter.class,
       EnaSampleToBioSampleConversionService.class,
       EnaSampleXmlEnhancer.class,
       BioSampleConverter.class,
@@ -47,8 +45,6 @@ public class TestConversion {
   public BioSamplesClient bioSamplesWebinClient;
 
   @Autowired private EraProDao eraProDao;
-
-  @Autowired private EgaSampleExporter egaSampleExporter;
 
   @Autowired private EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
 
@@ -68,10 +64,8 @@ public class TestConversion {
           final EnaImportCallable enaImportCallable =
               new EnaImportCallable(
                   sampleAccession,
-                  null,
                   bioSamplesWebinClient,
                   null,
-                  egaSampleExporter,
                   enaSampleToBioSampleConversionService,
                   eraProDao,
                   null);
@@ -93,10 +87,8 @@ public class TestConversion {
           final EnaImportCallable enaImportCallable =
               new EnaImportCallable(
                   sampleAccession,
-                  null,
                   bioSamplesWebinClient,
                   null,
-                  egaSampleExporter,
                   enaSampleToBioSampleConversionService,
                   eraProDao,
                   null);
@@ -118,10 +110,8 @@ public class TestConversion {
           final EnaImportCallable enaImportCallable =
               new EnaImportCallable(
                   sampleAccession,
-                  null,
                   bioSamplesWebinClient,
                   null,
-                  egaSampleExporter,
                   enaSampleToBioSampleConversionService,
                   eraProDao,
                   null);
@@ -143,10 +133,8 @@ public class TestConversion {
           final EnaImportCallable enaImportCallable =
               new EnaImportCallable(
                   sampleAccession,
-                  null,
                   bioSamplesWebinClient,
                   null,
-                  egaSampleExporter,
                   enaSampleToBioSampleConversionService,
                   eraProDao,
                   null);

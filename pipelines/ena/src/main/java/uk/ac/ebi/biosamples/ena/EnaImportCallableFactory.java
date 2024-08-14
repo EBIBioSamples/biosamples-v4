@@ -14,7 +14,6 @@ import java.util.concurrent.Callable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.ega.EgaSampleExporter;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 import uk.ac.ebi.biosamples.service.EraProDao;
 
@@ -24,19 +23,16 @@ public class EnaImportCallableFactory {
   private final BioSamplesClient bioSamplesAapClient;
   private final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
   private final EraProDao eraProDao;
-  private final EgaSampleExporter egaSampleExporter;
 
   public EnaImportCallableFactory(
       @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesWebinClient,
       final BioSamplesClient bioSamplesAapClient,
       final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService,
-      final EraProDao eraProDao,
-      final EgaSampleExporter egaSampleExporter) {
+      final EraProDao eraProDao) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
     this.bioSamplesAapClient = bioSamplesAapClient;
     this.enaSampleToBioSampleConversionService = enaSampleToBioSampleConversionService;
     this.eraProDao = eraProDao;
-    this.egaSampleExporter = egaSampleExporter;
   }
 
   /**
@@ -45,13 +41,11 @@ public class EnaImportCallableFactory {
    * @param accession The accession passed
    * @return the callable, {@link EnaImportCallable}
    */
-  public Callable<Void> build(final String accession, final String egaId) {
+  public Callable<Void> build(final String accession) {
     return new EnaImportCallable(
         accession,
-        egaId,
         bioSamplesWebinClient,
         bioSamplesAapClient,
-        egaSampleExporter,
         enaSampleToBioSampleConversionService,
         eraProDao,
         null);
@@ -63,14 +57,11 @@ public class EnaImportCallableFactory {
    * @param accession The accession passed
    * @return the callable, {@link EnaImportCallable}
    */
-  public Callable<Void> build(
-      final String accession, final String egaId, final SpecialTypes specialTypes) {
+  public Callable<Void> build(final String accession, final SpecialTypes specialTypes) {
     return new EnaImportCallable(
         accession,
-        egaId,
         bioSamplesWebinClient,
         bioSamplesAapClient,
-        egaSampleExporter,
         enaSampleToBioSampleConversionService,
         eraProDao,
         specialTypes);

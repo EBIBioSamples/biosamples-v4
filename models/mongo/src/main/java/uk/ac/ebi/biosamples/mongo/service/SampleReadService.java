@@ -26,8 +26,8 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoStructuredData;
-import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
-import uk.ac.ebi.biosamples.mongo.repo.MongoStructuredDataRepository;
+import uk.ac.ebi.biosamples.mongo.repository.MongoSampleRepository;
+import uk.ac.ebi.biosamples.mongo.repository.MongoStructuredDataRepository;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 
 /**

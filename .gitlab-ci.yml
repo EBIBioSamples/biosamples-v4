@@ -38,6 +38,22 @@ maven-package:
       - deployment
 #  when: manual
 
+clone-config-dev:
+  stage: config
+  script:
+    - git clone https://$BSD_INTERNAL_USER:$BSD_INTERNAL_PASS@gitlab.ebi.ac.uk/biosamples/biosamples-internal.git
+    - mkdir config
+    - cp -r biosamples-internal/script/* deployment/
+    - cp -r biosamples-internal/dev/* config/
+    - cp biosamples-internal/deployment/deploy.sh ./
+  artifacts:
+    paths:
+      - deployment
+      - config
+      - deploy.sh
+  only:
+    - dev
+
 clone-config-preproduction:
   stage: config
   script:
@@ -69,41 +85,66 @@ clone-config-production:
       - deploy.sh
       - deploy_agents_solr.sh
   when: manual
-  only:
-    - master
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "master"
+
+.deploy-template: &deploy-template
+  image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/ubuntu:latest
+  stage: deploy
+  script:
+    - chmod +x deploy.sh
+    - ./deploy.sh $BSD_NODE_NAME $BSD_HOST_NAME
+  when: manual
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "master"
+
+deploy-dev:
+  <<: *deploy-template
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "dev"
+  variables:
+    BSD_NODE_NAME: bsd_dev
+    BSD_HOST_NAME: wp-np2-44
+  environment:
+    name: dev-${BSD_HOST_NAME}
+    url: http://${BSD_HOST_NAME}:8081/biosamples/
 
 deploy-preproduction:
-  image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/ubuntu:latest
-  stage: deploy
-  script:
-    - chmod +x deploy.sh
-    - ./deploy.sh bsd_dev wp-np2-40
-  when: manual
-  only:
-    - refactoring_1_2024
-    - dev
-    - master
+  <<: *deploy-template
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "refactoring_1_2024"
+    - if: $CI_COMMIT_REF_NAME == "dev"
+    - if: $CI_COMMIT_REF_NAME == "master"
+  variables:
+    BSD_NODE_NAME: bsd_dev
+    BSD_HOST_NAME: wp-np2-40
+  environment:
+    name: dev-${BSD_HOST_NAME}
+    url: http://${BSD_HOST_NAME}:8081/biosamples/
 
-deploy-production-p2m-servers:
-  image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/ubuntu:latest
-  stage: deploy
-  script:
-    - chmod +x deploy.sh
-    - ./deploy.sh bsd_prod wp-p2m-40
-    - ./deploy.sh bsd_prod wp-p2m-41
-    - ./deploy_agents_solr.sh bsd_prod wp-p2m-42
-  when: manual
-  only:
-    - master
+deploy-production:
+  <<: *deploy-template
+  parallel:
+    matrix:
+      - BSD_NODE_NAME: bsd_prod
+        BSD_HOST_NAME: [wp-p2m-40, wp-p2m-41, wp-p1m-40, wp-p1m-41]
+  environment:
+    name: prod-${BSD_HOST_NAME}
+    url: http://${BSD_HOST_NAME}:8081/biosamples/
 
-deploy-production-p1m-servers:
+deploy-production-solr:
   image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/ubuntu:latest
   stage: deploy
   script:
     - chmod +x deploy.sh
-    - ./deploy.sh bsd_prod wp-p1m-40
-    - ./deploy.sh bsd_prod wp-p1m-41
-    - ./deploy_agents_solr.sh bsd_prod wp-p1m-42
+    - ./deploy_agents_solr.sh ${BSD_NODE_NAME} ${BSD_SOLR_HOST_NAME}
   when: manual
-  only:
-    - master
+  rules:
+    - if: '$BSD_NODE_NAME == "bsd_prod" && $CI_COMMIT_REF_NAME == "master"'
+  parallel:
+    matrix:
+      - BSD_NODE_NAME: bsd_prod
+        BSD_SOLR_HOST_NAME: [wp-p1m-42, wp-p2m-42]
+  environment:
+    name: prod-solr-${BSD_HOST_NAME}
+    url: http://${BSD_SOLR_HOST_NAME}.ebi.ac.uk:8983/solr

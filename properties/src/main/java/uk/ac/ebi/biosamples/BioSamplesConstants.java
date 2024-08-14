@@ -10,6 +10,8 @@
 */
 package uk.ac.ebi.biosamples;
 
+import java.util.Set;
+
 public class BioSamplesConstants {
   public static final String[] sraSampleAccessionPrefixesString = {"ERS", "SRS", "DRS"};
   public static final int MAX_RETRIES = 5;
@@ -20,4 +22,5 @@ public class BioSamplesConstants {
   public static final String SRA_ACCESSION = "SRA accession";
   public static final String NCBI_IMPORT_DOMAIN = "self.BiosampleImportNCBI";
   public static final String ENA_IMPORT_DOMAIN = "self.BiosampleImportENA";
+  public static final Set<String> CHECKLIST_ATTRIBUTES = Set.of("checklist", "ena-checklist");
 }
