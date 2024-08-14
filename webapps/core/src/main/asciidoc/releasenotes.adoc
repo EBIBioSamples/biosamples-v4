@@ -2,6 +2,12 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+[[v5.3.7]]
+== v5.3.7 Release notes
+* MICROBE logo in front page
+* NCBI and ENA sample mirroring fixes
+* Option added in BioSamples to perform JSON schema validation of all WEBIN samples
+
 [[v5.3.6]]
 == v5.3.6 Release notes
 * Fixes in documentation template
