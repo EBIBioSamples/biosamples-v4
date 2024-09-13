@@ -172,8 +172,8 @@ if __name__ == '__main__':
     # args = parser.parse_args()
 
     sample_path = './data/samples'
-    user = 'Webin-59287'
-    password = 'Password@123'
+    user = ''
+    password = ''
     no_of_samples = 1
     times_to_run = 2
 
