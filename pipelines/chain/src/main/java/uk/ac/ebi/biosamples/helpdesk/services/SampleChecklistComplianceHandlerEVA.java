@@ -8,7 +8,7 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.helpdesk;
+package uk.ac.ebi.biosamples.helpdesk.services;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -29,8 +29,9 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
-public class SampleChecklistComplaintMaker {
-  private static final Logger log = LoggerFactory.getLogger(SampleChecklistComplaintMaker.class);
+public class SampleChecklistComplianceHandlerEVA {
+  private static final Logger log =
+      LoggerFactory.getLogger(SampleChecklistComplianceHandlerEVA.class);
   private static final String GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA =
       "geographic location (country and/or sea)";
   private static final String GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY =
@@ -40,7 +41,7 @@ public class SampleChecklistComplaintMaker {
   private final BioSamplesClient bioSamplesAapClient;
   private final PipelinesProperties pipelinesProperties;
 
-  public SampleChecklistComplaintMaker(
+  public SampleChecklistComplianceHandlerEVA(
       @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesWebinClient,
       @Qualifier("AAPCLIENT") final BioSamplesClient bioSamplesAapClient,
       final PipelinesProperties pipelinesProperties) {
@@ -61,15 +62,15 @@ public class SampleChecklistComplaintMaker {
     }
 
     if (optionalSampleEntityModel.isPresent()) {
-      handleGeoLocAndCollectionDate(optionalSampleEntityModel);
+      handleGeographicLocationAndCollectionDate(optionalSampleEntityModel);
     } else {
       log.info("Sample not found: " + accession);
     }
   }
 
-  private void handleGeoLocAndCollectionDate(
+  private void handleGeographicLocationAndCollectionDate(
       Optional<EntityModel<Sample>> optionalSampleEntityModel) {
-    final Sample sample = optionalSampleEntityModel.get().getContent();
+    final Sample sample = optionalSampleEntityModel.orElseGet(null).getContent();
 
     if (sample == null) {
       return;
@@ -95,39 +96,38 @@ public class SampleChecklistComplaintMaker {
       final String getLocAttributeTag = geoLocAttribute.getTag();
       final String getLocAttributeUnit = geoLocAttribute.getUnit();
       // final List<String> splittedGeoLoc = splitGeoLoc(getLocAttrValue);
-      final String extractedCountryName = countryAndRegionExtractor(getLocAttrValue);
-      final String extractedRegionName = countryAndRegionExtractor(getLocAttrValue);
+      final String geoLocValue = countryAndRegionExtractor(getLocAttrValue);
 
-      if (!extractedRegionName.isEmpty()) {
-        log.info("setting " + GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY + " for " + accession);
+      if (!geoLocValue.isEmpty()) {
+        log.info(
+            "Setting "
+                + GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA
+                + " and "
+                + GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY
+                + " for "
+                + accession);
 
+        attributeSet.removeIf(
+            attribute -> attribute.getType().equals(GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA));
         attributeSet.removeIf(
             attribute -> attribute.getType().equals(GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY));
         attributeSet.add(
             Attribute.build(
-                GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY,
-                extractedRegionName,
+                GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA,
+                geoLocValue,
                 getLocAttributeTag,
                 Collections.emptyList(),
                 getLocAttributeUnit));
-      } else {
-        attributeSet.add(Attribute.build(GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY, "not provided"));
-      }
-
-      if (!extractedCountryName.isEmpty()) {
-        log.info("setting " + GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA + " for " + accession);
-
-        attributeSet.removeIf(
-            attribute -> attribute.getType().equals(GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA));
         attributeSet.add(
             Attribute.build(
-                GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA,
-                extractedCountryName,
+                GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY,
+                geoLocValue,
                 getLocAttributeTag,
                 Collections.emptyList(),
                 getLocAttributeUnit));
       } else {
         attributeSet.add(Attribute.build(GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA, "not provided"));
+        attributeSet.add(Attribute.build(GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY, "not provided"));
       }
     } else {
       log.info(
@@ -179,26 +179,6 @@ public class SampleChecklistComplaintMaker {
 
         log.info("Persisted using WEBIN client " + accession);
       }
-    }
-  }
-
-  public void samnSampleGeographicLocationAttributeUpdate() {
-    final List<String> sampleStrings =
-        List.of(
-            "SAMN31710087, SAMN31710088, SAMN31710089, SAMN31710090, SAMN31710091, SAMN31710092, SAMN31710093, SAMN31710094, SAMN31710095, SAMN31710096, SAMN31710097, SAMN31710098, SAMN31710099, SAMN31710100, SAMN31710101, SAMN31710102, SAMN31710103, SAMN31710104, SAMN31710105, SAMN31710106, SAMN31710107, SAMN31710108, SAMN31710109, SAMN31710110, SAMN31710111, SAMN31710112, SAMN31710113, SAMN31710114, SAMN31710115, SAMN31710116, SAMN31710117, SAMN31710118, SAMN31710119, SAMN31710120, SAMN31710121, SAMN31710122, SAMN31710123, SAMN31710124, SAMN31710125, SAMN31710126, SAMN31710127, SAMN31710128, SAMN31710129, SAMN31710130, SAMN31710131, SAMN31710132, SAMN31710133, SAMN31710134, SAMN31710135, SAMN31710136, SAMN31710137, SAMN31710138, SAMN31710139, SAMN31710140, SAMN31710141, SAMN31710142, SAMN31710143, SAMN31710144, SAMN31710145, SAMN31710146");
-
-    final Pattern pattern = Pattern.compile("SAMN\\d+");
-    final Set<String> samnAccessions = new HashSet<>();
-
-    for (final String sampleString : sampleStrings) {
-      final Matcher matcher = pattern.matcher(sampleString);
-      while (matcher.find()) {
-        samnAccessions.add(matcher.group());
-      }
-    }
-
-    for (final String accession : samnAccessions) {
-      processSample(accession, Collections.singletonList(""));
     }
   }
 

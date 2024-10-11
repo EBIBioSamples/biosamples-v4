@@ -181,6 +181,7 @@ public class SampleRestController {
         throw new GlobalExceptions.SampleAccessionDoesNotExistException();
       }
 
+      /*TODO: verify if below is curated or un-curated view, although no technical impact */
       oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
 
       sample =

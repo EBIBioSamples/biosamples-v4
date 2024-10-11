@@ -16,7 +16,7 @@ import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.controller.CurationRestController;
+import uk.ac.ebi.biosamples.controller.CurationController;
 import uk.ac.ebi.biosamples.model.Curation;
 
 @Service
@@ -36,7 +36,7 @@ public class CurationResourceAssembler
 
     resource.add(
         WebMvcLinkBuilder.linkTo(
-                WebMvcLinkBuilder.methodOn(CurationRestController.class)
+                WebMvcLinkBuilder.methodOn(CurationController.class)
                     .getCurationSamplesHal(curation.getHash(), null, null))
             .withRel("samples"));
 

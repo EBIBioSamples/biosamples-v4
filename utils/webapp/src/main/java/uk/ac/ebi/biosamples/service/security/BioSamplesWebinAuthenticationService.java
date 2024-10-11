@@ -98,14 +98,10 @@ public class BioSamplesWebinAuthenticationService {
       final String proxyWebinId,
       final String webinIdToSetForSample,
       final String domain) {
-    final boolean oldSamplePresent = oldSample.isPresent();
-
     if (webinIdFromAuthToken.equalsIgnoreCase(proxyWebinId)) {
-      return handleWebinSuperUserSampleSubmission(
-          sample, oldSample, domain, webinIdToSetForSample, oldSamplePresent);
+      return handleWebinSuperUserSampleSubmission(sample, oldSample, domain, webinIdToSetForSample);
     } else {
-      return handleNormalSampleUpdate(
-          sample, oldSample, webinIdFromAuthToken, domain, oldSamplePresent);
+      return handleNormalSampleUpdate(sample, oldSample, webinIdFromAuthToken, domain);
     }
   }
 
@@ -131,14 +127,13 @@ public class BioSamplesWebinAuthenticationService {
       final Sample sample,
       final Optional<Sample> oldSample,
       final String webinIdFromAuthToken,
-      final String domain,
-      final boolean oldSamplePresent) {
+      final String domain) {
     if (domain != null) {
       throw new GlobalExceptions.AccessControlException(
           "Sample submitted using WEBIN authentication must not have a domain");
     }
 
-    if (oldSamplePresent) {
+    if (oldSample.isPresent()) {
       final Sample oldSampleInDb = oldSample.get();
 
       existingSampleAccessibilityChecks(sample, oldSampleInDb);
@@ -166,9 +161,8 @@ public class BioSamplesWebinAuthenticationService {
       final Sample sample,
       final Optional<Sample> oldSample,
       final String domain,
-      final String webinIdToSetForSample,
-      final boolean oldSamplePresent) {
-    if (oldSamplePresent) {
+      final String webinIdToSetForSample) {
+    if (oldSample.isPresent()) {
       final Sample oldSampleInDb = oldSample.get();
       final String webinIdInOldSample = oldSampleInDb.getWebinSubmissionAccountId();
 
@@ -199,7 +193,8 @@ public class BioSamplesWebinAuthenticationService {
   private boolean isOwnershipChangeFromAapToWebinAllowed(final String oldSampleAapDomain) {
     return sampleService.isPipelineEnaDomain(oldSampleAapDomain)
         || isOldRegistrationDomain(oldSampleAapDomain)
-        || oldSampleAapDomain.equals(ATLANTICO_DOMAIN);
+        || oldSampleAapDomain.equals(ATLANTICO_DOMAIN)
+        || oldSampleAapDomain.equals("subs.team-31");
   }
 
   private boolean isSameDomain(final String domain, final String oldSampleAapDomain) {

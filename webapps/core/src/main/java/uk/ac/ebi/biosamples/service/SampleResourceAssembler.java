@@ -22,9 +22,9 @@ import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-import uk.ac.ebi.biosamples.controller.SampleCurationLinksRestController;
+import uk.ac.ebi.biosamples.controller.SampleCurationLinksController;
 import uk.ac.ebi.biosamples.controller.SampleRestController;
-import uk.ac.ebi.biosamples.controller.StructuredDataRestController;
+import uk.ac.ebi.biosamples.controller.StructuredDataController;
 import uk.ac.ebi.biosamples.model.Sample;
 
 /**
@@ -75,19 +75,19 @@ public class SampleResourceAssembler
 
   private Link getCurationLinksLink(final String accession) {
     return linkTo(
-            methodOn(SampleCurationLinksRestController.class)
+            methodOn(SampleCurationLinksController.class)
                 .getCurationLinkPageJson(accession, null, null))
         .withRel("curationLinks");
   }
 
   private Link getCurationLinkLink(final String accession) {
     return linkTo(
-            methodOn(SampleCurationLinksRestController.class).getCurationLinkJson(accession, null))
+            methodOn(SampleCurationLinksController.class).getCurationLinkJson(accession, null))
         .withRel("curationLink");
   }
 
   private Link getStructuredDataLink(final String accession) {
-    return linkTo(methodOn(StructuredDataRestController.class).get(accession))
+    return linkTo(methodOn(StructuredDataController.class).get(accession))
         .withRel("structuredData");
   }
 

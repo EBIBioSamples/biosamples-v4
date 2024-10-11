@@ -251,7 +251,6 @@ public class BulkActionControllerV2 {
 
     final List<Sample> createdSamples = new ArrayList<>();
     final List<SubmissionReceipt.ErrorReceipt> errors = new ArrayList<>();
-
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final AuthorizationProvider authProvider =
         authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
@@ -323,6 +322,45 @@ public class BulkActionControllerV2 {
 
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(new SubmissionReceipt(createdSamples, errors));
+  }
+
+  /*
+  Submit multiple samples, without any relationship information
+   */
+  @PreAuthorize("isAuthenticated()")
+  @RequestMapping("/bulk-validate")
+  @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
+  public ResponseEntity<SubmissionReceipt> validateV2(@RequestBody final List<Sample> samples) {
+    log.info("V2-Received Validate request for " + samples.size() + " samples");
+
+    final List<SubmissionReceipt.ErrorReceipt> errors = new ArrayList<>();
+    List<SubmissionReceipt.ValidationError> validationErrors;
+
+    for (final Sample sample : samples) {
+      final String validationResult = validateSampleV2WebinAuth(sample);
+
+      if (validationResult != null) {
+        try {
+          validationErrors = objectMapper.readValue(validationResult, new TypeReference<>() {});
+        } catch (JsonProcessingException e) {
+          validationErrors =
+              Collections.singletonList(
+                  new SubmissionReceipt.ValidationError(
+                      "", Collections.singletonList(validationResult)));
+        }
+
+        errors.add(new SubmissionReceipt.ErrorReceipt(sample.getName(), validationErrors));
+      }
+    }
+
+    log.info(
+        "V2-Received bulk-validate request for : "
+            + samples.size()
+            + " samples and validated : "
+            + samples.size()
+            + " samples.");
+
+    return ResponseEntity.status(HttpStatus.OK).body(new SubmissionReceipt(null, errors));
   }
 
   private Pair<Optional<Sample>, Optional<String>> persistSampleV2AapAuth(
@@ -397,6 +435,22 @@ public class BulkActionControllerV2 {
     }
 
     return sampleErrorPair;
+  }
+
+  private String validateSampleV2WebinAuth(Sample sample) {
+    try {
+      validateSample(sample, true);
+    } catch (GlobalExceptions.SchemaValidationException e) {
+      log.info("Sample validation failed: {}", sample.getAccession());
+
+      return e.getMessage();
+    } catch (Exception e) {
+      log.error("Failed to validate sample", e);
+
+      return e.getMessage();
+    }
+
+    return null;
   }
 
   private Sample buildSample(

@@ -104,7 +104,7 @@ public class SampleService {
 
     if (isWebinSuperUser) {
       if (newSample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-        // file uploader submissions are done via super-user, but they are non imported samples,
+        // file uploader submissions are done via superuser, but they are non-imported samples,
         // needs to be handled safely
         if (newSample.hasAccession()) {
           return isSavedSampleEmpty(oldSample);
@@ -112,7 +112,7 @@ public class SampleService {
 
         return true;
       } else {
-        // otherwise it is a ENA pipeline import, cannot be empty
+        // otherwise it is an ENA pipeline import, cannot be empty
         return false;
       }
     } else {
@@ -642,7 +642,8 @@ public class SampleService {
           && isWebinSuperUser
           && !isNcbiSampleAndNcbiSuperUserDomain(newSample)) {
         // If oldSample doesn't exist, and newSampleSraAccession is still null, create a new one
-        // Don't generate SRA accession (ERS sample accessions) for NCBI samples
+        // Don't generate SRA accession (ERS sample accessions) for NCBI samples while import (AAP
+        // domain check + prefix check)
         newSampleSraAccessionAttribute = Attribute.build(SRA_ACCESSION, generateOneSRAAccession());
         // Add newSampleSraAccession to the attributes of the new sample
         newSampleAttributes.add(newSampleSraAccessionAttribute);
