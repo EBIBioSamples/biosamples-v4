@@ -542,11 +542,14 @@ public class SamplesRestController {
             ? AuthorizationProvider.WEBIN
             : AuthorizationProvider.AAP;
     final boolean isWebinSuperUser =
-        (authProvider == AuthorizationProvider.WEBIN)
+        authProvider == AuthorizationProvider.WEBIN
             && bioSamplesWebinAuthenticationService.isWebinSuperUser(authToken.getUser());
+    final boolean isAapSuperUser =
+        authProvider == AuthorizationProvider.AAP && bioSamplesAapService.isWriteSuperUser();
+    final boolean isAnySuperUser = isWebinSuperUser || isAapSuperUser;
     final Optional<Sample> oldSample =
         sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
-            sample, isWebinSuperUser);
+            sample, isAnySuperUser);
     final Instant now = Instant.now();
 
     sample =
@@ -566,7 +569,7 @@ public class SamplesRestController {
                     : sample.getSubmittedVia())
             .build();
 
-    sample = validateSample(sample, authProvider, isWebinSuperUser);
+    sample = validateSample(sample, authProvider, isWebinSuperUser, isAapSuperUser);
 
     if (!setFullDetails) {
       sample = sampleManipulationService.removeLegacyFields(sample);
@@ -584,14 +587,12 @@ public class SamplesRestController {
   private Sample validateSample(
       Sample sample,
       final AuthorizationProvider authorizationProvider,
-      final boolean isWebinSuperUser) {
-    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    final boolean isWebinAuth = authorizationProvider == AuthorizationProvider.WEBIN;
-
-    if (isWebinAuth && !isWebinSuperUser) {
+      final boolean isWebinSuperUser,
+      final boolean isAapSuperUser) {
+    if (authorizationProvider == AuthorizationProvider.WEBIN && !isWebinSuperUser) {
       sample = schemaValidationService.validate(sample);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
-    } else if (!isWebinAuth && !bioSamplesAapService.isWriteSuperUser()) {
+    } else if (authorizationProvider == AuthorizationProvider.AAP && !isAapSuperUser) {
       sample = schemaValidationService.validate(sample);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, false);
     }

@@ -8,11 +8,9 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.auth;
+package uk.ac.ebi.biosamples.auth.services;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -34,8 +32,8 @@ import uk.ac.ebi.biosamples.mongo.repository.MongoAuthChangeRepository;
 @Component
 public class AuthChangeHandler {
   private static final Logger log = LoggerFactory.getLogger(AuthChangeHandler.class);
-  private static final String WEBIN_33870 = "Webin-33870";
-  public static final String SELF_ATLANT_ECO = "self.AtlantECO";
+  private static final String WEBIN_ID_TO_CHANGE_TO = "Webin-64171";
+  public static final String AAP_DOMAIN_TO_CHANGE = "self.AtlantECO";
   private final BioSamplesClient bioSamplesWebinClient;
   private final BioSamplesClient bioSamplesAapClient;
   private final MongoAuthChangeRepository mongoAuthChangeRepository;
@@ -50,20 +48,25 @@ public class AuthChangeHandler {
   }
 
   private void processSample(final String accession, final List<String> curationDomainList) {
-    log.info("Processing Sample: " + accession);
+    if (!accession.startsWith("SAMEA")) {
+      String sameaAccession = "SAMEA" + accession;
 
-    Optional<EntityModel<Sample>> optionalSampleEntityModel =
-        bioSamplesAapClient.fetchSampleResource(accession, Optional.of(curationDomainList));
+      log.info("Processing Sample: " + sameaAccession);
 
-    if (optionalSampleEntityModel.isEmpty()) {
-      optionalSampleEntityModel =
-          bioSamplesWebinClient.fetchSampleResource(accession, Optional.of(curationDomainList));
-    }
+      Optional<EntityModel<Sample>> optionalSampleEntityModel =
+          bioSamplesAapClient.fetchSampleResource(sameaAccession, Optional.of(curationDomainList));
 
-    if (optionalSampleEntityModel.isPresent()) {
-      handleAuth(optionalSampleEntityModel);
-    } else {
-      log.info("Sample not found: " + accession);
+      if (optionalSampleEntityModel.isEmpty()) {
+        optionalSampleEntityModel =
+            bioSamplesWebinClient.fetchSampleResource(
+                sameaAccession, Optional.of(curationDomainList));
+      }
+
+      if (optionalSampleEntityModel.isPresent()) {
+        handleAuth(optionalSampleEntityModel);
+      } else {
+        log.info("Sample not found: " + accession);
+      }
     }
   }
 
@@ -84,13 +87,16 @@ public class AuthChangeHandler {
       return;
     }
 
-    if (sampleDomain.equals(SELF_ATLANT_ECO)) {
+    if (sampleDomain.equals(AAP_DOMAIN_TO_CHANGE)) {
       log.info(
-          "Sample authority needs to change for: " + accession + " setting to: " + WEBIN_33870);
+          "Sample authority needs to change for: "
+              + accession
+              + " setting to: "
+              + WEBIN_ID_TO_CHANGE_TO);
 
       final Sample updatedSample =
           Sample.Builder.fromSample(sample)
-              .withWebinSubmissionAccountId(WEBIN_33870)
+              .withWebinSubmissionAccountId(WEBIN_ID_TO_CHANGE_TO)
               .withNoDomain()
               .build();
 
@@ -99,11 +105,11 @@ public class AuthChangeHandler {
 
       if (Objects.requireNonNull(sampleEntityModel.getContent())
           .getWebinSubmissionAccountId()
-          .equals(WEBIN_33870)) {
+          .equals(WEBIN_ID_TO_CHANGE_TO)) {
         log.info("Sample " + accession + " updated");
 
         mongoAuthChangeRepository.save(
-            new MongoAuthChangeRecord(accession, SELF_ATLANT_ECO, WEBIN_33870));
+            new MongoAuthChangeRecord(accession, AAP_DOMAIN_TO_CHANGE, WEBIN_ID_TO_CHANGE_TO));
       } else {
         log.info("Sample " + accession + " failed to be updated");
       }
@@ -126,6 +132,41 @@ public class AuthChangeHandler {
 
     } catch (IOException e) {
       log.info("Failed to process CSV file " + e);
+    }
+  }
+
+  public void parseFileAndProcessSampleAuthentication() {
+    final String file = "C:\\Users\\dgupta\\BioSamples_ownership-change-to-Webin-64171.txt";
+
+    try (final BufferedReader br = new BufferedReader(new FileReader(file))) {
+      String identifier;
+
+      while ((identifier = br.readLine()) != null) {
+        processSample(identifier, Collections.singletonList(""));
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void parseListOfSamplesAndProcessSampleAuthentication() {
+    final List<String> samples =
+        List.of(
+            "SAMEA8231217",
+            "SAMEA8231218",
+            "SAMEA8231219",
+            "SAMEA8231220",
+            "SAMEA8231221",
+            "SAMEA8231222",
+            "SAMEA8231223",
+            "SAMEA8231224",
+            "SAMEA8231225",
+            "SAMEA8231226");
+
+    try {
+      samples.forEach(sample -> processSample(sample, Collections.singletonList("")));
+    } catch (Exception e) {
+      log.info("Failed to process list of samples " + e);
     }
   }
 }

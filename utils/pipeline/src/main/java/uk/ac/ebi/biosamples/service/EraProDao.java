@@ -56,7 +56,8 @@ public class EraProDao {
         query, sampleCallbackResultRowMapper, minDateOld, maxDateOld, minDateOld, maxDateOld);
   }
 
-  public List<SampleCallbackResult> doSampleCallbackForAccessions(final List<String> accessions) {
+  public List<SampleCallbackResult> doSampleCallbackForAccessions(
+      final List<String> accessions, final boolean biosamples) {
     log.info("Getting ENA samples");
     final AtomicInteger counter = new AtomicInteger(0);
     final int batchSize = 1000;
@@ -67,13 +68,23 @@ public class EraProDao {
             .values();
 
     // Execute the query with the accessions as parameters
-    accessionBatches.forEach(
-        accessionBatch -> {
-          final String query = queryForAccessions(accessionBatch);
+    if (biosamples) {
+      accessionBatches.forEach(
+          accessionBatch -> {
+            final String query = queryForBioSampleAccessions(accessionBatch);
 
-          sampleCallbackResults.addAll(
-              jdbcTemplate.query(query, sampleCallbackResultRowMapper, accessionBatch.toArray()));
-        });
+            sampleCallbackResults.addAll(
+                jdbcTemplate.query(query, sampleCallbackResultRowMapper, accessionBatch.toArray()));
+          });
+    } else {
+      accessionBatches.forEach(
+          accessionBatch -> {
+            final String query = queryForAccessions(accessionBatch);
+
+            sampleCallbackResults.addAll(
+                jdbcTemplate.query(query, sampleCallbackResultRowMapper, accessionBatch.toArray()));
+          });
+    }
 
     return sampleCallbackResults;
   }
@@ -86,6 +97,26 @@ public class EraProDao {
     final String query =
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID, LAST_UPDATED FROM SAMPLE "
             + "WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' "
+            + "AND STATUS_ID IN (2, 4, 5, 6, 7, 8) AND EGA_ID IS NULL "
+            + "AND BIOSAMPLE_ID IN ("
+            + placeholders
+            + ") "
+            + "ORDER BY LAST_UPDATED ASC";
+
+    // Log the query for debugging
+    log.debug("Executing query: {}", query);
+
+    return query;
+  }
+
+  private String queryForBioSampleAccessions(List<String> accessions) {
+    // Create placeholders for the IN clause
+    final String placeholders = accessions.stream().map(a -> "?").collect(Collectors.joining(", "));
+
+    // Build the query with the appropriate number of placeholders
+    final String query =
+        "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID, LAST_UPDATED FROM SAMPLE "
+            + "WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'Y' "
             + "AND STATUS_ID IN (2, 4, 5, 6, 7, 8) AND EGA_ID IS NULL "
             + "AND BIOSAMPLE_ID IN ("
             + placeholders
@@ -227,4 +258,14 @@ public class EraProDao {
 
         return sampleCallbackResult;
       };
+
+  public void updateSampleStatus(final String biosampleId) {
+    try {
+      jdbcTemplate.update("UPDATE SAMPLE SET STATUS_ID = 4 WHERE BIOSAMPLE_ID = ?", biosampleId);
+    } catch (final Exception e) {
+      log.error("Failed to update sample status of " + biosampleId);
+
+      throw e;
+    }
+  }
 }

@@ -74,8 +74,9 @@ public class WebinAuthClientService implements ClientService {
       final AuthRequestWebin authRequestWebin =
           new AuthRequestWebin(username, password, authRealms);
       final HttpHeaders headers = new HttpHeaders();
-      headers.setContentType(MediaType.APPLICATION_JSON);
       final HttpEntity<String> entity;
+
+      headers.setContentType(MediaType.APPLICATION_JSON);
 
       try {
         entity = new HttpEntity<>(objectMapper.writeValueAsString(authRequestWebin), headers);

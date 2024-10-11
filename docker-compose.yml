@@ -35,7 +35,7 @@ services:
     - biosamples.mongo.sample.writeConcern=1
     - BIOSAMPLES_NEO_URL=bolt://neo4j:7687
     - biosamples.schemaValidator=http://json-schema-validator:3020/validate
-    - biosamples.schemaStore=https://www.ebi.ac.uk/biosamples/schema/store/
+    - biosamples.schemaStore=http://wp-np2-44.ebi.ac.uk:8080/biosamples/schema/store/
     - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
     - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
@@ -131,7 +131,7 @@ services:
       - SPRING_RABBITMQ_LISTENER_SIMPLE_TRANSACTION-SIZE=25
       - BIOSAMPLES_NEO_URL=bolt://neo4j:7687
       - biosamples.schemaValidator=http://json-schema-validator:3020/validate
-      - biosamples.schemaStore=https://www.ebi.ac.uk/biosamples/schema/store/
+      - biosamples.schemaStore=http://wp-np2-44.ebi.ac.uk:8080/biosamples/schema/store/
       - spring.jackson.serialization-inclusion=non_null
       - spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false
       - spring.jackson.serialization.indent_output=true

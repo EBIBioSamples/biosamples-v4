@@ -161,14 +161,13 @@ public class EnaImportCallable implements Callable<Void> {
         log.info(
             "Sample "
                 + accession
-                + " has SRA accession mismatch with ENA, updating SRA accession attribute with SAMPLE_ID from ENA");
+                + " has SRA accession mismatch with ENA, this shouldn't happen - investigate");
 
         /*sampleSaveRequired = true;
         attributesInBioSample.removeIf(attribute -> attribute.getType().equals(SRA_ACCESSION));
         attributesInBioSample.add(Attribute.build(SRA_ACCESSION, eraproSampleSampleId));*/
         // August 12, 2024: dont do anything to these samples, ENA and BSD auth samples shouldn't
         // have this mismatch from the end of 2023
-        sampleSaveRequired = false;
       } else {
         log.info("Sample " + accession + " has SRA accession match with ENA, no action required");
       }

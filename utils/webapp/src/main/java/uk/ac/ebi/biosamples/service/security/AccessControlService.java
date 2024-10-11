@@ -55,13 +55,12 @@ public class AccessControlService {
         final AuthorizationProvider authority;
         final String user;
         final List<String> roles;
-
         final JsonNode node = objectMapper.readTree(payload);
+
         if (isAap(node)) {
           authority = AuthorizationProvider.AAP;
           user = node.get("sub").asText();
-          roles =
-              objectMapper.convertValue(node.get("domains"), new TypeReference<List<String>>() {});
+          roles = objectMapper.convertValue(node.get("domains"), new TypeReference<>() {});
         } else {
           verifyValidity(token);
 
