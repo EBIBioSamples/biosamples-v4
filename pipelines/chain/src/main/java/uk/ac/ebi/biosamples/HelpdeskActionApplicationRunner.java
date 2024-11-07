@@ -33,7 +33,7 @@ public class HelpdeskActionApplicationRunner implements ApplicationRunner {
   @Override
   public void run(ApplicationArguments args) {
     // authChangeHandler.parseFileAndProcessSampleAuthentication();
-    sampleChecklistComplianceHandlerEVA.samnSampleGeographicLocationAttributeUpdateFromFile();
+    // sampleChecklistComplianceHandlerEVA.samnSampleGeographicLocationAttributeUpdateFromFile();
     /*final List<String> accessions =
         sampleStatusUpdater.parseFileAndGetSampleAccessionList(
             "C:\\Users\\dgupta\\AtlantECO-samples-to-suppress.txt");
@@ -44,6 +44,8 @@ public class HelpdeskActionApplicationRunner implements ApplicationRunner {
       "C:\\Users\\dgupta\\ParentChild_Biosamples_mapping_clean.xlsx");*/
       // sampleChecklistComplianceHandlerEVA.samnSampleGeographicLocationAttributeUpdateFromFile();
       // sampleExternalReferenceHandler.processSample("SAMEA115414646");
+
+      sampleStatusUpdater.makeFilteredSamplesPrivate();
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }

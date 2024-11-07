@@ -799,8 +799,8 @@ public class SampleService {
   }
 
   public Optional<Sample> validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
-      final Sample sample, final boolean anySuperUser) {
-    if (!anySuperUser) {
+      final Sample sample, final boolean isWebinSuperUser) {
+    if (!isWebinSuperUser) {
       if (sample.hasAccession()
           || sample.hasSraAccession()
           || sample.getAttributes() != null

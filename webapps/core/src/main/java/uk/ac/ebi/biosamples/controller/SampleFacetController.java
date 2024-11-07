@@ -48,7 +48,7 @@ public class SampleFacetController {
     //		MultiValueMap<String, String> filters = filterService.getFilters(filter);
     final Collection<Filter> filters = filterService.getFiltersCollection(filter);
     final Collection<String> domains = Collections.emptyList();
-    final List<Facet> sampleFacets = facetService.getFacets(text, filters, domains, 10, 10);
+    final List<Facet> sampleFacets = facetService.getFacets(text, filters, 10, 10);
 
     final CollectionModel<Facet> resources = CollectionModel.of(sampleFacets);
 

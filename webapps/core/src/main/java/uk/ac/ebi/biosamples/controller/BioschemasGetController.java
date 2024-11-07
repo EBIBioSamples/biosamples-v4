@@ -20,22 +20,22 @@ import uk.ac.ebi.biosamples.model.JsonLDDataset;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.JsonLDService;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 
 @RestController
 @RequestMapping(produces = "application/ld+json")
 public class BioschemasGetController {
   private final JsonLDService jsonLDService;
   private final SampleService sampleService;
-  private final BioSamplesAapService bioSamplesAapService;
+  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
 
   public BioschemasGetController(
       final JsonLDService service,
       final SampleService sampleService,
-      final BioSamplesAapService bioSamplesAapService) {
+      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService) {
     jsonLDService = service;
     this.sampleService = sampleService;
-    this.bioSamplesAapService = bioSamplesAapService;
+    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
   }
 
   @CrossOrigin(methods = RequestMethod.GET)
@@ -58,7 +58,7 @@ public class BioschemasGetController {
         sampleService
             .fetch(accession, Optional.empty())
             .orElseThrow(GlobalExceptions.SampleNotFoundException::new);
-    bioSamplesAapService.isSampleAccessible(sample);
+    bioSamplesWebinAuthenticationService.isSampleAccessible(sample, null);
     return jsonLDService.sampleToJsonLD(sample);
   }
 }

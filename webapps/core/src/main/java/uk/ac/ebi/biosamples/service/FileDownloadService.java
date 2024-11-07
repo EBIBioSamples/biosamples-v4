@@ -29,14 +29,9 @@ public class FileDownloadService {
   }
 
   public InputStream getDownloadStream(
-      final String text,
-      final Collection<Filter> filters,
-      final Collection<String> domains,
-      final String format,
-      final int count) {
+      final String text, final Collection<Filter> filters, final String format, final int count) {
     final FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor(format);
-    return new FileDownloadInputStream(
-        samplePageService, text, filters, count, domains, serializer);
+    return new FileDownloadInputStream(samplePageService, text, filters, count, serializer);
   }
 
   public void copyAndCompress(

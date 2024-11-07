@@ -66,7 +66,6 @@ public class SampleRestControllerTest {
     when(samplePageService.getSamplesByText(
             nullable(String.class),
             anyList(),
-            anySet(),
             nullable(String.class),
             nullable(String.class),
             anyInt(),

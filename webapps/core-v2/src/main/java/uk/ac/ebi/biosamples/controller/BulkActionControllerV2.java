@@ -34,9 +34,7 @@ import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @RestController
@@ -47,29 +45,23 @@ public class BulkActionControllerV2 {
   private static final String SRA_ACCESSION = "SRA accession";
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final SampleService sampleService;
-  private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final AccessControlService accessControlService;
   private final SchemaValidationService schemaValidationService;
-  private final TaxonomyClientService taxonomyClientService;
   private final BioSamplesProperties bioSamplesProperties;
   private final ObjectMapper objectMapper;
 
   public BulkActionControllerV2(
       final SampleService sampleService,
-      final BioSamplesAapService bioSamplesAapService,
       final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       final AccessControlService accessControlService,
       final SchemaValidationService schemaValidationService,
-      final TaxonomyClientService taxonomyClientService,
       final BioSamplesProperties bioSamplesProperties,
       ObjectMapper objectMapper) {
     this.sampleService = sampleService;
-    this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.accessControlService = accessControlService;
     this.schemaValidationService = schemaValidationService;
-    this.taxonomyClientService = taxonomyClientService;
     this.bioSamplesProperties = bioSamplesProperties;
     this.objectMapper = objectMapper;
   }
@@ -98,42 +90,24 @@ public class BulkActionControllerV2 {
         });
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
 
-    if (webinAuth) {
-      final String webinSubmissionAccountId = authToken.get().getUser();
-
-      if (webinSubmissionAccountId == null) {
-        throw new GlobalExceptions.WebinTokenInvalidException();
-      }
-
-      samples =
-          samples.stream()
-              .map(
-                  sample ->
-                      bioSamplesWebinAuthenticationService.buildSampleWithWebinId(
-                          sample, webinSubmissionAccountId))
-              .collect(Collectors.toList());
-    } else {
-      if (!samples.isEmpty()) {
-        // check the first sample domain only
-        Sample firstSample = samples.get(0);
-        firstSample = bioSamplesAapService.handleSampleDomain(firstSample, Optional.empty());
-
-        final Sample finalFirstSample = firstSample;
-
-        samples =
-            samples.stream()
-                .map(
-                    sample ->
-                        Sample.Builder.fromSample(sample)
-                            .withDomain(finalFirstSample.getDomain())
-                            .withNoWebinSubmissionAccountId()
-                            .build())
-                .collect(Collectors.toList());
-      }
+    if (authToken.isEmpty()) {
+      throw new GlobalExceptions.WebinTokenInvalidException();
     }
+
+    final String webinSubmissionAccountId = authToken.get().getUser();
+
+    if (webinSubmissionAccountId == null) {
+      throw new GlobalExceptions.WebinTokenInvalidException();
+    }
+
+    samples =
+        samples.stream()
+            .map(
+                sample ->
+                    bioSamplesWebinAuthenticationService.buildSampleWithWebinId(
+                        sample, webinSubmissionAccountId))
+            .collect(Collectors.toList());
 
     final List<Sample> createdSamplesList =
         samples.stream()
@@ -194,21 +168,17 @@ public class BulkActionControllerV2 {
                           justAccession, Optional.of(Collections.singletonList("")));
 
                   if (sampleOptional.isPresent()) {
-                    final boolean webinAuth =
-                        authToken
-                            .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
-                            .orElse(false);
                     final Sample sample = sampleOptional.get();
 
                     try {
-                      if (webinAuth) {
-                        final String webinSubmissionAccountId = authToken.get().getUser();
-
-                        bioSamplesWebinAuthenticationService.isSampleAccessible(
-                            sample, webinSubmissionAccountId);
-                      } else {
-                        bioSamplesAapService.isSampleAccessible(sample);
+                      if (authToken.isEmpty()) {
+                        throw new GlobalExceptions.WebinTokenInvalidException();
                       }
+
+                      final String webinSubmissionAccountId = authToken.get().getUser();
+
+                      bioSamplesWebinAuthenticationService.isSampleAccessible(
+                          sample, webinSubmissionAccountId);
                     } catch (final Exception e) {
                       log.info("Bulk-fetch forbidden sample: " + sample.getAccession());
                       return null;
@@ -252,65 +222,39 @@ public class BulkActionControllerV2 {
     final List<Sample> createdSamples = new ArrayList<>();
     final List<SubmissionReceipt.ErrorReceipt> errors = new ArrayList<>();
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final AuthorizationProvider authProvider =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
-            ? AuthorizationProvider.WEBIN
-            : AuthorizationProvider.AAP;
 
-    if (authProvider == AuthorizationProvider.WEBIN) {
-      final String webinSubmissionAccountId = authToken.get().getUser();
+    if (authToken.isEmpty()) {
+      throw new GlobalExceptions.WebinTokenInvalidException();
+    }
 
-      if (webinSubmissionAccountId == null) {
-        throw new GlobalExceptions.WebinTokenInvalidException();
-      }
+    final String webinSubmissionAccountId = authToken.get().getUser();
 
-      for (final Sample sample : samples) {
-        final Pair<Optional<Sample>, Optional<String>> sampleErrorPair =
-            persistSampleV2WebinAuth(authProvider, webinSubmissionAccountId, sample);
+    if (webinSubmissionAccountId == null) {
+      throw new GlobalExceptions.WebinTokenInvalidException();
+    }
 
-        sampleErrorPair.getLeft().ifPresent(createdSamples::add);
-        sampleErrorPair
-            .getRight()
-            .ifPresent(
-                err -> {
-                  List<SubmissionReceipt.ValidationError> validationErrors;
+    for (final Sample sample : samples) {
+      final Pair<Optional<Sample>, Optional<String>> sampleErrorPair =
+          persistSample(webinSubmissionAccountId, sample);
 
-                  try {
-                    validationErrors = objectMapper.readValue(err, new TypeReference<>() {});
-                  } catch (JsonProcessingException e) {
-                    validationErrors =
-                        Collections.singletonList(
-                            new SubmissionReceipt.ValidationError(
-                                "", Collections.singletonList(err)));
-                  }
+      sampleErrorPair.getLeft().ifPresent(createdSamples::add);
+      sampleErrorPair
+          .getRight()
+          .ifPresent(
+              err -> {
+                List<SubmissionReceipt.ValidationError> validationErrors;
 
-                  errors.add(
-                      new SubmissionReceipt.ErrorReceipt(sample.getName(), validationErrors));
-                });
-      }
-    } else {
-      for (final Sample sample : samples) {
-        final Pair<Optional<Sample>, Optional<String>> sampleErrorPair =
-            persistSampleV2AapAuth(authProvider, sample);
+                try {
+                  validationErrors = objectMapper.readValue(err, new TypeReference<>() {});
+                } catch (JsonProcessingException e) {
+                  validationErrors =
+                      Collections.singletonList(
+                          new SubmissionReceipt.ValidationError(
+                              "", Collections.singletonList(err)));
+                }
 
-        sampleErrorPair.getLeft().ifPresent(createdSamples::add);
-        sampleErrorPair
-            .getRight()
-            .ifPresent(
-                err -> {
-                  List<SubmissionReceipt.ValidationError> validationErrors;
-                  try {
-                    validationErrors = objectMapper.readValue(err, new TypeReference<>() {});
-                  } catch (JsonProcessingException e) {
-                    validationErrors =
-                        Collections.singletonList(
-                            new SubmissionReceipt.ValidationError(
-                                "", Collections.singletonList(err)));
-                  }
-                  errors.add(
-                      new SubmissionReceipt.ErrorReceipt(sample.getName(), validationErrors));
-                });
-      }
+                errors.add(new SubmissionReceipt.ErrorReceipt(sample.getName(), validationErrors));
+              });
     }
 
     log.info(
@@ -337,7 +281,7 @@ public class BulkActionControllerV2 {
     List<SubmissionReceipt.ValidationError> validationErrors;
 
     for (final Sample sample : samples) {
-      final String validationResult = validateSampleV2WebinAuth(sample);
+      final String validationResult = validateSample(sample);
 
       if (validationResult != null) {
         try {
@@ -360,47 +304,15 @@ public class BulkActionControllerV2 {
             + samples.size()
             + " samples.");
 
-    return ResponseEntity.status(HttpStatus.OK).body(new SubmissionReceipt(null, errors));
-  }
-
-  private Pair<Optional<Sample>, Optional<String>> persistSampleV2AapAuth(
-      final AuthorizationProvider authProvider, Sample sample) {
-    final boolean isAapSuperUser = bioSamplesAapService.isWriteSuperUser();
-    final Optional<Sample> oldSample =
-        sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
-            sample, isAapSuperUser);
-    final Set<Relationship> relationships =
-        sampleService.handleSampleRelationshipsV2(sample, oldSample, isAapSuperUser);
-
-    sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
-    sample = buildSample(sample, relationships, false);
-
-    sampleService.handleSampleRelationshipsV2(sample, oldSample, isAapSuperUser);
-
-    Pair<Optional<Sample>, Optional<String>> sampleErrorPair;
-    try {
-      if (!isAapSuperUser) {
-        validateSample(sample, false);
-      }
-      Optional<Sample> persistedSample =
-          Optional.of(
-              sampleService.persistSampleV2(sample, oldSample.orElse(null), authProvider, false));
-      sampleErrorPair = new ImmutablePair<>(persistedSample, Optional.empty());
-    } catch (GlobalExceptions.SchemaValidationException e) {
-      sampleErrorPair = new ImmutablePair<>(Optional.empty(), Optional.of(e.getMessage()));
-      log.info("Sample validation failed: {}", sample.getAccession());
-    } catch (Exception e) {
-      sampleErrorPair = new ImmutablePair<>(Optional.empty(), Optional.of(e.getMessage()));
-      log.error("Failed to validate sample", e);
+    if (!errors.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.OK).body(new SubmissionReceipt(null, errors));
+    } else {
+      return ResponseEntity.status(HttpStatus.OK).body(null);
     }
-
-    return sampleErrorPair;
   }
 
-  private Pair<Optional<Sample>, Optional<String>> persistSampleV2WebinAuth(
-      final AuthorizationProvider authProvider,
-      final String webinSubmissionAccountId,
-      Sample sample) {
+  private Pair<Optional<Sample>, Optional<String>> persistSample(
+      final String webinSubmissionAccountId, Sample sample) {
     final boolean isWebinSuperUser =
         bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
     final Optional<Sample> oldSample =
@@ -419,12 +331,13 @@ public class BulkActionControllerV2 {
     try {
       if (bioSamplesProperties.isEnableBulkSubmissionWebinSuperuserValidation()
           || !isWebinSuperUser) {
-        validateSample(sample, true);
+        schemaValidationService.validate(sample);
       }
-      Optional<Sample> persistedSample =
+
+      final Optional<Sample> persistedSample =
           Optional.of(
               sampleService.persistSampleV2(
-                  sample, oldSample.orElse(null), authProvider, isWebinSuperUser));
+                  sample, oldSample.orElse(null), AuthorizationProvider.WEBIN, isWebinSuperUser));
       sampleErrorPair = new ImmutablePair<>(persistedSample, Optional.empty());
     } catch (GlobalExceptions.SchemaValidationException e) {
       sampleErrorPair = new ImmutablePair<>(Optional.empty(), Optional.of(e.getMessage()));
@@ -437,9 +350,9 @@ public class BulkActionControllerV2 {
     return sampleErrorPair;
   }
 
-  private String validateSampleV2WebinAuth(Sample sample) {
+  private String validateSample(final Sample sample) {
     try {
-      validateSample(sample, true);
+      schemaValidationService.validate(sample);
     } catch (GlobalExceptions.SchemaValidationException e) {
       log.info("Sample validation failed: {}", sample.getAccession());
 
@@ -463,14 +376,5 @@ public class BulkActionControllerV2 {
         .withSubmittedVia(
             sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia())
         .build();
-  }
-
-  private Sample validateSample(Sample sample, final boolean isWebinSubmission) {
-    schemaValidationService.validate(sample);
-    /*sample =
-    taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
-        sample, isWebinSubmission);*/
-
-    return sample;
   }
 }

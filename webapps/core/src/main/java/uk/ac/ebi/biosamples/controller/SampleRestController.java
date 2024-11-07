@@ -32,7 +32,6 @@ import uk.ac.ebi.biosamples.service.SampleManipulationService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
@@ -53,7 +52,6 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 public class SampleRestController {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final SampleService sampleService;
-  private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final SampleManipulationService sampleManipulationService;
   private final SampleResourceAssembler sampleResourceAssembler;
@@ -64,7 +62,6 @@ public class SampleRestController {
 
   public SampleRestController(
       final SampleService sampleService,
-      final BioSamplesAapService bioSamplesAapService,
       final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       final SampleManipulationService sampleManipulationService,
       final SampleResourceAssembler sampleResourceAssembler,
@@ -73,7 +70,6 @@ public class SampleRestController {
       final TaxonomyClientService taxonomyClientService,
       final AccessControlService accessControlService) {
     this.sampleService = sampleService;
-    this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.sampleManipulationService = sampleManipulationService;
     this.sampleResourceAssembler = sampleResourceAssembler;
@@ -100,17 +96,8 @@ public class SampleRestController {
 
     sample.ifPresent(
         s -> {
-          final boolean webinAuth =
-              authToken
-                  .map(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
-                  .orElse(Boolean.FALSE);
-
-          if (webinAuth) {
-            bioSamplesWebinAuthenticationService.isSampleAccessible(
-                s, authToken.map(AuthToken::getUser).orElse(null));
-          } else {
-            bioSamplesAapService.isSampleAccessible(s);
-          }
+          bioSamplesWebinAuthenticationService.isSampleAccessible(
+              s, authToken.map(AuthToken::getUser).orElse(null));
 
           decodedLegacyDetails.ifPresent(d -> sampleManipulationService.removeLegacyFields(s));
         });
@@ -137,7 +124,7 @@ public class SampleRestController {
     return sample
         .map(
             s -> {
-              bioSamplesAapService.isSampleAccessible(s);
+              bioSamplesWebinAuthenticationService.isSampleAccessible(s, null);
               decodedLegacyDetails.ifPresent(d -> sampleManipulationService.removeLegacyFields(s));
 
               return phenopacketConverter.convertToJsonPhenopacket(s);
@@ -158,47 +145,33 @@ public class SampleRestController {
     log.debug("Received PUT for " + accession);
 
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final AuthorizationProvider authProvider =
-        authToken
-            .filter(t -> t.getAuthority() == AuthorizationProvider.WEBIN)
-            .map(t -> AuthorizationProvider.WEBIN)
-            .orElse(AuthorizationProvider.AAP);
 
-    boolean isWebinSuperUser = false;
+    boolean isWebinSuperUser;
     Optional<Sample> oldSample;
 
-    if (authProvider == AuthorizationProvider.WEBIN) {
-      final String webinIdFromAuthToken = authToken.get().getUser();
-
-      if (webinIdFromAuthToken == null) {
-        throw new GlobalExceptions.WebinTokenInvalidException();
-      }
-
-      isWebinSuperUser =
-          bioSamplesWebinAuthenticationService.isWebinSuperUser(webinIdFromAuthToken);
-
-      if (sampleService.isNotExistingAccession(accession) && !isWebinSuperUser) {
-        throw new GlobalExceptions.SampleAccessionDoesNotExistException();
-      }
-
-      /*TODO: verify if below is curated or un-curated view, although no technical impact */
-      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
-
-      sample =
-          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              sample, webinIdFromAuthToken, oldSample);
-      sample = handleAbstractDataForWebinSubmission(sample, webinIdFromAuthToken);
-    } else {
-      if (sampleService.isNotExistingAccession(accession)
-          && !(bioSamplesAapService.isWriteSuperUser()
-              || bioSamplesAapService.isIntegrationTestUser())) {
-        throw new GlobalExceptions.SampleAccessionDoesNotExistException();
-      }
-
-      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
-      sample = bioSamplesAapService.handleSampleDomain(sample, oldSample);
-      sample = handleAbstractDataForAapSubmission(sample);
+    if (authToken.isEmpty()) {
+      throw new GlobalExceptions.WebinTokenInvalidException();
     }
+
+    final String webinIdFromAuthToken = authToken.get().getUser();
+
+    if (webinIdFromAuthToken == null) {
+      throw new GlobalExceptions.WebinTokenInvalidException();
+    }
+
+    isWebinSuperUser = bioSamplesWebinAuthenticationService.isWebinSuperUser(webinIdFromAuthToken);
+
+    if (sampleService.isNotExistingAccession(accession) && !isWebinSuperUser) {
+      throw new GlobalExceptions.SampleAccessionDoesNotExistException();
+    }
+
+    /*TODO: verify if below is curated or un-curated view, although no technical impact */
+    oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
+
+    sample =
+        bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+            sample, webinIdFromAuthToken, oldSample);
+    sample = handleAbstractDataForWebinSubmission(sample, webinIdFromAuthToken);
 
     sample =
         Sample.Builder.fromSample(sample)
@@ -208,7 +181,7 @@ public class SampleRestController {
                     ? SubmittedViaType.JSON_API
                     : sample.getSubmittedVia())
             .build();
-    sample = validateSample(sample, authProvider, isWebinSuperUser);
+    sample = validateSample(sample, isWebinSuperUser);
 
     if (!setFullDetails) {
       log.trace("Removing contact legacy fields for " + accession);
@@ -217,28 +190,12 @@ public class SampleRestController {
     }
 
     sample =
-        sampleService.persistSample(sample, oldSample.orElse(null), authProvider, isWebinSuperUser);
+        sampleService.persistSample(
+            sample, oldSample.orElse(null), AuthorizationProvider.WEBIN, isWebinSuperUser);
 
     // assemble a resource to return
     // create the response object with the appropriate status
     return sampleResourceAssembler.toModel(sample);
-  }
-
-  private Sample handleAbstractDataForAapSubmission(Sample sample) {
-    final SortedSet<AbstractData> abstractData = sample.getData();
-
-    if (abstractData != null && !abstractData.isEmpty()) {
-      if (bioSamplesAapService.isStructuredDataSubmittedBySampleSubmitter(sample)) {
-        sample = Sample.Builder.fromSample(sample).build();
-      } else if (bioSamplesAapService.isWriteSuperUser()
-          || bioSamplesAapService.isIntegrationTestUser()) {
-        sample = Sample.Builder.fromSample(sample).build();
-      } else {
-        sample = Sample.Builder.fromSample(sample).withNoData().build();
-      }
-    }
-
-    return sample;
   }
 
   private Sample handleAbstractDataForWebinSubmission(
@@ -266,19 +223,11 @@ public class SampleRestController {
     }
   }
 
-  private Sample validateSample(
-      Sample sample,
-      final AuthorizationProvider authorizationProvider,
-      final boolean isWebinSuperUser) {
-    final boolean isWebinAuth = authorizationProvider == AuthorizationProvider.WEBIN;
-
+  private Sample validateSample(Sample sample, final boolean isWebinSuperUser) {
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    if (isWebinAuth && !isWebinSuperUser) {
+    if (!isWebinSuperUser) {
       schemaValidationService.validate(sample);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
-    } else if (!isWebinAuth && !bioSamplesAapService.isWriteSuperUser()) {
-      schemaValidationService.validate(sample);
-      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, false);
     }
 
     if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {

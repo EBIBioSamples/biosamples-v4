@@ -48,13 +48,13 @@ public class FileDownloadInputStreamTest {
   public void init() {
     final CursorArrayList<Sample> samplePage = new CursorArrayList<>(cursor);
     when(samplePageService.getSamplesByText(
-            emptySamplesText, filters, domains, null, cursor, pageSize, Optional.empty()))
+            emptySamplesText, filters, null, cursor, pageSize, Optional.empty()))
         .thenReturn(samplePage);
 
     final CursorArrayList<Sample> samplePageWithSample = new CursorArrayList<>(cursor);
     samplePageWithSample.add(getTestSample());
     when(samplePageService.getSamplesByText(
-            sampleSearchText, filters, domains, null, cursor, pageSize, Optional.empty()))
+            sampleSearchText, filters, null, cursor, pageSize, Optional.empty()))
         .thenReturn(samplePageWithSample);
   }
 
@@ -63,7 +63,7 @@ public class FileDownloadInputStreamTest {
     final FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor("json");
     fileDownloadInputStream =
         new FileDownloadInputStream(
-            samplePageService, emptySamplesText, filters, sampleCount, domains, serializer);
+            samplePageService, emptySamplesText, filters, sampleCount, serializer);
 
     final int startByte = fileDownloadInputStream.read();
     assertTrue(startByte > 0);
@@ -74,7 +74,7 @@ public class FileDownloadInputStreamTest {
     final FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor("json");
     fileDownloadInputStream =
         new FileDownloadInputStream(
-            samplePageService, emptySamplesText, filters, sampleCount, domains, serializer);
+            samplePageService, emptySamplesText, filters, sampleCount, serializer);
 
     final StringWriter writer = new StringWriter();
     IOUtils.copy(fileDownloadInputStream, writer, Charset.defaultCharset());
@@ -88,7 +88,7 @@ public class FileDownloadInputStreamTest {
     final FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor("xml");
     fileDownloadInputStream =
         new FileDownloadInputStream(
-            samplePageService, emptySamplesText, filters, sampleCount, domains, serializer);
+            samplePageService, emptySamplesText, filters, sampleCount, serializer);
 
     final StringWriter writer = new StringWriter();
     IOUtils.copy(fileDownloadInputStream, writer, Charset.defaultCharset());
@@ -101,7 +101,7 @@ public class FileDownloadInputStreamTest {
     final FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor("json");
     fileDownloadInputStream =
         new FileDownloadInputStream(
-            samplePageService, sampleSearchText, filters, sampleCount, domains, serializer);
+            samplePageService, sampleSearchText, filters, sampleCount, serializer);
 
     final StringWriter writer = new StringWriter();
     IOUtils.copy(fileDownloadInputStream, writer, Charset.defaultCharset());

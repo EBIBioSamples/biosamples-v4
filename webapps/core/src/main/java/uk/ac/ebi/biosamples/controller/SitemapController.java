@@ -89,12 +89,7 @@ public class SitemapController {
     final Pageable pageRequest = PageRequest.of(pageNumber - 1, sitemapPageSize);
     final Page<Sample> samplePage =
         samplePageService.getSamplesByText(
-            "",
-            Collections.emptyList(),
-            Collections.emptyList(),
-            null,
-            pageRequest,
-            Optional.empty());
+            "", Collections.emptyList(), null, pageRequest, Optional.empty());
     final XmlUrlSet xmlUrlSet = new XmlUrlSet();
     for (final Sample sample : samplePage.getContent()) {
       final String location =
@@ -139,7 +134,7 @@ public class SitemapController {
     final Collection<Filter> filters = Collections.emptyList();
     final Collection<String> domains = Collections.emptyList();
     final Page<Sample> samplePage =
-        samplePageService.getSamplesByText("", filters, domains, null, pageable, Optional.empty());
+        samplePageService.getSamplesByText("", filters, null, pageable, Optional.empty());
     return samplePage.getTotalElements();
   }
 }

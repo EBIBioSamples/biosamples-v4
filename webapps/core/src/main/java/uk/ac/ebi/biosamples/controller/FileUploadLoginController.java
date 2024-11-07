@@ -27,7 +27,6 @@ import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.auth.*;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.upload.FileUploadService;
 import uk.ac.ebi.biosamples.service.upload.JsonSchemaStoreSchemaRetrievalService;
@@ -37,7 +36,6 @@ import uk.ac.ebi.tsc.aap.client.exception.UserNameOrPasswordWrongException;
 @RequestMapping("/login")
 public class FileUploadLoginController {
   private final Logger log = LoggerFactory.getLogger(getClass());
-  private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final JsonSchemaStoreSchemaRetrievalService jsonSchemaStoreSchemaRetrievalService;
   private final FileUploadService fileUploadService;
@@ -46,12 +44,10 @@ public class FileUploadLoginController {
   @Autowired ObjectMapper objectMapper;
 
   public FileUploadLoginController(
-      final BioSamplesAapService bioSamplesAapService,
       final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       final JsonSchemaStoreSchemaRetrievalService jsonSchemaStoreSchemaRetrievalService,
       final AccessControlService accessControlService,
       final FileUploadService fileUploadService) {
-    this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.jsonSchemaStoreSchemaRetrievalService = jsonSchemaStoreSchemaRetrievalService;
     this.accessControlService = accessControlService;
@@ -111,28 +107,6 @@ public class FileUploadLoginController {
         }
 
         return "upload";
-      } else {
-        final String token =
-            bioSamplesAapService.authenticate(authRequest.getUserName(), authRequest.getPassword());
-
-        if (token != null) {
-          final List<String> domains = bioSamplesAapService.getDomains(token);
-
-          model.addAttribute("loginmethod", null);
-          model.addAttribute("domains", domains);
-          model.addAttribute("webinId", null);
-          model.addAttribute("checklists", checklists);
-          model.addAttribute("token", token);
-          model.remove("wrongCreds");
-
-          try {
-            fetchRecentSubmissions(model, token);
-          } catch (final Exception e) {
-            log.info("Failed to fetch recent submissions " + e.getMessage() + " caught");
-          }
-
-          return "upload";
-        }
       }
 
       return "uploadLogin";

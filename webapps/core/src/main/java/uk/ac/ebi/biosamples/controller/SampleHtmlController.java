@@ -41,7 +41,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 
 /**
  * Primary controller for HTML operations.
@@ -59,8 +59,8 @@ public class SampleHtmlController {
   private final JsonLDService jsonLDService;
   private final FacetService facetService;
   private final FilterService filterService;
-  private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesProperties bioSamplesProperties;
+  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
 
   public SampleHtmlController(
       final SampleService sampleService,
@@ -68,31 +68,19 @@ public class SampleHtmlController {
       final JsonLDService jsonLDService,
       final FacetService facetService,
       final FilterService filterService,
-      final BioSamplesAapService bioSamplesAapService,
-      final BioSamplesProperties bioSamplesProperties) {
+      final BioSamplesProperties bioSamplesProperties,
+      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService) {
     this.sampleService = sampleService;
     this.samplePageService = samplePageService;
     this.jsonLDService = jsonLDService;
     this.facetService = facetService;
     this.filterService = filterService;
-    this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesProperties = bioSamplesProperties;
+    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
   }
 
   @GetMapping(value = "/")
   public String index(final Model model) {
-
-    //    String jsonStats;
-    //    String jsonYearlyGrowth;
-    //    try {
-    //      ObjectMapper mapper = new ObjectMapper();
-    //      jsonStats = mapper.writeValueAsString(statService.getStats());
-    //      jsonYearlyGrowth = mapper.writeValueAsString(statService.getBioSamplesYearlyGrowth());
-    //    } catch (JsonProcessingException e) {
-    //      jsonStats = "{}";
-    //      jsonYearlyGrowth = "{}";
-    //    }
-
     final JsonLDDataCatalog dataCatalog = jsonLDService.getBioSamplesDataCatalog();
     model.addAttribute("jsonLD", jsonLDService.jsonLDToString(dataCatalog));
     //    model.addAttribute("stats", jsonStats);
@@ -119,29 +107,29 @@ public class SampleHtmlController {
       @RequestParam(name = "size", defaultValue = "10") Integer size,
       final HttpServletRequest request,
       final HttpServletResponse response) {
-
     page = page == null || page < 1 ? 1 : page;
     size = size == null || size < 1 ? 10 : size;
+
     if (page > 500 || size > 200) {
       throw new PaginationException(); // solr degrades with high page and size params, use cursor
       // instead
     }
 
     final Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);
-    final Collection<String> domains = bioSamplesAapService.getDomains();
-
     final Pageable pageable = PageRequest.of(page - 1, size);
     final Page<Sample> pageSample =
         samplePageService.getSamplesByText(
-            text, filterCollection, domains, null, pageable, Optional.empty());
-
+            text, filterCollection, null, pageable, Optional.empty());
     // build URLs for the facets depending on if they are enabled or not
     final UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);
     final List<String> filtersList = new ArrayList<>();
+
     if (filtersArray != null) {
       filtersList.addAll(Arrays.asList(filtersArray));
     }
+
     Collections.sort(filtersList);
+
     final String downloadURL =
         "?text="
             + (text != null ? text : "")
@@ -159,7 +147,8 @@ public class SampleHtmlController {
     model.addAttribute("downloadURL", downloadURL);
 
     addCacheControlHeadersToResponse(
-        domains, response, bioSamplesProperties.getBiosamplesCorePageCacheMaxAge());
+        response, bioSamplesProperties.getBiosamplesCorePageCacheMaxAge());
+
     return "samples";
   }
 
@@ -190,35 +179,37 @@ public class SampleHtmlController {
       @RequestParam(name = "filter", required = false) final String[] filtersArray,
       final HttpServletResponse response) {
     final Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);
-    final Collection<String> domains = bioSamplesAapService.getDomains();
-
     // build URLs for the facets depending on if they are enabled or not
     final List<String> filtersList = new ArrayList<>();
+
     if (filtersArray != null) {
       filtersList.addAll(Arrays.asList(filtersArray));
     }
+
     Collections.sort(filtersList);
 
     model.addAttribute("filters", filtersList);
-    model.addAttribute("facets", facetService.getFacets(text, filterCollection, domains, 20, 10));
+    model.addAttribute("facets", facetService.getFacets(text, filterCollection, 20, 10));
 
     addCacheControlHeadersToResponse(
-        domains, response, bioSamplesProperties.getBiosamplesCoreFacetCacheMaxAge());
+        response, bioSamplesProperties.getBiosamplesCoreFacetCacheMaxAge());
+
     return "fragments/facets";
   }
 
   private Paginations getPaginations(
       final Page<Sample> pageSample, final UriComponentsBuilder uriBuilder) {
-
     final int pageTotal = pageSample.getTotalPages();
     final int pageCurrent = pageSample.getNumber() + 1;
 
     Pagination previous = null;
+
     if (pageCurrent > 1) {
       previous = new Pagination(pageCurrent - 1, false, pageCurrent, uriBuilder);
     }
 
     Pagination next = null;
+
     if (pageCurrent < pageTotal) {
       next = new Pagination(pageCurrent + 1, false, pageCurrent, uriBuilder);
     }
@@ -261,7 +252,6 @@ public class SampleHtmlController {
   }
 
   private static class Paginations implements Iterable<Pagination> {
-
     private final List<Pagination> paginations = new ArrayList<>();
     public final Pagination previous;
     public final Pagination next;
@@ -312,12 +302,13 @@ public class SampleHtmlController {
       final HttpServletResponse response) {
     // TODO allow curation domain specification
     final Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
-    if (!sample.isPresent()) {
+
+    if (sample.isEmpty()) {
       log.info("Returning a 404 for " + request.getRequestURL());
       throw new ResourceNotFoundException();
     }
 
-    bioSamplesAapService.isSampleAccessible(sample.get());
+    bioSamplesWebinAuthenticationService.isSampleAccessible(sample.get(), null);
 
     // response.setHeader(HttpHeaders.LAST_MODIFIED,
     // String.valueOf(sample.getUpdate().toEpochSecond(ZoneOffset.UTC)));
@@ -328,17 +319,20 @@ public class SampleHtmlController {
     model.addAttribute("sample", sample.get());
     model.addAttribute("schemaStoreUrl", bioSamplesProperties.getSchemaStore());
     model.addAttribute("jsonLD", jsonLDString);
-
     model.addAttribute("update", sample.get().getUpdate().atOffset(ZoneOffset.UTC));
     model.addAttribute("release", sample.get().getRelease().atOffset(ZoneOffset.UTC));
     model.addAttribute("create", sample.get().getCreate().atOffset(ZoneOffset.UTC));
 
     final Instant submitted = sample.get().getSubmitted();
+
     model.addAttribute("submitted", submitted != null ? submitted.atOffset(ZoneOffset.UTC) : null);
+
     final Instant reviewed = sample.get().getReviewed();
+
     model.addAttribute("reviewed", reviewed != null ? reviewed.atOffset(ZoneOffset.UTC) : null);
 
-    addCacheControlHeadersToResponse(new ArrayList<>(), response, 10);
+    addCacheControlHeadersToResponse(response, 10);
+
     return "sample";
   }
 
@@ -373,15 +367,16 @@ public class SampleHtmlController {
   }
 
   private void addCacheControlHeadersToResponse(
-      final Collection<String> domains, final HttpServletResponse response, final long maxAge) {
+      final HttpServletResponse response, final long maxAge) {
     // EBI load balancer does cache but doesn't add age header, so clients could cache up to twice
     // this age
     final CacheControl cacheControl = CacheControl.maxAge(maxAge, TimeUnit.SECONDS);
     // if the user has access to any domains, then mark the response as
     // private as must be using AAP and responses will be different
-    if (domains != null && !domains.isEmpty()) {
+
+    /*if (domains != null && !domains.isEmpty()) {
       cacheControl.cachePrivate();
-    }
+    }*/
     response.setHeader("Cache-Control", cacheControl.getHeaderValue());
   }
 }

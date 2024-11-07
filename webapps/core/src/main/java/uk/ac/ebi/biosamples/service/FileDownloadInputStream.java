@@ -30,7 +30,6 @@ public class FileDownloadInputStream extends InputStream {
   private final SamplePageService samplePageService;
   private final String text;
   private final Collection<Filter> filters;
-  private final Collection<String> domains;
   private final FileDownloadSerializer serializer;
   private final Queue<Sample> sampleQueue;
   private InputStream sampleStream;
@@ -43,12 +42,10 @@ public class FileDownloadInputStream extends InputStream {
       final String text,
       final Collection<Filter> filters,
       final int totalCount,
-      final Collection<String> domains,
       final FileDownloadSerializer serializer) {
     this.samplePageService = samplePageService;
     this.text = text;
     this.filters = filters;
-    this.domains = domains;
     this.serializer = serializer;
 
     this.totalCount = Math.min(MAX_DOWNLOAD_SIZE, totalCount);
@@ -99,7 +96,7 @@ public class FileDownloadInputStream extends InputStream {
   private void loadSamples() {
     final CursorArrayList<Sample> samplePage =
         samplePageService.getSamplesByText(
-            text, filters, domains, null, cursor, PAGE_SIZE, Optional.empty());
+            text, filters, null, cursor, PAGE_SIZE, Optional.empty());
     if (!samplePage.isEmpty()) {
       sampleQueue.addAll(samplePage);
       cursor = samplePage.getNextCursorMark();

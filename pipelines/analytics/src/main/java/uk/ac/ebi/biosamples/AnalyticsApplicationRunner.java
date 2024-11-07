@@ -56,12 +56,7 @@ public class AnalyticsApplicationRunner implements ApplicationRunner {
 
     final Page<Sample> samplePage =
         samplePageService.getSamplesByText(
-            "",
-            Collections.emptyList(),
-            Collections.emptyList(),
-            null,
-            PageRequest.of(0, 1),
-            Optional.empty());
+            "", Collections.emptyList(), null, PageRequest.of(0, 1), Optional.empty());
     sampleAnalytics.setTotalRecords(samplePage.getTotalElements());
     addToFacets("organism", sampleAnalytics);
     addToFacets("tissue", sampleAnalytics);
@@ -81,8 +76,7 @@ public class AnalyticsApplicationRunner implements ApplicationRunner {
 
   private void addToFacets(final String facetField, final SampleAnalytics sampleAnalytics) {
     final List<Facet> facetList =
-        facetService.getFacets(
-            "", Collections.emptyList(), Collections.emptyList(), 1, 10, facetField);
+        facetService.getFacets("", Collections.emptyList(), 1, 10, facetField);
     for (final Facet facet : facetList) {
       final String label = facet.getLabel();
       final Long totalCount = facet.getCount();

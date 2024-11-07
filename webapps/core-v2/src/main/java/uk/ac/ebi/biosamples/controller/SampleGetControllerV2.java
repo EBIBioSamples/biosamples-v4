@@ -22,13 +22,9 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
-import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
-import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @RestController
 @ExposesResourceFor(Sample.class)
@@ -37,24 +33,15 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 public class SampleGetControllerV2 {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final SampleService sampleService;
-  private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
-  private final SchemaValidationService schemaValidationService;
-  private final TaxonomyClientService taxonomyClientService;
   private final AccessControlService accessControlService;
 
   public SampleGetControllerV2(
       final SampleService sampleService,
-      final BioSamplesAapService bioSamplesAapService,
       final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-      final SchemaValidationService schemaValidationService,
-      final TaxonomyClientService taxonomyClientService,
       final AccessControlService accessControlService) {
     this.sampleService = sampleService;
-    this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
-    this.schemaValidationService = schemaValidationService;
-    this.taxonomyClientService = taxonomyClientService;
     this.accessControlService = accessControlService;
   }
 
@@ -67,25 +54,17 @@ public class SampleGetControllerV2 {
   public Sample getSampleV2(
       @PathVariable final String accession,
       @RequestHeader(name = "Authorization", required = false) final String token) {
+    log.info("Received fetch for accession " + accession);
+
     final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final Optional<Sample> optionalSample =
         sampleService.fetch(accession, Optional.of(Collections.singletonList("")));
 
     if (optionalSample.isPresent()) {
-      final AuthorizationProvider authProvider =
-          authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE)
-              ? AuthorizationProvider.WEBIN
-              : AuthorizationProvider.AAP;
-
       final Sample sample = optionalSample.get();
+      final String webinSubmissionAccountId = authToken.get().getUser();
 
-      if (authProvider == AuthorizationProvider.WEBIN) {
-        final String webinSubmissionAccountId = authToken.get().getUser();
-
-        bioSamplesWebinAuthenticationService.isSampleAccessible(sample, webinSubmissionAccountId);
-      } else {
-        bioSamplesAapService.isSampleAccessible(sample);
-      }
+      bioSamplesWebinAuthenticationService.isSampleAccessible(sample, webinSubmissionAccountId);
 
       return sample;
     } else {

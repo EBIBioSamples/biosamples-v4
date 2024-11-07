@@ -19,11 +19,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
-import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.StructuredDataService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 
 /** Structured data operations */
@@ -33,17 +31,14 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationServic
 @CrossOrigin
 public class StructuredDataController {
   private final Logger log = LoggerFactory.getLogger(getClass());
-  private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final StructuredDataService structuredDataService;
   private final AccessControlService accessControlService;
 
   public StructuredDataController(
-      final BioSamplesAapService bioSamplesAapService,
       final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       final StructuredDataService structuredDataService,
       final AccessControlService accessControlService) {
-    this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.structuredDataService = structuredDataService;
     this.accessControlService = accessControlService;
@@ -71,24 +66,16 @@ public class StructuredDataController {
     final AuthToken authToken =
         accessControlService
             .extractToken(token)
-            .orElseThrow(GlobalExceptions.AccessControlException::new);
-    final boolean webinAuth = authToken.getAuthority() == AuthorizationProvider.WEBIN;
-
+            .orElseThrow(GlobalExceptions.WebinTokenInvalidException::new);
     log.info("PUT request for structured data: {}", accession);
 
     if (structuredData.getAccession() == null || !structuredData.getAccession().equals(accession)) {
       throw new GlobalExceptions.SampleAccessionMismatchException();
     }
 
-    if (webinAuth) {
-      bioSamplesWebinAuthenticationService.isStructuredDataAccessible(
-          structuredData, authToken.getUser());
-    } else {
-      bioSamplesAapService.handleStructuredDataDomain(structuredData);
-    }
+    bioSamplesWebinAuthenticationService.isStructuredDataAccessible(
+        structuredData, authToken.getUser());
 
-    final StructuredData storedData = structuredDataService.saveStructuredData(structuredData);
-
-    return EntityModel.of(storedData);
+    return EntityModel.of(structuredDataService.saveStructuredData(structuredData));
   }
 }

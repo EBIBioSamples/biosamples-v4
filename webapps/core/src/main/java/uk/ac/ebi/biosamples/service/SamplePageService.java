@@ -75,14 +75,12 @@ public class SamplePageService {
   public Page<Sample> getSamplesByText(
       final String text,
       final Collection<Filter> filters,
-      final Collection<String> domains,
       final String webinSubmissionAccountId,
       final Pageable pageable,
       final Optional<List<String>> curationDomains) {
     long startTime = System.nanoTime();
     final Page<SolrSample> pageSolrSample =
-        solrSampleService.fetchSolrSampleByText(
-            text, filters, domains, webinSubmissionAccountId, pageable);
+        solrSampleService.fetchSolrSampleByText(text, filters, webinSubmissionAccountId, pageable);
     long endTime = System.nanoTime();
     log.trace("Got solr page in " + ((endTime - startTime) / 1000000) + "ms");
 
@@ -112,7 +110,6 @@ public class SamplePageService {
   public CursorArrayList<Sample> getSamplesByText(
       final String text,
       final Collection<Filter> filters,
-      final Collection<String> domains,
       final String webinSubmissionAccountId,
       String cursorMark,
       int size,
@@ -122,7 +119,7 @@ public class SamplePageService {
 
     final CursorArrayList<SolrSample> cursorSolrSample =
         solrSampleService.fetchSolrSampleByText(
-            text, filters, domains, webinSubmissionAccountId, cursorMark, size);
+            text, filters, webinSubmissionAccountId, cursorMark, size);
 
     final List<Future<Optional<Sample>>> listFutureSample;
     listFutureSample =

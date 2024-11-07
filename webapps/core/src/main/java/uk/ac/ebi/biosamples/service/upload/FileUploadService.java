@@ -35,7 +35,6 @@ import uk.ac.ebi.biosamples.mongo.repository.MongoFileUploadRepository;
 import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
 import uk.ac.ebi.biosamples.mongo.util.SampleNameAccessionPair;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
 import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
@@ -48,7 +47,6 @@ public class FileUploadService {
   private final SampleService sampleService;
   private final SchemaValidationService schemaValidationService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
-  private final BioSamplesAapService bioSamplesAapService;
   private final MongoFileUploadRepository mongoFileUploadRepository;
   private final FileQueueService fileQueueService;
   private final FileUploadUtils fileUploadUtils;
@@ -57,7 +55,6 @@ public class FileUploadService {
       SampleService sampleService,
       SchemaValidationService schemaValidationService,
       BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-      BioSamplesAapService bioSamplesAapService,
       MongoFileUploadRepository mongoFileUploadRepository,
       FileQueueService fileQueueService,
       FileUploadUtils fileUploadUtils) {
@@ -65,7 +62,6 @@ public class FileUploadService {
     this.sampleService = sampleService;
     this.schemaValidationService = schemaValidationService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
-    this.bioSamplesAapService = bioSamplesAapService;
     this.mongoFileUploadRepository = mongoFileUploadRepository;
     this.fileQueueService = fileQueueService;
   }
@@ -239,8 +235,7 @@ public class FileUploadService {
 
           try {
             sample =
-                buildAndPersistSample(
-                    csvRecordMap, aapDomain, webinId, checklist, validationResult, isWebin);
+                buildAndPersistSample(csvRecordMap, webinId, checklist, validationResult, isWebin);
 
             if (sample == null) {
               validationResult.addValidationMessage(
@@ -319,7 +314,6 @@ public class FileUploadService {
 
   private Sample buildAndPersistSample(
       final Multimap<String, String> multiMap,
-      final String aapDomain,
       final String webinId,
       final String checklist,
       final ValidationResult validationResult,
@@ -345,7 +339,7 @@ public class FileUploadService {
       log.info("Old sample not present");
     }
 
-    sample = handleAuthentication(aapDomain, webinId, isWebin, sample, oldSample, validationResult);
+    sample = handleAuthentication(webinId, sample, oldSample, validationResult);
 
     if (sample != null) {
       sample = fileUploadUtils.addChecklistAttributeAndBuildSample(checklist, sample);
@@ -390,22 +384,15 @@ public class FileUploadService {
   }
 
   private Sample handleAuthentication(
-      final String aapDomain,
       final String webinId,
-      final boolean isWebin,
       Sample sample,
       final Optional<Sample> oldSample,
       final ValidationResult validationResult) {
     try {
-      if (isWebin) {
-        sample = Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(webinId).build();
-        sample =
-            bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-                sample, webinId, oldSample);
-      } else {
-        sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
-        sample = bioSamplesAapService.handleFileUploaderSampleDomain(sample, oldSample, aapDomain);
-      }
+      sample = Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(webinId).build();
+      sample =
+          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+              sample, webinId, oldSample);
 
       return sample;
     } catch (final Exception e) {

@@ -42,7 +42,6 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
@@ -65,7 +64,6 @@ public class SamplesRestController {
   private final SamplePageService samplePageService;
   private final SampleService sampleService;
   private final FilterService filterService;
-  private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final SampleManipulationService sampleManipulationService;
   private final BioSamplesProperties bioSamplesProperties;
@@ -79,7 +77,6 @@ public class SamplesRestController {
   public SamplesRestController(
       final SamplePageService samplePageService,
       final FilterService filterService,
-      final BioSamplesAapService bioSamplesAapService,
       final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       final SampleResourceAssembler sampleResourceAssembler,
       final SampleManipulationService sampleManipulationService,
@@ -90,7 +87,6 @@ public class SamplesRestController {
       final AccessControlService accessControlService) {
     this.samplePageService = samplePageService;
     this.filterService = filterService;
-    this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.sampleResourceAssembler = sampleResourceAssembler;
     this.sampleManipulationService = sampleManipulationService;
@@ -122,7 +118,6 @@ public class SamplesRestController {
     final Optional<List<String>> decodedCurationDomains =
         LinkUtils.decodeTextsToArray(curationdomain);
     String webinSubmissionAccountId = null;
-    Collection<String> domains = null;
 
     final int effectivePage = page == null || page < 0 ? 0 : page;
     final int effectiveSize = size == null || size < 1 ? 20 : size;
@@ -143,8 +138,6 @@ public class SamplesRestController {
 
     if (webinAuth) {
       webinSubmissionAccountId = authToken.map(AuthToken::getUser).orElse(null);
-    } else {
-      domains = bioSamplesAapService.getDomains();
     }
 
     final Collection<Filter> filters = filterService.getFiltersCollection(decodedFilter);
@@ -158,9 +151,6 @@ public class SamplesRestController {
     // if the user has access to any domains, then mark the response as private as must be using
     // AAP
     // and responses will be different
-    if (domains != null && !domains.isEmpty()) {
-      cacheControl.cachePrivate();
-    }
 
     if (cursor != null) {
       log.trace("This cursor = " + decodedCursor);
@@ -168,7 +158,6 @@ public class SamplesRestController {
           samplePageService.getSamplesByText(
               decodedText,
               filters,
-              domains != null && !domains.isEmpty() ? domains : Collections.emptySet(),
               webinSubmissionAccountId,
               decodedCursor,
               effectiveSize,
@@ -245,13 +234,12 @@ public class SamplesRestController {
       final Pageable pageable = PageRequest.of(effectivePage, effectiveSize, pageSort);
       final Page<Sample> pageSample =
           samplePageService.getSamplesByText(
-              text, filters, domains, webinSubmissionAccountId, pageable, decodedCurationDomains);
+              text, filters, webinSubmissionAccountId, pageable, decodedCurationDomains);
       final CollectionModel<EntityModel<Sample>> resources =
           populateResources(
               pageSample,
               effectiveSize,
               effectivePage,
-              webinAuth ? AuthorizationProvider.WEBIN.name() : AuthorizationProvider.AAP.name(),
               decodedText,
               decodedFilter,
               sort,
@@ -265,7 +253,6 @@ public class SamplesRestController {
       final Page<Sample> pageSample,
       final int effectiveSize,
       final int effectivePage,
-      final String authProvider,
       final String decodedText,
       final String[] decodedFilter,
       final String[] sort,
@@ -293,7 +280,6 @@ public class SamplesRestController {
           getPageLink(
               decodedText,
               decodedFilter,
-              authProvider,
               decodedCurationDomains,
               0,
               effectiveSize,
@@ -307,7 +293,6 @@ public class SamplesRestController {
           getPageLink(
               decodedText,
               decodedFilter,
-              authProvider,
               decodedCurationDomains,
               effectivePage - 1,
               effectiveSize,
@@ -320,7 +305,6 @@ public class SamplesRestController {
         getPageLink(
             decodedText,
             decodedFilter,
-            authProvider,
             decodedCurationDomains,
             effectivePage,
             effectiveSize,
@@ -334,7 +318,6 @@ public class SamplesRestController {
           getPageLink(
               decodedText,
               decodedFilter,
-              authProvider,
               decodedCurationDomains,
               effectivePage + 1,
               effectiveSize,
@@ -348,7 +331,6 @@ public class SamplesRestController {
           getPageLink(
               decodedText,
               decodedFilter,
-              authProvider,
               decodedCurationDomains,
               pageSample.getTotalPages(),
               effectiveSize,
@@ -416,7 +398,7 @@ public class SamplesRestController {
     final UriComponentsBuilder builder =
         WebMvcLinkBuilder.linkTo(controllerClass).toUriComponentsBuilder();
 
-    if (text != null && text.trim().length() > 0) {
+    if (text != null && !text.trim().isEmpty()) {
       builder.queryParam("text", text);
     }
 
@@ -442,7 +424,6 @@ public class SamplesRestController {
   static Link getPageLink(
       final String text,
       final String[] filter,
-      final String authProvider,
       final Optional<List<String>> decodedCurationDomains,
       final int page,
       final int size,
@@ -454,7 +435,6 @@ public class SamplesRestController {
 
     builder.queryParam("page", page);
     builder.queryParam("size", size);
-    builder.queryParam("authProvider", authProvider);
 
     if (sort != null) {
       for (final String sortString : sort) {
@@ -494,22 +474,16 @@ public class SamplesRestController {
         accessControlService
             .extractToken(token)
             .orElseThrow(GlobalExceptions.WebinTokenInvalidException::new);
-    final AuthorizationProvider authProvider =
-        (authToken.getAuthority() == AuthorizationProvider.WEBIN)
-            ? AuthorizationProvider.WEBIN
-            : AuthorizationProvider.AAP;
     final boolean isWebinSuperUser =
-        (authProvider == AuthorizationProvider.WEBIN)
-            && bioSamplesWebinAuthenticationService.isWebinSuperUser(authToken.getUser());
+        bioSamplesWebinAuthenticationService.isWebinSuperUser(authToken.getUser());
 
     sample =
-        (authProvider == AuthorizationProvider.WEBIN)
-            ? bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-                sample, authToken.getUser(), Optional.empty())
-            : bioSamplesAapService.handleSampleDomain(sample, Optional.empty());
+        bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+            sample, authToken.getUser(), Optional.empty());
 
     sample = sampleService.buildPrivateSample(sample);
-    sample = sampleService.persistSample(sample, null, authProvider, isWebinSuperUser);
+    sample =
+        sampleService.persistSample(sample, null, AuthorizationProvider.WEBIN, isWebinSuperUser);
 
     final EntityModel<Sample> sampleResource = sampleResourceAssembler.toModel(sample);
 
@@ -537,26 +511,16 @@ public class SamplesRestController {
         accessControlService
             .extractToken(token)
             .orElseThrow(GlobalExceptions.WebinTokenInvalidException::new);
-    final AuthorizationProvider authProvider =
-        (authToken.getAuthority() == AuthorizationProvider.WEBIN)
-            ? AuthorizationProvider.WEBIN
-            : AuthorizationProvider.AAP;
     final boolean isWebinSuperUser =
-        authProvider == AuthorizationProvider.WEBIN
-            && bioSamplesWebinAuthenticationService.isWebinSuperUser(authToken.getUser());
-    final boolean isAapSuperUser =
-        authProvider == AuthorizationProvider.AAP && bioSamplesAapService.isWriteSuperUser();
-    final boolean isAnySuperUser = isWebinSuperUser || isAapSuperUser;
+        bioSamplesWebinAuthenticationService.isWebinSuperUser(authToken.getUser());
     final Optional<Sample> oldSample =
         sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
-            sample, isAnySuperUser);
+            sample, isWebinSuperUser);
     final Instant now = Instant.now();
 
     sample =
-        (authProvider == AuthorizationProvider.WEBIN)
-            ? bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-                sample, authToken.getUser(), oldSample)
-            : bioSamplesAapService.handleSampleDomain(sample, oldSample);
+        bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+            sample, authToken.getUser(), oldSample);
 
     sample =
         Sample.Builder.fromSample(sample)
@@ -569,14 +533,15 @@ public class SamplesRestController {
                     : sample.getSubmittedVia())
             .build();
 
-    sample = validateSample(sample, authProvider, isWebinSuperUser, isAapSuperUser);
+    sample = validateSample(sample, isWebinSuperUser);
 
     if (!setFullDetails) {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
     sample =
-        sampleService.persistSample(sample, oldSample.orElse(null), authProvider, isWebinSuperUser);
+        sampleService.persistSample(
+            sample, oldSample.orElse(null), AuthorizationProvider.WEBIN, isWebinSuperUser);
 
     final EntityModel<Sample> sampleResource = sampleResourceAssembler.toModel(sample, getClass());
 
@@ -584,17 +549,10 @@ public class SamplesRestController {
         .body(sampleResource);
   }
 
-  private Sample validateSample(
-      Sample sample,
-      final AuthorizationProvider authorizationProvider,
-      final boolean isWebinSuperUser,
-      final boolean isAapSuperUser) {
-    if (authorizationProvider == AuthorizationProvider.WEBIN && !isWebinSuperUser) {
+  private Sample validateSample(Sample sample, final boolean isWebinSuperUser) {
+    if (!isWebinSuperUser) {
       sample = schemaValidationService.validate(sample);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
-    } else if (authorizationProvider == AuthorizationProvider.AAP && !isAapSuperUser) {
-      sample = schemaValidationService.validate(sample);
-      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, false);
     }
 
     if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {

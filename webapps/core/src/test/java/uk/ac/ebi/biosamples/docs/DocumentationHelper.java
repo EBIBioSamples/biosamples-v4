@@ -19,6 +19,7 @@ import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 
 public class DocumentationHelper {
 
+  public static final String WEBIN_SUBMISSION_ACCOUNT_ID = "Webin-12345";
   //    private final String[] sampleAccessionPrefix = {"SAME", "SAMD", "SAMEA", "SAMN"};
   private final int maxRandomNumber = 100000;
 
@@ -76,6 +77,10 @@ public class DocumentationHelper {
     return new Sample.Builder("FakeSample", "SAMEA12345");
   }
 
+  Sample.Builder getNonAccessionedExampleSampleBuilder() {
+    return new Sample.Builder("FakeSample");
+  }
+
   public Sample getExampleSample() {
     return getExampleSampleBuilder().build();
   }
@@ -88,22 +93,24 @@ public class DocumentationHelper {
     return getExampleSampleBuilder().withWebinSubmissionAccountId("WEBIN-12345").build();
   }
 
-  public Sample getExampleSampleWithoutWebinId() {
-    return getExampleSampleBuilder().build();
+  Sample getNonAccessionedExampleSampleWithWebinId() {
+    return getNonAccessionedExampleSampleBuilder()
+        .withWebinSubmissionAccountId("WEBIN-12345")
+        .build();
   }
 
   Sample getExampleSampleWithExternalReferences() {
     return getExampleSampleBuilder()
         .addExternalReference(
             ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/SAMEA00001"))
-        .withDomain(getExampleDomain())
+        .withWebinSubmissionAccountId(WEBIN_SUBMISSION_ACCOUNT_ID)
         .build();
   }
 
   Sample getExampleSampleWithRelationships() {
     return getExampleSampleBuilder()
         .addRelationship(Relationship.build("SAMFAKE123456", "derived from", "SAMFAKE654321"))
-        .withDomain(getExampleDomain())
+        .withWebinSubmissionAccountId(WEBIN_SUBMISSION_ACCOUNT_ID)
         .build();
   }
 

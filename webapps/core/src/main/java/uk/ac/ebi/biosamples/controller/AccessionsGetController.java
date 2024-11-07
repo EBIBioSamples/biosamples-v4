@@ -10,7 +10,6 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
@@ -20,26 +19,26 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.Accession;
 import uk.ac.ebi.biosamples.model.AuthToken;
-import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.service.AccessionsService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 
 @RestController
 @RequestMapping("/accessions")
 @CrossOrigin
 public class AccessionsGetController {
-  private final BioSamplesAapService bioSamplesAapService;
+  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final AccessionsService accessionsService;
   private final AccessControlService accessControlService;
 
   public AccessionsGetController(
-      final BioSamplesAapService bioSamplesAapService,
+      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       final AccessionsService accessionsService,
       final AccessControlService accessControlService) {
-    this.bioSamplesAapService = bioSamplesAapService;
+    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.accessionsService = accessionsService;
     this.accessControlService = accessControlService;
   }
@@ -52,17 +51,12 @@ public class AccessionsGetController {
       @RequestParam(name = "page", required = false, defaultValue = "0") final Integer page,
       @RequestParam(name = "size", required = false, defaultValue = "100") final Integer size,
       @RequestHeader(name = "Authorization", required = false) final String token) {
-
-    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
-    final AuthorizationProvider authProvider =
-        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
-    final String webinSubmissionAccountId = webinAuth ? authToken.get().getUser() : null;
-    final Collection<String> domains = webinAuth ? null : bioSamplesAapService.getDomains();
+    final AuthToken authToken =
+        accessControlService
+            .extractToken(token)
+            .orElseThrow(GlobalExceptions.WebinTokenInvalidException::new);
     final Page<String> pageAccessions =
-        accessionsService.getAccessions(
-            text, filter, domains, webinSubmissionAccountId, page, size);
+        accessionsService.getAccessions(text, filter, authToken.getUser(), page, size);
     final PagedModel.PageMetadata pageMetadata =
         new PagedModel.PageMetadata(
             size,
@@ -74,7 +68,7 @@ public class AccessionsGetController {
             pageAccessions.getContent().stream().map(Accession::build).collect(Collectors.toList()),
             pageMetadata);
 
-    addRelLinks(pageAccessions, resources, text, filter, page, size, authProvider.name());
+    addRelLinks(pageAccessions, resources, text, filter, page, size);
 
     return ResponseEntity.ok().body(resources);
   }
@@ -85,13 +79,11 @@ public class AccessionsGetController {
       final String text,
       final String[] filter,
       final Integer page,
-      final Integer size,
-      final String authProvider) {
+      final Integer size) {
     resources.add(
         SamplesRestController.getPageLink(
             text,
             filter,
-            authProvider,
             Optional.empty(),
             page,
             size,
@@ -104,7 +96,6 @@ public class AccessionsGetController {
           SamplesRestController.getPageLink(
               text,
               filter,
-              authProvider,
               Optional.empty(),
               0,
               size,
@@ -115,7 +106,6 @@ public class AccessionsGetController {
           SamplesRestController.getPageLink(
               text,
               filter,
-              authProvider,
               Optional.empty(),
               pageAccessions.getTotalPages(),
               size,
@@ -129,7 +119,6 @@ public class AccessionsGetController {
           SamplesRestController.getPageLink(
               text,
               filter,
-              authProvider,
               Optional.empty(),
               page - 1,
               size,
@@ -143,7 +132,6 @@ public class AccessionsGetController {
           SamplesRestController.getPageLink(
               text,
               filter,
-              authProvider,
               Optional.empty(),
               page + 1,
               size,

@@ -12,7 +12,6 @@ package uk.ac.ebi.biosamples.controller;
 
 import java.net.URI;
 import java.time.Instant;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -29,12 +28,10 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.CurationLink;
-import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.mongo.service.CurationReadService;
 import uk.ac.ebi.biosamples.service.CurationLinkResourceAssembler;
 import uk.ac.ebi.biosamples.service.CurationPersistService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 
 @RestController
@@ -44,7 +41,6 @@ public class SampleCurationLinksController {
   private final CurationReadService curationReadService;
   private final CurationPersistService curationPersistService;
   private final CurationLinkResourceAssembler curationLinkResourceAssembler;
-  private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final AccessControlService accessControlService;
 
@@ -52,13 +48,11 @@ public class SampleCurationLinksController {
       final CurationReadService curationReadService,
       final CurationPersistService curationPersistService,
       final CurationLinkResourceAssembler curationLinkResourceAssembler,
-      final BioSamplesAapService bioSamplesAapService,
       final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       final AccessControlService accessControlService) {
     this.curationReadService = curationReadService;
     this.curationPersistService = curationPersistService;
     this.curationLinkResourceAssembler = curationLinkResourceAssembler;
-    this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.accessControlService = accessControlService;
   }
@@ -108,11 +102,11 @@ public class SampleCurationLinksController {
       @PathVariable final String accession,
       @RequestBody CurationLink curationLink,
       @RequestHeader(name = "Authorization") final String token) {
-
     log.info("Recieved POST for " + curationLink);
-    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
+    final AuthToken authToken =
+        accessControlService
+            .extractToken(token)
+            .orElseThrow(GlobalExceptions.WebinTokenInvalidException::new);
 
     if (curationLink.getSample() == null) {
       // curationLink has no sample, use the one specified in the URL
@@ -123,26 +117,19 @@ public class SampleCurationLinksController {
       throw new GlobalExceptions.SampleNotMatchException();
     }
 
-    if (webinAuth) {
-      final String webinSubmissionAccountId = authToken.get().getUser();
+    final String webinSubmissionAccountId = authToken.getUser();
 
-      curationLink =
-          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              curationLink, webinSubmissionAccountId);
+    curationLink =
+        bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+            curationLink, webinSubmissionAccountId);
 
-      if (webinSubmissionAccountId == null) {
-        throw new GlobalExceptions.WebinTokenInvalidException();
-      }
-
-      curationLink =
-          CurationLink.build(
-              accession, curationLink.getCuration(), null, webinSubmissionAccountId, Instant.now());
-    } else {
-      curationLink =
-          CurationLink.build(
-              accession, curationLink.getCuration(), curationLink.getDomain(), null, Instant.now());
-      curationLink = bioSamplesAapService.handleCurationLinkDomain(curationLink);
+    if (webinSubmissionAccountId == null) {
+      throw new GlobalExceptions.WebinTokenInvalidException();
     }
+
+    curationLink =
+        CurationLink.build(
+            accession, curationLink.getCuration(), null, webinSubmissionAccountId, Instant.now());
 
     // now actually persist it
     curationLink = curationPersistService.store(curationLink);
