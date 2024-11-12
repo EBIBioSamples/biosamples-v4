@@ -14,28 +14,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>uk.ac.ebi.tsc.aap.client</groupId>
-			<artifactId>security</artifactId>
-			<version>1.0.6-SNAPSHOT</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.hateoas</groupId>
-					<artifactId>spring-hateoas</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>uk.ac.ebi.tsc.aap.client</groupId>
-			<artifactId>service</artifactId>
-			<version>1.0.6-SNAPSHOT</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.hateoas</groupId>
-					<artifactId>spring-hateoas</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-security</artifactId>
 			<version>5.3.8-SNAPSHOT</version>

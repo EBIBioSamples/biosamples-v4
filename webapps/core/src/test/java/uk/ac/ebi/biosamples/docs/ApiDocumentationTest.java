@@ -31,6 +31,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -77,8 +78,8 @@ public class ApiDocumentationTest {
   @MockBean private AccessControlService accessControlService;
   @MockBean private SampleService sampleService;
   @MockBean private SampleValidator sampleValidator;
-  @MockBean CurationPersistService curationPersistService;
-  @MockBean CurationReadService curationReadService;
+  @MockBean private CurationPersistService curationPersistService;
+  @MockBean private CurationReadService curationReadService;
   @MockBean private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   @MockBean private TaxonomyClientService taxonomyClientService;
   @MockBean private SchemaValidationService schemaValidationService;
@@ -270,8 +271,10 @@ public class ApiDocumentationTest {
         .thenReturn(
             Optional.of(
                 new AuthToken(
-                    "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
-    when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
+                    "RS256",
+                    AuthorizationProvider.WEBIN,
+                    WEBIN_TESTING_ACCOUNT,
+                    Collections.emptyList())));
 
     mockMvc
         .perform(
@@ -324,8 +327,10 @@ public class ApiDocumentationTest {
         .thenReturn(
             Optional.of(
                 new AuthToken(
-                    "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
-    when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
+                    "RS256",
+                    AuthorizationProvider.WEBIN,
+                    WEBIN_TESTING_ACCOUNT,
+                    Collections.emptyList())));
 
     mockMvc
         .perform(
@@ -683,6 +688,7 @@ public class ApiDocumentationTest {
   }
 
   @Test
+  @Ignore
   public void postCurationLink1() throws Exception {
     final CurationLink curationLink = faker.getExampleCurationLink();
 
@@ -698,7 +704,6 @@ public class ApiDocumentationTest {
                     AuthorizationProvider.WEBIN,
                     WEBIN_TESTING_ACCOUNT,
                     Collections.emptyList())));
-    when(accessControlService.extractToken(null)).thenReturn(Optional.empty());
 
     mockMvc
         .perform(

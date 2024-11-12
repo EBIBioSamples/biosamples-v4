@@ -57,7 +57,7 @@ public class BulkActionControllerV2 {
       final AccessControlService accessControlService,
       final SchemaValidationService schemaValidationService,
       final BioSamplesProperties bioSamplesProperties,
-      ObjectMapper objectMapper) {
+      final ObjectMapper objectMapper) {
     this.sampleService = sampleService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.accessControlService = accessControlService;

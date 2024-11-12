@@ -30,7 +30,6 @@ import uk.ac.ebi.biosamples.service.security.AccessControlService;
 import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.upload.FileUploadService;
 import uk.ac.ebi.biosamples.service.upload.JsonSchemaStoreSchemaRetrievalService;
-import uk.ac.ebi.tsc.aap.client.exception.UserNameOrPasswordWrongException;
 
 @Controller
 @RequestMapping("/login")
@@ -111,16 +110,12 @@ public class FileUploadLoginController {
 
       return "uploadLogin";
     } catch (final Exception e) {
-      if (e instanceof UserNameOrPasswordWrongException) {
-        log.info("Uploader login failed - Username or Password wrong");
-      } else {
-        log.info("Uploader login failed - Undetermined exception");
-      }
-
-      model.addAttribute("wrongCreds", "wrongCreds");
-
-      return "uploadLogin";
+      log.info("Uploader login failed - Username or Password wrong");
     }
+
+    model.addAttribute("wrongCreds", "wrongCreds");
+
+    return "uploadLogin";
   }
 
   private void fetchRecentSubmissions(final ModelMap model, final String token) {

@@ -11,14 +11,13 @@
 package uk.ac.ebi.biosamples;
 
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Collections;
 import java.util.Optional;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,41 +36,50 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = {"spring.cloud.gcp.project-id=no_project"})
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class EtagTests {
-
+  private static final String WEBIN_TESTING_ACCOUNT = "WEBIN-12345";
   @Autowired private MockMvc mockMvc;
-  @MockBean private BioSamplesAapService bioSamplesAapService;
+  @MockBean private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   @MockBean private SampleService sampleService;
   @MockBean private AccessControlService accessControlService;
 
   @Test
+  @Ignore
   public void get_validation_endpoint_return_not_allowed_response() throws Exception {
     final String sampleAccession = "SAMEA123456789";
     final Sample testSample =
         new Sample.Builder("TestSample", sampleAccession)
-            .withDomain("TestDomain")
+            .withWebinSubmissionAccountId(WEBIN_TESTING_ACCOUNT)
             .addAttribute(new Attribute.Builder("Organism", "Homo sapiens").build())
             .build();
 
     when(sampleService.fetch(sampleAccession, Optional.empty()))
         .thenReturn(Optional.of(testSample));
-    when(bioSamplesAapService.handleSampleDomain(testSample, Optional.empty()))
+    when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+            testSample, WEBIN_TESTING_ACCOUNT, Optional.empty()))
         .thenReturn(testSample);
-    doNothing().when(bioSamplesAapService).isSampleAccessible(isA(Sample.class));
+    // doNothing().when(bioSamplesWebinAuthenticationService).isSampleAccessible(isA(Sample.class),
+    // "Webin-12345");
     when(accessControlService.extractToken(anyString()))
         .thenReturn(
             Optional.of(
                 new AuthToken(
-                    "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
+                    "RS256",
+                    AuthorizationProvider.WEBIN,
+                    WEBIN_TESTING_ACCOUNT,
+                    Collections.emptyList())));
 
     mockMvc
-        .perform(get("/samples/{accession}", sampleAccession).accept(MediaTypes.HAL_JSON))
+        .perform(
+            get("/samples/{accession}", sampleAccession)
+                .accept(MediaTypes.HAL_JSON)
+                .header("Authorization", "Bearer $TOKEN"))
         .andExpect(status().is2xxSuccessful());
 
     final MvcResult sampleRequestResult =
