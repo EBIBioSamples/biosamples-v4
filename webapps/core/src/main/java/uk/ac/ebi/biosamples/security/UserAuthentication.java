@@ -10,18 +10,15 @@
 */
 package uk.ac.ebi.biosamples.security;
 
+import java.util.Collection;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-
 public class UserAuthentication implements Authentication {
   private User user;
   private boolean authenticated = true;
-
-  public UserAuthentication() {}
 
   UserAuthentication(User user) {
     this.user = user;

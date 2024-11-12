@@ -10,37 +10,39 @@
 */
 package uk.ac.ebi.biosamples.security;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.filter.GenericFilterBean;
-
+import java.io.IOException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.filter.GenericFilterBean;
 
 public class TokenAuthenticationFilter extends GenericFilterBean {
   private static final String TOKEN_HEADER_KEY = "Authorization";
   private static final String TOKEN_HEADER_VALUE_PREFIX = "Bearer";
-
   private final BioSamplesTokenAuthenticationService authenticationService;
 
-  public TokenAuthenticationFilter(BioSamplesTokenAuthenticationService authenticationService) {
+  public TokenAuthenticationFilter(
+      final BioSamplesTokenAuthenticationService authenticationService) {
     this.authenticationService = authenticationService;
   }
 
   @Override
-  public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
+  public void doFilter(
+      final ServletRequest request, final ServletResponse response, final FilterChain filterChain)
       throws IOException, ServletException {
-    HttpServletRequest httpRequest = (HttpServletRequest) request;
+    final HttpServletRequest httpRequest = (HttpServletRequest) request;
+    final String headerToken = getHeaderToken(httpRequest);
 
-    String headerToken = getHeaderToken(httpRequest);
     if (headerToken != null) {
       // JWT auth.
-      Authentication authentication = authenticationService.getAuthenticationFromToken(headerToken);
+      final Authentication authentication =
+          authenticationService.getAuthenticationFromToken(headerToken);
+
       if (authentication != null) {
         SecurityContextHolder.getContext().setAuthentication(authentication);
       }
@@ -49,17 +51,21 @@ public class TokenAuthenticationFilter extends GenericFilterBean {
     filterChain.doFilter(request, response);
   }
 
-  private static String getHeaderToken(HttpServletRequest request) {
+  private static String getHeaderToken(final HttpServletRequest request) {
     final String header = request.getHeader(TOKEN_HEADER_KEY);
-    if (header == null || !header.trim().startsWith(TOKEN_HEADER_VALUE_PREFIX.trim())) {
+
+    if (header == null) {
       return null;
     } else if (!header.trim().startsWith(TOKEN_HEADER_VALUE_PREFIX.trim())) {
       return null;
     }
+
     final String token = header.substring(TOKEN_HEADER_VALUE_PREFIX.trim().length());
+
     if (StringUtils.isEmpty(token)) {
       return null;
     }
+
     return token;
   }
 }

@@ -12,15 +12,13 @@ package uk.ac.ebi.biosamples.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class BioSamplesTokenHandler {
-  private final Logger log = LoggerFactory.getLogger(getClass());
-
   public User getUser(final String token) {
     Claims claims = null;
 

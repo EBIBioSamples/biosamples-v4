@@ -28,7 +28,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class BioSamplesWebSecurityConfig extends WebSecurityConfigurerAdapter {
   private final BioSamplesTokenAuthenticationService tokenAuthenticationService;
 
-  private TokenAuthenticationFilter tokenAuthenticationFilter() throws Exception {
+  private TokenAuthenticationFilter tokenAuthenticationFilter() {
     return new TokenAuthenticationFilter(this.tokenAuthenticationService);
   }
 
