@@ -94,26 +94,13 @@ public class GlobalExceptions {
   }
 
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public static class SampleValidationControllerException extends RuntimeException {
+  public static class SampleMandatoryFieldsMissingException extends RuntimeException {
     @Serial private static final long serialVersionUID = -7937033504537036300L;
 
-    public SampleValidationControllerException(final String message) {
+    public SampleMandatoryFieldsMissingException(final String message) {
       super(message);
     }
   }
-
-  @ResponseStatus(
-      value = HttpStatus.BAD_REQUEST,
-      reason = "Curation Link must specify a domain") // 400
-  public static class CurationLinkDomainMissingException extends RuntimeException {}
-
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample must specify a domain") // 400
-  public static class DomainMissingException extends RuntimeException {}
-
-  @ResponseStatus(
-      value = HttpStatus.BAD_REQUEST,
-      reason = "Structured data must have a domain") // 400
-  public static class StructuredDataDomainMissingException extends RuntimeException {}
 
   @ResponseStatus(
       value = HttpStatus.FORBIDDEN,
@@ -130,7 +117,7 @@ public class GlobalExceptions {
           "Sample submitted via V2 submission endpoints shouldn't contain relationships, please use the traditional endpoint instead") // 400
   public static class SampleWithRelationshipSubmissionExceptionV2 extends RuntimeException {}
 
-  @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Unauthorized WEBIN submitter")
+  @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Unauthorized submitter")
   public static class WebinUserLoginUnauthorizedException extends RuntimeException {}
 
   @ResponseStatus(

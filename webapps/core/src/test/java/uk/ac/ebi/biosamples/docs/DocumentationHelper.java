@@ -90,12 +90,14 @@ public class DocumentationHelper {
   }
 
   Sample getExampleSampleWithWebinId() {
-    return getExampleSampleBuilder().withWebinSubmissionAccountId("WEBIN-12345").build();
+    return getExampleSampleBuilder()
+        .withWebinSubmissionAccountId(WEBIN_SUBMISSION_ACCOUNT_ID)
+        .build();
   }
 
   Sample getNonAccessionedExampleSampleWithWebinId() {
     return getNonAccessionedExampleSampleBuilder()
-        .withWebinSubmissionAccountId("WEBIN-12345")
+        .withWebinSubmissionAccountId(WEBIN_SUBMISSION_ACCOUNT_ID)
         .build();
   }
 

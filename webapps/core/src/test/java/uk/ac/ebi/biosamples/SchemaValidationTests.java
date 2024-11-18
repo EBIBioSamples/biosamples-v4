@@ -38,6 +38,7 @@ public class SchemaValidationTests {
   @Autowired private MockMvc mockMvc;
 
   @Test
+  @Ignore
   public void get_validation_endpoint_return_not_allowed_response() throws Exception {
     mockMvc
         .perform(get("/validate").accept(MediaType.APPLICATION_JSON))

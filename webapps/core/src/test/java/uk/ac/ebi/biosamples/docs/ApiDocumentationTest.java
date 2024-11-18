@@ -43,6 +43,9 @@ import org.springframework.data.domain.*;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.test.context.support.WithUserDetails;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -54,9 +57,10 @@ import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.mongo.service.CurationReadService;
+import uk.ac.ebi.biosamples.security.TestSecurityConfig;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
@@ -65,6 +69,7 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 @SpringBootTest(properties = {"spring.cloud.gcp.project-id=no_project"})
 @AutoConfigureRestDocs
 @TestPropertySource(properties = {"aap.domains.url = ''"})
+@ContextConfiguration(classes = TestSecurityConfig.class)
 public class ApiDocumentationTest {
   private static final String WEBIN_TESTING_ACCOUNT = "WEBIN-12345";
 
@@ -77,10 +82,9 @@ public class ApiDocumentationTest {
   @MockBean private SamplePageService samplePageService;
   @MockBean private AccessControlService accessControlService;
   @MockBean private SampleService sampleService;
-  @MockBean private SampleValidator sampleValidator;
   @MockBean private CurationPersistService curationPersistService;
   @MockBean private CurationReadService curationReadService;
-  @MockBean private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
+  @MockBean private WebinAuthenticationService webinAuthenticationService;
   @MockBean private TaxonomyClientService taxonomyClientService;
   @MockBean private SchemaValidationService schemaValidationService;
   @MockBean private StructuredDataService structuredDataService;
@@ -136,7 +140,6 @@ public class ApiDocumentationTest {
             nullable(String.class), anyList(), nullable(String.class), any(Pageable.class), any()))
         .thenReturn(
             new PageImpl<>(Collections.singletonList(fakeSample), getDefaultPageable(), 100));
-
     when(samplePageService.getSamplesByText(
             nullable(String.class),
             anyList(),
@@ -174,6 +177,7 @@ public class ApiDocumentationTest {
    * @throws Exception if an error occurs during request execution.
    */
   @Test
+  @WithUserDetails(WEBIN_TESTING_ACCOUNT)
   public void postSampleMinimalInfo() throws Exception {
     final String wrongSampleSerialized = "{\"name\": \"Sample without minimum information\" }";
     final Sample wrongSample =
@@ -194,12 +198,16 @@ public class ApiDocumentationTest {
             null,
             null);
 
-    when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+    when(sampleService.getPrinciple(any(Authentication.class))).thenReturn(WEBIN_TESTING_ACCOUNT);
+    when(webinAuthenticationService.handleWebinUserSubmission(
             any(Sample.class), any(), any(Optional.class)))
         .thenReturn(wrongSample);
-    when(sampleValidator.validate(wrongSample)).thenCallRealMethod();
-    when(sampleService.persistSample(wrongSample, null, null, false)).thenCallRealMethod();
-
+    when(schemaValidationService.validate(any(Sample.class))).thenReturn(wrongSample);
+    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
+            any(Sample.class), eq(true)))
+        .thenReturn(wrongSample);
+    when(sampleService.persistSample(wrongSample, null, AuthorizationProvider.WEBIN, false))
+        .thenThrow(GlobalExceptions.SampleMandatoryFieldsMissingException.class);
     mockMvc
         .perform(
             post("/biosamples/samples")
@@ -244,6 +252,7 @@ public class ApiDocumentationTest {
    * @throws Exception if an error occurs during request execution.
    */
   @Test
+  @WithUserDetails(WEBIN_TESTING_ACCOUNT)
   public void postSample() throws Exception {
     final Sample sampleWithWebinId = faker.getNonAccessionedExampleSampleWithWebinId();
     final String sampleToSubmit =
@@ -257,9 +266,10 @@ public class ApiDocumentationTest {
             + "\"webinSubmissionAccountId\" : \"Webin-12345\" "
             + "}";
 
-    when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+    when(webinAuthenticationService.handleWebinUserSubmission(
             any(Sample.class), any(), any(Optional.class)))
         .thenReturn(sampleWithWebinId);
+    when(sampleService.getPrinciple(any(Authentication.class))).thenReturn(WEBIN_TESTING_ACCOUNT);
     when(sampleService.persistSample(
             any(Sample.class), eq(null), eq(AuthorizationProvider.WEBIN), eq(false)))
         .thenReturn(sampleWithWebinId);
@@ -267,14 +277,6 @@ public class ApiDocumentationTest {
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
             any(Sample.class), eq(true)))
         .thenReturn(sampleWithWebinId);
-    when(accessControlService.extractToken(anyString()))
-        .thenReturn(
-            Optional.of(
-                new AuthToken(
-                    "RS256",
-                    AuthorizationProvider.WEBIN,
-                    WEBIN_TESTING_ACCOUNT,
-                    Collections.emptyList())));
 
     mockMvc
         .perform(
@@ -297,6 +299,7 @@ public class ApiDocumentationTest {
    * @throws Exception if an error occurs during request execution.
    */
   @Test
+  @WithUserDetails(WEBIN_TESTING_ACCOUNT)
   public void postSampleWithExternalReferences() throws Exception {
     final Sample sample = faker.getExampleSampleWithExternalReferences();
     final String sampleToSubmit =
@@ -313,7 +316,8 @@ public class ApiDocumentationTest {
             + "  } ]"
             + "}";
 
-    when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+    when(sampleService.getPrinciple(any(Authentication.class))).thenReturn(WEBIN_TESTING_ACCOUNT);
+    when(webinAuthenticationService.handleWebinUserSubmission(
             any(Sample.class), any(String.class), eq(Optional.empty())))
         .thenReturn(sample);
     when(sampleService.persistSample(
@@ -323,14 +327,6 @@ public class ApiDocumentationTest {
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
             any(Sample.class), eq(true)))
         .thenReturn(sample);
-    when(accessControlService.extractToken(anyString()))
-        .thenReturn(
-            Optional.of(
-                new AuthToken(
-                    "RS256",
-                    AuthorizationProvider.WEBIN,
-                    WEBIN_TESTING_ACCOUNT,
-                    Collections.emptyList())));
 
     mockMvc
         .perform(
@@ -352,8 +348,11 @@ public class ApiDocumentationTest {
    * @throws Exception
    */
   @Test
+  @WithUserDetails(WEBIN_TESTING_ACCOUNT)
   public void putStructuredData() throws Exception {
     final StructuredData structuredData = faker.getExampleStructuredData();
+
+    when(sampleService.getPrinciple(any(Authentication.class))).thenReturn(WEBIN_TESTING_ACCOUNT);
     when(structuredDataService.saveStructuredData(eq(structuredData))).thenReturn(structuredData);
     when(structuredDataService.getStructuredData(eq(structuredData.getAccession())))
         .thenReturn(Optional.of(structuredData));
@@ -382,6 +381,7 @@ public class ApiDocumentationTest {
 
   /** Accessioning service to generate accession */
   @Test
+  @WithUserDetails(WEBIN_TESTING_ACCOUNT)
   public void postToGenerateAccession() throws Exception {
     final Sample sampleWithWebinId = faker.getExampleSampleWithWebinId();
     final Instant release =
@@ -403,10 +403,11 @@ public class ApiDocumentationTest {
             // "\", " +
             + "}";
 
-    when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+    when(webinAuthenticationService.handleWebinUserSubmission(
             any(Sample.class), any(String.class), eq(Optional.empty())))
         .thenReturn(sampleWithWebinId);
     when(sampleService.buildPrivateSample(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
+    when(sampleService.getPrinciple(any(Authentication.class))).thenReturn(WEBIN_TESTING_ACCOUNT);
     when(sampleService.persistSample(
             any(Sample.class), eq(null), eq(AuthorizationProvider.WEBIN), eq(false)))
         .thenReturn(sampleWithUpdatedDate);
@@ -433,6 +434,7 @@ public class ApiDocumentationTest {
 
   /** Accessioning service to generate accession */
   @Test
+  @WithUserDetails(WEBIN_TESTING_ACCOUNT)
   public void shouldReturnErrorWhenPostForAccessioningWithAccession() throws Exception {
     final Sample sampleWithWebinId = faker.getExampleSampleWithWebinId();
     final String sampleToSubmit =
@@ -454,6 +456,7 @@ public class ApiDocumentationTest {
             + "\""
             + " }";
 
+    when(sampleService.getPrinciple(any(Authentication.class))).thenReturn(WEBIN_TESTING_ACCOUNT);
     when(sampleService.persistSample(
             any(Sample.class), eq(null), eq(AuthorizationProvider.WEBIN), eq(false)))
         .thenReturn(sampleWithWebinId);
@@ -566,10 +569,12 @@ public class ApiDocumentationTest {
   }
 
   @Test
+  @WithUserDetails(WEBIN_TESTING_ACCOUNT)
   public void putSample1() throws Exception {
     final Sample sampleWithWebinId = faker.getExampleSampleWithWebinId();
 
-    when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+    when(sampleService.getPrinciple(any(Authentication.class))).thenReturn(WEBIN_TESTING_ACCOUNT);
+    when(webinAuthenticationService.handleWebinUserSubmission(
             any(Sample.class), any(String.class), eq(Optional.of(sampleWithWebinId))))
         .thenReturn(sampleWithWebinId);
     when(sampleService.fetch(eq(sampleWithWebinId.getAccession()), eq(Optional.empty())))
@@ -583,11 +588,6 @@ public class ApiDocumentationTest {
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
             any(Sample.class), eq(true)))
         .thenReturn(sampleWithWebinId);
-    when(accessControlService.extractToken(anyString()))
-        .thenReturn(
-            Optional.of(
-                new AuthToken(
-                    "RS256", AuthorizationProvider.AAP, "user", Collections.emptyList())));
 
     mockMvc
         .perform(
@@ -602,10 +602,12 @@ public class ApiDocumentationTest {
   }
 
   @Test
+  @WithUserDetails(WEBIN_TESTING_ACCOUNT)
   public void putSample2() throws Exception {
     final Sample sampleWithWebinId = faker.getExampleSampleWithWebinId();
 
-    when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+    when(sampleService.getPrinciple(any(Authentication.class))).thenReturn(WEBIN_TESTING_ACCOUNT);
+    when(webinAuthenticationService.handleWebinUserSubmission(
             any(Sample.class), any(String.class), eq(Optional.of(sampleWithWebinId))))
         .thenReturn(sampleWithWebinId);
     when(sampleService.fetch(eq(sampleWithWebinId.getAccession()), eq(Optional.empty())))
@@ -621,11 +623,6 @@ public class ApiDocumentationTest {
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
             any(Sample.class), eq(true)))
         .thenReturn(sampleWithWebinId);
-    when(accessControlService.extractToken(anyString()))
-        .thenReturn(
-            Optional.of(
-                new AuthToken(
-                    "RS256", AuthorizationProvider.WEBIN, "user", Collections.emptyList())));
 
     mockMvc
         .perform(
@@ -647,10 +644,12 @@ public class ApiDocumentationTest {
    * @throws Exception
    */
   @Test
+  @WithUserDetails(WEBIN_TESTING_ACCOUNT)
   public void putSampleWithRelationships() throws Exception {
     final Sample sampleWithWebinId = faker.getExampleSampleWithRelationships();
 
-    when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+    when(sampleService.getPrinciple(any(Authentication.class))).thenReturn(WEBIN_TESTING_ACCOUNT);
+    when(webinAuthenticationService.handleWebinUserSubmission(
             any(Sample.class), any(String.class), eq(Optional.of(sampleWithWebinId))))
         .thenReturn(sampleWithWebinId);
     when(sampleService.fetch(eq(sampleWithWebinId.getAccession()), eq(Optional.empty())))
@@ -664,14 +663,6 @@ public class ApiDocumentationTest {
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
             any(Sample.class), eq(true)))
         .thenReturn(sampleWithWebinId);
-    when(accessControlService.extractToken(anyString()))
-        .thenReturn(
-            Optional.of(
-                new AuthToken(
-                    "RS256",
-                    AuthorizationProvider.WEBIN,
-                    WEBIN_TESTING_ACCOUNT,
-                    Collections.emptyList())));
 
     mockMvc
         .perform(
@@ -692,7 +683,7 @@ public class ApiDocumentationTest {
   public void postCurationLink1() throws Exception {
     final CurationLink curationLink = faker.getExampleCurationLink();
 
-    when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+    when(webinAuthenticationService.handleWebinUserSubmission(
             any(CurationLink.class), any(String.class)))
         .thenReturn(curationLink);
     when(curationPersistService.store(curationLink)).thenReturn(curationLink);

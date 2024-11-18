@@ -147,7 +147,7 @@ public class JsonLdIntegration extends AbstractIntegration {
 
     return new Sample.Builder(name)
         .withTaxId(Long.valueOf(9606))
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withUpdate(update)
         .withAttributes(attributes)

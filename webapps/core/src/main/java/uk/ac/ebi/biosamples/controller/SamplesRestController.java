@@ -29,20 +29,20 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions.PaginationException;
-import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.*;
-import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
@@ -60,41 +60,37 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 @RequestMapping("/samples")
 @CrossOrigin
 public class SamplesRestController {
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private static final String SRA_ACCESSION = "SRA accession";
   private final SamplePageService samplePageService;
   private final SampleService sampleService;
   private final FilterService filterService;
-  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
+  private final WebinAuthenticationService webinAuthenticationService;
   private final SampleManipulationService sampleManipulationService;
   private final BioSamplesProperties bioSamplesProperties;
   private final SampleResourceAssembler sampleResourceAssembler;
   private final SchemaValidationService schemaValidationService;
   private final TaxonomyClientService taxonomyClientService;
-  private final AccessControlService accessControlService;
-
-  private final Logger log = LoggerFactory.getLogger(getClass());
 
   public SamplesRestController(
       final SamplePageService samplePageService,
       final FilterService filterService,
-      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+      final WebinAuthenticationService webinAuthenticationService,
       final SampleResourceAssembler sampleResourceAssembler,
       final SampleManipulationService sampleManipulationService,
       final SampleService sampleService,
       final BioSamplesProperties bioSamplesProperties,
       final SchemaValidationService schemaValidationService,
-      final TaxonomyClientService taxonomyClientService,
-      final AccessControlService accessControlService) {
+      final TaxonomyClientService taxonomyClientService) {
     this.samplePageService = samplePageService;
     this.filterService = filterService;
-    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
+    this.webinAuthenticationService = webinAuthenticationService;
     this.sampleResourceAssembler = sampleResourceAssembler;
     this.sampleManipulationService = sampleManipulationService;
     this.sampleService = sampleService;
     this.schemaValidationService = schemaValidationService;
     this.bioSamplesProperties = bioSamplesProperties;
     this.taxonomyClientService = taxonomyClientService;
-    this.accessControlService = accessControlService;
   }
 
   // must return a ResponseEntity so that cache headers can be set
@@ -107,17 +103,18 @@ public class SamplesRestController {
       @RequestParam(name = "page", required = false) final Integer page,
       @RequestParam(name = "size", required = false) final Integer size,
       @RequestParam(name = "sort", required = false) final String[] sort,
-      @RequestParam(name = "curationdomain", required = false) final String[] curationdomain,
-      @RequestHeader(name = "Authorization", required = false) final String token) {
+      @RequestParam(name = "curationdomain", required = false) final String[] curationdomain) {
 
     // Need to decode the %20 and similar from the parameters, this is *not* needed for the html
     // controller
+    final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+    final String principle = sampleService.getPrinciple(loggedInUser);
+
     final String decodedText = LinkUtils.decodeText(text);
     final String[] decodedFilter = LinkUtils.decodeTexts(filter);
     String decodedCursor = LinkUtils.decodeText(cursor);
     final Optional<List<String>> decodedCurationDomains =
         LinkUtils.decodeTextsToArray(curationdomain);
-    String webinSubmissionAccountId = null;
 
     final int effectivePage = page == null || page < 0 ? 0 : page;
     final int effectiveSize = size == null || size < 1 ? 20 : size;
@@ -129,15 +126,6 @@ public class SamplesRestController {
     if (cursor == null && page == null) { // cursor crawling is the default
       cursor = "*";
       decodedCursor = "*";
-    }
-
-    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-
-    final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
-
-    if (webinAuth) {
-      webinSubmissionAccountId = authToken.map(AuthToken::getUser).orElse(null);
     }
 
     final Collection<Filter> filters = filterService.getFiltersCollection(decodedFilter);
@@ -158,7 +146,7 @@ public class SamplesRestController {
           samplePageService.getSamplesByText(
               decodedText,
               filters,
-              webinSubmissionAccountId,
+              principle,
               decodedCursor,
               effectiveSize,
               decodedCurationDomains);
@@ -234,7 +222,7 @@ public class SamplesRestController {
       final Pageable pageable = PageRequest.of(effectivePage, effectiveSize, pageSort);
       final Page<Sample> pageSample =
           samplePageService.getSamplesByText(
-              text, filters, webinSubmissionAccountId, pageable, decodedCurationDomains);
+              text, filters, principle, pageable, decodedCurationDomains);
       final CollectionModel<EntityModel<Sample>> resources =
           populateResources(
               pageSample,
@@ -461,6 +449,13 @@ public class SamplesRestController {
       produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<EntityModel<Sample>> accession(
       @RequestBody Sample sample, @RequestHeader(name = "Authorization") final String token) {
+    final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+    final String principle = sampleService.getPrinciple(loggedInUser);
+
+    if (principle == null) {
+      throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
+    }
+
     final boolean sampleHasSRAAccessionInAttributes =
         sample.getAttributes() != null
             && sample.getAttributes().stream()
@@ -470,16 +465,10 @@ public class SamplesRestController {
       throw new GlobalExceptions.SampleWithAccessionSubmissionException();
     }
 
-    final AuthToken authToken =
-        accessControlService
-            .extractToken(token)
-            .orElseThrow(GlobalExceptions.WebinTokenInvalidException::new);
-    final boolean isWebinSuperUser =
-        bioSamplesWebinAuthenticationService.isWebinSuperUser(authToken.getUser());
+    final boolean isWebinSuperUser = webinAuthenticationService.isWebinSuperUser(principle);
 
     sample =
-        bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-            sample, authToken.getUser(), Optional.empty());
+        webinAuthenticationService.handleWebinUserSubmission(sample, principle, Optional.empty());
 
     sample = sampleService.buildPrivateSample(sample);
     sample =
@@ -496,49 +485,52 @@ public class SamplesRestController {
   public ResponseEntity<EntityModel<Sample>> post(
       @RequestBody Sample sample,
       @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
-          final boolean setFullDetails,
-      @RequestHeader(name = "Authorization") final String token) {
-    log.debug("Received POST for {}", sample);
+          final boolean setFullDetails) {
+    final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+    final String principle = sampleService.getPrinciple(loggedInUser);
 
+    if (principle == null) {
+      throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
+    }
+
+    log.debug("Received POST request for sample: {}", sample);
+
+    // Validate for structured data presence
     final Set<AbstractData> structuredData = sample.getData();
 
     if (structuredData != null && !structuredData.isEmpty()) {
       throw new GlobalExceptions.SampleValidationException(
-          "Sample contains structured data. Please submit structured data separately using the sample update PUT endpoint");
+          "Sample contains structured data. Please submit structured data separately using the sample update PUT endpoint.");
     }
 
-    final AuthToken authToken =
-        accessControlService
-            .extractToken(token)
-            .orElseThrow(GlobalExceptions.WebinTokenInvalidException::new);
-    final boolean isWebinSuperUser =
-        bioSamplesWebinAuthenticationService.isWebinSuperUser(authToken.getUser());
+    // Determine if user is a super user and validate sample with accessions
+    final boolean isWebinSuperUser = webinAuthenticationService.isWebinSuperUser(principle);
     final Optional<Sample> oldSample =
         sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
             sample, isWebinSuperUser);
     final Instant now = Instant.now();
 
-    sample =
-        bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-            sample, authToken.getUser(), oldSample);
+    // Handle Webin submission
+    sample = webinAuthenticationService.handleWebinUserSubmission(sample, principle, oldSample);
 
+    // Build and update the sample with required attributes
     sample =
         Sample.Builder.fromSample(sample)
             .withCreate(sampleService.defineCreateDate(sample, isWebinSuperUser))
             .withSubmitted(sampleService.defineSubmittedDate(sample, isWebinSuperUser))
             .withUpdate(now)
             .withSubmittedVia(
-                (sample.getSubmittedVia() == null)
-                    ? SubmittedViaType.JSON_API
-                    : sample.getSubmittedVia())
+                Optional.ofNullable(sample.getSubmittedVia()).orElse(SubmittedViaType.JSON_API))
             .build();
 
     sample = validateSample(sample, isWebinSuperUser);
 
+    // Optionally remove legacy fields
     if (!setFullDetails) {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
+    // Persist sample and assemble response
     sample =
         sampleService.persistSample(
             sample, oldSample.orElse(null), AuthorizationProvider.WEBIN, isWebinSuperUser);

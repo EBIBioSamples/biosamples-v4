@@ -10,10 +10,9 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -28,23 +27,23 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.test.context.support.WithUserDetails;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
-import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
+import uk.ac.ebi.biosamples.security.TestSecurityConfig;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
 
 @SpringBootTest(properties = {"spring.cloud.gcp.project-id=no_project"})
+@ContextConfiguration(classes = TestSecurityConfig.class)
 @AutoConfigureMockMvc
 public class BulkActionControllerV2Test {
   public static final String WEBIN_TESTING_ACCOUNT = "Webin-12345";
   @Autowired private MockMvc mockMvc;
   @MockBean private SampleService sampleService;
-  @MockBean private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
-  @MockBean private AccessControlService accessControlService;
+  @MockBean private WebinAuthenticationService webinAuthenticationService;
   @Autowired private ObjectMapper objectMapper;
 
   @BeforeEach
@@ -54,6 +53,31 @@ public class BulkActionControllerV2Test {
   }
 
   @Test
+  @WithUserDetails(WEBIN_TESTING_ACCOUNT)
+  public void testGetV2_SuccessfulFetch() throws Exception {
+    // Arrange
+    Sample sample =
+        new Sample.Builder("test_1")
+            .withWebinSubmissionAccountId(WEBIN_TESTING_ACCOUNT)
+            .withAccession("SAMEA1")
+            .withRelease("2047-01-01T12:00:00")
+            .build();
+    when(sampleService.fetch(anyString(), any())).thenReturn(Optional.of(sample));
+    doCallRealMethod()
+        .when(webinAuthenticationService)
+        .isSampleAccessible(sample, WEBIN_TESTING_ACCOUNT);
+
+    // Act & Assert
+    mockMvc
+        .perform(
+            get("/samples/bulk-fetch")
+                .param("accessions", "SAMEA1")
+                .header("Authorization", "Bearer token"))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  @WithUserDetails(WEBIN_TESTING_ACCOUNT)
   public void testAccessionV2_SuccessfulAccession() throws Exception {
     // Arrange
     Sample sample =
@@ -64,14 +88,10 @@ public class BulkActionControllerV2Test {
             .withAccession("SAMEA1")
             .build();
     List<Sample> samples = Collections.singletonList(sample);
-    String token = "Bearer token";
+    String token = "header.payload.signature";
 
-    AuthToken authToken =
-        new AuthToken(
-            "RS256", AuthorizationProvider.WEBIN, WEBIN_TESTING_ACCOUNT, Collections.emptyList());
-    when(accessControlService.extractToken(any())).thenReturn(Optional.of(authToken));
-    when(bioSamplesWebinAuthenticationService.buildSampleWithWebinId(any(), anyString()))
-        .thenReturn(sample);
+    when(webinAuthenticationService.buildSampleWithWebinId(any(), anyString())).thenReturn(sample);
+    when(sampleService.getPrinciple(any(Authentication.class))).thenReturn(WEBIN_TESTING_ACCOUNT);
     when(sampleService.buildPrivateSample(any(Sample.class))).thenReturn(sample);
     when(sampleService.accessionSample(any(Sample.class))).thenReturn(accessionedSample);
 
@@ -88,12 +108,23 @@ public class BulkActionControllerV2Test {
   }
 
   @Test
-  public void testAccessionV2_WebinTokenInvalidException() throws Exception {
+  @WithUserDetails(WEBIN_TESTING_ACCOUNT)
+  public void testAccessionV2_SuccessfulAccession_2() throws Exception {
     // Arrange
-    List<Sample> samples = Collections.singletonList(new Sample.Builder("test_1").build());
-    String token = "Bearer invalid_token";
+    Sample sample =
+        new Sample.Builder("test_1").withWebinSubmissionAccountId(WEBIN_TESTING_ACCOUNT).build();
+    Sample accessionedSample =
+        new Sample.Builder("test_1")
+            .withWebinSubmissionAccountId(WEBIN_TESTING_ACCOUNT)
+            .withAccession("SAMEA1")
+            .build();
+    List<Sample> samples = Collections.singletonList(sample);
+    String token = "header.payload.signature";
 
-    when(accessControlService.extractToken(anyString())).thenReturn(Optional.empty());
+    when(webinAuthenticationService.buildSampleWithWebinId(any(), anyString())).thenReturn(sample);
+    when(sampleService.getPrinciple(any(Authentication.class))).thenReturn(WEBIN_TESTING_ACCOUNT);
+    when(sampleService.buildPrivateSample(any(Sample.class))).thenReturn(sample);
+    when(sampleService.accessionSample(any(Sample.class))).thenReturn(accessionedSample);
 
     // Act & Assert
     mockMvc
@@ -101,12 +132,7 @@ public class BulkActionControllerV2Test {
             post("/samples/bulk-accession")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(samples))
-                .header("Authorization", token))
-        .andExpect(status().isUnauthorized())
-        .andExpect(
-            result ->
-                assertTrue(
-                    result.getResolvedException()
-                        instanceof GlobalExceptions.WebinTokenInvalidException));
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk());
   }
 }

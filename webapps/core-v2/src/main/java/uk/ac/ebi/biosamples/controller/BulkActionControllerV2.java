@@ -27,14 +27,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @RestController
@@ -45,22 +46,19 @@ public class BulkActionControllerV2 {
   private static final String SRA_ACCESSION = "SRA accession";
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final SampleService sampleService;
-  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
-  private final AccessControlService accessControlService;
+  private final WebinAuthenticationService webinAuthenticationService;
   private final SchemaValidationService schemaValidationService;
   private final BioSamplesProperties bioSamplesProperties;
   private final ObjectMapper objectMapper;
 
   public BulkActionControllerV2(
       final SampleService sampleService,
-      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-      final AccessControlService accessControlService,
+      final WebinAuthenticationService webinAuthenticationService,
       final SchemaValidationService schemaValidationService,
       final BioSamplesProperties bioSamplesProperties,
       final ObjectMapper objectMapper) {
     this.sampleService = sampleService;
-    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
-    this.accessControlService = accessControlService;
+    this.webinAuthenticationService = webinAuthenticationService;
     this.schemaValidationService = schemaValidationService;
     this.bioSamplesProperties = bioSamplesProperties;
     this.objectMapper = objectMapper;
@@ -71,12 +69,17 @@ public class BulkActionControllerV2 {
    */
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
+      value = "/bulk-accession",
       consumes = {MediaType.APPLICATION_JSON_VALUE},
       produces = {MediaType.APPLICATION_JSON_VALUE})
-  @RequestMapping("/bulk-accession")
-  public ResponseEntity<Map<String, String>> accessionV2(
-      @RequestBody List<Sample> samples,
-      @RequestHeader(name = "Authorization") final String token) {
+  public ResponseEntity<Map<String, String>> accessionV2(@RequestBody List<Sample> samples) {
+    final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+    final String principle = sampleService.getPrinciple(loggedInUser);
+
+    if (principle == null) {
+      throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
+    }
+
     log.info("V2-Received POST for bulk accessioning of " + samples.size() + " samples");
 
     samples.forEach(
@@ -89,24 +92,9 @@ public class BulkActionControllerV2 {
           }
         });
 
-    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-
-    if (authToken.isEmpty()) {
-      throw new GlobalExceptions.WebinTokenInvalidException();
-    }
-
-    final String webinSubmissionAccountId = authToken.get().getUser();
-
-    if (webinSubmissionAccountId == null) {
-      throw new GlobalExceptions.WebinTokenInvalidException();
-    }
-
     samples =
         samples.stream()
-            .map(
-                sample ->
-                    bioSamplesWebinAuthenticationService.buildSampleWithWebinId(
-                        sample, webinSubmissionAccountId))
+            .map(sample -> webinAuthenticationService.buildSampleWithWebinId(sample, principle))
             .collect(Collectors.toList());
 
     final List<Sample> createdSamplesList =
@@ -151,19 +139,22 @@ public class BulkActionControllerV2 {
   public ResponseEntity<Map<String, Sample>> getV2(
       @RequestParam final List<String> accessions,
       @RequestHeader(name = "Authorization", required = false) final String token) {
+    final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+    final String principle = sampleService.getPrinciple(loggedInUser);
+
     if (accessions == null) {
       throw new GlobalExceptions.BulkFetchInvalidRequestException();
     }
 
     log.info("V2-Received request to bulk-fetch " + accessions.size() + " accessions");
 
-    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
     final List<Sample> samples =
         accessions.stream()
             .map(
                 accession -> {
                   final String justAccession = accession.trim();
                   final Optional<Sample> sampleOptional =
+                      // fetch returns sample with no-curations applied
                       sampleService.fetch(
                           justAccession, Optional.of(Collections.singletonList("")));
 
@@ -171,14 +162,7 @@ public class BulkActionControllerV2 {
                     final Sample sample = sampleOptional.get();
 
                     try {
-                      if (authToken.isEmpty()) {
-                        throw new GlobalExceptions.WebinTokenInvalidException();
-                      }
-
-                      final String webinSubmissionAccountId = authToken.get().getUser();
-
-                      bioSamplesWebinAuthenticationService.isSampleAccessible(
-                          sample, webinSubmissionAccountId);
+                      webinAuthenticationService.isSampleAccessible(sample, principle);
                     } catch (final Exception e) {
                       log.info("Bulk-fetch forbidden sample: " + sample.getAccession());
                       return null;
@@ -209,33 +193,28 @@ public class BulkActionControllerV2 {
   }
 
   /*
-  Submit multiple samples, without any relationship information
+  Validate multiple samples, without any relationship information
    */
   @PreAuthorize("isAuthenticated()")
-  @RequestMapping("/bulk-submit")
-  @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<SubmissionReceipt> postV2(
-      @RequestBody final List<Sample> samples,
-      @RequestHeader(name = "Authorization") final String token) {
+  @PostMapping(
+      value = "/bulk-submit",
+      consumes = {MediaType.APPLICATION_JSON_VALUE})
+  public ResponseEntity<SubmissionReceipt> postV2(@RequestBody final List<Sample> samples) {
+    final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+    final String principle = sampleService.getPrinciple(loggedInUser);
+
+    if (principle == null) {
+      throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
+    }
+
     log.info("V2-Received POST for " + samples.size() + " samples");
 
     final List<Sample> createdSamples = new ArrayList<>();
     final List<SubmissionReceipt.ErrorReceipt> errors = new ArrayList<>();
-    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-
-    if (authToken.isEmpty()) {
-      throw new GlobalExceptions.WebinTokenInvalidException();
-    }
-
-    final String webinSubmissionAccountId = authToken.get().getUser();
-
-    if (webinSubmissionAccountId == null) {
-      throw new GlobalExceptions.WebinTokenInvalidException();
-    }
 
     for (final Sample sample : samples) {
       final Pair<Optional<Sample>, Optional<String>> sampleErrorPair =
-          persistSample(webinSubmissionAccountId, sample);
+          persistSample(principle, sample);
 
       sampleErrorPair.getLeft().ifPresent(createdSamples::add);
       sampleErrorPair
@@ -271,9 +250,9 @@ public class BulkActionControllerV2 {
   /*
   Submit multiple samples, without any relationship information
    */
-  @PreAuthorize("isAuthenticated()")
-  @RequestMapping("/bulk-validate")
-  @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
+  @PostMapping(
+      value = "/bulk-validate",
+      consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<SubmissionReceipt> validateV2(@RequestBody final List<Sample> samples) {
     log.info("V2-Received Validate request for " + samples.size() + " samples");
 
@@ -304,17 +283,13 @@ public class BulkActionControllerV2 {
             + samples.size()
             + " samples.");
 
-    if (!errors.isEmpty()) {
-      return ResponseEntity.status(HttpStatus.OK).body(new SubmissionReceipt(null, errors));
-    } else {
-      return ResponseEntity.status(HttpStatus.OK).body(null);
-    }
+    return ResponseEntity.status(HttpStatus.OK).body(new SubmissionReceipt(null, errors));
   }
 
   private Pair<Optional<Sample>, Optional<String>> persistSample(
       final String webinSubmissionAccountId, Sample sample) {
     final boolean isWebinSuperUser =
-        bioSamplesWebinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
+        webinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
     final Optional<Sample> oldSample =
         sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
             sample, isWebinSuperUser);
@@ -322,7 +297,7 @@ public class BulkActionControllerV2 {
         sampleService.handleSampleRelationshipsV2(sample, oldSample, isWebinSuperUser);
 
     sample =
-        bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+        webinAuthenticationService.handleWebinUserSubmission(
             sample, webinSubmissionAccountId, oldSample);
 
     sample = buildSample(sample, relationships, isWebinSuperUser);

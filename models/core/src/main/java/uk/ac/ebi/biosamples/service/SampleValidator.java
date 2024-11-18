@@ -27,7 +27,7 @@ public class SampleValidator {
 
   public SampleValidator(final AttributeValidator attributeValidator) {
     this.attributeValidator = attributeValidator;
-    relationshipValidator = new RelationshipValidator();
+    this.relationshipValidator = new RelationshipValidator();
   }
 
   public Collection<String> validate(final Sample sample) {

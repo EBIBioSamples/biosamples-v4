@@ -16,13 +16,14 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.ExposesResourceFor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
-import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
+import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.StructuredDataService;
-import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
 
 /** Structured data operations */
 @RestController
@@ -31,17 +32,17 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationServic
 @CrossOrigin
 public class StructuredDataController {
   private final Logger log = LoggerFactory.getLogger(getClass());
-  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
+  private final WebinAuthenticationService webinAuthenticationService;
   private final StructuredDataService structuredDataService;
-  private final AccessControlService accessControlService;
+  private final SampleService sampleService;
 
   public StructuredDataController(
-      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
+      final WebinAuthenticationService webinAuthenticationService,
       final StructuredDataService structuredDataService,
-      final AccessControlService accessControlService) {
-    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
+      final SampleService sampleService) {
+    this.webinAuthenticationService = webinAuthenticationService;
     this.structuredDataService = structuredDataService;
-    this.accessControlService = accessControlService;
+    this.sampleService = sampleService;
   }
 
   @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -60,21 +61,20 @@ public class StructuredDataController {
   @PreAuthorize("isAuthenticated()")
   @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public EntityModel<StructuredData> put(
-      @PathVariable final String accession,
-      @RequestBody final StructuredData structuredData,
-      @RequestHeader("Authorization") final String token) {
-    final AuthToken authToken =
-        accessControlService
-            .extractToken(token)
-            .orElseThrow(GlobalExceptions.WebinTokenInvalidException::new);
+      @PathVariable final String accession, @RequestBody final StructuredData structuredData) {
+    final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+    final String principle = sampleService.getPrinciple(loggedInUser);
+
+    if (principle == null) {
+      throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
+    }
     log.info("PUT request for structured data: {}", accession);
 
     if (structuredData.getAccession() == null || !structuredData.getAccession().equals(accession)) {
       throw new GlobalExceptions.SampleAccessionMismatchException();
     }
 
-    bioSamplesWebinAuthenticationService.isStructuredDataAccessible(
-        structuredData, authToken.getUser());
+    webinAuthenticationService.isStructuredDataAccessible(structuredData, principle);
 
     return EntityModel.of(structuredDataService.saveStructuredData(structuredData));
   }

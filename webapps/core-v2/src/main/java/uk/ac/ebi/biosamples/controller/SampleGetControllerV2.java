@@ -18,13 +18,13 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.ExposesResourceFor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
-import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
 
 @RestController
 @ExposesResourceFor(Sample.class)
@@ -33,16 +33,13 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationServic
 public class SampleGetControllerV2 {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final SampleService sampleService;
-  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
-  private final AccessControlService accessControlService;
+  private final WebinAuthenticationService webinAuthenticationService;
 
   public SampleGetControllerV2(
       final SampleService sampleService,
-      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-      final AccessControlService accessControlService) {
+      final WebinAuthenticationService webinAuthenticationService) {
     this.sampleService = sampleService;
-    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
-    this.accessControlService = accessControlService;
+    this.webinAuthenticationService = webinAuthenticationService;
   }
 
   /*
@@ -51,20 +48,20 @@ public class SampleGetControllerV2 {
   @PreAuthorize("isAuthenticated()")
   @CrossOrigin(methods = RequestMethod.GET)
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-  public Sample getSampleV2(
-      @PathVariable final String accession,
-      @RequestHeader(name = "Authorization", required = false) final String token) {
+  public Sample getSampleV2(@PathVariable final String accession) {
+    final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+    final String principle = sampleService.getPrinciple(loggedInUser);
+
     log.info("Received fetch for accession " + accession);
 
-    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
+    // fetch returns sample with no-curations applied
     final Optional<Sample> optionalSample =
         sampleService.fetch(accession, Optional.of(Collections.singletonList("")));
 
     if (optionalSample.isPresent()) {
       final Sample sample = optionalSample.get();
-      final String webinSubmissionAccountId = authToken.get().getUser();
 
-      bioSamplesWebinAuthenticationService.isSampleAccessible(sample, webinSubmissionAccountId);
+      webinAuthenticationService.isSampleAccessible(sample, principle);
 
       return sample;
     } else {

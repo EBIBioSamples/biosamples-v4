@@ -10,17 +10,16 @@
 */
 package uk.ac.ebi.biosamples.security;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 @Service
 @Primary
+@Slf4j
 public class BioSamplesTokenAuthenticationService {
-  private static final Logger LOGGER =
-      LoggerFactory.getLogger(BioSamplesTokenAuthenticationService.class);
   private final BioSamplesTokenHandler tokenHandler;
 
   public BioSamplesTokenAuthenticationService(final BioSamplesTokenHandler tokenHandler) {
@@ -29,17 +28,21 @@ public class BioSamplesTokenAuthenticationService {
   }
 
   public Authentication getAuthenticationFromToken(String token) {
-    LOGGER.trace("getAuthentication");
+    log.trace("getAuthentication");
 
     try {
       if (token == null) {
         return null;
       }
 
-      return new UserAuthentication(tokenHandler.getUser(token));
+      final User user = tokenHandler.getUser(token);
+
+      log.info("Logged in user is " + user.getUsername());
+
+      return new UserAuthentication(user);
     } catch (final Exception e) {
-      LOGGER.error(e.getMessage());
-      LOGGER.debug("Cannot extract authentication details from token", e);
+      log.error(e.getMessage());
+      log.debug("Cannot extract authentication details from token", e);
 
       return null;
     }

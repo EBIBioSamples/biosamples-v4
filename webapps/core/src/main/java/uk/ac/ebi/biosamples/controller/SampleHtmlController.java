@@ -41,7 +41,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
 
 /**
  * Primary controller for HTML operations.
@@ -60,7 +60,7 @@ public class SampleHtmlController {
   private final FacetService facetService;
   private final FilterService filterService;
   private final BioSamplesProperties bioSamplesProperties;
-  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
+  private final WebinAuthenticationService webinAuthenticationService;
 
   public SampleHtmlController(
       final SampleService sampleService,
@@ -69,14 +69,14 @@ public class SampleHtmlController {
       final FacetService facetService,
       final FilterService filterService,
       final BioSamplesProperties bioSamplesProperties,
-      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService) {
+      final WebinAuthenticationService webinAuthenticationService) {
     this.sampleService = sampleService;
     this.samplePageService = samplePageService;
     this.jsonLDService = jsonLDService;
     this.facetService = facetService;
     this.filterService = filterService;
     this.bioSamplesProperties = bioSamplesProperties;
-    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
+    this.webinAuthenticationService = webinAuthenticationService;
   }
 
   @GetMapping(value = "/")
@@ -301,6 +301,7 @@ public class SampleHtmlController {
       final HttpServletRequest request,
       final HttpServletResponse response) {
     // TODO allow curation domain specification
+    // fetch returns sample with curations applied
     final Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
 
     if (sample.isEmpty()) {
@@ -308,7 +309,7 @@ public class SampleHtmlController {
       throw new ResourceNotFoundException();
     }
 
-    bioSamplesWebinAuthenticationService.isSampleAccessible(sample.get(), null);
+    webinAuthenticationService.isSampleAccessible(sample.get(), null);
 
     // response.setHeader(HttpHeaders.LAST_MODIFIED,
     // String.valueOf(sample.getUpdate().toEpochSecond(ZoneOffset.UTC)));

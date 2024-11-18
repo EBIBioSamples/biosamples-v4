@@ -10,39 +10,33 @@
 */
 package uk.ac.ebi.biosamples.security;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.ArrayList;
+import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.model.AuthToken;
+import uk.ac.ebi.biosamples.service.security.AccessControlService;
 
 @Component
+@Slf4j
 public class BioSamplesTokenHandler {
-  private final Logger log = LoggerFactory.getLogger(getClass());
+  @Autowired AccessControlService accessControlService;
 
   public User getUser(final String token) {
-    Claims claims = null;
-
     try {
-      claims = decodeJWT(token);
+      final Optional<AuthToken> authToken = accessControlService.extractToken(token);
 
-      if (claims == null) {
+      if (authToken.isEmpty()) {
         throw new RuntimeException("No claims for this token");
       } else {
-        return new User(null, null, null);
+        return new User(authToken.get().getUser(), "", new ArrayList<>());
       }
     } catch (final Exception e) {
       log.info("Cannot parse token: " + e.getMessage());
     }
 
-    return new User(claims.get("principle", String.class), null, null);
-  }
-
-  private Claims decodeJWT(final String jwt) {
-    final int i = jwt.lastIndexOf('.');
-    final String withoutSignature = jwt.substring(0, i + 1);
-
-    return Jwts.parser().parseClaimsJwt(withoutSignature).getBody();
+    return new User(null, "", new ArrayList<>());
   }
 }

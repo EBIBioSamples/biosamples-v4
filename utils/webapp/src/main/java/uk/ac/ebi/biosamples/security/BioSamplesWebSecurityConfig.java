@@ -13,6 +13,7 @@ package uk.ac.ebi.biosamples.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -28,33 +29,45 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class BioSamplesWebSecurityConfig extends WebSecurityConfigurerAdapter {
   private final BioSamplesTokenAuthenticationService tokenAuthenticationService;
 
-  private TokenAuthenticationFilter tokenAuthenticationFilter() {
-    return new TokenAuthenticationFilter(this.tokenAuthenticationService);
-  }
-
   public BioSamplesWebSecurityConfig(
       final BioSamplesTokenAuthenticationService tokenAuthenticationService) {
     this.tokenAuthenticationService = tokenAuthenticationService;
   }
 
+  private BioSamplesTokenAuthenticationFilter tokenAuthenticationFilter() {
+    return new BioSamplesTokenAuthenticationFilter(this.tokenAuthenticationService);
+  }
+
   @Override
   protected void configure(final HttpSecurity httpSecurity) throws Exception {
     httpSecurity
-        // we don't need CSRF because our token is invulnerable
         .csrf()
         .disable()
         .cors()
         .and()
         .exceptionHandling()
         .and()
-        // don't create session
         .sessionManagement()
-        .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        .and()
+        .authorizeRequests()
+        // Allow unrestricted access to /samples/bulk-validate
+        .antMatchers(HttpMethod.POST, "/samples/bulk-validate")
+        .permitAll()
+        // Authenticate all other POST requests under /samples
+        .antMatchers(HttpMethod.POST, "/samples/**")
+        .authenticated()
+        // Allow unrestricted access to /actuator endpoints
+        .antMatchers("/actuator/**")
+        .permitAll()
+        // Allow access to all other routes without authentication
+        .anyRequest()
+        .permitAll();
 
     httpSecurity.addFilterBefore(
         tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
-    // disable the no-cache header injection, we'll manage this ourselves
+    // Disable cache control header injection
     httpSecurity.headers().cacheControl().disable();
   }
 
@@ -62,7 +75,6 @@ public class BioSamplesWebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Bean
   CorsConfigurationSource corsConfigurationSource() {
     final CorsConfiguration configuration = new CorsConfiguration();
-
     configuration.setAllowCredentials(true);
     configuration.addAllowedOrigin("*");
     configuration.addAllowedHeader("*");
@@ -70,7 +82,6 @@ public class BioSamplesWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
-
     return source;
   }
 

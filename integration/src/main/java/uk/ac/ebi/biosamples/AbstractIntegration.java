@@ -33,7 +33,6 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
   private final Logger log = LoggerFactory.getLogger(getClass());
   final BioSamplesClient publicClient;
   private int exitCode = 1; // don't make this final
-  private BioSamplesClient webinClient;
   protected final BioSamplesClient client;
   protected final String defaultIntegrationSubmissionDomain = "self.BiosampleIntegrationTest";
 
@@ -55,7 +54,6 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
         client
             .getPublicClient()
             .orElseThrow(() -> new IntegrationTestFailException("Could not create public client"));
-    this.webinClient = webinClient;
   }
 
   public AbstractIntegration(final BioSamplesClient client) {

@@ -36,7 +36,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = {"spring.cloud.gcp.project-id=no_project"})
@@ -45,7 +45,7 @@ import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationServic
 public class EtagTests {
   private static final String WEBIN_TESTING_ACCOUNT = "WEBIN-12345";
   @Autowired private MockMvc mockMvc;
-  @MockBean private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
+  @MockBean private WebinAuthenticationService webinAuthenticationService;
   @MockBean private SampleService sampleService;
   @MockBean private AccessControlService accessControlService;
 
@@ -61,7 +61,7 @@ public class EtagTests {
 
     when(sampleService.fetch(sampleAccession, Optional.empty()))
         .thenReturn(Optional.of(testSample));
-    when(bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
+    when(webinAuthenticationService.handleWebinUserSubmission(
             testSample, WEBIN_TESTING_ACCOUNT, Optional.empty()))
         .thenReturn(testSample);
     // doNothing().when(bioSamplesWebinAuthenticationService).isSampleAccessible(isA(Sample.class),

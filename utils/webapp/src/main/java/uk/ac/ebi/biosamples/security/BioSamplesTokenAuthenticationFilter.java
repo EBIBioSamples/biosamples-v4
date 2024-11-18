@@ -16,32 +16,33 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.commons.lang3.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
 
-public class TokenAuthenticationFilter extends GenericFilterBean {
-  private static final String TOKEN_HEADER_KEY = "Authorization";
-  private static final String TOKEN_HEADER_VALUE_PREFIX = "Bearer";
-  private final BioSamplesTokenAuthenticationService authenticationService;
+@Slf4j
+public class BioSamplesTokenAuthenticationFilter extends GenericFilterBean {
+  private final BioSamplesTokenAuthenticationService bioSamplesTokenAuthenticationService;
 
-  public TokenAuthenticationFilter(
-      final BioSamplesTokenAuthenticationService authenticationService) {
-    this.authenticationService = authenticationService;
+  public BioSamplesTokenAuthenticationFilter(
+      final BioSamplesTokenAuthenticationService bioSamplesTokenAuthenticationService) {
+    this.bioSamplesTokenAuthenticationService = bioSamplesTokenAuthenticationService;
   }
 
   @Override
   public void doFilter(
       final ServletRequest request, final ServletResponse response, final FilterChain filterChain)
       throws IOException, ServletException {
+    log.info("Token filter invoked.");
+
     final HttpServletRequest httpRequest = (HttpServletRequest) request;
     final String headerToken = getHeaderToken(httpRequest);
 
     if (headerToken != null) {
       // JWT auth.
       final Authentication authentication =
-          authenticationService.getAuthenticationFromToken(headerToken);
+          bioSamplesTokenAuthenticationService.getAuthenticationFromToken(headerToken);
 
       if (authentication != null) {
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -52,20 +53,32 @@ public class TokenAuthenticationFilter extends GenericFilterBean {
   }
 
   private static String getHeaderToken(final HttpServletRequest request) {
-    final String header = request.getHeader(TOKEN_HEADER_KEY);
+    try {
+      final String header = request.getHeader("Authorization");
 
-    if (header == null) {
-      return null;
-    } else if (!header.trim().startsWith(TOKEN_HEADER_VALUE_PREFIX.trim())) {
+      if (header == null) {
+        log.info("No {} header", "Authorization");
+
+        return null;
+      }
+
+      if (!header.trim().startsWith("Bearer".trim())) {
+        log.info("No {} prefix", "Bearer");
+
+        return null;
+      } else {
+        final String token = header.substring("Bearer".trim().length());
+
+        if (token.isEmpty()) {
+          log.info("Missing jwt token");
+
+          return null;
+        } else {
+          return token.trim();
+        }
+      }
+    } catch (final Exception e) {
       return null;
     }
-
-    final String token = header.substring(TOKEN_HEADER_VALUE_PREFIX.trim().length());
-
-    if (StringUtils.isEmpty(token)) {
-      return null;
-    }
-
-    return token;
   }
 }

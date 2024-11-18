@@ -127,11 +127,4 @@ public class BioSamplesCrossSourceIngestAccessControlService {
       throw new GlobalExceptions.SampleAccessionDoesNotExistException();
     }
   }
-
-  public void preventAapDomainChangeForFileUploadSampleSubmissions(
-      final Sample oldSample, final String newSampleSubmissionDomain) {
-    if (!newSampleSubmissionDomain.equals(oldSample.getDomain())) {
-      throw new GlobalExceptions.SampleDomainMismatchException();
-    }
-  }
 }

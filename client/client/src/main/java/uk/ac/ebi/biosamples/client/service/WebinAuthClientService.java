@@ -63,10 +63,10 @@ public class WebinAuthClientService implements ClientService {
     }
 
     if (username == null
-        || username.trim().length() == 0
+        || username.trim().isEmpty()
         || password == null
-        || password.trim().length() == 0
-        || authRealms.size() == 0) {
+        || password.trim().isEmpty()
+        || authRealms.isEmpty()) {
       return null;
     }
 

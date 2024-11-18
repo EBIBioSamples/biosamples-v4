@@ -57,17 +57,11 @@ public class AccessControlService {
         final List<String> roles;
         final JsonNode node = objectMapper.readTree(payload);
 
-        if (isAap(node)) {
-          authority = AuthorizationProvider.AAP;
-          user = node.get("sub").asText();
-          roles = objectMapper.convertValue(node.get("domains"), new TypeReference<>() {});
-        } else {
-          verifyValidity(token);
+        verifyValidity(token);
 
-          authority = AuthorizationProvider.WEBIN;
-          user = node.get("principle").asText();
-          roles = objectMapper.convertValue(node.get("role"), new TypeReference<>() {});
-        }
+        authority = AuthorizationProvider.WEBIN;
+        user = node.get("principle").asText();
+        roles = objectMapper.convertValue(node.get("role"), new TypeReference<>() {});
 
         authToken = new AuthToken(algorithm, authority, user, roles);
       } catch (final IOException e) {
@@ -88,10 +82,6 @@ public class AccessControlService {
     if (jwt.getExpiresAt().before(new Date())) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
     }
-  }
-
-  private static boolean isAap(final JsonNode node) {
-    return node.get("iss") != null && node.get("iss").asText().contains("aai.ebi.ac.uk");
   }
 
   private boolean verifySignature() {

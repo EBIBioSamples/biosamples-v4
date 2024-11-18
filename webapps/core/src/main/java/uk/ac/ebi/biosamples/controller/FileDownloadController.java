@@ -26,7 +26,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FileDownloadService;
 import uk.ac.ebi.biosamples.service.FilterService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 @Controller
@@ -35,15 +35,15 @@ public class FileDownloadController {
   private static final Logger LOG = LoggerFactory.getLogger(FileDownloadController.class);
   private final FileDownloadService fileDownloadService;
   private final FilterService filterService;
-  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
+  private final WebinAuthenticationService webinAuthenticationService;
 
   public FileDownloadController(
       final FileDownloadService fileDownloadService,
       final FilterService filterService,
-      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService) {
+      final WebinAuthenticationService webinAuthenticationService) {
     this.fileDownloadService = fileDownloadService;
     this.filterService = filterService;
-    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
+    this.webinAuthenticationService = webinAuthenticationService;
   }
 
   @GetMapping

@@ -18,29 +18,24 @@ import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.Accession;
-import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.service.AccessionsService;
-import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.SampleService;
 
 @RestController
 @RequestMapping("/accessions")
 @CrossOrigin
 public class AccessionsGetController {
-  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final AccessionsService accessionsService;
-  private final AccessControlService accessControlService;
+  private final SampleService sampleService;
 
   public AccessionsGetController(
-      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-      final AccessionsService accessionsService,
-      final AccessControlService accessControlService) {
-    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
+      final AccessionsService accessionsService, final SampleService sampleService) {
     this.accessionsService = accessionsService;
-    this.accessControlService = accessControlService;
+    this.sampleService = sampleService;
   }
 
   @CrossOrigin(methods = RequestMethod.GET)
@@ -49,14 +44,12 @@ public class AccessionsGetController {
       @RequestParam(name = "text", required = false) final String text,
       @RequestParam(name = "filter", required = false) final String[] filter,
       @RequestParam(name = "page", required = false, defaultValue = "0") final Integer page,
-      @RequestParam(name = "size", required = false, defaultValue = "100") final Integer size,
-      @RequestHeader(name = "Authorization", required = false) final String token) {
-    final AuthToken authToken =
-        accessControlService
-            .extractToken(token)
-            .orElseThrow(GlobalExceptions.WebinTokenInvalidException::new);
+      @RequestParam(name = "size", required = false, defaultValue = "100") final Integer size) {
+    final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+    final String principle = sampleService.getPrinciple(loggedInUser);
+
     final Page<String> pageAccessions =
-        accessionsService.getAccessions(text, filter, authToken.getUser(), page, size);
+        accessionsService.getAccessions(text, filter, principle, page, size);
     final PagedModel.PageMetadata pageMetadata =
         new PagedModel.PageMetadata(
             size,
