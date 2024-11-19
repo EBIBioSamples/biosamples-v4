@@ -88,9 +88,7 @@ public class AccessControlService {
     return true;
   }
 
-  public List<String> getUserRoles(final AuthToken token) {
-    return token.getAuthority() == AuthorizationProvider.AAP
-        ? token.getRoles()
-        : Collections.singletonList(token.getUser());
+  public String getUser(final AuthToken token) {
+    return token.getUser();
   }
 }

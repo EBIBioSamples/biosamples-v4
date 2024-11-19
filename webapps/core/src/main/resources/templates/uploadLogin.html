@@ -27,7 +27,7 @@
         </div>
 
         <div class="login-wrapper">
-            <form th:action="@{/login/auth}" method="post" modelAttribute="authRequest">
+            <form th:action="@{/login/auth}" method="post" modelAttribute="fileUploaderAuthRequest">
                 <label for="userName"><b>Username</b></label>
                 <input type="text" id="userName" name="userName" autofocus="autofocus" class="required"/> <br/>
                 <label for="password"><b>Password</b></label>

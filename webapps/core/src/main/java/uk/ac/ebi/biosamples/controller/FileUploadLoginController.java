@@ -60,7 +60,9 @@ public class FileUploadLoginController {
   @PreAuthorize("permitAll()")
   @PostMapping(value = "/auth")
   public String auth(
-      @ModelAttribute("authRequest") final AuthRequest authRequest, final ModelMap model) {
+      @ModelAttribute("fileUploaderAuthRequest")
+          final FileUploaderAuthRequest fileUploaderAuthRequest,
+      final ModelMap model) {
     try {
       Map<String, String> checklists = new TreeMap<>();
 
@@ -72,8 +74,8 @@ public class FileUploadLoginController {
 
       final AuthRequestWebin authRequestWebin =
           new AuthRequestWebin(
-              authRequest.getUserName(),
-              authRequest.getPassword(),
+              fileUploaderAuthRequest.getUserName(),
+              fileUploaderAuthRequest.getPassword(),
               Collections.singletonList(AuthRealm.ENA));
       final String token =
           getWebinAuthenticationToken(objectMapper.writeValueAsString(authRequestWebin)).getBody();
@@ -83,7 +85,7 @@ public class FileUploadLoginController {
       if (authToken.isPresent()) {
         webinSubmissionAccountId = authToken.get().getUser();
       } else {
-        throw new GlobalExceptions.WebinTokenInvalidException();
+        throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
       }
 
       if (webinSubmissionAccountId == null) {
@@ -133,9 +135,9 @@ public class FileUploadLoginController {
           accessControlService
               .extractToken(token)
               .orElseThrow(GlobalExceptions.AccessControlException::new);
-      final List<String> userRoles = accessControlService.getUserRoles(authToken);
+      final String user = accessControlService.getUser(authToken);
 
-      return fileUploadService.getUserSubmissions(userRoles);
+      return fileUploadService.getUserSubmissions(user);
     } catch (final Exception e) {
       log.info("Failed in fetch submissions in getSubmissions() " + e.getMessage());
       throw new RuntimeException(e);

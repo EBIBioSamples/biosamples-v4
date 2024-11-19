@@ -191,8 +191,8 @@ public class FileUploadController {
         accessControlService
             .extractToken(token)
             .orElseThrow(GlobalExceptions.AccessControlException::new);
-    final List<String> userRoles = accessControlService.getUserRoles(authToken);
-    final List<MongoFileUpload> uploads = fileUploadService.getUserSubmissions(userRoles);
+    final String user = accessControlService.getUser(authToken);
+    final List<MongoFileUpload> uploads = fileUploadService.getUserSubmissions(user);
 
     return ResponseEntity.ok().body(uploads);
   }

@@ -116,7 +116,7 @@ public class WebinAuthenticationService {
       existingSampleAccessibilityChecks(sample, oldSampleInDb);
 
       if (!webinIdFromAuthToken.equalsIgnoreCase(oldSampleInDb.getWebinSubmissionAccountId())) {
-        throw new GlobalExceptions.NotOriginalSubmitterException();
+        throw new GlobalExceptions.NonSubmitterUpdateAttemptException();
       } else {
         return buildSampleWithWebinId(sample, webinIdFromAuthToken);
       }

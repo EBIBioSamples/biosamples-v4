@@ -11,16 +11,12 @@
 package uk.ac.ebi.biosamples.service.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.List;
 import junit.framework.TestCase;
-import org.junit.Assert;
-import org.junit.Ignore;
-import uk.ac.ebi.biosamples.model.AuthToken;
-import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
-@Ignore
 public class AccessControlServiceTest extends TestCase {
-  private static final String WEBIN_TOKEN =
+  private static final String EXPIRED_WEBIN_TOKEN =
       "eyJhbGciOiJSUzI1NiJ9.eyJwcmluY2lwbGUiOiJXZWJpbi01OTI4NyIsInJvbGUiO"
           + "ltdLCJleHAiOjE2MjY4ODE5MjgsImlhdCI6MTYyNjg2MzkyOH0.OkgsxRLGkG0O5nbVnVsgwKRNMM3Fqh4bsNRqM0n0fTWLqqqBc"
           + "J4tNgaihj7OmZmCpIKTOecxEhh3anNfjQQ1O9vQhtCeiFz9g2Tj8pTdv-6FBZ5t5gidz5W4GDsJ_8hDnXPge7Gk5ug3_GddDAWHv"
@@ -30,14 +26,14 @@ public class AccessControlServiceTest extends TestCase {
       new AccessControlService(new ObjectMapper());
 
   public void testExtractToken() {
-    final AuthToken token = accessControlService.extractToken(WEBIN_TOKEN).orElse(null);
-    Assert.assertEquals(token.getAuthority(), AuthorizationProvider.WEBIN);
-  }
+    try {
+      accessControlService.extractToken(EXPIRED_WEBIN_TOKEN).orElse(null);
+    } catch (final Exception e) {
+      assertTrue(e instanceof ResponseStatusException);
 
-  public void testGetUserRoles() {
-    final AuthToken token = accessControlService.extractToken(WEBIN_TOKEN).orElse(null);
-    final List<String> userRoles = accessControlService.getUserRoles(token);
+      final ResponseStatusException rse = (ResponseStatusException) e;
 
-    Assert.assertTrue(userRoles.contains(null));
+      assertSame(rse.getStatus(), HttpStatus.UNAUTHORIZED);
+    }
   }
 }

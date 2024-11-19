@@ -29,9 +29,6 @@ public class GlobalExceptions {
       reason = "Bulk fetch request parameter accessions is null or empty")
   public static class BulkFetchInvalidRequestException extends RuntimeException {}
 
-  @ResponseStatus(value = HttpStatus.FORBIDDEN)
-  public static class BulkFetchForbiddenException extends RuntimeException {}
-
   @ResponseStatus(
       value = HttpStatus.BAD_REQUEST,
       reason = "Sample accession must match URL accession") // 400
@@ -76,7 +73,7 @@ public class GlobalExceptions {
       value = HttpStatus.FORBIDDEN,
       reason =
           "This sample is permitted to be updated only by the original submitter. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk for more information")
-  public static class NotOriginalSubmitterException extends RuntimeException {}
+  public static class NonSubmitterUpdateAttemptException extends RuntimeException {}
 
   public static class SampleNotAccessibleAdviceException extends RuntimeException {
     @Serial private static final long serialVersionUID = -6250819256457895445L;
@@ -122,13 +119,8 @@ public class GlobalExceptions {
 
   @ResponseStatus(
       value = HttpStatus.BAD_REQUEST,
-      reason = "Structured data must have a webin submission account id") // 400
+      reason = "Structured data must have a Webin Account ID") // 400
   public static class StructuredDataWebinIdMissingException extends RuntimeException {}
-
-  @ResponseStatus(
-      value = HttpStatus.UNAUTHORIZED,
-      reason = "You must provide a bearer token to be able to submit") // 401
-  public static class WebinTokenInvalidException extends RuntimeException {}
 
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public static class UploadInvalidException extends RuntimeException {
@@ -147,13 +139,6 @@ public class GlobalExceptions {
       value = HttpStatus.BAD_REQUEST,
       reason = "Sample must match URL or be omitted") // 400
   public static class SampleNotMatchException extends RuntimeException {}
-
-  @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR, reason = "Bulk accessioning failure")
-  public static class BulkAccessionFailureExceptionV2 extends RuntimeException {
-    public BulkAccessionFailureExceptionV2(final String message) {
-      super(message);
-    }
-  }
 
   public static class SampleConversionException extends RuntimeException {
     public SampleConversionException(final String message) {

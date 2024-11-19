@@ -8,13 +8,14 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.mongo.repository;
+package uk.ac.ebi.biosamples.model.auth;
 
-import java.util.List;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.repository.MongoRepository;
-import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
+import java.io.Serializable;
+import lombok.*;
 
-public interface MongoFileUploadRepository extends MongoRepository<MongoFileUpload, String> {
-  List<MongoFileUpload> findBySubmitterDetails(String user, Pageable page);
+@Data
+@AllArgsConstructor
+public class FileUploaderAuthRequest implements Serializable {
+  private String userName;
+  private String password;
 }

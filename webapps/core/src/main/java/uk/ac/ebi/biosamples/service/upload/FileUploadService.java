@@ -498,10 +498,10 @@ public class FileUploadService {
                 "Submission not found, please enter a valid submission ID."));
   }
 
-  public List<MongoFileUpload> getUserSubmissions(final List<String> userRoles) {
+  public List<MongoFileUpload> getUserSubmissions(final String user) {
     try {
       final Pageable page = PageRequest.of(0, 10);
-      return mongoFileUploadRepository.findBySubmitterDetailsIn(userRoles, page);
+      return mongoFileUploadRepository.findBySubmitterDetails(user, page);
     } catch (final Exception e) {
       log.info("Failed in fetch submissions in getUserSubmissions() " + e.getMessage());
       throw new RuntimeException(e);
