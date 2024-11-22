@@ -39,8 +39,7 @@ public class SampleExternalReferenceHandler {
           ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + accession);
       final Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
 
-      bioSamplesClient.persistCuration(
-          accession, curation, pipelinesProperties.getProxyWebinId(), true);
+      bioSamplesClient.persistCuration(accession, curation, pipelinesProperties.getProxyWebinId());
     }
   }
 }

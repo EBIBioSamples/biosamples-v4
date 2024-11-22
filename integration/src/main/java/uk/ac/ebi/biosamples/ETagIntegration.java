@@ -35,10 +35,8 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
 public class ETagIntegration extends AbstractIntegration {
-
   private final ClientProperties clientProperties;
   private final RestTemplate restTemplate;
-
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   public ETagIntegration(
@@ -46,6 +44,7 @@ public class ETagIntegration extends AbstractIntegration {
       final ClientProperties clientProperties,
       final RestTemplateBuilder restTemplateBuilder) {
     super(client);
+
     this.clientProperties = clientProperties;
     restTemplate = restTemplateBuilder.build();
   }
@@ -184,7 +183,9 @@ public class ETagIntegration extends AbstractIntegration {
             Stream.of(Attribute.build("organism", "Homo Sapiens")).collect(Collectors.toSet()));
 
     client.persistCuration(
-        testSample.getAccession(), sampleCuration, "self.BiosampleIntegrationTest", false);
+        testSample.getAccession(),
+        sampleCuration,
+        clientProperties.getBiosamplesClientWebinUsername());
 
     // Fetch again both the sample and the raw sample, the raw ETAG should match
     rawSampleResponse =
@@ -214,7 +215,7 @@ public class ETagIntegration extends AbstractIntegration {
   private Sample getTestSample() {
     return new Sample.Builder("ETAG sample test")
         .withAccession("SAMETAG2031")
-        .withDomain("self.BiosampleIntegrationTest")
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease("2017-01-01T12:00:00")
         .withUpdate("2017-01-01T12:00:00")
         .addAttribute(Attribute.build("organism", "human"))

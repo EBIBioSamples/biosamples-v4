@@ -15,6 +15,7 @@ import java.util.*;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
@@ -22,8 +23,12 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 @Order(6)
 // @Profile({ "default", "rest" })
 public class RestExternalReferenceIntegration extends AbstractIntegration {
-  public RestExternalReferenceIntegration(final BioSamplesClient client) {
+  private final ClientProperties clientProperties;
+
+  public RestExternalReferenceIntegration(
+      final BioSamplesClient client, final ClientProperties clientProperties) {
     super(client);
+    this.clientProperties = clientProperties;
   }
 
   @Override
@@ -55,8 +60,7 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
             null,
             Collections.singletonList(
                 ExternalReference.build("http://www.ebi.ac.uk/ena/ERA123456"))),
-        "self.BiosampleIntegrationTest",
-        false);
+        clientProperties.getBiosamplesClientWebinUsername());
   }
 
   @Override
@@ -150,7 +154,7 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
                     "DUO:0000005", "DUO:0000014", "DUO:0000019", "DUO:0000026", "DUO:0000028"))));
 
     return new Sample.Builder(name)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withUpdate(update)
         .withAttributes(attributes)

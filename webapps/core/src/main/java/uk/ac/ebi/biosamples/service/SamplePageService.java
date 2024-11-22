@@ -120,8 +120,8 @@ public class SamplePageService {
     final CursorArrayList<SolrSample> cursorSolrSample =
         solrSampleService.fetchSolrSampleByText(
             text, filters, webinSubmissionAccountId, cursorMark, size);
-
     final List<Future<Optional<Sample>>> listFutureSample;
+
     listFutureSample =
         cursorSolrSample.stream()
             .map(s -> sampleService.fetchAsync(s.getAccession(), curationDomains))

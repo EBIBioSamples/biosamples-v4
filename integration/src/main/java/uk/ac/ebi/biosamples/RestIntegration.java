@@ -50,11 +50,12 @@ public class RestIntegration extends AbstractIntegration {
       final RestTemplateBuilder restTemplateBuilder,
       final ClientProperties clientProperties,
       @Qualifier("WEBINCLIENT") final BioSamplesClient webinClient) {
-    super(client, webinClient);
-    restTemplate = restTemplateBuilder.build();
+    super(client);
+
+    this.restTemplate = restTemplateBuilder.build();
     this.clientProperties = clientProperties;
     this.webinClient = webinClient;
-    annonymousClient =
+    this.annonymousClient =
         new BioSamplesClient(
             this.clientProperties.getBiosamplesClientUri(),
             this.clientProperties.getBiosamplesClientUriV2(),
@@ -115,17 +116,18 @@ public class RestIntegration extends AbstractIntegration {
   protected void phaseTwo() {
     // Test POSTing a sample with an accession to /samples should return 400 BAD REQUEST
     // response
-    postSampleWithAccessionShouldReturnABadRequestResponse();
+    postSampleWithoutAuthenticationShouldReturn403Response();
 
     final Sample sampleTest1 = getSampleTest1();
     // get to check it worked
     final Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest1.getName());
+
     if (optionalSample.isEmpty()) {
       throw new IntegrationTestFailException(
           "Cant find sample " + sampleTest1.getName(), Phase.TWO);
     }
-    // check the update date
 
+    // check the update date
     final Instant now = Instant.now();
 
     log.info("Now is : " + now);
@@ -211,7 +213,7 @@ public class RestIntegration extends AbstractIntegration {
     sampleTest1 =
         new Sample.Builder(sampleTest1.getName(), sampleTest1.getAccession())
             .withTaxId(sampleTest1.getTaxId())
-            .withDomain(sampleTest1.getDomain())
+            .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
             .withRelease("2116-04-01T11:36:57.00Z")
             .withUpdate(sampleTest1.getUpdate())
             .withAttributes(sampleTest1.getAttributes())
@@ -488,7 +490,7 @@ public class RestIntegration extends AbstractIntegration {
         .withTaxId(9606L)
         .withUpdate(update)
         .withRelease(release)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withAttributes(attributes)
         .withRelationships(relationships)
         .withExternalReferences(externalReferences)
@@ -583,7 +585,7 @@ public class RestIntegration extends AbstractIntegration {
 
     return new Sample.Builder(name)
         .withTaxId(9606L)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withUpdate(update)
         .withPublications(Collections.singletonList(publication))
@@ -591,20 +593,22 @@ public class RestIntegration extends AbstractIntegration {
         .build();
   }
 
-  private void postSampleWithAccessionShouldReturnABadRequestResponse() {
+  private void postSampleWithoutAuthenticationShouldReturn403Response() {
     final Traverson traverson =
         new Traverson(clientProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON);
     final Traverson.TraversalBuilder builder = traverson.follow("samples");
+    final MultiValueMap<String, String> sample = new LinkedMultiValueMap<>();
+
     log.info("POSTing sample with accession from " + builder.asLink().getHref());
 
-    final MultiValueMap<String, String> sample = new LinkedMultiValueMap<>();
     sample.add("name", "RestIntegration_sample_3");
     sample.add("accession", "SAMEA09123842");
-    sample.add("domain", "self.BiosampleIntegrationTest");
+    sample.add("webinSubmissionAccountId", clientProperties.getBiosamplesClientWebinUsername());
     sample.add("release", "2016-05-05T11:36:57.00Z");
     sample.add("update", "2016-04-01T11:36:57.00Z");
 
     final HttpHeaders httpHeaders = new HttpHeaders();
+
     httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
@@ -613,15 +617,17 @@ public class RestIntegration extends AbstractIntegration {
     try {
       restTemplate.exchange(builder.asLink().getHref(), HttpMethod.POST, entity, String.class);
     } catch (final HttpStatusCodeException sce) {
-      if (!sce.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
+      log.info("Status of /samples POST without authentication is " + sce.getStatusCode());
+
+      if (!sce.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
         throw new RuntimeException(
-            "POSTing to samples endpoint a sample with an accession should return a 400 Bad Request exception");
+            "POSTing to samples endpoint a sample without authentication should return a 403 FORBIDDEN response");
       }
     }
 
     log.info(
         String.format(
-            "POSTing sample with accession from %s produced a BAD REQUEST as expected and wanted ",
+            "POSTing sample without authentication from %s produced a 403 FORBIDDEN response as expected ",
             builder.asLink().getHref()));
   }
 }

@@ -163,9 +163,10 @@ public class JsonLdIntegration extends AbstractIntegration {
 
   private void checkPresenceWithRest(final String sampleName) throws InterruptedException {
     final Sample sample;
+    final Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleName);
+
     TimeUnit.SECONDS.sleep(2);
 
-    final Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleName);
     if (optionalSample.isPresent()) {
       sample = optionalSample.get();
     } else {
@@ -174,7 +175,9 @@ public class JsonLdIntegration extends AbstractIntegration {
 
     final UriComponentsBuilder uriBuilder =
         UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri());
+
     uriBuilder.pathSegment("samples", sample.getAccession() + ".ldjson");
+
     final ResponseEntity<JsonLDDataRecord> responseEntity =
         restTemplate.getForEntity(uriBuilder.toUriString(), JsonLDDataRecord.class);
 

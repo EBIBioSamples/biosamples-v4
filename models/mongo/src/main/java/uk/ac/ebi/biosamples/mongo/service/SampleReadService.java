@@ -78,7 +78,8 @@ public class SampleReadService {
     final MongoSample mongoSample = getMongoSample(accession);
 
     if (mongoSample == null) {
-      LOGGER.warn(String.format("Failed to retrieve sample with accession %s", accession));
+      LOGGER.warn(String.format("1 - Failed to retrieve sample with accession %s", accession));
+
       return Optional.empty();
     }
 
@@ -150,6 +151,7 @@ public class SampleReadService {
       if (!opt.isPresent()) {
         LOGGER.warn(String.format("failed to retrieve sample with accession %s", accession));
       }
+
       return opt;
     }
   }

@@ -22,6 +22,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -33,9 +34,13 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 // @Profile({"default", "rest"})
 public class RestFilterIntegration extends AbstractIntegration {
   private final Logger log = LoggerFactory.getLogger(getClass());
+  private final ClientProperties clientProperties;
 
-  public RestFilterIntegration(final BioSamplesClient client) {
+  public RestFilterIntegration(
+      final BioSamplesClient client, final ClientProperties clientProperties) {
     super(client);
+
+    this.clientProperties = clientProperties;
   }
 
   @Override
@@ -45,6 +50,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     Sample testSample3 = getTestSample3();
 
     final Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample1.getName());
+
     if (optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
           "RestFilterIntegration test sample should not be available during phase 1", Phase.ONE);
@@ -58,7 +64,6 @@ public class RestFilterIntegration extends AbstractIntegration {
             .findFirst()
             .get();
     testSample1.getAttributes().add(sraAccessionAttribute1);
-
     testSample1 =
         Sample.Builder.fromSample(testSample1)
             .withAccession(resource.getContent().getAccession())
@@ -81,6 +86,7 @@ public class RestFilterIntegration extends AbstractIntegration {
             .filter(attribute -> attribute.getType().equals("SRA accession"))
             .findFirst()
             .get();
+
     testSample2.getAttributes().add(sraAccessionAttribute2);
     testSample2 =
         Sample.Builder.fromSample(testSample2)
@@ -104,6 +110,7 @@ public class RestFilterIntegration extends AbstractIntegration {
             .filter(attribute -> attribute.getType().equals("SRA accession"))
             .findFirst()
             .get();
+
     testSample3.getAttributes().add(sraAccessionAttribute3);
     testSample3 =
         Sample.Builder.fromSample(testSample3)
@@ -127,6 +134,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     Sample testSample3 = getTestSample3();
 
     TimeUnit.SECONDS.sleep(2);
+
     Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample2.getName());
 
     if (optionalSample.isPresent()) {
@@ -147,9 +155,11 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
 
     final SortedSet<Relationship> relations = new TreeSet<>();
+
     relations.add(
         Relationship.build(testSample3.getAccession(), "parent of", testSample2.getAccession()));
     testSample3 = Sample.Builder.fromSample(testSample3).withRelationships(relations).build();
+
     client.persistSampleResource(testSample3);
   }
 
@@ -157,7 +167,6 @@ public class RestFilterIntegration extends AbstractIntegration {
   protected void phaseThree() {
     Sample testSample1 = getTestSample1();
     Sample testSample2 = getTestSample2();
-
     Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample1.getName());
 
     if (optionalSample.isPresent()) {
@@ -483,7 +492,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     attributes.add(Attribute.build("Organism", "Human"));
 
     return new Sample.Builder(name)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withUpdate(update)
         .withAttributes(attributes)
@@ -502,7 +511,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     attributes.add(Attribute.build("Organism", "Human"));
 
     return new Sample.Builder(name)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withUpdate(update)
         .withAttributes(attributes)
@@ -515,7 +524,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
     return new Sample.Builder(name)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withUpdate(update)
         .withAttributes(Collections.singleton(Attribute.build("Organism", "Human")))

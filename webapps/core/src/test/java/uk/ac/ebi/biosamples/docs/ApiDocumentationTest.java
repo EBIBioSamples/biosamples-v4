@@ -46,7 +46,6 @@ import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -68,7 +67,6 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = {"spring.cloud.gcp.project-id=no_project"})
 @AutoConfigureRestDocs
-@TestPropertySource(properties = {"aap.domains.url = ''"})
 @ContextConfiguration(classes = TestSecurityConfig.class)
 public class ApiDocumentationTest {
   private static final String WEBIN_TESTING_ACCOUNT = "WEBIN-12345";
@@ -206,7 +204,7 @@ public class ApiDocumentationTest {
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
             any(Sample.class), eq(true)))
         .thenReturn(wrongSample);
-    when(sampleService.persistSample(wrongSample, null, AuthorizationProvider.WEBIN, false))
+    when(sampleService.persistSample(wrongSample, null, false))
         .thenThrow(GlobalExceptions.SampleMandatoryFieldsMissingException.class);
     mockMvc
         .perform(
@@ -270,8 +268,7 @@ public class ApiDocumentationTest {
             any(Sample.class), any(), any(Optional.class)))
         .thenReturn(sampleWithWebinId);
     when(sampleService.getPrinciple(any(Authentication.class))).thenReturn(WEBIN_TESTING_ACCOUNT);
-    when(sampleService.persistSample(
-            any(Sample.class), eq(null), eq(AuthorizationProvider.WEBIN), eq(false)))
+    when(sampleService.persistSample(any(Sample.class), eq(null), eq(false)))
         .thenReturn(sampleWithWebinId);
     when(schemaValidationService.validate(any(Sample.class))).thenReturn(sampleWithWebinId);
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
@@ -320,9 +317,7 @@ public class ApiDocumentationTest {
     when(webinAuthenticationService.handleWebinUserSubmission(
             any(Sample.class), any(String.class), eq(Optional.empty())))
         .thenReturn(sample);
-    when(sampleService.persistSample(
-            any(Sample.class), eq(null), eq(AuthorizationProvider.WEBIN), eq(false)))
-        .thenReturn(sample);
+    when(sampleService.persistSample(any(Sample.class), eq(null), eq(false))).thenReturn(sample);
     when(schemaValidationService.validate(any(Sample.class))).thenReturn(sample);
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
             any(Sample.class), eq(true)))
@@ -408,8 +403,7 @@ public class ApiDocumentationTest {
         .thenReturn(sampleWithWebinId);
     when(sampleService.buildPrivateSample(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
     when(sampleService.getPrinciple(any(Authentication.class))).thenReturn(WEBIN_TESTING_ACCOUNT);
-    when(sampleService.persistSample(
-            any(Sample.class), eq(null), eq(AuthorizationProvider.WEBIN), eq(false)))
+    when(sampleService.persistSample(any(Sample.class), eq(null), eq(false)))
         .thenReturn(sampleWithUpdatedDate);
     when(accessControlService.extractToken(anyString()))
         .thenReturn(
@@ -457,8 +451,7 @@ public class ApiDocumentationTest {
             + " }";
 
     when(sampleService.getPrinciple(any(Authentication.class))).thenReturn(WEBIN_TESTING_ACCOUNT);
-    when(sampleService.persistSample(
-            any(Sample.class), eq(null), eq(AuthorizationProvider.WEBIN), eq(false)))
+    when(sampleService.persistSample(any(Sample.class), eq(null), eq(false)))
         .thenReturn(sampleWithWebinId);
 
     mockMvc
@@ -579,11 +572,7 @@ public class ApiDocumentationTest {
         .thenReturn(sampleWithWebinId);
     when(sampleService.fetch(eq(sampleWithWebinId.getAccession()), eq(Optional.empty())))
         .thenReturn(Optional.of(sampleWithWebinId));
-    when(sampleService.persistSample(
-            eq(sampleWithWebinId),
-            eq(sampleWithWebinId),
-            eq(AuthorizationProvider.WEBIN),
-            eq(false)))
+    when(sampleService.persistSample(eq(sampleWithWebinId), eq(sampleWithWebinId), eq(false)))
         .thenReturn(sampleWithWebinId);
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
             any(Sample.class), eq(true)))
@@ -613,11 +602,7 @@ public class ApiDocumentationTest {
     when(sampleService.fetch(eq(sampleWithWebinId.getAccession()), eq(Optional.empty())))
         .thenReturn(Optional.of(sampleWithWebinId));
     when(sampleService.isNotExistingAccession(sampleWithWebinId.getAccession())).thenReturn(false);
-    when(sampleService.persistSample(
-            eq(sampleWithWebinId),
-            eq(sampleWithWebinId),
-            eq(AuthorizationProvider.WEBIN),
-            eq(false)))
+    when(sampleService.persistSample(eq(sampleWithWebinId), eq(sampleWithWebinId), eq(false)))
         .thenReturn(sampleWithWebinId);
 
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
@@ -654,11 +639,7 @@ public class ApiDocumentationTest {
         .thenReturn(sampleWithWebinId);
     when(sampleService.fetch(eq(sampleWithWebinId.getAccession()), eq(Optional.empty())))
         .thenReturn(Optional.of(sampleWithWebinId));
-    when(sampleService.persistSample(
-            eq(sampleWithWebinId),
-            eq(sampleWithWebinId),
-            eq(AuthorizationProvider.WEBIN),
-            eq(false)))
+    when(sampleService.persistSample(eq(sampleWithWebinId), eq(sampleWithWebinId), eq(false)))
         .thenReturn(sampleWithWebinId);
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
             any(Sample.class), eq(true)))

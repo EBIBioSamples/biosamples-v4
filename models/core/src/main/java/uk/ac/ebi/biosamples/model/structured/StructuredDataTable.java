@@ -12,33 +12,15 @@ package uk.ac.ebi.biosamples.model.structured;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.*;
+import lombok.Getter;
 
+@Getter
 public class StructuredDataTable {
   private String domain;
   private String webinSubmissionAccountId;
   private String type;
   private String schema;
   private Set<Map<String, StructuredDataEntry>> content;
-
-  public String getDomain() {
-    return domain;
-  }
-
-  public String getWebinSubmissionAccountId() {
-    return webinSubmissionAccountId;
-  }
-
-  public String getType() {
-    return type;
-  }
-
-  public String getSchema() {
-    return schema;
-  }
-
-  public Set<Map<String, StructuredDataEntry>> getContent() {
-    return content;
-  }
 
   public static StructuredDataTable build(
       final String domain,
@@ -47,6 +29,7 @@ public class StructuredDataTable {
       final String schema,
       final Set<Map<String, StructuredDataEntry>> content) {
     final StructuredDataTable structuredDataTable = new StructuredDataTable();
+
     structuredDataTable.schema = schema;
     structuredDataTable.domain = domain;
     structuredDataTable.webinSubmissionAccountId = webinSubmissionAccountId;
@@ -100,7 +83,9 @@ public class StructuredDataTable {
   @JsonIgnore
   public SortedSet<String> getHeaders() {
     final SortedSet<String> headers = new TreeSet<>();
+
     content.forEach(row -> headers.addAll(row.keySet()));
+
     return headers;
   }
 }

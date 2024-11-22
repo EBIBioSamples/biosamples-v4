@@ -17,49 +17,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import java.util.*;
+import lombok.Data;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+@Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExternalReference implements Comparable<ExternalReference> {
   private final String url;
-  private final String hash;
+  @JsonIgnore private final String hash;
   private final SortedSet<String> duo;
 
   private ExternalReference(final String url, final String hash, final SortedSet<String> duo) {
     this.url = url;
     this.hash = hash;
     this.duo = duo;
-  }
-
-  public String getUrl() {
-    return url;
-  }
-
-  @JsonIgnore
-  public String getHash() {
-    return hash;
-  }
-
-  public SortedSet<String> getDuo() {
-    return duo != null ? duo : Collections.emptySortedSet();
-  }
-
-  @Override
-  public boolean equals(final Object o) {
-    if (o == this) {
-      return true;
-    }
-    if (!(o instanceof ExternalReference)) {
-      return false;
-    }
-    final ExternalReference other = (ExternalReference) o;
-    return Objects.equals(url, other.url) && Objects.equals(duo, other.duo);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(hash);
   }
 
   @Override
@@ -97,17 +69,6 @@ public class ExternalReference implements Comparable<ExternalReference> {
       }
     }
     return 0;
-  }
-
-  @Override
-  public String toString() {
-    final StringBuilder sb = new StringBuilder();
-    sb.append("ExternalReference(");
-    sb.append(url);
-    sb.append(",");
-    sb.append(duo);
-    sb.append(")");
-    return sb.toString();
   }
 
   public static ExternalReference build(String url, SortedSet<String> duo) {

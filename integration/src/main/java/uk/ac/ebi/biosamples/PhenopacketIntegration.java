@@ -28,6 +28,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -36,12 +37,16 @@ import uk.ac.ebi.biosamples.model.Sample;
 // @Profile({"default", "rest"})
 public class PhenopacketIntegration extends AbstractIntegration {
   private final RestTemplate restTemplate;
+  private final ClientProperties clientProperties;
 
   public PhenopacketIntegration(
-      final BioSamplesClient client, final RestTemplateBuilder restTemplateBuilder) {
+      final BioSamplesClient client,
+      final RestTemplateBuilder restTemplateBuilder,
+      ClientProperties clientProperties) {
     super(client);
 
     restTemplate = restTemplateBuilder.build();
+    this.clientProperties = clientProperties;
   }
 
   @Override
@@ -128,7 +133,7 @@ public class PhenopacketIntegration extends AbstractIntegration {
         new Sample.Builder("Phenopacket_ERS1790018", "Phenopacket_ERS1790018");
 
     sampleBuilder
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease("2017-01-01T12:00:00")
         .withUpdate("2017-01-01T12:00:00")
         .withTaxId(9606L)

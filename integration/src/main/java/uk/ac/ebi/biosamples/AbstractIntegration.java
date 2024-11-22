@@ -31,8 +31,9 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 public abstract class AbstractIntegration implements ApplicationRunner, ExitCodeGenerator {
   private final Logger log = LoggerFactory.getLogger(getClass());
-  final BioSamplesClient publicClient;
   private int exitCode = 1; // don't make this final
+  protected static final String defaultWebinIdForIntegrationTests = "Webin-40894";
+  protected final BioSamplesClient publicClient;
   protected final BioSamplesClient client;
   protected final String defaultIntegrationSubmissionDomain = "self.BiosampleIntegrationTest";
 
@@ -48,16 +49,9 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
 
   protected abstract void phaseSix() throws ExecutionException, InterruptedException;
 
-  public AbstractIntegration(final BioSamplesClient client, final BioSamplesClient webinClient) {
-    this.client = client;
-    publicClient =
-        client
-            .getPublicClient()
-            .orElseThrow(() -> new IntegrationTestFailException("Could not create public client"));
-  }
-
   public AbstractIntegration(final BioSamplesClient client) {
     this.client = client;
+
     publicClient =
         client
             .getPublicClient()

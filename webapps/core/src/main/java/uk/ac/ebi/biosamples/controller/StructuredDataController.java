@@ -68,6 +68,7 @@ public class StructuredDataController {
     if (principle == null) {
       throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
     }
+
     log.info("PUT request for structured data: {}", accession);
 
     if (structuredData.getAccession() == null || !structuredData.getAccession().equals(accession)) {

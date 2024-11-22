@@ -15,9 +15,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Set;
+import lombok.Getter;
 import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
 import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
+@Getter
 public class StructuredData {
   protected String accession;
 
@@ -33,29 +35,15 @@ public class StructuredData {
 
   protected StructuredData() {}
 
-  public String getAccession() {
-    return accession;
-  }
-
-  public Instant getCreate() {
-    return create;
-  }
-
-  public Instant getUpdate() {
-    return update;
-  }
-
-  public Set<StructuredDataTable> getData() {
-    return data;
-  }
-
   public static StructuredData build(
       final String accession, final Instant create, final Set<StructuredDataTable> data) {
     final StructuredData structuredData = new StructuredData();
+
     structuredData.accession = accession;
     structuredData.create = create;
     structuredData.update = Instant.now();
     structuredData.data = data;
+
     return structuredData;
   }
 
@@ -65,10 +53,12 @@ public class StructuredData {
       final Instant update,
       final Set<StructuredDataTable> data) {
     final StructuredData structuredData = new StructuredData();
+
     structuredData.accession = accession;
     structuredData.create = create;
     structuredData.update = update;
     structuredData.data = data;
+
     return structuredData;
   }
 
@@ -76,6 +66,7 @@ public class StructuredData {
   public boolean equals(final Object object) {
     if (object instanceof StructuredData) {
       final StructuredData o = (StructuredData) object;
+
       if (accession.equals(o.getAccession())) {
         return data.equals(o.getData());
       }

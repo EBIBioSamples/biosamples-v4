@@ -81,7 +81,7 @@ public class CopydownApplicationRunner implements ApplicationRunner {
 
         final Callable<PipelineResult> task =
             new SampleCopydownCallable(
-                bioSamplesClient, sample, pipelinesProperties.getCopydownDomain());
+                bioSamplesClient, sample, pipelinesProperties.getProxyWebinId());
 
         futures.put(sample.getAccession(), executorService.submit(task));
       }

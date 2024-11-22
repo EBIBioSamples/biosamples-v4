@@ -481,14 +481,10 @@ public class BioSamplesClient implements AutoCloseable {
   }
 
   public EntityModel<CurationLink> persistCuration(
-      final String accession,
-      final Curation curation,
-      final String webinIdOrDomain,
-      final boolean isWebin) {
-    log.trace("Persisting curation " + curation + " on " + accession + " using " + webinIdOrDomain);
+      final String accession, final Curation curation, final String webinId) {
+    log.trace("Persisting curation " + curation + " on " + accession + " using " + webinId);
 
-    return curationSubmissionService.submit(
-        buildCurationLink(accession, curation, webinIdOrDomain, isWebin));
+    return curationSubmissionService.submit(buildCurationLink(accession, curation, webinId), null);
   }
 
   public Iterable<EntityModel<CurationLink>> fetchCurationLinksOfSample(final String accession) {
@@ -550,47 +546,20 @@ public class BioSamplesClient implements AutoCloseable {
   }
 
   public EntityModel<CurationLink> persistCuration(
-      final String accession,
-      final Curation curation,
-      final String webinIdOrDomain,
-      final String jwt,
-      final boolean isWebin) {
-    log.trace("Persisting curation {} on {} in {}", curation, accession, webinIdOrDomain);
+      final String accession, final Curation curation, final String webinId, final String jwt) {
+    log.trace("Persisting curation {} on {} in {}", curation, accession, webinId);
 
-    final CurationLink curationLink =
-        buildCurationLink(accession, curation, webinIdOrDomain, isWebin);
+    final CurationLink curationLink = buildCurationLink(accession, curation, webinId);
 
-    return curationSubmissionService.submit(curationLink);
+    return curationSubmissionService.submit(curationLink, jwt);
   }
 
   private CurationLink buildCurationLink(
-      final String accession,
-      final Curation curation,
-      final String webinIdOrDomain,
-      final boolean isWebin) {
-    final CurationLink curationLink;
+      final String accession, final Curation curation, final String webinId) {
 
-    if (isWebin) {
-      log.trace(
-          "Persisting curation "
-              + curation
-              + " on "
-              + accession
-              + " using WEBIN ID "
-              + webinIdOrDomain);
-      curationLink = CurationLink.build(accession, curation, null, webinIdOrDomain, null);
-    } else {
-      log.trace(
-          "Persisting curation "
-              + curation
-              + " on "
-              + accession
-              + " using DOMAIN "
-              + webinIdOrDomain);
-      curationLink = CurationLink.build(accession, curation, webinIdOrDomain, null, null);
-    }
-
-    return curationLink;
+    log.trace(
+        "Persisting curation " + curation + " on " + accession + " using WEBIN ID " + webinId);
+    return CurationLink.build(accession, curation, null, webinId, null);
   }
 
   public Iterable<EntityModel<CurationLink>> fetchCurationLinksOfSample(

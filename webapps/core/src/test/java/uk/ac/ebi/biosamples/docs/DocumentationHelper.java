@@ -18,7 +18,6 @@ import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 
 public class DocumentationHelper {
-
   public static final String WEBIN_SUBMISSION_ACCOUNT_ID = "Webin-12345";
   //    private final String[] sampleAccessionPrefix = {"SAME", "SAMD", "SAMEA", "SAMN"};
   private final int maxRandomNumber = 100000;
@@ -85,10 +84,6 @@ public class DocumentationHelper {
     return getExampleSampleBuilder().build();
   }
 
-  Sample getExampleSampleWithDomain() {
-    return getExampleSampleBuilder().withDomain(getExampleDomain()).build();
-  }
-
   Sample getExampleSampleWithWebinId() {
     return getExampleSampleBuilder()
         .withWebinSubmissionAccountId(WEBIN_SUBMISSION_ACCOUNT_ID)
@@ -141,7 +136,11 @@ public class DocumentationHelper {
     final String domain = getExampleDomain();
 
     return CurationLink.build(
-        sampleObject.getAccession(), curationObject, domain, null, Instant.now());
+        sampleObject.getAccession(),
+        curationObject,
+        null,
+        WEBIN_SUBMISSION_ACCOUNT_ID,
+        Instant.now());
   }
 
   CurationLink getExampleCurationLinkWithWebinId() {
@@ -149,7 +148,11 @@ public class DocumentationHelper {
     final Sample sampleObject = getExampleSampleBuilder().build();
 
     return CurationLink.build(
-        sampleObject.getAccession(), curationObject, null, "WEBIN-12345", Instant.now());
+        sampleObject.getAccession(),
+        curationObject,
+        null,
+        WEBIN_SUBMISSION_ACCOUNT_ID,
+        Instant.now());
   }
 
   StructuredData getExampleStructuredData() {

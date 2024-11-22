@@ -37,13 +37,9 @@ import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = {"spring.cloud.gcp.project-id=no_project"})
 public class SampleRestControllerTest {
-
   @Autowired private WebApplicationContext context;
-
   @MockBean private SamplePageService samplePageService;
-
   @MockBean CurationPersistService curationPersistService;
-
   @MockBean CurationReadService curationReadService;
 
   private DocumentationHelper faker;
@@ -63,6 +59,7 @@ public class SampleRestControllerTest {
     final Sample fakeSample = faker.getExampleSample();
     final CursorArrayList<Sample> sampleCursorArrayList =
         new CursorArrayList<>(Collections.singletonList(fakeSample), "");
+
     when(samplePageService.getSamplesByText(
             nullable(String.class),
             anyList(),

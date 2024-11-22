@@ -94,7 +94,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
                 sample,
                 olsProcessor,
                 curationApplicationService,
-                pipelinesProperties.getCurationDomain(),
+                pipelinesProperties.getProxyWebinId(),
                 iriUrlValidatorService);
         sampleCount++;
         if (sampleCount % 10000 == 0) {

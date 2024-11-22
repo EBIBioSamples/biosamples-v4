@@ -46,7 +46,6 @@ public class FileUploadSubmissionService {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private ValidationResult validationResult;
   private FileUploadUtils fileUploadUtils;
-  @Autowired BioSamplesClient bioSamplesAapClient;
 
   @Autowired
   @Qualifier("WEBINCLIENT")
@@ -280,15 +279,11 @@ public class FileUploadSubmissionService {
 
     relationships.forEach(relationship -> log.info(relationship.toString()));
 
-    if (relationships.size() > 0) {
+    if (!relationships.isEmpty()) {
       sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
 
       try {
-        if (isWebin) {
-          sample = bioSamplesWebinClient.persistSampleResource(sample).getContent();
-        } else {
-          sample = bioSamplesAapClient.persistSampleResource(sample).getContent();
-        }
+        sample = bioSamplesWebinClient.persistSampleResource(sample).getContent();
       } catch (final Exception e) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
@@ -315,45 +310,25 @@ public class FileUploadSubmissionService {
     if (sample != null) {
       sample = fileUploadUtils.addChecklistAttributeAndBuildSample(checklist, sample);
 
-      if (isWebin) {
-        try {
-          sample = Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(webinId).build();
+      try {
+        sample = Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(webinId).build();
 
-          /*if (mongoSampleRepository
-                      .findByWebinSubmissionAccountIdAndName(webinId, sampleName)
-                      .size()
-                  > 0
-              && !sampleWithAccession) {
-            validationResult.addValidationMessage(
-                new ValidationResult.ValidationMessage(
-                    sampleName, " Already exists with submission account " + webinId));
+        /*if (mongoSampleRepository
+                    .findByWebinSubmissionAccountIdAndName(webinId, sampleName)
+                    .size()
+                > 0
+            && !sampleWithAccession) {
+          validationResult.addValidationMessage(
+              new ValidationResult.ValidationMessage(
+                  sampleName, " Already exists with submission account " + webinId));
 
-            return null;
-          } else {*/
-          sample = bioSamplesWebinClient.persistSampleResource(sample).getContent();
-          /*}*/
-        } catch (final Exception e) {
-          persisted = false;
-          handleUnauthorizedWhilePersistence(sampleName, accession, sampleWithAccession, e);
-        }
-      } else {
-        try {
-          sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
-
-          /*if (mongoSampleRepository.findByDomainAndName(aapDomain, sampleName).size() > 0
-              && !sampleWithAccession) {
-            validationResult.addValidationMessage(
-                new ValidationResult.ValidationMessage(
-                    sampleName, " Already exists with submission account " + aapDomain));
-
-            return null;
-          } else {*/
-          sample = bioSamplesAapClient.persistSampleResource(sample).getContent();
-          /*}*/
-        } catch (final Exception e) {
-          persisted = false;
-          handleUnauthorizedWhilePersistence(sampleName, accession, sampleWithAccession, e);
-        }
+          return null;
+        } else {*/
+        sample = bioSamplesWebinClient.persistSampleResource(sample).getContent();
+        /*}*/
+      } catch (final Exception e) {
+        persisted = false;
+        handleUnauthorizedWhilePersistence(sampleName, accession, sampleWithAccession, e);
       }
 
       if (sampleWithAccession && persisted) {

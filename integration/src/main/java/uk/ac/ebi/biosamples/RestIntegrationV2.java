@@ -33,14 +33,17 @@ public class RestIntegrationV2 extends AbstractIntegration {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final BioSamplesClient annonymousClient;
   private final BioSamplesClient webinClient;
+  private final ClientProperties clientProperties;
 
   public RestIntegrationV2(
       final BioSamplesClient client,
       final RestTemplateBuilder restTemplateBuilder,
       final ClientProperties clientProperties,
-      @Qualifier("WEBINCLIENT") final BioSamplesClient webinClient) {
-    super(client, webinClient);
+      @Qualifier("WEBINCLIENT") final BioSamplesClient webinClient,
+      ClientProperties clientProperties1) {
+    super(client);
     this.webinClient = webinClient;
+    this.clientProperties = clientProperties1;
     annonymousClient =
         new BioSamplesClient(
             clientProperties.getBiosamplesClientUri(),
@@ -139,7 +142,10 @@ public class RestIntegrationV2 extends AbstractIntegration {
       final Attribute attributePost = Attribute.build("organism part", "lungs");
       final Curation curation = Curation.build(attributePre, attributePost);
 
-      webinClient.persistCuration(apiResponseSampleAccession1, curation, "Webin-40894", true);
+      webinClient.persistCuration(
+          apiResponseSampleAccession1,
+          curation,
+          clientProperties.getBiosamplesClientWebinUsername());
 
       final Map<String, Sample> apiResponseV2SampleBulkFetch =
           webinClient.fetchSampleResourcesByAccessionsV2(

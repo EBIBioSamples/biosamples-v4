@@ -16,7 +16,6 @@ import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.PreDestroy;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -31,13 +30,15 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 @Order(2)
 public class RestSampleStatusIntegration extends AbstractIntegration {
   private final BioSamplesClient anonymousClient;
+  private final ClientProperties clientProperties;
 
   public RestSampleStatusIntegration(
       final BioSamplesClient client,
       final RestTemplateBuilder restTemplateBuilder,
-      final ClientProperties clientProperties,
-      @Qualifier("WEBINCLIENT") final BioSamplesClient webinClient) {
-    super(client, webinClient);
+      final ClientProperties clientProperties) {
+    super(client);
+
+    this.clientProperties = clientProperties;
     anonymousClient =
         new BioSamplesClient(
             clientProperties.getBiosamplesClientUri(),
@@ -124,7 +125,7 @@ public class RestSampleStatusIntegration extends AbstractIntegration {
         .withStatus(SampleStatus.PUBLIC)
         .withUpdate(Instant.parse("2016-05-05T11:36:57.00Z"))
         .withRelease(Instant.parse("2016-04-01T11:36:57.00Z"))
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withAttributes(attributes)
         .build();
   }
@@ -144,7 +145,7 @@ public class RestSampleStatusIntegration extends AbstractIntegration {
         .withStatus(SampleStatus.SUPPRESSED)
         .withUpdate(Instant.parse("2016-05-05T11:36:57.00Z"))
         .withRelease(Instant.parse("2016-04-01T11:36:57.00Z"))
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withAttributes(attributes)
         .build();
   }
@@ -163,7 +164,7 @@ public class RestSampleStatusIntegration extends AbstractIntegration {
         .withStatus(SampleStatus.PRIVATE)
         .withUpdate(Instant.parse("2016-05-05T11:36:57.00Z"))
         .withRelease(Instant.parse("2116-04-01T11:36:57.00Z"))
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withAttributes(attributes)
         .build();
   }
@@ -182,7 +183,7 @@ public class RestSampleStatusIntegration extends AbstractIntegration {
         .withStatus(SampleStatus.PRIVATE)
         .withUpdate(Instant.parse("2016-05-05T11:36:57.00Z"))
         .withRelease(Instant.parse("2016-04-01T11:36:57.00Z"))
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withAttributes(attributes)
         .build();
   }

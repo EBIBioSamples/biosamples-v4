@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.SampleManipulationService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
@@ -177,9 +176,7 @@ public class SampleRestController {
     }
 
     // Persist sample and return assembled response
-    sample =
-        sampleService.persistSample(
-            sample, oldSample.orElse(null), AuthorizationProvider.WEBIN, isWebinSuperUser);
+    sample = sampleService.persistSample(sample, oldSample.orElse(null), isWebinSuperUser);
     return sampleResourceAssembler.toModel(sample);
   }
 

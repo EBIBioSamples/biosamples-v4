@@ -17,13 +17,15 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import uk.ac.ebi.biosamples.service.structured.AbstractDataDeserializer;
 
+@Data
+@NoArgsConstructor
 @JsonPropertyOrder({"domain", "type", "schema", "content"})
 @JsonDeserialize(using = AbstractDataDeserializer.class)
 public abstract class AbstractData implements Comparable<AbstractData> {
-  public AbstractData() {}
-
   @JsonProperty("domain")
   public abstract String getDomain();
 

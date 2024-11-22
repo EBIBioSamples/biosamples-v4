@@ -34,7 +34,7 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
 
   public RestIntegrationSRAAccessioningV2(
       final BioSamplesClient client, @Qualifier("WEBINCLIENT") final BioSamplesClient webinClient) {
-    super(client, webinClient);
+    super(client);
     this.webinClient = webinClient;
     this.aapClient = client;
   }

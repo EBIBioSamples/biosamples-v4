@@ -29,7 +29,6 @@ import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 
 public class NcbiElementCallable implements Callable<Void> {
   private static final int MAX_RETRIES = 5;
-
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final Element sampleElem;
   private final String webinId;
@@ -85,7 +84,7 @@ public class NcbiElementCallable implements Callable<Void> {
           success = true;
 
           try {
-            bioSamplesClient.persistCuration(accession, curation, webinId, false);
+            bioSamplesClient.persistCuration(accession, curation, webinId);
           } catch (final Exception e) {
             log.info("Failed to curate NCBI sample with ENA link " + accession);
           }

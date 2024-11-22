@@ -38,7 +38,6 @@ import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions.PaginationException;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.*;
@@ -471,8 +470,7 @@ public class SamplesRestController {
         webinAuthenticationService.handleWebinUserSubmission(sample, principle, Optional.empty());
 
     sample = sampleService.buildPrivateSample(sample);
-    sample =
-        sampleService.persistSample(sample, null, AuthorizationProvider.WEBIN, isWebinSuperUser);
+    sample = sampleService.persistSample(sample, null, isWebinSuperUser);
 
     final EntityModel<Sample> sampleResource = sampleResourceAssembler.toModel(sample);
 
@@ -531,9 +529,7 @@ public class SamplesRestController {
     }
 
     // Persist sample and assemble response
-    sample =
-        sampleService.persistSample(
-            sample, oldSample.orElse(null), AuthorizationProvider.WEBIN, isWebinSuperUser);
+    sample = sampleService.persistSample(sample, oldSample.orElse(null), isWebinSuperUser);
 
     final EntityModel<Sample> sampleResource = sampleResourceAssembler.toModel(sample, getClass());
 

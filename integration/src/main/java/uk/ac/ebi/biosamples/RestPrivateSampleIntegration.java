@@ -16,35 +16,44 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component
 public class RestPrivateSampleIntegration extends AbstractIntegration {
-  public RestPrivateSampleIntegration(final BioSamplesClient client) {
+  private final ClientProperties clientProperties;
+
+  public RestPrivateSampleIntegration(
+      final BioSamplesClient client, final ClientProperties clientProperties) {
     super(client);
+
+    this.clientProperties = clientProperties;
   }
 
   @Override
   protected void phaseOne() {
     final Sample publicSampleToday = getSampleWithReleaseDateToday();
     final Sample privateSample = getSampleWithFutureReleaseDate();
-
     Optional<Sample> optionalSample = fetchUniqueSampleByName(publicSampleToday.getName());
+
     if (optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
           "RestPrivateSampleIntegration test sample should not be available during phase 1",
           Phase.ONE);
     }
+
     client.persistSampleResource(publicSampleToday);
 
     optionalSample = fetchUniqueSampleByName(privateSample.getName());
+
     if (optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
           "RestPrivateSampleIntegration test sample should not be available during phase 1",
           Phase.ONE);
     }
+
     client.persistSampleResource(privateSample);
   }
 
@@ -52,15 +61,15 @@ public class RestPrivateSampleIntegration extends AbstractIntegration {
   protected void phaseTwo() {
     final Sample publicSampleToday = getSampleWithReleaseDateToday();
     final Sample privateSample = getSampleWithFutureReleaseDate();
-
     Optional<Sample> optionalSample = fetchUniqueSampleByName(publicSampleToday.getName());
 
-    if (!optionalSample.isPresent()) {
+    if (optionalSample.isEmpty()) {
       throw new IntegrationTestFailException(
           "Sample does not exist, sample name: " + publicSampleToday.getName(), Phase.TWO);
     }
 
     optionalSample = fetchUniqueSampleByName(privateSample.getName());
+
     if (optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
           "Private sample exists, sample name: " + privateSample.getName(), Phase.TWO);
@@ -88,13 +97,13 @@ public class RestPrivateSampleIntegration extends AbstractIntegration {
   private Sample getSampleWithReleaseDateToday() {
     final String name = "RestPrivateSampleIntegration_sample_1";
     final Instant release = Instant.now();
-
     final SortedSet<Attribute> attributes = new TreeSet<>();
+
     attributes.add(Attribute.build("description", "Fake sample with today(now) release date"));
     attributes.add(Attribute.build("Organism", "Human"));
 
     return new Sample.Builder(name)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withAttributes(attributes)
         .build();
@@ -103,13 +112,13 @@ public class RestPrivateSampleIntegration extends AbstractIntegration {
   private Sample getSampleWithFutureReleaseDate() {
     final String name = "RestPrivateSampleIntegration_sample_2";
     final Instant release = Instant.now().plusSeconds(3600);
-
     final SortedSet<Attribute> attributes = new TreeSet<>();
+
     attributes.add(Attribute.build("description", "Fake sample with future release date"));
     attributes.add(Attribute.build("Organism", "Human"));
 
     return new Sample.Builder(name)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withAttributes(attributes)
         .build();

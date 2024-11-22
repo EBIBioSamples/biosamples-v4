@@ -40,7 +40,7 @@ import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
 @ContextConfiguration(classes = TestSecurityConfig.class)
 @AutoConfigureMockMvc
 public class BulkActionControllerV2Test {
-  public static final String WEBIN_TESTING_ACCOUNT = "Webin-12345";
+  private static final String WEBIN_TESTING_ACCOUNT = "Webin-12345";
   @Autowired private MockMvc mockMvc;
   @MockBean private SampleService sampleService;
   @MockBean private WebinAuthenticationService webinAuthenticationService;

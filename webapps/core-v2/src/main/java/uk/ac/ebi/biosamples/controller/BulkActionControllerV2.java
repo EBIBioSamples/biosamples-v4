@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
@@ -311,8 +310,7 @@ public class BulkActionControllerV2 {
 
       final Optional<Sample> persistedSample =
           Optional.of(
-              sampleService.persistSampleV2(
-                  sample, oldSample.orElse(null), AuthorizationProvider.WEBIN, isWebinSuperUser));
+              sampleService.persistSampleV2(sample, oldSample.orElse(null), isWebinSuperUser));
       sampleErrorPair = new ImmutablePair<>(persistedSample, Optional.empty());
     } catch (GlobalExceptions.SchemaValidationException e) {
       sampleErrorPair = new ImmutablePair<>(Optional.empty(), Optional.of(e.getMessage()));

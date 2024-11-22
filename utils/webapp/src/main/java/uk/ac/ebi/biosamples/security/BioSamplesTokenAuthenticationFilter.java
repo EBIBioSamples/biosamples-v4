@@ -57,7 +57,7 @@ public class BioSamplesTokenAuthenticationFilter extends GenericFilterBean {
       final String header = request.getHeader("Authorization");
 
       if (header == null) {
-        log.info("No {} header", "Authorization");
+        log.info("No Authorization header");
 
         return null;
       }

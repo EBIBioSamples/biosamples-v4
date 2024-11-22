@@ -31,7 +31,6 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -177,10 +176,7 @@ public class SampleService {
   Called by V1 endpoints to persist samples
    */
   public Sample persistSample(
-      Sample newSample,
-      final Sample oldSample,
-      final AuthorizationProvider authProvider,
-      final boolean isWebinSuperUser) {
+      Sample newSample, final Sample oldSample, final boolean isWebinSuperUser) {
     final Collection<String> errors = sampleValidator.validate(newSample);
 
     if (!errors.isEmpty()) {
@@ -191,7 +187,7 @@ public class SampleService {
 
     if (newSample.hasAccession()) {
       if (oldSample != null) {
-        newSample = updateFromCurrent(newSample, oldSample, authProvider, isWebinSuperUser);
+        newSample = updateFromCurrent(newSample, oldSample, isWebinSuperUser);
       } else {
         newSample = updateWhenNoneExists(newSample);
       }
@@ -256,10 +252,7 @@ public class SampleService {
   }
 
   private Sample updateFromCurrent(
-      Sample newSample,
-      final Sample oldSample,
-      final AuthorizationProvider authProvider,
-      final boolean isWebinSuperUser) {
+      Sample newSample, final Sample oldSample, final boolean isWebinSuperUser) {
     final boolean savedSampleEmpty = isStoredSampleEmpty(newSample, isWebinSuperUser, oldSample);
 
     if (savedSampleEmpty) {
@@ -272,12 +265,7 @@ public class SampleService {
             Objects.requireNonNull(sampleToMongoSampleConverter.convert(oldSample)));
 
     return compareWithExistingAndUpdateSample(
-        newSample,
-        oldSample,
-        existingRelationships,
-        savedSampleEmpty,
-        authProvider,
-        isWebinSuperUser);
+        newSample, oldSample, existingRelationships, savedSampleEmpty, isWebinSuperUser);
   }
 
   private Sample createNew(Sample newSample) {
@@ -330,10 +318,7 @@ public class SampleService {
   Called by V2 endpoints to persist samples
    */
   public Sample persistSampleV2(
-      Sample newSample,
-      final Sample oldSample,
-      final AuthorizationProvider authProvider,
-      final boolean isWebinSuperUser) {
+      Sample newSample, final Sample oldSample, final boolean isWebinSuperUser) {
     final Collection<String> errors = sampleValidator.validate(newSample);
 
     if (!errors.isEmpty()) {
@@ -356,7 +341,7 @@ public class SampleService {
 
         newSample =
             compareWithExistingAndUpdateSample(
-                newSample, oldSample, null, savedSampleEmpty, authProvider, isWebinSuperUser);
+                newSample, oldSample, null, savedSampleEmpty, isWebinSuperUser);
       } else {
         log.error(
             "Trying to update sample not in database, accession: {}", newSample.getAccession());
@@ -448,7 +433,6 @@ public class SampleService {
       final Sample oldSample,
       final List<Relationship> existingRelationships,
       final boolean isEmptySample,
-      final AuthorizationProvider authProvider,
       final boolean isWebinSuperUser) {
     Set<AbstractData> structuredData = new HashSet<>();
     boolean applyOldSampleStructuredData = false;
@@ -476,16 +460,16 @@ public class SampleService {
       log.trace("Old sample structured data size is " + structuredData.size());
 
       return Sample.Builder.fromSample(newSample)
-          .withCreate(defineCreateDate(newSample, oldSample, authProvider))
-          .withSubmitted(defineSubmittedDate(newSample, oldSample, isEmptySample, authProvider))
+          .withCreate(defineCreateDate(newSample, oldSample))
+          .withSubmitted(defineSubmittedDate(newSample, oldSample, isEmptySample))
           .withData(structuredData)
           .build();
     } else {
       log.info("Building sample without structured data");
 
       return Sample.Builder.fromSample(newSample)
-          .withCreate(defineCreateDate(newSample, oldSample, authProvider))
-          .withSubmitted(defineSubmittedDate(newSample, oldSample, isEmptySample, authProvider))
+          .withCreate(defineCreateDate(newSample, oldSample))
+          .withSubmitted(defineSubmittedDate(newSample, oldSample, isEmptySample))
           .build();
     }
   }
@@ -641,23 +625,8 @@ public class SampleService {
         && isPipelineNcbiDomain(newSample.getDomain());
   }
 
-  private Instant defineCreateDate(
-      final Sample newSample, final Sample oldSample, final AuthorizationProvider authProvider) {
-    final String domain = newSample.getDomain();
-
-    if (authProvider == AuthorizationProvider.WEBIN) {
-      return (oldSample.getCreate() != null ? oldSample.getCreate() : newSample.getCreate());
-    } else {
-      if (isPipelineNcbiDomain(domain)) {
-        return newSample.getCreate() != null
-            ? newSample.getCreate()
-            : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
-      } else if (isPipelineEnaDomain(domain)) {
-        return oldSample.getCreate() != null ? oldSample.getCreate() : newSample.getCreate();
-      } else {
-        return oldSample.getCreate() != null ? oldSample.getCreate() : newSample.getCreate();
-      }
-    }
+  private Instant defineCreateDate(final Sample newSample, final Sample oldSample) {
+    return (oldSample.getCreate() != null ? oldSample.getCreate() : newSample.getCreate());
   }
 
   public boolean isPipelineEnaDomain(final String domain) {
@@ -677,38 +646,11 @@ public class SampleService {
   }
 
   private Instant defineSubmittedDate(
-      final Sample newSample,
-      final Sample oldSample,
-      final boolean isEmptySample,
-      final AuthorizationProvider authProvider) {
-    if (authProvider == AuthorizationProvider.WEBIN) {
-      if (isEmptySample) {
-        return newSample.getSubmitted();
-      } else {
-        return oldSample.getSubmitted() != null
-            ? oldSample.getSubmitted()
-            : newSample.getSubmitted();
-      }
+      final Sample newSample, final Sample oldSample, final boolean isEmptySample) {
+    if (isEmptySample) {
+      return newSample.getSubmitted();
     } else {
-      final String domain = newSample.getDomain();
-
-      if (isPipelineNcbiDomain(domain)) {
-        return newSample.getSubmitted() != null
-            ? newSample.getSubmitted()
-            : (oldSample.getSubmitted() != null ? oldSample.getSubmitted() : oldSample.getCreate());
-      } else if (isPipelineEnaDomain(domain)) {
-        return (oldSample.getSubmitted() != null)
-            ? oldSample.getSubmitted()
-            : newSample.getSubmitted();
-      } else {
-        if (isEmptySample) {
-          return newSample.getSubmitted();
-        } else {
-          return oldSample.getSubmitted() != null
-              ? oldSample.getSubmitted()
-              : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
-        }
-      }
+      return oldSample.getSubmitted() != null ? oldSample.getSubmitted() : newSample.getSubmitted();
     }
   }
 
