@@ -30,6 +30,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.*;
@@ -155,7 +156,7 @@ public class BulkActionControllerV2 {
                   final Optional<Sample> sampleOptional =
                       // fetch returns sample with no-curations applied
                       sampleService.fetch(
-                          justAccession, Optional.of(Collections.singletonList("")));
+                          justAccession, false);
 
                   if (sampleOptional.isPresent()) {
                     final Sample sample = sampleOptional.get();
@@ -196,7 +197,7 @@ public class BulkActionControllerV2 {
    */
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
-      value = "/bulk-submit",
+      value = "/bulk-submit-get-receipt",
       consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<SubmissionReceipt> postV2(@RequestBody final List<Sample> samples) {
     final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
@@ -249,6 +250,41 @@ public class BulkActionControllerV2 {
   /*
   Submit multiple samples, without any relationship information
    */
+  @PreAuthorize("isAuthenticated()")
+  @RequestMapping("/bulk-submit")
+  @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
+  public ResponseEntity<List<Sample>> postV2NoValidation(@RequestBody final List<Sample> samples) {
+    log.info("V2-Received POST for " + samples.size() + " samples");
+
+    final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+    final String principle = sampleService.getPrinciple(loggedInUser);
+
+    if (principle == null) {
+      throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
+    }
+
+    if (!webinAuthenticationService.isWebinSuperUser(principle)) {
+      throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "POST for super users only");
+    }
+
+    final List<Sample> createdSamples =
+        samples.stream()
+            .map(sample -> persistSampleNoValidation(principle, sample))
+            .collect(Collectors.toList());
+
+    log.info(
+        "V2-Received bulk-submit request for : "
+            + samples.size()
+            + " samples and persisted : "
+            + createdSamples.size()
+            + " samples.");
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdSamples);
+  }
+
+  /*
+  Submit multiple samples, without any relationship information
+   */
   @PostMapping(
       value = "/bulk-validate",
       consumes = {MediaType.APPLICATION_JSON_VALUE})
@@ -259,7 +295,7 @@ public class BulkActionControllerV2 {
     List<SubmissionReceipt.ValidationError> validationErrors;
 
     for (final Sample sample : samples) {
-      final String validationResult = validateSample(sample);
+      final String validationResult = validate(sample);
 
       if (validationResult != null) {
         try {
@@ -302,10 +338,12 @@ public class BulkActionControllerV2 {
     sample = buildSample(sample, relationships, isWebinSuperUser);
 
     Pair<Optional<Sample>, Optional<String>> sampleErrorPair;
+    String validationMessage = null;
+
     try {
-      if (bioSamplesProperties.isEnableBulkSubmissionWebinSuperuserValidation()
+      if (bioSamplesProperties.isEnableBulkSubmissionWebinSuperUserValidation()
           || !isWebinSuperUser) {
-        schemaValidationService.validate(sample);
+        validationMessage = validate(sample);
       }
 
       final Optional<Sample> persistedSample =
@@ -313,27 +351,49 @@ public class BulkActionControllerV2 {
               sampleService.persistSampleV2(sample, oldSample.orElse(null), isWebinSuperUser));
       sampleErrorPair = new ImmutablePair<>(persistedSample, Optional.empty());
     } catch (GlobalExceptions.SchemaValidationException e) {
-      sampleErrorPair = new ImmutablePair<>(Optional.empty(), Optional.of(e.getMessage()));
+      sampleErrorPair =
+          new ImmutablePair<>(Optional.empty(), Optional.ofNullable(validationMessage));
+
       log.info("Sample validation failed: {}", sample.getAccession());
     } catch (Exception e) {
-      sampleErrorPair = new ImmutablePair<>(Optional.empty(), Optional.of(e.getMessage()));
+      sampleErrorPair =
+          new ImmutablePair<>(Optional.empty(), Optional.ofNullable(validationMessage));
+
       log.error("Failed to validate sample", e);
     }
 
     return sampleErrorPair;
   }
 
-  private String validateSample(final Sample sample) {
+  private Sample persistSampleNoValidation(final String webinSubmissionAccountId, Sample sample) {
+    final Optional<Sample> oldSample =
+        sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(sample, true);
+    final Set<Relationship> relationships =
+        sampleService.handleSampleRelationshipsV2(sample, oldSample, true);
+
+    sample =
+        webinAuthenticationService.handleWebinUserSubmission(
+            sample, webinSubmissionAccountId, oldSample);
+    sample = buildSample(sample, relationships, true);
+
+    return sampleService.persistSampleV2(sample, oldSample.orElse(null), true);
+  }
+
+  private String validate(final Sample sample) {
+    final String sampleIdentifier =
+        sample.getAccession() != null ? sample.getAccession() : sample.getName();
     try {
       schemaValidationService.validate(sample);
     } catch (GlobalExceptions.SchemaValidationException e) {
       log.info("Sample validation failed: {}", sample.getAccession());
 
-      return e.getMessage();
+      return Optional.ofNullable(e.getMessage())
+          .orElse("Unknown validation error while validating sample: " + sampleIdentifier);
     } catch (Exception e) {
       log.error("Failed to validate sample", e);
 
-      return e.getMessage();
+      return Optional.ofNullable(e.getMessage())
+          .orElse("Unknown validation error while validating sample: " + sampleIdentifier);
     }
 
     return null;
