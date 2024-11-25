@@ -135,7 +135,11 @@ public class ApiDocumentationTest {
   public void getSamples() throws Exception {
     final Sample fakeSample = faker.getExampleSample();
     when(samplePageService.getSamplesByText(
-            nullable(String.class), anyList(), nullable(String.class), any(Pageable.class), any()))
+            nullable(String.class),
+            anyList(),
+            nullable(String.class),
+            any(Pageable.class),
+            anyBoolean()))
         .thenReturn(
             new PageImpl<>(Collections.singletonList(fakeSample), getDefaultPageable(), 100));
     when(samplePageService.getSamplesByText(
@@ -144,7 +148,7 @@ public class ApiDocumentationTest {
             nullable(String.class),
             nullable(String.class),
             anyInt(),
-            any()))
+            anyBoolean()))
         .thenReturn(new CursorArrayList<>(Collections.singletonList(fakeSample), ""));
 
     mockMvc
@@ -570,7 +574,7 @@ public class ApiDocumentationTest {
     when(webinAuthenticationService.handleWebinUserSubmission(
             any(Sample.class), any(String.class), eq(Optional.of(sampleWithWebinId))))
         .thenReturn(sampleWithWebinId);
-    when(sampleService.fetch(eq(sampleWithWebinId.getAccession()), eq(Optional.empty())))
+    when(sampleService.fetch(eq(sampleWithWebinId.getAccession()), eq(false)))
         .thenReturn(Optional.of(sampleWithWebinId));
     when(sampleService.persistSample(eq(sampleWithWebinId), eq(sampleWithWebinId), eq(false)))
         .thenReturn(sampleWithWebinId);
@@ -599,7 +603,7 @@ public class ApiDocumentationTest {
     when(webinAuthenticationService.handleWebinUserSubmission(
             any(Sample.class), any(String.class), eq(Optional.of(sampleWithWebinId))))
         .thenReturn(sampleWithWebinId);
-    when(sampleService.fetch(eq(sampleWithWebinId.getAccession()), eq(Optional.empty())))
+    when(sampleService.fetch(eq(sampleWithWebinId.getAccession()), eq(false)))
         .thenReturn(Optional.of(sampleWithWebinId));
     when(sampleService.isNotExistingAccession(sampleWithWebinId.getAccession())).thenReturn(false);
     when(sampleService.persistSample(eq(sampleWithWebinId), eq(sampleWithWebinId), eq(false)))
@@ -637,7 +641,7 @@ public class ApiDocumentationTest {
     when(webinAuthenticationService.handleWebinUserSubmission(
             any(Sample.class), any(String.class), eq(Optional.of(sampleWithWebinId))))
         .thenReturn(sampleWithWebinId);
-    when(sampleService.fetch(eq(sampleWithWebinId.getAccession()), eq(Optional.empty())))
+    when(sampleService.fetch(eq(sampleWithWebinId.getAccession()), eq(false)))
         .thenReturn(Optional.of(sampleWithWebinId));
     when(sampleService.persistSample(eq(sampleWithWebinId), eq(sampleWithWebinId), eq(false)))
         .thenReturn(sampleWithWebinId);
@@ -695,8 +699,7 @@ public class ApiDocumentationTest {
   public void getSample() throws Exception {
     final Sample sample =
         faker.getExampleSampleBuilder().withDomain(faker.getExampleDomain()).build();
-    when(sampleService.fetch(sample.getAccession(), Optional.empty()))
-        .thenReturn(Optional.of(sample));
+    when(sampleService.fetch(sample.getAccession(), false)).thenReturn(Optional.of(sample));
     when(accessControlService.extractToken(anyString())).thenReturn(Optional.empty());
 
     mockMvc

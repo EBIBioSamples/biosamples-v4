@@ -10,7 +10,6 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.CollectionModel;
@@ -75,31 +74,16 @@ public class AccessionsGetController {
       final Integer size) {
     resources.add(
         SamplesRestController.getPageLink(
-            text,
-            filter,
-            Optional.empty(),
-            page,
-            size,
-            null,
-            IanaLinkRelations.SELF.value(),
-            getClass()));
+            text, filter, page, size, null, IanaLinkRelations.SELF.value(), getClass()));
 
     if (pageAccessions.getTotalPages() > 1) {
       resources.add(
           SamplesRestController.getPageLink(
-              text,
-              filter,
-              Optional.empty(),
-              0,
-              size,
-              null,
-              IanaLinkRelations.FIRST.value(),
-              getClass()));
+              text, filter, 0, size, null, IanaLinkRelations.FIRST.value(), getClass()));
       resources.add(
           SamplesRestController.getPageLink(
               text,
               filter,
-              Optional.empty(),
               pageAccessions.getTotalPages(),
               size,
               null,
@@ -110,27 +94,13 @@ public class AccessionsGetController {
     if (page > 0) {
       resources.add(
           SamplesRestController.getPageLink(
-              text,
-              filter,
-              Optional.empty(),
-              page - 1,
-              size,
-              null,
-              IanaLinkRelations.PREVIOUS.value(),
-              getClass()));
+              text, filter, page - 1, size, null, IanaLinkRelations.PREVIOUS.value(), getClass()));
     }
 
     if (page < pageAccessions.getTotalPages() - 1) {
       resources.add(
           SamplesRestController.getPageLink(
-              text,
-              filter,
-              Optional.empty(),
-              page + 1,
-              size,
-              null,
-              IanaLinkRelations.NEXT.value(),
-              getClass()));
+              text, filter, page + 1, size, null, IanaLinkRelations.NEXT.value(), getClass()));
     }
   }
 }

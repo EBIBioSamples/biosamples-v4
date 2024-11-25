@@ -100,9 +100,9 @@ public class ReindexRunnerTest {
             Collections.EMPTY_SET);
 
     when(mongoOperations.stream(any(), eq(MongoSample.class))).thenReturn(samples);
-    when(sampleReadService.fetch("ACCESSION1", Optional.empty())).thenReturn(Optional.of(sample1));
-    when(sampleReadService.fetch("ACCESSION2", Optional.empty())).thenReturn(Optional.empty());
-    when(sampleReadService.fetch("ACCESSION3", Optional.empty()))
+    when(sampleReadService.fetch("ACCESSION1", true)).thenReturn(Optional.of(sample1));
+    when(sampleReadService.fetch("ACCESSION2", true)).thenReturn(Optional.empty());
+    when(sampleReadService.fetch("ACCESSION3", true))
         .thenReturn(Optional.empty())
         .thenReturn(Optional.of(sample3));
     final ReindexRunner reindexRunner =

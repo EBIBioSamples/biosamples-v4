@@ -32,8 +32,6 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 @Service
 @Slf4j
 public class SampleStatusUpdater {
-  @Autowired private BioSamplesClient aapClient;
-
   @Autowired
   @Qualifier("WEBINCLIENT")
   private BioSamplesClient webinClient;
@@ -113,12 +111,7 @@ public class SampleStatusUpdater {
     log.info("Handling " + accession);
 
     Optional<EntityModel<Sample>> optionalSampleEntityModel =
-        aapClient.fetchSampleResource(accession, Optional.of(Collections.singletonList("")));
-
-    if (optionalSampleEntityModel.isEmpty()) {
-      optionalSampleEntityModel =
-          webinClient.fetchSampleResource(accession, Optional.of(Collections.singletonList("")));
-    }
+        webinClient.fetchSampleResource(accession, false);
 
     if (optionalSampleEntityModel.isPresent()) {
       final Sample sample = optionalSampleEntityModel.get().getContent();
@@ -144,11 +137,7 @@ public class SampleStatusUpdater {
                           .toEpochSecond(ZoneOffset.UTC)))
               .build();
 
-      if (updatedSample.getWebinSubmissionAccountId() != null) {
-        webinClient.persistSampleResource(updatedSample);
-      } else {
-        aapClient.persistSampleResource(updatedSample);
-      }
+      webinClient.persistSampleResource(updatedSample);
     }
   }
 }

@@ -35,32 +35,23 @@ public class AuthChangeHandler {
   private static final String WEBIN_ID_TO_CHANGE_TO = "Webin-64171";
   public static final String AAP_DOMAIN_TO_CHANGE = "self.AtlantECO";
   private final BioSamplesClient bioSamplesWebinClient;
-  private final BioSamplesClient bioSamplesAapClient;
   private final MongoAuthChangeRepository mongoAuthChangeRepository;
 
   public AuthChangeHandler(
       @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesWebinClient,
-      @Qualifier("AAPCLIENT") final BioSamplesClient bioSamplesAapClient,
       final MongoAuthChangeRepository mongoAuthChangeRepository) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
-    this.bioSamplesAapClient = bioSamplesAapClient;
     this.mongoAuthChangeRepository = mongoAuthChangeRepository;
   }
 
   private void processSample(final String accession, final List<String> curationDomainList) {
     if (!accession.startsWith("SAMEA")) {
-      String sameaAccession = "SAMEA" + accession;
+      final String sameaAccession = "SAMEA" + accession;
 
       log.info("Processing Sample: " + sameaAccession);
 
-      Optional<EntityModel<Sample>> optionalSampleEntityModel =
-          bioSamplesAapClient.fetchSampleResource(sameaAccession, Optional.of(curationDomainList));
-
-      if (optionalSampleEntityModel.isEmpty()) {
-        optionalSampleEntityModel =
-            bioSamplesWebinClient.fetchSampleResource(
-                sameaAccession, Optional.of(curationDomainList));
-      }
+      final Optional<EntityModel<Sample>> optionalSampleEntityModel =
+          bioSamplesWebinClient.fetchSampleResource(sameaAccession, false);
 
       if (optionalSampleEntityModel.isPresent()) {
         handleAuth(optionalSampleEntityModel);

@@ -24,7 +24,6 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
 public class CurationApplicationService {
-
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   public Sample applyCurationToSample(final Sample sample, final Curation curation) {
@@ -33,12 +32,14 @@ public class CurationApplicationService {
     final SortedSet<Attribute> attributes = new TreeSet<>(sample.getAttributes());
     final SortedSet<ExternalReference> externalReferences =
         new TreeSet<>(sample.getExternalReferences());
+
     // remove pre-curation things
     for (final Attribute attribute : curation.getAttributesPre()) {
       if (!attributes.contains(attribute)) {
         throw new IllegalArgumentException(
             "Attempting to apply curation " + curation + " to sample " + sample);
       }
+
       attributes.remove(attribute);
     }
     for (final ExternalReference externalReference : curation.getExternalReferencesPre()) {
@@ -46,6 +47,7 @@ public class CurationApplicationService {
         throw new IllegalArgumentException(
             "Attempting to apply curation " + curation + " to sample " + sample);
       }
+
       externalReferences.remove(externalReference);
     }
     // add post-curation things
@@ -54,6 +56,7 @@ public class CurationApplicationService {
         throw new IllegalArgumentException(
             "Attempting to apply curation " + curation + " to sample " + sample);
       }
+
       attributes.add(attribute);
     }
     for (final ExternalReference externalReference : curation.getExternalReferencesPost()) {
@@ -61,6 +64,7 @@ public class CurationApplicationService {
         throw new IllegalArgumentException(
             "Attempting to apply curation " + curation + " to sample " + sample);
       }
+
       externalReferences.add(externalReference);
     }
 
@@ -92,11 +96,13 @@ public class CurationApplicationService {
   public Sample applyAllCurationToSample(Sample sample, final Collection<Curation> curations) {
     boolean curationApplied = true;
 
-    while (curationApplied && curations.size() > 0) {
+    while (curationApplied && !curations.isEmpty()) {
       final Iterator<Curation> it = curations.iterator();
       curationApplied = false;
+
       while (it.hasNext()) {
         final Curation curation = it.next();
+
         try {
           sample = applyCurationToSample(sample, curation);
           it.remove();
@@ -106,6 +112,7 @@ public class CurationApplicationService {
         }
       }
     }
+
     return sample;
   }
 }

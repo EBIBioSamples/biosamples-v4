@@ -42,19 +42,18 @@ public class FileDownloadInputStreamTest {
   private final String sampleSearchText = "";
   private final String emptySamplesText = "no samples search";
   private final Collection<Filter> filters = Collections.emptyList();
-  private final Collection<String> domains = Collections.emptyList();
 
   @Before
   public void init() {
     final CursorArrayList<Sample> samplePage = new CursorArrayList<>(cursor);
     when(samplePageService.getSamplesByText(
-            emptySamplesText, filters, null, cursor, pageSize, Optional.empty()))
+            emptySamplesText, filters, null, cursor, pageSize, true))
         .thenReturn(samplePage);
 
     final CursorArrayList<Sample> samplePageWithSample = new CursorArrayList<>(cursor);
     samplePageWithSample.add(getTestSample());
     when(samplePageService.getSamplesByText(
-            sampleSearchText, filters, null, cursor, pageSize, Optional.empty()))
+            sampleSearchText, filters, null, cursor, pageSize, true))
         .thenReturn(samplePageWithSample);
   }
 

@@ -118,8 +118,7 @@ public class SampleHtmlController {
     final Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);
     final Pageable pageable = PageRequest.of(page - 1, size);
     final Page<Sample> pageSample =
-        samplePageService.getSamplesByText(
-            text, filterCollection, null, pageable, Optional.empty());
+        samplePageService.getSamplesByText(text, filterCollection, null, pageable, true);
     // build URLs for the facets depending on if they are enabled or not
     final UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);
     final List<String> filtersList = new ArrayList<>();
@@ -302,7 +301,7 @@ public class SampleHtmlController {
       final HttpServletResponse response) {
     // TODO allow curation domain specification
     // fetch returns sample with curations applied
-    final Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
+    final Optional<Sample> sample = sampleService.fetch(accession, true);
 
     if (sample.isEmpty()) {
       log.info("Returning a 404 for " + request.getRequestURL());

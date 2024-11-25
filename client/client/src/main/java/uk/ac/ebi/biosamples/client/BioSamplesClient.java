@@ -251,22 +251,21 @@ public class BioSamplesClient implements AutoCloseable {
    */
   public Optional<EntityModel<Sample>> fetchSampleResource(final String accession)
       throws RestClientException {
-    return fetchSampleResource(accession, Optional.empty());
+    return fetchSampleResource(accession, true);
   }
 
   /**
    * Fetches a sample resource by accession using BioSamples with optional curation domains.
    *
    * @param accession the accession of the sample
-   * @param curationDomains the optional list of curation domains
+   * @param applyCurations apply curations or fetch raw
    * @return the optional sample resource
    * @throws RestClientException if there is an error while fetching the sample
    */
   public Optional<EntityModel<Sample>> fetchSampleResource(
-      final String accession, final Optional<List<String>> curationDomains)
-      throws RestClientException {
+      final String accession, final boolean applyCurations) throws RestClientException {
     try {
-      return sampleRetrievalService.fetch(accession, curationDomains);
+      return sampleRetrievalService.fetch(accession, applyCurations);
     } catch (final Exception e) {
       throw new RuntimeException(e.getCause());
     }
@@ -390,7 +389,7 @@ public class BioSamplesClient implements AutoCloseable {
    * @return the optional sample
    * @throws RestClientException if there is an error while fetching the sample
    * @deprecated This method has been deprecated. Use {@link #fetchSampleResource(String)} or {@link
-   *     #fetchSampleResource(String, Optional)} instead.
+   *     #fetchSampleResource(String, boolean)} instead.
    */
   @Deprecated
   public Optional<Sample> fetchSample(final String accession) throws RestClientException {
@@ -498,14 +497,14 @@ public class BioSamplesClient implements AutoCloseable {
   // services including JWT to utilize original submission user credentials
   public Optional<EntityModel<Sample>> fetchSampleResource(final String accession, final String jwt)
       throws RestClientException {
-    return fetchSampleResource(accession, Optional.empty(), jwt);
+    return fetchSampleResource(accession, true, jwt);
   }
 
   public Optional<EntityModel<Sample>> fetchSampleResource(
-      final String accession, final Optional<List<String>> curationDomains, final String jwt)
+      final String accession, final boolean applyCurations, final String jwt)
       throws RestClientException {
     try {
-      return sampleRetrievalService.fetch(accession, curationDomains, jwt);
+      return sampleRetrievalService.fetch(accession, applyCurations, jwt);
     } catch (final Exception e) {
       throw new RuntimeException(e.getCause());
     }

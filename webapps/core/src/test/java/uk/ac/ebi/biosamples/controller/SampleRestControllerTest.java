@@ -66,7 +66,7 @@ public class SampleRestControllerTest {
             nullable(String.class),
             nullable(String.class),
             anyInt(),
-            any()))
+            anyBoolean()))
         .thenReturn(sampleCursorArrayList);
 
     mockMvc

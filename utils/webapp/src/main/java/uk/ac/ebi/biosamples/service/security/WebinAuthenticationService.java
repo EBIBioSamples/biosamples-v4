@@ -268,7 +268,7 @@ public class WebinAuthenticationService {
     final AtomicBoolean isWebinIdValid = new AtomicBoolean(false);
 
     // fetch returns sample with curations applied
-    final Optional<Sample> oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
+    final Optional<Sample> oldSample = sampleService.fetch(sample.getAccession(), true);
 
     if (oldSample.isPresent()) {
       final Sample oldSampleInDb = oldSample.get();

@@ -62,7 +62,7 @@ public class BulkActionControllerV2Test {
             .withAccession("SAMEA1")
             .withRelease("2047-01-01T12:00:00")
             .build();
-    when(sampleService.fetch(anyString(), any())).thenReturn(Optional.of(sample));
+    when(sampleService.fetch(anyString(), anyBoolean())).thenReturn(Optional.of(sample));
     doCallRealMethod()
         .when(webinAuthenticationService)
         .isSampleAccessible(sample, WEBIN_TESTING_ACCOUNT);

@@ -554,7 +554,7 @@ public class RestIntegration extends AbstractIntegration {
     return new Sample.Builder(name)
         .withUpdate(update)
         .withRelease(release)
-        .withWebinSubmissionAccountId("Webin-40894")
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withAttributes(attributes)
         .withRelationships(relationships)
         .withExternalReferences(externalReferences)

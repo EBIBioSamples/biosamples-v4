@@ -59,8 +59,7 @@ public class EtagTests {
             .addAttribute(new Attribute.Builder("Organism", "Homo sapiens").build())
             .build();
 
-    when(sampleService.fetch(sampleAccession, Optional.empty()))
-        .thenReturn(Optional.of(testSample));
+    when(sampleService.fetch(sampleAccession, true)).thenReturn(Optional.of(testSample));
     when(webinAuthenticationService.handleWebinUserSubmission(
             testSample, WEBIN_TESTING_ACCOUNT, Optional.empty()))
         .thenReturn(testSample);

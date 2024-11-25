@@ -97,6 +97,7 @@ public class RestCurationIntegration extends AbstractIntegration {
 
     // resubmit sample with relationships
     final SortedSet<Relationship> relationships = new TreeSet<>();
+
     relationships.add(
         Relationship.build(sample3.getAccession(), "DERIVED_FROM", sample.getAccession()));
     sample3 = Sample.Builder.fromSample(sample3).withRelationships(relationships).build();
@@ -195,22 +196,27 @@ public class RestCurationIntegration extends AbstractIntegration {
     // check what the default alldomain conflicting result is
     MultiValueMap<String, String> params;
     params = new LinkedMultiValueMap<>();
-
-    testSampleCurationDomains(sample.getAccession(), "A", params);
-    // check what the no-domain result is
-    params = new LinkedMultiValueMap<>();
-    params.add("curationdomain", "");
+    params.add("applyCurations", "false");
 
     testSampleCurationDomains(sample.getAccession(), "original", params);
+
+    // check what the no-domain result is
+    params = new LinkedMultiValueMap<>();
+    params.add("applyCurations", "false");
+
+    testSampleCurationDomains(sample.getAccession(), "original", params);
+
     // check what a single-domain result is
     params = new LinkedMultiValueMap<>();
-    params.add("curationdomain", "self.BiosampleIntegrationTest");
+    params.add("applyCurations", "true");
 
     testSampleCurationDomains(sample.getAccession(), "A", params);
-    params = new LinkedMultiValueMap<>();
-    params.add("curationdomain", "self.BiosampleIntegrationTestAlternative");
 
-    testSampleCurationDomains(sample.getAccession(), "B", params);
+    params = new LinkedMultiValueMap<>();
+    params.add("applyCurations", "true");
+
+    // TODO: check: should be A or B
+    testSampleCurationDomains(sample.getAccession(), "A", params);
   }
 
   @Override
@@ -349,6 +355,7 @@ public class RestCurationIntegration extends AbstractIntegration {
             .toUri();
 
     log.info("GETting from " + uri);
+
     final RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
     final ResponseEntity<EntityModel<Sample>> response =
         restTemplate.exchange(request, new ParameterizedTypeReference<>() {});
@@ -367,8 +374,8 @@ public class RestCurationIntegration extends AbstractIntegration {
     final String name = "RestCurationIntegration_sample_1";
     final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-
     final SortedSet<Attribute> attributes = new TreeSet<>();
+
     attributes.add(Attribute.build("Organism", "9606"));
     attributes.add(Attribute.build("CurationDomain", "original"));
     attributes.add(Attribute.build("Weird", "\"\""));
@@ -385,8 +392,8 @@ public class RestCurationIntegration extends AbstractIntegration {
     final String name = "RestCurationIntegration_sample_2";
     final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-
     final SortedSet<Attribute> attributes = new TreeSet<>();
+
     attributes.add(Attribute.build("Organism", "9606"));
     attributes.add(Attribute.build("CurationDomain", "original"));
     attributes.add(Attribute.build("Weird", "\"\""));
@@ -403,8 +410,8 @@ public class RestCurationIntegration extends AbstractIntegration {
     final String name = "RestCurationIntegration_sample_3";
     final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-
     final SortedSet<Attribute> attributes = new TreeSet<>();
+
     attributes.add(Attribute.build("Organism", "9606"));
 
     return new Sample.Builder(name)

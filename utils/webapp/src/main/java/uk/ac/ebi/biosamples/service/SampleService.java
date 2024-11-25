@@ -91,9 +91,8 @@ public class SampleService {
   }
 
   /** Throws an IllegalArgumentException of no sample with that accession exists */
-  public Optional<Sample> fetch(
-      final String accession, final Optional<List<String>> curationDomains) {
-    return sampleReadService.fetch(accession, curationDomains);
+  public Optional<Sample> fetch(final String accession, final boolean applyCurations) {
+    return sampleReadService.fetch(accession, applyCurations);
   }
 
   /*
@@ -208,7 +207,7 @@ public class SampleService {
     }
 
     // fetch returns sample with curations applied
-    final Optional<Sample> sampleOptional = fetch(newSample.getAccession(), Optional.empty());
+    final Optional<Sample> sampleOptional = fetch(newSample.getAccession(), true);
 
     return sampleOptional.orElseThrow(
         () ->
@@ -511,12 +510,10 @@ public class SampleService {
       final Sample newSample, final List<Relationship> existingRelationships) {
     if (existingRelationships != null && !existingRelationships.isEmpty()) {
       final String webinId = newSample.getWebinSubmissionAccountId();
-      final String domain = newSample.getDomain();
 
       // superuser and non file upload submissions
-      if ((webinId != null
-              && webinId.equals(bioSamplesProperties.getBiosamplesClientWebinUsername()))
-          || domain != null && domain.equals(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
+      if (webinId != null
+          && webinId.equals(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
         if (newSample.getSubmittedVia() != SubmittedViaType.FILE_UPLOADER) {
           newSample.getRelationships().addAll(existingRelationships);
         }
@@ -752,7 +749,7 @@ public class SampleService {
       if (sample.hasAccession() && !isNotExistingAccession(sample.getAccession())) {
         // fetch old sample if sample exists,
         // fetch returns sample with curations applied
-        return fetch(sample.getAccession(), Optional.empty());
+        return fetch(sample.getAccession(), false);
       }
     }
 

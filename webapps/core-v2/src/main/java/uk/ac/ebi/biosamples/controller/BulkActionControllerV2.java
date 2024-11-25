@@ -155,8 +155,7 @@ public class BulkActionControllerV2 {
                   final String justAccession = accession.trim();
                   final Optional<Sample> sampleOptional =
                       // fetch returns sample with no-curations applied
-                      sampleService.fetch(
-                          justAccession, false);
+                      sampleService.fetch(justAccession, false);
 
                   if (sampleOptional.isPresent()) {
                     final Sample sample = sampleOptional.get();

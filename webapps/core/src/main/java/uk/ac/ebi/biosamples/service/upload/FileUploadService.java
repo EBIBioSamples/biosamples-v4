@@ -278,7 +278,7 @@ public class FileUploadService {
 
     if (!sampleService.isNotExistingAccession(sample.getAccession())) {
       // fetch returns sample with curations applied
-      oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
+      oldSample = sampleService.fetch(sample.getAccession(), false);
     }
 
     if (relationships != null && !relationships.isEmpty()) {
@@ -315,7 +315,7 @@ public class FileUploadService {
 
       if (!sampleService.isNotExistingAccession(sample.getAccession())) {
         // fetch returns sample with curations applied
-        oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
+        oldSample = sampleService.fetch(sample.getAccession(), false);
       }
     }
 

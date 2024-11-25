@@ -275,8 +275,7 @@ public class Ncbi implements ApplicationRunner {
       for (final String accession : toRemoveAccessions) {
         // this must get the ORIGINAL sample without curation
         final Optional<EntityModel<Sample>> sampleOptional =
-            bioSamplesClient.fetchSampleResource(
-                accession, Optional.of(Collections.singletonList("")));
+            bioSamplesClient.fetchSampleResource(accession, false);
         if (sampleOptional.isPresent()) {
           final Sample sample = sampleOptional.get().getContent();
           // set the release date to 1000 years in the future to make it private again
