@@ -32,7 +32,7 @@ public class SampleExternalReferenceHandler {
 
   public void processSample(final String accession) {
     final Optional<EntityModel<Sample>> optionalSampleEntityModel =
-        bioSamplesClient.fetchSampleResource(accession);
+        bioSamplesClient.fetchSampleResource(accession, false);
 
     if (optionalSampleEntityModel.isPresent()) {
       final ExternalReference exRef =

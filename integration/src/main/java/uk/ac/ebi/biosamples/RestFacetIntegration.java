@@ -43,7 +43,7 @@ public class RestFacetIntegration extends AbstractIntegration {
     Sample aeSampleTest = getArrayExpressSampleTest();
 
     // put a sample
-    EntityModel<Sample> resource = client.persistSampleResource(sampleTest1);
+    EntityModel<Sample> resource = webinClient.persistSampleResource(sampleTest1);
 
     final Attribute sraAccessionAttribute1 =
         resource.getContent().getAttributes().stream()
@@ -66,7 +66,7 @@ public class RestFacetIntegration extends AbstractIntegration {
           Phase.ONE);
     }
 
-    resource = client.persistSampleResource(enaSampleTest);
+    resource = webinClient.persistSampleResource(enaSampleTest);
 
     final Attribute sraAccessionAttribute2 =
         resource.getContent().getAttributes().stream()
@@ -88,7 +88,7 @@ public class RestFacetIntegration extends AbstractIntegration {
           Phase.ONE);
     }
 
-    resource = client.persistSampleResource(aeSampleTest);
+    resource = webinClient.persistSampleResource(aeSampleTest);
 
     final Attribute sraAccessionAttribute3 =
         resource.getContent().getAttributes().stream()

@@ -72,6 +72,9 @@ public class ClientProperties {
   @Value("${biosamples.client.webin.username:Webin-40894}")
   private String biosamplesClientWebinUsername;
 
+  @Value("${biosamples.client.webin.test.username:Webin-57176}")
+  private String biosamplesClientWebinTestUsername;
+
   // can't use "null" because it will be a string
   @Value("${biosamples.client.webin.password:#{null}}")
   private String biosamplesClientWebinPassword;

@@ -37,18 +37,11 @@ public class SampleResourceAssembler
   public SampleResourceAssembler() {}
 
   private Link getSelfLink(
-      final String accession,
-      final Optional<Boolean> legacydetails,
-      final boolean applyCurations,
-      final Class controllerClass) {
+      final String accession, final Optional<Boolean> legacydetails, final Class controllerClass) {
     final UriComponentsBuilder uriComponentsBuilder =
         linkTo(controllerClass, accession).toUriComponentsBuilder();
     if (legacydetails.isPresent() && legacydetails.get()) {
       uriComponentsBuilder.queryParam("legacydetails", legacydetails);
-    }
-
-    if (applyCurations) {
-      uriComponentsBuilder.queryParam("applyCurations", true);
     }
 
     return Link.of(uriComponentsBuilder.build().toUriString(), IanaLinkRelations.SELF);
@@ -59,9 +52,11 @@ public class SampleResourceAssembler
         UriComponentsBuilder.fromUriString(selfLink.getHref()).build();
 
     if (selfUriComponents.getQueryParams().isEmpty()) {
-      return Link.of(selfLink.getHref() + "{?applyCurations}", String.valueOf(true));
+      return Link.of(selfLink.getHref() + "{?applyCurations}", String.valueOf(false))
+          .withRel("applyCurations");
     } else {
-      return Link.of(selfLink.getHref() + "{&applyCurations}", String.valueOf(true));
+      return Link.of(selfLink.getHref() + "{&applyCurations}", String.valueOf(false))
+          .withRel("applyCurations");
     }
   }
 
@@ -90,8 +85,7 @@ public class SampleResourceAssembler
       final Class controllerClass) {
     final EntityModel<Sample> sampleResource = EntityModel.of(sample);
 
-    sampleResource.add(
-        getSelfLink(sample.getAccession(), legacydetails, applyCurations, controllerClass));
+    sampleResource.add(getSelfLink(sample.getAccession(), legacydetails, controllerClass));
     // add link to apply curations
     sampleResource.add(getApplyCurationLink(sampleResource.getLink(IanaLinkRelations.SELF).get()));
     // add link to curationLinks on this sample

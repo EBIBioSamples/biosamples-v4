@@ -52,7 +52,7 @@ public class SamplesGraphIntegration extends AbstractIntegration {
   @Override
   protected void phaseFour() {
     final List<Sample> samples = new ArrayList<>();
-    for (final EntityModel<Sample> sample : client.fetchSampleResourceAll()) {
+    for (final EntityModel<Sample> sample : webinClient.fetchSampleResourceAll()) {
       samples.add(sample.getContent());
     }
 

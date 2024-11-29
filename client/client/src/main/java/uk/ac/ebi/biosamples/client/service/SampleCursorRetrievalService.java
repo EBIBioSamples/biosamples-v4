@@ -73,7 +73,7 @@ public class SampleCursorRetrievalService {
     params.add("size", Integer.toString(pageSize));
 
     if (!addCurations) {
-      params.add("curationdomain", "");
+      params.add("applyCurations", "false");
     }
 
     params = encodePlusInQueryParameters(params);

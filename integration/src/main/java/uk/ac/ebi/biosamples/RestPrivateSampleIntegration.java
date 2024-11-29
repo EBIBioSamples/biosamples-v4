@@ -44,7 +44,7 @@ public class RestPrivateSampleIntegration extends AbstractIntegration {
           Phase.ONE);
     }
 
-    client.persistSampleResource(publicSampleToday);
+    webinClient.persistSampleResource(publicSampleToday);
 
     optionalSample = fetchUniqueSampleByName(privateSample.getName());
 
@@ -54,7 +54,7 @@ public class RestPrivateSampleIntegration extends AbstractIntegration {
           Phase.ONE);
     }
 
-    client.persistSampleResource(privateSample);
+    webinClient.persistSampleResource(privateSample);
   }
 
   @Override

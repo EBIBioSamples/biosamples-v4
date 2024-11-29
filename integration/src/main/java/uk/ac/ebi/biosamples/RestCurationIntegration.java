@@ -58,9 +58,9 @@ public class RestCurationIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseOne() {
-    client.persistSampleResource(getSampleTest1());
-    client.persistSampleResource(getSampleTest2());
-    client.persistSampleResource(getSampleTest3());
+    webinClient.persistSampleResource(getSampleTest1());
+    webinClient.persistSampleResource(getSampleTest2());
+    webinClient.persistSampleResource(getSampleTest3());
   }
 
   @Override
@@ -102,7 +102,7 @@ public class RestCurationIntegration extends AbstractIntegration {
         Relationship.build(sample3.getAccession(), "DERIVED_FROM", sample.getAccession()));
     sample3 = Sample.Builder.fromSample(sample3).withRelationships(relationships).build();
 
-    client.persistSampleResource(sample3);
+    webinClient.persistSampleResource(sample3);
 
     Set<Attribute> attributesPre;
     Set<Attribute> attributesPost;
@@ -112,7 +112,7 @@ public class RestCurationIntegration extends AbstractIntegration {
     attributesPost = new HashSet<>();
     attributesPost.add(Attribute.build("Organism", "Homo sapiens"));
 
-    client.persistCuration(
+    webinClient.persistCuration(
         sample.getAccession(),
         Curation.build(attributesPre, attributesPost, null, null),
         clientProperties.getBiosamplesClientWebinUsername());
@@ -124,7 +124,7 @@ public class RestCurationIntegration extends AbstractIntegration {
         Attribute.build(
             "Organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
-    client.persistCuration(
+    webinClient.persistCuration(
         sample.getAccession(),
         Curation.build(attributesPre, attributesPost, null, null),
         clientProperties.getBiosamplesClientWebinUsername());
@@ -133,7 +133,7 @@ public class RestCurationIntegration extends AbstractIntegration {
     attributesPre.add(Attribute.build("Weird", "\"\""));
     attributesPost = new HashSet<>();
 
-    client.persistCuration(
+    webinClient.persistCuration(
         sample.getAccession(),
         Curation.build(attributesPre, attributesPost, null, null),
         clientProperties.getBiosamplesClientWebinUsername());
@@ -144,17 +144,17 @@ public class RestCurationIntegration extends AbstractIntegration {
     attributesPost = new HashSet<>();
     attributesPost.add(Attribute.build("CurationDomain", "A"));
 
-    client.persistCuration(
+    webinClient.persistCuration(
         sample.getAccession(),
         Curation.build(attributesPre, attributesPost, null, null),
         clientProperties.getBiosamplesClientWebinUsername());
 
     attributesPre = new HashSet<>();
-    attributesPre.add(Attribute.build("CurationDomain", "original"));
+    attributesPre.add(Attribute.build("CurationDomain", "A"));
     attributesPost = new HashSet<>();
     attributesPost.add(Attribute.build("CurationDomain", "B"));
 
-    client.persistCuration(
+    webinClient.persistCuration(
         sample.getAccession(),
         Curation.build(attributesPre, attributesPost, null, null),
         clientProperties.getBiosamplesClientWebinUsername());
@@ -165,7 +165,7 @@ public class RestCurationIntegration extends AbstractIntegration {
     relationshipsPost.add(
         Relationship.build(sample.getAccession(), "SAME_AS", sample2.getAccession()));
 
-    client.persistCuration(
+    webinClient.persistCuration(
         sample.getAccession(),
         Curation.build(null, null, null, null, relationshipsPre, relationshipsPost),
         clientProperties.getBiosamplesClientWebinUsername());
@@ -191,7 +191,7 @@ public class RestCurationIntegration extends AbstractIntegration {
     testSampleCurations(sample);
 
     // check there were no side-effects
-    client.fetchSampleResource(sample.getAccession());
+    webinClient.fetchSampleResource(sample.getAccession());
 
     // check what the default alldomain conflicting result is
     MultiValueMap<String, String> params;
@@ -210,13 +210,13 @@ public class RestCurationIntegration extends AbstractIntegration {
     params = new LinkedMultiValueMap<>();
     params.add("applyCurations", "true");
 
-    testSampleCurationDomains(sample.getAccession(), "A", params);
+    testSampleCurationDomains(sample.getAccession(), "B", params);
 
     params = new LinkedMultiValueMap<>();
     params.add("applyCurations", "true");
 
     // TODO: check: should be A or B
-    testSampleCurationDomains(sample.getAccession(), "A", params);
+    testSampleCurationDomains(sample.getAccession(), "B", params);
   }
 
   @Override
@@ -237,7 +237,7 @@ public class RestCurationIntegration extends AbstractIntegration {
 
     final Set<Relationship> relationshipsPost = new HashSet<>();
 
-    client.persistCuration(
+    webinClient.persistCuration(
         sample3.getAccession(),
         Curation.build(null, null, null, null, relationshipsPre, relationshipsPost),
         clientProperties.getBiosamplesClientWebinUsername());
@@ -283,7 +283,7 @@ public class RestCurationIntegration extends AbstractIntegration {
     	throw new RuntimeException("No curations in list");
     }
     */
-    for (final EntityModel<Curation> curationResource : client.fetchCurationResourceAll()) {
+    for (final EntityModel<Curation> curationResource : webinClient.fetchCurationResourceAll()) {
       final Link selfLink = curationResource.getLink("self").get();
       final Link samplesLink = curationResource.getLink("samples").get();
 

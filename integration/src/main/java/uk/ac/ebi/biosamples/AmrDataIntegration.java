@@ -60,7 +60,7 @@ public class AmrDataIntegration extends AbstractIntegration {
           "AMRDataIntegration test sample should not be available during phase 1", Phase.ONE);
     }
 
-    final EntityModel<Sample> resource = client.persistSampleResource(testSample);
+    final EntityModel<Sample> resource = webinClient.persistSampleResource(testSample);
 
     Sample testSampleWithAccession =
         Sample.Builder.fromSample(testSample)
@@ -112,7 +112,8 @@ public class AmrDataIntegration extends AbstractIntegration {
 
     sd = StructuredData.build(optionalSample.get().getAccession(), sd.getCreate(), sd.getData());
 
-    final EntityModel<StructuredData> structuredDataResource = client.persistStructuredData(sd);
+    final EntityModel<StructuredData> structuredDataResource =
+        webinClient.persistStructuredData(sd);
 
     if (structuredDataResource.getContent() == null) {
       throw new RuntimeException("Should return submitted structured data");

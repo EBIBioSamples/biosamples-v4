@@ -45,7 +45,7 @@ public class SampleChecklistComplianceHandlerEVA {
     this.pipelinesProperties = pipelinesProperties;
   }
 
-  private void processSample(final String accession, final List<String> curationDomainList) {
+  private void processSample(final String accession) {
     log.info("Processing Sample: " + accession);
 
     final Optional<EntityModel<Sample>> optionalSampleEntityModel =
@@ -186,7 +186,7 @@ public class SampleChecklistComplianceHandlerEVA {
     for (final String accession : samnAccessions) {
       // log.info(accession);
 
-      processSample(accession, Collections.singletonList(""));
+      processSample(accession);
     }
   }
 

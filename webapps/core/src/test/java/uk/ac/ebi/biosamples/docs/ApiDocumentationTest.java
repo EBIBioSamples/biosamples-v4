@@ -699,7 +699,7 @@ public class ApiDocumentationTest {
   public void getSample() throws Exception {
     final Sample sample =
         faker.getExampleSampleBuilder().withDomain(faker.getExampleDomain()).build();
-    when(sampleService.fetch(sample.getAccession(), false)).thenReturn(Optional.of(sample));
+    when(sampleService.fetch(sample.getAccession(), true)).thenReturn(Optional.of(sample));
     when(accessControlService.extractToken(anyString())).thenReturn(Optional.empty());
 
     mockMvc

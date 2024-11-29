@@ -42,8 +42,8 @@ public class FilterBuilder {
     return new DateRangeFilter.DateRangeFilterBuilder("update");
   }
 
-  public DomainFilter.Builder onDomain(final String domain) {
-    return new DomainFilter.Builder(domain);
+  public AuthenticationFilter.Builder onAuthInfo(final String domain) {
+    return new AuthenticationFilter.Builder(domain);
   }
 
   public NameFilter.Builder onName(final String name) {

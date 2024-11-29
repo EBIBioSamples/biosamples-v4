@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 import javax.annotation.PreDestroy;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -56,7 +57,12 @@ public class BioSamplesClient implements AutoCloseable {
   private final CurationSubmissionService curationSubmissionService;
   private final StructuredDataSubmissionService structuredDataSubmissionService;
   private final SampleValidator sampleValidator;
-  private final Optional<BioSamplesClient> publicClient;
+  /**
+   * -- GETTER -- Gets the public client.
+   *
+   * @return the public client
+   */
+  @Getter private final Optional<BioSamplesClient> publicClient;
 
   /**
    * Constructs a BioSamplesClient with the given parameters.
@@ -82,10 +88,7 @@ public class BioSamplesClient implements AutoCloseable {
     final RestTemplate restOperations = restTemplateBuilder.build();
 
     if (clientService != null) {
-      if (clientService instanceof AapClientService) {
-        log.trace("Adding BsdClientHttpRequestInterceptor");
-        restOperations.getInterceptors().add(new BsdClientHttpRequestInterceptor(clientService));
-      } else if (clientService instanceof WebinAuthClientService) {
+      if (clientService instanceof WebinAuthClientService) {
         log.trace("Adding WebinClientHttpRequestInterceptor");
         restOperations.getInterceptors().add(new BsdClientHttpRequestInterceptor(clientService));
       } else {
@@ -101,23 +104,16 @@ public class BioSamplesClient implements AutoCloseable {
     sampleCursorRetrievalService =
         new SampleCursorRetrievalService(
             restOperations, traverson, clientProperties.getBiosamplesClientPagesize());
-
     sampleSubmissionService = new SampleSubmissionService(restOperations, traverson);
-
     sampleSubmissionServiceV2 = new SampleSubmissionServiceV2(restOperations, uriV2);
-
     sampleRetrievalServiceV2 = new SampleRetrievalServiceV2(restOperations, uriV2);
-
     curationRetrievalService =
         new CurationRetrievalService(
             restOperations, traverson, clientProperties.getBiosamplesClientPagesize());
-
     /*TODO: In CurationSubmissionService and StructuredDataSubmissionService webin auth is handled more elegantly, replicate it in all other services*/
     curationSubmissionService = new CurationSubmissionService(restOperations, traverson);
-
     structuredDataSubmissionService =
         new StructuredDataSubmissionService(restOperations, traverson);
-
     this.sampleValidator = sampleValidator;
 
     if (clientService == null) {
@@ -128,15 +124,6 @@ public class BioSamplesClient implements AutoCloseable {
               new BioSamplesClient(
                   uri, uriV2, restTemplateBuilder, sampleValidator, null, clientProperties));
     }
-  }
-
-  /**
-   * Gets the public client.
-   *
-   * @return the public client
-   */
-  public Optional<BioSamplesClient> getPublicClient() {
-    return publicClient;
   }
 
   private static class BsdClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
@@ -380,21 +367,6 @@ public class BioSamplesClient implements AutoCloseable {
   public PagedModel<EntityModel<Sample>> fetchPagedSampleResource(
       final String text, final Collection<Filter> filters, final int page, final int size) {
     return samplePageRetrievalService.search(text, filters, page, size);
-  }
-
-  /**
-   * Deprecated method: Fetches a sample by accession using BioSamples.
-   *
-   * @param accession the accession of the sample
-   * @return the optional sample
-   * @throws RestClientException if there is an error while fetching the sample
-   * @deprecated This method has been deprecated. Use {@link #fetchSampleResource(String)} or {@link
-   *     #fetchSampleResource(String, boolean)} instead.
-   */
-  @Deprecated
-  public Optional<Sample> fetchSample(final String accession) throws RestClientException {
-    final Optional<EntityModel<Sample>> resource = fetchSampleResource(accession);
-    return resource.map(EntityModel::getContent);
   }
 
   /**

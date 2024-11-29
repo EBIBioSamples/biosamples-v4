@@ -11,7 +11,6 @@
 package uk.ac.ebi.biosamples.auth.services;
 
 import java.io.*;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -44,7 +43,7 @@ public class AuthChangeHandler {
     this.mongoAuthChangeRepository = mongoAuthChangeRepository;
   }
 
-  private void processSample(final String accession, final List<String> curationDomainList) {
+  private void processSample(final String accession) {
     if (!accession.startsWith("SAMEA")) {
       final String sameaAccession = "SAMEA" + accession;
 
@@ -118,7 +117,7 @@ public class AuthChangeHandler {
       for (final CSVRecord csvRecord : csvParser) {
         final String sampleIdentifier = csvRecord.get("Sample Identifier");
 
-        processSample(sampleIdentifier, Collections.singletonList(""));
+        processSample(sampleIdentifier);
       }
 
     } catch (IOException e) {
@@ -133,7 +132,7 @@ public class AuthChangeHandler {
       String identifier;
 
       while ((identifier = br.readLine()) != null) {
-        processSample(identifier, Collections.singletonList(""));
+        processSample(identifier);
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -155,7 +154,7 @@ public class AuthChangeHandler {
             "SAMEA8231226");
 
     try {
-      samples.forEach(sample -> processSample(sample, Collections.singletonList("")));
+      samples.forEach(sample -> processSample(sample));
     } catch (Exception e) {
       log.info("Failed to process list of samples " + e);
     }

@@ -55,7 +55,7 @@ public class NcbiEnaLinkCallable implements Callable<Void> {
     try {
       // Retrieve the sample to check its existence
       Optional<EntityModel<Sample>> optionalSampleEntityModel =
-          bioSamplesClient.fetchSampleResource(accession);
+          bioSamplesClient.fetchSampleResource(accession, false);
 
       if (optionalSampleEntityModel.isEmpty()) {
         log.info("NCBI sample doesn't exist in BioSamples " + accession + " fetching from ERAPRO");

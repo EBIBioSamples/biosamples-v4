@@ -79,7 +79,7 @@ public class SampleRestController {
   public EntityModel<Sample> getSampleHal(
       @PathVariable final String accession,
       @RequestParam(name = "legacydetails", required = false) final String legacydetails,
-      @RequestParam(name = "applyCurations", required = false, defaultValue = "false")
+      @RequestParam(name = "applyCurations", required = false, defaultValue = "true")
           final boolean applyCurations) {
     final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
     final String principle = sampleService.getPrinciple(loggedInUser);
@@ -105,7 +105,7 @@ public class SampleRestController {
   public String getSamplePhenopacket(
       @PathVariable final String accession,
       @RequestParam(name = "legacydetails", required = false) final String legacydetails,
-      @RequestParam(name = "applyCurations", required = false, defaultValue = "false")
+      @RequestParam(name = "applyCurations", required = false, defaultValue = "true")
           final boolean applyCurations) {
     final Optional<Boolean> decodedLegacyDetails =
         Optional.ofNullable("true".equals(legacydetails) ? Boolean.TRUE : null);

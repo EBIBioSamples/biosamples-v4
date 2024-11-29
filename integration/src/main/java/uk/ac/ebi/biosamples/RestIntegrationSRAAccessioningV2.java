@@ -16,7 +16,6 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
@@ -29,14 +28,9 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
   public static final String SRA_ACCESSION = "SRA accession";
   private final Logger log = LoggerFactory.getLogger(getClass());
-  private final BioSamplesClient webinClient;
-  private final BioSamplesClient aapClient;
 
-  public RestIntegrationSRAAccessioningV2(
-      final BioSamplesClient client, @Qualifier("WEBINCLIENT") final BioSamplesClient webinClient) {
+  public RestIntegrationSRAAccessioningV2(final BioSamplesClient client) {
     super(client);
-    this.webinClient = webinClient;
-    this.aapClient = client;
   }
 
   @Override
