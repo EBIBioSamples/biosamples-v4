@@ -239,7 +239,7 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
     // Persist sample-2 again and check if old SRA accession is retained
     final Sample sample2ContentAfterRePersistWithSRAAccessionRemoved =
         webinClient
-            .persistSampleResourceV2(Collections.singletonList(sample2Content))
+            .validatePersistSampleResourceV2(Collections.singletonList(sample2Content))
             .getSamples()
             .get(0);
 
@@ -266,9 +266,9 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
   }
 
   private Sample persistAndFetch(final Sample sample) {
-    // Submit with webin client, no jwt passed
+    // Submit with a webin client, no jwt passed
     final List<Sample> samples =
-        webinClient.persistSampleResourceV2(Collections.singletonList(sample)).getSamples();
+        webinClient.validatePersistSampleResourceV2(Collections.singletonList(sample)).getSamples();
     final String accession = Objects.requireNonNull(samples.get(0)).getAccession();
     final Optional<EntityModel<Sample>> fetchedSample = webinClient.fetchSampleResource(accession);
 

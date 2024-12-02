@@ -38,13 +38,22 @@ public class SampleSubmissionServiceV2 {
     this.uriV2 = uriV2;
   }
 
-  public SubmissionReceipt submit(final List<Sample> samples) throws RestClientException {
+  public List<Sample> submit(final List<Sample> samples) throws RestClientException {
     return new SampleSubmitterV2(samples).postSamples();
   }
 
-  public SubmissionReceipt submit(final List<Sample> samples, final String jwt)
+  public List<Sample> submit(final List<Sample> samples, final String jwt)
       throws RestClientException {
     return new SampleSubmitterV2(samples, jwt).postSamples();
+  }
+
+  public SubmissionReceipt validateSubmit(final List<Sample> samples) throws RestClientException {
+    return new SampleValidateSubmitterV2(samples).postSamples();
+  }
+
+  public SubmissionReceipt validateSubmit(final List<Sample> samples, final String jwt)
+      throws RestClientException {
+    return new SampleValidateSubmitterV2(samples, jwt).postSamples();
   }
 
   public Map<String, String> accession(final List<Sample> samples) throws RestClientException {
@@ -70,9 +79,48 @@ public class SampleSubmissionServiceV2 {
       this.jwt = jwt;
     }
 
-    public SubmissionReceipt postSamples() {
+    public List<Sample> postSamples() {
       final URI v2PostUri =
           UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples/bulk-submit"))
+              .build(true)
+              .toUri();
+      log.info("POSTing {} samples {}", samples.size(), v2PostUri);
+
+      final RequestEntity<List<Sample>> requestEntity =
+          buildRequestEntityWithAuthHeader(v2PostUri, jwt, samples);
+      final ResponseEntity<List<Sample>> responseEntity;
+
+      try {
+        responseEntity =
+            restOperations.exchange(
+                requestEntity, new ParameterizedTypeReference<List<Sample>>() {});
+      } catch (final RestClientResponseException e) {
+        log.error("Unable to POST to {} got response {}", v2PostUri, e.getResponseBodyAsString());
+
+        throw e;
+      }
+
+      return responseEntity.getBody();
+    }
+  }
+
+  private class SampleValidateSubmitterV2 {
+    private final List<Sample> samples;
+    private final String jwt;
+
+    SampleValidateSubmitterV2(final List<Sample> samples) {
+      this.samples = samples;
+      jwt = null;
+    }
+
+    SampleValidateSubmitterV2(final List<Sample> samples, final String jwt) {
+      this.samples = samples;
+      this.jwt = jwt;
+    }
+
+    public SubmissionReceipt postSamples() {
+      final URI v2PostUri =
+          UriComponentsBuilder.fromUri(URI.create(uriV2 + "/samples/bulk-submit-get-receipt"))
               .build(true)
               .toUri();
       log.info("POSTing {} samples {}", samples.size(), v2PostUri);

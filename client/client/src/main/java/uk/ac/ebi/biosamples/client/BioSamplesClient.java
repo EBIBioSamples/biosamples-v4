@@ -388,7 +388,7 @@ public class BioSamplesClient implements AutoCloseable {
    * @param samples the list of samples to persist
    * @return the list of persisted samples
    */
-  public SubmissionReceipt persistSampleResourceV2(final List<Sample> samples) {
+  public List<Sample> persistSampleResourceV2(final List<Sample> samples) {
     return sampleSubmissionServiceV2.submit(samples);
   }
 
@@ -399,8 +399,30 @@ public class BioSamplesClient implements AutoCloseable {
    * @param jwt the JWT token
    * @return the list of persisted samples
    */
-  public SubmissionReceipt persistSampleResourceV2(final List<Sample> samples, final String jwt) {
+  public List<Sample> persistSampleResourceV2(final List<Sample> samples, final String jwt) {
     return sampleSubmissionServiceV2.submit(samples, jwt);
+  }
+
+  /**
+   * Persists multiple sample resources using BioSamples V2 with JWT authentication.
+   *
+   * @param samples the list of samples to persist
+   * @param jwt the JWT token
+   * @return the list of persisted samples
+   */
+  public SubmissionReceipt validatePersistSampleResourceV2(
+      final List<Sample> samples, final String jwt) {
+    return sampleSubmissionServiceV2.validateSubmit(samples, jwt);
+  }
+
+  /**
+   * Persists multiple sample resources using BioSamples V2.
+   *
+   * @param samples the list of samples to persist
+   * @return the list of persisted samples
+   */
+  public SubmissionReceipt validatePersistSampleResourceV2(final List<Sample> samples) {
+    return sampleSubmissionServiceV2.validateSubmit(samples);
   }
 
   /**
