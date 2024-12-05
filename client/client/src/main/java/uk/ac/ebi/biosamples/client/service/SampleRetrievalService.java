@@ -66,12 +66,8 @@ public class SampleRetrievalService {
 
     public Optional<EntityModel<Sample>> fetchSample() {
       final Traverson.TraversalBuilder traversalBuilder = traverson.follow("samples");
-
       // Get the base URI from the traversal
       final String baseUri = traversalBuilder.asLink().getHref() + "/" + accession;
-
-      log.info("Base URL here " + baseUri);
-
       // Add the query parameter
       final String uri =
           UriComponentsBuilder.fromUriString(baseUri)
