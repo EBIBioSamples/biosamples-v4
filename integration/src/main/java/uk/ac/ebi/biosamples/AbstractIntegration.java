@@ -31,10 +31,10 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 public abstract class AbstractIntegration implements ApplicationRunner, ExitCodeGenerator {
   private final Logger log = LoggerFactory.getLogger(getClass());
-  final BioSamplesClient publicClient;
   private int exitCode = 1; // don't make this final
-  private BioSamplesClient webinClient;
-  protected final BioSamplesClient client;
+  protected static final String defaultWebinIdForIntegrationTests = "Webin-40894";
+  protected final BioSamplesClient noAuthClient;
+  protected final BioSamplesClient webinClient;
   protected final String defaultIntegrationSubmissionDomain = "self.BiosampleIntegrationTest";
 
   protected abstract void phaseOne();
@@ -49,19 +49,10 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
 
   protected abstract void phaseSix() throws ExecutionException, InterruptedException;
 
-  public AbstractIntegration(final BioSamplesClient client, final BioSamplesClient webinClient) {
-    this.client = client;
-    publicClient =
-        client
-            .getPublicClient()
-            .orElseThrow(() -> new IntegrationTestFailException("Could not create public client"));
+  public AbstractIntegration(final BioSamplesClient webinClient) {
     this.webinClient = webinClient;
-  }
-
-  public AbstractIntegration(final BioSamplesClient client) {
-    this.client = client;
-    publicClient =
-        client
+    this.noAuthClient =
+        webinClient
             .getPublicClient()
             .orElseThrow(() -> new IntegrationTestFailException("Could not create public client"));
   }
@@ -112,13 +103,13 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
     // do nothing
   }
 
-  // For the purpose of unit testing we will consider name is unique, so we can fetch sample
+  // For unit testing, we will consider name is unique, so we can fetch sample
   // uniquely from name
   Optional<Sample> fetchUniqueSampleByName(final String name) {
     final Optional<Sample> optionalSample;
     final Filter nameFilter = FilterBuilder.create().onName(name).build();
     final Iterator<EntityModel<Sample>> resourceIterator =
-        publicClient.fetchSampleResourceAll(Collections.singletonList(nameFilter)).iterator();
+        noAuthClient.fetchSampleResourceAll(Collections.singletonList(nameFilter)).iterator();
 
     if (resourceIterator.hasNext()) {
       optionalSample = Optional.ofNullable(resourceIterator.next().getContent());
@@ -147,7 +138,7 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
       throw new IntegrationTestFailException(
           "RestIntegration test sample should not be available during phase 1", Phase.ONE);
     } else {
-      final EntityModel<Sample> resource = client.persistSampleResource(sample);
+      final EntityModel<Sample> resource = webinClient.persistSampleResource(sample);
       final Sample sampleContent = resource.getContent();
       final Attribute sraAccessionAttribute =
           sampleContent.getAttributes().stream()

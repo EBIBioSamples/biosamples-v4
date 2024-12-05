@@ -35,10 +35,8 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
 public class ETagIntegration extends AbstractIntegration {
-
   private final ClientProperties clientProperties;
   private final RestTemplate restTemplate;
-
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   public ETagIntegration(
@@ -46,6 +44,7 @@ public class ETagIntegration extends AbstractIntegration {
       final ClientProperties clientProperties,
       final RestTemplateBuilder restTemplateBuilder) {
     super(client);
+
     this.clientProperties = clientProperties;
     restTemplate = restTemplateBuilder.build();
   }
@@ -56,7 +55,7 @@ public class ETagIntegration extends AbstractIntegration {
 
     log.info("Submitting sample for ETAG check");
 
-    final EntityModel<Sample> resource = client.persistSampleResource(testSample);
+    final EntityModel<Sample> resource = webinClient.persistSampleResource(testSample);
     final Attribute sraAccessionAttribute =
         Objects.requireNonNull(resource.getContent()).getAttributes().stream()
             .filter(attribute -> attribute.getType().equals(BioSamplesConstants.SRA_ACCESSION))
@@ -139,7 +138,7 @@ public class ETagIntegration extends AbstractIntegration {
             .addAttribute(Attribute.build("Organism part", "liver"))
             .build();
 
-    client.persistSampleResource(updatedSample);
+    webinClient.persistSampleResource(updatedSample);
 
     response = restTemplate.exchange(request, String.class);
 
@@ -158,7 +157,8 @@ public class ETagIntegration extends AbstractIntegration {
   @Override
   protected void phaseFour() {
     log.info(
-        "Verifying ETAG of a sample pre and post curation are different, but ETAG of the raw sample remains the same");
+        "Verifying ETAG of a sample pre and post curation are different, "
+            + "but ETAG of the raw sample remains the same");
 
     final Sample testSample = getTestSample();
 
@@ -183,8 +183,10 @@ public class ETagIntegration extends AbstractIntegration {
             Stream.of(testSample.getAttributes().first()).collect(Collectors.toSet()),
             Stream.of(Attribute.build("organism", "Homo Sapiens")).collect(Collectors.toSet()));
 
-    client.persistCuration(
-        testSample.getAccession(), sampleCuration, "self.BiosampleIntegrationTest", false);
+    webinClient.persistCuration(
+        testSample.getAccession(),
+        sampleCuration,
+        clientProperties.getBiosamplesClientWebinUsername());
 
     // Fetch again both the sample and the raw sample, the raw ETAG should match
     rawSampleResponse =
@@ -214,7 +216,7 @@ public class ETagIntegration extends AbstractIntegration {
   private Sample getTestSample() {
     return new Sample.Builder("ETAG sample test")
         .withAccession("SAMETAG2031")
-        .withDomain("self.BiosampleIntegrationTest")
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease("2017-01-01T12:00:00")
         .withUpdate("2017-01-01T12:00:00")
         .addAttribute(Attribute.build("organism", "human"))
@@ -246,7 +248,7 @@ public class ETagIntegration extends AbstractIntegration {
         new Traverson(clientProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON)
             .follow("samples")
             .follow(Hop.rel("sample").withParameter("accession", sample.getAccession()))
-            .follow(Hop.rel("curationDomain").withParameter("curationdomain", ""))
+            .follow(Hop.rel("applyCurations").withParameter("applyCurations", "false"))
             .asLink();
 
     return RequestEntity.get(URI.create(sampleLink.getHref())).accept(MediaTypes.HAL_JSON).build();

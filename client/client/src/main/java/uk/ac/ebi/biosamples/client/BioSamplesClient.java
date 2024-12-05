@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 import javax.annotation.PreDestroy;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -56,7 +57,12 @@ public class BioSamplesClient implements AutoCloseable {
   private final CurationSubmissionService curationSubmissionService;
   private final StructuredDataSubmissionService structuredDataSubmissionService;
   private final SampleValidator sampleValidator;
-  private final Optional<BioSamplesClient> publicClient;
+  /**
+   * -- GETTER -- Gets the public client.
+   *
+   * @return the public client
+   */
+  @Getter private final Optional<BioSamplesClient> publicClient;
 
   /**
    * Constructs a BioSamplesClient with the given parameters.
@@ -82,10 +88,7 @@ public class BioSamplesClient implements AutoCloseable {
     final RestTemplate restOperations = restTemplateBuilder.build();
 
     if (clientService != null) {
-      if (clientService instanceof AapClientService) {
-        log.trace("Adding BsdClientHttpRequestInterceptor");
-        restOperations.getInterceptors().add(new BsdClientHttpRequestInterceptor(clientService));
-      } else if (clientService instanceof WebinAuthClientService) {
+      if (clientService instanceof WebinAuthClientService) {
         log.trace("Adding WebinClientHttpRequestInterceptor");
         restOperations.getInterceptors().add(new BsdClientHttpRequestInterceptor(clientService));
       } else {
@@ -101,23 +104,16 @@ public class BioSamplesClient implements AutoCloseable {
     sampleCursorRetrievalService =
         new SampleCursorRetrievalService(
             restOperations, traverson, clientProperties.getBiosamplesClientPagesize());
-
     sampleSubmissionService = new SampleSubmissionService(restOperations, traverson);
-
     sampleSubmissionServiceV2 = new SampleSubmissionServiceV2(restOperations, uriV2);
-
     sampleRetrievalServiceV2 = new SampleRetrievalServiceV2(restOperations, uriV2);
-
     curationRetrievalService =
         new CurationRetrievalService(
             restOperations, traverson, clientProperties.getBiosamplesClientPagesize());
-
     /*TODO: In CurationSubmissionService and StructuredDataSubmissionService webin auth is handled more elegantly, replicate it in all other services*/
     curationSubmissionService = new CurationSubmissionService(restOperations, traverson);
-
     structuredDataSubmissionService =
         new StructuredDataSubmissionService(restOperations, traverson);
-
     this.sampleValidator = sampleValidator;
 
     if (clientService == null) {
@@ -128,15 +124,6 @@ public class BioSamplesClient implements AutoCloseable {
               new BioSamplesClient(
                   uri, uriV2, restTemplateBuilder, sampleValidator, null, clientProperties));
     }
-  }
-
-  /**
-   * Gets the public client.
-   *
-   * @return the public client
-   */
-  public Optional<BioSamplesClient> getPublicClient() {
-    return publicClient;
   }
 
   private static class BsdClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
@@ -251,22 +238,21 @@ public class BioSamplesClient implements AutoCloseable {
    */
   public Optional<EntityModel<Sample>> fetchSampleResource(final String accession)
       throws RestClientException {
-    return fetchSampleResource(accession, Optional.empty());
+    return fetchSampleResource(accession, true);
   }
 
   /**
    * Fetches a sample resource by accession using BioSamples with optional curation domains.
    *
    * @param accession the accession of the sample
-   * @param curationDomains the optional list of curation domains
+   * @param applyCurations apply curations or fetch raw
    * @return the optional sample resource
    * @throws RestClientException if there is an error while fetching the sample
    */
   public Optional<EntityModel<Sample>> fetchSampleResource(
-      final String accession, final Optional<List<String>> curationDomains)
-      throws RestClientException {
+      final String accession, final boolean applyCurations) throws RestClientException {
     try {
-      return sampleRetrievalService.fetch(accession, curationDomains);
+      return sampleRetrievalService.fetch(accession, applyCurations);
     } catch (final Exception e) {
       throw new RuntimeException(e.getCause());
     }
@@ -384,21 +370,6 @@ public class BioSamplesClient implements AutoCloseable {
   }
 
   /**
-   * Deprecated method: Fetches a sample by accession using BioSamples.
-   *
-   * @param accession the accession of the sample
-   * @return the optional sample
-   * @throws RestClientException if there is an error while fetching the sample
-   * @deprecated This method has been deprecated. Use {@link #fetchSampleResource(String)} or {@link
-   *     #fetchSampleResource(String, Optional)} instead.
-   */
-  @Deprecated
-  public Optional<Sample> fetchSample(final String accession) throws RestClientException {
-    final Optional<EntityModel<Sample>> resource = fetchSampleResource(accession);
-    return resource.map(EntityModel::getContent);
-  }
-
-  /**
    * Deprecated method: Persists a sample using BioSamples.
    *
    * @param sample the sample to persist
@@ -417,7 +388,7 @@ public class BioSamplesClient implements AutoCloseable {
    * @param samples the list of samples to persist
    * @return the list of persisted samples
    */
-  public SubmissionReceipt persistSampleResourceV2(final List<Sample> samples) {
+  public List<Sample> persistSampleResourceV2(final List<Sample> samples) {
     return sampleSubmissionServiceV2.submit(samples);
   }
 
@@ -428,8 +399,30 @@ public class BioSamplesClient implements AutoCloseable {
    * @param jwt the JWT token
    * @return the list of persisted samples
    */
-  public SubmissionReceipt persistSampleResourceV2(final List<Sample> samples, final String jwt) {
+  public List<Sample> persistSampleResourceV2(final List<Sample> samples, final String jwt) {
     return sampleSubmissionServiceV2.submit(samples, jwt);
+  }
+
+  /**
+   * Persists multiple sample resources using BioSamples V2 with JWT authentication.
+   *
+   * @param samples the list of samples to persist
+   * @param jwt the JWT token
+   * @return the list of persisted samples
+   */
+  public SubmissionReceipt validatePersistSampleResourceV2(
+      final List<Sample> samples, final String jwt) {
+    return sampleSubmissionServiceV2.validateSubmit(samples, jwt);
+  }
+
+  /**
+   * Persists multiple sample resources using BioSamples V2.
+   *
+   * @param samples the list of samples to persist
+   * @return the list of persisted samples
+   */
+  public SubmissionReceipt validatePersistSampleResourceV2(final List<Sample> samples) {
+    return sampleSubmissionServiceV2.validateSubmit(samples);
   }
 
   /**
@@ -481,14 +474,10 @@ public class BioSamplesClient implements AutoCloseable {
   }
 
   public EntityModel<CurationLink> persistCuration(
-      final String accession,
-      final Curation curation,
-      final String webinIdOrDomain,
-      final boolean isWebin) {
-    log.trace("Persisting curation " + curation + " on " + accession + " using " + webinIdOrDomain);
+      final String accession, final Curation curation, final String webinId) {
+    log.trace("Persisting curation " + curation + " on " + accession + " using " + webinId);
 
-    return curationSubmissionService.submit(
-        buildCurationLink(accession, curation, webinIdOrDomain, isWebin));
+    return curationSubmissionService.submit(buildCurationLink(accession, curation, webinId), null);
   }
 
   public Iterable<EntityModel<CurationLink>> fetchCurationLinksOfSample(final String accession) {
@@ -502,14 +491,14 @@ public class BioSamplesClient implements AutoCloseable {
   // services including JWT to utilize original submission user credentials
   public Optional<EntityModel<Sample>> fetchSampleResource(final String accession, final String jwt)
       throws RestClientException {
-    return fetchSampleResource(accession, Optional.empty(), jwt);
+    return fetchSampleResource(accession, true, jwt);
   }
 
   public Optional<EntityModel<Sample>> fetchSampleResource(
-      final String accession, final Optional<List<String>> curationDomains, final String jwt)
+      final String accession, final boolean applyCurations, final String jwt)
       throws RestClientException {
     try {
-      return sampleRetrievalService.fetch(accession, curationDomains, jwt);
+      return sampleRetrievalService.fetch(accession, applyCurations, jwt);
     } catch (final Exception e) {
       throw new RuntimeException(e.getCause());
     }
@@ -550,47 +539,20 @@ public class BioSamplesClient implements AutoCloseable {
   }
 
   public EntityModel<CurationLink> persistCuration(
-      final String accession,
-      final Curation curation,
-      final String webinIdOrDomain,
-      final String jwt,
-      final boolean isWebin) {
-    log.trace("Persisting curation {} on {} in {}", curation, accession, webinIdOrDomain);
+      final String accession, final Curation curation, final String webinId, final String jwt) {
+    log.trace("Persisting curation {} on {} in {}", curation, accession, webinId);
 
-    final CurationLink curationLink =
-        buildCurationLink(accession, curation, webinIdOrDomain, isWebin);
+    final CurationLink curationLink = buildCurationLink(accession, curation, webinId);
 
-    return curationSubmissionService.submit(curationLink);
+    return curationSubmissionService.submit(curationLink, jwt);
   }
 
   private CurationLink buildCurationLink(
-      final String accession,
-      final Curation curation,
-      final String webinIdOrDomain,
-      final boolean isWebin) {
-    final CurationLink curationLink;
+      final String accession, final Curation curation, final String webinId) {
 
-    if (isWebin) {
-      log.trace(
-          "Persisting curation "
-              + curation
-              + " on "
-              + accession
-              + " using WEBIN ID "
-              + webinIdOrDomain);
-      curationLink = CurationLink.build(accession, curation, null, webinIdOrDomain, null);
-    } else {
-      log.trace(
-          "Persisting curation "
-              + curation
-              + " on "
-              + accession
-              + " using DOMAIN "
-              + webinIdOrDomain);
-      curationLink = CurationLink.build(accession, curation, webinIdOrDomain, null, null);
-    }
-
-    return curationLink;
+    log.trace(
+        "Persisting curation " + curation + " on " + accession + " using WEBIN ID " + webinId);
+    return CurationLink.build(accession, curation, null, webinId, null);
   }
 
   public Iterable<EntityModel<CurationLink>> fetchCurationLinksOfSample(

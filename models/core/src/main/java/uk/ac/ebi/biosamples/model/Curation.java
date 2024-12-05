@@ -219,6 +219,7 @@ public class Curation implements Comparable<Curation> {
     sortedPostRelationships = Collections.unmodifiableSortedSet(sortedPostRelationships);
 
     final Hasher hasher = Hashing.sha256().newHasher();
+
     for (final Attribute a : sortedPreAttributes) {
       hasher.putUnencodedChars(a.getType());
       hasher.putUnencodedChars(a.getValue());
@@ -234,6 +235,7 @@ public class Curation implements Comparable<Curation> {
         hasher.putUnencodedChars(iri);
       }
     }
+
     for (final Attribute a : sortedPostAttributes) {
       hasher.putUnencodedChars(a.getType());
       hasher.putUnencodedChars(a.getValue());
@@ -248,28 +250,33 @@ public class Curation implements Comparable<Curation> {
         hasher.putUnencodedChars(iri);
       }
     }
+
     for (final ExternalReference a : sortedPreExternal) {
       hasher.putUnencodedChars(a.getUrl());
       for (final String s : a.getDuo()) {
         hasher.putUnencodedChars(s);
       }
     }
+
     for (final ExternalReference a : sortedPostExternal) {
       hasher.putUnencodedChars(a.getUrl());
       for (final String s : a.getDuo()) {
         hasher.putUnencodedChars(s);
       }
     }
+
     for (final Relationship a : sortedPreRelationships) {
       hasher.putUnencodedChars(a.getSource());
       hasher.putUnencodedChars(a.getTarget());
       hasher.putUnencodedChars(a.getType());
     }
+
     for (final Relationship a : sortedPostRelationships) {
       hasher.putUnencodedChars(a.getSource());
       hasher.putUnencodedChars(a.getTarget());
       hasher.putUnencodedChars(a.getType());
     }
+
     final String hash = hasher.hash().toString();
 
     return new Curation(

@@ -41,7 +41,6 @@ import uk.ac.ebi.biosamples.mongo.service.AnalyticsService;
 @Component
 public class TaxonImportApplicationRunner implements ApplicationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonImportApplicationRunner.class);
-  private final BioSamplesClient bioSamplesAapClient;
 
   @Qualifier("WEBINCLIENT")
   private final BioSamplesClient bioSamplesWebinClient;
@@ -51,11 +50,9 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
   private final ObjectMapper objectMapper;
 
   public TaxonImportApplicationRunner(
-      final BioSamplesClient bioSamplesAapClient,
       final BioSamplesClient bioSamplesWebinClient,
       final AnalyticsService analyticsService,
       final ObjectMapper objectMapper) {
-    this.bioSamplesAapClient = bioSamplesAapClient;
     this.bioSamplesWebinClient = bioSamplesWebinClient;
     this.analyticsService = analyticsService;
     this.objectMapper = objectMapper;
@@ -210,8 +207,7 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
 
   private Sample getSampleUncurated(final String accession) throws Exception {
     final Optional<EntityModel<Sample>> optionalSample =
-        bioSamplesAapClient.fetchSampleResource(
-            accession, Optional.of(Collections.singletonList("")));
+        bioSamplesWebinClient.fetchSampleResource(accession, false);
 
     if (optionalSample.isPresent()) {
       final Sample sample = optionalSample.get().getContent();
@@ -255,7 +251,7 @@ public class TaxonImportApplicationRunner implements ApplicationRunner {
     newSample = Sample.Builder.fromSample(sample).withTaxId(entry.getTaxId()).build();
 
     if (newSample.getDomain() != null) {
-      bioSamplesAapClient.persistSampleResource(newSample);
+      bioSamplesWebinClient.persistSampleResource(newSample);
     } else if (newSample.getWebinSubmissionAccountId() != null) {
       bioSamplesWebinClient.persistSampleResource(newSample);
     } else {

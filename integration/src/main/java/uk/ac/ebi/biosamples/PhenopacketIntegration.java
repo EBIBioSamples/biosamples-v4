@@ -28,6 +28,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -36,25 +37,29 @@ import uk.ac.ebi.biosamples.model.Sample;
 // @Profile({"default", "rest"})
 public class PhenopacketIntegration extends AbstractIntegration {
   private final RestTemplate restTemplate;
+  private final ClientProperties clientProperties;
 
   public PhenopacketIntegration(
-      final BioSamplesClient client, final RestTemplateBuilder restTemplateBuilder) {
+      final BioSamplesClient client,
+      final RestTemplateBuilder restTemplateBuilder,
+      ClientProperties clientProperties) {
     super(client);
 
     restTemplate = restTemplateBuilder.build();
+    this.clientProperties = clientProperties;
   }
 
   @Override
   protected void phaseOne() {
     final Sample testSample = getTestSample();
     final Optional<EntityModel<Sample>> optionalSample =
-        client.fetchSampleResource(testSample.getAccession());
+        webinClient.fetchSampleResource(testSample.getAccession());
 
     if (optionalSample.isPresent()) {
       throw new RuntimeException("Phenopacket test sample should not be available during phase 1");
     }
 
-    final EntityModel<Sample> resource = client.persistSampleResource(testSample);
+    final EntityModel<Sample> resource = webinClient.persistSampleResource(testSample);
     final Attribute sraAccessionAttribute =
         Objects.requireNonNull(resource.getContent()).getAttributes().stream()
             .filter(attribute -> attribute.getType().equals(BioSamplesConstants.SRA_ACCESSION))
@@ -81,7 +86,7 @@ public class PhenopacketIntegration extends AbstractIntegration {
   private void checkSampleWithOrphanetLinkWorks() {
     final Sample testSample = getTestSample();
     final Optional<EntityModel<Sample>> sampleResource =
-        client.fetchSampleResource(testSample.getAccession());
+        webinClient.fetchSampleResource(testSample.getAccession());
 
     assertThat(sampleResource.isPresent(), CoreMatchers.is(true));
 
@@ -128,7 +133,7 @@ public class PhenopacketIntegration extends AbstractIntegration {
         new Sample.Builder("Phenopacket_ERS1790018", "Phenopacket_ERS1790018");
 
     sampleBuilder
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease("2017-01-01T12:00:00")
         .withUpdate("2017-01-01T12:00:00")
         .withTaxId(9606L)

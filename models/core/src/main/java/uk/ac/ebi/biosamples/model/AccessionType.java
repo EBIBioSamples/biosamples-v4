@@ -10,6 +10,9 @@
 */
 package uk.ac.ebi.biosamples.model;
 
+import lombok.Getter;
+
+@Getter
 public enum AccessionType {
   ANY("SAM[END][AG]?[0-9]+"),
   ANY_GROUP("SAMEG[0-9]+"),
@@ -22,10 +25,6 @@ public enum AccessionType {
 
   AccessionType(String regex) {
     this.accessionRegex = regex;
-  }
-
-  public String getAccessionRegex() {
-    return this.accessionRegex;
   }
 
   public boolean matches(String accession) {

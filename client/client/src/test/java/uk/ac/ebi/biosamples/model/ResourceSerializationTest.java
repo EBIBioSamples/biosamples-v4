@@ -41,9 +41,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @JsonTest
 @TestPropertySource(properties = {"spring.jackson.serialization.INDENT_OUTPUT=true"})
 public class ResourceSerializationTest {
-
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private JacksonTester<EntityModel<Sample>> json;
 
   public ResourceSerializationTest() {}
@@ -57,7 +55,7 @@ public class ResourceSerializationTest {
   private Sample getSimpleSample() {
     final String name = "Test Sample";
     final String accession = "SAMEA1234";
-    final String domain = "abcde12345";
+    final String webinId = "Webin-12345";
     final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
@@ -82,7 +80,7 @@ public class ResourceSerializationTest {
     //		return Sample.build(name, accession, domain, release, update, attributes, relationships,
     // externalReferences, null, null, null);
     return new Sample.Builder(name, accession)
-        .withDomain(domain)
+        .withWebinSubmissionAccountId(webinId)
         .withRelease(release)
         .withUpdate(update)
         .withAttributes(attributes)
@@ -111,9 +109,11 @@ public class ResourceSerializationTest {
   public void testDeserialize() throws Exception {
     final EntityModel<Sample> fileSample = json.readObject("/TEST1.json");
     final EntityModel<Sample> simpleSample = EntityModel.of(getSimpleSample());
+
     log.info("fileSample = " + fileSample);
     log.info("simpleSample = " + simpleSample);
     // Use JSON path based assertions
+
     assertThat(Objects.requireNonNull(fileSample.getContent()).getName()).isEqualTo("Test Sample");
     assertThat(fileSample.getContent().getAccession()).isEqualTo("SAMEA1234");
     // Assert against a `.json` file
@@ -146,10 +146,13 @@ public class ResourceSerializationTest {
         new BufferedReader(
             new InputStreamReader(new ClassPathResource("/TEST1.json").getInputStream()), 1024);
     final StringBuilder stringBuilder = new StringBuilder();
+
     String line;
+
     while ((line = br.readLine()) != null) {
       stringBuilder.append(line).append('\n');
     }
+
     br.close();
     final String jsonFile = stringBuilder.toString();
 

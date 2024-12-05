@@ -31,7 +31,7 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
   private final OlsProcessor olsProcessor;
   private final CurationApplicationService curationApplicationService;
   private final IriUrlValidatorService iriUrlValidatorService;
-  private final String domain;
+  private final String webinId;
   private int curationCount;
 
   static final String[] NON_APPLICABLE_SYNONYMS = {
@@ -55,13 +55,13 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
       final Sample sample,
       final OlsProcessor olsProcessor,
       final CurationApplicationService curationApplicationService,
-      final String domain,
+      final String webinId,
       final IriUrlValidatorService iriUrlValidatorService) {
     this.bioSamplesClient = bioSamplesClient;
     this.sample = sample;
     this.olsProcessor = olsProcessor;
     this.curationApplicationService = curationApplicationService;
-    this.domain = domain;
+    this.webinId = webinId;
     this.iriUrlValidatorService = iriUrlValidatorService;
     curationCount = 0;
   }
@@ -99,11 +99,11 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
       final String newValue = cleanString(attribute.getValue());
 
       // if the clean type or value would be empty, curate to an non attribute
-      if (newType.length() == 0 || newValue.length() == 0) {
+      if (newType.isEmpty() || newValue.isEmpty()) {
         final Curation curation =
             Curation.build(Collections.singleton(attribute), Collections.emptyList());
 
-        bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
+        bioSamplesClient.persistCuration(sample.getAccession(), curation, webinId);
         sample = curationApplicationService.applyCurationToSample(sample, curation);
         curationCount++;
 
@@ -116,7 +116,7 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
                 newType, newValue, attribute.getTag(), attribute.getIri(), attribute.getUnit());
         final Curation curation = Curation.build(attribute, newAttribute);
 
-        bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
+        bioSamplesClient.persistCuration(sample.getAccession(), curation, webinId);
         sample = curationApplicationService.applyCurationToSample(sample, curation);
         curationCount++;
 
@@ -127,7 +127,7 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
       if (isNotApplicableSynonym(attribute.getValue())) {
         final Curation curation = Curation.build(attribute, null);
 
-        bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
+        bioSamplesClient.persistCuration(sample.getAccession(), curation, webinId);
         sample = curationApplicationService.applyCurationToSample(sample, curation);
         curationCount++;
 
@@ -148,7 +148,7 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
                   newUnit);
           final Curation curation = Curation.build(attribute, newAttribute);
 
-          bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
+          bioSamplesClient.persistCuration(sample.getAccession(), curation, webinId);
           sample = curationApplicationService.applyCurationToSample(sample, curation);
           curationCount++;
 
@@ -180,7 +180,7 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
                   attribute.getUnit());
           final Curation curation = Curation.build(attribute, newAttribute);
 
-          bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
+          bioSamplesClient.persistCuration(sample.getAccession(), curation, webinId);
           sample = curationApplicationService.applyCurationToSample(sample, curation);
           curationCount++;
 
@@ -426,7 +426,7 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
                     Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 
             // save the curation back in biosamples
-            bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
+            bioSamplesClient.persistCuration(sample.getAccession(), curation, webinId);
             sample = curationApplicationService.applyCurationToSample(sample, curation);
 
             return sample;
@@ -446,7 +446,7 @@ public class SampleCurationCallable implements Callable<PipelineResult> {
                     Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 
             // save the curation back in biosamples
-            bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
+            bioSamplesClient.persistCuration(sample.getAccession(), curation, webinId);
             sample = curationApplicationService.applyCurationToSample(sample, curation);
 
             return sample;

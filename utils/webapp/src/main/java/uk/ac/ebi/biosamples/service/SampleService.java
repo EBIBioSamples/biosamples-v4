@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
@@ -29,7 +31,6 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -90,24 +91,21 @@ public class SampleService {
   }
 
   /** Throws an IllegalArgumentException of no sample with that accession exists */
-  public Optional<Sample> fetch(
-      final String accession, final Optional<List<String>> curationDomains) {
-    return sampleReadService.fetch(accession, curationDomains);
+  public Optional<Sample> fetch(final String accession, final boolean applyCurations) {
+    return sampleReadService.fetch(accession, applyCurations);
   }
 
   /*
-  Checks if the current newSample that exists has no metadata, returns true if empty
+  Checks if the current sample that exists has no metadata, returns true if empty
    */
-  private boolean isSavedSampleEmpty(
+  private boolean isStoredSampleEmpty(
       final Sample newSample, final boolean isWebinSuperUser, final Sample oldSample) {
-    final String domain = newSample.getDomain();
-
     if (isWebinSuperUser) {
       if (newSample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
         // file uploader submissions are done via superuser, but they are non-imported samples,
         // needs to be handled safely
         if (newSample.hasAccession()) {
-          return isSavedSampleEmpty(oldSample);
+          return isStoredSampleEmpty(oldSample);
         }
 
         return true;
@@ -117,29 +115,21 @@ public class SampleService {
       }
     } else {
       if (newSample.hasAccession()) {
-        return isSavedSampleEmpty(oldSample);
+        return isStoredSampleEmpty(oldSample);
       }
     }
 
-    if (isAPipelineAapDomain(domain)) {
-      return false; // imported newSample - never submitted first time to BSD, always has metadata
-    } else {
-      if (newSample.hasAccession()) {
-        return isSavedSampleEmpty(oldSample);
-      }
-
-      return true;
+    if (newSample.hasAccession()) {
+      return isStoredSampleEmpty(oldSample);
     }
-  }
 
-  public boolean isAPipelineAapDomain(final String domain) {
-    return isPipelineEnaDomain(domain) || isPipelineNcbiDomain(domain);
+    return true;
   }
 
   /*
   Checks if the current sample that exists has no metadata, returns true if empty
    */
-  private boolean isSavedSampleEmpty(final Sample oldSample) {
+  private boolean isStoredSampleEmpty(final Sample oldSample) {
     if (oldSample.getTaxId() != null && oldSample.getTaxId() > 0) {
       return false;
     }
@@ -175,46 +165,49 @@ public class SampleService {
     return oldSample.getStructuredData().isEmpty();
   }
 
-  // because the fetchUsing caches the newSample, if an updated version is stored, we need to make
+  // Because the fetch caches the sample, if an updated version is stored, we need to make
   // sure
   // that any cached version
   // is removed.
-  // Note, pages of samples will not be cache busted, only single-accession newSample retrieval
+  // Note, pages of samples will not be cache busted, only single-accession sample retrieval
   // @CacheEvict(cacheNames=WebappProperties.fetchUsing, key="#result.accession")
   /*
   Called by V1 endpoints to persist samples
    */
   public Sample persistSample(
-      Sample newSample,
-      final Sample oldSample,
-      final AuthorizationProvider authProvider,
-      final boolean isWebinSuperUser) {
-    validateSample(newSample);
+      Sample newSample, final Sample oldSample, final boolean isWebinSuperUser) {
+    final Collection<String> errors = sampleValidator.validate(newSample);
+
+    if (!errors.isEmpty()) {
+      log.error("Sample validation failed : {}", errors);
+
+      throw new GlobalExceptions.SampleMandatoryFieldsMissingException(String.join("|", errors));
+    }
 
     if (newSample.hasAccession()) {
       if (oldSample != null) {
-        newSample = updateSampleWithExisting(newSample, oldSample, authProvider, isWebinSuperUser);
+        newSample = updateFromCurrent(newSample, oldSample, isWebinSuperUser);
       } else {
-        newSample = handleUpdateWhereNoOldSampleExists(newSample);
+        newSample = updateWhenNoneExists(newSample);
       }
 
       MongoSample mongoSample = sampleToMongoSampleConverter.convert(newSample);
       mongoSample = mongoSampleRepository.save(mongoSample);
 
-      if (isSampleTaxIdUpdated(oldSample, newSample)) {
+      if (isTaxIdUpdated(oldSample, newSample)) {
         mongoSampleMessageRepository.save(
             new MongoSampleMessage(newSample.getAccession(), Instant.now(), newSample.getTaxId()));
       }
 
       newSample = mongoSampleToSampleConverter.apply(mongoSample);
       sendMessageToRabbitForIndexingToSolr(
-          newSample.getAccession(), getExistingRelationshipTargetsForindesinginSolr(oldSample));
-
+          newSample.getAccession(), getExistingRelationshipTargetsForIndexingInSolr(oldSample));
     } else {
-      newSample = handleSampleNotAccessioned(newSample);
+      newSample = createNew(newSample);
     }
 
-    final Optional<Sample> sampleOptional = fetch(newSample.getAccession(), Optional.empty());
+    // fetch returns sample with curations applied
+    final Optional<Sample> sampleOptional = fetch(newSample.getAccession(), true);
 
     return sampleOptional.orElseThrow(
         () ->
@@ -222,7 +215,7 @@ public class SampleService {
                 "Failed to create newSample. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk"));
   }
 
-  private Sample handleUpdateWhereNoOldSampleExists(Sample newSample) {
+  private Sample updateWhenNoneExists(Sample newSample) {
     log.error("Trying to update sample not in database, accession: {}", newSample.getAccession());
 
     bioSamplesCrossSourceIngestAccessControlService
@@ -257,65 +250,50 @@ public class SampleService {
     return newSample;
   }
 
-  private void validateSample(final Sample sample) {
-    final Collection<String> errors = sampleValidator.validate(sample);
-
-    if (!errors.isEmpty()) {
-      log.error("Sample validation failed : {}", errors);
-
-      throw new GlobalExceptions.SampleValidationControllerException(String.join("|", errors));
-    }
-  }
-
-  private Sample updateSampleWithExisting(
-      Sample newSample,
-      final Sample oldSample,
-      final AuthorizationProvider authProvider,
-      final boolean isWebinSuperUser) {
-    final boolean savedSampleEmpty = isSavedSampleEmpty(newSample, isWebinSuperUser, oldSample);
+  private Sample updateFromCurrent(
+      Sample newSample, final Sample oldSample, final boolean isWebinSuperUser) {
+    final boolean savedSampleEmpty = isStoredSampleEmpty(newSample, isWebinSuperUser, oldSample);
 
     if (savedSampleEmpty) {
       newSample = Sample.Builder.fromSample(newSample).withSubmitted(Instant.now()).build();
     }
 
     final List<Relationship> existingRelationships =
-        getExistingRelationshipTargetsForindesinginSolr(
+        getExistingRelationshipTargetsForIndexingInSolr(
             newSample.getAccession(),
             Objects.requireNonNull(sampleToMongoSampleConverter.convert(oldSample)));
 
     return compareWithExistingAndUpdateSample(
-        newSample,
-        oldSample,
-        existingRelationships,
-        savedSampleEmpty,
-        authProvider,
-        isWebinSuperUser);
+        newSample, oldSample, existingRelationships, savedSampleEmpty, isWebinSuperUser);
   }
 
-  private Sample handleSampleNotAccessioned(Sample newSample) {
-    final boolean sampleNotSraAccessioned =
+  private Sample createNew(Sample newSample) {
+    final boolean noSraAccession =
         newSample.getAttributes().stream()
             .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION));
 
-    validateAndPromoteSRAAccessionAttributeToField(newSample);
-    newSample = mongoAccessionService.generateAccession(newSample, sampleNotSraAccessioned);
+    if (!noSraAccession) {
+      newSample = validateAndPromoteSRAAccessionAttributeToField(newSample);
+    }
+
+    newSample = mongoAccessionService.generateAccession(newSample, noSraAccession);
     sendMessageToRabbitForIndexingToSolr(newSample.getAccession(), Collections.emptyList());
 
     return newSample;
   }
 
-  private boolean isSampleTaxIdUpdated(final Sample oldSample, final Sample sample) {
+  private boolean isTaxIdUpdated(final Sample oldSample, final Sample sample) {
     return oldSample != null
         && oldSample.getTaxId() != null
         && !oldSample.getTaxId().equals(sample.getTaxId());
   }
 
-  private List<String> getExistingRelationshipTargetsForindesinginSolr(final Sample oldSample) {
+  private List<String> getExistingRelationshipTargetsForIndexingInSolr(final Sample oldSample) {
     final List<String> existingRelationshipTargets = new ArrayList<>();
 
     if (oldSample != null) {
       final List<Relationship> existingRelationships =
-          getExistingRelationshipTargetsForindesinginSolr(
+          getExistingRelationshipTargetsForIndexingInSolr(
               oldSample.getAccession(),
               Objects.requireNonNull(sampleToMongoSampleConverter.convert(oldSample)));
 
@@ -339,15 +317,12 @@ public class SampleService {
   Called by V2 endpoints to persist samples
    */
   public Sample persistSampleV2(
-      Sample newSample,
-      final Sample oldSample,
-      final AuthorizationProvider authProvider,
-      final boolean isWebinSuperUser) {
+      Sample newSample, final Sample oldSample, final boolean isWebinSuperUser) {
     final Collection<String> errors = sampleValidator.validate(newSample);
 
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
-      throw new GlobalExceptions.SampleValidationControllerException(String.join("|", errors));
+      throw new GlobalExceptions.SampleMandatoryFieldsMissingException(String.join("|", errors));
     }
 
     if (newSample.hasAccession()) {
@@ -356,7 +331,8 @@ public class SampleService {
             "Trying to update sample that exists in database, accession: {}",
             newSample.getAccession());
 
-        final boolean savedSampleEmpty = isSavedSampleEmpty(newSample, isWebinSuperUser, oldSample);
+        final boolean savedSampleEmpty =
+            isStoredSampleEmpty(newSample, isWebinSuperUser, oldSample);
 
         if (savedSampleEmpty) {
           newSample = Sample.Builder.fromSample(newSample).withSubmitted(Instant.now()).build();
@@ -364,11 +340,12 @@ public class SampleService {
 
         newSample =
             compareWithExistingAndUpdateSample(
-                newSample, oldSample, null, savedSampleEmpty, authProvider, isWebinSuperUser);
+                newSample, oldSample, null, savedSampleEmpty, isWebinSuperUser);
       } else {
         log.error(
             "Trying to update sample not in database, accession: {}", newSample.getAccession());
-        newSample = handleUpdateWhereNoOldSampleExists(newSample);
+
+        newSample = updateWhenNoneExists(newSample);
       }
 
       MongoSample mongoSample = sampleToMongoSampleConverter.convert(newSample);
@@ -378,19 +355,10 @@ public class SampleService {
       mongoSample = mongoSampleRepository.save(mongoSample);
       newSample = mongoSampleToSampleConverter.apply(mongoSample);
 
+      sendMessageToRabbitForIndexingToSolr(newSample.getAccession(), Collections.emptyList());
     } else {
-      final boolean sampleNotSraAccessioned =
-          newSample.getAttributes().stream()
-              .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION));
-
-      if (!sampleNotSraAccessioned) {
-        newSample = validateAndPromoteSRAAccessionAttributeToField(newSample);
-      }
-
-      newSample = mongoAccessionService.generateAccession(newSample, sampleNotSraAccessioned);
+      newSample = createNew(newSample);
     }
-
-    sendMessageToRabbitForIndexingToSolr(newSample.getAccession(), Collections.emptyList());
 
     return newSample;
   }
@@ -405,20 +373,21 @@ public class SampleService {
   }
 
   /*
-  Called by V2 endpoints to build a newSample with a newly generated newSample accession
+  Called by V2 endpoints to build a sample with a newly generated sample accession
    */
   public Sample accessionSample(Sample newSample) {
     final Collection<String> errors = sampleValidator.validate(newSample);
 
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
-      throw new GlobalExceptions.SampleValidationControllerException(String.join("|", errors));
+
+      throw new GlobalExceptions.SampleMandatoryFieldsMissingException(String.join("|", errors));
     }
 
     if (newSample
         .getWebinSubmissionAccountId()
         .equalsIgnoreCase(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
-      // accessioning from ENA, newSample name is the SRA accession here
+      // accessioning from ENA, sample name is the SRA accession here
       final Attribute sraAccessionAttribute = Attribute.build(SRA_ACCESSION, newSample.getName());
 
       newSample.getAttributes().add(sraAccessionAttribute);
@@ -445,7 +414,7 @@ public class SampleService {
     }
   }
 
-  private List<Relationship> getExistingRelationshipTargetsForindesinginSolr(
+  private List<Relationship> getExistingRelationshipTargetsForIndexingInSolr(
       final String accession, final MongoSample mongoOldSample) {
     final List<Relationship> oldRelationshipTargets = new ArrayList<>();
 
@@ -464,7 +433,6 @@ public class SampleService {
       final Sample oldSample,
       final List<Relationship> existingRelationships,
       final boolean isEmptySample,
-      final AuthorizationProvider authProvider,
       final boolean isWebinSuperUser) {
     Set<AbstractData> structuredData = new HashSet<>();
     boolean applyOldSampleStructuredData = false;
@@ -492,16 +460,16 @@ public class SampleService {
       log.trace("Old sample structured data size is " + structuredData.size());
 
       return Sample.Builder.fromSample(newSample)
-          .withCreate(defineCreateDate(newSample, oldSample, authProvider))
-          .withSubmitted(defineSubmittedDate(newSample, oldSample, isEmptySample, authProvider))
+          .withCreate(defineCreateDate(newSample, oldSample))
+          .withSubmitted(defineSubmittedDate(newSample, oldSample, isEmptySample))
           .withData(structuredData)
           .build();
     } else {
       log.info("Building sample without structured data");
 
       return Sample.Builder.fromSample(newSample)
-          .withCreate(defineCreateDate(newSample, oldSample, authProvider))
-          .withSubmitted(defineSubmittedDate(newSample, oldSample, isEmptySample, authProvider))
+          .withCreate(defineCreateDate(newSample, oldSample))
+          .withSubmitted(defineSubmittedDate(newSample, oldSample, isEmptySample))
           .build();
     }
   }
@@ -543,12 +511,10 @@ public class SampleService {
       final Sample newSample, final List<Relationship> existingRelationships) {
     if (existingRelationships != null && !existingRelationships.isEmpty()) {
       final String webinId = newSample.getWebinSubmissionAccountId();
-      final String domain = newSample.getDomain();
 
       // superuser and non file upload submissions
-      if ((webinId != null
-              && webinId.equals(bioSamplesProperties.getBiosamplesClientWebinUsername()))
-          || domain != null && domain.equals(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
+      if (webinId != null
+          && webinId.equals(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
         if (newSample.getSubmittedVia() != SubmittedViaType.FILE_UPLOADER) {
           newSample.getRelationships().addAll(existingRelationships);
         }
@@ -657,23 +623,8 @@ public class SampleService {
         && isPipelineNcbiDomain(newSample.getDomain());
   }
 
-  private Instant defineCreateDate(
-      final Sample newSample, final Sample oldSample, final AuthorizationProvider authProvider) {
-    final String domain = newSample.getDomain();
-
-    if (authProvider == AuthorizationProvider.WEBIN) {
-      return (oldSample.getCreate() != null ? oldSample.getCreate() : newSample.getCreate());
-    } else {
-      if (isPipelineNcbiDomain(domain)) {
-        return newSample.getCreate() != null
-            ? newSample.getCreate()
-            : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
-      } else if (isPipelineEnaDomain(domain)) {
-        return oldSample.getCreate() != null ? oldSample.getCreate() : newSample.getCreate();
-      } else {
-        return oldSample.getCreate() != null ? oldSample.getCreate() : newSample.getCreate();
-      }
-    }
+  private Instant defineCreateDate(final Sample newSample, final Sample oldSample) {
+    return (oldSample.getCreate() != null ? oldSample.getCreate() : newSample.getCreate());
   }
 
   public boolean isPipelineEnaDomain(final String domain) {
@@ -693,60 +644,27 @@ public class SampleService {
   }
 
   private Instant defineSubmittedDate(
-      final Sample newSample,
-      final Sample oldSample,
-      final boolean isEmptySample,
-      final AuthorizationProvider authProvider) {
-    if (authProvider == AuthorizationProvider.WEBIN) {
-      if (isEmptySample) {
-        return newSample.getSubmitted();
-      } else {
-        return oldSample.getSubmitted() != null
-            ? oldSample.getSubmitted()
-            : newSample.getSubmitted();
-      }
+      final Sample newSample, final Sample oldSample, final boolean isEmptySample) {
+    if (isEmptySample) {
+      return newSample.getSubmitted();
     } else {
-      final String domain = newSample.getDomain();
-
-      if (isPipelineNcbiDomain(domain)) {
-        return newSample.getSubmitted() != null
-            ? newSample.getSubmitted()
-            : (oldSample.getSubmitted() != null ? oldSample.getSubmitted() : oldSample.getCreate());
-      } else if (isPipelineEnaDomain(domain)) {
-        return (oldSample.getSubmitted() != null)
-            ? oldSample.getSubmitted()
-            : newSample.getSubmitted();
-      } else {
-        if (isEmptySample) {
-          return newSample.getSubmitted();
-        } else {
-          return oldSample.getSubmitted() != null
-              ? oldSample.getSubmitted()
-              : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
-        }
-      }
+      return oldSample.getSubmitted() != null ? oldSample.getSubmitted() : newSample.getSubmitted();
     }
   }
 
   public Instant defineCreateDate(final Sample sample, final boolean isWebinSuperUserSubmission) {
     final Instant now = Instant.now();
-    final String domain = sample.getDomain();
     final Instant create = sample.getCreate();
 
-    return ((domain != null && isAPipelineAapDomain(domain)) || isWebinSuperUserSubmission)
-        ? (create != null ? create : now)
-        : now;
+    return isWebinSuperUserSubmission ? (create != null ? create : now) : now;
   }
 
   public Instant defineSubmittedDate(
       final Sample sample, final boolean isWebinSuperUserSubmission) {
     final Instant now = Instant.now();
-    final String domain = sample.getDomain();
     final Instant submitted = sample.getSubmitted();
 
-    return ((domain != null && isAPipelineAapDomain(domain)) || isWebinSuperUserSubmission)
-        ? (submitted != null ? submitted : now)
-        : now;
+    return isWebinSuperUserSubmission ? (submitted != null ? submitted : now) : now;
   }
 
   public Sample buildPrivateSample(final Sample sample) {
@@ -799,8 +717,8 @@ public class SampleService {
   }
 
   public Optional<Sample> validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
-      final Sample sample, final boolean anySuperUser) {
-    if (!anySuperUser) {
+      final Sample sample, final boolean isWebinSuperUser) {
+    if (!isWebinSuperUser) {
       if (sample.hasAccession()
           || sample.hasSraAccession()
           || sample.getAttributes() != null
@@ -830,11 +748,23 @@ public class SampleService {
       }
 
       if (sample.hasAccession() && !isNotExistingAccession(sample.getAccession())) {
-        // fetch old sample if sample exists
-        return fetch(sample.getAccession(), Optional.empty());
+        // fetch old sample if sample exists,
+        // fetch returns sample with curations applied
+        return fetch(sample.getAccession(), false);
       }
     }
 
     return Optional.empty();
+  }
+
+  public String getPrinciple(final Authentication loggedInUser) {
+    if (loggedInUser == null || loggedInUser.getPrincipal() == null) {
+      log.warn("Unauthenticated access detected: returning null for principal");
+      return null;
+    }
+
+    return loggedInUser.getPrincipal() instanceof UserDetails
+        ? ((UserDetails) loggedInUser.getPrincipal()).getUsername()
+        : loggedInUser.getPrincipal().toString();
   }
 }

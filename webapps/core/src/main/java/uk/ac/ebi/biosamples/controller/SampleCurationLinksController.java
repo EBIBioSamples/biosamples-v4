@@ -12,7 +12,6 @@ package uk.ac.ebi.biosamples.controller;
 
 import java.net.URI;
 import java.time.Instant;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -25,17 +24,16 @@ import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
-import uk.ac.ebi.biosamples.model.AuthToken;
 import uk.ac.ebi.biosamples.model.CurationLink;
-import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.mongo.service.CurationReadService;
 import uk.ac.ebi.biosamples.service.CurationLinkResourceAssembler;
 import uk.ac.ebi.biosamples.service.CurationPersistService;
-import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesWebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
 
 @RestController
 @RequestMapping("/samples/{accession}/curationlinks")
@@ -44,23 +42,20 @@ public class SampleCurationLinksController {
   private final CurationReadService curationReadService;
   private final CurationPersistService curationPersistService;
   private final CurationLinkResourceAssembler curationLinkResourceAssembler;
-  private final BioSamplesAapService bioSamplesAapService;
-  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
-  private final AccessControlService accessControlService;
+  private final WebinAuthenticationService webinAuthenticationService;
+  private final SampleService sampleService;
 
   public SampleCurationLinksController(
       final CurationReadService curationReadService,
       final CurationPersistService curationPersistService,
       final CurationLinkResourceAssembler curationLinkResourceAssembler,
-      final BioSamplesAapService bioSamplesAapService,
-      final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
-      final AccessControlService accessControlService) {
+      final WebinAuthenticationService webinAuthenticationService,
+      SampleService sampleService) {
     this.curationReadService = curationReadService;
     this.curationPersistService = curationPersistService;
     this.curationLinkResourceAssembler = curationLinkResourceAssembler;
-    this.bioSamplesAapService = bioSamplesAapService;
-    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
-    this.accessControlService = accessControlService;
+    this.webinAuthenticationService = webinAuthenticationService;
+    this.sampleService = sampleService;
   }
 
   @CrossOrigin
@@ -105,14 +100,15 @@ public class SampleCurationLinksController {
       consumes = {MediaType.APPLICATION_JSON_VALUE},
       produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<EntityModel<CurationLink>> createCurationLinkJson(
-      @PathVariable final String accession,
-      @RequestBody CurationLink curationLink,
-      @RequestHeader(name = "Authorization") final String token) {
+      @PathVariable final String accession, @RequestBody CurationLink curationLink) {
+    final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+    final String principle = sampleService.getPrinciple(loggedInUser);
+
+    if (principle == null) {
+      throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
+    }
 
     log.info("Recieved POST for " + curationLink);
-    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
 
     if (curationLink.getSample() == null) {
       // curationLink has no sample, use the one specified in the URL
@@ -123,26 +119,9 @@ public class SampleCurationLinksController {
       throw new GlobalExceptions.SampleNotMatchException();
     }
 
-    if (webinAuth) {
-      final String webinSubmissionAccountId = authToken.get().getUser();
-
-      curationLink =
-          bioSamplesWebinAuthenticationService.handleWebinUserSubmission(
-              curationLink, webinSubmissionAccountId);
-
-      if (webinSubmissionAccountId == null) {
-        throw new GlobalExceptions.WebinTokenInvalidException();
-      }
-
-      curationLink =
-          CurationLink.build(
-              accession, curationLink.getCuration(), null, webinSubmissionAccountId, Instant.now());
-    } else {
-      curationLink =
-          CurationLink.build(
-              accession, curationLink.getCuration(), curationLink.getDomain(), null, Instant.now());
-      curationLink = bioSamplesAapService.handleCurationLinkDomain(curationLink);
-    }
+    curationLink = webinAuthenticationService.handleWebinUserSubmission(curationLink, principle);
+    curationLink =
+        CurationLink.build(accession, curationLink.getCuration(), null, principle, Instant.now());
 
     // now actually persist it
     curationLink = curationPersistService.store(curationLink);
@@ -155,12 +134,15 @@ public class SampleCurationLinksController {
 
   @CrossOrigin
   @DeleteMapping(value = "/{hash}")
-  public ResponseEntity<?> deleteCurationLinkJson(
-      @PathVariable final String accession, @PathVariable final String hash) {
+  public ResponseEntity<?> deleteCurationLinkJson(@PathVariable final String hash) {
     log.info("Received DELETE for curation link " + hash);
+
     final CurationLink curationLink = curationReadService.getCurationLink(hash);
+
     log.info("Deleting curationLink " + curationLink);
+
     curationPersistService.delete(curationLink);
+
     return ResponseEntity.noContent().build();
   }
 }

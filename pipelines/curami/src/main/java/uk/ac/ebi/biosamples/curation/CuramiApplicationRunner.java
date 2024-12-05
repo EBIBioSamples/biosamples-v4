@@ -94,7 +94,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
 
         final Callable<PipelineResult> task =
             new SampleCuramiCallable(
-                bioSamplesClient, sample, pipelinesProperties.getCurationDomain(), curationRules);
+                bioSamplesClient, sample, pipelinesProperties.getProxyWebinId(), curationRules);
         futures.put(sample.getAccession(), executorService.submit(task));
 
         if (++sampleCount % 5000 == 0) {

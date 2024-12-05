@@ -27,20 +27,19 @@ import uk.ac.ebi.biosamples.model.Sample;
 public class SampleCuramiCallable implements Callable<PipelineResult> {
   private static final Logger LOG = LoggerFactory.getLogger(SampleCuramiCallable.class);
   static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
-
   private final Sample sample;
   private final BioSamplesClient bioSamplesClient;
-  private final String domain;
+  private final String webinId;
   private final Map<String, String> curationRules;
 
   SampleCuramiCallable(
       final BioSamplesClient bioSamplesClient,
       final Sample sample,
-      final String domain,
+      final String webinId,
       final Map<String, String> curationRules) {
     this.bioSamplesClient = bioSamplesClient;
     this.sample = sample;
-    this.domain = domain;
+    this.webinId = webinId;
     this.curationRules = curationRules;
   }
 
@@ -83,7 +82,7 @@ public class SampleCuramiCallable implements Callable<PipelineResult> {
                     a.getIri(),
                     a.getUnit()));
         LOG.info("New curation found {}", curation);
-        bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
+        bioSamplesClient.persistCuration(sample.getAccession(), curation, webinId);
         curations.add(curation);
       }
     }

@@ -15,9 +15,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.Getter;
 import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
+@Getter
 public class SampleAnalytics {
   private long totalRecords;
   private String dateRange;
@@ -32,16 +34,8 @@ public class SampleAnalytics {
     facets = new HashMap<>();
   }
 
-  public long getTotalRecords() {
-    return totalRecords;
-  }
-
   public void setTotalRecords(final long totalRecords) {
     this.totalRecords = totalRecords;
-  }
-
-  public String getDateRange() {
-    return dateRange;
   }
 
   public void setDateRange(final String dateRange) {
@@ -65,16 +59,8 @@ public class SampleAnalytics {
     }
   }
 
-  public long getProcessedRecords() {
-    return processedRecords;
-  }
-
   public void setProcessedRecords(final long processedRecords) {
     this.processedRecords = processedRecords;
-  }
-
-  public Map<String, Long> getCenter() {
-    return center;
   }
 
   public void addToCenter(final String centerName) {
@@ -85,20 +71,12 @@ public class SampleAnalytics {
     }
   }
 
-  public Map<String, Long> getChannel() {
-    return channel;
-  }
-
   public void addToChannel(final String accessionPrefix) {
     if (channel.containsKey(accessionPrefix)) {
       channel.put(accessionPrefix, channel.get(accessionPrefix) + 1);
     } else {
       channel.put(accessionPrefix, 1L);
     }
-  }
-
-  public Map<String, Map<String, Long>> getFacets() {
-    return facets;
   }
 
   public void addToFacets() {}

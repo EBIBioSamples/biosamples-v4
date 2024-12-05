@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.client.service.AapClientService;
+import uk.ac.ebi.biosamples.client.service.WebinAuthClientService;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
@@ -31,15 +31,10 @@ import uk.ac.ebi.biosamples.service.SampleValidator;
 
 public class MockBioSamplesClient extends BioSamplesClient {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final Map<String, List<Curation>> curations = new HashMap<>();
-
   private final boolean logCurations;
-
   private PrintWriter printWriter;
-
   private FileWriter fileWriter;
-
   private int count = 0;
 
   MockBioSamplesClient(
@@ -47,14 +42,18 @@ public class MockBioSamplesClient extends BioSamplesClient {
       final URI uriV2,
       final RestTemplateBuilder restTemplateBuilder,
       final SampleValidator sampleValidator,
-      final AapClientService aapClientService,
+      final WebinAuthClientService webinAuthClientService,
       final ClientProperties clientProperties,
       final boolean logCurations) {
-    super(uri, uriV2, restTemplateBuilder, sampleValidator, aapClientService, clientProperties);
+    super(
+        uri, uriV2, restTemplateBuilder, sampleValidator, webinAuthClientService, clientProperties);
+
     this.logCurations = logCurations;
+
     if (logCurations) {
       try {
         log.info("Logging curations");
+
         fileWriter = new FileWriter("curations.csv");
         printWriter = new PrintWriter(fileWriter);
       } catch (final IOException e) {
@@ -75,21 +74,22 @@ public class MockBioSamplesClient extends BioSamplesClient {
 
   @Override
   public EntityModel<CurationLink> persistCuration(
-      final String accession,
-      final Curation curation,
-      final String webinIdOrDomain,
-      final boolean isWebin) {
-    log.trace(
-        "Mocking persisting curation " + curation + " on " + accession + " in " + webinIdOrDomain);
+      final String accession, final Curation curation, final String webinId) {
+    log.trace("Mocking persisting curation " + curation + " on " + accession + " in " + webinId);
+
     if (logCurations) {
-      logCuration(accession, webinIdOrDomain, curation);
+      logCuration(accession, webinId, curation);
     }
+
     List<Curation> sampleCurations = curations.get(accession);
+
     if (sampleCurations == null) {
       sampleCurations = new ArrayList<>();
     }
+
     sampleCurations.add(curation);
     curations.put(accession, sampleCurations);
+
     return mock(EntityModel.class);
   }
 
@@ -100,6 +100,7 @@ public class MockBioSamplesClient extends BioSamplesClient {
   private void logCuration(final String accession, final String domain, final Curation curation) {
     count++;
     printWriter.printf("%s,%s,%s\n", accession, domain, explainCuration(curation));
+
     if (count % 500 == 0) {
       log.info("Recorded " + count + " curations");
     }

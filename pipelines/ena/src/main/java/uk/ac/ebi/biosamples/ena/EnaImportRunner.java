@@ -244,7 +244,7 @@ public class EnaImportRunner implements ApplicationRunner {
           final String biosampleId = sampleCallbackResult.getBiosampleId();
           final int statusId = sampleCallbackResult.getStatusId();
           final Optional<EntityModel<Sample>> biosampleOptional =
-              bioSamplesClient.fetchSampleResource(biosampleId);
+              bioSamplesClient.fetchSampleResource(biosampleId, false);
 
           if (biosampleOptional.isPresent()) {
             final Sample biosample = biosampleOptional.get().getContent();

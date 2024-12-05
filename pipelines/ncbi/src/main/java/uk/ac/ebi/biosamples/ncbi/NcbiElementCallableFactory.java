@@ -13,6 +13,7 @@ package uk.ac.ebi.biosamples.ncbi;
 import java.util.Map;
 import java.util.Set;
 import org.dom4j.Element;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -22,23 +23,21 @@ import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 @Service
 public class NcbiElementCallableFactory {
   private final BioSamplesClient bioSamplesClient;
-
-  private final String domain;
-
+  private final String webinId;
   private final NcbiSampleConversionService conversionService;
 
   public NcbiElementCallableFactory(
       final NcbiSampleConversionService conversionService,
-      final BioSamplesClient bioSamplesClient,
+      @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesClient,
       final PipelinesProperties pipelinesProperties) {
     this.conversionService = conversionService;
     this.bioSamplesClient = bioSamplesClient;
-    domain = pipelinesProperties.getNcbiDomain();
+    this.webinId = pipelinesProperties.getProxyWebinId();
   }
 
   public NcbiElementCallable build(
       final Element element, final Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
     return new NcbiElementCallable(
-        conversionService, bioSamplesClient, element, domain, sampleToAmrMap);
+        conversionService, bioSamplesClient, element, webinId, sampleToAmrMap);
   }
 }

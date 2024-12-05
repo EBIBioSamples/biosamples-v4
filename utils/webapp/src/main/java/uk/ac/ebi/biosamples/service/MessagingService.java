@@ -59,7 +59,7 @@ public class MessagingService {
       throw new IllegalArgumentException("accession cannot be empty");
     }
 
-    final Optional<Sample> sample = sampleReadService.fetch(accession, Optional.empty());
+    final Optional<Sample> sample = sampleReadService.fetch(accession, true);
 
     if (sample.isPresent()) {
       // for each sample we have a relationship to, update it to index this sample as an
@@ -83,14 +83,14 @@ public class MessagingService {
 
     // remove deleted relationships
     for (final String accession : existingRelationshipTargets) {
-      futures.add(sampleReadService.fetchAsync(accession, Optional.empty()));
+      futures.add(sampleReadService.fetchAsync(accession, true));
     }
 
     for (final Relationship relationship : sample.getRelationships()) {
       if (relationship.getSource() != null
           && relationship.getSource().equals(sample.getAccession())
           && !existingRelationshipTargets.contains(sample.getAccession())) {
-        futures.add(sampleReadService.fetchAsync(relationship.getTarget(), Optional.empty()));
+        futures.add(sampleReadService.fetchAsync(relationship.getTarget(), true));
       }
     }
 
@@ -121,8 +121,7 @@ public class MessagingService {
     for (final Relationship relationship : sample.getRelationships()) {
       if (relationship.getSource().equals(sample.getAccession())) {
         if (relationship.getType().toLowerCase().equals("derived from")) {
-          final Optional<Sample> target =
-              sampleReadService.fetch(relationship.getTarget(), Optional.empty());
+          final Optional<Sample> target = sampleReadService.fetch(relationship.getTarget(), true);
           if (target.isPresent()) {
             if (!related.contains(target.get())) {
               related.add(target.get());

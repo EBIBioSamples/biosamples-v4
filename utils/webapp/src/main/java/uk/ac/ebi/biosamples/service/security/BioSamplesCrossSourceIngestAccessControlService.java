@@ -80,7 +80,7 @@ public class BioSamplesCrossSourceIngestAccessControlService {
     // file uploader submission access protection
     if (webinIdInOldSample != null
         && !webinIdInOldSample.equals(newSample.getWebinSubmissionAccountId())) {
-      throw new GlobalExceptions.NotOriginalSubmitterException();
+      throw new GlobalExceptions.NonSubmitterUpdateAttemptException();
     }
   }
 
@@ -125,13 +125,6 @@ public class BioSamplesCrossSourceIngestAccessControlService {
           newSample.getAccession());
 
       throw new GlobalExceptions.SampleAccessionDoesNotExistException();
-    }
-  }
-
-  public void preventAapDomainChangeForFileUploadSampleSubmissions(
-      final Sample oldSample, final String newSampleSubmissionDomain) {
-    if (!newSampleSubmissionDomain.equals(oldSample.getDomain())) {
-      throw new GlobalExceptions.SampleDomainMismatchException();
     }
   }
 }

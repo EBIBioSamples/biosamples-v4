@@ -85,7 +85,7 @@ public class SampleRelationshipHandler {
       final String targetSampleAccession = row.secondaryIdSoilParent;
       final String sourceSampleAccession = row.secondaryIdPlantChild;
       final Optional<EntityModel<Sample>> sourceSampleOptional =
-          bioSamplesWebinClient.fetchSampleResource(sourceSampleAccession);
+          bioSamplesWebinClient.fetchSampleResource(sourceSampleAccession, false);
 
       if (sourceSampleOptional.isPresent()) {
         final Sample sourceSample = sourceSampleOptional.get().getContent();

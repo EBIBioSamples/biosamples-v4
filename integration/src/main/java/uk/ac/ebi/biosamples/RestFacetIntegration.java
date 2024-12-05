@@ -18,6 +18,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -27,9 +28,12 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 @Order(3)
 // @Profile({"default","rest"})
 public class RestFacetIntegration extends AbstractIntegration {
+  private final ClientProperties clientProperties;
 
-  public RestFacetIntegration(final BioSamplesClient client) {
+  public RestFacetIntegration(
+      final BioSamplesClient client, final ClientProperties clientProperties) {
     super(client);
+    this.clientProperties = clientProperties;
   }
 
   @Override
@@ -39,7 +43,7 @@ public class RestFacetIntegration extends AbstractIntegration {
     Sample aeSampleTest = getArrayExpressSampleTest();
 
     // put a sample
-    EntityModel<Sample> resource = client.persistSampleResource(sampleTest1);
+    EntityModel<Sample> resource = webinClient.persistSampleResource(sampleTest1);
 
     final Attribute sraAccessionAttribute1 =
         resource.getContent().getAttributes().stream()
@@ -62,7 +66,7 @@ public class RestFacetIntegration extends AbstractIntegration {
           Phase.ONE);
     }
 
-    resource = client.persistSampleResource(enaSampleTest);
+    resource = webinClient.persistSampleResource(enaSampleTest);
 
     final Attribute sraAccessionAttribute2 =
         resource.getContent().getAttributes().stream()
@@ -84,7 +88,7 @@ public class RestFacetIntegration extends AbstractIntegration {
           Phase.ONE);
     }
 
-    resource = client.persistSampleResource(aeSampleTest);
+    resource = webinClient.persistSampleResource(aeSampleTest);
 
     final Attribute sraAccessionAttribute3 =
         resource.getContent().getAttributes().stream()
@@ -184,8 +188,8 @@ public class RestFacetIntegration extends AbstractIntegration {
     final String name = "RestFacetIntegration_testRestFacet";
     final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-
     final SortedSet<Attribute> attributes = new TreeSet<>();
+
     attributes.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
@@ -193,7 +197,7 @@ public class RestFacetIntegration extends AbstractIntegration {
     attributes.add(Attribute.build("geographic location (country and/or sea)", "Land of Oz"));
 
     return new Sample.Builder(name)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withUpdate(update)
         .withAttributes(attributes)
@@ -221,7 +225,7 @@ public class RestFacetIntegration extends AbstractIntegration {
         ExternalReference.build("http://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-09123"));
 
     return new Sample.Builder(name)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withUpdate(update)
         .withAttributes(attributes)
@@ -246,7 +250,7 @@ public class RestFacetIntegration extends AbstractIntegration {
         ExternalReference.build("http://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-5277"));
 
     return new Sample.Builder(name)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withUpdate(update)
         .withAttributes(attributes)

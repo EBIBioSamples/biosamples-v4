@@ -16,6 +16,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -25,8 +26,12 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 @Order(1)
 // @Profile({"default", "rest"})
 public class RestSearchIntegration extends AbstractIntegration {
-  public RestSearchIntegration(final BioSamplesClient client) {
+  private final ClientProperties clientProperties;
+
+  public RestSearchIntegration(
+      final BioSamplesClient client, final ClientProperties clientProperties) {
     super(client);
+    this.clientProperties = clientProperties;
   }
 
   @Override
@@ -37,9 +42,9 @@ public class RestSearchIntegration extends AbstractIntegration {
     Sample test5 = getSampleTest5();
 
     // put a private sample
-    EntityModel<Sample> resource = client.persistSampleResource(test1);
+    EntityModel<Sample> resource = webinClient.persistSampleResource(test1);
     final Attribute sraAccessionAttribute1 =
-        resource.getContent().getAttributes().stream()
+        Objects.requireNonNull(resource.getContent()).getAttributes().stream()
             .filter(attribute -> attribute.getType().equals("SRA accession"))
             .findFirst()
             .get();
@@ -60,7 +65,7 @@ public class RestSearchIntegration extends AbstractIntegration {
     }
 
     // put a sample that refers to a non-existing sample, Should this fail???
-    resource = client.persistSampleResource(test2);
+    resource = webinClient.persistSampleResource(test2);
 
     final Attribute sraAccessionAttribute2 =
         resource.getContent().getAttributes().stream()
@@ -82,7 +87,7 @@ public class RestSearchIntegration extends AbstractIntegration {
           Phase.ONE);
     }
 
-    resource = client.persistSampleResource(test4);
+    resource = webinClient.persistSampleResource(test4);
 
     final Attribute sraAccessionAttribute4 =
         resource.getContent().getAttributes().stream()
@@ -104,7 +109,7 @@ public class RestSearchIntegration extends AbstractIntegration {
           Phase.ONE);
     }
 
-    resource = client.persistSampleResource(test5);
+    resource = webinClient.persistSampleResource(test5);
 
     final Attribute sraAccessionAttribute5 =
         resource.getContent().getAttributes().stream()
@@ -170,7 +175,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 
     test4 = Sample.Builder.fromSample(test4).withRelationships(relationships).build();
 
-    EntityModel<Sample> resource = client.persistSampleResource(test4);
+    EntityModel<Sample> resource = webinClient.persistSampleResource(test4);
 
     if (!test4.equals(resource.getContent())) {
       throw new IntegrationTestFailException(
@@ -185,7 +190,7 @@ public class RestSearchIntegration extends AbstractIntegration {
     test5 = Sample.Builder.fromSample(test5).withRelationships(relationships).build();
 
     final Optional<EntityModel<Sample>> optionalResource =
-        client.fetchSampleResource(test5.getAccession());
+        webinClient.fetchSampleResource(test5.getAccession());
 
     if (optionalResource.isPresent()) {
       resource = optionalResource.get();
@@ -223,7 +228,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 
     final List<EntityModel<Sample>> samples = new ArrayList<>();
 
-    for (final EntityModel<Sample> sample : publicClient.fetchSampleResourceAll()) {
+    for (final EntityModel<Sample> sample : noAuthClient.fetchSampleResourceAll()) {
       samples.add(sample);
     }
 
@@ -233,7 +238,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 
     // check that the private sample is not in search results
     // check that the referenced non-existing sample not in search result
-    for (final EntityModel<Sample> resource : publicClient.fetchSampleResourceAll()) {
+    for (final EntityModel<Sample> resource : noAuthClient.fetchSampleResourceAll()) {
       if (Objects.requireNonNull(resource.getContent()).getName().equals(test1.getName())) {
         throw new IntegrationTestFailException(
             "Found non-public sample " + test1.getAccession() + " in search samples", Phase.TWO);
@@ -244,7 +249,7 @@ public class RestSearchIntegration extends AbstractIntegration {
     // Eukaryota
     final Set<String> accessions = new HashSet<>();
 
-    for (final EntityModel<Sample> sample : publicClient.fetchSampleResourceAll("Homo Sapiens")) {
+    for (final EntityModel<Sample> sample : noAuthClient.fetchSampleResourceAll("Homo Sapiens")) {
       accessions.add(Objects.requireNonNull(sample.getContent()).getAccession());
     }
 
@@ -272,7 +277,7 @@ public class RestSearchIntegration extends AbstractIntegration {
     final List<String> sample2EffectiveSearchResults = new ArrayList<>();
 
     for (final EntityModel<Sample> sample :
-        publicClient.fetchSampleResourceAll(sample2.getAccession())) {
+        noAuthClient.fetchSampleResourceAll(sample2.getAccession())) {
       sample2EffectiveSearchResults.add(Objects.requireNonNull(sample.getContent()).getAccession());
     }
 
@@ -280,7 +285,7 @@ public class RestSearchIntegration extends AbstractIntegration {
       throw new IntegrationTestFailException("No search results found!", Phase.FOUR);
     }
 
-    if (!sample2EffectiveSearchResults.containsAll(sample2ExpectedSearchResults)) {
+    if (!new HashSet<>(sample2EffectiveSearchResults).containsAll(sample2ExpectedSearchResults)) {
       throw new IntegrationTestFailException(
           "Search results for "
               + sample2.getAccession()
@@ -292,7 +297,7 @@ public class RestSearchIntegration extends AbstractIntegration {
     final List<String> sample4EffectiveSearchResults = new ArrayList<>();
 
     for (final EntityModel<Sample> sample :
-        publicClient.fetchSampleResourceAll(sample4.getAccession())) {
+        noAuthClient.fetchSampleResourceAll(sample4.getAccession())) {
       sample4EffectiveSearchResults.add(Objects.requireNonNull(sample.getContent()).getAccession());
     }
 
@@ -328,7 +333,7 @@ public class RestSearchIntegration extends AbstractIntegration {
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
     return new Sample.Builder(name)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withAttributes(attributes)
         .build();
@@ -337,17 +342,16 @@ public class RestSearchIntegration extends AbstractIntegration {
   private Sample getSampleTest2() {
     final String name = "RestSearchIntegration_sample_2_with_invalid_relationships";
     final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-
     final SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Relationship> relationships = new TreeSet<>();
+
     attributes.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
-
-    final SortedSet<Relationship> relationships = new TreeSet<>();
     relationships.add(Relationship.build("SAMEA2", "derived from", "SAMEA3"));
 
     return new Sample.Builder(name)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withRelationships(relationships)
         .withAttributes(attributes)
@@ -357,14 +361,14 @@ public class RestSearchIntegration extends AbstractIntegration {
   private Sample getSampleTest4() {
     final String name = "RestSearchIntegration_sample_4";
     final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-
     final SortedSet<Attribute> attributes = new TreeSet<>();
+
     attributes.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
     return new Sample.Builder(name)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withAttributes(attributes)
         .build();
@@ -373,14 +377,14 @@ public class RestSearchIntegration extends AbstractIntegration {
   private Sample getSampleTest5() {
     final String name = "RestSearchIntegration_sample_5";
     final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-
     final SortedSet<Attribute> attributes = new TreeSet<>();
+
     attributes.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
     return new Sample.Builder(name)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withAttributes(attributes)
         .build();
