@@ -110,7 +110,7 @@ public class SampleSubmissionServiceV2 {
 
     SampleValidateSubmitterV2(final List<Sample> samples) {
       this.samples = samples;
-      jwt = null;
+      this.jwt = null;
     }
 
     SampleValidateSubmitterV2(final List<Sample> samples, final String jwt) {
@@ -147,7 +147,7 @@ public class SampleSubmissionServiceV2 {
 
     SampleAccessionerV2(final List<Sample> samples) {
       this.samples = samples;
-      jwt = null;
+      this.jwt = null;
     }
 
     SampleAccessionerV2(final List<Sample> samples, final String jwt) {
@@ -164,7 +164,6 @@ public class SampleSubmissionServiceV2 {
 
       final RequestEntity<List<Sample>> requestEntity =
           buildRequestEntityWithAuthHeader(v2BulkAccessionUri, jwt, samples);
-
       final ResponseEntity<Map<String, String>> responseEntity;
 
       try {
@@ -173,9 +172,13 @@ public class SampleSubmissionServiceV2 {
                 requestEntity, new ParameterizedTypeReference<Map<String, String>>() {});
       } catch (final RestClientResponseException e) {
         log.error(
-            "Unable to accession samples from {} got response {}",
+            "Unable to accession samples from {} "
+                + "got response status text {}, "
+                + "response body {}, exception {}",
             v2BulkAccessionUri,
-            e.getResponseBodyAsString());
+            e.getStatusText(),
+            e.getResponseBodyAsString(),
+            e);
 
         throw e;
       }

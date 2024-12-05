@@ -169,7 +169,7 @@ public class SampleService {
   // sure
   // that any cached version
   // is removed.
-  // Note, pages of samples will not be cache busted, only single-accession newSample retrieval
+  // Note, pages of samples will not be cache busted, only single-accession sample retrieval
   // @CacheEvict(cacheNames=WebappProperties.fetchUsing, key="#result.accession")
   /*
   Called by V1 endpoints to persist samples
@@ -272,11 +272,20 @@ public class SampleService {
         newSample.getAttributes().stream()
             .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION));
 
+    log.info("No SRA accession " + noSraAccession + " for sample " + newSample.getName());
+
     if (!noSraAccession) {
-      validateAndPromoteSRAAccessionAttributeToField(newSample);
+      log.info("In if for sample " + newSample.getName());
+
+      newSample = validateAndPromoteSRAAccessionAttributeToField(newSample);
+
+      log.info("Sample here is 1 " + newSample.toString());
     }
 
     newSample = mongoAccessionService.generateAccession(newSample, noSraAccession);
+
+    log.info("Sample here is 2 " + newSample.toString());
+
     sendMessageToRabbitForIndexingToSolr(newSample.getAccession(), Collections.emptyList());
 
     return newSample;
@@ -357,7 +366,7 @@ public class SampleService {
 
       sendMessageToRabbitForIndexingToSolr(newSample.getAccession(), Collections.emptyList());
     } else {
-      createNew(newSample);
+      newSample = createNew(newSample);
     }
 
     return newSample;
@@ -373,20 +382,21 @@ public class SampleService {
   }
 
   /*
-  Called by V2 endpoints to build a newSample with a newly generated newSample accession
+  Called by V2 endpoints to build a sample with a newly generated sample accession
    */
   public Sample accessionSample(Sample newSample) {
     final Collection<String> errors = sampleValidator.validate(newSample);
 
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
+
       throw new GlobalExceptions.SampleMandatoryFieldsMissingException(String.join("|", errors));
     }
 
     if (newSample
         .getWebinSubmissionAccountId()
         .equalsIgnoreCase(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
-      // accessioning from ENA, newSample name is the SRA accession here
+      // accessioning from ENA, sample name is the SRA accession here
       final Attribute sraAccessionAttribute = Attribute.build(SRA_ACCESSION, newSample.getName());
 
       newSample.getAttributes().add(sraAccessionAttribute);

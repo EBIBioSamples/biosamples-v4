@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
@@ -56,7 +55,7 @@ public class SampleRetrievalService {
     SampleRetriever(final String accession, final boolean applyCurations) {
       this.accession = accession;
       this.applyCurations = applyCurations;
-      jwt = null;
+      this.jwt = null;
     }
 
     SampleRetriever(final String accession, final boolean applyCurations, final String jwt) {
@@ -66,35 +65,34 @@ public class SampleRetrievalService {
     }
 
     public Optional<EntityModel<Sample>> fetchSample() {
-      // Start with the base traversal
-      String baseUri =
-          traverson
-              .follow("samples")
-              .follow(Hop.rel("sample").withParameter("accession", accession))
-              .asLink()
-              .getHref();
+      final Traverson.TraversalBuilder traversalBuilder = traverson.follow("samples");
 
-      // Add the query parameter if applyCurations is true
-      if (applyCurations) {
-        baseUri =
-            UriComponentsBuilder.fromUriString(baseUri)
-                .queryParam("applyCurations", true)
-                .build()
-                .toUriString();
-      }
+      // Get the base URI from the traversal
+      final String baseUri = traversalBuilder.asLink().getHref() + "/" + accession;
 
-      URI uri = URI.create(baseUri);
+      log.info("Base URL here " + baseUri);
+
+      // Add the query parameter
+      final String uri =
+          UriComponentsBuilder.fromUriString(baseUri)
+              .queryParam("applyCurations", applyCurations) // Append query parameter
+              .build()
+              .toUriString();
+
       log.info("GETing " + uri);
 
       // Prepare headers for the request
       final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+
       headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
+
       if (jwt != null) {
         headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
       }
 
       // Create the request entity
-      final RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
+      final RequestEntity<Void> requestEntity =
+          new RequestEntity<>(headers, HttpMethod.GET, URI.create(uri));
       final ResponseEntity<EntityModel<Sample>> responseEntity;
 
       try {
