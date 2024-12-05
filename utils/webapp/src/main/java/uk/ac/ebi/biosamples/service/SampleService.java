@@ -272,20 +272,11 @@ public class SampleService {
         newSample.getAttributes().stream()
             .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION));
 
-    log.info("No SRA accession " + noSraAccession + " for sample " + newSample.getName());
-
     if (!noSraAccession) {
-      log.info("In if for sample " + newSample.getName());
-
       newSample = validateAndPromoteSRAAccessionAttributeToField(newSample);
-
-      log.info("Sample here is 1 " + newSample.toString());
     }
 
     newSample = mongoAccessionService.generateAccession(newSample, noSraAccession);
-
-    log.info("Sample here is 2 " + newSample.toString());
-
     sendMessageToRabbitForIndexingToSolr(newSample.getAccession(), Collections.emptyList());
 
     return newSample;
