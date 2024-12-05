@@ -10,7 +10,6 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import java.util.Collections;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,8 +54,7 @@ public class SampleGetControllerV2 {
     log.info("Received fetch for accession " + accession);
 
     // fetch returns sample with no-curations applied
-    final Optional<Sample> optionalSample =
-        sampleService.fetch(accession, Optional.of(Collections.singletonList("")));
+    final Optional<Sample> optionalSample = sampleService.fetch(accession, false);
 
     if (optionalSample.isPresent()) {
       final Sample sample = optionalSample.get();

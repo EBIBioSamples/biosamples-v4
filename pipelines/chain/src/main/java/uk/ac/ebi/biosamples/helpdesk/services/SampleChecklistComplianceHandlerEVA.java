@@ -20,9 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
@@ -38,28 +36,20 @@ public class SampleChecklistComplianceHandlerEVA {
       "geographic location (region and locality)";
   public static final String NCBI_MIRRORING_WEBIN_ID = "Webin-842";
   private final BioSamplesClient bioSamplesWebinClient;
-  private final BioSamplesClient bioSamplesAapClient;
   private final PipelinesProperties pipelinesProperties;
 
   public SampleChecklistComplianceHandlerEVA(
       @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesWebinClient,
-      @Qualifier("AAPCLIENT") final BioSamplesClient bioSamplesAapClient,
       final PipelinesProperties pipelinesProperties) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
-    this.bioSamplesAapClient = bioSamplesAapClient;
     this.pipelinesProperties = pipelinesProperties;
   }
 
-  private void processSample(final String accession, final List<String> curationDomainList) {
+  private void processSample(final String accession) {
     log.info("Processing Sample: " + accession);
 
-    Optional<EntityModel<Sample>> optionalSampleEntityModel =
-        bioSamplesAapClient.fetchSampleResource(accession, Optional.of(curationDomainList));
-
-    if (optionalSampleEntityModel.isEmpty()) {
-      optionalSampleEntityModel =
-          bioSamplesWebinClient.fetchSampleResource(accession, Optional.of(curationDomainList));
-    }
+    final Optional<EntityModel<Sample>> optionalSampleEntityModel =
+        bioSamplesWebinClient.fetchSampleResource(accession, false);
 
     if (optionalSampleEntityModel.isPresent()) {
       handleGeographicLocationAndCollectionDate(optionalSampleEntityModel);
@@ -164,21 +154,13 @@ public class SampleChecklistComplianceHandlerEVA {
 
     final Sample updateSample =
         Sample.Builder.fromSample(sample).withAttributes(attributeSet).build();
+
     try {
-      bioSamplesAapClient.persistSampleResource(updateSample);
-    } catch (final HttpClientErrorException e) {
-      if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-        log.info(
-            "Failed to persist using AAP client - UNAUTHORIZED, "
-                + "attempting persist using WEBIN client "
-                + accession);
+      bioSamplesWebinClient.persistSampleResource(updateSample);
 
-        if (sample.getWebinSubmissionAccountId().equals(NCBI_MIRRORING_WEBIN_ID)
-            || sample.getWebinSubmissionAccountId().equals(pipelinesProperties.getProxyWebinId()))
-          bioSamplesWebinClient.persistSampleResource(sample);
-
-        log.info("Persisted using WEBIN client " + accession);
-      }
+      log.info("Persisted using WEBIN client " + accession);
+    } catch (final Exception e) {
+      log.info("Failed to persisted using WEBIN client " + accession);
     }
   }
 
@@ -204,7 +186,7 @@ public class SampleChecklistComplianceHandlerEVA {
     for (final String accession : samnAccessions) {
       // log.info(accession);
 
-      processSample(accession, Collections.singletonList(""));
+      processSample(accession);
     }
   }
 

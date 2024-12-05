@@ -10,7 +10,6 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import java.util.Optional;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
@@ -56,7 +55,7 @@ public class BioschemasGetController {
   public JsonLDDataRecord getJsonLDSample(@PathVariable final String accession) {
     final Sample sample =
         sampleService
-            .fetch(accession, Optional.empty()) // fetch returns sample with curations applied
+            .fetch(accession, true) // fetch returns sample with curations applied
             .orElseThrow(GlobalExceptions.SampleNotFoundException::new);
     webinAuthenticationService.isSampleAccessible(sample, null);
     return jsonLDService.sampleToJsonLD(sample);

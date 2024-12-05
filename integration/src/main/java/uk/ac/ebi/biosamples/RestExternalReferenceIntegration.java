@@ -34,7 +34,7 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
   @Override
   protected void phaseOne() {
     final Sample sample = getSampleTest1();
-    client.persistSampleResource(sample);
+    webinClient.persistSampleResource(sample);
   }
 
   @Override
@@ -52,7 +52,7 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
     }
 
     testExternalReferences();
-    client.persistCuration(
+    webinClient.persistCuration(
         sample.getAccession(),
         Curation.build(
             null,

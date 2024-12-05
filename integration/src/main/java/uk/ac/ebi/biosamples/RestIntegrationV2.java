@@ -17,7 +17,6 @@ import java.util.concurrent.ExecutionException;
 import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.EntityModel;
@@ -32,18 +31,16 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 public class RestIntegrationV2 extends AbstractIntegration {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final BioSamplesClient annonymousClient;
-  private final BioSamplesClient webinClient;
   private final ClientProperties clientProperties;
 
   public RestIntegrationV2(
       final BioSamplesClient client,
       final RestTemplateBuilder restTemplateBuilder,
-      final ClientProperties clientProperties,
-      @Qualifier("WEBINCLIENT") final BioSamplesClient webinClient,
-      ClientProperties clientProperties1) {
+      final ClientProperties clientProperties) {
     super(client);
-    this.webinClient = webinClient;
-    this.clientProperties = clientProperties1;
+
+    this.clientProperties = clientProperties;
+
     annonymousClient =
         new BioSamplesClient(
             clientProperties.getBiosamplesClientUri(),
@@ -90,7 +87,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
     // Submit with webin client, no jwt passed
     final List<Sample> webinSampleResource =
         webinClient
-            .persistSampleResourceV2(Collections.singletonList(webinSampleTest1))
+            .validatePersistSampleResourceV2(Collections.singletonList(webinSampleTest1))
             .getSamples();
     final String webinSampleAccession =
         Objects.requireNonNull(webinSampleResource.get(0)).getAccession();
@@ -98,7 +95,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
     final Optional<EntityModel<Sample>> webinSamplePostPersistence =
         webinClient.fetchSampleResource(webinSampleAccession);
 
-    if (!webinSamplePostPersistence.isPresent()) {
+    if (webinSamplePostPersistence.isEmpty()) {
       throw new IntegrationTestFailException(
           "Private sample submitted using webin auth not retrieved", Phase.SIX);
     }
@@ -125,7 +122,7 @@ public class RestIntegrationV2 extends AbstractIntegration {
     final Map<String, String> sampleAccessionToNameMap =
         webinClient.bulkAccessionV2(Collections.singletonList(webinSampleMinimalInfo));
 
-    if (sampleAccessionToNameMap.size() == 0) {
+    if (sampleAccessionToNameMap.isEmpty()) {
       throw new IntegrationTestFailException("Bulk accession is not working for V2", Phase.SIX);
     }
 
@@ -134,7 +131,8 @@ public class RestIntegrationV2 extends AbstractIntegration {
       final Sample webinTestSampleV2Submission = getWebinSampleTest1();
       final List<Sample> apiResponseSampleResourceList =
           webinClient
-              .persistSampleResourceV2(Collections.singletonList(webinTestSampleV2Submission))
+              .validatePersistSampleResourceV2(
+                  Collections.singletonList(webinTestSampleV2Submission))
               .getSamples();
       final String apiResponseSampleAccession1 =
           Objects.requireNonNull(apiResponseSampleResourceList.get(0)).getAccession();

@@ -101,7 +101,7 @@ public class BigIntegration extends AbstractIntegration {
 
     final long startTime = System.nanoTime();
 
-    client.persistSamples(samples);
+    webinClient.persistSamples(samples);
 
     final long endTime = System.nanoTime();
     final double elapsedMs = (int) ((endTime - startTime) / 1000000L);
@@ -124,7 +124,7 @@ public class BigIntegration extends AbstractIntegration {
     // time how long it takes to get the highly connected sample
     startTime = System.nanoTime();
 
-    client.fetchSample("SAMEA" + (firstInteger + noSamples));
+    webinClient.fetchSampleResource("SAMEA" + (firstInteger + noSamples));
 
     endTime = System.nanoTime();
     elapsedMs = (int) ((endTime - startTime) / 1000000L);
@@ -141,7 +141,7 @@ public class BigIntegration extends AbstractIntegration {
     log.info("Took " + elapsedMs + "ms to fetch highly-connected sample SAMbig" + noSamples);
     startTime = System.nanoTime();
 
-    client.fetchSample("SAMEA" + firstInteger);
+    webinClient.fetchSampleResource("SAMEA" + firstInteger);
 
     endTime = System.nanoTime();
     elapsedMs = (int) ((endTime - startTime) / 1000000L);
@@ -159,7 +159,7 @@ public class BigIntegration extends AbstractIntegration {
     // time how long it takes to loop over all of them
     startTime = System.nanoTime();
 
-    client.fetchSampleResourceAll(); // do nothing
+    webinClient.fetchSampleResourceAll(); // do nothing
 
     endTime = System.nanoTime();
     elapsedMs = (int) ((endTime - startTime) / 1000000L);

@@ -10,7 +10,6 @@
 */
 package uk.ac.ebi.biosamples.curation;
 
-import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -45,8 +44,7 @@ public class TransformationCallable implements Callable<PipelineResult> {
     int modifiedRecords = 0;
 
     final Optional<EntityModel<Sample>> optionalSampleResource =
-        bioSamplesClientWebin.fetchSampleResource(
-            sample.getAccession(), Optional.of(Collections.singletonList("")));
+        bioSamplesClientWebin.fetchSampleResource(sample.getAccession(), false);
 
     if (optionalSampleResource.isPresent()) {
       final Sample uncuratedSample = optionalSampleResource.get().getContent();

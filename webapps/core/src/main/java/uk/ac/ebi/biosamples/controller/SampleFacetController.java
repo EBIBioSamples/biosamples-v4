@@ -69,7 +69,7 @@ public class SampleFacetController {
         LinkUtils.cleanLink(
             WebMvcLinkBuilder.linkTo(
                     WebMvcLinkBuilder.methodOn(SamplesRestController.class)
-                        .searchHal(text, filter, null, null, null, null, null))
+                        .searchHal(text, filter, null, null, null, null, true))
                 .withRel("samples")));
 
     return ResponseEntity.ok().body(resources);

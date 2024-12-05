@@ -11,7 +11,6 @@
 package uk.ac.ebi.biosamples.controller;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
 import org.slf4j.Logger;
@@ -33,7 +32,6 @@ import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
-import uk.ac.ebi.biosamples.utils.LinkUtils;
 import uk.ac.ebi.biosamples.utils.phenopacket.PhenopacketConverter;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
@@ -81,24 +79,22 @@ public class SampleRestController {
   public EntityModel<Sample> getSampleHal(
       @PathVariable final String accession,
       @RequestParam(name = "legacydetails", required = false) final String legacydetails,
-      @RequestParam(name = "curationdomain", required = false) final String[] curationdomain) {
+      @RequestParam(name = "applyCurations", required = false, defaultValue = "true")
+          final boolean applyCurations) {
     final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
     final String principle = sampleService.getPrinciple(loggedInUser);
-    final Optional<List<String>> decodedCurationDomains =
-        LinkUtils.decodeTextsToArray(curationdomain);
     final Optional<Boolean> decodedLegacyDetails =
         "true".equals(legacydetails) ? Optional.of(Boolean.TRUE) : Optional.empty();
-    final Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains);
+    final Optional<Sample> sample = sampleService.fetch(accession, applyCurations);
 
     sample.ifPresent(
         s -> {
           webinAuthenticationService.isSampleAccessible(s, principle);
-
           decodedLegacyDetails.ifPresent(d -> sampleManipulationService.removeLegacyFields(s));
         });
 
     return sample
-        .map(s -> sampleResourceAssembler.toModel(s, decodedLegacyDetails, decodedCurationDomains))
+        .map(s -> sampleResourceAssembler.toModel(s, decodedLegacyDetails, true))
         .orElseThrow(GlobalExceptions.SampleNotFoundException::new);
   }
 
@@ -109,12 +105,11 @@ public class SampleRestController {
   public String getSamplePhenopacket(
       @PathVariable final String accession,
       @RequestParam(name = "legacydetails", required = false) final String legacydetails,
-      @RequestParam(name = "curationdomain", required = false) final String[] curationdomain) {
-    final Optional<List<String>> decodedCurationDomains =
-        LinkUtils.decodeTextsToArray(curationdomain);
+      @RequestParam(name = "applyCurations", required = false, defaultValue = "true")
+          final boolean applyCurations) {
     final Optional<Boolean> decodedLegacyDetails =
         Optional.ofNullable("true".equals(legacydetails) ? Boolean.TRUE : null);
-    final Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains);
+    final Optional<Sample> sample = sampleService.fetch(accession, applyCurations);
 
     return sample
         .map(
@@ -154,7 +149,7 @@ public class SampleRestController {
     }
 
     // Fetch existing sample
-    final Optional<Sample> oldSample = sampleService.fetch(sample.getAccession(), Optional.empty());
+    final Optional<Sample> oldSample = sampleService.fetch(sample.getAccession(), false);
 
     // Handle Webin submission and abstract data
     sample = webinAuthenticationService.handleWebinUserSubmission(sample, principle, oldSample);

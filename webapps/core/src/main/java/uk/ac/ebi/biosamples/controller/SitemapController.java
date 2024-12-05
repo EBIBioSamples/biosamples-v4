@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,8 +87,7 @@ public class SitemapController {
     final long startTime = System.currentTimeMillis();
     final Pageable pageRequest = PageRequest.of(pageNumber - 1, sitemapPageSize);
     final Page<Sample> samplePage =
-        samplePageService.getSamplesByText(
-            "", Collections.emptyList(), null, pageRequest, Optional.empty());
+        samplePageService.getSamplesByText("", Collections.emptyList(), null, pageRequest, true);
     final XmlUrlSet xmlUrlSet = new XmlUrlSet();
     for (final Sample sample : samplePage.getContent()) {
       final String location =
@@ -134,7 +132,7 @@ public class SitemapController {
     final Collection<Filter> filters = Collections.emptyList();
     final Collection<String> domains = Collections.emptyList();
     final Page<Sample> samplePage =
-        samplePageService.getSamplesByText("", filters, null, pageable, Optional.empty());
+        samplePageService.getSamplesByText("", filters, null, pageable, true);
     return samplePage.getTotalElements();
   }
 }

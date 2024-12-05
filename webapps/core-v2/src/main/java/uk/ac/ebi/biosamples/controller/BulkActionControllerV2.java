@@ -70,9 +70,10 @@ public class BulkActionControllerV2 {
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
       value = "/bulk-accession",
-      consumes = {MediaType.APPLICATION_JSON_VALUE},
-      produces = {MediaType.APPLICATION_JSON_VALUE})
+      consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Map<String, String>> accessionV2(@RequestBody List<Sample> samples) {
+    log.info("V2-Received POST for bulk accessioning called");
+
     final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
     final String principle = sampleService.getPrinciple(loggedInUser);
 
@@ -155,8 +156,7 @@ public class BulkActionControllerV2 {
                   final String justAccession = accession.trim();
                   final Optional<Sample> sampleOptional =
                       // fetch returns sample with no-curations applied
-                      sampleService.fetch(
-                          justAccession, false);
+                      sampleService.fetch(justAccession, false);
 
                   if (sampleOptional.isPresent()) {
                     final Sample sample = sampleOptional.get();
@@ -237,7 +237,7 @@ public class BulkActionControllerV2 {
     }
 
     log.info(
-        "V2-Received bulk-submit request for : "
+        "V2-Received bulk-submit-get-receipt request for : "
             + samples.size()
             + " samples and persisted : "
             + createdSamples.size()

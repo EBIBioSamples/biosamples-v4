@@ -26,7 +26,6 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.client.service.AapClientService;
 import uk.ac.ebi.biosamples.client.service.WebinAuthClientService;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
@@ -58,11 +57,6 @@ public class TestApplication {
 
   @Bean
   SampleValidator sampleValidator() {
-    return null;
-  }
-
-  @Bean
-  AapClientService aapClientService() {
     return null;
   }
 

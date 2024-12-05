@@ -102,7 +102,8 @@ public class SamplesRestController {
       @RequestParam(name = "page", required = false) final Integer page,
       @RequestParam(name = "size", required = false) final Integer size,
       @RequestParam(name = "sort", required = false) final String[] sort,
-      @RequestParam(name = "curationdomain", required = false) final String[] curationdomain) {
+      @RequestParam(name = "applyCurations", required = false, defaultValue = "true")
+          final boolean applyCurations) {
 
     // Need to decode the %20 and similar from the parameters, this is *not* needed for the html
     // controller
@@ -112,8 +113,6 @@ public class SamplesRestController {
     final String decodedText = LinkUtils.decodeText(text);
     final String[] decodedFilter = LinkUtils.decodeTexts(filter);
     String decodedCursor = LinkUtils.decodeText(cursor);
-    final Optional<List<String>> decodedCurationDomains =
-        LinkUtils.decodeTextsToArray(curationdomain);
 
     final int effectivePage = page == null || page < 0 ? 0 : page;
     final int effectiveSize = size == null || size < 1 ? 20 : size;
@@ -143,12 +142,7 @@ public class SamplesRestController {
       log.trace("This cursor = " + decodedCursor);
       final CursorArrayList<Sample> samples =
           samplePageService.getSamplesByText(
-              decodedText,
-              filters,
-              principle,
-              decodedCursor,
-              effectiveSize,
-              decodedCurationDomains);
+              decodedText, filters, principle, decodedCursor, effectiveSize, applyCurations);
       log.trace("Next cursor = " + samples.getNextCursorMark());
 
       final CollectionModel<EntityModel<Sample>> resources =
@@ -165,7 +159,7 @@ public class SamplesRestController {
           getCursorLink(
               decodedText,
               decodedFilter,
-              decodedCurationDomains,
+              applyCurations,
               decodedCursor,
               effectiveSize,
               IanaLinkRelations.SELF.value(),
@@ -177,7 +171,7 @@ public class SamplesRestController {
             getCursorLink(
                 decodedText,
                 decodedFilter,
-                decodedCurationDomains,
+                applyCurations,
                 samples.getNextCursorMark(),
                 effectiveSize,
                 IanaLinkRelations.NEXT.value(),
@@ -189,7 +183,7 @@ public class SamplesRestController {
             getCursorLink(
                 decodedText,
                 decodedFilter,
-                decodedCurationDomains,
+                applyCurations,
                 "*",
                 effectiveSize,
                 "cursor",
@@ -220,8 +214,7 @@ public class SamplesRestController {
               : Sort.unsorted();
       final Pageable pageable = PageRequest.of(effectivePage, effectiveSize, pageSort);
       final Page<Sample> pageSample =
-          samplePageService.getSamplesByText(
-              text, filters, principle, pageable, decodedCurationDomains);
+          samplePageService.getSamplesByText(text, filters, principle, pageable, applyCurations);
       final CollectionModel<EntityModel<Sample>> resources =
           populateResources(
               pageSample,
@@ -230,7 +223,7 @@ public class SamplesRestController {
               decodedText,
               decodedFilter,
               sort,
-              decodedCurationDomains);
+              applyCurations);
 
       return ResponseEntity.ok().cacheControl(cacheControl).body(resources);
     }
@@ -243,7 +236,7 @@ public class SamplesRestController {
       final String decodedText,
       final String[] decodedFilter,
       final String[] sort,
-      final Optional<List<String>> decodedCurationDomains) {
+      final boolean applyCurations) {
     final PagedModel.PageMetadata pageMetadata =
         new PagedModel.PageMetadata(
             effectiveSize,
@@ -267,7 +260,6 @@ public class SamplesRestController {
           getPageLink(
               decodedText,
               decodedFilter,
-              decodedCurationDomains,
               0,
               effectiveSize,
               sort,
@@ -280,7 +272,6 @@ public class SamplesRestController {
           getPageLink(
               decodedText,
               decodedFilter,
-              decodedCurationDomains,
               effectivePage - 1,
               effectiveSize,
               sort,
@@ -292,7 +283,6 @@ public class SamplesRestController {
         getPageLink(
             decodedText,
             decodedFilter,
-            decodedCurationDomains,
             effectivePage,
             effectiveSize,
             sort,
@@ -305,7 +295,6 @@ public class SamplesRestController {
           getPageLink(
               decodedText,
               decodedFilter,
-              decodedCurationDomains,
               effectivePage + 1,
               effectiveSize,
               sort,
@@ -318,7 +307,6 @@ public class SamplesRestController {
           getPageLink(
               decodedText,
               decodedFilter,
-              decodedCurationDomains,
               pageSample.getTotalPages(),
               effectiveSize,
               sort,
@@ -331,7 +319,7 @@ public class SamplesRestController {
           getCursorLink(
               decodedText,
               decodedFilter,
-              decodedCurationDomains,
+              applyCurations,
               "*",
               effectiveSize,
               "cursor",
@@ -364,13 +352,16 @@ public class SamplesRestController {
   private static Link getCursorLink(
       final String text,
       final String[] filter,
-      final Optional<List<String>> decodedCurationDomains,
+      final boolean applyCurations,
       final String cursor,
       final int size,
       final String rel,
       final Class controllerClass) {
-    final UriComponentsBuilder builder =
-        getUriComponentsBuilder(text, filter, decodedCurationDomains, controllerClass);
+    final UriComponentsBuilder builder = getUriComponentsBuilder(text, filter, controllerClass);
+
+    if (applyCurations) {
+      builder.queryParam("applyCurations", "true");
+    }
 
     builder.queryParam("cursor", cursor);
     builder.queryParam("size", size);
@@ -378,10 +369,7 @@ public class SamplesRestController {
   }
 
   private static UriComponentsBuilder getUriComponentsBuilder(
-      final String text,
-      final String[] filter,
-      final Optional<List<String>> decodedCurationDomains,
-      final Class controllerClass) {
+      final String text, final String[] filter, final Class controllerClass) {
     final UriComponentsBuilder builder =
         WebMvcLinkBuilder.linkTo(controllerClass).toUriComponentsBuilder();
 
@@ -395,30 +383,18 @@ public class SamplesRestController {
       }
     }
 
-    if (decodedCurationDomains.isPresent()) {
-      if (decodedCurationDomains.get().isEmpty()) {
-        builder.queryParam("curationdomain", "");
-      } else {
-        for (final String d : decodedCurationDomains.get()) {
-          builder.queryParam("curationdomain", d);
-        }
-      }
-    }
-
     return builder;
   }
 
   static Link getPageLink(
       final String text,
       final String[] filter,
-      final Optional<List<String>> decodedCurationDomains,
       final int page,
       final int size,
       final String[] sort,
       final String rel,
       final Class controllerClass) {
-    final UriComponentsBuilder builder =
-        getUriComponentsBuilder(text, filter, decodedCurationDomains, controllerClass);
+    final UriComponentsBuilder builder = getUriComponentsBuilder(text, filter, controllerClass);
 
     builder.queryParam("page", page);
     builder.queryParam("size", size);

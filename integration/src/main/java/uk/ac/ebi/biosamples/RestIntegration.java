@@ -43,18 +43,18 @@ public class RestIntegration extends AbstractIntegration {
   private final RestTemplate restTemplate;
   private final ClientProperties clientProperties;
   private final BioSamplesClient annonymousClient;
-  private final BioSamplesClient webinClient;
+  private final BioSamplesClient webinTestClient;
 
   public RestIntegration(
       final BioSamplesClient client,
       final RestTemplateBuilder restTemplateBuilder,
       final ClientProperties clientProperties,
-      @Qualifier("WEBINCLIENT") final BioSamplesClient webinClient) {
+      @Qualifier("WEBINTESTCLIENT") final BioSamplesClient webinTestClient) {
     super(client);
 
     this.restTemplate = restTemplateBuilder.build();
     this.clientProperties = clientProperties;
-    this.webinClient = webinClient;
+    this.webinTestClient = webinTestClient;
     this.annonymousClient =
         new BioSamplesClient(
             this.clientProperties.getBiosamplesClientUri(),
@@ -67,23 +67,21 @@ public class RestIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseOne() {
-    final Sample testSample = getSampleTest1();
+    final Sample testSample = getSampleTest1(); // public sample
     final Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
 
     if (optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
           "RestIntegration test sample should not be available during phase 1", Phase.ONE);
     } else {
-      final EntityModel<Sample> resource = client.persistSampleResource(testSample);
+      // persisting with Webin test account
+      final EntityModel<Sample> resource = webinTestClient.persistSampleResource(testSample);
       final Sample sampleContent = resource.getContent();
       final Sample testSampleWithAccession =
           Sample.Builder.fromSample(testSample)
               .withAccession(Objects.requireNonNull(sampleContent).getAccession())
               .withStatus(sampleContent.getStatus())
               .build();
-
-      // trying to post the same sample back again to see PUT is working fine as the sample at this
-      // stage has an accession
       final Attribute sraAccessionAttribute =
           resource.getContent().getAttributes().stream()
               .filter(attribute -> attribute.getType().equals("SRA accession"))
@@ -92,8 +90,11 @@ public class RestIntegration extends AbstractIntegration {
 
       testSampleWithAccession.getAttributes().add(sraAccessionAttribute);
 
+      // trying to post the same sample back again to see PUT is working fine as the sample at this
+      // stage has an accession
+      // persisting with Webin test account
       final EntityModel<Sample> resourceAfterRepost =
-          client.persistSampleResource(testSampleWithAccession);
+          webinTestClient.persistSampleResource(testSampleWithAccession);
       final Sample repostedSampleContent = resourceAfterRepost.getContent();
 
       if (!testSampleWithAccession.equals(sampleContent)) {
@@ -114,11 +115,10 @@ public class RestIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseTwo() {
-    // Test POSTing a sample with an accession to /samples should return 400 BAD REQUEST
-    // response
+    // Test POSTing a sample without auth should return 403 response
     postSampleWithoutAuthenticationShouldReturn403Response();
 
-    final Sample sampleTest1 = getSampleTest1();
+    final Sample sampleTest1 = getSampleTest1(); // public sample
     // get to check it worked
     final Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest1.getName());
 
@@ -135,37 +135,19 @@ public class RestIntegration extends AbstractIntegration {
     log.info(
         "Difference of time is "
             + Duration.between(now, optionalSample.get().getUpdate()).abs().getSeconds());
-
-    /* if (Duration.between(Instant.now(), optionalSample.get().getUpdate()).abs().getSeconds()
-        > 300) {
-      throw new IntegrationTestFailException(
-          "Update date was not modified to within 300s as intended, "
-              + "expected: "
-              + Instant.now()
-              + "actual: "
-              + optionalSample.get().getUpdate()
-              + "",
-          Phase.TWO);
-    }*/
-    // disabled because not fully operational
-    // checkIfModifiedSince(optional.get());
-    // checkIfMatch(optional.get());
-
-    // TODO check If-Unmodified-Since
-    // TODO check If-None-Match
   }
 
   @Override
   protected void phaseThree() throws InterruptedException {
-    Sample sampleTest1 = getSampleTest1();
-    Sample sampleTest2 = getSampleTest2();
+    Sample sampleTest1 = getSampleTest1(); // public sample
+    Sample sampleTest2 = getSampleTest2(); // public sample
     Sample retrievedFromIterable = null;
 
     TimeUnit.SECONDS.sleep(2);
 
     // fetch the already submitted test sample 1
     final Iterable<EntityModel<Sample>> optionalSampleIterable =
-        client.fetchSampleResourceAll(sampleTest1.getName());
+        webinClient.fetchSampleResourceAll(sampleTest1.getName());
     final Iterator<EntityModel<Sample>> sampleIterator = optionalSampleIterable.iterator();
 
     boolean found = false;
@@ -180,9 +162,9 @@ public class RestIntegration extends AbstractIntegration {
 
     if (!found) {
       throw new IntegrationTestFailException(
-          "Cannot access private " + sampleTest1.getName(), Phase.THREE);
+          "Sample submitter cannot access own public sample " + sampleTest1.getName(), Phase.THREE);
     } else {
-      // prepare test sample 1 for resubmission with attached accession
+      // prepare test sample 1 for re-submission with attached accession
       sampleTest1 =
           Sample.Builder.fromSample(sampleTest1)
               .withAccession(retrievedFromIterable.getAccession())
@@ -190,8 +172,8 @@ public class RestIntegration extends AbstractIntegration {
     }
 
     // put the second sample in
-    final EntityModel<Sample> sampleTest2Resource = client.persistSampleResource(sampleTest2);
-
+    final EntityModel<Sample> sampleTest2Resource =
+        webinTestClient.persistSampleResource(sampleTest2);
     // get the accession and sra accession of test sample 2
     final Sample sampleTest2ResourceContent = sampleTest2Resource.getContent();
     final String sampleTest2Accession =
@@ -213,7 +195,7 @@ public class RestIntegration extends AbstractIntegration {
     sampleTest1 =
         new Sample.Builder(sampleTest1.getName(), sampleTest1.getAccession())
             .withTaxId(sampleTest1.getTaxId())
-            .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
+            .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinTestUsername())
             .withRelease("2116-04-01T11:36:57.00Z")
             .withUpdate(sampleTest1.getUpdate())
             .withAttributes(sampleTest1.getAttributes())
@@ -221,7 +203,9 @@ public class RestIntegration extends AbstractIntegration {
             .withExternalReferences(sampleTest1.getExternalReferences())
             .build();
 
-    final EntityModel<Sample> sampleTest1Resource = client.persistSampleResource(sampleTest1);
+    // sample test 1 persisted as private by webin test account
+    final EntityModel<Sample> sampleTest1Resource =
+        webinTestClient.persistSampleResource(sampleTest1);
     final Sample sampleTest1ResourceContent = sampleTest1Resource.getContent();
     final Attribute sraAccessionAttributeForSampleTest1 =
         sampleTest1ResourceContent.getAttributes().stream()
@@ -231,7 +215,7 @@ public class RestIntegration extends AbstractIntegration {
 
     sampleTest1.getAttributes().add(sraAccessionAttributeForSampleTest1);
 
-    if (!sampleTest1.equals(sampleTest1ResourceContent)) {
+    if (!sampleTest1ResourceContent.equals(sampleTest1)) {
       throw new IntegrationTestFailException(
           "Expected response ("
               + sampleTest1ResourceContent
@@ -247,15 +231,16 @@ public class RestIntegration extends AbstractIntegration {
 
     if (sampleTest1Optional.isPresent()) {
       throw new IntegrationTestFailException(
-          "Can access private " + sampleTest1.getAccession() + " as annonymous", Phase.THREE);
+          "Can access private " + sampleTest1.getAccession() + " as anonymous", Phase.THREE);
     }
 
-    // check that it is accessible, if authorised
-    sampleTest1Optional = client.fetchSampleResource(sampleTest1.getAccession());
+    // check that it is accessible, if authorized
+    sampleTest1Optional = webinTestClient.fetchSampleResource(sampleTest1.getAccession());
 
     if (sampleTest1Optional.isEmpty()) {
       throw new IntegrationTestFailException(
-          "Cannot access private " + sampleTest1.getAccession(), Phase.THREE);
+          "Sample submitter cannot access own private sample " + sampleTest1.getAccession(),
+          Phase.THREE);
     }
 
     // build sample test 2 with accession for resubmission
@@ -266,11 +251,12 @@ public class RestIntegration extends AbstractIntegration {
             .build();
 
     final Optional<EntityModel<Sample>> sampleTest2Optional =
-        client.fetchSampleResource(sampleTest2Accession);
+        webinTestClient.fetchSampleResource(sampleTest2Accession);
 
     if (sampleTest2Optional.isEmpty()) {
       throw new IntegrationTestFailException(
-          "Cannot access private " + sampleTest2.getAccession(), Phase.THREE);
+          "Sample submitter cannot access own private sample " + sampleTest2.getAccession(),
+          Phase.THREE);
     }
 
     if (!sampleTest2.equals(sampleTest2Optional.get().getContent())) {
@@ -283,14 +269,15 @@ public class RestIntegration extends AbstractIntegration {
           Phase.TWO);
     }
 
-    // test private sample create and fetch using webin auth
+    // test private sample creates and fetches using webin auth
     final Sample webinSampleTest1 = getWebinSampleTest1();
+    // persisting with webin test account
     final EntityModel<Sample> webinSampleResource =
-        webinClient.persistSampleResource(webinSampleTest1);
+        webinTestClient.persistSampleResource(webinSampleTest1);
     final String webinSampleAccession =
         Objects.requireNonNull(webinSampleResource.getContent()).getAccession();
     final Optional<EntityModel<Sample>> webinSamplePostPersistance =
-        webinClient.fetchSampleResource(webinSampleAccession);
+        webinTestClient.fetchSampleResource(webinSampleAccession);
 
     if (webinSamplePostPersistance.isEmpty()) {
       throw new IntegrationTestFailException(
@@ -306,9 +293,10 @@ public class RestIntegration extends AbstractIntegration {
     Sample sampleTest2 = getSampleTest2();
 
     final Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest2.getName());
+
     if (optionalSample.isEmpty()) {
       throw new IntegrationTestFailException(
-          "Cannot access private " + sampleTest2.getName(), Phase.FOUR);
+          "Anonymous user cannot access public sample " + sampleTest2.getName(), Phase.FOUR);
     } else {
       sampleTest2 =
           Sample.Builder.fromSample(sampleTest2)
@@ -340,11 +328,12 @@ public class RestIntegration extends AbstractIntegration {
     // check that it has the additional relationship added
     // get to check it worked
     final Optional<EntityModel<Sample>> optional =
-        client.fetchSampleResource(sampleTest2.getAccession());
+        webinClient.fetchSampleResource(sampleTest2.getAccession());
 
     if (optional.isEmpty()) {
       throw new IntegrationTestFailException("No existing " + sampleTest2.getName(), Phase.FOUR);
     }
+
     final Sample sampleTest2Rest = optional.get().getContent();
     final Attribute sraAccessionAttributeForSampleTest2 =
         sampleTest2Rest.getAttributes().stream()
@@ -382,7 +371,7 @@ public class RestIntegration extends AbstractIntegration {
             .withNoOrganisations()
             .build();
 
-    final EntityModel<Sample> resource = client.persistSampleResource(sampleTest1);
+    final EntityModel<Sample> resource = webinTestClient.persistSampleResource(sampleTest1);
     final Attribute sraAccessionAttributeForSampleTest1 =
         resource.getContent().getAttributes().stream()
             .filter(attribute -> attribute.getType().equals("SRA accession"))
@@ -411,7 +400,7 @@ public class RestIntegration extends AbstractIntegration {
 
     if (optionalSample.isEmpty()) {
       throw new IntegrationTestFailException(
-          "Cannot access private " + sampleTest2.getName(), Phase.FOUR);
+          "Anonymous user cannot access public sample " + sampleTest2.getName(), Phase.FOUR);
     } else {
       sample = optionalSample.get();
       sampleTest2 =
@@ -490,7 +479,7 @@ public class RestIntegration extends AbstractIntegration {
         .withTaxId(9606L)
         .withUpdate(update)
         .withRelease(release)
-        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinTestUsername())
         .withAttributes(attributes)
         .withRelationships(relationships)
         .withExternalReferences(externalReferences)
@@ -554,7 +543,7 @@ public class RestIntegration extends AbstractIntegration {
     return new Sample.Builder(name)
         .withUpdate(update)
         .withRelease(release)
-        .withWebinSubmissionAccountId("Webin-40894")
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinTestUsername())
         .withAttributes(attributes)
         .withRelationships(relationships)
         .withExternalReferences(externalReferences)
@@ -585,7 +574,7 @@ public class RestIntegration extends AbstractIntegration {
 
     return new Sample.Builder(name)
         .withTaxId(9606L)
-        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinTestUsername())
         .withRelease(release)
         .withUpdate(update)
         .withPublications(Collections.singletonList(publication))

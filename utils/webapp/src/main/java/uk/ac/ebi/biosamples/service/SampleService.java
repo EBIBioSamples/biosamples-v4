@@ -91,9 +91,8 @@ public class SampleService {
   }
 
   /** Throws an IllegalArgumentException of no sample with that accession exists */
-  public Optional<Sample> fetch(
-      final String accession, final Optional<List<String>> curationDomains) {
-    return sampleReadService.fetch(accession, curationDomains);
+  public Optional<Sample> fetch(final String accession, final boolean applyCurations) {
+    return sampleReadService.fetch(accession, applyCurations);
   }
 
   /*
@@ -170,7 +169,7 @@ public class SampleService {
   // sure
   // that any cached version
   // is removed.
-  // Note, pages of samples will not be cache busted, only single-accession newSample retrieval
+  // Note, pages of samples will not be cache busted, only single-accession sample retrieval
   // @CacheEvict(cacheNames=WebappProperties.fetchUsing, key="#result.accession")
   /*
   Called by V1 endpoints to persist samples
@@ -208,7 +207,7 @@ public class SampleService {
     }
 
     // fetch returns sample with curations applied
-    final Optional<Sample> sampleOptional = fetch(newSample.getAccession(), Optional.empty());
+    final Optional<Sample> sampleOptional = fetch(newSample.getAccession(), true);
 
     return sampleOptional.orElseThrow(
         () ->
@@ -274,7 +273,7 @@ public class SampleService {
             .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION));
 
     if (!noSraAccession) {
-      validateAndPromoteSRAAccessionAttributeToField(newSample);
+      newSample = validateAndPromoteSRAAccessionAttributeToField(newSample);
     }
 
     newSample = mongoAccessionService.generateAccession(newSample, noSraAccession);
@@ -358,7 +357,7 @@ public class SampleService {
 
       sendMessageToRabbitForIndexingToSolr(newSample.getAccession(), Collections.emptyList());
     } else {
-      createNew(newSample);
+      newSample = createNew(newSample);
     }
 
     return newSample;
@@ -374,20 +373,21 @@ public class SampleService {
   }
 
   /*
-  Called by V2 endpoints to build a newSample with a newly generated newSample accession
+  Called by V2 endpoints to build a sample with a newly generated sample accession
    */
   public Sample accessionSample(Sample newSample) {
     final Collection<String> errors = sampleValidator.validate(newSample);
 
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
+
       throw new GlobalExceptions.SampleMandatoryFieldsMissingException(String.join("|", errors));
     }
 
     if (newSample
         .getWebinSubmissionAccountId()
         .equalsIgnoreCase(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
-      // accessioning from ENA, newSample name is the SRA accession here
+      // accessioning from ENA, sample name is the SRA accession here
       final Attribute sraAccessionAttribute = Attribute.build(SRA_ACCESSION, newSample.getName());
 
       newSample.getAttributes().add(sraAccessionAttribute);
@@ -511,12 +511,10 @@ public class SampleService {
       final Sample newSample, final List<Relationship> existingRelationships) {
     if (existingRelationships != null && !existingRelationships.isEmpty()) {
       final String webinId = newSample.getWebinSubmissionAccountId();
-      final String domain = newSample.getDomain();
 
       // superuser and non file upload submissions
-      if ((webinId != null
-              && webinId.equals(bioSamplesProperties.getBiosamplesClientWebinUsername()))
-          || domain != null && domain.equals(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
+      if (webinId != null
+          && webinId.equals(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
         if (newSample.getSubmittedVia() != SubmittedViaType.FILE_UPLOADER) {
           newSample.getRelationships().addAll(existingRelationships);
         }
@@ -752,7 +750,7 @@ public class SampleService {
       if (sample.hasAccession() && !isNotExistingAccession(sample.getAccession())) {
         // fetch old sample if sample exists,
         // fetch returns sample with curations applied
-        return fetch(sample.getAccession(), Optional.empty());
+        return fetch(sample.getAccession(), false);
       }
     }
 

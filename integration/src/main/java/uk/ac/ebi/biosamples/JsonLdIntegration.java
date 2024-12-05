@@ -56,7 +56,7 @@ public class JsonLdIntegration extends AbstractIntegration {
       throw new IntegrationTestFailException(
           "JsonLD test sample should not be available during phase 1", Phase.ONE);
     } else {
-      final EntityModel<Sample> resource = client.persistSampleResource(testSample);
+      final EntityModel<Sample> resource = webinClient.persistSampleResource(testSample);
       final Sample sampleContent = resource.getContent();
       final Attribute sraAccessionAttribute =
           sampleContent.getAttributes().stream()

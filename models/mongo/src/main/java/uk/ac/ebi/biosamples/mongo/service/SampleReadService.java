@@ -73,12 +73,11 @@ public class SampleReadService {
             bioSamplesProperties.getBiosamplesCorePageThreadCountMax());
   }
 
-  public Optional<Sample> fetch(
-      final String accession, final Optional<List<String>> curationDomains) {
+  public Optional<Sample> fetch(final String accession, final boolean applyCurations) {
     final MongoSample mongoSample = getMongoSample(accession);
 
     if (mongoSample == null) {
-      LOGGER.warn(String.format("1 - Failed to retrieve sample with accession %s", accession));
+      LOGGER.warn(String.format("Failed to retrieve sample with accession %s", accession));
 
       return Optional.empty();
     }
@@ -88,7 +87,9 @@ public class SampleReadService {
     final AtomicReference<Sample> sample =
         new AtomicReference<>(mongoSampleToSampleConverter.apply(updatedMongoSample));
 
-    sample.set(curationReadService.applyAllCurationToSample(sample.get(), curationDomains));
+    if (applyCurations) {
+      sample.set(curationReadService.applyAllCurationToSample(sample.get()));
+    }
 
     final Optional<MongoStructuredData> mongoStructuredData =
         mongoStructuredDataRepository.findById(accession);
@@ -126,28 +127,28 @@ public class SampleReadService {
         .anyMatch(accession::startsWith);
   }
 
-  public Future<Optional<Sample>> fetchAsync(
-      final String accession, final Optional<List<String>> curationDomains) {
-    return executorService.submit(new FetchCallable(accession, this, curationDomains));
+  public Future<Optional<Sample>> fetchAsync(final String accession, final boolean applyCurations) {
+    return executorService.submit(new FetchCallable(accession, this, applyCurations));
   }
 
   private static class FetchCallable implements Callable<Optional<Sample>> {
     private final SampleReadService sampleReadService;
     private final String accession;
-    private final Optional<List<String>> curationDomains;
+    private final boolean applyCurations;
 
     FetchCallable(
         final String accession,
         final SampleReadService sampleReadService,
-        final Optional<List<String>> curationDomains) {
+        final boolean applyCurations) {
       this.accession = accession;
       this.sampleReadService = sampleReadService;
-      this.curationDomains = curationDomains;
+      this.applyCurations = applyCurations;
     }
 
     @Override
     public Optional<Sample> call() {
-      final Optional<Sample> opt = sampleReadService.fetch(accession, curationDomains);
+      final Optional<Sample> opt = sampleReadService.fetch(accession, applyCurations);
+
       if (!opt.isPresent()) {
         LOGGER.warn(String.format("failed to retrieve sample with accession %s", accession));
       }

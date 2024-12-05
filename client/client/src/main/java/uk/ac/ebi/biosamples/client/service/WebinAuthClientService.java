@@ -29,14 +29,11 @@ import uk.ac.ebi.biosamples.client.model.auth.AuthRequestWebin;
 
 public class WebinAuthClientService implements ClientService {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final RestOperations restOperations;
-
   private final URI webinAuthUri;
   private final String username;
   private final String password;
   private final List<AuthRealm> authRealms;
-
   private Optional<String> jwt = Optional.empty();
   private Optional<Date> expiry = Optional.empty();
   private Optional<Date> expiryMinusAnHour = Optional.empty();

@@ -53,7 +53,7 @@ public class SitemapIntegration extends AbstractIntegration {
   protected void phaseTwo() {
     final List<EntityModel<Sample>> samples = new ArrayList<>();
     final Map<String, Boolean> lookupTable = new HashMap<>();
-    for (final EntityModel<Sample> sample : publicClient.fetchSampleResourceAll()) {
+    for (final EntityModel<Sample> sample : noAuthClient.fetchSampleResourceAll()) {
       samples.add(sample);
       lookupTable.put(Objects.requireNonNull(sample.getContent()).getAccession(), Boolean.FALSE);
     }

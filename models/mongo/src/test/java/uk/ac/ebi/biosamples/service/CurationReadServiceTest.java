@@ -43,7 +43,6 @@ import uk.ac.ebi.biosamples.mongo.service.MongoCurationToCurationConverter;
     })
 @ActiveProfiles("test")
 public class CurationReadServiceTest {
-
   @MockBean private MongoCurationRepository mongoCurationRepository;
   @MockBean private MongoCurationLinkRepository mongoCurationLinkRepository;
 
@@ -84,8 +83,7 @@ public class CurationReadServiceTest {
   @Test
   public void applyAllCurationToSample_test_add_new_curation_attribute() {
     final Sample originalSample = getSampleForTest();
-    final Sample curatedSample =
-        curationReadService.applyAllCurationToSample(originalSample, Optional.empty());
+    final Sample curatedSample = curationReadService.applyAllCurationToSample(originalSample);
 
     if (!curatedSample
         .getAttributes()
@@ -104,20 +102,18 @@ public class CurationReadServiceTest {
   public void
       applyAllCurationToSample_test_dont_add_new_curation_attribute_pass_double_quotes_as_single_elem_in_curation_domain_list() {
     final Sample originalSample = getSampleForTest();
-    final Sample curatedSample =
-        curationReadService.applyAllCurationToSample(
-            originalSample, Optional.of(Collections.singletonList("")));
+    final Sample curatedSample = curationReadService.applyAllCurationToSample(originalSample);
 
-    if (curatedSample
+    if (!curatedSample
         .getAttributes()
         .contains(Attribute.build("NewCuration", "new value", "iri", "unit"))) {
-      Assert.fail("Un-curated view contains curation object");
+      Assert.fail("Curated view doesn't contains curation object");
     }
 
-    if (curatedSample
+    if (!curatedSample
         .getExternalReferences()
         .contains(ExternalReference.build("www.ebi.ac.uk/test/new"))) {
-      Assert.fail("Un-curated view contains curation object");
+      Assert.fail("Curated view doesn't contains curation object");
     }
   }
 
@@ -125,28 +121,25 @@ public class CurationReadServiceTest {
   public void
       applyAllCurationToSample_test_dont_add_new_curation_attribute_pass_single_empty_optional_in_curation_domain_list() {
     final Sample originalSample = getSampleForTest();
-    final Sample curatedSample =
-        curationReadService.applyAllCurationToSample(
-            originalSample, Optional.of(new ArrayList<>()));
+    final Sample curatedSample = curationReadService.applyAllCurationToSample(originalSample);
 
-    if (curatedSample
+    if (!curatedSample
         .getAttributes()
         .contains(Attribute.build("NewCuration", "new value", "iri", "unit"))) {
-      Assert.fail("Un-curated view contains curation object");
+      Assert.fail("Curated view doesn't contains curation object");
     }
 
-    if (curatedSample
+    if (!curatedSample
         .getExternalReferences()
         .contains(ExternalReference.build("www.ebi.ac.uk/test/new"))) {
-      Assert.fail("Un-curated view contains curation object");
+      Assert.fail("Curated view doesn't contains curation object");
     }
   }
 
   @Test
   public void applyAllCurationToSample_test_delete_curation_attribute() {
     final Sample originalSample = getSampleForTest();
-    final Sample curatedSample =
-        curationReadService.applyAllCurationToSample(originalSample, Optional.empty());
+    final Sample curatedSample = curationReadService.applyAllCurationToSample(originalSample);
 
     if (curatedSample.getAttributes().contains(Attribute.build("Weird", "weired value"))) {
       Assert.fail("Failed to delete curation attribute to sample");
@@ -162,8 +155,7 @@ public class CurationReadServiceTest {
   @Test
   public void applyAllCurationToSample_test_correct_curation_attribute_order() {
     final Sample originalSample = getSampleForTest();
-    final Sample curatedSample =
-        curationReadService.applyAllCurationToSample(originalSample, Optional.empty());
+    final Sample curatedSample = curationReadService.applyAllCurationToSample(originalSample);
 
     for (final Attribute attribute : curatedSample.getAttributes()) {
       if ("Organism".equalsIgnoreCase(attribute.getType())) {
