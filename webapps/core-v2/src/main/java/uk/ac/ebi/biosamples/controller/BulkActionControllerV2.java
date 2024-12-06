@@ -295,7 +295,7 @@ public class BulkActionControllerV2 {
     List<SubmissionReceipt.ValidationError> validationErrors;
 
     for (final Sample sample : samples) {
-      final String validationResult = validate(sample);
+      final String validationResult = validateGetMessages(sample);
 
       if (validationResult != null) {
         try {
@@ -338,12 +338,11 @@ public class BulkActionControllerV2 {
     sample = buildSample(sample, relationships, isWebinSuperUser);
 
     Pair<Optional<Sample>, Optional<String>> sampleErrorPair;
-    String validationMessage = null;
 
     try {
       if (bioSamplesProperties.isEnableBulkSubmissionWebinSuperUserValidation()
           || !isWebinSuperUser) {
-        validationMessage = validate(sample);
+        validate(sample);
       }
 
       final Optional<Sample> persistedSample =
@@ -351,13 +350,11 @@ public class BulkActionControllerV2 {
               sampleService.persistSampleV2(sample, oldSample.orElse(null), isWebinSuperUser));
       sampleErrorPair = new ImmutablePair<>(persistedSample, Optional.empty());
     } catch (GlobalExceptions.SchemaValidationException e) {
-      sampleErrorPair =
-          new ImmutablePair<>(Optional.empty(), Optional.ofNullable(validationMessage));
+      sampleErrorPair = new ImmutablePair<>(Optional.empty(), Optional.ofNullable(e.getMessage()));
 
       log.info("Sample validation failed: {}", sample.getAccession());
     } catch (Exception e) {
-      sampleErrorPair =
-          new ImmutablePair<>(Optional.empty(), Optional.ofNullable(validationMessage));
+      sampleErrorPair = new ImmutablePair<>(Optional.empty(), Optional.ofNullable(e.getMessage()));
 
       log.error("Failed to validate sample", e);
     }
@@ -379,7 +376,7 @@ public class BulkActionControllerV2 {
     return sampleService.persistSampleV2(sample, oldSample.orElse(null), true);
   }
 
-  private String validate(final Sample sample) {
+  private String validateGetMessages(final Sample sample) {
     final String sampleIdentifier =
         sample.getAccession() != null ? sample.getAccession() : sample.getName();
     try {
@@ -397,6 +394,10 @@ public class BulkActionControllerV2 {
     }
 
     return null;
+  }
+
+  private void validate(Sample sample) {
+    schemaValidationService.validate(sample);
   }
 
   private Sample buildSample(

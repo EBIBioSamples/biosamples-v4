@@ -65,6 +65,7 @@ public class SchemaValidationService {
       throw new GlobalExceptions.SchemaValidationException(e.getMessage(), e);
     } catch (final Exception e) {
       log.error("Schema validation error: " + e.getMessage(), e);
+
       throw new GlobalExceptions.SchemaValidationException(
           "Sample validation error: " + e.getMessage(), e);
     }
