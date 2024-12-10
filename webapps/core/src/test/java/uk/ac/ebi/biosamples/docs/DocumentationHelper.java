@@ -133,7 +133,6 @@ public class DocumentationHelper {
   CurationLink getExampleCurationLink() {
     final Curation curationObject = getExampleCuration();
     final Sample sampleObject = getExampleSampleBuilder().build();
-    final String domain = getExampleDomain();
 
     return CurationLink.build(
         sampleObject.getAccession(),

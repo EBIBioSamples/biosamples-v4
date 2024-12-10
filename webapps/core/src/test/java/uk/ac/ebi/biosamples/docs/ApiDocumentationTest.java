@@ -31,7 +31,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -425,7 +424,7 @@ public class ApiDocumentationTest {
         .andExpect(status().is2xxSuccessful())
         .andDo(
             document(
-                "accession-sample-2",
+                "accession-sample",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint())));
   }
@@ -664,22 +663,15 @@ public class ApiDocumentationTest {
   }
 
   @Test
-  @Ignore
-  public void postCurationLink1() throws Exception {
+  @WithUserDetails(WEBIN_TESTING_ACCOUNT)
+  public void postCurationLink() throws Exception {
     final CurationLink curationLink = faker.getExampleCurationLink();
 
+    when(sampleService.getPrinciple(any(Authentication.class))).thenReturn(WEBIN_TESTING_ACCOUNT);
     when(webinAuthenticationService.handleWebinUserSubmission(
             any(CurationLink.class), any(String.class)))
         .thenReturn(curationLink);
-    when(curationPersistService.store(curationLink)).thenReturn(curationLink);
-    when(accessControlService.extractToken(anyString()))
-        .thenReturn(
-            Optional.of(
-                new AuthToken(
-                    "RS256",
-                    AuthorizationProvider.WEBIN,
-                    WEBIN_TESTING_ACCOUNT,
-                    Collections.emptyList())));
+    when(curationPersistService.store(any(CurationLink.class))).thenReturn(curationLink);
 
     mockMvc
         .perform(
