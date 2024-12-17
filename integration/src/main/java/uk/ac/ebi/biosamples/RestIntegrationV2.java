@@ -65,14 +65,12 @@ public class RestIntegrationV2 extends AbstractIntegration {
 
   @Override
   protected void phaseFive() {
-    final Optional<EntityModel<Sample>> sampleSubmittedWithAAPAuth =
+    final Optional<EntityModel<Sample>> submittedSample =
         annonymousClient.fetchSampleResource("SAMEA1");
-    final Sample sampleSubmittedWithAAPAuthNowAfterPersistenceWithWebinSuperUser =
-        webinClient
-            .persistSampleResource(sampleSubmittedWithAAPAuth.get().getContent())
-            .getContent();
+    final Sample submittedSampleRePersistedBySuperUser =
+        webinClient.persistSampleResource(submittedSample.get().getContent()).getContent();
 
-    if (sampleSubmittedWithAAPAuthNowAfterPersistenceWithWebinSuperUser.getAttributes().stream()
+    if (submittedSampleRePersistedBySuperUser.getAttributes().stream()
         .noneMatch(attribute -> attribute.getType().equals("SRA accession"))) {
       throw new IntegrationTestFailException(
           "Sample must have a SRA accession at this stage", Phase.FIVE);

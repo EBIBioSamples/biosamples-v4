@@ -322,18 +322,15 @@ public class BulkActionControllerV2 {
   }
 
   private Pair<Optional<Sample>, Optional<String>> persistSample(
-      final String webinSubmissionAccountId, Sample sample) {
-    final boolean isWebinSuperUser =
-        webinAuthenticationService.isWebinSuperUser(webinSubmissionAccountId);
+      final String principle, Sample sample) {
+    final boolean isWebinSuperUser = webinAuthenticationService.isWebinSuperUser(principle);
     final Optional<Sample> oldSample =
         sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
             sample, isWebinSuperUser);
     final Set<Relationship> relationships =
         sampleService.handleSampleRelationshipsV2(sample, oldSample, isWebinSuperUser);
 
-    sample =
-        webinAuthenticationService.handleWebinUserSubmission(
-            sample, webinSubmissionAccountId, oldSample);
+    sample = webinAuthenticationService.handleWebinUserSubmission(sample, principle, oldSample);
 
     sample = buildSample(sample, relationships, isWebinSuperUser);
 
@@ -362,15 +359,13 @@ public class BulkActionControllerV2 {
     return sampleErrorPair;
   }
 
-  private Sample persistSampleNoValidation(final String webinSubmissionAccountId, Sample sample) {
+  private Sample persistSampleNoValidation(final String principle, Sample sample) {
     final Optional<Sample> oldSample =
         sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(sample, true);
     final Set<Relationship> relationships =
         sampleService.handleSampleRelationshipsV2(sample, oldSample, true);
 
-    sample =
-        webinAuthenticationService.handleWebinUserSubmission(
-            sample, webinSubmissionAccountId, oldSample);
+    sample = webinAuthenticationService.handleWebinUserSubmission(sample, principle, oldSample);
     sample = buildSample(sample, relationships, true);
 
     return sampleService.persistSampleV2(sample, oldSample.orElse(null), true);

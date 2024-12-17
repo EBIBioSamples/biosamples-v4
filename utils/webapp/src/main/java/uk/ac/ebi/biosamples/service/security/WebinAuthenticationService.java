@@ -47,21 +47,19 @@ public class WebinAuthenticationService {
   }
 
   public Sample handleWebinUserSubmission(
-      final Sample sample, final String webinIdFromAuthToken, final Optional<Sample> oldSample) {
+      final Sample sample, final String principle, final Optional<Sample> oldSample) {
     final String proxyWebinId = bioSamplesProperties.getBiosamplesClientWebinUsername();
     final String webinIdInSample = sample.getWebinSubmissionAccountId();
-    final String domain = sample.getDomain();
 
-    if (webinIdFromAuthToken != null && !webinIdFromAuthToken.isEmpty()) {
+    if (principle != null && !principle.isEmpty()) {
       final String webinIdToSetForSample =
           (webinIdInSample != null && !webinIdInSample.isEmpty()) ? webinIdInSample : proxyWebinId;
 
       if (sample.getAccession() != null) {
         return handleSampleUpdate(
-            sample, oldSample, webinIdFromAuthToken, proxyWebinId, webinIdToSetForSample, domain);
+            sample, oldSample, principle, proxyWebinId, webinIdToSetForSample);
       } else {
-        return handleNewSubmission(
-            sample, webinIdFromAuthToken, proxyWebinId, webinIdToSetForSample, domain);
+        return handleNewSubmission(sample, principle, proxyWebinId, webinIdToSetForSample);
       }
     } else {
       throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
@@ -73,12 +71,11 @@ public class WebinAuthenticationService {
       final Optional<Sample> oldSample,
       final String webinIdFromAuthToken,
       final String proxyWebinId,
-      final String webinIdToSetForSample,
-      final String domain) {
+      final String webinIdToSetForSample) {
     if (webinIdFromAuthToken.equalsIgnoreCase(proxyWebinId)) {
-      return handleWebinSuperUserSampleSubmission(sample, oldSample, domain, webinIdToSetForSample);
+      return handleWebinSuperUserSampleSubmission(sample, oldSample, webinIdToSetForSample);
     } else {
-      return handleNormalSampleUpdate(sample, oldSample, webinIdFromAuthToken, domain);
+      return handleNormalSampleUpdate(sample, oldSample, webinIdFromAuthToken);
     }
   }
 
@@ -86,30 +83,16 @@ public class WebinAuthenticationService {
       final Sample sample,
       final String webinIdFromAuthToken,
       final String proxyWebinId,
-      final String webinIdToSetForSample,
-      final String domain) {
+      final String webinIdToSetForSample) {
     if (webinIdFromAuthToken.equalsIgnoreCase(proxyWebinId)) {
       return buildSampleWithWebinId(sample, webinIdToSetForSample);
     } else {
-      if (domain != null) {
-        throw new GlobalExceptions.AccessControlException(
-            "Sample submitted using WEBIN authentication must not have a domain");
-      }
-
       return buildSampleWithWebinId(sample, webinIdFromAuthToken);
     }
   }
 
   private Sample handleNormalSampleUpdate(
-      final Sample sample,
-      final Optional<Sample> oldSample,
-      final String webinIdFromAuthToken,
-      final String domain) {
-    if (domain != null) {
-      throw new GlobalExceptions.AccessControlException(
-          "Sample submitted using WEBIN authentication must not have a domain");
-    }
-
+      final Sample sample, final Optional<Sample> oldSample, final String webinIdFromAuthToken) {
     if (oldSample.isPresent()) {
       final Sample oldSampleInDb = oldSample.get();
 
@@ -135,10 +118,7 @@ public class WebinAuthenticationService {
   }
 
   private Sample handleWebinSuperUserSampleSubmission(
-      final Sample sample,
-      final Optional<Sample> oldSample,
-      final String domain,
-      final String webinIdToSetForSample) {
+      final Sample sample, final Optional<Sample> oldSample, final String webinIdToSetForSample) {
     if (oldSample.isPresent()) {
       final Sample oldSampleInDb = oldSample.get();
       final String webinIdInOldSample = oldSampleInDb.getWebinSubmissionAccountId();
@@ -152,14 +132,10 @@ public class WebinAuthenticationService {
       } else {
         final String oldSampleAapDomain = oldSampleInDb.getDomain();
 
-        if (isOwnershipChangeFromAapToWebinAllowed(oldSampleAapDomain)) {
-          return buildSampleWithWebinId(sample, webinIdToSetForSample);
-        } else if (sampleService.isPipelineNcbiDomain(oldSampleAapDomain)) {
-          return sample;
-        } else if (isSameDomain(domain, oldSampleAapDomain)) {
+        if (sampleService.isPipelineNcbiDomain(oldSampleAapDomain)) {
           return sample;
         } else {
-          throw new GlobalExceptions.SampleNotAccessibleException();
+          return buildSampleWithWebinId(sample, webinIdToSetForSample);
         }
       }
     } else {
@@ -167,11 +143,8 @@ public class WebinAuthenticationService {
     }
   }
 
-  private boolean isOwnershipChangeFromAapToWebinAllowed(final String oldSampleAapDomain) {
-    return sampleService.isPipelineEnaDomain(oldSampleAapDomain)
-        || isOldRegistrationDomain(oldSampleAapDomain)
-        || oldSampleAapDomain.equals(ATLANTICO_DOMAIN)
-        || oldSampleAapDomain.equals("subs.team-31");
+  private boolean isOwnershipChangeFromAapToWebinAllowed() {
+    return true;
   }
 
   private boolean isSameDomain(final String domain, final String oldSampleAapDomain) {

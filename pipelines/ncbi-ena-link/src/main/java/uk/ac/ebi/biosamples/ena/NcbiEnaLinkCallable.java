@@ -61,7 +61,7 @@ public class NcbiEnaLinkCallable implements Callable<Void> {
         log.info("NCBI sample doesn't exist in BioSamples " + accession + " fetching from ERAPRO");
 
         // Enrich the sample from ERA PRO
-        final Sample sample = enaSampleToBioSampleConversionService.enrichSample(accession, true);
+        final Sample sample = enaSampleToBioSampleConversionService.enrichSample(accession);
 
         // Attempt to persist the enriched sample with retries
         submitRetry(success, sample);
@@ -88,7 +88,7 @@ public class NcbiEnaLinkCallable implements Callable<Void> {
           } else {
             // Enrich and persist the sample if there is a mismatch
             final Sample modifiedSample =
-                enaSampleToBioSampleConversionService.enrichSample(accession, true, eraproSample);
+                enaSampleToBioSampleConversionService.enrichSample(accession, eraproSample);
 
             submitRetry(success, modifiedSample);
           }

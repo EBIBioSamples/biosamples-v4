@@ -371,12 +371,7 @@ public class SampleHtmlController {
     // EBI load balancer does cache but doesn't add age header, so clients could cache up to twice
     // this age
     final CacheControl cacheControl = CacheControl.maxAge(maxAge, TimeUnit.SECONDS);
-    // if the user has access to any domains, then mark the response as
-    // private as must be using AAP and responses will be different
 
-    /*if (domains != null && !domains.isEmpty()) {
-      cacheControl.cachePrivate();
-    }*/
     response.setHeader("Cache-Control", cacheControl.getHeaderValue());
   }
 }

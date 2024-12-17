@@ -87,7 +87,7 @@ public class NcbiSampleConversionService {
 
   public NcbiSampleConversionService(final TaxonomyService taxonomyService) {
     this.taxonomyService = taxonomyService;
-    amrConversionService = new NcbiAmrConversionService();
+    this.amrConversionService = new NcbiAmrConversionService();
   }
 
   public Sample convertNcbiXmlElementToSample(final Element sampleElem) {

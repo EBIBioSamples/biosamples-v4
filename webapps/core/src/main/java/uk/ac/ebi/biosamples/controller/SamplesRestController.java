@@ -134,9 +134,6 @@ public class SamplesRestController {
     final CacheControl cacheControl =
         CacheControl.maxAge(
             bioSamplesProperties.getBiosamplesCorePageCacheMaxAge(), TimeUnit.SECONDS);
-    // if the user has access to any domains, then mark the response as private as must be using
-    // AAP
-    // and responses will be different
 
     if (cursor != null) {
       log.trace("This cursor = " + decodedCursor);

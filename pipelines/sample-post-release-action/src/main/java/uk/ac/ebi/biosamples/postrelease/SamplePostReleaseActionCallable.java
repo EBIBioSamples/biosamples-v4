@@ -21,15 +21,11 @@ import uk.ac.ebi.biosamples.model.SampleStatus;
 public class SamplePostReleaseActionCallable implements Callable<Boolean> {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final Sample sample;
-  private final BioSamplesClient bioSamplesAapClient;
   private final BioSamplesClient bioSamplesWebinClient;
   static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
   SamplePostReleaseActionCallable(
-      final BioSamplesClient bioSamplesAapClient,
-      final BioSamplesClient bioSamplesWebinClient,
-      final Sample sample) {
-    this.bioSamplesAapClient = bioSamplesAapClient;
+      final BioSamplesClient bioSamplesWebinClient, final Sample sample) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
     this.sample = sample;
   }
@@ -53,13 +49,7 @@ public class SamplePostReleaseActionCallable implements Callable<Boolean> {
     boolean success = true;
 
     try {
-      final String webinSubmissionAccountId = sample.getWebinSubmissionAccountId();
-
-      if (webinSubmissionAccountId != null && webinSubmissionAccountId.length() > 0) {
-        bioSamplesWebinClient.persistSampleResource(buildSampleWithPublicStatus());
-      } else {
-        bioSamplesAapClient.persistSampleResource(buildSampleWithPublicStatus());
-      }
+      bioSamplesWebinClient.persistSampleResource(buildSampleWithPublicStatus());
 
       log.info(sampleAccession + " is public now");
     } catch (final Exception e) {
