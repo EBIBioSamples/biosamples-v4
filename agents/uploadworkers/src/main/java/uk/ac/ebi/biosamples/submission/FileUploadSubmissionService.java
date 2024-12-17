@@ -78,21 +78,9 @@ public class FileUploadSubmissionService {
       log.info("Received file with file ID " + submissionId);
 
       final SubmissionFile submissionFile = fileUploadStorageService.getFile(submissionId);
-
-      // get submissionFile metadata, determine webin aur aap auth and use client
-      // accordingly
       final boolean isWebin = mongoFileUpload.isWebin();
       final String checklist = mongoFileUpload.getChecklist();
-
-      String aapDomain = null;
-      String webinId = null;
-
-      if (isWebin) {
-        webinId = mongoFileUpload.getSubmitterDetails();
-      } else {
-        aapDomain = mongoFileUpload.getSubmitterDetails();
-      }
-
+      final String webinId = mongoFileUpload.getSubmitterDetails();
       final Path temp = Files.createTempFile("upload", ".tsv");
 
       Files.copy(submissionFile.getStream(), temp, StandardCopyOption.REPLACE_EXISTING);
@@ -112,8 +100,7 @@ public class FileUploadSubmissionService {
       log.info("CSV data size: " + csvDataMap.size());
 
       final List<Sample> samples =
-          buildAndPersistSamples(
-              csvDataMap, aapDomain, webinId, checklist, validationResult, isWebin);
+          buildAndPersistSamples(csvDataMap, webinId, checklist, validationResult, isWebin);
       final List<SampleNameAccessionPair> accessionsList =
           samples.stream()
               .filter(sample -> sample.getAccession() != null)
@@ -212,7 +199,6 @@ public class FileUploadSubmissionService {
 
   private List<Sample> buildAndPersistSamples(
       final List<Multimap<String, String>> csvDataMap,
-      final String aapDomain,
       final String webinId,
       final String checklist,
       final ValidationResult validationResult,
@@ -225,7 +211,7 @@ public class FileUploadSubmissionService {
           Sample sample = null;
 
           try {
-            sample = buildAndPersistSample(csvRecordMap, aapDomain, webinId, checklist, isWebin);
+            sample = buildAndPersistSample(csvRecordMap, webinId, checklist);
 
             if (sample == null) {
               validationResult.addValidationMessage(
@@ -295,12 +281,8 @@ public class FileUploadSubmissionService {
   }
 
   private Sample buildAndPersistSample(
-      final Multimap<String, String> multiMap,
-      final String aapDomain,
-      final String webinId,
-      final String checklist,
-      final boolean isWebin) {
-    final String sampleName = fileUploadUtils.getSampleName(multiMap);
+      final Multimap<String, String> multiMap, final String webinId, final String checklist) {
+    final String sampleName = FileUploadUtils.getSampleName(multiMap);
     final String accession = fileUploadUtils.getSampleAccession(multiMap);
     final boolean sampleWithAccession = accession != null;
     boolean persisted = true;

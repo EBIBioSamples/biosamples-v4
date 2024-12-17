@@ -72,7 +72,7 @@ public class EnaImportCallable implements Callable<Void> {
         sampleToUpdateRequiredPair = buildBsdAuthoritySampleWithSraAccession(accession);
       } else {
         enaSampleConvertedToBioSample =
-            enaSampleToBioSampleConversionService.enrichSample(accession, false);
+            enaSampleToBioSampleConversionService.enrichSample(accession);
       }
 
       boolean success = false;
@@ -258,7 +258,7 @@ public class EnaImportCallable implements Callable<Void> {
               + " sample from ERAPRO "
               + accession);
       try {
-        final Sample sample = enaSampleToBioSampleConversionService.enrichSample(accession, false);
+        final Sample sample = enaSampleToBioSampleConversionService.enrichSample(accession);
 
         boolean success = false;
         int numRetry = 0;

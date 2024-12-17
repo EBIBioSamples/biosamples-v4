@@ -34,7 +34,6 @@ public class SampleReleaseCallable implements Callable<Void> {
   private static final Logger log = LoggerFactory.getLogger(SampleReleaseCallable.class);
   private final PipelinesProperties pipelinesProperties;
   private final BioSamplesClient bioSamplesWebinClient;
-  private final BioSamplesClient bioSamplesAapClient;
   private final RestTemplate restTemplate;
   private final String accession;
   private final LocalDate localDate;
@@ -42,13 +41,11 @@ public class SampleReleaseCallable implements Callable<Void> {
 
   SampleReleaseCallable(
       final BioSamplesClient bioSamplesWebinClient,
-      final BioSamplesClient bioSamplesAapClient,
       final PipelinesProperties pipelinesProperties,
       final RestTemplate restTemplate,
       final String accession,
       final LocalDate fromDate) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
-    this.bioSamplesAapClient = bioSamplesAapClient;
     this.restTemplate = restTemplate;
     this.pipelinesProperties = pipelinesProperties;
     this.accession = accession;
@@ -57,7 +54,6 @@ public class SampleReleaseCallable implements Callable<Void> {
 
   @Override
   public Void call() {
-    boolean isAap = false;
     boolean isHandled = false;
 
     try {
@@ -65,11 +61,6 @@ public class SampleReleaseCallable implements Callable<Void> {
 
       Optional<EntityModel<Sample>> optionalSampleResource =
           bioSamplesWebinClient.fetchSampleResource(accession, false);
-
-      if (optionalSampleResource.isEmpty()) {
-        optionalSampleResource = bioSamplesAapClient.fetchSampleResource(accession, false);
-        isAap = true;
-      }
 
       if (optionalSampleResource.isPresent()) {
         final Sample sampleWithoutCurations = optionalSampleResource.get().getContent();
@@ -81,29 +72,16 @@ public class SampleReleaseCallable implements Callable<Void> {
 
         if (sampleWithoutCurations.getRelease().isAfter(Instant.now())) {
           // private sample, make it public
-          if (isAap) {
-            handleInsdcStatusAttribute(sampleWithoutCurations);
-            handleExternalReference(sampleWithoutCurations);
+          handleInsdcStatusAttribute(sampleWithoutCurations);
+          handleExternalReference(sampleWithoutCurations);
 
-            bioSamplesAapClient
-                .persistSampleResource(
-                    Sample.Builder.fromSample(sampleWithoutCurations)
-                        .withRelease(Instant.now())
-                        .withStatus(SampleStatus.PUBLIC)
-                        .build())
-                .getContent();
-          } else {
-            handleInsdcStatusAttribute(sampleWithoutCurations);
-            handleExternalReference(sampleWithoutCurations);
-
-            bioSamplesWebinClient
-                .persistSampleResource(
-                    Sample.Builder.fromSample(sampleWithoutCurations)
-                        .withRelease(Instant.now())
-                        .withStatus(SampleStatus.PUBLIC)
-                        .build())
-                .getContent();
-          }
+          bioSamplesWebinClient
+              .persistSampleResource(
+                  Sample.Builder.fromSample(sampleWithoutCurations)
+                      .withRelease(Instant.now())
+                      .withStatus(SampleStatus.PUBLIC)
+                      .build())
+              .getContent();
         }
 
         isHandled = true;
@@ -142,7 +120,6 @@ public class SampleReleaseCallable implements Callable<Void> {
             externalReference ->
                 externalReference.getUrl().equalsIgnoreCase(expectedExternalReference))) {
       externalReferences.add(ExternalReference.build(expectedExternalReference));
-
       sampleWithoutCurations.getExternalReferences().addAll(externalReferences);
     }
   }

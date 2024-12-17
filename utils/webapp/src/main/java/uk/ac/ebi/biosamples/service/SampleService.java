@@ -219,14 +219,14 @@ public class SampleService {
     log.error("Trying to update sample not in database, accession: {}", newSample.getAccession());
 
     bioSamplesCrossSourceIngestAccessControlService
-        .validateFileUploaderSampleUpdateHasAlwaysExistingAccession(newSample);
+        .validateFileUploaderSampleUpdateHasExistingAccession(newSample);
 
     final SortedSet<Attribute> newSampleAttributes = newSample.getAttributes();
 
     if (newSampleAttributes.stream()
         .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION))) {
       // Don't generate SRA accession (ERS sample accessions) for NCBI samples
-      if (!isNcbiSampleAndNcbiSuperUserDomain(newSample)) {
+      if (!isNcbiImport(newSample)) {
         final String sraAccession = generateOneSRAAccession();
 
         newSampleAttributes.add(Attribute.build(SRA_ACCESSION, sraAccession));
@@ -495,7 +495,7 @@ public class SampleService {
       }
     }
 
-    // Check if SRA accession field is null but attribute is present
+    // Check if SRA accession field is null but the attribute is present
     if (sraAccessionField == null && newSampleSraAccessionOptional.isPresent()) {
       // Promote SRA accession attribute to the field and return the modified sample
       return Sample.Builder.fromSample(newSample)
@@ -512,7 +512,7 @@ public class SampleService {
     if (existingRelationships != null && !existingRelationships.isEmpty()) {
       final String webinId = newSample.getWebinSubmissionAccountId();
 
-      // superuser and non file upload submissions
+      // superuser and non-file upload submissions
       if (webinId != null
           && webinId.equals(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
         if (newSample.getSubmittedVia() != SubmittedViaType.FILE_UPLOADER) {
@@ -546,7 +546,7 @@ public class SampleService {
             && !oldSampleSraAccessionField.isEmpty()
             && !newSampleSraAccessionField.equals(oldSampleSraAccessionField)
             && !isWebinSuperUser
-            && !isNcbiSampleAndNcbiSuperUserDomain(newSample)) {
+            && !isNcbiImport(newSample)) {
           throw new GlobalExceptions.ChangedSRAAccessionException();
         }
       }
@@ -599,28 +599,27 @@ public class SampleService {
               .getValue()
               .equals(newSampleSraAccessionAttribute.getValue())
           && !isWebinSuperUser
-          && !isNcbiSampleAndNcbiSuperUserDomain(newSample)) {
+          && !isNcbiImport(newSample)) {
         throw new GlobalExceptions.ChangedSRAAccessionException();
       }
     } else {
       // Step 7: Handling New Samples without Old Samples (Old Sample doesn't exist)
-      if (newSampleSraAccessionAttribute == null
-          && isWebinSuperUser
-          && !isNcbiSampleAndNcbiSuperUserDomain(newSample)) {
-        // If oldSample doesn't exist, and newSampleSraAccession is still null, create a new one
-        // Don't generate SRA accession (ERS sample accessions) for NCBI samples while import (AAP
-        // domain check + prefix check)
+      if (newSampleSraAccessionAttribute == null && isWebinSuperUser && !isNcbiImport(newSample)) {
+        // If oldSample doesn't exist, and newSampleSraAccessionAttribute is still null, create, a
+        // new one
+        // Doesn't generate SRA accession (ERS sample accessions) for NCBI samples while import
+        // (prefix checks)
         newSampleSraAccessionAttribute = Attribute.build(SRA_ACCESSION, generateOneSRAAccession());
-        // Add newSampleSraAccession to the attributes of the new sample
+        // Add newSampleSraAccessionAttribute to the attributes of the new sample
         newSampleAttributes.add(newSampleSraAccessionAttribute);
       }
     }
   }
 
-  private boolean isNcbiSampleAndNcbiSuperUserDomain(final Sample newSample) {
+  private boolean isNcbiImport(final Sample newSample) {
     return (newSample.getAccession().startsWith(NCBI_ACCESSION_PREFIX)
             || newSample.getAccession().startsWith(DDBJ_ACCESSION_PREFIX))
-        && isPipelineNcbiDomain(newSample.getDomain());
+        && newSample.getSubmittedVia() == SubmittedViaType.PIPELINE_IMPORT;
   }
 
   private Instant defineCreateDate(final Sample newSample, final Sample oldSample) {

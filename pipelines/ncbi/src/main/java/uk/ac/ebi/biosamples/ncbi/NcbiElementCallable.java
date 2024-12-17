@@ -66,10 +66,10 @@ public class NcbiElementCallable implements Callable<Void> {
       }
 
       // Generate the sample without the domain
-      final Sample sampleWithoutDomain =
+      final Sample sampleWithoutAuthInfo =
           ncbiSampleConversionService.convertNcbiXmlElementToSample(sampleElem);
       final Sample sample =
-          Sample.Builder.fromSample(sampleWithoutDomain)
+          Sample.Builder.fromSample(sampleWithoutAuthInfo)
               .withWebinSubmissionAccountId(webinId)
               .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
               .build();

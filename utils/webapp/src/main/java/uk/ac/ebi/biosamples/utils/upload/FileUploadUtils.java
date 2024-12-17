@@ -39,8 +39,6 @@ public class FileUploadUtils {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private static final DateTimeFormatter DATE_TIME_FORMATTER =
       DateTimeFormatter.ofPattern("dd LLL yyyy HH:mm");
-  public static final String WEBIN_AUTH = "WEBIN";
-  public static final String AAP = "AAP";
 
   public List<Multimap<String, String>> getISATABDataInMap(final CSVParser csvParser)
       throws IOException {

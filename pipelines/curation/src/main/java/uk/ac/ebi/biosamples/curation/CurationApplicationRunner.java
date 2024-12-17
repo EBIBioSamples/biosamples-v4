@@ -18,7 +18,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.EntityModel;
@@ -50,7 +49,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
   private final IriUrlValidatorService iriUrlValidatorService;
 
   public CurationApplicationRunner(
-      @Qualifier("AAPCLIENT") final BioSamplesClient bioSamplesClient,
+      final BioSamplesClient bioSamplesClient,
       final PipelinesProperties pipelinesProperties,
       final OlsProcessor olsProcessor,
       final CurationApplicationService curationApplicationService,
@@ -78,12 +77,14 @@ public class CurationApplicationRunner implements ApplicationRunner {
             true,
             pipelinesProperties.getThreadCount(),
             pipelinesProperties.getThreadCountMax())) {
-
       final Map<String, Future<PipelineResult>> futures = new HashMap<>();
+
       for (final EntityModel<Sample> sampleResource :
           bioSamplesClient.fetchSampleResourceAll("", filters)) {
         LOG.trace("Handling {}", sampleResource);
+
         final Sample sample = sampleResource.getContent();
+
         if (sample == null) {
           throw new RuntimeException("Sample should not be null");
         }
