@@ -30,7 +30,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.*;
@@ -263,9 +262,9 @@ public class BulkActionControllerV2 {
       throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
     }
 
-    if (!webinAuthenticationService.isWebinSuperUser(principle)) {
+    /*if (!webinAuthenticationService.isWebinSuperUser(principle)) {
       throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "POST for super users only");
-    }
+    }*/
 
     final List<Sample> createdSamples =
         samples.stream()
