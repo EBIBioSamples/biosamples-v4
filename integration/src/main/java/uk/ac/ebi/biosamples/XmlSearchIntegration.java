@@ -22,11 +22,12 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component
 public class XmlSearchIntegration extends AbstractIntegration {
-  private final XmlSearchTester xmlSearchTester;
   private final Logger log = LoggerFactory.getLogger(getClass());
+  private final XmlSearchTester xmlSearchTester;
 
   public XmlSearchIntegration(final BioSamplesClient client) {
     super(client);
+
     xmlSearchTester = new XmlSearchTester(log, client);
   }
 
@@ -52,7 +53,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
   @Override
   protected void phaseSix() {}
 
-  private static class XmlSearchTester {
+  private class XmlSearchTester {
     private final Logger log;
     private final BioSamplesClient client;
 
@@ -69,32 +70,54 @@ public class XmlSearchIntegration extends AbstractIntegration {
               TestSampleGenerator.getSampleGroup(),
               TestSampleGenerator.getSampleWithSpecificUpdateDate(),
               TestSampleGenerator.getSampleReleasedAtTheEndOfTheDay(),
-              TestSampleGenerator.getSampleReleasedExaclyTheDayAfterSAMD0912312());
+              TestSampleGenerator.getSampleReleasedExaclyTheDayAfterSAMD0912312(),
+              TestSampleGenerator.getSAMDSampleWithSubmittedViaAsPipelineImport(),
+              TestSampleGenerator.getSAMNSampleWithSubmittedViaAsPipelineImport());
 
       for (Sample sample : baseSampleList) {
         /*throw new RuntimeException("Found existing " + sample.getAccession());*/
 
+        log.info("Persisting sample - " + sample.getAccession());
+
         final EntityModel<Sample> resource = client.persistSampleResource(sample);
         final Sample sampleContent = resource.getContent();
-        final Attribute sraAccessionAttribute =
-            sampleContent.getAttributes().stream()
-                .filter(attribute -> attribute.getType().equals("SRA accession"))
-                .findFirst()
-                .get();
+        final String accession = sampleContent.getAccession();
 
-        sample.getAttributes().add(sraAccessionAttribute);
+        log.info("Persisted sample accession is - " + accession);
 
-        sample =
-            Sample.Builder.fromSample(sample)
-                .withStatus(sampleContent.getStatus())
-                .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
-                .withSraAccession(Objects.requireNonNull(resource.getContent()).getSraAccession())
-                .build();
+        if (!(sample.getAccession().equals("SAMD01111111")
+            || sample.getAccession().equals("SAMN01111111"))) {
+          final Attribute sraAccessionAttribute =
+              sampleContent.getAttributes().stream()
+                  .filter(
+                      attribute -> attribute.getType().equals(BioSamplesConstants.SRA_ACCESSION))
+                  .findFirst()
+                  .get();
 
-        if (!sampleContent.equals(sample)) {
-          throw new IntegrationTestFailException(
-              "Expected response (" + sampleContent + ") to equal submission (" + sample + ")",
-              Phase.ONE);
+          sample.getAttributes().add(sraAccessionAttribute);
+
+          sample =
+              Sample.Builder.fromSample(sample)
+                  .withStatus(sampleContent.getStatus())
+                  .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
+                  .withSraAccession(Objects.requireNonNull(resource.getContent()).getSraAccession())
+                  .build();
+
+          if (!sampleContent.equals(sample)) {
+            throw new IntegrationTestFailException(
+                "Expected response (" + sampleContent + ") to equal submission (" + sample + ")",
+                Phase.ONE);
+          }
+        } else {
+          if (sampleContent.getAttributes().stream()
+              .anyMatch(
+                  attribute -> attribute.getType().equals(BioSamplesConstants.SRA_ACCESSION))) {
+            throw new IntegrationTestFailException(
+                "SAMD/ SAMN sample PIPELINE_IMPORT shouldn't assign new SRA accession", Phase.ONE);
+          } else {
+            log.info(
+                "SAMD/ SAMN sample with PIPELINE IMPORT doesn't have SRA accession (ERS) assigned as expected");
+          }
         }
       }
 
@@ -189,7 +212,6 @@ public class XmlSearchIntegration extends AbstractIntegration {
     static Sample getRegularSample() {
       final String name = "Test XML Sample";
       final String accession = "SAMEA999999";
-      final String domain = "self.BiosampleIntegrationTest";
       final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
       final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
       final SortedSet<Attribute> attributes = new TreeSet<>();
@@ -197,12 +219,10 @@ public class XmlSearchIntegration extends AbstractIntegration {
       attributes.add(
           Attribute.build(
               "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
-      //            return Sample.build(name, accession, "self.BiosampleIntegrationTest",
-      // release,
-      // update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+
       return new Sample.Builder(name, accession)
           .withTaxId(9606L)
-          .withDomain(domain)
+          .withWebinSubmissionAccountId(defaultWebinIdForIntegrationTests)
           .withRelease(release)
           .withUpdate(update)
           .withAttributes(attributes)
@@ -212,7 +232,6 @@ public class XmlSearchIntegration extends AbstractIntegration {
     static Sample getPrivateSample() {
       final String name = "Private XML sample";
       final String accession = "SAMEA888888";
-      final String domain = "self.BiosampleIntegrationTest";
       final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
       final Instant release = Instant.parse("2116-04-01T11:36:57.00Z");
       final SortedSet<Attribute> attributes = new TreeSet<>();
@@ -221,12 +240,9 @@ public class XmlSearchIntegration extends AbstractIntegration {
           Attribute.build(
               "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
-      //            return Sample.build(name, accession, "self.BiosampleIntegrationTest",
-      // release,
-      // update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
       return new Sample.Builder(name, accession)
           .withTaxId(9606L)
-          .withDomain(domain)
+          .withWebinSubmissionAccountId(defaultWebinIdForIntegrationTests)
           .withRelease(release)
           .withUpdate(update)
           .withAttributes(attributes)
@@ -236,17 +252,11 @@ public class XmlSearchIntegration extends AbstractIntegration {
     static Sample getSampleWithinGroup() {
       final String name = "Sample part of group";
       final String accession = "SAMEA777777";
-      final String domain = "self.BiosampleIntegrationTest";
       final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
       final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
-      //            SortedSet<Attribute> attributes = new TreeSet<>();
-
-      //            return Sample.build(name, accession, "self.BiosampleIntegrationTest",
-      // release,
-      // update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
       return new Sample.Builder(name, accession)
-          .withDomain(domain)
+          .withWebinSubmissionAccountId(defaultWebinIdForIntegrationTests)
           .withRelease(release)
           .withUpdate(update)
           .withAttributes(Collections.singleton(Attribute.build("Organism", "Human")))
@@ -256,7 +266,6 @@ public class XmlSearchIntegration extends AbstractIntegration {
     static Sample getSampleGroup() {
       final String name = "Test XML sample group";
       final String accession = "SAMEG001122";
-      final String domain = "self.BiosampleIntegrationTest";
       final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
       final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
       final SortedSet<Relationship> relationships = new TreeSet<>();
@@ -264,11 +273,8 @@ public class XmlSearchIntegration extends AbstractIntegration {
       relationships.add(
           Relationship.build(accession, "has member", getSampleWithinGroup().getAccession()));
 
-      //            return Sample.build(name, accession, "self.BiosampleIntegrationTest",
-      // release,
-      // update, new TreeSet<>(), relationships, new TreeSet<>(), null, null, null);
       return new Sample.Builder(name, accession)
-          .withDomain(domain)
+          .withWebinSubmissionAccountId(defaultWebinIdForIntegrationTests)
           .withRelease(release)
           .withUpdate(update)
           .withAttributes(Collections.singleton(Attribute.build("Organism", "Human")))
@@ -279,15 +285,11 @@ public class XmlSearchIntegration extends AbstractIntegration {
     static Sample getSampleWithSpecificUpdateDate() {
       final String name = "Test XML sample for update date";
       final String accession = "SAME101010";
-      final String domain = "self.BiosampleIntegrationTest";
       final Instant update = Instant.now();
       final Instant release = Instant.parse("1980-08-02T00:30:00Z");
-      //            return Sample.build(name, accession, submissionDomain, release, update,
-      // null,
-      //                    null, null, null, null,
-      //                    null);
+
       return new Sample.Builder(name, accession)
-          .withDomain(domain)
+          .withWebinSubmissionAccountId(defaultWebinIdForIntegrationTests)
           .withRelease(release)
           .withUpdate(update)
           .withAttributes(Collections.singleton(Attribute.build("Organism", "Human")))
@@ -297,18 +299,14 @@ public class XmlSearchIntegration extends AbstractIntegration {
     static Sample getSampleWithContactInformations() {
       final String name = "Test XML sample with contact information";
       final String accession = "SAME114477";
-      final String domain = "self.BiosampleIntegrationTest";
       final Instant update = Instant.now();
       final Instant release = Instant.parse("1980-08-02T00:30:00Z");
       final SortedSet<Contact> contacts = new TreeSet<>();
 
       contacts.add(new Contact.Builder().firstName("Loca").lastName("Lol").build());
 
-      //            return Sample.build(name, accession, submissionDomain, release, update,
-      //                    null, null, null,
-      //                    null, contacts, null);
       return new Sample.Builder(name, accession)
-          .withDomain(domain)
+          .withWebinSubmissionAccountId(defaultWebinIdForIntegrationTests)
           .withRelease(release)
           .withUpdate(update)
           .withAttributes(Collections.singleton(Attribute.build("Organism", "Human")))
@@ -319,7 +317,6 @@ public class XmlSearchIntegration extends AbstractIntegration {
     static Sample getGroupWithFullMsiDetails() {
       final String name = "Test XML group with contact information and other";
       final String accession = "SAMEG114477";
-      final String domain = "self.BiosampleIntegrationTest";
       final Instant update = Instant.now();
       final Instant release = Instant.parse("1980-08-02T00:30:00Z");
       final SortedSet<Contact> contacts = new TreeSet<>();
@@ -341,11 +338,8 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
       publications.add(new Publication.Builder().doi("123123").pubmed_id("someID").build());
 
-      //            return Sample.build(name, accession, submissionDomain, release, update,
-      //                    null, null, null,
-      //                    organizations, contacts, publications);
       return new Sample.Builder(name, accession)
-          .withDomain(domain)
+          .withWebinSubmissionAccountId(defaultWebinIdForIntegrationTests)
           .withRelease(release)
           .withUpdate(update)
           .withAttributes(Collections.singleton(Attribute.build("Organism", "Human")))
@@ -358,15 +352,11 @@ public class XmlSearchIntegration extends AbstractIntegration {
     static Sample getSampleReleasedAtTheEndOfTheDay() {
       final String name = "Test XML Sample with release date almost at the end of the day";
       final String accession = "SAMD0912312";
-      final String domain = "self.BiosampleIntegrationTest";
       final Instant update = Instant.now();
       final Instant release = Instant.parse("2016-08-02T23:59:59Z");
 
-      //            return Sample.build(name, accession, submissionDomain, release, update,
-      //                    null, null, null,
-      //                    null, null, null);
       return new Sample.Builder(name, accession)
-          .withDomain(domain)
+          .withWebinSubmissionAccountId(defaultWebinIdForIntegrationTests)
           .withRelease(release)
           .withUpdate(update)
           .withAttributes(Collections.singleton(Attribute.build("Organism", "Human")))
@@ -376,7 +366,6 @@ public class XmlSearchIntegration extends AbstractIntegration {
     static Sample getSampleReleasedExaclyTheDayAfterSAMD0912312() {
       final String name = "Test XML Sample SAMD0912313";
       final String accession = "SAMD0912313";
-      final String domain = "self.BiosampleIntegrationTest";
       final Instant update = Instant.now();
       final Instant release = Instant.parse("2016-08-03T00:00:00Z");
       final SortedSet<Attribute> attributes = new TreeSet<>();
@@ -388,14 +377,57 @@ public class XmlSearchIntegration extends AbstractIntegration {
               .build());
       attributes.add(Attribute.build("Organism", "Human"));
 
-      //            return Sample.build(name, accession, submissionDomain, release, update,
-      //                    attributes, null, null,
-      //                    null, null, null);
       return new Sample.Builder(name, accession)
-          .withDomain(domain)
+          .withWebinSubmissionAccountId(defaultWebinIdForIntegrationTests)
           .withRelease(release)
           .withUpdate(update)
           .withAttributes(attributes)
+          .build();
+    }
+
+    static Sample getSAMDSampleWithSubmittedViaAsPipelineImport() {
+      final String name = "Test Sample SAMD01111111";
+      final String accession = "SAMD01111111";
+      final Instant update = Instant.now();
+      final Instant release = Instant.parse("2016-08-03T00:00:00Z");
+      final SortedSet<Attribute> attributes = new TreeSet<>();
+
+      attributes.add(
+          new Attribute.Builder(
+                  "description",
+                  "Sample released exactly at midnight of the day after another sample was released")
+              .build());
+      attributes.add(Attribute.build("Organism", "Human"));
+
+      return new Sample.Builder(name, accession)
+          .withWebinSubmissionAccountId(defaultWebinIdForIntegrationTests)
+          .withRelease(release)
+          .withUpdate(update)
+          .withAttributes(attributes)
+          .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
+          .build();
+    }
+
+    static Sample getSAMNSampleWithSubmittedViaAsPipelineImport() {
+      final String name = "Test Sample SAMN01111111";
+      final String accession = "SAMN01111111";
+      final Instant update = Instant.now();
+      final Instant release = Instant.parse("2016-08-03T00:00:00Z");
+      final SortedSet<Attribute> attributes = new TreeSet<>();
+
+      attributes.add(
+          new Attribute.Builder(
+                  "description",
+                  "Sample released exactly at midnight of the day after another sample was released")
+              .build());
+      attributes.add(Attribute.build("Organism", "Human"));
+
+      return new Sample.Builder(name, accession)
+          .withWebinSubmissionAccountId(defaultWebinIdForIntegrationTests)
+          .withRelease(release)
+          .withUpdate(update)
+          .withAttributes(attributes)
+          .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
           .build();
     }
   }

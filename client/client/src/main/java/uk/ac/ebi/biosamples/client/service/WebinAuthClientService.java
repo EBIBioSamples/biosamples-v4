@@ -29,14 +29,11 @@ import uk.ac.ebi.biosamples.client.model.auth.AuthRequestWebin;
 
 public class WebinAuthClientService implements ClientService {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final RestOperations restOperations;
-
   private final URI webinAuthUri;
   private final String username;
   private final String password;
   private final List<AuthRealm> authRealms;
-
   private Optional<String> jwt = Optional.empty();
   private Optional<Date> expiry = Optional.empty();
   private Optional<Date> expiryMinusAnHour = Optional.empty();
@@ -63,10 +60,10 @@ public class WebinAuthClientService implements ClientService {
     }
 
     if (username == null
-        || username.trim().length() == 0
+        || username.trim().isEmpty()
         || password == null
-        || password.trim().length() == 0
-        || authRealms.size() == 0) {
+        || password.trim().isEmpty()
+        || authRealms.isEmpty()) {
       return null;
     }
 
@@ -74,8 +71,9 @@ public class WebinAuthClientService implements ClientService {
       final AuthRequestWebin authRequestWebin =
           new AuthRequestWebin(username, password, authRealms);
       final HttpHeaders headers = new HttpHeaders();
-      headers.setContentType(MediaType.APPLICATION_JSON);
       final HttpEntity<String> entity;
+
+      headers.setContentType(MediaType.APPLICATION_JSON);
 
       try {
         entity = new HttpEntity<>(objectMapper.writeValueAsString(authRequestWebin), headers);

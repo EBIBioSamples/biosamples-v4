@@ -31,7 +31,7 @@ public class RootHalController {
     final RepresentationModel resource = new RepresentationModel();
 
     resource.add(WebMvcLinkBuilder.linkTo(SamplesRestController.class).withRel("samples"));
-    resource.add(WebMvcLinkBuilder.linkTo(CurationRestController.class).withRel("curations"));
+    resource.add(WebMvcLinkBuilder.linkTo(CurationController.class).withRel("curations"));
     resource.add(
         Link.of(
             "https://www.ebi.ac.uk/data-protection/privacy-notice/embl-ebi-public-website",

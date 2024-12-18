@@ -46,7 +46,6 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.model.auth.AuthRealm;
-import uk.ac.ebi.biosamples.client.service.AapClientService;
 import uk.ac.ebi.biosamples.client.service.ClientService;
 import uk.ac.ebi.biosamples.client.service.WebinAuthClientService;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
@@ -75,23 +74,8 @@ public class BioSamplesAutoConfiguration {
     return new ClientProperties();
   }
 
-  @Bean("AAP")
-  @ConditionalOnMissingBean(AapClientService.class)
-  public AapClientService aapClientService(
-      final RestTemplateBuilder restTemplateBuilder, final ClientProperties clientProperties) {
-    if (clientProperties.getBiosamplesClientAapUsername() != null
-        && clientProperties.getBiosamplesClientAapPassword() != null) {
-      return new AapClientService(
-          restTemplateBuilder,
-          clientProperties.getBiosamplesClientAapUri(),
-          clientProperties.getBiosamplesClientAapUsername(),
-          clientProperties.getBiosamplesClientAapPassword());
-    } else {
-      return null;
-    }
-  }
-
-  @Bean("WEBIN")
+  @Bean
+  @Primary
   @ConditionalOnMissingBean(WebinAuthClientService.class)
   public WebinAuthClientService webinAuthClientService(
       final RestTemplateBuilder restTemplateBuilder, final ClientProperties clientProperties) {
@@ -108,7 +92,24 @@ public class BioSamplesAutoConfiguration {
     }
   }
 
+  @Bean
+  public WebinAuthClientService webinAuthTestClientService(
+      final RestTemplateBuilder restTemplateBuilder, final ClientProperties clientProperties) {
+    if (clientProperties.getBiosamplesClientWebinUsername() != null
+        && clientProperties.getBiosamplesClientWebinPassword() != null) {
+      return new WebinAuthClientService(
+          restTemplateBuilder,
+          clientProperties.getBiosamplesWebinAuthTokenUri(),
+          clientProperties.getBiosamplesClientWebinTestUsername(),
+          clientProperties.getBiosamplesClientWebinPassword(),
+          Arrays.asList(AuthRealm.ENA, AuthRealm.EGA)); // pass the realm
+    } else {
+      return null;
+    }
+  }
+
   @Bean("WEBINCLIENT")
+  @Primary
   public BioSamplesClient bioSamplesWebinClient(
       final ClientProperties clientProperties,
       RestTemplateBuilder restTemplateBuilder,
@@ -128,16 +129,16 @@ public class BioSamplesAutoConfiguration {
         clientProperties);
   }
 
-  @Bean("AAPCLIENT")
-  @Primary
-  public BioSamplesClient bioSamplesAapClient(
+  @Bean("WEBINTESTCLIENT")
+  public BioSamplesClient bioSamplesWebinTestClient(
       final ClientProperties clientProperties,
       RestTemplateBuilder restTemplateBuilder,
       final SampleValidator sampleValidator) {
     restTemplateBuilder =
         restTemplateBuilder.additionalCustomizers(
             new BioSampleClientRestTemplateCustomizer(clientProperties));
-    final ClientService clientService = aapClientService(restTemplateBuilder, clientProperties);
+    final ClientService clientService =
+        webinAuthTestClientService(restTemplateBuilder, clientProperties);
 
     return new BioSamplesClient(
         clientProperties.getBiosamplesClientUri(),

@@ -15,7 +15,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.client.service.AapClientService;
+import uk.ac.ebi.biosamples.client.service.WebinAuthClientService;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.ncbi.MockBioSamplesClient;
 import uk.ac.ebi.biosamples.service.SampleValidator;
@@ -33,13 +33,13 @@ public class TestApplication {
         clientProperties.getBiosamplesClientUriV2(),
         restTemplateBuilder,
         sampleValidator,
-        aapClientService(),
+        webinAuthClientService(),
         clientProperties,
         objectMapper);
   }
 
   @Bean
-  AapClientService aapClientService() {
+  WebinAuthClientService webinAuthClientService() {
     return null;
   }
 }

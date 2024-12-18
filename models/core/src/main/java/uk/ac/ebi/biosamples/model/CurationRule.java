@@ -13,7 +13,9 @@ package uk.ac.ebi.biosamples.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
+import lombok.Getter;
 
+@Getter
 public class CurationRule implements Comparable<CurationRule> {
   private final String attributePre;
   private final String attributePost;
@@ -21,14 +23,6 @@ public class CurationRule implements Comparable<CurationRule> {
   private CurationRule(final String attributePre, final String attributePost) {
     this.attributePre = attributePre;
     this.attributePost = attributePost;
-  }
-
-  public String getAttributePre() {
-    return attributePre;
-  }
-
-  public String getAttributePost() {
-    return attributePost;
   }
 
   @Override

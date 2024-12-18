@@ -48,7 +48,6 @@ public class SolrFacetService {
   public List<Facet> getFacets(
       final String searchTerm,
       final Collection<Filter> filters,
-      final Collection<String> domains,
       final Pageable facetFieldPageInfo,
       final Pageable facetValuesPageInfo,
       final String facetField) {
@@ -82,7 +81,7 @@ public class SolrFacetService {
 
     // Add domains and release date filters
     final Optional<FilterQuery> domainAndPublicFilterQuery =
-        solrFilterService.getPublicFilterQuery(domains, null);
+        solrFilterService.getPublicFilterQuery(null);
     domainAndPublicFilterQuery.ifPresent(query::addFilterQuery);
 
     // Add all the provided filters
@@ -122,11 +121,10 @@ public class SolrFacetService {
   public List<Facet> getFacets(
       final String searchTerm,
       final Collection<Filter> filters,
-      final Collection<String> domains,
       final Pageable facetFieldPageInfo,
       final Pageable facetValuesPageInfo) {
 
-    return getFacets(searchTerm, filters, domains, facetFieldPageInfo, facetValuesPageInfo, null);
+    return getFacets(searchTerm, filters, facetFieldPageInfo, facetValuesPageInfo, null);
   }
 
   private List<Entry<SolrSampleField, Long>> getFacetFields(

@@ -27,13 +27,10 @@ import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
 @Document
 public class MongoCurationLink implements Comparable<MongoCurationLink> {
-
   @Id private final String hash;
 
   @Indexed(background = true)
   private final String sample;
-
-  private final String domain;
 
   private final String webinSubmissionAccountId;
 
@@ -41,6 +38,7 @@ public class MongoCurationLink implements Comparable<MongoCurationLink> {
   protected final Instant created;
 
   private final Curation curation;
+  private String domain;
 
   private MongoCurationLink(
       final String sample,
@@ -91,6 +89,7 @@ public class MongoCurationLink implements Comparable<MongoCurationLink> {
       return false;
     }
     final MongoCurationLink other = (MongoCurationLink) o;
+
     return Objects.equals(curation, other.curation) && Objects.equals(sample, other.sample);
   }
 
@@ -108,15 +107,18 @@ public class MongoCurationLink implements Comparable<MongoCurationLink> {
     if (!sample.equals(other.sample)) {
       return sample.compareTo(other.sample);
     }
+
     if (!curation.equals(other.curation)) {
       return curation.compareTo(other.curation);
     }
+
     return 0;
   }
 
   @Override
   public String toString() {
     final String sb = "MongoCurationLink(" + sample + "," + curation + ")";
+
     return sb;
   }
 
@@ -129,7 +131,6 @@ public class MongoCurationLink implements Comparable<MongoCurationLink> {
       @JsonProperty("webinSubmissionAccountId") final String webinSubmissionAccountId,
       @JsonProperty("created") @JsonDeserialize(using = CustomInstantDeserializer.class)
           final Instant created) {
-
     final String hash =
         Hashing.sha256()
             .newHasher()
@@ -137,8 +138,6 @@ public class MongoCurationLink implements Comparable<MongoCurationLink> {
             .putUnencodedChars(sample)
             .hash()
             .toString();
-    // TODO hash on domain
-    // TODO synchronized with CurationLink
 
     return new MongoCurationLink(sample, domain, webinSubmissionAccountId, curation, hash, created);
   }

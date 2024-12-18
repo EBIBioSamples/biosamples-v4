@@ -11,6 +11,5 @@
 package uk.ac.ebi.biosamples.model.auth;
 
 public enum AuthorizationProvider {
-  AAP,
   WEBIN;
 }

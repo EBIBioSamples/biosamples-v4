@@ -16,11 +16,11 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
@@ -29,14 +29,13 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
   public static final String SRA_ACCESSION = "SRA accession";
   private final Logger log = LoggerFactory.getLogger(getClass());
-  private final BioSamplesClient webinClient;
-  private final BioSamplesClient aapClient;
+  private final ClientProperties clientProperties;
 
   public RestIntegrationSRAAccessioningV2(
-      final BioSamplesClient client, @Qualifier("WEBINCLIENT") final BioSamplesClient webinClient) {
-    super(client, webinClient);
-    this.webinClient = webinClient;
-    this.aapClient = client;
+      final BioSamplesClient client, final ClientProperties clientProperties) {
+    super(client);
+
+    this.clientProperties = clientProperties;
   }
 
   @Override
@@ -245,7 +244,7 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
     // Persist sample-2 again and check if old SRA accession is retained
     final Sample sample2ContentAfterRePersistWithSRAAccessionRemoved =
         webinClient
-            .persistSampleResourceV2(Collections.singletonList(sample2Content))
+            .validatePersistSampleResourceV2(Collections.singletonList(sample2Content))
             .getSamples()
             .get(0);
 
@@ -272,9 +271,10 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
   }
 
   private Sample persistAndFetch(final Sample sample) {
-    // Submit with webin client, no jwt passed
-    final List<Sample> samples =
-        webinClient.persistSampleResourceV2(Collections.singletonList(sample)).getSamples();
+    // Submit with a webin client, no jwt passed
+    final SubmissionReceipt submissionReceipt =
+        webinClient.validatePersistSampleResourceV2(Collections.singletonList(sample));
+    final List<Sample> samples = submissionReceipt.getSamples();
     final String accession = Objects.requireNonNull(samples.get(0)).getAccession();
     final Optional<EntityModel<Sample>> fetchedSample = webinClient.fetchSampleResource(accession);
 
@@ -282,7 +282,7 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
   }
 
   private Sample getWebinSampleTest1() {
-    final String name = "RestIntegrationWebin_sample_1";
+    final String name = "RestIntegrationWebin_sample_1_sra_test";
     final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     final Instant release = Instant.parse("2116-04-01T11:36:57.00Z");
 
@@ -330,7 +330,7 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
     return new Sample.Builder(name)
         .withUpdate(update)
         .withRelease(release)
-        .withWebinSubmissionAccountId("Webin-40894")
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withAttributes(attributes)
         .withRelationships(relationships)
         .withExternalReferences(externalReferences)
@@ -341,7 +341,7 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
   }
 
   private Sample getWebinSampleTest2() {
-    final String name = "RestIntegrationWebin_sample_2";
+    final String name = "RestIntegrationWebin_sample_2_sra_test";
     final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     final Instant release = Instant.parse("2116-04-01T11:36:57.00Z");
 
@@ -390,7 +390,7 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
     return new Sample.Builder(name)
         .withUpdate(update)
         .withRelease(release)
-        .withWebinSubmissionAccountId("Webin-40894")
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withAttributes(attributes)
         .withRelationships(relationships)
         .withExternalReferences(externalReferences)

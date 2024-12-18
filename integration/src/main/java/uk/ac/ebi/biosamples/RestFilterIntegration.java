@@ -22,6 +22,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -33,9 +34,13 @@ import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 // @Profile({"default", "rest"})
 public class RestFilterIntegration extends AbstractIntegration {
   private final Logger log = LoggerFactory.getLogger(getClass());
+  private final ClientProperties clientProperties;
 
-  public RestFilterIntegration(final BioSamplesClient client) {
+  public RestFilterIntegration(
+      final BioSamplesClient client, final ClientProperties clientProperties) {
     super(client);
+
+    this.clientProperties = clientProperties;
   }
 
   @Override
@@ -45,12 +50,13 @@ public class RestFilterIntegration extends AbstractIntegration {
     Sample testSample3 = getTestSample3();
 
     final Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample1.getName());
+
     if (optionalSample.isPresent()) {
       throw new IntegrationTestFailException(
           "RestFilterIntegration test sample should not be available during phase 1", Phase.ONE);
     }
 
-    EntityModel<Sample> resource = client.persistSampleResource(testSample1);
+    EntityModel<Sample> resource = webinClient.persistSampleResource(testSample1);
 
     final Attribute sraAccessionAttribute1 =
         resource.getContent().getAttributes().stream()
@@ -58,7 +64,6 @@ public class RestFilterIntegration extends AbstractIntegration {
             .findFirst()
             .get();
     testSample1.getAttributes().add(sraAccessionAttribute1);
-
     testSample1 =
         Sample.Builder.fromSample(testSample1)
             .withAccession(resource.getContent().getAccession())
@@ -74,13 +79,14 @@ public class RestFilterIntegration extends AbstractIntegration {
           Phase.ONE);
     }
 
-    resource = client.persistSampleResource(testSample2);
+    resource = webinClient.persistSampleResource(testSample2);
 
     final Attribute sraAccessionAttribute2 =
         resource.getContent().getAttributes().stream()
             .filter(attribute -> attribute.getType().equals("SRA accession"))
             .findFirst()
             .get();
+
     testSample2.getAttributes().add(sraAccessionAttribute2);
     testSample2 =
         Sample.Builder.fromSample(testSample2)
@@ -97,13 +103,14 @@ public class RestFilterIntegration extends AbstractIntegration {
           Phase.ONE);
     }
 
-    resource = client.persistSampleResource(testSample3);
+    resource = webinClient.persistSampleResource(testSample3);
 
     final Attribute sraAccessionAttribute3 =
         resource.getContent().getAttributes().stream()
             .filter(attribute -> attribute.getType().equals("SRA accession"))
             .findFirst()
             .get();
+
     testSample3.getAttributes().add(sraAccessionAttribute3);
     testSample3 =
         Sample.Builder.fromSample(testSample3)
@@ -127,6 +134,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     Sample testSample3 = getTestSample3();
 
     TimeUnit.SECONDS.sleep(2);
+
     Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample2.getName());
 
     if (optionalSample.isPresent()) {
@@ -147,17 +155,18 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
 
     final SortedSet<Relationship> relations = new TreeSet<>();
+
     relations.add(
         Relationship.build(testSample3.getAccession(), "parent of", testSample2.getAccession()));
     testSample3 = Sample.Builder.fromSample(testSample3).withRelationships(relations).build();
-    client.persistSampleResource(testSample3);
+
+    webinClient.persistSampleResource(testSample3);
   }
 
   @Override
   protected void phaseThree() {
     Sample testSample1 = getTestSample1();
     Sample testSample2 = getTestSample2();
-
     Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample1.getName());
 
     if (optionalSample.isPresent()) {
@@ -181,7 +190,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     Filter attributeFilter =
         FilterBuilder.create().onAttribute("TestAttribute").withValue("FilterMe").build();
     PagedModel<EntityModel<Sample>> samplePage =
-        client.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
+        webinClient.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
 
     if (samplePage.getMetadata().getTotalElements() != 1) {
       throw new IntegrationTestFailException(
@@ -218,7 +227,7 @@ public class RestFilterIntegration extends AbstractIntegration {
             .build();
 
     samplePage =
-        client.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
+        webinClient.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
 
     if (samplePage.getMetadata().getTotalElements() != 1) {
       throw new IntegrationTestFailException(
@@ -251,7 +260,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     attributeFilter =
         FilterBuilder.create().onAttribute(targetAttribute.get().getType()).withValue(null).build();
     samplePage =
-        client.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
+        webinClient.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
 
     if (samplePage.getMetadata().getTotalElements() != 1) {
       throw new IntegrationTestFailException(
@@ -274,7 +283,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     attributeFilter =
         FilterBuilder.create().onAttribute("testAttribute").withValue("filterMe_1").build();
     samplePage =
-        client.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
+        webinClient.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
 
     if (samplePage.getMetadata().getTotalElements() != 1) {
       throw new IntegrationTestFailException(
@@ -296,7 +305,8 @@ public class RestFilterIntegration extends AbstractIntegration {
 
     final Filter nameFilter = FilterBuilder.create().onName(testSample2.getName()).build();
 
-    samplePage = client.fetchPagedSampleResource("", Collections.singletonList(nameFilter), 0, 10);
+    samplePage =
+        webinClient.fetchPagedSampleResource("", Collections.singletonList(nameFilter), 0, 10);
 
     if (samplePage.getMetadata().getTotalElements() != 1) {
       throw new IntegrationTestFailException(
@@ -320,7 +330,7 @@ public class RestFilterIntegration extends AbstractIntegration {
         FilterBuilder.create().onAccession(testSample2.getAccession()).build();
 
     samplePage =
-        client.fetchPagedSampleResource("", Collections.singletonList(accessionFilter), 0, 10);
+        webinClient.fetchPagedSampleResource("", Collections.singletonList(accessionFilter), 0, 10);
 
     if (samplePage.getMetadata().getTotalElements() != 1) {
       throw new IntegrationTestFailException(
@@ -351,6 +361,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     Sample testSample3 = getTestSample3();
 
     Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample1.getName());
+
     if (optionalSample.isPresent()) {
       testSample1 = optionalSample.get();
     } else {
@@ -359,6 +370,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
 
     optionalSample = fetchUniqueSampleByName(testSample2.getName());
+
     if (optionalSample.isPresent()) {
       testSample2 = optionalSample.get();
     } else {
@@ -367,6 +379,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
 
     optionalSample = fetchUniqueSampleByName(testSample3.getName());
+
     if (optionalSample.isPresent()) {
       testSample3 = optionalSample.get();
     } else {
@@ -379,6 +392,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     final String accession3 = testSample3.getAccession();
 
     log.info("Getting sample 1 using filter on date range");
+
     final Filter dateFilter =
         FilterBuilder.create()
             .onReleaseDate()
@@ -386,15 +400,18 @@ public class RestFilterIntegration extends AbstractIntegration {
             .until(testSample1.getRelease().plusSeconds(2))
             .build();
     PagedModel<EntityModel<Sample>> samplePage =
-        client.fetchPagedSampleResource("", Collections.singletonList(dateFilter), 0, 10);
+        webinClient.fetchPagedSampleResource("", Collections.singletonList(dateFilter), 0, 10);
+
     if (samplePage.getMetadata().getTotalElements() < 1) {
       throw new IntegrationTestFailException(
           "Unexpected number of results for date range filter query: "
               + samplePage.getMetadata().getTotalElements());
     }
+
     boolean match =
         samplePage.getContent().stream()
             .anyMatch(resource -> resource.getContent().getAccession().equals(accession1));
+
     if (!match) {
       throw new IntegrationTestFailException(
           "Returned sample doesn't match the expected sample " + testSample1.getAccession(),
@@ -402,12 +419,14 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
 
     log.info("Getting sample 3 using filter on relation");
+
     final Filter relFilter =
         FilterBuilder.create()
             .onRelation("parent of")
             .withValue(testSample2.getAccession())
             .build();
-    samplePage = client.fetchPagedSampleResource("", Collections.singletonList(relFilter), 0, 10);
+    samplePage =
+        webinClient.fetchPagedSampleResource("", Collections.singletonList(relFilter), 0, 10);
 
     if (samplePage.getMetadata().getTotalElements() < 1) {
       throw new IntegrationTestFailException(
@@ -415,9 +434,11 @@ public class RestFilterIntegration extends AbstractIntegration {
               + samplePage.getMetadata().getTotalElements(),
           Phase.FOUR);
     }
+
     match =
         samplePage.getContent().stream()
             .anyMatch(resource -> resource.getContent().getAccession().equals(accession3));
+
     if (!match) {
       throw new IntegrationTestFailException(
           "Returned sample doesn't match the expected sample " + testSample3.getAccession(),
@@ -425,22 +446,25 @@ public class RestFilterIntegration extends AbstractIntegration {
     }
 
     log.info("Getting sample 2 using filter on inverse relation");
+
     final Filter invRelFilter =
         FilterBuilder.create()
             .onInverseRelation("parent of")
             .withValue(testSample3.getAccession())
             .build();
     samplePage =
-        client.fetchPagedSampleResource("", Collections.singletonList(invRelFilter), 0, 10);
+        webinClient.fetchPagedSampleResource("", Collections.singletonList(invRelFilter), 0, 10);
 
     if (samplePage.getMetadata().getTotalElements() < 1) {
       throw new IntegrationTestFailException(
           "Unexpected number of results for relation filter query. Expected more than zero but got "
               + samplePage.getMetadata().getTotalElements());
     }
+
     match =
         samplePage.getContent().stream()
             .anyMatch(resource -> resource.getContent().getAccession().equals(accession2));
+
     if (!match) {
       throw new IntegrationTestFailException(
           "Returned sample doesn't match the expected sample " + testSample3.getAccession(),
@@ -450,11 +474,13 @@ public class RestFilterIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseFive() {
-    log.info("Getting results filtered by domains");
-    final Filter domainFilter =
-        FilterBuilder.create().onDomain(defaultIntegrationSubmissionDomain).build();
+    log.info("Getting results filtered by Webin Id");
+
+    final Filter authFilter =
+        FilterBuilder.create().onAuthInfo(defaultWebinIdForIntegrationTests).build();
     final PagedModel<EntityModel<Sample>> samplePage =
-        client.fetchPagedSampleResource("", Collections.singletonList(domainFilter), 0, 10);
+        webinClient.fetchPagedSampleResource("", Collections.singletonList(authFilter), 0, 10);
+
     if (samplePage.getMetadata().getTotalElements() < 1) {
       throw new IntegrationTestFailException(
           "Unexpected number of results for domain filter query: "
@@ -470,8 +496,8 @@ public class RestFilterIntegration extends AbstractIntegration {
     final String name = "RestFilterIntegration_sample_1";
     final Instant update = Instant.parse("1999-12-25T11:36:57.00Z");
     final Instant release = Instant.parse("1999-12-25T11:36:57.00Z");
-
     final SortedSet<Attribute> attributes = new TreeSet<>();
+
     attributes.add(Attribute.build("TestAttribute", "FilterMe"));
     attributes.add(
         Attribute.build(
@@ -483,7 +509,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     attributes.add(Attribute.build("Organism", "Human"));
 
     return new Sample.Builder(name)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withUpdate(update)
         .withAttributes(attributes)
@@ -494,15 +520,15 @@ public class RestFilterIntegration extends AbstractIntegration {
     final String name = "RestFilterIntegration_sample_2";
     final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-
     final SortedSet<Attribute> attributes = new TreeSet<>();
+
     attributes.add(
         Attribute.build(
             "testAttribute", "filterMe_1", "http://www.ebi.ac.uk/efo/EFO_0001071", null));
     attributes.add(Attribute.build("Organism", "Human"));
 
     return new Sample.Builder(name)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withUpdate(update)
         .withAttributes(attributes)
@@ -515,7 +541,7 @@ public class RestFilterIntegration extends AbstractIntegration {
     final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
     return new Sample.Builder(name)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withUpdate(update)
         .withAttributes(Collections.singleton(Attribute.build("Organism", "Human")))

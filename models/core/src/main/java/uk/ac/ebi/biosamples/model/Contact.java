@@ -20,7 +20,6 @@ import org.springframework.util.StringUtils;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonDeserialize(builder = Contact.Builder.class)
 public class Contact implements Comparable<Contact> {
-
   private final String firstName;
   private final String lastName;
   private final String midInitials;

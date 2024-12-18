@@ -13,7 +13,9 @@ package uk.ac.ebi.biosamples.model.structured;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import lombok.Getter;
 
+@Getter
 public enum StructuredDataType {
   AMR(Collections.emptyList()),
   CHICKEN_DATA(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner", "Method")),
@@ -29,9 +31,5 @@ public enum StructuredDataType {
 
   StructuredDataType(List<String> headers) {
     this.headers = headers;
-  }
-
-  public List<String> getHeaders() {
-    return headers;
   }
 }

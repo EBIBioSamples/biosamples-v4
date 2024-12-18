@@ -15,6 +15,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -24,14 +25,18 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.biosamples.PipelinesProperties;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.PipelineName;
+import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
 import uk.ac.ebi.biosamples.mongo.repository.MongoPipelineRepository;
 import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
@@ -54,6 +59,10 @@ public class EnaImportRunner implements ApplicationRunner {
   @Autowired private EraProDao eraProDao;
   @Autowired private EnaImportCallableFactory enaImportCallableFactory;
   @Autowired private MongoPipelineRepository mongoPipelineRepository;
+
+  @Autowired
+  @Qualifier("WEBINCLIENT")
+  private BioSamplesClient bioSamplesClient;
 
   private final Map<String, Future<Void>> futures = new LinkedHashMap<>();
   static final Set<String> failures = new HashSet<>();
@@ -145,6 +154,7 @@ public class EnaImportRunner implements ApplicationRunner {
 
       // Sync BSD authority samples from ERAPRO
       importEraBsdAuthoritySamples(fromDate, toDate);
+      // syncBsdEnaSampleStatusFromFile_BsdAuthoritySamples(filePath);
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);
       pipelineFailureCause = e.getMessage();
@@ -215,9 +225,45 @@ public class EnaImportRunner implements ApplicationRunner {
   private void importEraSamplesFromFile(final String filePath) throws Exception {
     final List<String> accessions = getAccessions(filePath);
     final List<SampleCallbackResult> sampleCallbackResults =
-        eraProDao.doSampleCallbackForAccessions(accessions);
+        eraProDao.doSampleCallbackForAccessions(accessions, false);
 
     handleSamples(sampleCallbackResults);
+  }
+
+  private void syncBsdEnaSampleStatusFromFile_BsdAuthoritySamples(final String filePath) {
+    final List<String> accessions = getAccessions(filePath);
+    final List<SampleCallbackResult> sampleCallbackResults =
+        eraProDao.doSampleCallbackForAccessions(accessions, true);
+
+    syncBsdEnaSampleStatus(sampleCallbackResults);
+  }
+
+  private void syncBsdEnaSampleStatus(final List<SampleCallbackResult> sampleCallbackResults) {
+    sampleCallbackResults.forEach(
+        sampleCallbackResult -> {
+          final String biosampleId = sampleCallbackResult.getBiosampleId();
+          final int statusId = sampleCallbackResult.getStatusId();
+          final Optional<EntityModel<Sample>> biosampleOptional =
+              bioSamplesClient.fetchSampleResource(biosampleId, false);
+
+          if (biosampleOptional.isPresent()) {
+            final Sample biosample = biosampleOptional.get().getContent();
+
+            if (biosample.getRelease().isBefore(Instant.now())) {
+              log.info("Sample " + biosampleId + " is public in BioSamples, check ENA status");
+
+              if (statusId == 2) {
+                log.info("Sample " + biosampleId + " is public in BioSamples, but private in ENA");
+                eraProDao.updateSampleStatus(biosampleId);
+                log.info("Sample " + biosampleId + " status updated to public in ENA");
+              } else {
+                log.info("Sample " + biosampleId + " is not private in ENA, no actions required");
+              }
+            } else {
+              log.info("Sample " + biosampleId + " is private in BioSamples");
+            }
+          }
+        });
   }
 
   private void handleSamples(List<SampleCallbackResult> sampleCallbackResults) throws Exception {

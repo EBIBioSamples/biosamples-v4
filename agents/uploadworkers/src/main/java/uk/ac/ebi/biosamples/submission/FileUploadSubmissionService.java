@@ -46,7 +46,6 @@ public class FileUploadSubmissionService {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private ValidationResult validationResult;
   private FileUploadUtils fileUploadUtils;
-  @Autowired BioSamplesClient bioSamplesAapClient;
 
   @Autowired
   @Qualifier("WEBINCLIENT")
@@ -79,21 +78,9 @@ public class FileUploadSubmissionService {
       log.info("Received file with file ID " + submissionId);
 
       final SubmissionFile submissionFile = fileUploadStorageService.getFile(submissionId);
-
-      // get submissionFile metadata, determine webin aur aap auth and use client
-      // accordingly
       final boolean isWebin = mongoFileUpload.isWebin();
       final String checklist = mongoFileUpload.getChecklist();
-
-      String aapDomain = null;
-      String webinId = null;
-
-      if (isWebin) {
-        webinId = mongoFileUpload.getSubmitterDetails();
-      } else {
-        aapDomain = mongoFileUpload.getSubmitterDetails();
-      }
-
+      final String webinId = mongoFileUpload.getSubmitterDetails();
       final Path temp = Files.createTempFile("upload", ".tsv");
 
       Files.copy(submissionFile.getStream(), temp, StandardCopyOption.REPLACE_EXISTING);
@@ -113,8 +100,7 @@ public class FileUploadSubmissionService {
       log.info("CSV data size: " + csvDataMap.size());
 
       final List<Sample> samples =
-          buildAndPersistSamples(
-              csvDataMap, aapDomain, webinId, checklist, validationResult, isWebin);
+          buildAndPersistSamples(csvDataMap, webinId, checklist, validationResult, isWebin);
       final List<SampleNameAccessionPair> accessionsList =
           samples.stream()
               .filter(sample -> sample.getAccession() != null)
@@ -213,7 +199,6 @@ public class FileUploadSubmissionService {
 
   private List<Sample> buildAndPersistSamples(
       final List<Multimap<String, String>> csvDataMap,
-      final String aapDomain,
       final String webinId,
       final String checklist,
       final ValidationResult validationResult,
@@ -226,7 +211,7 @@ public class FileUploadSubmissionService {
           Sample sample = null;
 
           try {
-            sample = buildAndPersistSample(csvRecordMap, aapDomain, webinId, checklist, isWebin);
+            sample = buildAndPersistSample(csvRecordMap, webinId, checklist);
 
             if (sample == null) {
               validationResult.addValidationMessage(
@@ -280,15 +265,11 @@ public class FileUploadSubmissionService {
 
     relationships.forEach(relationship -> log.info(relationship.toString()));
 
-    if (relationships.size() > 0) {
+    if (!relationships.isEmpty()) {
       sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
 
       try {
-        if (isWebin) {
-          sample = bioSamplesWebinClient.persistSampleResource(sample).getContent();
-        } else {
-          sample = bioSamplesAapClient.persistSampleResource(sample).getContent();
-        }
+        sample = bioSamplesWebinClient.persistSampleResource(sample).getContent();
       } catch (final Exception e) {
         validationResult.addValidationMessage(
             new ValidationResult.ValidationMessage(
@@ -300,12 +281,8 @@ public class FileUploadSubmissionService {
   }
 
   private Sample buildAndPersistSample(
-      final Multimap<String, String> multiMap,
-      final String aapDomain,
-      final String webinId,
-      final String checklist,
-      final boolean isWebin) {
-    final String sampleName = fileUploadUtils.getSampleName(multiMap);
+      final Multimap<String, String> multiMap, final String webinId, final String checklist) {
+    final String sampleName = FileUploadUtils.getSampleName(multiMap);
     final String accession = fileUploadUtils.getSampleAccession(multiMap);
     final boolean sampleWithAccession = accession != null;
     boolean persisted = true;
@@ -315,45 +292,25 @@ public class FileUploadSubmissionService {
     if (sample != null) {
       sample = fileUploadUtils.addChecklistAttributeAndBuildSample(checklist, sample);
 
-      if (isWebin) {
-        try {
-          sample = Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(webinId).build();
+      try {
+        sample = Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(webinId).build();
 
-          /*if (mongoSampleRepository
-                      .findByWebinSubmissionAccountIdAndName(webinId, sampleName)
-                      .size()
-                  > 0
-              && !sampleWithAccession) {
-            validationResult.addValidationMessage(
-                new ValidationResult.ValidationMessage(
-                    sampleName, " Already exists with submission account " + webinId));
+        /*if (mongoSampleRepository
+                    .findByWebinSubmissionAccountIdAndName(webinId, sampleName)
+                    .size()
+                > 0
+            && !sampleWithAccession) {
+          validationResult.addValidationMessage(
+              new ValidationResult.ValidationMessage(
+                  sampleName, " Already exists with submission account " + webinId));
 
-            return null;
-          } else {*/
-          sample = bioSamplesWebinClient.persistSampleResource(sample).getContent();
-          /*}*/
-        } catch (final Exception e) {
-          persisted = false;
-          handleUnauthorizedWhilePersistence(sampleName, accession, sampleWithAccession, e);
-        }
-      } else {
-        try {
-          sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
-
-          /*if (mongoSampleRepository.findByDomainAndName(aapDomain, sampleName).size() > 0
-              && !sampleWithAccession) {
-            validationResult.addValidationMessage(
-                new ValidationResult.ValidationMessage(
-                    sampleName, " Already exists with submission account " + aapDomain));
-
-            return null;
-          } else {*/
-          sample = bioSamplesAapClient.persistSampleResource(sample).getContent();
-          /*}*/
-        } catch (final Exception e) {
-          persisted = false;
-          handleUnauthorizedWhilePersistence(sampleName, accession, sampleWithAccession, e);
-        }
+          return null;
+        } else {*/
+        sample = bioSamplesWebinClient.persistSampleResource(sample).getContent();
+        /*}*/
+      } catch (final Exception e) {
+        persisted = false;
+        handleUnauthorizedWhilePersistence(sampleName, accession, sampleWithAccession, e);
       }
 
       if (sampleWithAccession && persisted) {

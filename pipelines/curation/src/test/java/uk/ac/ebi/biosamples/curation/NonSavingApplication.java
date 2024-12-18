@@ -14,24 +14,23 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import uk.ac.ebi.biosamples.Application;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.client.service.AapClientService;
+import uk.ac.ebi.biosamples.client.service.WebinAuthClientService;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
 public class NonSavingApplication extends Application {
-
   @Bean
   public BioSamplesClient bioSamplesClient(
       ClientProperties clientProperties,
       RestTemplateBuilder restTemplateBuilder,
       SampleValidator sampleValidator,
-      AapClientService aapClientService) {
+      WebinAuthClientService webinAuthClientService) {
     return new MockBioSamplesClient(
         clientProperties.getBiosamplesClientUri(),
         clientProperties.getBiosamplesClientUriV2(),
         restTemplateBuilder,
         sampleValidator,
-        aapClientService,
+        webinAuthClientService,
         clientProperties,
         true);
   }

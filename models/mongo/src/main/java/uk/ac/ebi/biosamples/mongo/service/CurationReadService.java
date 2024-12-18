@@ -58,6 +58,7 @@ public class CurationReadService {
       final String accession, final Pageable pageable) {
     final Page<MongoCurationLink> pageNeoCurationLink =
         mongoCurationLinkRepository.findBySample(accession, pageable);
+
     // convert them into a state to return
     return pageNeoCurationLink.map(mongoCurationLinkToCurationLinkConverter);
   }
@@ -84,6 +85,7 @@ public class CurationReadService {
     final SortedSet<ExternalReference> externalReferences =
         new TreeSet<>(sample.getExternalReferences());
     final SortedSet<Relationship> relationships = new TreeSet<>(sample.getRelationships());
+
     // remove pre-curation things
     for (final Attribute attribute : curation.getAttributesPre()) {
       if (!attributes.contains(attribute)) {
@@ -154,25 +156,7 @@ public class CurationReadService {
         .build();
   }
 
-  public Sample applyAllCurationToSample(
-      Sample sample, final Optional<List<String>> curationDomainsOptional) {
-    // short-circuit only if curationdomain=<blank represented by "" or empty list>
-    if (curationDomainsOptional.isPresent()) {
-      final List<String> curationDomainList = curationDomainsOptional.get();
-
-      if (curationDomainList.isEmpty()) {
-        return sample;
-      }
-
-      if (curationDomainList.size() == 1) {
-        final String curationDomain = curationDomainList.get(0);
-
-        if (curationDomain.trim().isEmpty()) {
-          return sample;
-        }
-      }
-    }
-
+  public Sample applyAllCurationToSample(Sample sample) {
     // Try to apply curations in the order of creation date.
     // Because of the index in creation date mongo returns in that order
     final Set<CurationLink> curationLinks = new LinkedHashSet<>();
@@ -184,16 +168,9 @@ public class CurationReadService {
       page = getCurationLinksForSample(sample.getAccession(), pageable);
 
       for (final CurationLink curationLink : page) {
-        if (curationDomainsOptional.isPresent()) {
-          // curation domains restricted, curation must be part of that domain
-          if (curationDomainsOptional.get().contains(curationLink.getDomain())) {
-            curationLinks.add(curationLink);
-          }
-        } else {
-          // no curation domain restriction, use all
-          curationLinks.add(curationLink);
-        }
+        curationLinks.add(curationLink);
       }
+
       pageNo += 1;
     } while (pageNo < page.getTotalPages());
 

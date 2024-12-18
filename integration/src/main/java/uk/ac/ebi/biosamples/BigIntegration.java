@@ -42,16 +42,13 @@ import uk.ac.ebi.biosamples.model.Sample;
 @Component
 @Profile({"big"})
 public class BigIntegration extends AbstractIntegration {
-
+  private static final int timeout = 100000;
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final RestOperations restOperations;
   private final ClientProperties clientProperties;
-
   // must be over 1000
   private final int firstInteger = 10000000;
   private final int noSamples = 5000;
-
-  private static final int timeout = 100000;
 
   public BigIntegration(
       final BioSamplesClient client,
@@ -66,10 +63,13 @@ public class BigIntegration extends AbstractIntegration {
     // caching)
     final List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
     final ObjectMapper mapper = new ObjectMapper();
+
     mapper.registerModule(new Jackson2HalModule());
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
     final MappingJackson2HttpMessageConverter halConverter =
         new TypeConstrainedMappingJackson2HttpMessageConverter(RepresentationModel.class);
+
     halConverter.setObjectMapper(mapper);
     halConverter.setSupportedMediaTypes(Collections.singletonList(MediaTypes.HAL_JSON));
     // make sure this is inserted first
@@ -84,14 +84,14 @@ public class BigIntegration extends AbstractIntegration {
   @Override
   protected void phaseOne() {
     final List<Sample> samples = new ArrayList<>();
-
     // generate a root sample
     final Sample root = generateSample(firstInteger, Collections.emptyList(), null);
+
     samples.add(root);
     // generate a large number of samples
     for (int i = 1; i < noSamples; i++) {
-
       final Sample sample = generateSample(firstInteger + i, Collections.emptyList(), root);
+
       samples.add(sample);
     }
     // generate one sample to rule them all
@@ -100,13 +100,16 @@ public class BigIntegration extends AbstractIntegration {
     // time how long it takes to post them
 
     final long startTime = System.nanoTime();
-    client.persistSamples(samples);
-    final long endTime = System.nanoTime();
 
+    webinClient.persistSamples(samples);
+
+    final long endTime = System.nanoTime();
     final double elapsedMs = (int) ((endTime - startTime) / 1000000L);
     final double msPerSample = elapsedMs / noSamples;
+
     log.info(
         "Submitted " + noSamples + " samples in " + elapsedMs + "ms (" + msPerSample + "ms each)");
+
     if (msPerSample > 100) {
       throw new RuntimeException(
           "Took more than 100ms per sample to post (" + msPerSample + "ms each)");
@@ -118,13 +121,14 @@ public class BigIntegration extends AbstractIntegration {
     long startTime;
     long endTime;
     double elapsedMs;
-
     // time how long it takes to get the highly connected sample
-
     startTime = System.nanoTime();
-    client.fetchSample("SAMEA" + (firstInteger + noSamples));
+
+    webinClient.fetchSampleResource("SAMEA" + (firstInteger + noSamples));
+
     endTime = System.nanoTime();
     elapsedMs = (int) ((endTime - startTime) / 1000000L);
+
     if (elapsedMs > timeout) {
       throw new RuntimeException(
           "Took more than "
@@ -133,12 +137,15 @@ public class BigIntegration extends AbstractIntegration {
               + elapsedMs
               + "ms)");
     }
-    log.info("Took " + elapsedMs + "ms to fetch highly-connected sample SAMbig" + noSamples);
 
+    log.info("Took " + elapsedMs + "ms to fetch highly-connected sample SAMbig" + noSamples);
     startTime = System.nanoTime();
-    client.fetchSample("SAMEA" + firstInteger);
+
+    webinClient.fetchSampleResource("SAMEA" + firstInteger);
+
     endTime = System.nanoTime();
     elapsedMs = (int) ((endTime - startTime) / 1000000L);
+
     if (elapsedMs > timeout) {
       throw new RuntimeException(
           "Took more than  "
@@ -147,18 +154,21 @@ public class BigIntegration extends AbstractIntegration {
               + elapsedMs
               + "ms)");
     }
+
     log.info("Took " + elapsedMs + "ms to fetch highly-connected sample SAMbig0");
-
     // time how long it takes to loop over all of them
-
     startTime = System.nanoTime();
-    client.fetchSampleResourceAll(); // do nothing
+
+    webinClient.fetchSampleResourceAll(); // do nothing
+
     endTime = System.nanoTime();
     elapsedMs = (int) ((endTime - startTime) / 1000000L);
+
     if (elapsedMs > timeout) {
       throw new RuntimeException(
           "Took more than  " + timeout + "ms to fetch all samples (" + elapsedMs + "ms)");
     }
+
     log.info("Took " + elapsedMs + "ms to fetch all samples");
 
     // TODO check HAL links for search term and facets are persistent over paging etc
@@ -172,28 +182,33 @@ public class BigIntegration extends AbstractIntegration {
             .encode()
             .toUri();
     log.info("checking HAL links on " + uri);
+
     final ResponseEntity<PagedModel<EntityModel<Sample>>> responseEntity =
         restOperations.exchange(
             RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build(),
             new ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>() {});
-
     final PagedModel<EntityModel<Sample>> page = responseEntity.getBody();
+
     log.info("looking for links in " + page);
+
     for (final Link link : page.getLinks()) {
       log.info("Found link " + link);
     }
+
     final Link firstLink = page.getLink(IanaLinkRelations.FIRST).get();
     final UriComponents firstLinkUriComponents =
         UriComponentsBuilder.fromUriString(firstLink.getHref()).build();
-
     final String firstFilter = firstLinkUriComponents.getQueryParams().get("filter").get(0);
+
     if (!"attr:organism:Homo%20sapiens".equals(firstFilter)) {
       throw new RuntimeException(
           "Expected first relationship URL to include parameter filter with value 'attr:organism:Homo sapiens' but got '"
               + firstFilter
               + "'");
     }
+
     final String firstText = firstLinkUriComponents.getQueryParams().get("text").get(0);
+
     if (!"Sample".equals(firstText)) {
       throw new RuntimeException(
           "Expected first relationship URL to include parameter text with value 'Sample' but got '"
@@ -224,12 +239,11 @@ public class BigIntegration extends AbstractIntegration {
   protected void phaseSix() {}
 
   private Sample generateSample(final int i, final List<Sample> samples, final Sample root) {
-
     final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-    final String domain = "self.BiosampleIntegrationTest";
-
     final SortedSet<Attribute> attributes = new TreeSet<>();
+    final SortedSet<Relationship> relationships = new TreeSet<>();
+
     attributes.add(
         Attribute.build(
             "organism",
@@ -238,17 +252,17 @@ public class BigIntegration extends AbstractIntegration {
             Lists.newArrayList("http://purl.obolibrary.org/obo/NCBITaxon_9606"),
             null));
 
-    final SortedSet<Relationship> relationships = new TreeSet<>();
     for (final Sample other : samples) {
       relationships.add(Relationship.build("SAMEA" + i, "derived from", other.getAccession()));
     }
+
     if (root != null) {
       relationships.add(Relationship.build("SAMEA" + i, "derived from", root.getAccession()));
     }
 
     final Sample sample =
         new Sample.Builder("big sample " + i, "SAMEA" + i)
-            .withDomain(domain)
+            .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
             .withRelease(release)
             .withUpdate(update)
             .withAttributes(attributes)
@@ -259,6 +273,7 @@ public class BigIntegration extends AbstractIntegration {
     // relationships, null, null, null, null);
 
     log.trace("built " + sample.getAccession());
+
     return sample;
   }
 }

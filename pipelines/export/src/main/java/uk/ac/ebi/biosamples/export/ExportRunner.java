@@ -45,10 +45,9 @@ public class ExportRunner implements ApplicationRunner {
   @Override
   public void run(final ApplicationArguments args) {
     final String jsonSampleFilename = args.getNonOptionArgs().get(0);
-    final boolean removeCurations = args.getOptionValues("curationdomain") != null;
     final long oldTime = System.nanoTime();
     int sampleCount = 0;
-    boolean isPassed = true;
+
     try {
       boolean first = true;
       try (final Writer jsonSampleWriter =
@@ -59,8 +58,7 @@ public class ExportRunner implements ApplicationRunner {
                   new GZIPOutputStream(new FileOutputStream(jsonSampleFilename)),
                   StandardCharsets.UTF_8)) {
         jsonSampleWriter.write("[\n");
-        for (final EntityModel<Sample> sampleResource :
-            bioSamplesClient.fetchSampleResourceAll(!removeCurations)) {
+        for (final EntityModel<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
           log.trace("Handling " + sampleResource);
           final Sample sample = sampleResource.getContent();
           if (sample == null) {
@@ -76,7 +74,6 @@ public class ExportRunner implements ApplicationRunner {
         jsonSampleWriter.write("\n]");
       }
     } catch (final Exception e) {
-      isPassed = false;
     } finally {
       final long elapsed = System.nanoTime() - oldTime;
       log.info("Exported " + sampleCount + " samples in " + (elapsed / 1000000000L) + "s");

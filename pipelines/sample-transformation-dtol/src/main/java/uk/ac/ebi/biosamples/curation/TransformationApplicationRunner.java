@@ -18,7 +18,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.EntityModel;
@@ -38,16 +37,12 @@ import uk.ac.ebi.biosamples.utils.ThreadUtils;
 public class TransformationApplicationRunner implements ApplicationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(TransformationApplicationRunner.class);
   private final BioSamplesClient bioSamplesClientWebin;
-  private final BioSamplesClient bioSamplesClientAap;
   private final PipelinesProperties pipelinesProperties;
   private final PipelineFutureCallback pipelineFutureCallback;
 
   public TransformationApplicationRunner(
-      @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesClientWebin,
-      final BioSamplesClient bioSamplesClientAap,
-      final PipelinesProperties pipelinesProperties) {
+      final BioSamplesClient bioSamplesClientWebin, final PipelinesProperties pipelinesProperties) {
     this.bioSamplesClientWebin = bioSamplesClientWebin;
-    this.bioSamplesClientAap = bioSamplesClientAap;
     this.pipelinesProperties = pipelinesProperties;
     pipelineFutureCallback = new PipelineFutureCallback();
   }
@@ -80,7 +75,7 @@ public class TransformationApplicationRunner implements ApplicationRunner {
         Objects.requireNonNull(sample);
 
         final Callable<PipelineResult> task =
-            new TransformationCallable(sample, bioSamplesClientWebin, bioSamplesClientAap);
+            new TransformationCallable(sample, bioSamplesClientWebin);
 
         futures.put(sample.getAccession(), executorService.submit(task));
 

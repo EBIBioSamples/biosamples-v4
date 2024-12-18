@@ -132,6 +132,7 @@ public class Attribute implements Comparable<Attribute> {
     if (iri == null) {
       iri = "";
     }
+
     return build(type, value, tag, Lists.newArrayList(iri), unit);
   }
 

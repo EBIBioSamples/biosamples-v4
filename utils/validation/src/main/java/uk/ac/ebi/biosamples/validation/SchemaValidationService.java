@@ -11,7 +11,6 @@
 package uk.ac.ebi.biosamples.validation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Set;
 import javax.validation.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +50,6 @@ public class SchemaValidationService {
 
     try {
       final String sampleString = objectMapper.writeValueAsString(sample);
-      final Set<Attribute> sampleAttributes = sample.getAttributes();
 
       validator.validateById(schemaId, sampleString);
 
@@ -67,6 +65,7 @@ public class SchemaValidationService {
       throw new GlobalExceptions.SchemaValidationException(e.getMessage(), e);
     } catch (final Exception e) {
       log.error("Schema validation error: " + e.getMessage(), e);
+
       throw new GlobalExceptions.SchemaValidationException(
           "Sample validation error: " + e.getMessage(), e);
     }

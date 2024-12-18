@@ -56,7 +56,7 @@ public class JsonLdIntegration extends AbstractIntegration {
       throw new IntegrationTestFailException(
           "JsonLD test sample should not be available during phase 1", Phase.ONE);
     } else {
-      final EntityModel<Sample> resource = client.persistSampleResource(testSample);
+      final EntityModel<Sample> resource = webinClient.persistSampleResource(testSample);
       final Sample sampleContent = resource.getContent();
       final Attribute sraAccessionAttribute =
           sampleContent.getAttributes().stream()
@@ -147,7 +147,7 @@ public class JsonLdIntegration extends AbstractIntegration {
 
     return new Sample.Builder(name)
         .withTaxId(Long.valueOf(9606))
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withUpdate(update)
         .withAttributes(attributes)
@@ -163,9 +163,10 @@ public class JsonLdIntegration extends AbstractIntegration {
 
   private void checkPresenceWithRest(final String sampleName) throws InterruptedException {
     final Sample sample;
+    final Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleName);
+
     TimeUnit.SECONDS.sleep(2);
 
-    final Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleName);
     if (optionalSample.isPresent()) {
       sample = optionalSample.get();
     } else {
@@ -174,7 +175,9 @@ public class JsonLdIntegration extends AbstractIntegration {
 
     final UriComponentsBuilder uriBuilder =
         UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri());
+
     uriBuilder.pathSegment("samples", sample.getAccession() + ".ldjson");
+
     final ResponseEntity<JsonLDDataRecord> responseEntity =
         restTemplate.getForEntity(uriBuilder.toUriString(), JsonLDDataRecord.class);
 

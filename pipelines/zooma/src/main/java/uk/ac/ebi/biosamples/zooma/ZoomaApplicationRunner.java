@@ -89,7 +89,7 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
                 sample,
                 zoomaProcessor,
                 curationApplicationService,
-                pipelinesProperties.getZoomaDomain());
+                pipelinesProperties.getProxyWebinId());
         sampleCount++;
 
         futures.put(sample.getAccession(), executorService.submit(task));

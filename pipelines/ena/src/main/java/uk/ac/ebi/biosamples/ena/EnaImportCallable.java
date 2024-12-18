@@ -12,7 +12,6 @@ package uk.ac.ebi.biosamples.ena;
 
 import static uk.ac.ebi.biosamples.BioSamplesConstants.SRA_ACCESSION;
 
-import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -73,7 +72,7 @@ public class EnaImportCallable implements Callable<Void> {
         sampleToUpdateRequiredPair = buildBsdAuthoritySampleWithSraAccession(accession);
       } else {
         enaSampleConvertedToBioSample =
-            enaSampleToBioSampleConversionService.enrichSample(accession, false);
+            enaSampleToBioSampleConversionService.enrichSample(accession);
       }
 
       boolean success = false;
@@ -129,8 +128,7 @@ public class EnaImportCallable implements Callable<Void> {
   private SampleToUpdateRequiredPair buildBsdAuthoritySampleWithSraAccession(
       final String accession) {
     final Optional<EntityModel<Sample>> sampleOptionalInBioSamples =
-        bioSamplesWebinClient.fetchSampleResource(
-            accession, Optional.of(Collections.singletonList("")));
+        bioSamplesWebinClient.fetchSampleResource(accession, false);
     final Sample sampleInBioSamples =
         sampleOptionalInBioSamples.map(EntityModel::getContent).orElse(null);
     final EraproSample eraproSample = eraProDao.getSampleDetailsByBioSampleId(accession);
@@ -161,14 +159,13 @@ public class EnaImportCallable implements Callable<Void> {
         log.info(
             "Sample "
                 + accession
-                + " has SRA accession mismatch with ENA, updating SRA accession attribute with SAMPLE_ID from ENA");
+                + " has SRA accession mismatch with ENA, this shouldn't happen - investigate");
 
         /*sampleSaveRequired = true;
         attributesInBioSample.removeIf(attribute -> attribute.getType().equals(SRA_ACCESSION));
         attributesInBioSample.add(Attribute.build(SRA_ACCESSION, eraproSampleSampleId));*/
         // August 12, 2024: dont do anything to these samples, ENA and BSD auth samples shouldn't
         // have this mismatch from the end of 2023
-        sampleSaveRequired = false;
       } else {
         log.info("Sample " + accession + " has SRA accession match with ENA, no action required");
       }
@@ -192,8 +189,7 @@ public class EnaImportCallable implements Callable<Void> {
   private Void handleSuppressedKilledSample(final SpecialTypes specialTypes)
       throws DocumentException {
     final Optional<EntityModel<Sample>> sampleOptionalInBioSamples =
-        bioSamplesWebinClient.fetchSampleResource(
-            accession, Optional.of(Collections.singletonList("")));
+        bioSamplesWebinClient.fetchSampleResource(accession, false);
     final Sample sampleInBioSamples =
         sampleOptionalInBioSamples.map(EntityModel::getContent).orElse(null);
     final String statusHandled = specialTypes.name().toLowerCase();
@@ -262,7 +258,7 @@ public class EnaImportCallable implements Callable<Void> {
               + " sample from ERAPRO "
               + accession);
       try {
-        final Sample sample = enaSampleToBioSampleConversionService.enrichSample(accession, false);
+        final Sample sample = enaSampleToBioSampleConversionService.enrichSample(accession);
 
         boolean success = false;
         int numRetry = 0;

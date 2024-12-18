@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Function;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 
 @Service
+@Slf4j
 public class MongoSampleToSampleConverter implements Function<MongoSample, Sample> {
   @Autowired
   private MongoExternalReferenceToExternalReferenceConverter

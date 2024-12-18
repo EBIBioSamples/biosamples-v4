@@ -81,8 +81,8 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
 
       log.info("Running from date range from " + fromDate + " until " + toDate);
 
-      // Import NCBI missing samples from ENA
-      importMissingNcbiSamples(fromDate, toDate);
+      // Syncing NCBI missing samples from ENA
+      syncNcbiSamples(fromDate, toDate);
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);
       pipelineFailureCause = e.getMessage();
@@ -148,8 +148,7 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
     return sampleCallbackResults;
   }
 
-  private void importMissingNcbiSamples(final LocalDate fromDate, final LocalDate toDate)
-      throws Exception {
+  private void syncNcbiSamples(final LocalDate fromDate, final LocalDate toDate) throws Exception {
     log.info("Handling NCBI Samples");
 
     final List<SampleCallbackResult> sampleCallbackResults =

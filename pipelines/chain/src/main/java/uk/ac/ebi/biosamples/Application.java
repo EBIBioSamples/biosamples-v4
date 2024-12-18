@@ -12,7 +12,6 @@ package uk.ac.ebi.biosamples;
 
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
@@ -21,7 +20,6 @@ import org.apache.http.impl.client.cache.CachingHttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
-import org.apache.http.protocol.HttpContext;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -73,24 +71,21 @@ public class Application {
         // use a keep alive strategy to try to make it easier to maintain connections for
         // reuse
         final ConnectionKeepAliveStrategy keepAliveStrategy =
-            new ConnectionKeepAliveStrategy() {
-              public long getKeepAliveDuration(
-                  final HttpResponse response, final HttpContext context) {
+            (response, context) -> {
 
-                // check if there is a non-standard keep alive header present
-                final HeaderElementIterator it =
-                    new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
-                while (it.hasNext()) {
-                  final HeaderElement he = it.nextElement();
-                  final String param = he.getName();
-                  final String value = he.getValue();
-                  if (value != null && param.equalsIgnoreCase("timeout")) {
-                    return Long.parseLong(value) * 1000;
-                  }
+              // check if there is a non-standard keep alive header present
+              final HeaderElementIterator it =
+                  new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
+              while (it.hasNext()) {
+                final HeaderElement he = it.nextElement();
+                final String param = he.getName();
+                final String value = he.getValue();
+                if (value != null && param.equalsIgnoreCase("timeout")) {
+                  return Long.parseLong(value) * 1000;
                 }
-                // default to 60s if no header
-                return 60 * 1000;
               }
+              // default to 60s if no header
+              return 60 * 1000;
             };
 
         // set a number of connections to use at once for multiple threads

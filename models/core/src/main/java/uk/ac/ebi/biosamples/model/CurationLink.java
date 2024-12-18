@@ -24,9 +24,9 @@ import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 public class CurationLink implements Comparable<CurationLink> {
   private final Curation curation;
   private final String sample;
-  private final String domain;
   private final String webinSubmissionAccountId;
   private final String hash;
+  private String domain;
 
   @JsonSerialize(using = CustomInstantSerializer.class)
   protected final Instant created;
@@ -55,19 +55,23 @@ public class CurationLink implements Comparable<CurationLink> {
     if (!domain.equals(other.domain)) {
       return domain.compareTo(other.domain);
     }
+
     if (!webinSubmissionAccountId.equals(other.webinSubmissionAccountId)) {
       return webinSubmissionAccountId.compareTo(other.webinSubmissionAccountId);
     }
+
     if (!sample.equals(other.sample)) {
       return sample.compareTo(other.sample);
     }
+
     if (!curation.equals(other.curation)) {
       return curation.compareTo(other.curation);
     }
+
     return 0;
   }
 
-  // Used for deserializtion (JSON -> Java)
+  // Used for deserialization (JSON -> Java)
   @JsonCreator
   public static CurationLink build(
       @JsonProperty("sample") final String sample,
@@ -76,7 +80,6 @@ public class CurationLink implements Comparable<CurationLink> {
       @JsonProperty("webinSubmissionAccountId") final String webinSubmissionAccountId,
       @JsonProperty("created") @JsonDeserialize(using = CustomInstantDeserializer.class)
           final Instant created) {
-
     final String hash =
         Hashing.sha256()
             .newHasher()
@@ -84,8 +87,6 @@ public class CurationLink implements Comparable<CurationLink> {
             .putUnencodedChars(sample)
             .hash()
             .toString();
-    // TODO hash on domain
-    // TODO synchronized with MongoCurationLink
 
     return new CurationLink(sample, domain, webinSubmissionAccountId, curation, hash, created);
   }

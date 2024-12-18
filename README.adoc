@@ -3,7 +3,9 @@ image:https://quay.io/repository/ebibiosamples/biosamples-v4/status["Docker Repo
 
 = BioSamples
 
-BioSamples https://www.ebi.ac.uk/biosamples/ stores and supplies descriptions and metadata about biological samples used in research and development by academia and industry. Samples are either 'reference' samples (e.g. from 1000 Genomes, HipSci, FAANG) or have been used in an assay database such as the European Nucleotide Archive (ENA) or ArrayExpress. 
+BioSamples https://www.ebi.ac.uk/biosamples/ an ELIXIR Core Deposition Database, stores and supplies descriptions and metadata about biological samples used in research and development by academia and industry. Samples are either 'reference' samples (e.g. from 1000 Genomes, HipSci, FAANG) or experimental samples, and have been used in an assay that has generated publicly available data in the European Nucleotide Archive (ENA) or ArrayExpress .
+
+BioSamples supports links between sample records and any sample-derived datasets, including sequence-based datasets such as those held in the European Nucleotide Archive (ENA) or ArrayExpress, -omics-based datasets such as those in PRIDE or MetaboLights, and any other assay-based databases. It provides links to assays and specific samples and accepts direct submissions of sample information. 
 
 BioSamples also synchronizes data with the NCBI BioSample database and imports data from ENA.
 
@@ -41,7 +43,7 @@ This document provides information about the local installation, development env
 [source,sh]
 ----
 sudo apt-get update
-sudo apt-get install openjdk-8-jdk maven git docker
+sudo apt-get install temurin-17-jdk maven git docker (or any JDK 17)
 ----
 . Please make sure the software versions are correct.
 +
@@ -53,7 +55,7 @@ docker -v
 
 java -version
 # Output
-# openjdk version "1.8.0_222"
+# openjdk version "17.0.12" 2024-07-16
 ----
 . Install BioSamples on your computer.
 +
@@ -132,14 +134,6 @@ Run the pipeline to send the data to the submission API via REST
 Note: You will need to mount the location that the XML dump was
 downloaded to within the docker container. A docker-compose.override.yml
 file is the easiest way to do that.
-
-=== ENA
-
-You can run the pipelines-ena to import ENA samples.
-In order to do that you will need to add some security settings to maven 
-to get access to oracle private driver repository.
-
-You can read more instructions about this at https://blogs.oracle.com/dev2dev/get-oracle-jdbc-drivers-and-ucp-from-oracle-maven-repository-without-ides
 
 === MongoDB notes
 
@@ -227,11 +221,11 @@ appropriate sections:
     <dependency>
         <groupId>uk.ac.ebi.biosamples</groupId>
         <artifactId>biosamples-spring-boot-starter</artifactId>
-        <version>5.2.4</version>
+        <version>5.3.7</version>
     </dependency>
 </dependencies>
 
-** 4.0.4 is an example, latest version is available in the release notes here -> https://www.ebi.ac.uk/biosamples/docs/releasenotes
+** 5.3.7 is an example, latest version is available in the release notes here -> https://www.ebi.ac.uk/biosamples/docs/releasenotes
 ....
 ....
 maven {

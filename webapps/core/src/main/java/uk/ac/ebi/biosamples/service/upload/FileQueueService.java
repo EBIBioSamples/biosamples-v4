@@ -45,13 +45,9 @@ public class FileQueueService {
   }
 
   public String queueFileinMongoAndSendMessageToRabbitMq(
-      final MultipartFile file,
-      final String aapDomain,
-      final String checklist,
-      final String webinId) {
+      final MultipartFile file, final String checklist, final String webinId) {
     try {
       final String fileId = persistUploadedFileInMongo(file);
-      final boolean isWebin = webinId != null && !webinId.isEmpty();
       final LocalDateTime submissionDate = LocalDateTime.now();
       final MongoFileUpload mongoFileUpload =
           new MongoFileUpload(
@@ -59,9 +55,9 @@ public class FileQueueService {
               BioSamplesFileUploadSubmissionStatus.ACTIVE,
               FileUploadUtils.formatDateString(submissionDate),
               FileUploadUtils.formatDateString(submissionDate),
-              isWebin ? webinId : aapDomain,
+              webinId,
               checklist,
-              isWebin,
+              true,
               new ArrayList<>(),
               null);
 

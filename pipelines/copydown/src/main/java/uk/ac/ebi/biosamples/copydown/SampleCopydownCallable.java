@@ -29,15 +29,15 @@ public class SampleCopydownCallable implements Callable<PipelineResult> {
   private static final String DERIVED_FROM = "derived from";
   private final Sample sample;
   private final BioSamplesClient bioSamplesClient;
-  private final String domain;
+  private final String webinId;
   private int curationCount;
   static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
   public SampleCopydownCallable(
-      final BioSamplesClient bioSamplesClient, final Sample sample, final String domain) {
+      final BioSamplesClient bioSamplesClient, final Sample sample, final String webinId) {
     this.bioSamplesClient = bioSamplesClient;
     this.sample = sample;
-    this.domain = domain;
+    this.webinId = webinId;
     curationCount = 0;
   }
 
@@ -143,7 +143,7 @@ public class SampleCopydownCallable implements Callable<PipelineResult> {
 
     final Curation curation = Curation.build(Collections.emptyList(), postAttributes);
 
-    bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
+    bioSamplesClient.persistCuration(sample.getAccession(), curation, webinId);
     curationCount++;
   }
 
