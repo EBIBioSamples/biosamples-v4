@@ -71,7 +71,8 @@ public class XmlSearchIntegration extends AbstractIntegration {
               TestSampleGenerator.getSampleWithSpecificUpdateDate(),
               TestSampleGenerator.getSampleReleasedAtTheEndOfTheDay(),
               TestSampleGenerator.getSampleReleasedExaclyTheDayAfterSAMD0912312(),
-              TestSampleGenerator.getSAMDSampleWithSubmittedViaAsPipelineImport());
+              TestSampleGenerator.getSAMDSampleWithSubmittedViaAsPipelineImport(),
+              TestSampleGenerator.getSAMNSampleWithSubmittedViaAsPipelineImport());
 
       for (Sample sample : baseSampleList) {
         /*throw new RuntimeException("Found existing " + sample.getAccession());*/
@@ -84,7 +85,8 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
         log.info("Persisted sample accession is - " + accession);
 
-        if (!sample.getAccession().equals("SAMD01111111")) {
+        if (!(sample.getAccession().equals("SAMD01111111")
+            || sample.getAccession().equals("SAMN01111111"))) {
           final Attribute sraAccessionAttribute =
               sampleContent.getAttributes().stream()
                   .filter(
@@ -111,7 +113,10 @@ public class XmlSearchIntegration extends AbstractIntegration {
               .anyMatch(
                   attribute -> attribute.getType().equals(BioSamplesConstants.SRA_ACCESSION))) {
             throw new IntegrationTestFailException(
-                "SAMD sample PIPELINE_IMPORT shouldn't assign new SRA accession", Phase.ONE);
+                "SAMD/ SAMN sample PIPELINE_IMPORT shouldn't assign new SRA accession", Phase.ONE);
+          } else {
+            log.info(
+                "SAMD/ SAMN sample with PIPELINE IMPORT doesn't have SRA accession (ERS) assigned as expected");
           }
         }
       }
@@ -383,6 +388,29 @@ public class XmlSearchIntegration extends AbstractIntegration {
     static Sample getSAMDSampleWithSubmittedViaAsPipelineImport() {
       final String name = "Test Sample SAMD01111111";
       final String accession = "SAMD01111111";
+      final Instant update = Instant.now();
+      final Instant release = Instant.parse("2016-08-03T00:00:00Z");
+      final SortedSet<Attribute> attributes = new TreeSet<>();
+
+      attributes.add(
+          new Attribute.Builder(
+                  "description",
+                  "Sample released exactly at midnight of the day after another sample was released")
+              .build());
+      attributes.add(Attribute.build("Organism", "Human"));
+
+      return new Sample.Builder(name, accession)
+          .withWebinSubmissionAccountId(defaultWebinIdForIntegrationTests)
+          .withRelease(release)
+          .withUpdate(update)
+          .withAttributes(attributes)
+          .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
+          .build();
+    }
+
+    static Sample getSAMNSampleWithSubmittedViaAsPipelineImport() {
+      final String name = "Test Sample SAMN01111111";
+      final String accession = "SAMN01111111";
       final Instant update = Instant.now();
       final Instant release = Instant.parse("2016-08-03T00:00:00Z");
       final SortedSet<Attribute> attributes = new TreeSet<>();
