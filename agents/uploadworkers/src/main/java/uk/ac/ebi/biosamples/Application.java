@@ -21,19 +21,8 @@ import uk.ac.ebi.biosamples.mongo.repository.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
-import uk.ac.ebi.tsc.aap.client.repo.*;
 
-@SpringBootApplication(
-    exclude = {
-      DomainService.class,
-      DomainRepositoryRest.class,
-      ProfileService.class,
-      ProfileRepositoryRest.class,
-      UserService.class,
-      UserRepositoryRest.class,
-      TokenService.class,
-      TokenRepositoryRest.class
-    })
+@SpringBootApplication
 public class Application {
   public static void main(final String[] args) {
     System.exit(SpringApplication.exit(SpringApplication.run(Application.class, args)));

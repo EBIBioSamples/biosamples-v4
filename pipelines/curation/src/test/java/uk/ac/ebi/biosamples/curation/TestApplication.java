@@ -25,7 +25,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.client.service.AapClientService;
+import uk.ac.ebi.biosamples.client.service.WebinAuthClientService;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
@@ -58,7 +58,7 @@ public class TestApplication {
   }
 
   @Bean
-  AapClientService aapClientService() {
+  WebinAuthClientService webinAuthClientService() {
     return null;
   }
 
@@ -89,7 +89,7 @@ public class TestApplication {
         bioSamplesProperties().getBiosamplesClientUriV2(),
         restTemplateBuilder,
         sampleValidator(),
-        aapClientService(),
+        webinAuthClientService(),
         clientProperties(),
         true);
   }

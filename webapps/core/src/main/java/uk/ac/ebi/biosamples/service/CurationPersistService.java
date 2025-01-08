@@ -84,8 +84,10 @@ public class CurationPersistService {
     if (curationLink == null) {
       throw new IllegalArgumentException("curationLink must not be null");
     }
+
     final MongoCurationLink mongoCurationLink =
         curationLinkToMongoCurationLinkConverter.convert(curationLink);
+
     mongoCurationLinkRepository.deleteById(mongoCurationLink.getHash());
     messagingSerivce.fetchThenSendMessage(curationLink.getSample());
   }
@@ -108,8 +110,8 @@ public class CurationPersistService {
             CurationLink.build(
                 rel.getTarget(),
                 reverseCuration,
-                curationLink.getDomain(),
                 null,
+                curationLink.getWebinSubmissionAccountId(),
                 curationLink.getCreated());
 
         if (!mongoCurationLinkRepository.findById(reverseCurationLink.getHash()).isPresent()) {
@@ -131,8 +133,8 @@ public class CurationPersistService {
             CurationLink.build(
                 rel.getTarget(),
                 reverseCuration,
-                curationLink.getDomain(),
                 null,
+                curationLink.getWebinSubmissionAccountId(),
                 curationLink.getCreated());
 
         if (!mongoCurationLinkRepository.findById(reverseCurationLink.getHash()).isPresent()) {

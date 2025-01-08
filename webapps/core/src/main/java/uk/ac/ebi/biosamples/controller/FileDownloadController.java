@@ -26,7 +26,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FileDownloadService;
 import uk.ac.ebi.biosamples.service.FilterService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 @Controller
@@ -35,15 +35,15 @@ public class FileDownloadController {
   private static final Logger LOG = LoggerFactory.getLogger(FileDownloadController.class);
   private final FileDownloadService fileDownloadService;
   private final FilterService filterService;
-  private final BioSamplesAapService bioSamplesAapService;
+  private final WebinAuthenticationService webinAuthenticationService;
 
   public FileDownloadController(
       final FileDownloadService fileDownloadService,
       final FilterService filterService,
-      final BioSamplesAapService bioSamplesAapService) {
+      final WebinAuthenticationService webinAuthenticationService) {
     this.fileDownloadService = fileDownloadService;
     this.filterService = filterService;
-    this.bioSamplesAapService = bioSamplesAapService;
+    this.webinAuthenticationService = webinAuthenticationService;
   }
 
   @GetMapping
@@ -64,11 +64,10 @@ public class FileDownloadController {
     final String decodedText = LinkUtils.decodeText(text);
     final Collection<Filter> filters =
         filterService.getFiltersCollection(LinkUtils.decodeTexts(filter));
-    final Collection<String> domains = bioSamplesAapService.getDomains();
     final String outputFormat = getDownloadFormat(format, request.getHeader("Accept"));
     setResponseHeaders(response, zip, outputFormat);
     final InputStream in =
-        fileDownloadService.getDownloadStream(decodedText, filters, domains, outputFormat, count);
+        fileDownloadService.getDownloadStream(decodedText, filters, outputFormat, count);
     final StreamingResponseBody responseBody =
         outputStream -> fileDownloadService.copyAndCompress(in, outputStream, zip, outputFormat);
 

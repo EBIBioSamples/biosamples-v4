@@ -36,9 +36,9 @@ public class CurationSubmissionService {
     this.traverson = traverson;
   }
 
-  public EntityModel<CurationLink> submit(final CurationLink curationLink)
+  public EntityModel<CurationLink> submit(final CurationLink curationLink, final String jwt)
       throws RestClientException {
-    return persistCuration(curationLink, null);
+    return persistCuration(curationLink, jwt);
   }
 
   public EntityModel<CurationLink> persistCuration(

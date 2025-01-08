@@ -65,7 +65,6 @@ public class FileUploadController {
   @PostMapping
   public ResponseEntity<byte[]> upload(
       @RequestParam("file") final MultipartFile file,
-      @Valid final String hiddenAapDomain,
       @Valid final String hiddenChecklist,
       @Valid final String webinId)
       throws IOException {
@@ -76,8 +75,7 @@ public class FileUploadController {
 
       try {
         final File downloadableFile =
-            fileUploadService.upload(
-                file, hiddenAapDomain, hiddenChecklist, webinId, fileUploadUtils);
+            fileUploadService.upload(file, hiddenChecklist, webinId, fileUploadUtils);
         final byte[] bytes = FileUtils.readFileToByteArray(downloadableFile);
         final HttpHeaders headers = setResponseHeadersSuccess(downloadableFile);
 
@@ -118,7 +116,7 @@ public class FileUploadController {
       try {
         final String fileId =
             fileQueueService.queueFileinMongoAndSendMessageToRabbitMq(
-                file, hiddenAapDomain, hiddenChecklist, webinId);
+                file, hiddenChecklist, webinId);
         final File queuedUploadMessageFile = fileUploadUtils.writeQueueMessageToFile(fileId);
         final byte[] bytes = FileUtils.readFileToByteArray(queuedUploadMessageFile);
         final HttpHeaders headers = setResponseHeadersFailure(queuedUploadMessageFile);
@@ -193,8 +191,8 @@ public class FileUploadController {
         accessControlService
             .extractToken(token)
             .orElseThrow(GlobalExceptions.AccessControlException::new);
-    final List<String> userRoles = accessControlService.getUserRoles(authToken);
-    final List<MongoFileUpload> uploads = fileUploadService.getUserSubmissions(userRoles);
+    final String user = accessControlService.getUser(authToken);
+    final List<MongoFileUpload> uploads = fileUploadService.getUserSubmissions(user);
 
     return ResponseEntity.ok().body(uploads);
   }

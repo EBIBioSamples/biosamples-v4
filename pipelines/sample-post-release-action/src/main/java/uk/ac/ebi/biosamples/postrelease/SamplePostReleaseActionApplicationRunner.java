@@ -18,7 +18,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.EntityModel;
@@ -35,15 +34,11 @@ import uk.ac.ebi.biosamples.utils.ThreadUtils;
 public class SamplePostReleaseActionApplicationRunner implements ApplicationRunner {
   private static final Logger LOG =
       LoggerFactory.getLogger(SamplePostReleaseActionApplicationRunner.class);
-  private final BioSamplesClient bioSamplesAapClient;
   private final BioSamplesClient bioSamplesWebinClient;
   private final PipelinesProperties pipelinesProperties;
 
   public SamplePostReleaseActionApplicationRunner(
-      @Qualifier("AAPCLIENT") final BioSamplesClient bioSamplesAapClient,
-      @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesWebinClient,
-      final PipelinesProperties pipelinesProperties) {
-    this.bioSamplesAapClient = bioSamplesAapClient;
+      final BioSamplesClient bioSamplesWebinClient, final PipelinesProperties pipelinesProperties) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
     this.pipelinesProperties = pipelinesProperties;
   }
@@ -64,7 +59,7 @@ public class SamplePostReleaseActionApplicationRunner implements ApplicationRunn
 
       final Map<String, Future<Boolean>> futures = new HashMap<>();
       for (final EntityModel<Sample> sampleResource :
-          bioSamplesAapClient.fetchSampleResourceAllWithoutCuration("", filters)) {
+          bioSamplesWebinClient.fetchSampleResourceAllWithoutCuration("", filters)) {
         final Sample sample = sampleResource.getContent();
 
         if (sample == null) {
@@ -74,7 +69,7 @@ public class SamplePostReleaseActionApplicationRunner implements ApplicationRunn
         LOG.info("Handling {}", sample.getAccession());
 
         final Callable<Boolean> task =
-            new SamplePostReleaseActionCallable(bioSamplesAapClient, bioSamplesWebinClient, sample);
+            new SamplePostReleaseActionCallable(bioSamplesWebinClient, sample);
         sampleCount++;
 
         if (sampleCount % 10000 == 0) {

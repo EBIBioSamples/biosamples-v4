@@ -30,7 +30,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.StreamUtils;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
 import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @RunWith(SpringRunner.class)
@@ -38,17 +37,10 @@ import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class StructuredDataTest {
-
   @Autowired private MockMvc mockMvc;
-
   private JacksonTester<Sample> json;
-
   private ObjectMapper mapper;
-
-  @MockBean private BioSamplesAapService bioSamplesAapService;
-
   @MockBean private SampleService sampleService;
-
   @MockBean private SchemaValidationService schemaValidatorService;
 
   @Before

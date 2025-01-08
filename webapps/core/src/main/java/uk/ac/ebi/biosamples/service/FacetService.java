@@ -35,16 +35,14 @@ public class FacetService {
   public List<Facet> getFacets(
       final String text,
       final Collection<Filter> filters,
-      final Collection<String> domains,
       final int noOfFacets,
       final int noOfFacetValues) {
-    return getFacets(text, filters, domains, noOfFacets, noOfFacetValues, null);
+    return getFacets(text, filters, noOfFacets, noOfFacetValues, null);
   }
 
   public List<Facet> getFacets(
       final String text,
       final Collection<Filter> filters,
-      final Collection<String> domains,
       final int noOfFacets,
       final int noOfFacetValues,
       final String facetField) {
@@ -58,7 +56,7 @@ public class FacetService {
     final String escapedText = text == null ? null : ClientUtils.escapeQueryChars(text);
     final List<Facet> facets =
         solrFacetService.getFacets(
-            escapedText, filters, domains, facetPageable, facetValuePageable, facetField);
+            escapedText, filters, facetPageable, facetValuePageable, facetField);
     final long endTime = System.nanoTime();
     log.trace("Got solr facets in " + ((endTime - startTime) / 1000000) + "ms");
 

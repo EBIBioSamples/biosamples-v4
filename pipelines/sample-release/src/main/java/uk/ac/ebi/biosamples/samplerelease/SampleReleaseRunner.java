@@ -37,16 +37,13 @@ import uk.ac.ebi.biosamples.utils.ThreadUtils;
 public class SampleReleaseRunner implements ApplicationRunner {
   private static final Logger log = LoggerFactory.getLogger(SampleReleaseRunner.class);
   private final BioSamplesClient bioSamplesWebinClient;
-  private final BioSamplesClient bioSamplesAapClient;
 
   @Autowired private RestTemplate restTemplate;
   @Autowired private PipelinesProperties pipelinesProperties;
 
   public SampleReleaseRunner(
-      @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesWebinClient,
-      @Qualifier("AAPCLIENT") final BioSamplesClient bioSamplesAapClient) {
+      @Qualifier("WEBINCLIENT") final BioSamplesClient bioSamplesWebinClient) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
-    this.bioSamplesAapClient = bioSamplesAapClient;
   }
 
   @Override
@@ -133,7 +130,6 @@ public class SampleReleaseRunner implements ApplicationRunner {
                   final Callable<Void> task =
                       new SampleReleaseCallable(
                           bioSamplesWebinClient,
-                          bioSamplesAapClient,
                           pipelinesProperties,
                           restTemplate,
                           accession,

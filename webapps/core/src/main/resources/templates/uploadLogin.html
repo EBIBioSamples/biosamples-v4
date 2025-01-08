@@ -27,13 +27,7 @@
         </div>
 
         <div class="login-wrapper">
-            <form th:action="@{/login/auth}" method="post" modelAttribute="authRequest">
-                <span><b>Login using</b></span> &nbsp;
-                <input type="radio" name="loginWay" id="AAP" value="AAP" checked="checked"/><b>AAP</b> &nbsp;
-                <input type="radio" name="loginWay" id="WEBIN" value="WEBIN"/><b>WEBIN</b>
-
-                <br/>
-
+            <form th:action="@{/login/auth}" method="post" modelAttribute="fileUploaderAuthRequest">
                 <label for="userName"><b>Username</b></label>
                 <input type="text" id="userName" name="userName" autofocus="autofocus" class="required"/> <br/>
                 <label for="password"><b>Password</b></label>

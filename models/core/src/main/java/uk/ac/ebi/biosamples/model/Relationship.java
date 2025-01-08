@@ -13,7 +13,9 @@ package uk.ac.ebi.biosamples.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
+import lombok.Getter;
 
+@Getter
 public class Relationship implements Comparable<Relationship> {
   private final String type;
   private final String target;
@@ -24,18 +26,6 @@ public class Relationship implements Comparable<Relationship> {
     this.type = type;
     this.target = target;
     this.source = source;
-  }
-
-  public String getType() {
-    return type;
-  }
-
-  public String getTarget() {
-    return target;
-  }
-
-  public String getSource() {
-    return source;
   }
 
   @Override

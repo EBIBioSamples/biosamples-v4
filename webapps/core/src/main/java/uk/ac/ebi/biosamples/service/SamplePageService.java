@@ -68,28 +68,26 @@ public class SamplePageService {
         mongoCurationLinkRepository.findByCurationHash(hash, pageable);
     // stream process each into a sample
     final Page<Sample> pageSample =
-        accession.map(mcl -> sampleService.fetch(mcl.getSample(), Optional.empty()).get());
+        accession.map(mcl -> sampleService.fetch(mcl.getSample(), true).get());
     return pageSample;
   }
 
   public Page<Sample> getSamplesByText(
       final String text,
       final Collection<Filter> filters,
-      final Collection<String> domains,
       final String webinSubmissionAccountId,
       final Pageable pageable,
-      final Optional<List<String>> curationDomains) {
+      final boolean applyCurations) {
     long startTime = System.nanoTime();
     final Page<SolrSample> pageSolrSample =
-        solrSampleService.fetchSolrSampleByText(
-            text, filters, domains, webinSubmissionAccountId, pageable);
+        solrSampleService.fetchSolrSampleByText(text, filters, webinSubmissionAccountId, pageable);
     long endTime = System.nanoTime();
     log.trace("Got solr page in " + ((endTime - startTime) / 1000000) + "ms");
 
     startTime = System.nanoTime();
     final Page<Future<Optional<Sample>>> pageFutureSample;
     pageFutureSample =
-        pageSolrSample.map(ss -> sampleService.fetchAsync(ss.getAccession(), curationDomains));
+        pageSolrSample.map(ss -> sampleService.fetchAsync(ss.getAccession(), applyCurations));
 
     final Page<Sample> pageSample =
         pageFutureSample.map(
@@ -112,22 +110,21 @@ public class SamplePageService {
   public CursorArrayList<Sample> getSamplesByText(
       final String text,
       final Collection<Filter> filters,
-      final Collection<String> domains,
       final String webinSubmissionAccountId,
       String cursorMark,
       int size,
-      final Optional<List<String>> curationDomains) {
+      final boolean applyCurations) {
     cursorMark = validateCursor(cursorMark);
     size = validatePageSize(size);
 
     final CursorArrayList<SolrSample> cursorSolrSample =
         solrSampleService.fetchSolrSampleByText(
-            text, filters, domains, webinSubmissionAccountId, cursorMark, size);
-
+            text, filters, webinSubmissionAccountId, cursorMark, size);
     final List<Future<Optional<Sample>>> listFutureSample;
+
     listFutureSample =
         cursorSolrSample.stream()
-            .map(s -> sampleService.fetchAsync(s.getAccession(), curationDomains))
+            .map(s -> sampleService.fetchAsync(s.getAccession(), applyCurations))
             .collect(Collectors.toList());
 
     final List<Sample> listSample = collectSampleFutures(listFutureSample);
@@ -149,9 +146,10 @@ public class SamplePageService {
   }
 
   private String validateCursor(String cursorMark) {
-    if (cursorMark == null || cursorMark.trim().length() == 0) {
+    if (cursorMark == null || cursorMark.trim().isEmpty()) {
       cursorMark = "*";
     }
+
     return cursorMark;
   }
 
@@ -159,9 +157,11 @@ public class SamplePageService {
     if (pageSize > 1000) {
       pageSize = 1000;
     }
+
     if (pageSize < 1) {
       pageSize = 1;
     }
+
     return pageSize;
   }
 }

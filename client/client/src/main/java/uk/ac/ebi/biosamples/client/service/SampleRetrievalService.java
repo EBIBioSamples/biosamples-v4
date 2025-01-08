@@ -17,14 +17,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
-import org.springframework.hateoas.client.Traverson.TraversalBuilder;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
+import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.model.Sample;
 
 public class SampleRetrievalService {
@@ -39,61 +38,46 @@ public class SampleRetrievalService {
   }
 
   /** This will get an existing sample from biosamples using the accession */
-  public Optional<EntityModel<Sample>> fetch(
-      final String accession, final Optional<List<String>> curationDomains) {
-    return new SampleRetriever(accession, curationDomains).fetchSample();
+  public Optional<EntityModel<Sample>> fetch(final String accession, final boolean applyCurations) {
+    return new SampleRetriever(accession, applyCurations).fetchSample();
   }
 
   public Optional<EntityModel<Sample>> fetch(
-      final String accession, final Optional<List<String>> curationDomains, final String jwt) {
-    return new SampleRetriever(accession, curationDomains, jwt).fetchSample();
+      final String accession, final boolean applyCurations, final String jwt) {
+    return new SampleRetriever(accession, applyCurations, jwt).fetchSample();
   }
 
   private class SampleRetriever {
     private final String accession;
-    private final Optional<List<String>> curationDomains;
+    private final boolean applyCurations;
     private final String jwt;
 
-    SampleRetriever(final String accession, final Optional<List<String>> curationDomains) {
+    SampleRetriever(final String accession, final boolean applyCurations) {
       this.accession = accession;
-      this.curationDomains = curationDomains;
-      jwt = null;
+      this.applyCurations = applyCurations;
+      this.jwt = null;
     }
 
-    SampleRetriever(
-        final String accession, final Optional<List<String>> curationDomains, final String jwt) {
+    SampleRetriever(final String accession, final boolean applyCurations, final String jwt) {
       this.accession = accession;
-      this.curationDomains = curationDomains;
+      this.applyCurations = applyCurations;
       this.jwt = jwt;
     }
 
     public Optional<EntityModel<Sample>> fetchSample() {
-      final URI uri;
-
-      if (!curationDomains.isPresent()) {
-        uri =
-            URI.create(
-                traverson
-                    .follow("samples")
-                    .follow(Hop.rel("sample").withParameter("accession", accession))
-                    .asLink()
-                    .getHref());
-      } else {
-        final TraversalBuilder traversalBuilder =
-            traverson
-                .follow("samples")
-                .follow(Hop.rel("sample").withParameter("accession", accession));
-
-        for (final String curationDomain : curationDomains.get()) {
-          traversalBuilder.follow(
-              Hop.rel("curationDomain").withParameter("curationdomain", curationDomain));
-        }
-
-        uri = URI.create(traversalBuilder.asLink().getHref());
-      }
+      final Traverson.TraversalBuilder traversalBuilder = traverson.follow("samples");
+      // Get the base URI from the traversal
+      final String baseUri = traversalBuilder.asLink().getHref() + "/" + accession;
+      // Add the query parameter
+      final String uri =
+          UriComponentsBuilder.fromUriString(baseUri)
+              .queryParam("applyCurations", applyCurations) // Append query parameter
+              .build()
+              .toUriString();
 
       log.info("GETing " + uri);
 
+      // Prepare headers for the request
       final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
 
       headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
@@ -102,7 +86,9 @@ public class SampleRetrievalService {
         headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
       }
 
-      final RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
+      // Create the request entity
+      final RequestEntity<Void> requestEntity =
+          new RequestEntity<>(headers, HttpMethod.GET, URI.create(uri));
       final ResponseEntity<EntityModel<Sample>> responseEntity;
 
       try {
@@ -181,7 +167,7 @@ public class SampleRetrievalService {
         while (queue.size() < queueMaxSize && accessions.hasNext()) {
           log.trace("Queue size is " + queue.size());
 
-          queue.add(fetch(accessions.next(), Optional.empty(), jwt));
+          queue.add(fetch(accessions.next(), true, jwt));
         }
 
         // get the end of the queue and wait for it to finish if needed

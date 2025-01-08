@@ -49,17 +49,6 @@ public class BioSamplesProperties {
   @Value("${biosamples.submit.max-files-size-kb:20}")
   private long biosamplesFileUploaderMaxSameTimeUploadFileSize;
 
-  @Value("${biosamples.client.aap.uri:https://explore.api.aai.ebi.ac.uk/auth}")
-  private URI biosamplesClientAapUri;
-
-  // can't use "null" because it will be a string
-  @Value("${biosamples.client.aap.username:#{null}}")
-  private String biosamplesClientAapUsername;
-
-  // can't use "null" because it will be a string
-  @Value("${biosamples.client.aap.password:#{null}}")
-  private String biosamplesClientAapPassword;
-
   @Value(
       "${biosamples.client.webin.auth.token.uri:https://www.ebi.ac.uk/ena/submit/webin/auth/token}")
   private URI biosamplesWebinAuthTokenUri;
@@ -84,12 +73,6 @@ public class BioSamplesProperties {
   // Set each cache object maximum size, 1024*1024 = 1048576 = 1Mb
   @Value("${biosamples.client.cache.maxobjectsize:1048576}")
   private int biosamplesClientCacheMaxObjectSize;
-
-  @Value("${biosamples.aap.super.read:self.BiosampleSuperUserRead}")
-  private String biosamplesAapSuperRead;
-
-  @Value("${biosamples.aap.super.write:self.BiosampleSuperUserWrite}")
-  private String biosamplesAapSuperWrite;
 
   @Value("${biosamples.ols:https://www.ebi.ac.uk/ols}")
   private String ols;
@@ -127,7 +110,7 @@ public class BioSamplesProperties {
   private String biosamplesDefaultSchema;
 
   @Value("${biosamples.bulksubmisison.webin.superuser.validation:false}")
-  private boolean enableBulkSubmissionWebinSuperuserValidation;
+  private boolean enableBulkSubmissionWebinSuperUserValidation;
 
   public int getBiosamplesClientConnectionCountMax() {
     return connectionCountMax;

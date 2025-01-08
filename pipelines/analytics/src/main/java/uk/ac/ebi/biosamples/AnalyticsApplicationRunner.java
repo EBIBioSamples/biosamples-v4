@@ -52,23 +52,17 @@ public class AnalyticsApplicationRunner implements ApplicationRunner {
     final Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
     final long sampleCount = 0;
+    final Instant endTime = Instant.now();
     final SampleAnalytics sampleAnalytics = new SampleAnalytics();
-
     final Page<Sample> samplePage =
         samplePageService.getSamplesByText(
-            "",
-            Collections.emptyList(),
-            Collections.emptyList(),
-            null,
-            PageRequest.of(0, 1),
-            Optional.empty());
+            "", Collections.emptyList(), null, PageRequest.of(0, 1), true);
     sampleAnalytics.setTotalRecords(samplePage.getTotalElements());
     addToFacets("organism", sampleAnalytics);
     addToFacets("tissue", sampleAnalytics);
     addToFacets("sex", sampleAnalytics);
     addToFacets("external reference", sampleAnalytics);
 
-    final Instant endTime = Instant.now();
     LOG.info("Total samples processed {}", sampleCount);
     LOG.info("Total curation objects added {}", pipelineFutureCallback.getTotalCount());
     LOG.info("Pipeline finished at {}", endTime);
@@ -81,20 +75,24 @@ public class AnalyticsApplicationRunner implements ApplicationRunner {
 
   private void addToFacets(final String facetField, final SampleAnalytics sampleAnalytics) {
     final List<Facet> facetList =
-        facetService.getFacets(
-            "", Collections.emptyList(), Collections.emptyList(), 1, 10, facetField);
+        facetService.getFacets("", Collections.emptyList(), 1, 10, facetField);
+
     for (final Facet facet : facetList) {
       final String label = facet.getLabel();
       final Long totalCount = facet.getCount();
-      Long existingFacetSum = 0L;
       final Map<String, Map<String, Long>> facetListMap = sampleAnalytics.getFacets();
+      Long existingFacetSum = 0L;
+
       if (facet.getContent() instanceof LabelCountListContent) {
         final Map<String, Long> facetMap = new HashMap<>();
+
         facetListMap.put(label, facetMap);
+
         for (final LabelCountEntry e : (LabelCountListContent) facet.getContent()) {
           facetMap.put(e.getLabel(), e.getCount());
           existingFacetSum += e.getCount();
         }
+
         facetMap.put("other", totalCount - existingFacetSum);
       }
     }

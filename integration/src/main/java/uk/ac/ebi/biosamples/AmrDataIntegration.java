@@ -23,6 +23,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
@@ -33,14 +34,19 @@ import uk.ac.ebi.biosamples.utils.TestUtilities;
 
 @Component
 public class AmrDataIntegration extends AbstractIntegration {
-
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final ObjectMapper mapper;
+  private final ClientProperties clientProperties;
 
   public AmrDataIntegration(
-      final BioSamplesClient client, final RestTemplateBuilder restTemplateBuilder) {
+      final BioSamplesClient client,
+      final RestTemplateBuilder restTemplateBuilder,
+      ClientProperties clientProperties) {
     super(client);
+
+    this.clientProperties = clientProperties;
     restTemplateBuilder.build();
+
     mapper = new ObjectMapper();
   }
 
@@ -54,7 +60,8 @@ public class AmrDataIntegration extends AbstractIntegration {
           "AMRDataIntegration test sample should not be available during phase 1", Phase.ONE);
     }
 
-    final EntityModel<Sample> resource = client.persistSampleResource(testSample);
+    final EntityModel<Sample> resource = webinClient.persistSampleResource(testSample);
+
     Sample testSampleWithAccession =
         Sample.Builder.fromSample(testSample)
             .withAccession(Objects.requireNonNull(resource.getContent()).getAccession())
@@ -87,11 +94,13 @@ public class AmrDataIntegration extends AbstractIntegration {
   protected void phaseTwo() {
     final Sample testSample = getTestSample();
     final Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
+
     if (!optionalSample.isPresent()) {
       throw new IntegrationTestFailException("Cant find sample " + testSample.getName(), Phase.TWO);
     }
 
     final String json = TestUtilities.readFileAsString("structured_data_amr.json");
+
     StructuredData sd;
 
     try {
@@ -102,7 +111,9 @@ public class AmrDataIntegration extends AbstractIntegration {
     }
 
     sd = StructuredData.build(optionalSample.get().getAccession(), sd.getCreate(), sd.getData());
-    final EntityModel<StructuredData> structuredDataResource = client.persistStructuredData(sd);
+
+    final EntityModel<StructuredData> structuredDataResource =
+        webinClient.persistStructuredData(sd);
 
     if (structuredDataResource.getContent() == null) {
       throw new RuntimeException("Should return submitted structured data");
@@ -114,19 +125,24 @@ public class AmrDataIntegration extends AbstractIntegration {
     final Sample testSample = getTestSample();
 
     TimeUnit.SECONDS.sleep(2);
+
     final Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
-    if (!optionalSample.isPresent()) {
+
+    if (optionalSample.isEmpty()) {
       throw new IntegrationTestFailException(
           "Cant find sample " + testSample.getName(), Phase.THREE);
     }
 
     final Sample amrSample = optionalSample.get();
+
     log.info("Checking sample has amr data");
+
     assertEquals(amrSample.getStructuredData().size(), 1);
     assertEquals(
         amrSample.getStructuredData().iterator().next().getType(), StructuredDataType.AMR.name());
 
     final StructuredDataTable table = amrSample.getStructuredData().iterator().next();
+
     assertEquals(table.getContent().size(), 15);
 
     // Assert there are only 2 entries with missing testing standard
@@ -195,7 +211,7 @@ public class AmrDataIntegration extends AbstractIntegration {
     return new Sample.Builder(name)
         .withUpdate(update)
         .withRelease(release)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withAttributes(attributes)
         .withRelationships(relationships)
         .withExternalReferences(externalReferences)

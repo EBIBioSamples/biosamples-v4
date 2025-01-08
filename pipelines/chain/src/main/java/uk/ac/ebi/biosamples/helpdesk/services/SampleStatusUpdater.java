@@ -17,23 +17,21 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.filter.AttributeFilter;
+import uk.ac.ebi.biosamples.model.filter.Filter;
 
 @Service
 @Slf4j
 public class SampleStatusUpdater {
-  @Autowired private BioSamplesClient aapClient;
-
   @Autowired
   @Qualifier("WEBINCLIENT")
   private BioSamplesClient webinClient;
@@ -56,6 +54,55 @@ public class SampleStatusUpdater {
     return accessions;
   }
 
+  public void makeFilteredSamplesPrivate() {
+    final List<Sample> samples = new ArrayList<>();
+    final Filter projectFilter =
+        new AttributeFilter.Builder("project").withValue("MorPhiC").build();
+
+    final Iterable<EntityModel<Sample>> samplesIterable =
+        webinClient.fetchSampleResourceAll(Collections.singletonList(projectFilter));
+
+    samplesIterable.forEach(
+        sampleEntityModel -> {
+          final Sample sample = sampleEntityModel.getContent();
+
+          if (sample.getRelease().isBefore(Instant.now())) {
+            samples.add(sample);
+          }
+        });
+
+    if (samples.size() == 169) {
+      log.info("Accession count matches expectations - process samples");
+
+      samples.forEach(
+          sample -> {
+            final Set<Attribute> attributes = sample.getAttributes();
+            final Attribute projectAttribute =
+                attributes.stream()
+                    .filter(attribute -> attribute.getType().equals("project"))
+                    .toList()
+                    .get(0);
+
+            attributes.remove(projectAttribute);
+            attributes.add(Attribute.build("project", "MorPhiC-Test"));
+
+            sample =
+                Sample.Builder.fromSample(sample)
+                    .withAttributes(attributes)
+                    .withRelease(
+                        Instant.ofEpochSecond(
+                            LocalDateTime.now(ZoneOffset.UTC)
+                                .plusYears(100)
+                                .toEpochSecond(ZoneOffset.UTC)))
+                    .build();
+
+            log.info("Persisting sample " + sample.getAccession());
+
+            webinClient.persistSampleResource(sample);
+          });
+    }
+  }
+
   public void processSamples(final List<String> accessions) {
     accessions.forEach(accession -> processSample(accession));
   }
@@ -64,12 +111,7 @@ public class SampleStatusUpdater {
     log.info("Handling " + accession);
 
     Optional<EntityModel<Sample>> optionalSampleEntityModel =
-        aapClient.fetchSampleResource(accession, Optional.of(Collections.singletonList("")));
-
-    if (optionalSampleEntityModel.isEmpty()) {
-      optionalSampleEntityModel =
-          webinClient.fetchSampleResource(accession, Optional.of(Collections.singletonList("")));
-    }
+        webinClient.fetchSampleResource(accession, false);
 
     if (optionalSampleEntityModel.isPresent()) {
       final Sample sample = optionalSampleEntityModel.get().getContent();
@@ -95,11 +137,7 @@ public class SampleStatusUpdater {
                           .toEpochSecond(ZoneOffset.UTC)))
               .build();
 
-      if (updatedSample.getWebinSubmissionAccountId() != null) {
-        webinClient.persistSampleResource(updatedSample);
-      } else {
-        aapClient.persistSampleResource(updatedSample);
-      }
+      webinClient.persistSampleResource(updatedSample);
     }
   }
 }

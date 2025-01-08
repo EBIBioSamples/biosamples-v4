@@ -49,8 +49,7 @@ public class EnaSampleToBioSampleConversionService {
   }
 
   /** Handles one ENA/ NCBI sample */
-  public Sample enrichSample(final String accession, final boolean isNcbiSample)
-      throws DocumentException {
+  public Sample enrichSample(final String accession) throws DocumentException {
     final EraproSample eraproSample = eraProDao.getSampleDetailsByBioSampleId(accession);
 
     if (eraproSample != null) {
@@ -62,7 +61,7 @@ public class EnaSampleToBioSampleConversionService {
 
       // check that we got some content
       if (XmlPathBuilder.of(enaSampleRootElement).path("SAMPLE").exists()) {
-        return enrichSample(eraproSample, enaSampleRootElement, accession, isNcbiSample);
+        return enrichSample(eraproSample, enaSampleRootElement, accession);
       } else {
         log.warn("Unable to find SAMPLE element for " + accession);
       }
@@ -72,8 +71,7 @@ public class EnaSampleToBioSampleConversionService {
   }
 
   /** Handles one ENA/ NCBI sample */
-  public Sample enrichSample(
-      final String accession, final boolean isNcbiSample, final EraproSample eraproSample)
+  public Sample enrichSample(final String accession, final EraproSample eraproSample)
       throws DocumentException {
     if (eraproSample != null) {
       final String xmlString = eraproSample.getSampleXml();
@@ -84,7 +82,7 @@ public class EnaSampleToBioSampleConversionService {
 
       // check that we got some content
       if (XmlPathBuilder.of(enaSampleRootElement).path("SAMPLE").exists()) {
-        return enrichSample(eraproSample, enaSampleRootElement, accession, isNcbiSample);
+        return enrichSample(eraproSample, enaSampleRootElement, accession);
       } else {
         log.warn("Unable to find SAMPLE element for " + accession);
       }
@@ -95,10 +93,7 @@ public class EnaSampleToBioSampleConversionService {
 
   /** Enriches one ENA/ NCBI sample */
   private Sample enrichSample(
-      final EraproSample eraproSample,
-      final Element enaSampleRootElement,
-      final String accession,
-      final boolean isNcbiSample) {
+      final EraproSample eraproSample, final Element enaSampleRootElement, final String accession) {
     Sample sample =
         enaSampleToBioSampleConverter.convertEnaSampleXmlToBioSample(
             enaSampleRootElement, accession);
@@ -147,45 +142,24 @@ public class EnaSampleToBioSampleConversionService {
 
     // Although update date is passed here, its system generated to time now by
     // webapps-core
-    if (!isNcbiSample) {
-      sample =
-          Sample.build(
-              sample.getName(),
-              accession,
-              sraAccession,
-              null,
-              webinId,
-              taxId,
-              status,
-              release,
-              update,
-              create,
-              submitted,
-              null,
-              attributes,
-              null,
-              Collections.singleton(
-                  ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + accession)));
-    } else {
-      sample =
-          Sample.build(
-              sample.getName(),
-              accession,
-              sraAccession,
-              pipelinesProperties.getEnaDomain(),
-              null,
-              taxId,
-              status,
-              release,
-              update,
-              create,
-              submitted,
-              null,
-              attributes,
-              null,
-              Collections.singleton(
-                  ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + accession)));
-    }
+    sample =
+        Sample.build(
+            sample.getName(),
+            accession,
+            sraAccession,
+            null,
+            webinId,
+            taxId,
+            status,
+            release,
+            update,
+            create,
+            submitted,
+            null,
+            attributes,
+            null,
+            Collections.singleton(
+                ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + accession)));
 
     return Sample.Builder.fromSample(sample)
         .withNoData()

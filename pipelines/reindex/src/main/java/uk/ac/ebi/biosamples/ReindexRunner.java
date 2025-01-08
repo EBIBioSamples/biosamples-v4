@@ -147,7 +147,7 @@ public class ReindexRunner implements ApplicationRunner {
         }
       }
 
-      final Optional<Sample> sampleOptional = sampleReadService.fetch(accession, Optional.empty());
+      final Optional<Sample> sampleOptional = sampleReadService.fetch(accession, true);
 
       if (sampleOptional.isPresent()) {
         try {

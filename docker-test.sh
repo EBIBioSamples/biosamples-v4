@@ -5,7 +5,7 @@ docker-compose up -d biosamples-agents-solr
 
 for X in "$@"
 do
-  docker-compose run --rm --service-ports biosamples-integration java -jar integration-5.3.8-SNAPSHOT.jar --phase=$X $ARGS $@
+  docker-compose run --rm --service-ports biosamples-integration java -jar integration-5.3.9-SNAPSHOT.jar --phase=$X $ARGS $@
   sleep 30 #solr is configured to commit every 5 seconds
 
 done

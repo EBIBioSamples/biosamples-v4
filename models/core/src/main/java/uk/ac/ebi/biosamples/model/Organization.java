@@ -20,7 +20,6 @@ import org.springframework.util.StringUtils;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonDeserialize(builder = Organization.Builder.class)
 public class Organization implements Comparable<Organization> {
-
   private final String name;
   private final String role;
   private final String address;

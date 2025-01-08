@@ -14,9 +14,11 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import lombok.Getter;
 import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
+@Getter
 public class PipelineAnalytics {
   private String name;
   private Instant startTime;
@@ -38,24 +40,12 @@ public class PipelineAnalytics {
     this.modifiedRecords = modifiedRecords;
   }
 
-  public Instant getStartTime() {
-    return startTime;
-  }
-
   public void setStartTime(final Instant startTime) {
     this.startTime = startTime;
   }
 
-  public Instant getEndTime() {
-    return endTime;
-  }
-
   public void setEndTime(final Instant endTime) {
     this.endTime = endTime;
-  }
-
-  public String getDateRange() {
-    return dateRange;
   }
 
   public void setDateRange(final String dateRange) {
@@ -79,24 +69,12 @@ public class PipelineAnalytics {
     }
   }
 
-  public String getName() {
-    return name;
-  }
-
   public void setName(final String name) {
     this.name = name;
   }
 
-  public long getProcessedRecords() {
-    return processedRecords;
-  }
-
   public void setProcessedRecords(final long processedRecords) {
     this.processedRecords = processedRecords;
-  }
-
-  public long getModifiedRecords() {
-    return modifiedRecords;
   }
 
   public void setModifiedRecords(final long modifiedRecords) {

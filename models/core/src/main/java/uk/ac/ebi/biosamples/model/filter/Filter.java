@@ -14,7 +14,6 @@ import java.util.Optional;
 import uk.ac.ebi.biosamples.model.facet.FacetType;
 
 public interface Filter {
-
   public FilterType getType();
 
   /**
@@ -46,8 +45,8 @@ public interface Filter {
    */
   public FacetType getAssociatedFacetType();
 
-  public interface Builder {
-    public Filter build();
+  interface Builder {
+    Filter build();
 
     /**
      * Create a builder starting from a filter serialization

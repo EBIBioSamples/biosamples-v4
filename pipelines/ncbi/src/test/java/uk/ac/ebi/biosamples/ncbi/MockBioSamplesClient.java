@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.client.service.AapClientService;
+import uk.ac.ebi.biosamples.client.service.WebinAuthClientService;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleValidator;
@@ -45,10 +45,11 @@ public class MockBioSamplesClient extends BioSamplesClient {
       final URI uriV2,
       final RestTemplateBuilder restTemplateBuilder,
       final SampleValidator sampleValidator,
-      final AapClientService aapClientService,
+      final WebinAuthClientService webinAuthClientService,
       final ClientProperties clientProperties,
       final ObjectMapper objectMapper) {
-    super(uri, uriV2, restTemplateBuilder, sampleValidator, aapClientService, clientProperties);
+    super(
+        uri, uriV2, restTemplateBuilder, sampleValidator, webinAuthClientService, clientProperties);
     this.objectMapper = objectMapper;
     try {
       fileWriter = new FileWriter("ncbi-import.json");

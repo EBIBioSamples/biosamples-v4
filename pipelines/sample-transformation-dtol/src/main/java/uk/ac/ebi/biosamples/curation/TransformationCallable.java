@@ -10,7 +10,6 @@
 */
 package uk.ac.ebi.biosamples.curation;
 
-import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -26,18 +25,12 @@ import uk.ac.ebi.biosamples.model.Sample;
 public class TransformationCallable implements Callable<PipelineResult> {
   private static final Logger LOG = LoggerFactory.getLogger(TransformationCallable.class);
   static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
-
   private final Sample sample;
   private final BioSamplesClient bioSamplesClientWebin;
-  private final BioSamplesClient bioSamplesClientAap;
 
-  TransformationCallable(
-      final Sample sample,
-      final BioSamplesClient bioSamplesClientWebin,
-      final BioSamplesClient bioSamplesClientAap) {
+  TransformationCallable(final Sample sample, final BioSamplesClient bioSamplesClientWebin) {
     this.sample = sample;
     this.bioSamplesClientWebin = bioSamplesClientWebin;
-    this.bioSamplesClientAap = bioSamplesClientAap;
   }
 
   @Override
@@ -45,8 +38,7 @@ public class TransformationCallable implements Callable<PipelineResult> {
     int modifiedRecords = 0;
 
     final Optional<EntityModel<Sample>> optionalSampleResource =
-        bioSamplesClientWebin.fetchSampleResource(
-            sample.getAccession(), Optional.of(Collections.singletonList("")));
+        bioSamplesClientWebin.fetchSampleResource(sample.getAccession(), false);
 
     if (optionalSampleResource.isPresent()) {
       final Sample uncuratedSample = optionalSampleResource.get().getContent();
@@ -101,19 +93,7 @@ public class TransformationCallable implements Callable<PipelineResult> {
   }
 
   private Sample persistSample(final Sample s) {
-    final EntityModel<Sample> sampleEntity;
-
-    if (s.getDomain() != null) {
-      sampleEntity = bioSamplesClientAap.persistSampleResource(s);
-    } else if (s.getWebinSubmissionAccountId() != null) {
-      sampleEntity = bioSamplesClientWebin.persistSampleResource(s);
-    } else {
-      LOG.warn(
-          "Auth info is not available for {} trying with default AAP client", s.getAccession());
-      sampleEntity = bioSamplesClientAap.persistSampleResource(s);
-    }
-
-    return sampleEntity.getContent();
+    return bioSamplesClientWebin.persistSampleResource(s).getContent();
   }
 
   private Relationship createDerivedRelationship(final String source, final String target) {

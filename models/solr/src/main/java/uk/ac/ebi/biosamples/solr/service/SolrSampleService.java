@@ -44,19 +44,17 @@ public class SolrSampleService {
    *
    * @param searchTerm the term to search for in solr
    * @param filters a Collection of filters used in the solr query
-   * @param domains a Collection of domains used in the solr query
    * @param pageable pagination information
    * @return a page of Samples full-filling the query
    */
   public Page<SolrSample> fetchSolrSampleByText(
       final String searchTerm,
       final Collection<Filter> filters,
-      final Collection<String> domains,
       final String webinSubmissionAccountId,
       final Pageable pageable) {
     Page<SolrSample> result;
     try {
-      final Query query = buildQuery(searchTerm, filters, domains, webinSubmissionAccountId);
+      final Query query = buildQuery(searchTerm, filters, webinSubmissionAccountId);
       query.setPageRequest(pageable);
       query.setTimeAllowed(TIMEALLOWED * 1000);
       // return the samples from solr that match the query
@@ -65,7 +63,7 @@ public class SolrSampleService {
       // If it is not possible to use the search as a filter treat search string as text
       final String escapedSearchTerm =
           searchTerm == null ? null : ClientUtils.escapeQueryChars(searchTerm);
-      final Query query = buildQuery(escapedSearchTerm, filters, domains, webinSubmissionAccountId);
+      final Query query = buildQuery(escapedSearchTerm, filters, webinSubmissionAccountId);
       query.setPageRequest(pageable);
       query.setTimeAllowed(TIMEALLOWED * 1000);
       // return the samples from solr that match the query
@@ -79,18 +77,16 @@ public class SolrSampleService {
    *
    * @param searchTerm the term to search for in solr
    * @param filters a Collection of filters used in the solr query
-   * @param domains a Collection of domains used in the solr query
    * @param cursorMark cursor serialization
    * @return a page of Samples full-filling the query
    */
   public CursorArrayList<SolrSample> fetchSolrSampleByText(
       final String searchTerm,
       final Collection<Filter> filters,
-      final Collection<String> domains,
       final String webinSubmissionAccountId,
       final String cursorMark,
       final int size) {
-    final Query query = buildQuery(searchTerm, filters, domains, webinSubmissionAccountId);
+    final Query query = buildQuery(searchTerm, filters, webinSubmissionAccountId);
     query.addSort(Sort.by("id")); // this must match the field in solr
 
     return solrSampleRepository.findByQueryCursorMark(query, cursorMark, size);
@@ -99,7 +95,6 @@ public class SolrSampleService {
   private Query buildQuery(
       final String searchTerm,
       final Collection<Filter> filters,
-      final Collection<String> domains,
       final String webinSubmissionAccountId) {
     final Query query;
     if (StringUtils.isBlank(searchTerm) || "*:*".equals(searchTerm.trim())) {
@@ -127,7 +122,7 @@ public class SolrSampleService {
     query.addProjectionOnField(new SimpleField("id"));
 
     final Optional<FilterQuery> publicFilterQuery =
-        solrFilterService.getPublicFilterQuery(domains, webinSubmissionAccountId);
+        solrFilterService.getPublicFilterQuery(webinSubmissionAccountId);
     publicFilterQuery.ifPresent(query::addFilterQuery);
 
     solrFilterService.getFilterQuery(filters).forEach(query::addFilterQuery);

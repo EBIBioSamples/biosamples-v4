@@ -19,7 +19,6 @@ import java.util.Objects;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonDeserialize(builder = Publication.Builder.class)
 public class Publication implements Comparable<Publication> {
-
   private final String doi;
   private final String pubmed_id;
 

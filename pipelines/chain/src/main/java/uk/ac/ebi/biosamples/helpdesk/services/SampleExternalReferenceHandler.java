@@ -32,15 +32,14 @@ public class SampleExternalReferenceHandler {
 
   public void processSample(final String accession) {
     final Optional<EntityModel<Sample>> optionalSampleEntityModel =
-        bioSamplesClient.fetchSampleResource(accession);
+        bioSamplesClient.fetchSampleResource(accession, false);
 
     if (optionalSampleEntityModel.isPresent()) {
       final ExternalReference exRef =
           ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + accession);
       final Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
 
-      bioSamplesClient.persistCuration(
-          accession, curation, pipelinesProperties.getProxyWebinId(), true);
+      bioSamplesClient.persistCuration(accession, curation, pipelinesProperties.getProxyWebinId());
     }
   }
 }

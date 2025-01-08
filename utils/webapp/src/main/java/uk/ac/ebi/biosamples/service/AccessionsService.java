@@ -11,7 +11,6 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.util.Collection;
-import java.util.Collections;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -34,7 +33,6 @@ public class AccessionsService {
   public Page<String> getAccessions(
       final String text,
       final String[] requestfilters,
-      final Collection<String> domains,
       final String webinSubmissionAccountId,
       final Integer page,
       final Integer size) {
@@ -43,23 +41,17 @@ public class AccessionsService {
     final String[] decodedFilter = LinkUtils.decodeTexts(requestfilters);
     final Collection<Filter> filtersAfterDecode = filterService.getFiltersCollection(decodedFilter);
 
-    return fetchAccessions(
-        pageable, decodedText, filtersAfterDecode, domains, webinSubmissionAccountId);
+    return fetchAccessions(pageable, decodedText, filtersAfterDecode, webinSubmissionAccountId);
   }
 
   private Page<String> fetchAccessions(
       final PageRequest pageable,
       final String decodedText,
       final Collection<Filter> filtersAfterDecode,
-      final Collection<String> domains,
       final String webinSubmissionAccountId) {
     final Page<SolrSample> pageSolrSample =
         solrSampleService.fetchSolrSampleByText(
-            decodedText,
-            filtersAfterDecode,
-            (domains != null && !domains.isEmpty()) ? domains : Collections.emptySet(),
-            webinSubmissionAccountId,
-            pageable);
+            decodedText, filtersAfterDecode, webinSubmissionAccountId, pageable);
     return pageSolrSample.map(SolrSample::getAccession);
   }
 }

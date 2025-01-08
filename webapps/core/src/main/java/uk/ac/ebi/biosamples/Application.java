@@ -23,8 +23,6 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.concurrent.Executor;
 import javax.servlet.Filter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -47,25 +45,11 @@ import uk.ac.ebi.biosamples.mongo.repository.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
-import uk.ac.ebi.tsc.aap.client.repo.*;
 
-@SpringBootApplication(
-    exclude = {
-      DomainService.class,
-      DomainRepositoryRest.class,
-      ProfileService.class,
-      ProfileRepositoryRest.class,
-      UserService.class,
-      UserRepositoryRest.class,
-      TokenService.class,
-      TokenRepositoryRest.class,
-      GcpStackdriverMetricsAutoConfiguration.class
-    })
+@SpringBootApplication(exclude = {GcpStackdriverMetricsAutoConfiguration.class})
 @EnableAsync
 @EnableCaching
 public class Application extends SpringBootServletInitializer {
-  private static final Logger log = LoggerFactory.getLogger("WebappsCore");
-
   public static void main(final String[] args) {
     SpringApplication.run(Application.class, args);
   }

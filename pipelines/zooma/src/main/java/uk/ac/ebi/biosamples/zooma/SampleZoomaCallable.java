@@ -29,7 +29,7 @@ public class SampleZoomaCallable implements Callable<PipelineResult> {
   private final BioSamplesClient bioSamplesClient;
   private final ZoomaProcessor zoomaProcessor;
   private final CurationApplicationService curationApplicationService;
-  private final String domain;
+  private final String webinId;
   private int curationCount;
   static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
@@ -38,12 +38,12 @@ public class SampleZoomaCallable implements Callable<PipelineResult> {
       final Sample sample,
       final ZoomaProcessor zoomaProcessor,
       final CurationApplicationService curationApplicationService,
-      final String domain) {
+      final String webinId) {
     this.bioSamplesClient = bioSamplesClient;
     this.sample = sample;
     this.zoomaProcessor = zoomaProcessor;
     this.curationApplicationService = curationApplicationService;
-    this.domain = domain;
+    this.webinId = webinId;
     curationCount = 0;
   }
 
@@ -158,7 +158,7 @@ public class SampleZoomaCallable implements Callable<PipelineResult> {
                   Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 
           // save the curation back in biosamples
-          bioSamplesClient.persistCuration(sample.getAccession(), curation, domain, false);
+          bioSamplesClient.persistCuration(sample.getAccession(), curation, webinId);
           sample = curationApplicationService.applyCurationToSample(sample, curation);
           curationCount++;
         }

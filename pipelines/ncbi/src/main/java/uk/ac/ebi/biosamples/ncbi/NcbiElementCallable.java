@@ -29,10 +29,9 @@ import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 
 public class NcbiElementCallable implements Callable<Void> {
   private static final int MAX_RETRIES = 5;
-
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final Element sampleElem;
-  private final String domain;
+  private final String webinId;
   private final BioSamplesClient bioSamplesClient;
   private final NcbiSampleConversionService ncbiSampleConversionService;
   private final Map<String, Set<StructuredDataTable>> sampleToAmrMap;
@@ -41,12 +40,12 @@ public class NcbiElementCallable implements Callable<Void> {
       final NcbiSampleConversionService ncbiSampleConversionService,
       final BioSamplesClient bioSamplesClient,
       final Element sampleElem,
-      final String domain,
+      final String webinId,
       final Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
     this.ncbiSampleConversionService = ncbiSampleConversionService;
     this.bioSamplesClient = bioSamplesClient;
     this.sampleElem = sampleElem;
-    this.domain = domain;
+    this.webinId = webinId;
     this.sampleToAmrMap = sampleToAmrMap;
   }
 
@@ -67,11 +66,11 @@ public class NcbiElementCallable implements Callable<Void> {
       }
 
       // Generate the sample without the domain
-      final Sample sampleWithoutDomain =
+      final Sample sampleWithoutAuthInfo =
           ncbiSampleConversionService.convertNcbiXmlElementToSample(sampleElem);
       final Sample sample =
-          Sample.Builder.fromSample(sampleWithoutDomain)
-              .withDomain(domain)
+          Sample.Builder.fromSample(sampleWithoutAuthInfo)
+              .withWebinSubmissionAccountId(webinId)
               .withSubmittedVia(SubmittedViaType.PIPELINE_IMPORT)
               .build();
       final ExternalReference exRef =
@@ -85,7 +84,7 @@ public class NcbiElementCallable implements Callable<Void> {
           success = true;
 
           try {
-            bioSamplesClient.persistCuration(accession, curation, domain, false);
+            bioSamplesClient.persistCuration(accession, curation, webinId);
           } catch (final Exception e) {
             log.info("Failed to curate NCBI sample with ENA link " + accession);
           }

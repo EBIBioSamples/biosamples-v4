@@ -28,51 +28,6 @@ public class BioSamplesCrossSourceIngestAccessControlService {
 
   @Autowired BioSamplesProperties bioSamplesProperties;
 
-  /**
-   * Checks if a sample update by an AAP user is allowed based on the submitter type. AAP users
-   * cannot update samples submitted by WEBIN users.
-   *
-   * @param oldSample The old sample object.
-   * @param sample The new sample object.
-   * @throws GlobalExceptions.AccessControlException if the update is not allowed.
-   */
-  public void checkAndPreventWebinUserSampleUpdateByAapUser(
-      final Sample oldSample, final Sample sample) {
-    // Check if the old sample was submitted by a WEBIN user
-    if (oldSample.getWebinSubmissionAccountId() != null) {
-      // If the old sample was submitted by a WEBIN super-user
-      if (oldSample
-          .getWebinSubmissionAccountId()
-          .equalsIgnoreCase(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
-        // If the domain is not null and is not "ncbi" (NCBI import domain can update WEBIN
-        // super-user samples)
-        if (!isNcbiSampleAndNcbiSuperUserDomain(sample)) {
-          // Throw an exception as AAP users cannot update WEBIN user samples
-          throw new GlobalExceptions.AccessControlException(
-              "An AAP submitter cannot update a sample submitted by a WEBIN submitter");
-        }
-      } else {
-        // Throw an exception as AAP users cannot update WEBIN user samples
-        throw new GlobalExceptions.AccessControlException(
-            "An AAP submitter cannot update a sample submitted by a WEBIN submitter");
-      }
-    }
-  }
-
-  private boolean isNcbiSampleAndNcbiSuperUserDomain(final Sample newSample) {
-    return (newSample.getAccession().startsWith(NCBI_ACCESSION_PREFIX)
-            || newSample.getAccession().startsWith(DDBJ_ACCESSION_PREFIX))
-        && isPipelineNcbiDomain(newSample.getDomain());
-  }
-
-  public boolean isPipelineNcbiDomain(final String domain) {
-    if (domain == null) {
-      return false;
-    }
-
-    return domain.equalsIgnoreCase(NCBI_IMPORT_DOMAIN);
-  }
-
   public void isOriginalSubmitterInSampleMetadata(
       final String webinIdInOldSample, final Sample newSample) {
     log.info("Super user and file upload submission");
@@ -80,7 +35,7 @@ public class BioSamplesCrossSourceIngestAccessControlService {
     // file uploader submission access protection
     if (webinIdInOldSample != null
         && !webinIdInOldSample.equals(newSample.getWebinSubmissionAccountId())) {
-      throw new GlobalExceptions.NotOriginalSubmitterException();
+      throw new GlobalExceptions.NonSubmitterUpdateAttemptException();
     }
   }
 
@@ -118,20 +73,13 @@ public class BioSamplesCrossSourceIngestAccessControlService {
     }
   }
 
-  public void validateFileUploaderSampleUpdateHasAlwaysExistingAccession(final Sample newSample) {
+  public void validateFileUploaderSampleUpdateHasExistingAccession(final Sample newSample) {
     if (newSample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
       log.error(
           "Not permitted to update sample not in database using the file uploader, accession: {}",
           newSample.getAccession());
 
       throw new GlobalExceptions.SampleAccessionDoesNotExistException();
-    }
-  }
-
-  public void preventAapDomainChangeForFileUploadSampleSubmissions(
-      final Sample oldSample, final String newSampleSubmissionDomain) {
-    if (!newSampleSubmissionDomain.equals(oldSample.getDomain())) {
-      throw new GlobalExceptions.SampleDomainMismatchException();
     }
   }
 }

@@ -125,16 +125,13 @@ public class SolrFilterService {
    * Return a filter query for public samples (released in the past) or samples part of the
    * provided, and their own samples using auth domains
    *
-   * @param domains a collection of domains
    * @return a filter query for public and domain relevant samples
    */
-  Optional<FilterQuery> getPublicFilterQuery(
-      final Collection<String> domains, final String webinSubmissionAccountId) {
+  Optional<FilterQuery> getPublicFilterQuery(final String webinSubmissionAccountId) {
     // check if this is a read superuser
-    if ((domains != null && domains.contains(bioSamplesProperties.getBiosamplesAapSuperRead()))
-        || (webinSubmissionAccountId != null
-            && webinSubmissionAccountId.equalsIgnoreCase(
-                bioSamplesProperties.getBiosamplesClientWebinUsername()))) {
+    if (webinSubmissionAccountId != null
+        && webinSubmissionAccountId.equalsIgnoreCase(
+            bioSamplesProperties.getBiosamplesClientWebinUsername())) {
       return Optional.empty();
     }
 
@@ -150,11 +147,6 @@ public class SolrFilterService {
             new Criteria(SolrFieldService.encodeFieldName("INSDC status") + "_av_ss")
                 .not()
                 .in(Collections.singletonList("suppressed")));
-
-    if (domains != null && !domains.isEmpty()) {
-      // user can see public and private samples inside its own domain
-      publicSampleCriteria = publicSampleCriteria.or(new Criteria("domain_s").in(domains));
-    }
 
     if (webinSubmissionAccountId != null && !webinSubmissionAccountId.isEmpty()) {
       // user can see public and private samples submitted by them using their webin auth tokens

@@ -10,8 +10,6 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import java.util.Collection;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.CollectionModel;
@@ -19,29 +17,24 @@ import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Accession;
-import uk.ac.ebi.biosamples.model.AuthToken;
-import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
 import uk.ac.ebi.biosamples.service.AccessionsService;
-import uk.ac.ebi.biosamples.service.security.AccessControlService;
-import uk.ac.ebi.biosamples.service.security.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.SampleService;
 
 @RestController
 @RequestMapping("/accessions")
 @CrossOrigin
 public class AccessionsGetController {
-  private final BioSamplesAapService bioSamplesAapService;
   private final AccessionsService accessionsService;
-  private final AccessControlService accessControlService;
+  private final SampleService sampleService;
 
   public AccessionsGetController(
-      final BioSamplesAapService bioSamplesAapService,
-      final AccessionsService accessionsService,
-      final AccessControlService accessControlService) {
-    this.bioSamplesAapService = bioSamplesAapService;
+      final AccessionsService accessionsService, final SampleService sampleService) {
     this.accessionsService = accessionsService;
-    this.accessControlService = accessControlService;
+    this.sampleService = sampleService;
   }
 
   @CrossOrigin(methods = RequestMethod.GET)
@@ -50,19 +43,12 @@ public class AccessionsGetController {
       @RequestParam(name = "text", required = false) final String text,
       @RequestParam(name = "filter", required = false) final String[] filter,
       @RequestParam(name = "page", required = false, defaultValue = "0") final Integer page,
-      @RequestParam(name = "size", required = false, defaultValue = "100") final Integer size,
-      @RequestHeader(name = "Authorization", required = false) final String token) {
+      @RequestParam(name = "size", required = false, defaultValue = "100") final Integer size) {
+    final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+    final String principle = sampleService.getPrinciple(loggedInUser);
 
-    final Optional<AuthToken> authToken = accessControlService.extractToken(token);
-    final boolean webinAuth =
-        authToken.map(t -> t.getAuthority() == AuthorizationProvider.WEBIN).orElse(Boolean.FALSE);
-    final AuthorizationProvider authProvider =
-        webinAuth ? AuthorizationProvider.WEBIN : AuthorizationProvider.AAP;
-    final String webinSubmissionAccountId = webinAuth ? authToken.get().getUser() : null;
-    final Collection<String> domains = webinAuth ? null : bioSamplesAapService.getDomains();
     final Page<String> pageAccessions =
-        accessionsService.getAccessions(
-            text, filter, domains, webinSubmissionAccountId, page, size);
+        accessionsService.getAccessions(text, filter, principle, page, size);
     final PagedModel.PageMetadata pageMetadata =
         new PagedModel.PageMetadata(
             size,
@@ -74,7 +60,7 @@ public class AccessionsGetController {
             pageAccessions.getContent().stream().map(Accession::build).collect(Collectors.toList()),
             pageMetadata);
 
-    addRelLinks(pageAccessions, resources, text, filter, page, size, authProvider.name());
+    addRelLinks(pageAccessions, resources, text, filter, page, size);
 
     return ResponseEntity.ok().body(resources);
   }
@@ -85,38 +71,19 @@ public class AccessionsGetController {
       final String text,
       final String[] filter,
       final Integer page,
-      final Integer size,
-      final String authProvider) {
+      final Integer size) {
     resources.add(
         SamplesRestController.getPageLink(
-            text,
-            filter,
-            authProvider,
-            Optional.empty(),
-            page,
-            size,
-            null,
-            IanaLinkRelations.SELF.value(),
-            getClass()));
+            text, filter, page, size, null, IanaLinkRelations.SELF.value(), getClass()));
 
     if (pageAccessions.getTotalPages() > 1) {
       resources.add(
           SamplesRestController.getPageLink(
-              text,
-              filter,
-              authProvider,
-              Optional.empty(),
-              0,
-              size,
-              null,
-              IanaLinkRelations.FIRST.value(),
-              getClass()));
+              text, filter, 0, size, null, IanaLinkRelations.FIRST.value(), getClass()));
       resources.add(
           SamplesRestController.getPageLink(
               text,
               filter,
-              authProvider,
-              Optional.empty(),
               pageAccessions.getTotalPages(),
               size,
               null,
@@ -127,29 +94,13 @@ public class AccessionsGetController {
     if (page > 0) {
       resources.add(
           SamplesRestController.getPageLink(
-              text,
-              filter,
-              authProvider,
-              Optional.empty(),
-              page - 1,
-              size,
-              null,
-              IanaLinkRelations.PREVIOUS.value(),
-              getClass()));
+              text, filter, page - 1, size, null, IanaLinkRelations.PREVIOUS.value(), getClass()));
     }
 
     if (page < pageAccessions.getTotalPages() - 1) {
       resources.add(
           SamplesRestController.getPageLink(
-              text,
-              filter,
-              authProvider,
-              Optional.empty(),
-              page + 1,
-              size,
-              null,
-              IanaLinkRelations.NEXT.value(),
-              getClass()));
+              text, filter, page + 1, size, null, IanaLinkRelations.NEXT.value(), getClass()));
     }
   }
 }

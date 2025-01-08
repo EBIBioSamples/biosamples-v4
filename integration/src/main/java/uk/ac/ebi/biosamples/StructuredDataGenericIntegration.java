@@ -17,6 +17,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Publication;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -24,9 +25,13 @@ import uk.ac.ebi.biosamples.model.Sample;
 @Component
 public class StructuredDataGenericIntegration extends AbstractIntegration {
   private final ObjectMapper mapper;
+  private final ClientProperties clientProperties;
 
-  public StructuredDataGenericIntegration(final BioSamplesClient client) {
+  public StructuredDataGenericIntegration(
+      final BioSamplesClient client, final ClientProperties clientProperties) {
     super(client);
+
+    this.clientProperties = clientProperties;
     mapper = new ObjectMapper();
   }
 
@@ -132,18 +137,17 @@ public class StructuredDataGenericIntegration extends AbstractIntegration {
     final String name = "StructuredDataGenericIntegration_sample_1";
     final Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     final Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-
     final Publication publication =
         new Publication.Builder().doi("doi").pubmed_id("pubmed_id").build();
-
     final SortedSet<Attribute> attributes = new TreeSet<>();
+
     attributes.add(
         Attribute.build(
             "organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
     attributes.add(Attribute.build("UTF-8 test", "αβ"));
 
     return new Sample.Builder(name)
-        .withDomain(defaultIntegrationSubmissionDomain)
+        .withWebinSubmissionAccountId(clientProperties.getBiosamplesClientWebinUsername())
         .withRelease(release)
         .withUpdate(update)
         .withPublications(Collections.singletonList(publication))
