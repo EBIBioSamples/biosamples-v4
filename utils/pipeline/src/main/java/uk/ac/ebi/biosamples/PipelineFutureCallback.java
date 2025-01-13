@@ -21,6 +21,7 @@ public class PipelineFutureCallback implements ThreadUtils.Callback<PipelineResu
   @Override
   public void call(final PipelineResult pipelineResult) {
     totalCount = totalCount + pipelineResult.getModifiedRecords();
+
     if (!pipelineResult.isSuccess()) {
       failedSamples.add(pipelineResult.getAccession());
     }

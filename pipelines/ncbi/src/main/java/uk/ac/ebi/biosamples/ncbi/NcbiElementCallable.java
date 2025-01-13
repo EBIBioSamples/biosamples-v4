@@ -30,7 +30,7 @@ import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 public class NcbiElementCallable implements Callable<Void> {
   private static final int MAX_RETRIES = 5;
   private final Logger log = LoggerFactory.getLogger(getClass());
-  private final Element sampleElem;
+  private final Element sampleElement;
   private final String webinId;
   private final BioSamplesClient bioSamplesClient;
   private final NcbiSampleConversionService ncbiSampleConversionService;
@@ -39,19 +39,19 @@ public class NcbiElementCallable implements Callable<Void> {
   NcbiElementCallable(
       final NcbiSampleConversionService ncbiSampleConversionService,
       final BioSamplesClient bioSamplesClient,
-      final Element sampleElem,
+      final Element sampleElement,
       final String webinId,
       final Map<String, Set<StructuredDataTable>> sampleToAmrMap) {
     this.ncbiSampleConversionService = ncbiSampleConversionService;
     this.bioSamplesClient = bioSamplesClient;
-    this.sampleElem = sampleElem;
+    this.sampleElement = sampleElement;
     this.webinId = webinId;
     this.sampleToAmrMap = sampleToAmrMap;
   }
 
   @Override
   public Void call() {
-    final String accession = sampleElem.attributeValue("accession");
+    final String accession = sampleElement.attributeValue("accession");
 
     try {
       boolean success = false;
@@ -67,7 +67,7 @@ public class NcbiElementCallable implements Callable<Void> {
 
       // Generate the sample without the domain
       final Sample sampleWithoutAuthInfo =
-          ncbiSampleConversionService.convertNcbiXmlElementToSample(sampleElem);
+          ncbiSampleConversionService.convertNcbiXmlElementToSample(sampleElement);
       final Sample sample =
           Sample.Builder.fromSample(sampleWithoutAuthInfo)
               .withWebinSubmissionAccountId(webinId)
@@ -81,12 +81,8 @@ public class NcbiElementCallable implements Callable<Void> {
         try {
           bioSamplesClient.persistSampleResource(sample);
 
-          success = true;
-
-          try {
-            bioSamplesClient.persistCuration(accession, curation, webinId);
-          } catch (final Exception e) {
-            log.info("Failed to curate NCBI sample with ENA link " + accession);
+          if (bioSamplesClient.fetchSampleResource(sample.getAccession()).isPresent()) {
+            success = true;
           }
         } catch (final Exception e) {
           if (++numRetry == MAX_RETRIES) {
@@ -95,8 +91,14 @@ public class NcbiElementCallable implements Callable<Void> {
         }
       }
 
+      try {
+        bioSamplesClient.persistCuration(accession, curation, webinId);
+      } catch (final Exception e) {
+        log.info("Failed to curate NCBI sample with ENA link " + accession);
+      }
+
       final Set<StructuredDataTable> structuredDataTableSet =
-          ncbiSampleConversionService.convertNcbiXmlElementToStructuredData(sampleElem, amrData);
+          ncbiSampleConversionService.convertNcbiXmlElementToStructuredData(sampleElement, amrData);
 
       if (!structuredDataTableSet.isEmpty()) {
         final StructuredData structuredData =

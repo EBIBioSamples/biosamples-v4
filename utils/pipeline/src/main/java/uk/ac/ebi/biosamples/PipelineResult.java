@@ -10,6 +10,9 @@
 */
 package uk.ac.ebi.biosamples;
 
+import lombok.Getter;
+
+@Getter
 public class PipelineResult {
   private final long modifiedRecords;
   private final boolean success;
@@ -19,17 +22,5 @@ public class PipelineResult {
     this.accession = accession;
     this.modifiedRecords = modifiedRecords;
     this.success = success;
-  }
-
-  public String getAccession() {
-    return accession;
-  }
-
-  public long getModifiedRecords() {
-    return modifiedRecords;
-  }
-
-  public boolean isSuccess() {
-    return success;
   }
 }

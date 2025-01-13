@@ -29,7 +29,6 @@ import uk.ac.ebi.biosamples.model.*;
 @Service
 public class JsonLDService {
   private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final ObjectMapper objectMapper;
   private final SampleToJsonLDSampleRecordConverter jsonLDSampleConverter;
   private String dataCatalogUrl;
@@ -59,9 +58,10 @@ public class JsonLDService {
     try {
       final Method method =
           SampleRestController.class.getMethod(
-              "getSampleHal", String.class, String.class, String[].class, String.class);
+              "getSampleHal", String.class, String.class, boolean.class);
       final String sampleUrl =
           linkTo(method, sample.getAccession(), null, null, null).toUri().toString();
+
       jsonLDSample.setUrl(sampleUrl);
       jsonLDSample.setId(sampleUrl);
     } catch (final NoSuchMethodException e) {
