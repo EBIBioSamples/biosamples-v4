@@ -34,7 +34,7 @@ public class BioSamplesTokenAuthenticationFilter extends GenericFilterBean {
   public void doFilter(
       final ServletRequest request, final ServletResponse response, final FilterChain filterChain)
       throws IOException, ServletException {
-    log.info("Token filter invoked.");
+    log.debug("Token filter invoked.");
 
     final HttpServletRequest httpRequest = (HttpServletRequest) request;
     final String headerToken = getHeaderToken(httpRequest);
@@ -57,20 +57,20 @@ public class BioSamplesTokenAuthenticationFilter extends GenericFilterBean {
       final String header = request.getHeader("Authorization");
 
       if (header == null) {
-        log.info("No Authorization header");
+        log.debug("No Authorization header");
 
         return null;
       }
 
       if (!header.trim().startsWith("Bearer".trim())) {
-        log.info("No {} prefix", "Bearer");
+        log.debug("No {} prefix", "Bearer");
 
         return null;
       } else {
         final String token = header.substring("Bearer".trim().length());
 
         if (token.isEmpty()) {
-          log.info("Missing jwt token");
+          log.debug("Missing jwt token");
 
           return null;
         } else {
