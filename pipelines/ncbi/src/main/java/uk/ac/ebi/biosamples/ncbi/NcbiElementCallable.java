@@ -81,9 +81,7 @@ public class NcbiElementCallable implements Callable<Void> {
         try {
           bioSamplesClient.persistSampleResource(sample);
 
-          if (bioSamplesClient.fetchSampleResource(sample.getAccession()).isPresent()) {
-            success = true;
-          }
+          success = true;
         } catch (final Exception e) {
           if (++numRetry == MAX_RETRIES) {
             throw new RuntimeException("Failed to handle the sample with accession " + accession);

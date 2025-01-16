@@ -39,7 +39,6 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
     properties = {"job.autorun.enabled=false"})
 @ActiveProfiles("test")
 public class NcbiElementCallableTest {
-
   @MockBean BioSamplesClient bioSamplesClient;
 
   private final TestUtilities testUtils = new TestUtilities();
