@@ -28,6 +28,7 @@ set -e
 docker-compose build
 
 #start up the webapps (and dependencies)
+#docker-compose up -d --remove-orphans solr rabbitmq mongo neo4j json-schema-validator schema-store
 docker-compose up -d --remove-orphans solr rabbitmq mongo neo4j json-schema-validator
 echo "checking solr is up"
 ./http-status-check -u http://localhost:8983 -t 30
@@ -39,10 +40,15 @@ echo "checking json-schema-validator is up"
 ./http-status-check -u http://localhost:3020/validate -t 30
 echo "checking neo4j is up"
 ./http-status-check -u http://localhost:7474 -t 30
+#echo "checking schema-store is up"
+#./http-status-check -u http://localhost:8080 -t 30
 
 
 #configure solr
 curl http://localhost:8983/solr/samples/config -H 'Content-type:application/json' -d'{"set-property" : {"updateHandler.autoCommit.maxTime":1000, "updateHandler.autoCommit.openSearcher":"true", "updateHandler.autoSoftCommit.maxDocs":1, "query.documentCache.size":1024, "query.filterCache.size":1024, "query.filterCache.autowarmCount":128, "query.queryResultCache.size":1024, "query.queryResultCache.autowarmCount":128}}'
+
+#configure schema-store
+
 
 #profile any queries that take longer than 100 ms
 docker-compose run --rm mongo mongo --eval 'db.setProfilingLevel(1)' mongo:27017/biosamples

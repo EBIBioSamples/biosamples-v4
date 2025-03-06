@@ -188,7 +188,7 @@ public class SampleHtmlController {
     Collections.sort(filtersList);
 
     model.addAttribute("filters", filtersList);
-    model.addAttribute("facets", facetService.getFacets(text, filterCollection, 20, 10));
+    model.addAttribute("facets", facetService.getFacets(text, filterCollection, 20, 10, null));
 
     addCacheControlHeadersToResponse(
         response, bioSamplesProperties.getBiosamplesCoreFacetCacheMaxAge());

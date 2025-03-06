@@ -75,7 +75,7 @@ public class AnalyticsApplicationRunner implements ApplicationRunner {
 
   private void addToFacets(final String facetField, final SampleAnalytics sampleAnalytics) {
     final List<Facet> facetList =
-        facetService.getFacets("", Collections.emptyList(), 1, 10, facetField);
+        facetService.getFacets("", Collections.emptyList(), 1, 10, facetField, null);
 
     for (final Facet facet : facetList) {
       final String label = facet.getLabel();

@@ -42,13 +42,15 @@ public class SampleFacetController {
   @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<CollectionModel<Facet>> getFacetsHal(
       @RequestParam(name = "text", required = false) final String text,
-      @RequestParam(name = "filter", required = false) final String[] filter) {
+      @RequestParam(name = "filter", required = false) final String[] filter,
+      @RequestParam(name = "facet", required = false) final List<String> facet) {
 
     // TODO support rows and start parameters
     //		MultiValueMap<String, String> filters = filterService.getFilters(filter);
     final Collection<Filter> filters = filterService.getFiltersCollection(filter);
     final Collection<String> domains = Collections.emptyList();
-    final List<Facet> sampleFacets = facetService.getFacets(text, filters, 10, 10);
+    final int maxFacetCount = facet != null && !facet.isEmpty() ? 10000 : 10;
+    final List<Facet> sampleFacets = facetService.getFacets(text, filters, maxFacetCount, maxFacetCount, facet);
 
     final CollectionModel<Facet> resources = CollectionModel.of(sampleFacets);
 
@@ -62,7 +64,7 @@ public class SampleFacetController {
         LinkUtils.cleanLink(
             WebMvcLinkBuilder.linkTo(
                     WebMvcLinkBuilder.methodOn(SampleFacetController.class)
-                        .getFacetsHal(text, filter))
+                        .getFacetsHal(text, filter, facet))
                 .withSelfRel()));
 
     resources.add(
