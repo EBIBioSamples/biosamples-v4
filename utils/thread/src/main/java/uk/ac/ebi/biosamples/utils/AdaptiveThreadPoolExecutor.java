@@ -46,9 +46,13 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
    * wait up to 24h before termination;
    */
   @Override
-  public void close() throws Exception {
+  public void close() {
     shutdown();
-    awaitTermination(1, TimeUnit.MINUTES);
+    try {
+      awaitTermination(1, TimeUnit.MINUTES);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**

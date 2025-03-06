@@ -12,7 +12,6 @@
 		<snippetsDirectory>${project.build.directory}/generated-snippets</snippetsDirectory>
 		<bootstrap.version>4.0.0-2</bootstrap.version>
 		<webjars-locator.version>0.30</webjars-locator.version>
-		<lombok.version>1.18.22</lombok.version>
 		<spring-cloud-gcp.version>3.4.6</spring-cloud-gcp.version>
 		<spring-cloud.version>2021.0.6</spring-cloud.version>
 	</properties>

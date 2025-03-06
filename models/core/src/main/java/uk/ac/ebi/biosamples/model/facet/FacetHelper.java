@@ -89,7 +89,7 @@ public class FacetHelper {
     IGNORE_FACETING_FIELDS.add("biospecimen repository sample id");
   }
 
-  public static String get_encoding_suffix(String attribute) {
+  public static String getEncodingSuffix(String attribute) {
     String suffix = "";
     if (FACETING_FIELDS.contains(attribute)) {
       suffix = "_av_ss";
@@ -97,6 +97,10 @@ public class FacetHelper {
       suffix = "_dt";
     }
     return suffix;
+  }
+
+  public static String getEncodingSuffixForFacetingFields() {
+    return "_av_ss";
   }
 
   public static int compareFacets(String f1, String f2) {

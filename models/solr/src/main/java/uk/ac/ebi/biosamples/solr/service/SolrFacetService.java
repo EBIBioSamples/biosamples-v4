@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.solr.core.query.Criteria;
 import org.springframework.data.solr.core.query.FacetQuery;
@@ -50,7 +51,8 @@ public class SolrFacetService {
       final Collection<Filter> filters,
       final Pageable facetFieldPageInfo,
       final Pageable facetValuesPageInfo,
-      final String facetField) {
+      final String facetField,
+      final List<String> facetFields) {
     boolean isLandingPage = false;
 
     final List<Facet> facets = new ArrayList<>();
@@ -88,16 +90,16 @@ public class SolrFacetService {
     solrFilterService.getFilterQuery(filters).forEach(query::addFilterQuery);
 
     final List<Entry<SolrSampleField, Long>> allFacetFields =
-        getFacetFields(facetFieldPageInfo, query, isLandingPage, facetField);
+        getFacetFields(facetFieldPageInfo, query, isLandingPage, facetField, facetFields);
 
     List<Entry<SolrSampleField, Long>> rangeFacetFields = Collections.emptyList();
-    if (facetField == null) {
+    if (facetField == null || facetFields == null) {
       rangeFacetFields =
           FacetHelper.RANGE_FACETING_FIELDS.stream()
               .map(
                   s ->
                       new SimpleEntry<>(
-                          solrFieldService.decodeField(s + FacetHelper.get_encoding_suffix(s)), 0L))
+                          solrFieldService.decodeField(s + FacetHelper.getEncodingSuffix(s)), 0L))
               .collect(Collectors.toList());
     }
 
@@ -124,14 +126,15 @@ public class SolrFacetService {
       final Pageable facetFieldPageInfo,
       final Pageable facetValuesPageInfo) {
 
-    return getFacets(searchTerm, filters, facetFieldPageInfo, facetValuesPageInfo, null);
+    return getFacets(searchTerm, filters, facetFieldPageInfo, facetValuesPageInfo, null, null);
   }
 
   private List<Entry<SolrSampleField, Long>> getFacetFields(
       final Pageable facetFieldPageInfo,
       final FacetQuery query,
       final boolean isLandingPage,
-      final String facetField) {
+      final String facetField,
+      final List<String> facetFields) {
     final int facetLimit = 10;
     final List<Entry<SolrSampleField, Long>> allFacetFields;
 
@@ -142,8 +145,14 @@ public class SolrFacetService {
               new SimpleEntry<>(
                   solrFieldService.decodeField(
                       SolrFieldService.encodeFieldName(facetField)
-                          + FacetHelper.get_encoding_suffix(facetField)),
+                          + FacetHelper.getEncodingSuffix(facetField)),
                   0L));
+    } else if (facetFields != null && !facetFields.isEmpty()) {
+      allFacetFields = facetFields.stream()
+          .map(s -> new SimpleEntry<>(
+              solrFieldService.decodeField(
+                  SolrFieldService.encodeFieldName(s) + FacetHelper.getEncodingSuffixForFacetingFields()), 0L))
+              .collect(Collectors.toList());
     } else if (isLandingPage) {
       allFacetFields =
           FacetHelper.FACETING_FIELDS.stream()
@@ -153,7 +162,7 @@ public class SolrFacetService {
                       new SimpleEntry<>(
                           solrFieldService.decodeField(
                               SolrFieldService.encodeFieldName(s)
-                                  + FacetHelper.get_encoding_suffix(s)),
+                                  + FacetHelper.getEncodingSuffix(s)),
                           0L))
               .collect(Collectors.toList());
     } else {
