@@ -60,7 +60,7 @@ public class StatService {
   public List<Facet> getSingleFacet(final String[] filter) {
     final Collection<Filter> filters = filterService.getFiltersCollection(filter);
     final Collection<String> domains = Collections.emptyList();
-    final List<Facet> sampleFacets = facetService.getFacets("", filters, 1, 10);
+    final List<Facet> sampleFacets = facetService.getFacets("", filters, 1, 10, null);
 
     return sampleFacets;
   }

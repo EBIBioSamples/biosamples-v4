@@ -16,7 +16,7 @@ stages:
   - deploy
 
 maven-package:
-  image: eclipse-temurin:17-jdk
+  image: ${CI_REGISTRY_IMAGE}/eclipse-temurin:17-jdk
   stage: package
   script:
     - './mvnw -q deploy -P embl-ebi -s ci_settings.xml -DskipTests -Dmaven.source.skip=true'
@@ -89,7 +89,7 @@ clone-config-production:
     - if: $CI_COMMIT_REF_NAME == "master"
 
 .deploy-template: &deploy-template
-  image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/ubuntu:latest
+  image: ${CI_REGISTRY_IMAGE}/ubuntu:latest
   stage: deploy
   script:
     - chmod +x deploy.sh
@@ -133,7 +133,7 @@ deploy-production:
     url: http://${BSD_HOST_NAME}:8081/biosamples/
 
 deploy-production-solr:
-  image: dockerhub.ebi.ac.uk/biosamples/biosamples-v4/ubuntu:latest
+  image: ${CI_REGISTRY_IMAGE}/ubuntu:latest
   stage: deploy
   script:
     - chmod +x deploy.sh

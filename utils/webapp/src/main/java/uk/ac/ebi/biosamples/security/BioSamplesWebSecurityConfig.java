@@ -54,6 +54,8 @@ public class BioSamplesWebSecurityConfig extends WebSecurityConfigurerAdapter {
         // Allow unrestricted access to /samples/bulk-validate
         .antMatchers(HttpMethod.POST, "/samples/bulk-validate")
         .permitAll()
+        .antMatchers(HttpMethod.POST, "/samples/validate")
+        .permitAll()
         // Authenticate all other POST requests under /samples
         .antMatchers(HttpMethod.POST, "/samples/**")
         .authenticated()

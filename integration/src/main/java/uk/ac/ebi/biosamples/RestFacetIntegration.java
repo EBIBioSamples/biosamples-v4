@@ -1,22 +1,27 @@
 /*
-* Copyright 2021 EMBL - European Bioinformatics Institute
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
-* file except in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0
-* Unless required by applicable law or agreed to in writing, software distributed under the
-* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-* CONDITIONS OF ANY KIND, either express or implied. See the License for the
-* specific language governing permissions and limitations under the License.
-*/
+ * Copyright 2021 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package uk.ac.ebi.biosamples;
 
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.TreeNode;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
@@ -24,16 +29,26 @@ import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 @Component
 @Order(3)
 // @Profile({"default","rest"})
 public class RestFacetIntegration extends AbstractIntegration {
+  private final Logger log = LoggerFactory.getLogger(getClass());
   private final ClientProperties clientProperties;
+  private final RestTemplate restTemplate;
+  private final ObjectMapper objectMapper;
 
   public RestFacetIntegration(
-      final BioSamplesClient client, final ClientProperties clientProperties) {
+      final BioSamplesClient client, final ClientProperties clientProperties, final RestTemplateBuilder restTemplateBuilder, ObjectMapper objectMapper) {
     super(client);
     this.clientProperties = clientProperties;
+    this.restTemplate = restTemplateBuilder.build();
+    this.objectMapper = objectMapper;
   }
 
   @Override
@@ -176,13 +191,17 @@ public class RestFacetIntegration extends AbstractIntegration {
   }
 
   @Override
-  protected void phaseFour() {}
+  protected void phaseFour() {
+  }
 
   @Override
-  protected void phaseFive() {}
+  protected void phaseFive() {
+  }
 
   @Override
-  protected void phaseSix() {}
+  protected void phaseSix() {
+    facetEndpointShouldReturnAllFacetValuesWhenFacetFilterIsAvailable();
+  }
 
   private Sample getSampleTest1() {
     final String name = "RestFacetIntegration_testRestFacet";
@@ -256,5 +275,26 @@ public class RestFacetIntegration extends AbstractIntegration {
         .withAttributes(attributes)
         .withExternalReferences(externalReferences)
         .build();
+  }
+
+  private void facetEndpointShouldReturnAllFacetValuesWhenFacetFilterIsAvailable() {
+    String url = clientProperties.getBiosamplesClientUri() + "/samples/facets?facet=SRA accession";
+    try {
+      ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+      JsonNode node = objectMapper.readTree(response.getBody());
+      JsonNode facets = node.get("_embedded").get("facets");
+      for (JsonNode facet : facets) {
+        if ("SRA accession".equals(facet.get("label").asText())) {
+          if (facet.get("content").size() <= 10) {
+            throw new IntegrationTestFailException("Facet count should be larger than 10 when facet filters are being used", Phase.SIX);
+          }
+          return;
+        }
+      }
+      throw new IntegrationTestFailException("Facets should contain valid facet values for filter facet query", Phase.SIX);
+    } catch (JsonProcessingException e) {
+      log.error("Failed to process response content", e);
+      throw new RuntimeException("Failed to process facet response", e);
+    }
   }
 }

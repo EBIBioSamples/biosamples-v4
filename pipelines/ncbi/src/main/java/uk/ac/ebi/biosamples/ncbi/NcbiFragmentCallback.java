@@ -137,6 +137,7 @@ public class NcbiFragmentCallback implements ElementCallback {
 
     // check the date compared to window
     final LocalDate updateDate;
+
     if (attributes.getValue("", "last_update") != null) {
       updateDate =
           LocalDate.parse(
@@ -156,6 +157,7 @@ public class NcbiFragmentCallback implements ElementCallback {
     }
 
     LocalDate latestDate = updateDate;
+
     if (releaseDate.isAfter(latestDate)) {
       latestDate = releaseDate;
     }
@@ -165,7 +167,6 @@ public class NcbiFragmentCallback implements ElementCallback {
     }
 
     return toDate == null || !latestDate.isAfter(toDate);
-
     // hasn't failed, so we must be interested in it
   }
 }

@@ -43,14 +43,11 @@ public class XmlFragmenter {
   public void handleStream(
       final InputStream inputStream, final String encoding, final ElementCallback... callback)
       throws ParserConfigurationException, SAXException, IOException {
-
     final InputSource isource = new InputSource(inputStream);
-
-    isource.setEncoding(encoding);
-
     final DefaultHandler handler = new FragmentationHandler(callback);
     final SAXParser saxParser = factory.newSAXParser();
 
+    isource.setEncoding(encoding);
     saxParser.parse(isource, handler);
   }
 
@@ -87,7 +84,9 @@ public class XmlFragmenter {
         }
         if (inRegion.get(i)) {
           addTextIfNeeded(i);
+
           final Element el;
+
           if (elementStack.get(i).isEmpty()) {
             el = doc.get(i).addElement(qName);
           } else {
@@ -96,6 +95,7 @@ public class XmlFragmenter {
           for (int j = 0; j < attributes.getLength(); j++) {
             el.addAttribute(attributes.getQName(j), attributes.getValue(j));
           }
+
           elementStack.get(i).push(el);
         }
       }
@@ -106,6 +106,7 @@ public class XmlFragmenter {
       for (int i = 0; i < callbacks.size(); i++) {
         if (inRegion.get(i)) {
           addTextIfNeeded(i);
+
           elementStack.get(i).pop();
 
           if (elementStack.get(i).isEmpty()) {

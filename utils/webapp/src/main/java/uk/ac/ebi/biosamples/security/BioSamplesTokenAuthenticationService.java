@@ -13,7 +13,6 @@ package uk.ac.ebi.biosamples.security;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -35,11 +34,7 @@ public class BioSamplesTokenAuthenticationService {
         return null;
       }
 
-      final User user = tokenHandler.getUser(token);
-
-      log.info("Logged in user is " + user.getUsername());
-
-      return new UserAuthentication(user);
+      return new UserAuthentication(tokenHandler.getUser(token));
     } catch (final Exception e) {
       log.error(e.getMessage());
       log.debug("Cannot extract authentication details from token", e);

@@ -76,7 +76,13 @@ public class JsonSchemaStoreSchemaRetrievalService {
           final JSONObject schema = schemas.getJSONObject(i);
 
           if (schema != null) {
-            final String schemaName = schema.getString("name");
+            String schemaName;
+            if (schema.get("name") == null) {
+              schemaName = schema.getString("accession");
+            } else {
+              schemaName = schema.getString("name");
+            }
+
             final String schemaAccession = schema.getString("accession");
 
             schemaAccessions.put(schemaAccession, schemaName + "(" + schemaAccession + ")");

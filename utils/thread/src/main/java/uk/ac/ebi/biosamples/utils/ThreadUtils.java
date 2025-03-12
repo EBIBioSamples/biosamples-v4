@@ -51,8 +51,8 @@ public class ThreadUtils {
     }
   }
 
-  public static interface Callback<T> {
-    public void call(T t);
+  public interface Callback<T> {
+    void call(T t);
   }
 
   public static <T, U> void checkAndRetryFutures(

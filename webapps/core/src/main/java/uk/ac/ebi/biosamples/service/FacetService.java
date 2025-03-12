@@ -36,8 +36,9 @@ public class FacetService {
       final String text,
       final Collection<Filter> filters,
       final int noOfFacets,
-      final int noOfFacetValues) {
-    return getFacets(text, filters, noOfFacets, noOfFacetValues, null);
+      final int noOfFacetValues,
+      final List<String> facetFields) {
+    return getFacets(text, filters, noOfFacets, noOfFacetValues, null, facetFields);
   }
 
   public List<Facet> getFacets(
@@ -45,7 +46,8 @@ public class FacetService {
       final Collection<Filter> filters,
       final int noOfFacets,
       final int noOfFacetValues,
-      final String facetField) {
+      final String facetField,
+      final List<String> facetFields) {
     final Pageable facetPageable = PageRequest.of(0, noOfFacets);
     final Pageable facetValuePageable = PageRequest.of(0, noOfFacetValues);
     // TODO if a facet is enabled as a filter, then that value will be the only filter displayed
@@ -56,7 +58,7 @@ public class FacetService {
     final String escapedText = text == null ? null : ClientUtils.escapeQueryChars(text);
     final List<Facet> facets =
         solrFacetService.getFacets(
-            escapedText, filters, facetPageable, facetValuePageable, facetField);
+            escapedText, filters, facetPageable, facetValuePageable, facetField, facetFields);
     final long endTime = System.nanoTime();
     log.trace("Got solr facets in " + ((endTime - startTime) / 1000000) + "ms");
 
