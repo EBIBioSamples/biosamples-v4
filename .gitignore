@@ -109,5 +109,6 @@ create_new_facets_and_filters.md
 /ncbi_*.*.gz
 
 #docker
-data
+data/*
+!scripts/data/samples/*
 docker
