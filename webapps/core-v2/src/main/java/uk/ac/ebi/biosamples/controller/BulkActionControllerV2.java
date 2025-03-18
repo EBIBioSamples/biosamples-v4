@@ -288,13 +288,20 @@ public class BulkActionControllerV2 {
       value = "/bulk-validate",
       consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<SubmissionReceipt> validateV2(@RequestBody final List<Sample> samples) {
+    final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+    final String principle = sampleService.getPrinciple(loggedInUser);
+
+    if (principle == null) {
+      throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
+    }
+
     log.info("V2-Received Validate request for " + samples.size() + " samples");
 
     final List<SubmissionReceipt.ErrorReceipt> errors = new ArrayList<>();
     List<SubmissionReceipt.ValidationError> validationErrors;
 
     for (final Sample sample : samples) {
-      final String validationResult = validateGetMessages(sample);
+      final String validationResult = validateGetMessages(sample, principle);
 
       if (validationResult != null) {
         try {
@@ -370,11 +377,11 @@ public class BulkActionControllerV2 {
     return sampleService.persistSampleV2(sample, oldSample.orElse(null), true);
   }
 
-  private String validateGetMessages(final Sample sample) {
+  private String validateGetMessages(final Sample sample, final String principle) {
     final String sampleIdentifier =
         sample.getAccession() != null ? sample.getAccession() : sample.getName();
     try {
-      schemaValidationService.validate(sample, null);
+      schemaValidationService.validate(sample, principle);
     } catch (GlobalExceptions.SchemaValidationException e) {
       log.info("Sample validation failed: {}", sample.getAccession());
 
