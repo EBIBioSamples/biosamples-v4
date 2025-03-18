@@ -119,7 +119,7 @@
 		<repository>
 			<id>maven.oracle.com</id>
 			<name>oracle-maven-repo</name>
-			<url>https://maven.oracle.com</url>
+			<url>https://maven.oracle.com/public</url>
 <!-- 			<layout>default</layout> -->
 <!-- 			<releases> -->
 <!-- 				<enabled>true</enabled> -->

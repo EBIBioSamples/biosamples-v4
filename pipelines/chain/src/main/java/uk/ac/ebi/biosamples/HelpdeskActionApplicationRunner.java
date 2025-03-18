@@ -10,30 +10,60 @@
 */
 package uk.ac.ebi.biosamples;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.auth.services.AuthChangeHandler;
-import uk.ac.ebi.biosamples.helpdesk.services.SampleChecklistComplianceHandlerEVA;
-import uk.ac.ebi.biosamples.helpdesk.services.SampleExternalReferenceHandler;
-import uk.ac.ebi.biosamples.helpdesk.services.SampleRelationshipHandler;
-import uk.ac.ebi.biosamples.helpdesk.services.SampleStatusUpdater;
+import uk.ac.ebi.biosamples.helpdesk.services.*;
 
 // import uk.ac.ebi.biosamples.service.AnalyticsService;
 
 @Component
+@Slf4j
 public class HelpdeskActionApplicationRunner implements ApplicationRunner {
   @Autowired SampleChecklistComplianceHandlerEVA sampleChecklistComplianceHandlerEVA;
   @Autowired SampleStatusUpdater sampleStatusUpdater;
   @Autowired AuthChangeHandler authChangeHandler;
   @Autowired SampleRelationshipHandler sampleRelationshipHandler;
   @Autowired SampleExternalReferenceHandler sampleExternalReferenceHandler;
+  @Autowired SampleRestoreIPK sampleRestoreIPK;
 
   @Override
   public void run(ApplicationArguments args) {
     // authChangeHandler.parseFileAndProcessSampleAuthentication();
     // sampleChecklistComplianceHandlerEVA.samnSampleGeographicLocationAttributeUpdateFromFile();
+    try {
+      final List<String> accessions =
+          sampleRestoreIPK.parseInput("C:\\Users\\dgupta\\IPK_samples.xlsx");
+
+      log.info("Number of accessions to be handled are " + accessions.size());
+
+      final List<String> updateResults =
+          accessions.stream()
+              .map(
+                  accession ->
+                      sampleRestoreIPK.restoreSample(accession)
+                          ? accession + " updated"
+                          : accession + " not updated")
+              .toList();
+
+      Files.write(
+          Paths.get("updateResults_2.txt"),
+          updateResults,
+          StandardOpenOption.CREATE,
+          StandardOpenOption.TRUNCATE_EXISTING);
+    } catch (Exception e) {
+      log.info("Operation failed");
+      e.printStackTrace();
+
+      throw new RuntimeException(e);
+    }
     /*final List<String> accessions =
         sampleStatusUpdater.parseFileAndGetSampleAccessionList(
             "C:\\Users\\dgupta\\AtlantECO-samples-to-suppress.txt");
@@ -45,7 +75,7 @@ public class HelpdeskActionApplicationRunner implements ApplicationRunner {
       // sampleChecklistComplianceHandlerEVA.samnSampleGeographicLocationAttributeUpdateFromFile();
       // sampleExternalReferenceHandler.processSample("SAMEA115414646");
 
-      sampleStatusUpdater.makeFilteredSamplesPrivate();
+      // sampleStatusUpdater.makeFilteredSamplesPrivate();
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }

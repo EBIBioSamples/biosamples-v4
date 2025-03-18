@@ -409,7 +409,7 @@ public class SamplesRestController {
       produces = {MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE})
   @RequestMapping("/validate")
   public ResponseEntity<Sample> validateSample(@RequestBody final Sample sample) {
-    schemaValidationService.validate(sample);
+    schemaValidationService.validate(sample, null);
 
     return ResponseEntity.ok(sample);
   }
@@ -494,7 +494,7 @@ public class SamplesRestController {
                 Optional.ofNullable(sample.getSubmittedVia()).orElse(SubmittedViaType.JSON_API))
             .build();
 
-    sample = validateSample(sample, isWebinSuperUser);
+    sample = validateSample(sample, principle, isWebinSuperUser);
 
     // Optionally remove legacy fields
     if (!setFullDetails) {
@@ -510,14 +510,15 @@ public class SamplesRestController {
         .body(sampleResource);
   }
 
-  private Sample validateSample(Sample sample, final boolean isWebinSuperUser) {
+  private Sample validateSample(
+      Sample sample, final String principle, final boolean isWebinSuperUser) {
     if (!isWebinSuperUser) {
-      sample = schemaValidationService.validate(sample);
+      sample = schemaValidationService.validate(sample, principle);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
     }
 
     if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-      sample = schemaValidationService.validate(sample);
+      sample = schemaValidationService.validate(sample, principle);
     }
 
     return sample;

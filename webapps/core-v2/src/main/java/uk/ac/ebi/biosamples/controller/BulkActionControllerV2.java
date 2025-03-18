@@ -338,7 +338,7 @@ public class BulkActionControllerV2 {
     try {
       if (bioSamplesProperties.isEnableBulkSubmissionWebinSuperUserValidation()
           || !isWebinSuperUser) {
-        validate(sample);
+        validate(sample, principle);
       }
 
       final Optional<Sample> persistedSample =
@@ -374,7 +374,7 @@ public class BulkActionControllerV2 {
     final String sampleIdentifier =
         sample.getAccession() != null ? sample.getAccession() : sample.getName();
     try {
-      schemaValidationService.validate(sample);
+      schemaValidationService.validate(sample, null);
     } catch (GlobalExceptions.SchemaValidationException e) {
       log.info("Sample validation failed: {}", sample.getAccession());
 
@@ -390,8 +390,8 @@ public class BulkActionControllerV2 {
     return null;
   }
 
-  private void validate(Sample sample) {
-    schemaValidationService.validate(sample);
+  private void validate(final Sample sample, final String principle) {
+    schemaValidationService.validate(sample, principle);
   }
 
   private Sample buildSample(

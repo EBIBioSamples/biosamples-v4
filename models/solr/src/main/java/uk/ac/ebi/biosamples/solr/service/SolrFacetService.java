@@ -16,7 +16,6 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.solr.core.query.Criteria;
 import org.springframework.data.solr.core.query.FacetQuery;
@@ -148,10 +147,15 @@ public class SolrFacetService {
                           + FacetHelper.getEncodingSuffix(facetField)),
                   0L));
     } else if (facetFields != null && !facetFields.isEmpty()) {
-      allFacetFields = facetFields.stream()
-          .map(s -> new SimpleEntry<>(
-              solrFieldService.decodeField(
-                  SolrFieldService.encodeFieldName(s) + FacetHelper.getEncodingSuffixForFacetingFields()), 0L))
+      allFacetFields =
+          facetFields.stream()
+              .map(
+                  s ->
+                      new SimpleEntry<>(
+                          solrFieldService.decodeField(
+                              SolrFieldService.encodeFieldName(s)
+                                  + FacetHelper.getEncodingSuffixForFacetingFields()),
+                          0L))
               .collect(Collectors.toList());
     } else if (isLandingPage) {
       allFacetFields =

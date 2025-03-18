@@ -109,6 +109,9 @@ public class BioSamplesProperties {
   @Value("${biosamples.schema.default:BSDC00001}")
   private String biosamplesDefaultSchema;
 
+  @Value("${biosamples.schema.restricted:ERC000011:0.1}")
+  private String biosamplesRestrictedSchema;
+
   @Value("${biosamples.bulksubmisison.webin.superuser.validation:false}")
   private boolean enableBulkSubmissionWebinSuperUserValidation;
 

@@ -190,7 +190,7 @@ public class EraProDao {
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID, LAST_UPDATED FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND BIOSAMPLE_AUTHORITY= 'N' "
             + "AND "
             + STATUS_CLAUSE
-            + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY LAST_UPDATED ASC";
+            + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) AND BIOSAMPLE_ID IN ('SAMN46282745','SAMN46283036') ORDER BY LAST_UPDATED ASC";
 
     final Date minDateOld = java.sql.Date.valueOf(minDate);
     final Date maxDateOld = java.sql.Date.valueOf(maxDate);

@@ -33,6 +33,7 @@ public class AuthChangeHandler {
   private static final Logger log = LoggerFactory.getLogger(AuthChangeHandler.class);
   private static final String WEBIN_ID_TO_CHANGE_TO = "Webin-64171";
   public static final String AAP_DOMAIN_TO_CHANGE = "self.AtlantECO";
+  public static final String WEBIN_ID_CURRENT = "Webin-33870";
   private final BioSamplesClient bioSamplesWebinClient;
   private final MongoAuthChangeRepository mongoAuthChangeRepository;
 
@@ -43,20 +44,20 @@ public class AuthChangeHandler {
     this.mongoAuthChangeRepository = mongoAuthChangeRepository;
   }
 
-  private void processSample(final String accession) {
+  private void processSample(String accession) {
     if (!accession.startsWith("SAMEA")) {
-      final String sameaAccession = "SAMEA" + accession;
+      accession = "SAMEA" + accession;
+    }
 
-      log.info("Processing Sample: " + sameaAccession);
+    log.info("Processing Sample: " + accession);
 
-      final Optional<EntityModel<Sample>> optionalSampleEntityModel =
-          bioSamplesWebinClient.fetchSampleResource(sameaAccession, false);
+    final Optional<EntityModel<Sample>> optionalSampleEntityModel =
+        bioSamplesWebinClient.fetchSampleResource(accession, false);
 
-      if (optionalSampleEntityModel.isPresent()) {
-        handleAuth(optionalSampleEntityModel);
-      } else {
-        log.info("Sample not found: " + accession);
-      }
+    if (optionalSampleEntityModel.isPresent()) {
+      handleAuth(optionalSampleEntityModel);
+    } else {
+      log.info("Sample not found: " + accession);
     }
   }
 
@@ -69,6 +70,7 @@ public class AuthChangeHandler {
 
     final String accession = sample.getAccession();
     final String sampleDomain = sample.getDomain();
+    final String webinId = sample.getWebinSubmissionAccountId();
 
     if (sample.getSubmittedVia() == SubmittedViaType.PIPELINE_IMPORT
         || sample.getSubmittedVia() == SubmittedViaType.WEBIN_SERVICES) {
@@ -77,7 +79,10 @@ public class AuthChangeHandler {
       return;
     }
 
-    if (sampleDomain.equals(AAP_DOMAIN_TO_CHANGE)) {
+    boolean webinIdChange = webinId != null;
+
+    if ((sampleDomain != null && sampleDomain.equals(AAP_DOMAIN_TO_CHANGE))
+        || (webinIdChange && sample.getWebinSubmissionAccountId().equals(WEBIN_ID_CURRENT))) {
       log.info(
           "Sample authority needs to change for: "
               + accession
@@ -98,8 +103,10 @@ public class AuthChangeHandler {
           .equals(WEBIN_ID_TO_CHANGE_TO)) {
         log.info("Sample " + accession + " updated");
 
-        mongoAuthChangeRepository.save(
-            new MongoAuthChangeRecord(accession, AAP_DOMAIN_TO_CHANGE, WEBIN_ID_TO_CHANGE_TO));
+        if (!webinIdChange) {
+          mongoAuthChangeRepository.save(
+              new MongoAuthChangeRecord(accession, AAP_DOMAIN_TO_CHANGE, WEBIN_ID_TO_CHANGE_TO));
+        }
       } else {
         log.info("Sample " + accession + " failed to be updated");
       }
@@ -126,7 +133,7 @@ public class AuthChangeHandler {
   }
 
   public void parseFileAndProcessSampleAuthentication() {
-    final String file = "C:\\Users\\dgupta\\BioSamples_ownership-change-to-Webin-64171.txt";
+    final String file = "C:\\Users\\dgupta\\BioSamples_ownership-change-to-Webin-64171_2.txt";
 
     try (final BufferedReader br = new BufferedReader(new FileReader(file))) {
       String identifier;

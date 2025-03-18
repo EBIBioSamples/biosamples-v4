@@ -203,7 +203,8 @@ public class ApiDocumentationTest {
     when(webinAuthenticationService.handleWebinUserSubmission(
             any(Sample.class), any(), any(Optional.class)))
         .thenReturn(wrongSample);
-    when(schemaValidationService.validate(any(Sample.class))).thenReturn(wrongSample);
+    when(schemaValidationService.validate(any(Sample.class), any(String.class)))
+        .thenReturn(wrongSample);
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
             any(Sample.class), eq(true)))
         .thenReturn(wrongSample);
@@ -273,7 +274,8 @@ public class ApiDocumentationTest {
     when(sampleService.getPrinciple(any(Authentication.class))).thenReturn(WEBIN_TESTING_ACCOUNT);
     when(sampleService.persistSample(any(Sample.class), eq(null), eq(false)))
         .thenReturn(sampleWithWebinId);
-    when(schemaValidationService.validate(any(Sample.class))).thenReturn(sampleWithWebinId);
+    when(schemaValidationService.validate(any(Sample.class), any(String.class)))
+        .thenReturn(sampleWithWebinId);
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
             any(Sample.class), eq(true)))
         .thenReturn(sampleWithWebinId);
@@ -321,7 +323,7 @@ public class ApiDocumentationTest {
             any(Sample.class), any(String.class), eq(Optional.empty())))
         .thenReturn(sample);
     when(sampleService.persistSample(any(Sample.class), eq(null), eq(false))).thenReturn(sample);
-    when(schemaValidationService.validate(any(Sample.class))).thenReturn(sample);
+    when(schemaValidationService.validate(any(Sample.class), any(String.class))).thenReturn(sample);
     when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
             any(Sample.class), eq(true)))
         .thenReturn(sample);

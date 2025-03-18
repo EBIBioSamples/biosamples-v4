@@ -15,7 +15,9 @@ import javax.validation.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import uk.ac.ebi.biosamples.BioSamplesConstants;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
@@ -39,7 +41,7 @@ public class SchemaValidationService {
     this.validator = validator;
   }
 
-  public Sample validate(final Sample sample) {
+  public Sample validate(final Sample sample, final String webinId) {
     final String schemaId =
         sample.getCharacteristics().stream()
             .filter(
@@ -47,6 +49,14 @@ public class SchemaValidationService {
             .findFirst()
             .map(Attribute::getValue)
             .orElse(bioSamplesProperties.getBiosamplesDefaultSchema());
+
+    // check if the schema referred in the sample is accessible or protected
+    if (schemaId.equalsIgnoreCase(bioSamplesProperties.getBiosamplesRestrictedSchema())
+        && !bioSamplesProperties.getBiosamplesClientWebinUsername().equals(webinId)) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN,
+          "Validation of sample metadata against this schema is not permitted");
+    }
 
     try {
       final String sampleString = objectMapper.writeValueAsString(sample);
