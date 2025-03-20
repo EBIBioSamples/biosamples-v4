@@ -35,7 +35,6 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
   protected static final String defaultWebinIdForIntegrationTests = "Webin-40894";
   protected final BioSamplesClient noAuthClient;
   protected final BioSamplesClient webinClient;
-  protected final String defaultIntegrationSubmissionDomain = "self.BiosampleIntegrationTest";
 
   protected abstract void phaseOne();
 

@@ -51,7 +51,8 @@ public class SchemaValidationController {
       }
     }
 
-    schemaValidationService.validate(sample);
+    schemaValidationService.validate(sample, null);
+
     return ResponseEntity.ok(sample);
   }
 }

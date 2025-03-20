@@ -13,7 +13,6 @@
 		<version>2.5.5</version>
 	</parent>
 	<properties>
-		<java.version>8</java.version>
 		<neo4j-ogm.version>2.1.4</neo4j-ogm.version>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
@@ -23,19 +22,6 @@
 	<profiles>
 		<profile>
 			<id>embl-ebi</id>
-		</profile>
-		<profile>
-			<id>nexus</id>
-			<distributionManagement>
-				<repository>
-					<id>ebi.nexus</id>
-					<url>https://www.ebi.ac.uk/Tools/maven/repos/content/repositories/biosamples/</url>
-				</repository>
-				<snapshotRepository>
-					<id>ebi.nexus</id>
-					<url>https://www.ebi.ac.uk/Tools/maven/repos/content/repositories/biosamples-snapshots/</url>
-				</snapshotRepository>
-			</distributionManagement>
 		</profile>
 	</profiles>
 	<modules>
@@ -111,28 +97,12 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
-		<!-- needed to EBI TSC AAP -->
+		<!-- needed for oracle dependencies -->
 		<repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
+			<id>oracle-public</id>
+			<url>https://maven.oracle.com/public</url>
 		</repository>
-		<repository>
-			<id>ossrh-snapshot</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<!-- needed for biosamples -->
+		<!-- needed for biosamples gitlab-->
 		<repository>
 			<id>biosamples-v4</id>
 			<url>https://gitlab.ebi.ac.uk/api/v4/projects/2669/packages/maven</url>

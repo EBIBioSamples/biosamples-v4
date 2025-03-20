@@ -29,7 +29,9 @@ public class FilterService {
     }
 
     Arrays.sort(filterStrings);
+
     final SortedSet<String> filterStringSet = new TreeSet<>(Arrays.asList(filterStrings));
+
     for (final String filterString : filterStringSet) {
       if (!filterString.isEmpty()) {
         outputFilters.add(FilterBuilder.create().buildFromString(filterString));

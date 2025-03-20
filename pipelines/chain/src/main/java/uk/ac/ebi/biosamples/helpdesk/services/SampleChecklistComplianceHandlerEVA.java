@@ -104,14 +104,14 @@ public class SampleChecklistComplianceHandlerEVA {
         attributeSet.add(
             Attribute.build(
                 GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA,
-                geoLocValue,
+                "South Korea",
                 getLocAttributeTag,
                 Collections.emptyList(),
                 getLocAttributeUnit));
         attributeSet.add(
             Attribute.build(
                 GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY,
-                geoLocValue,
+                "South Korea",
                 getLocAttributeTag,
                 Collections.emptyList(),
                 getLocAttributeUnit));
