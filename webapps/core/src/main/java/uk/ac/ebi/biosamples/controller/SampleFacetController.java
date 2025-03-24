@@ -50,7 +50,8 @@ public class SampleFacetController {
     final Collection<Filter> filters = filterService.getFiltersCollection(filter);
     final Collection<String> domains = Collections.emptyList();
     final int maxFacetCount = facet != null && !facet.isEmpty() ? 10000 : 10;
-    final List<Facet> sampleFacets = facetService.getFacets(text, filters, maxFacetCount, maxFacetCount, facet);
+    final List<Facet> sampleFacets =
+        facetService.getFacets(text, filters, maxFacetCount, maxFacetCount, facet);
 
     final CollectionModel<Facet> resources = CollectionModel.of(sampleFacets);
 

@@ -399,10 +399,4 @@ public class RestIntegrationSRAAccessioningV2 extends AbstractIntegration {
         .withPublications(publications)
         .build();
   }
-
-  private Sample getWebinSampleMinimalInfo() {
-    final String name = "RestIntegrationWebin_sample_1";
-
-    return new Sample.Builder(name).build();
-  }
 }

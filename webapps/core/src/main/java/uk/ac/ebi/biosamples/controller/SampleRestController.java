@@ -162,7 +162,7 @@ public class SampleRestController {
             .withSubmittedVia(
                 Optional.ofNullable(sample.getSubmittedVia()).orElse(SubmittedViaType.JSON_API))
             .build();
-    sample = validateSample(sample, isWebinSuperUser);
+    sample = validateSample(sample, principle, isWebinSuperUser);
 
     // Optionally remove legacy fields
     if (!setFullDetails) {
@@ -200,15 +200,16 @@ public class SampleRestController {
     }
   }
 
-  private Sample validateSample(Sample sample, final boolean isWebinSuperUser) {
+  private Sample validateSample(
+      Sample sample, final String principle, final boolean isWebinSuperUser) {
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
     if (!isWebinSuperUser) {
-      schemaValidationService.validate(sample);
+      schemaValidationService.validate(sample, principle);
       sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
     }
 
     if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-      schemaValidationService.validate(sample);
+      schemaValidationService.validate(sample, principle);
     }
 
     return sample;

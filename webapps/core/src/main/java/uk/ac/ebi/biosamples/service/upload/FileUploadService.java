@@ -458,7 +458,7 @@ public class FileUploadService {
     boolean isValidatedAgainstChecklist = false;
 
     try {
-      schemaValidationService.validate(sample);
+      schemaValidationService.validate(sample, null);
       isValidatedAgainstChecklist = true;
     } catch (final Exception schemaValidationException) {
       log.info("Schema validator failed to validate sample");
