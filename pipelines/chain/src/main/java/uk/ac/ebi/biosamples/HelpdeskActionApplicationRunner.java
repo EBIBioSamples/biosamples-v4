@@ -40,7 +40,7 @@ public class HelpdeskActionApplicationRunner implements ApplicationRunner {
     // sampleChecklistComplianceHandlerEVA.samnSampleGeographicLocationAttributeUpdateFromFile();
     try {
       final List<String> accessions =
-          sampleRestoreIPK.parseInput("C:\\Users\\dgupta\\IPK_samples.xlsx");
+          sampleRestoreIPK.parseInput("C:\\Users\\dgupta\\IPK_samples_3.list");
 
       log.info("Number of accessions to be handled are " + accessions.size());
 
@@ -54,7 +54,7 @@ public class HelpdeskActionApplicationRunner implements ApplicationRunner {
               .toList();
 
       Files.write(
-          Paths.get("updateResults_2.txt"),
+          Paths.get("updateResults_3.txt"),
           updateResults,
           StandardOpenOption.CREATE,
           StandardOpenOption.TRUNCATE_EXISTING);

@@ -10,20 +10,13 @@
 */
 package uk.ac.ebi.biosamples.helpdesk.services;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -132,8 +125,11 @@ public class SampleRestoreIPK {
   public List<String> parseInput(final String filePath) {
     final List<String> accessionsList = new ArrayList<>();
 
-    try (final FileInputStream fis = new FileInputStream(new File(filePath))) {
-      final Workbook workbook = new XSSFWorkbook(fis);
+    try (final FileInputStream fis = new FileInputStream(filePath)) {
+      try (final BufferedReader br = new BufferedReader(new InputStreamReader(fis))) {
+        br.lines().forEach(accessionsList::add);
+      }
+      /*final Workbook workbook = new XSSFWorkbook(fis);
 
       final Sheet sheet = workbook.getSheetAt(0);
       sheet
@@ -145,7 +141,7 @@ public class SampleRestoreIPK {
                 if (cell != null && cell.getCellType() == CellType.STRING) {
                   accessionsList.add(cell.getStringCellValue().trim());
                 }
-              });
+              });*/
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
