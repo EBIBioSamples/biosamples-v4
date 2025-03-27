@@ -21,7 +21,6 @@
 
 	<modules>
 		<module>core</module>
-		<module>mongo</module>
 		<module>solr</module>
 		<module>sitemap</module>
 		<module>jsonld</module>

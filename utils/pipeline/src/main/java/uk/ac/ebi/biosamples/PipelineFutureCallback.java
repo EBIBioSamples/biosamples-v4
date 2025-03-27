@@ -12,7 +12,7 @@ package uk.ac.ebi.biosamples;
 
 import java.util.ArrayList;
 import java.util.List;
-import uk.ac.ebi.biosamples.utils.ThreadUtils;
+import uk.ac.ebi.biosamples.utils.thread.ThreadUtils;
 
 public class PipelineFutureCallback implements ThreadUtils.Callback<PipelineResult> {
   private long totalCount = 0;

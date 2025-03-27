@@ -37,7 +37,7 @@
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>utils-webapp</artifactId>
+			<artifactId>core</artifactId>
 			<version>5.3.10-SNAPSHOT</version>
 		</dependency>
 		<dependency>
@@ -47,7 +47,7 @@
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>models-mongo</artifactId>
+			<artifactId>core</artifactId>
 			<version>5.3.10-SNAPSHOT</version>
 		</dependency>
 		<dependency>

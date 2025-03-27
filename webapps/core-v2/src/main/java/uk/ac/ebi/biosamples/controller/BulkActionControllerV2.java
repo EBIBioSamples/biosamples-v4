@@ -31,11 +31,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
+import uk.ac.ebi.biosamples.exception.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
-import uk.ac.ebi.biosamples.validation.SchemaValidationService;
+import uk.ac.ebi.biosamples.service.validation.SchemaValidationService;
 
 @RestController
 @ExposesResourceFor(Sample.class)
@@ -355,7 +355,9 @@ public class BulkActionControllerV2 {
     } catch (GlobalExceptions.SchemaValidationException e) {
       sampleErrorPair = new ImmutablePair<>(Optional.empty(), Optional.ofNullable(e.getMessage()));
 
-      log.info("Sample validation failed: {}", sample.getAccession());
+      final String accession = sample.getAccession();
+
+      log.info("Sample validation failed: {}", accession != null ? accession : sample.getName());
     } catch (Exception e) {
       sampleErrorPair = new ImmutablePair<>(Optional.empty(), Optional.ofNullable(e.getMessage()));
 

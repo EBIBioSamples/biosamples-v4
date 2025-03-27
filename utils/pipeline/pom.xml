@@ -48,7 +48,7 @@
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>utils-thread</artifactId>
+			<artifactId>core</artifactId>
 			<version>5.3.10-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>

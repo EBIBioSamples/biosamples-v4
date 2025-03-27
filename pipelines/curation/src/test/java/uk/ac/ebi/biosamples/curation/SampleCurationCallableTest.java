@@ -39,8 +39,8 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.curation.service.IriUrlValidatorService;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
+import uk.ac.ebi.biosamples.utils.ols.OlsProcessor;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(

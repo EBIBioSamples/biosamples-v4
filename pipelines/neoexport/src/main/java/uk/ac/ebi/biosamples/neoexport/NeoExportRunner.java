@@ -31,9 +31,9 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleAnalytics;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.neo4j.repo.NeoSampleRepository;
-import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
-import uk.ac.ebi.biosamples.utils.ThreadUtils;
+import uk.ac.ebi.biosamples.utils.thread.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.thread.ThreadUtils;
 
 @Component
 public class NeoExportRunner implements ApplicationRunner {

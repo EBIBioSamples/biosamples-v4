@@ -49,7 +49,8 @@ public class EnaSampleToBioSampleConversionService {
   }
 
   /** Handles one ENA/ NCBI sample */
-  public Sample enrichSample(final String accession) throws DocumentException {
+  public Sample enrichSample(final String accession, final boolean isNcbiDdbjSample)
+      throws DocumentException {
     final EraproSample eraproSample = eraProDao.getSampleDetailsByBioSampleId(accession);
 
     if (eraproSample != null) {
@@ -61,7 +62,7 @@ public class EnaSampleToBioSampleConversionService {
 
       // check that we got some content
       if (XmlPathBuilder.of(enaSampleRootElement).path("SAMPLE").exists()) {
-        return enrichSample(eraproSample, enaSampleRootElement, accession);
+        return enrichSample(eraproSample, enaSampleRootElement, accession, isNcbiDdbjSample);
       } else {
         log.warn("Unable to find SAMPLE element for " + accession);
       }
@@ -82,7 +83,7 @@ public class EnaSampleToBioSampleConversionService {
 
       // check that we got some content
       if (XmlPathBuilder.of(enaSampleRootElement).path("SAMPLE").exists()) {
-        return enrichSample(eraproSample, enaSampleRootElement, accession);
+        return enrichSample(eraproSample, enaSampleRootElement, accession, false);
       } else {
         log.warn("Unable to find SAMPLE element for " + accession);
       }
@@ -93,7 +94,10 @@ public class EnaSampleToBioSampleConversionService {
 
   /** Enriches one ENA/ NCBI sample */
   private Sample enrichSample(
-      final EraproSample eraproSample, final Element enaSampleRootElement, final String accession) {
+      final EraproSample eraproSample,
+      final Element enaSampleRootElement,
+      final String accession,
+      final boolean isNcbiDdbjSample) {
     Sample sample =
         enaSampleToBioSampleConverter.convertEnaSampleXmlToBioSample(
             enaSampleRootElement, accession);
@@ -101,7 +105,10 @@ public class EnaSampleToBioSampleConversionService {
     final String sraAccession = eraproSample.getSampleId();
     final SampleStatus status = handleStatus(eraproSample.getStatus());
     final Long taxId = eraproSample.getTaxId();
-    final String webinId = eraproSample.getSubmissionAccountId();
+    final String webinId =
+        isNcbiDdbjSample
+            ? pipelinesProperties.getProxyWebinId()
+            : eraproSample.getSubmissionAccountId();
 
     final SortedSet<Attribute> attributes = new TreeSet<>(sample.getCharacteristics());
     final SortedSet<Publication> publications = new TreeSet<>(sample.getPublications());

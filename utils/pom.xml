@@ -13,11 +13,6 @@
 	</parent>
 
 	<modules>
-		<module>webapp</module>
 		<module>pipeline</module>
-		<module>thread</module>
-		<module>ols</module>
-		<module>client</module>
-		<module>validation</module>
 	</modules>
 </project>
