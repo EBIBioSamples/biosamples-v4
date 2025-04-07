@@ -35,6 +35,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.amqp.SimpleRabbitListenerContainerFactoryConfigurer;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
@@ -45,8 +47,14 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.biosamples.configuration.MessagingConfiguration;
+import uk.ac.ebi.biosamples.mongo.repository.MongoSampleRepository;
+import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
+import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
+import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 
 @SpringBootApplication
+@Import(MessagingConfiguration.class)
 @EnableAsync
 @EnableScheduling
 public class Application {
@@ -177,5 +185,18 @@ public class Application {
     configurer.configure(factory, connectionFactory);
 
     return factory;
+  }
+
+  @Bean(name = "SampleAccessionService")
+  public MongoAccessionService mongoSampleAccessionService(
+      final MongoSampleRepository mongoSampleRepository,
+      final SampleToMongoSampleConverter sampleToMongoSampleConverter,
+      final MongoSampleToSampleConverter mongoSampleToSampleConverter,
+      final MongoOperations mongoOperations) {
+    return new MongoAccessionService(
+        mongoSampleRepository,
+        sampleToMongoSampleConverter,
+        mongoSampleToSampleConverter,
+        mongoOperations);
   }
 }

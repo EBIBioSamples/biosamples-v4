@@ -42,7 +42,7 @@
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>messaging</artifactId>
+			<artifactId>core</artifactId>
 			<version>5.3.10-SNAPSHOT</version>
 		</dependency>
 		<dependency>

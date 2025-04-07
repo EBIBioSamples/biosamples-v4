@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>biosamples</artifactId>
-	<version>5.3.11-SNAPSHOT</version>
+	<version>5.3.10-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -26,14 +26,12 @@
 	</profiles>
 	<modules>
 		<module>models</module>
-		<module>messaging</module>
 		<module>agents</module>
 		<module>webapps</module>
 		<module>pipelines</module>
 		<module>integration</module>
 		<module>client</module>
 		<module>properties</module>
-		<module>utils</module>
 		<module>core</module>
 	</modules>
 	<dependencies>

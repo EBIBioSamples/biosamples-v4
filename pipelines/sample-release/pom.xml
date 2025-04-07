@@ -8,15 +8,15 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.3.11-SNAPSHOT</version>
+		<version>5.3.10-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>utils-pipeline</artifactId>
-			<version>5.3.11-SNAPSHOT</version>
+			<artifactId>pipelines-common</artifactId>
+			<version>5.3.10-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>

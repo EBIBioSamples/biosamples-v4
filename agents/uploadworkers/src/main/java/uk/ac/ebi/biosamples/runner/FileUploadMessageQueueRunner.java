@@ -16,8 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.MessageUtils;
-import uk.ac.ebi.biosamples.Messaging;
+import uk.ac.ebi.biosamples.messaging.MessageUtils;
+import uk.ac.ebi.biosamples.messaging.Messaging;
 
 @Component
 public class FileUploadMessageQueueRunner implements ApplicationRunner {
