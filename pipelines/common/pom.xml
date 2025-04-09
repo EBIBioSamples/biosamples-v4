@@ -59,12 +59,6 @@
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>models-core</artifactId>
-			<version>5.3.10-SNAPSHOT</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>properties</artifactId>
 			<version>5.3.10-SNAPSHOT</version>
 			<scope>compile</scope>

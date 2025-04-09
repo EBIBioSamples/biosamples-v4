@@ -15,8 +15,8 @@ import java.util.List;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-import uk.ac.ebi.biosamples.model.PipelineAnalytics;
-import uk.ac.ebi.biosamples.model.SampleAnalytics;
+import uk.ac.ebi.biosamples.core.model.PipelineAnalytics;
+import uk.ac.ebi.biosamples.core.model.SampleAnalytics;
 
 @Document
 public class MongoAnalytics {

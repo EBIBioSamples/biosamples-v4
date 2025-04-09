@@ -1,8 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>integration</artifactId>
 	<packaging>jar</packaging>
+
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
@@ -11,6 +14,8 @@
 	</parent>
 
 	<dependencies>
+
+		<!-- Internal BioSamples Modules -->
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>biosamples-spring-boot-starter</artifactId>
@@ -18,31 +23,22 @@
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>models-sitemap</artifactId>
-			<version>5.3.10-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>models-jsonld</artifactId>
-			<version>5.3.10-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>properties</artifactId>
 			<version>5.3.10-SNAPSHOT</version>
-			<scope>compile</scope>
 		</dependency>
+
+		<!-- Spring Boot -->
 		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>models-neo4j</artifactId>
-			<version>5.3.10-SNAPSHOT</version>
-			<scope>compile</scope>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
 			<version>1.3.4</version>
 		</dependency>
+
+		<!-- XML -->
 		<dependency>
 			<groupId>org.xmlunit</groupId>
 			<artifactId>xmlunit-core</artifactId>
@@ -54,6 +50,23 @@
 			<version>2.4.0</version>
 		</dependency>
 		<dependency>
+			<groupId>dom4j</groupId>
+			<artifactId>dom4j</artifactId>
+			<version>1.6.1</version>
+		</dependency>
+
+		<!-- Testing -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-all</artifactId>
+			<version>1.3</version>
+		</dependency>
+		<dependency>
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest-library</artifactId>
 		</dependency>
@@ -63,15 +76,12 @@
 			<version>3.0.7</version>
 		</dependency>
 		<dependency>
-			<groupId>org.hamcrest</groupId>
-			<artifactId>hamcrest-all</artifactId>
-			<version>1.3</version>
-		</dependency>
-		<dependency>
 			<groupId>io.rest-assured</groupId>
 			<artifactId>json-path</artifactId>
 			<version>3.0.7</version>
 		</dependency>
+
+		<!-- Utilities -->
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
@@ -85,20 +95,8 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.13.2</version>
-			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.13.2</version>
-		</dependency>
-		<dependency>
-			<groupId>dom4j</groupId>
-			<artifactId>dom4j</artifactId>
-			<version>1.6.1</version>
-			<scope>compile</scope>
-		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -124,4 +122,5 @@
 			</plugin>
 		</plugins>
 	</build>
+
 </project>

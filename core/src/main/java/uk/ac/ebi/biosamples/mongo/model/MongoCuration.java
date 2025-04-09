@@ -17,9 +17,9 @@ import com.google.common.hash.Hashing;
 import java.util.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.core.model.Attribute;
+import uk.ac.ebi.biosamples.core.model.ExternalReference;
+import uk.ac.ebi.biosamples.core.model.Relationship;
 
 @Document
 public class MongoCuration implements Comparable<MongoCuration> {

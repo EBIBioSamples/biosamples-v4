@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 import uk.ac.ebi.biosamples.service.EraProDao;
 

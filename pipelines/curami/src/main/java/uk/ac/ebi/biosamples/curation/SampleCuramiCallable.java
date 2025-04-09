@@ -20,9 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Attribute;
+import uk.ac.ebi.biosamples.core.model.Curation;
+import uk.ac.ebi.biosamples.core.model.Sample;
 
 public class SampleCuramiCallable implements Callable<PipelineResult> {
   private static final Logger LOG = LoggerFactory.getLogger(SampleCuramiCallable.class);

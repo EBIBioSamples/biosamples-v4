@@ -17,8 +17,8 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.messaging.MessageUtils;
-import uk.ac.ebi.biosamples.messaging.Messaging;
+import uk.ac.ebi.biosamples.messaging.MessagingConstants;
+import uk.ac.ebi.biosamples.messaging.service.MessageUtils;
 
 @Component
 public class SolrRunner implements ApplicationRunner {
@@ -36,9 +36,9 @@ public class SolrRunner implements ApplicationRunner {
         || messageCount == null
         || messageCount > 0) {
       Thread.sleep(1000);
-      messageCount = messageUtils.getQueueCount(Messaging.INDEXING_QUEUE);
+      messageCount = messageUtils.getQueueCount(MessagingConstants.INDEXING_QUEUE);
 
-      log.trace("Messages remaining in " + Messaging.INDEXING_QUEUE + " " + messageCount);
+      log.trace("Messages remaining in " + MessagingConstants.INDEXING_QUEUE + " " + messageCount);
     }
   }
 }

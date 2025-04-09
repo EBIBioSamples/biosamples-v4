@@ -27,8 +27,8 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.WebinAuthClientService;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
-import uk.ac.ebi.biosamples.service.CurationApplicationService;
-import uk.ac.ebi.biosamples.service.SampleValidator;
+import uk.ac.ebi.biosamples.core.service.CurationApplicationService;
+import uk.ac.ebi.biosamples.core.service.SampleValidator;
 import uk.ac.ebi.biosamples.utils.ols.OlsProcessor;
 
 @Configuration

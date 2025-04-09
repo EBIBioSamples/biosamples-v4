@@ -34,14 +34,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.filter.Filter;
 import uk.ac.ebi.biosamples.exception.GlobalExceptions.PaginationException;
-import uk.ac.ebi.biosamples.model.JsonLDDataCatalog;
-import uk.ac.ebi.biosamples.model.JsonLDDataset;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.auth.AuthorizationProvider;
-import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.jsonld.model.JsonLDDataCatalog;
+import uk.ac.ebi.biosamples.jsonld.model.JsonLDDataset;
+import uk.ac.ebi.biosamples.security.model.AuthorizationProvider;
 import uk.ac.ebi.biosamples.service.*;
-import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.WebinAuthenticationService;
 
 /**
  * Primary controller for HTML operations.

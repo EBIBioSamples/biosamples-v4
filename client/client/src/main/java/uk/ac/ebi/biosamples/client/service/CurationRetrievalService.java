@@ -21,8 +21,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 import uk.ac.ebi.biosamples.client.utils.IterableResourceFetchAll;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.CurationLink;
+import uk.ac.ebi.biosamples.core.model.Curation;
+import uk.ac.ebi.biosamples.core.model.CurationLink;
 
 public class CurationRetrievalService {
   private final Traverson traverson;

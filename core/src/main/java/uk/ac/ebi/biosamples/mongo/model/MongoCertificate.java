@@ -12,7 +12,7 @@ package uk.ac.ebi.biosamples.mongo.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
-import uk.ac.ebi.biosamples.model.Certificate;
+import uk.ac.ebi.biosamples.core.model.Certificate;
 
 public class MongoCertificate implements Comparable<MongoCertificate> {
   private String name;

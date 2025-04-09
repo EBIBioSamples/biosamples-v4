@@ -17,7 +17,7 @@ import org.phenopackets.schema.v1.core.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.core.model.Attribute;
 
 @Component
 class PhenopacketConversionHelper {

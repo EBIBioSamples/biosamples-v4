@@ -12,7 +12,7 @@ package uk.ac.ebi.biosamples.mongo.service;
 
 import java.util.function.Function;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.CurationLink;
+import uk.ac.ebi.biosamples.core.model.CurationLink;
 import uk.ac.ebi.biosamples.mongo.model.MongoCurationLink;
 
 @Service

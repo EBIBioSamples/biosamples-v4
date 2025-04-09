@@ -32,13 +32,10 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.service.*;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.CurationLink;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SubmissionReceipt;
-import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.model.structured.StructuredData;
-import uk.ac.ebi.biosamples.service.SampleValidator;
+import uk.ac.ebi.biosamples.core.model.*;
+import uk.ac.ebi.biosamples.core.model.filter.Filter;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredData;
+import uk.ac.ebi.biosamples.core.service.SampleValidator;
 
 /**
  * This is the primary class for interacting with BioSamples.

@@ -26,10 +26,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import uk.ac.ebi.biosamples.core.model.filter.AttributeFilter;
+import uk.ac.ebi.biosamples.core.model.filter.DateRangeFilter;
+import uk.ac.ebi.biosamples.core.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.PipelineName;
-import uk.ac.ebi.biosamples.model.filter.AttributeFilter;
-import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
-import uk.ac.ebi.biosamples.model.filter.Filter;
 
 public class PipelineUtils {
   private static final Logger log = LoggerFactory.getLogger(PipelineUtils.class);

@@ -12,7 +12,7 @@ package uk.ac.ebi.biosamples.mongo.service;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.structured.StructuredData;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.mongo.model.MongoStructuredData;
 
 @Service

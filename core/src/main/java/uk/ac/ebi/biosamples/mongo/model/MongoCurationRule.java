@@ -18,8 +18,8 @@ import java.time.Instant;
 import java.util.Objects;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
-import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
+import uk.ac.ebi.biosamples.core.service.CustomInstantDeserializer;
+import uk.ac.ebi.biosamples.core.service.CustomInstantSerializer;
 
 @Document
 public class MongoCurationRule implements Comparable<MongoCurationRule> {

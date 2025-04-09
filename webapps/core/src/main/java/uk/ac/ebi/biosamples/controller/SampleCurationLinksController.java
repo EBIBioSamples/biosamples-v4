@@ -27,13 +27,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.ebi.biosamples.core.model.CurationLink;
 import uk.ac.ebi.biosamples.exception.GlobalExceptions;
-import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.mongo.service.CurationReadService;
 import uk.ac.ebi.biosamples.service.CurationLinkResourceAssembler;
 import uk.ac.ebi.biosamples.service.CurationPersistService;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.WebinAuthenticationService;
 
 @RestController
 @RequestMapping("/samples/{accession}/curationlinks")

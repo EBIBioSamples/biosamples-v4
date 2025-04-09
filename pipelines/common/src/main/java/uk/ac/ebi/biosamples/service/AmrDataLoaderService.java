@@ -24,9 +24,9 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredDataEntry;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.model.AccessionFtpUrlPair;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 
 @Service
 public class AmrDataLoaderService {

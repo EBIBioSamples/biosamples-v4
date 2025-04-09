@@ -19,11 +19,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.exception.GlobalExceptions;
-import uk.ac.ebi.biosamples.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.StructuredDataService;
-import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.WebinAuthenticationService;
 
 /** Structured data operations */
 @RestController

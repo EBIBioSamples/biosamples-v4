@@ -31,8 +31,8 @@ import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.core.model.*;
 import uk.ac.ebi.biosamples.exception.GlobalExceptions;
-import uk.ac.ebi.biosamples.model.*;
 
 @Service
 public class FileUploadUtils {

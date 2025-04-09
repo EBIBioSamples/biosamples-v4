@@ -31,10 +31,10 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
-import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
-import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
-import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
+import uk.ac.ebi.biosamples.core.model.*;
+import uk.ac.ebi.biosamples.core.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.core.service.CustomInstantDeserializer;
+import uk.ac.ebi.biosamples.core.service.CustomInstantSerializer;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)

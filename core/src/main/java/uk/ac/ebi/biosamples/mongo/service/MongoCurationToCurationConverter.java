@@ -13,7 +13,7 @@ package uk.ac.ebi.biosamples.mongo.service;
 import java.util.function.Function;
 import org.springframework.boot.context.properties.ConfigurationPropertiesBinding;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.core.model.Curation;
 import uk.ac.ebi.biosamples.mongo.model.MongoCuration;
 
 @Service

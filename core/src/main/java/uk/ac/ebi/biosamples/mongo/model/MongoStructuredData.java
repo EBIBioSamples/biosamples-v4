@@ -19,10 +19,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import uk.ac.ebi.biosamples.model.structured.StructuredData;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
-import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
-import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredData;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredDataTable;
+import uk.ac.ebi.biosamples.core.service.CustomInstantDeserializer;
+import uk.ac.ebi.biosamples.core.service.CustomInstantSerializer;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Document

@@ -20,10 +20,10 @@ import java.util.Objects;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.CurationLink;
-import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
-import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
+import uk.ac.ebi.biosamples.core.model.Curation;
+import uk.ac.ebi.biosamples.core.model.CurationLink;
+import uk.ac.ebi.biosamples.core.service.CustomInstantDeserializer;
+import uk.ac.ebi.biosamples.core.service.CustomInstantSerializer;
 
 @Document
 public class MongoCurationLink implements Comparable<MongoCurationLink> {

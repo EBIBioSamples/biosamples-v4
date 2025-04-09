@@ -14,7 +14,7 @@ import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Sample;
 
 public abstract class PipelineSampleCallable implements Callable<PipelineResult> {
   protected final Logger LOG = LoggerFactory.getLogger(getClass());

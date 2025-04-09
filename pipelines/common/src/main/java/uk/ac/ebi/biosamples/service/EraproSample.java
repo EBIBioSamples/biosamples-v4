@@ -10,7 +10,7 @@
 */
 package uk.ac.ebi.biosamples.service;
 
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Sample;
 
 /**
  * Bean to store all ENA sample related details fetched from ERAPRO for a {@link Sample}

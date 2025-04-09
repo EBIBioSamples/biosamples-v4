@@ -12,7 +12,8 @@ package uk.ac.ebi.biosamples.service;
 
 import java.util.*;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.core.model.filter.Filter;
+import uk.ac.ebi.biosamples.core.service.FilterBuilder;
 
 @Service
 public class FilterService {

@@ -18,8 +18,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.springframework.core.io.ClassPathResource;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Attribute;
+import uk.ac.ebi.biosamples.core.model.Sample;
 
 public class PhenopacketConverterTest {
   private final PhenopacketConverter phenopacketConverter =

@@ -31,10 +31,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.core.model.Relationship;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.SubmissionReceipt;
+import uk.ac.ebi.biosamples.core.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.exception.GlobalExceptions;
-import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.WebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.validation.SchemaValidationService;
 
 @RestController

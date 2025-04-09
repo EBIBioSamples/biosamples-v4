@@ -25,10 +25,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.exception.GlobalExceptions;
-import uk.ac.ebi.biosamples.model.AuthToken;
-import uk.ac.ebi.biosamples.model.auth.*;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
-import uk.ac.ebi.biosamples.service.security.AccessControlService;
+import uk.ac.ebi.biosamples.security.model.AuthRealm;
+import uk.ac.ebi.biosamples.security.model.AuthRequestWebin;
+import uk.ac.ebi.biosamples.security.model.AuthToken;
+import uk.ac.ebi.biosamples.security.model.FileUploaderAuthRequest;
+import uk.ac.ebi.biosamples.security.service.AccessControlService;
 import uk.ac.ebi.biosamples.service.upload.FileUploadService;
 import uk.ac.ebi.biosamples.service.upload.JsonSchemaStoreSchemaRetrievalService;
 

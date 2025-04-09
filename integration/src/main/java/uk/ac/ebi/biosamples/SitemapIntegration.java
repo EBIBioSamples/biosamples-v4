@@ -12,6 +12,7 @@ package uk.ac.ebi.biosamples;
 
 import java.net.URI;
 import java.util.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.annotation.Order;
@@ -23,13 +24,14 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.XmlSitemap;
-import uk.ac.ebi.biosamples.model.XmlSitemapIndex;
-import uk.ac.ebi.biosamples.model.XmlUrlSet;
+import uk.ac.ebi.biosamples.core.model.*;
+import uk.ac.ebi.biosamples.sitemap.model.XmlSitemap;
+import uk.ac.ebi.biosamples.sitemap.model.XmlSitemapIndex;
+import uk.ac.ebi.biosamples.sitemap.model.XmlUrlSet;
 
 @Order
 @Component
+@Slf4j
 public class SitemapIntegration extends AbstractIntegration {
   private final URI biosamplesSubmissionUri;
   private final RestOperations restTemplate;
@@ -53,6 +55,7 @@ public class SitemapIntegration extends AbstractIntegration {
   protected void phaseTwo() {
     final List<EntityModel<Sample>> samples = new ArrayList<>();
     final Map<String, Boolean> lookupTable = new HashMap<>();
+
     for (final EntityModel<Sample> sample : noAuthClient.fetchSampleResourceAll()) {
       samples.add(sample);
       lookupTable.put(Objects.requireNonNull(sample.getContent()).getAccession(), Boolean.FALSE);
@@ -63,12 +66,13 @@ public class SitemapIntegration extends AbstractIntegration {
     }
 
     final int expectedSitemapIndexSize = Math.floorDiv(samples.size(), sitemapPageSize) + 1;
-
     final XmlSitemapIndex index = getSitemapIndex();
-    if (index.getXmlSitemaps().size() != expectedSitemapIndexSize) {
+    final int modelIndexSize = index.getXmlSitemaps().size();
+
+    if (modelIndexSize != expectedSitemapIndexSize) {
       throw new RuntimeException(
           "The model index size ("
-              + index.getXmlSitemaps().size()
+              + modelIndexSize
               + ") doesn't match the expected size ("
               + expectedSitemapIndexSize
               + ")");
@@ -115,20 +119,29 @@ public class SitemapIntegration extends AbstractIntegration {
   private XmlSitemapIndex getSitemapIndex() {
     final UriComponentsBuilder builder = UriComponentsBuilder.fromUri(biosamplesSubmissionUri);
     final UriComponents sitemapUri = builder.pathSegment("sitemap").build();
+
+    log.info("Calling sitemap URI: {}", sitemapUri.toUri());
+
     final ResponseEntity<XmlSitemapIndex> responseEntity =
         restTemplate.getForEntity(sitemapUri.toUri(), XmlSitemapIndex.class);
+
     if (!responseEntity.getStatusCode().is2xxSuccessful()) {
       throw new RuntimeException("Sitemap not available");
     }
+
+    log.info("Sitemap response {}", responseEntity.getBody());
+
     return responseEntity.getBody();
   }
 
   private XmlUrlSet getUrlSet(final XmlSitemap sitemap) {
     final ResponseEntity<XmlUrlSet> urlSetReponseEntity =
         restTemplate.getForEntity(sitemap.getLoc(), XmlUrlSet.class);
+
     if (!urlSetReponseEntity.getStatusCode().is2xxSuccessful()) {
       throw new RuntimeException("Unable to reach a model urlset");
     }
+
     return urlSetReponseEntity.getBody();
   }
 }

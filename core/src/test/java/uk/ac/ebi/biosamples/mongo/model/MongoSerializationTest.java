@@ -25,10 +25,10 @@ import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
+import uk.ac.ebi.biosamples.core.model.*;
+import uk.ac.ebi.biosamples.core.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredDataEntry;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredDataTable;
 
 @RunWith(SpringRunner.class)
 @JsonTest

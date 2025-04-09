@@ -15,7 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Sample;
 
 public class TaxonomyClientServiceTest {
   @Test

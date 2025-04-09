@@ -25,7 +25,6 @@
 		</profile>
 	</profiles>
 	<modules>
-		<module>models</module>
 		<module>agents</module>
 		<module>webapps</module>
 		<module>pipelines</module>

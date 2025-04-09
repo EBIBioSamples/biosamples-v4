@@ -11,8 +11,8 @@
 package uk.ac.ebi.biosamples.service.taxonomy;
 
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.exception.GlobalExceptions;
-import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.ena.taxonomy.client.TaxonomyClientImpl;
 import uk.ac.ebi.ena.taxonomy.taxon.SubmittableTaxon;
 

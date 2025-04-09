@@ -20,11 +20,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.messaging.MessageContent;
-import uk.ac.ebi.biosamples.messaging.Messaging;
-import uk.ac.ebi.biosamples.model.CurationLink;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.CurationLink;
+import uk.ac.ebi.biosamples.core.model.Relationship;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.messaging.MessagingConstants;
+import uk.ac.ebi.biosamples.messaging.model.MessageContent;
 import uk.ac.ebi.biosamples.mongo.service.SampleReadService;
 
 @Service
@@ -42,7 +42,7 @@ public class MessagingService {
   public void sendFileUploadedMessage(final String fileId) {
     log.info("Uploaded file queued " + fileId);
 
-    amqpTemplate.convertAndSend(Messaging.UPLOAD_EXCHANGE, "", fileId);
+    amqpTemplate.convertAndSend(MessagingConstants.UPLOAD_EXCHANGE, "", fileId);
   }
 
   void fetchThenSendMessage(final String accession) {
@@ -71,8 +71,8 @@ public class MessagingService {
 
       // send the original sample with the extras as related samples
       amqpTemplate.convertAndSend(
-          Messaging.INDEXING_EXCHANGE,
-          Messaging.INDEXING_QUEUE,
+          MessagingConstants.INDEXING_EXCHANGE,
+          MessagingConstants.INDEXING_QUEUE,
           MessageContent.build(sample.get(), null, related, false));
     }
   }

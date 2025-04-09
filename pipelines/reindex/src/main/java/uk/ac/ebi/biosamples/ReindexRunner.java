@@ -24,11 +24,11 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.util.CloseableIterator;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.messaging.MessageContent;
-import uk.ac.ebi.biosamples.messaging.Messaging;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
-import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.filter.DateRangeFilter;
+import uk.ac.ebi.biosamples.core.model.filter.Filter;
+import uk.ac.ebi.biosamples.messaging.MessagingConstants;
+import uk.ac.ebi.biosamples.messaging.model.MessageContent;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.service.SampleReadService;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
@@ -154,8 +154,8 @@ public class ReindexRunner implements ApplicationRunner {
       if (sampleOptional.isPresent()) {
         try {
           amqpTemplate.convertAndSend(
-              Messaging.REINDEXING_EXCHANGE,
-              Messaging.REINDEXING_QUEUE,
+              MessagingConstants.REINDEXING_EXCHANGE,
+              MessagingConstants.REINDEXING_QUEUE,
               MessageContent.build(sampleOptional.get(), null, related, false));
 
           return true;

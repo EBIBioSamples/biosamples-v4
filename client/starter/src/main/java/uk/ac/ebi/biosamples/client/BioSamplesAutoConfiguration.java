@@ -49,8 +49,8 @@ import uk.ac.ebi.biosamples.client.model.auth.AuthRealm;
 import uk.ac.ebi.biosamples.client.service.ClientService;
 import uk.ac.ebi.biosamples.client.service.WebinAuthClientService;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
-import uk.ac.ebi.biosamples.service.AttributeValidator;
-import uk.ac.ebi.biosamples.service.SampleValidator;
+import uk.ac.ebi.biosamples.core.service.AttributeValidator;
+import uk.ac.ebi.biosamples.core.service.SampleValidator;
 
 @Configuration
 @AutoConfigureAfter(WebClientAutoConfiguration.class)

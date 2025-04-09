@@ -36,6 +36,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.ac.ebi.biosamples.core.model.*;
 
 @RunWith(SpringRunner.class)
 @JsonTest

@@ -19,9 +19,9 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.dom4j.Element;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Publication;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Attribute;
+import uk.ac.ebi.biosamples.core.model.Publication;
+import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
