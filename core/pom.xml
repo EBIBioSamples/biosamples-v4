@@ -2,6 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -9,7 +10,9 @@
 		<artifactId>biosamples</artifactId>
 		<version>5.3.10-SNAPSHOT</version>
 	</parent>
+
 	<artifactId>core</artifactId>
+
 	<properties>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
@@ -18,7 +21,7 @@
 
 	<dependencies>
 
-		<!-- EBI-specific dependencies -->
+		<!-- === EBI dependencies === -->
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>properties</artifactId>
@@ -30,7 +33,7 @@
 			<version>2.2.8</version>
 		</dependency>
 
-		<!-- Spring dependencies -->
+		<!-- === Spring dependencies === -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
@@ -69,11 +72,15 @@
 			<version>2.5.0.RELEASE</version>
 		</dependency>
 
-		<!-- Jackson / JSON / XML -->
+		<!-- === Jackson / JSON / XML === -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
 			<version>2.12.5</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -93,7 +100,7 @@
 			<version>4.1.4</version>
 		</dependency>
 
-		<!-- Protocol Buffers / Schema -->
+		<!-- === Protocol Buffers / Schema === -->
 		<dependency>
 			<groupId>com.google.protobuf</groupId>
 			<artifactId>protobuf-java</artifactId>
@@ -110,12 +117,14 @@
 			<version>1.0.0</version>
 		</dependency>
 
-		<!-- Utility libraries -->
+		<!-- === Auth / Security === -->
 		<dependency>
-			<groupId>org.neo4j.driver</groupId>
-			<artifactId>neo4j-java-driver</artifactId>
+			<groupId>com.auth0</groupId>
+			<artifactId>java-jwt</artifactId>
 			<version>4.0.0</version>
 		</dependency>
+
+		<!-- === Utility libraries === -->
 		<dependency>
 			<groupId>com.github.ben-manes.caffeine</groupId>
 			<artifactId>caffeine</artifactId>
@@ -130,19 +139,25 @@
 			<artifactId>commons-csv</artifactId>
 			<version>1.8</version>
 		</dependency>
-
-		<!-- Auth / Security -->
 		<dependency>
-			<groupId>com.auth0</groupId>
-			<artifactId>java-jwt</artifactId>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+			<version>1.8</version>
+		</dependency>
+		<dependency>
+			<groupId>org.neo4j.driver</groupId>
+			<artifactId>neo4j-java-driver</artifactId>
 			<version>4.0.0</version>
 		</dependency>
 
-		<!-- YAML / XML / Validation -->
+		<!-- === Sitemap === -->
 		<dependency>
-			<groupId>org.yaml</groupId>
-			<artifactId>snakeyaml</artifactId>
+			<groupId>com.google.code</groupId>
+			<artifactId>sitemapgen4j</artifactId>
+			<version>1.0.1</version>
 		</dependency>
+
+		<!-- === YAML / XML / Validation === -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
@@ -152,55 +167,9 @@
 			<artifactId>validation-api</artifactId>
 		</dependency>
 
-		<!-- Sitemap - need this for Jackson2ObjectMapperBuilder -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-annotations</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.code</groupId>
-			<artifactId>sitemapgen4j</artifactId>
-			<version>1.0.1</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.xml.bind</groupId>
-			<artifactId>jaxb-api</artifactId>
-			<version>2.3.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-core</artifactId>
-			<version>2.3.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-impl</artifactId>
-			<version>2.3.0</version>
-		</dependency>
-
-		<!-- curami -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-csv</artifactId>
-			<version>1.8</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-text</artifactId>
-			<version>1.8</version>
-		</dependency>
-
 	</dependencies>
 
-	<!-- lock transitive dependency version -->
+	<!-- === Lock transitive dependency versions === -->
 	<dependencyManagement>
 		<dependencies>
 			<dependency>

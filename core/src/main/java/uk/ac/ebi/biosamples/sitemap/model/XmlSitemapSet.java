@@ -10,16 +10,18 @@
 */
 package uk.ac.ebi.biosamples.sitemap.model;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import java.util.ArrayList;
 import java.util.Collection;
-import javax.xml.bind.annotation.*;
 
-/** @author mrelac */
-@XmlAccessorType(value = XmlAccessType.NONE)
-@XmlRootElement(name = "sitemapset")
+@JacksonXmlRootElement(localName = "sitemapset")
 public class XmlSitemapSet {
-  @XmlElements({@XmlElement(name = "model", type = XmlSitemap.class)})
-  private final Collection<XmlSitemap> xmlSitemaps = new ArrayList();
+
+  @JacksonXmlElementWrapper(localName = "model", useWrapping = false)
+  @JacksonXmlProperty(localName = "sitemap")
+  private final Collection<XmlSitemap> xmlSitemaps = new ArrayList<>();
 
   public void addSitemap(final XmlSitemap xmlSitemap) {
     xmlSitemaps.add(xmlSitemap);

@@ -10,30 +10,28 @@
 */
 package uk.ac.ebi.biosamples.sitemap.model;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.xml.bind.annotation.*;
 
-/** @author mrelac */
-@XmlAccessorType(value = XmlAccessType.NONE)
-@XmlRootElement(name = "urlset")
+@JacksonXmlRootElement(localName = "urlset")
 public class XmlUrlSet {
 
   private static final int MAX_SITEMAP_ENTRIES = 50000;
 
-  @XmlElements({@XmlElement(name = "url", type = XmlUrl.class)})
-  private final List<XmlUrl> xmlUrls = new ArrayList();
+  @JacksonXmlProperty(localName = "url")
+  @JacksonXmlElementWrapper(useWrapping = false)
+  private final List<XmlUrl> xmlUrls = new ArrayList<>();
 
   public void addUrl(final XmlUrl xmlUrl) {
-
     final int size = xmlUrls.size();
 
-    // Reservoir sampling to get random entries in the model (this will get them all
-    // eventually, but not exceed the model entry size restriction)
+    // Reservoir sampling
     if (size >= MAX_SITEMAP_ENTRIES) {
-      // Randomly replace elements in the reservoir with a decreasing probability.
-      final int idx = new Double(Math.floor(Math.random() * size)).intValue();
+      final int idx = (int) Math.floor(Math.random() * size);
       if (idx < MAX_SITEMAP_ENTRIES) {
         xmlUrls.set(idx, xmlUrl);
       }

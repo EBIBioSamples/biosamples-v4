@@ -12,6 +12,7 @@ package uk.ac.ebi.biosamples;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -44,6 +45,7 @@ public class SitemapIntegration extends AbstractIntegration {
       final RestTemplateBuilder restTemplateBuilder,
       final ClientProperties clientProperties) {
     super(client);
+
     biosamplesSubmissionUri = clientProperties.getBiosamplesClientUri();
     restTemplate = restTemplateBuilder.build();
   }
@@ -122,6 +124,10 @@ public class SitemapIntegration extends AbstractIntegration {
 
     log.info("Calling sitemap URI: {}", sitemapUri.toUri());
 
+    ResponseEntity<String> rawResponse =
+        restTemplate.getForEntity(sitemapUri.toUri(), String.class);
+    log.info("Raw XML: " + rawResponse.getBody());
+
     final ResponseEntity<XmlSitemapIndex> responseEntity =
         restTemplate.getForEntity(sitemapUri.toUri(), XmlSitemapIndex.class);
 
@@ -129,7 +135,15 @@ public class SitemapIntegration extends AbstractIntegration {
       throw new RuntimeException("Sitemap not available");
     }
 
-    log.info("Sitemap response {}", responseEntity.getBody());
+    XmlSitemapIndex xmlSitemapIndex = responseEntity.getBody();
+
+    log.info("Number of sitemaps {}", xmlSitemapIndex.getXmlSitemaps().size());
+
+    log.info(
+        "Sitemap response {}",
+        xmlSitemapIndex.getXmlSitemaps().stream()
+            .map(xmlSitemap -> xmlSitemap.getLoc() + xmlSitemap.getLastmod())
+            .collect(Collectors.joining(",")));
 
     return responseEntity.getBody();
   }

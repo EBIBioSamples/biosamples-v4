@@ -10,14 +10,13 @@
 */
 package uk.ac.ebi.biosamples.sitemap.model;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.redfin.sitemapgenerator.W3CDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-import javax.xml.bind.annotation.XmlElement;
 
 /** Class representing the sitemap entry */
 public class XmlSitemap {
-
   private final W3CDateFormat dateFormat;
 
   public XmlSitemap() {
@@ -31,9 +30,9 @@ public class XmlSitemap {
     this.loc = loc;
   }
 
-  @XmlElement private final String loc;
+  @JacksonXmlProperty private final String loc;
 
-  @XmlElement private final String lastmod;
+  @JacksonXmlProperty private final String lastmod;
 
   public String getLoc() {
     return loc;

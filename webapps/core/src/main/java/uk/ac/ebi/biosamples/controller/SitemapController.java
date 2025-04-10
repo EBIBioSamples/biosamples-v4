@@ -71,6 +71,8 @@ public class SitemapController {
       xmlSitemapIndex.addSitemap(xmlSiteMap);
     }
 
+    log.info("Sitemap API called, returning {} sitemaps ", xmlSitemapIndex.getXmlSitemaps().size());
+
     return xmlSitemapIndex;
   }
 

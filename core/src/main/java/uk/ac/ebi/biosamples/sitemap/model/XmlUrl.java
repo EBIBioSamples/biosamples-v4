@@ -10,19 +10,15 @@
 */
 package uk.ac.ebi.biosamples.sitemap.model;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.redfin.sitemapgenerator.W3CDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.TimeZone;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 
-/** @author mrelac */
-@XmlAccessorType(value = XmlAccessType.NONE)
-@XmlRootElement(name = "url")
+@JacksonXmlRootElement(localName = "url")
 public class XmlUrl {
 
   private final W3CDateFormat dateFormat = getDateFormat();
@@ -30,14 +26,6 @@ public class XmlUrl {
   private XmlUrl() {
     this(null, LocalDate.now(), ChangeFrequency.WEEKLY, Priority.MEDIUM);
   }
-
-  //
-  //    private XmlUrl(String loc, Priority priority) {
-  //        lastmod = dateFormat.format(new Date());
-  //        this.loc = loc;
-  //        this.priority = priority.getValue();
-  //        this.changefreq = ChangeFrequency.WEEKLY.getValue();
-  //    }
 
   private XmlUrl(
       final String loc,
@@ -57,13 +45,17 @@ public class XmlUrl {
     return dateFormat;
   }
 
-  @XmlElement private final String loc;
+  @JacksonXmlProperty(localName = "loc")
+  private final String loc;
 
-  @XmlElement private final String lastmod;
+  @JacksonXmlProperty(localName = "lastmod")
+  private final String lastmod;
 
-  @XmlElement private final String changefreq;
+  @JacksonXmlProperty(localName = "changefreq")
+  private final String changefreq;
 
-  @XmlElement private final String priority;
+  @JacksonXmlProperty(localName = "priority")
+  private final String priority;
 
   public String getLoc() {
     return loc;
