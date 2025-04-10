@@ -1,0 +1,68 @@
+{
+  "id": "SAMETAG2031",
+  "subject": {
+    "id": "SAMETAG2031-individual",
+    "sex": "MALE",
+    "taxonomy": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    }
+  },
+  "biosamples": [{
+    "id": "SAMETAG2031",
+    "individualId": "SAMETAG2031-individual",
+    "description": "test description",
+    "sampledTissue": {
+      "id": "UBERON:0002107",
+      "label": "liver"
+    },
+    "taxonomy": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    },
+    "ageOfIndividualAtCollection": {
+      "age": "30"
+    }
+  }],
+  "diseases": [{
+    "term": {
+      "id": "EFO:0000365",
+      "label": "colorectal adenocarcinoma"
+    }
+  }, {
+    "term": {
+      "id": "MONDO:0002491",
+      "label": "lung disease"
+    }
+  }],
+  "metaData": {
+    "created": "1970-01-01T00:00:00Z",
+    "createdBy": "Biosamples phenopacket exporter",
+    "resources": [{
+      "id": "ncbitaxon",
+      "name": "NCBI organismal classification",
+      "url": "http://purl.obolibrary.org/obo/ncbitaxon.owl",
+      "version": "2020-04-18"
+    }, {
+      "id": "pato",
+      "name": "PATO - the Phenotype And Trait Ontology",
+      "url": "http://purl.obolibrary.org/obo/pato.owl",
+      "version": "2020-08-02"
+    }, {
+      "id": "mondo",
+      "name": "Mondo Disease Ontology",
+      "url": "http://purl.obolibrary.org/obo/mondo.owl",
+      "version": "2020-10-21"
+    }, {
+      "id": "efo",
+      "name": "Experimental Factor Ontology",
+      "url": "http://www.ebi.ac.uk/efo/efo.owl",
+      "version": "3.23.0"
+    }, {
+      "id": "uberon",
+      "name": "Uber-anatomy ontology",
+      "url": "http://purl.obolibrary.org/obo/uberon.owl",
+      "version": "2020-09-16"
+    }]
+  }
+}

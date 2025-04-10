@@ -23,7 +23,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Sample;
 
 @Component
 public class ExportRunner implements ApplicationRunner {

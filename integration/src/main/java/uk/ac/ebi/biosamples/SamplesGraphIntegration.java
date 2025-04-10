@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.*;
 import uk.ac.ebi.biosamples.neo4j.model.GraphNode;
 import uk.ac.ebi.biosamples.neo4j.model.GraphSearchQuery;
 import uk.ac.ebi.biosamples.neo4j.model.NeoSample;

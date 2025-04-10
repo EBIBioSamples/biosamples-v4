@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.certification.Checklist;
 import uk.ac.ebi.biosamples.model.certification.InterrogationResult;
 import uk.ac.ebi.biosamples.model.certification.SampleDocument;
-import uk.ac.ebi.biosamples.validation.ValidatorI;
+import uk.ac.ebi.biosamples.service.validation.ValidatorI;
 
 @Service
 public class Interrogator {

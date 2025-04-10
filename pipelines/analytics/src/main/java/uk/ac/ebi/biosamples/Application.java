@@ -34,14 +34,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.configuration.ExclusionConfiguration;
-import uk.ac.ebi.biosamples.mongo.repository.MongoSampleRepository;
-import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
-import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
-import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.service.EnaConfig;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 import uk.ac.ebi.biosamples.service.EraProDao;
@@ -152,18 +147,5 @@ public class Application {
         restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
       }
     };
-  }
-
-  @Bean(name = "SampleAccessionService")
-  public MongoAccessionService mongoSampleAccessionService(
-      final MongoSampleRepository mongoSampleRepository,
-      final SampleToMongoSampleConverter sampleToMongoSampleConverter,
-      final MongoSampleToSampleConverter mongoSampleToSampleConverter,
-      final MongoOperations mongoOperations) {
-    return new MongoAccessionService(
-        mongoSampleRepository,
-        sampleToMongoSampleConverter,
-        mongoSampleToSampleConverter,
-        mongoOperations);
   }
 }

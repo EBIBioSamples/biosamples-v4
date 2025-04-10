@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import junit.framework.TestCase;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
+import uk.ac.ebi.biosamples.security.service.AccessControlService;
 
 public class AccessControlServiceTest extends TestCase {
   private static final String EXPIRED_WEBIN_TOKEN =

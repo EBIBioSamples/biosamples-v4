@@ -16,10 +16,12 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.AttributeRecommendation;
-import uk.ac.ebi.biosamples.model.CuramiRecommendation;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Attribute;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.curami.model.AttributeRecommendation;
+import uk.ac.ebi.biosamples.curami.model.CuramiRecommendation;
+import uk.ac.ebi.biosamples.curami.service.CuramiUtils;
+import uk.ac.ebi.biosamples.curami.service.DataLoader;
 
 @Service
 public class RecommendationService {
