@@ -111,7 +111,7 @@
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
-			<version>5.1.0</version> <!-- Use the same version as poi -->
+			<version>5.4.0</version> <!-- Use the same version as poi -->
 		</dependency>
 	</dependencies>
 
