@@ -24,7 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.ac.ebi.biosamples.model.certification.*;
-import uk.ac.ebi.biosamples.validation.ValidatorI;
+import uk.ac.ebi.biosamples.service.validation.ValidatorI;
 
 @Service
 public class Certifier {

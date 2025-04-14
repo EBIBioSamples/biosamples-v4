@@ -25,9 +25,9 @@ import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.WebinAuthClientService;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.CurationLink;
-import uk.ac.ebi.biosamples.service.SampleValidator;
+import uk.ac.ebi.biosamples.core.model.Curation;
+import uk.ac.ebi.biosamples.core.model.CurationLink;
+import uk.ac.ebi.biosamples.core.service.SampleValidator;
 
 public class MockBioSamplesClient extends BioSamplesClient {
   private final Logger log = LoggerFactory.getLogger(getClass());

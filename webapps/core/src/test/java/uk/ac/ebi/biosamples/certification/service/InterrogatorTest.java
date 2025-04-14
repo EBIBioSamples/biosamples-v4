@@ -27,8 +27,8 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.certification.InterrogationResult;
 import uk.ac.ebi.biosamples.model.certification.SampleDocument;
 import uk.ac.ebi.biosamples.service.certification.*;
-import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
-import uk.ac.ebi.biosamples.validation.ValidatorI;
+import uk.ac.ebi.biosamples.service.validation.ElixirSchemaValidator;
+import uk.ac.ebi.biosamples.service.validation.ValidatorI;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(

@@ -10,10 +10,11 @@
 */
 package uk.ac.ebi.biosamples;
 
+import static org.junit.Assert.assertTrue;
+
 import java.net.URI;
 import java.time.Instant;
 import java.util.*;
-import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -32,10 +33,7 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.*;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component
@@ -255,7 +253,7 @@ public class RestCurationIntegration extends AbstractIntegration {
           "Sample does not exist, sample name: " + sample3.getName(), Phase.TWO);
     }
 
-    Assert.assertTrue(sample3.getRelationships().isEmpty());
+    assertTrue(sample3.getRelationships().isEmpty());
   }
 
   @Override

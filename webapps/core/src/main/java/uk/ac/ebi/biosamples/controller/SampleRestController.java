@@ -23,17 +23,17 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.core.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.exception.GlobalExceptions;
 import uk.ac.ebi.biosamples.service.SampleManipulationService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.WebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
+import uk.ac.ebi.biosamples.service.validation.SchemaValidationService;
 import uk.ac.ebi.biosamples.utils.phenopacket.PhenopacketConverter;
-import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and write.
