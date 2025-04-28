@@ -18,6 +18,10 @@
 			<artifactId>spring-boot-starter-cache</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>pipelines-common</artifactId>
 			<version>5.3.10-SNAPSHOT</version>

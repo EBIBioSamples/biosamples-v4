@@ -33,14 +33,12 @@ public class SampleCursorRetrievalService {
   private final Traverson traverson;
   private final ExecutorService executor;
   private final RestOperations restOperations;
-  private final int pageSize;
 
   public SampleCursorRetrievalService(
-      final RestOperations restOperations, final Traverson traverson, final int pageSize) {
+      final RestOperations restOperations, final Traverson traverson) {
     this.restOperations = restOperations;
     this.traverson = traverson;
     this.executor = Executors.newSingleThreadExecutor();
-    this.pageSize = pageSize;
   }
 
   public Iterable<EntityModel<Sample>> fetchAll(
@@ -70,11 +68,7 @@ public class SampleCursorRetrievalService {
       params.add("filter", filter.getSerialization());
     }
 
-    params.add("size", Integer.toString(pageSize));
-
-    if (!addCurations) {
-      params.add("applyCurations", "false");
-    }
+    params.add("applyCurations", String.valueOf(addCurations));
 
     params = encodePlusInQueryParameters(params);
 

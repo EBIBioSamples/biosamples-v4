@@ -82,8 +82,9 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
 
   @Override
   public Iterator<EntityModel<T>> iterator() {
-
+    boolean applyCurations = true;
     TraversalBuilder traversonBuilder = null;
+
     for (final Hop hop : hops) {
       if (traversonBuilder == null) {
         traversonBuilder = traverson.follow(hop);
@@ -92,29 +93,45 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
       }
     }
 
-    // get the first page
-    final URI uri =
-        UriComponentsBuilder.fromHttpUrl(traversonBuilder.asLink().getHref())
-            .queryParams(params)
+    final String href = traversonBuilder.asLink().getHref();
+
+    // Remove existing 'applyCurations' parameter
+    URI baseUriWithoutApplyCurations =
+        UriComponentsBuilder.fromHttpUrl(href)
+            .replaceQueryParam("applyCurations") // removes all instances
             .build()
             .toUri();
 
-    final RequestEntity<Void> requestEntity =
-        IteratorResourceFetchAll.NextPageCallable.buildRequestEntity(jwt, uri);
+    // Add your desired query parameters
+    URI finalUri =
+        UriComponentsBuilder.fromUri(baseUriWithoutApplyCurations)
+            .queryParams(params) // your own MultiValueMap<String, String>
+            .build(true)
+            .toUri();
 
+    // log.info("Getting the first page " + finalUri);
+
+    final RequestEntity<Void> requestEntity =
+        IteratorResourceFetchAll.NextPageCallable.buildRequestEntity(jwt, finalUri);
     final ResponseEntity<PagedModel<EntityModel<T>>> responseEntity =
         restOperations.exchange(requestEntity, parameterizedTypeReference);
+
+    if (params.get("applyCurations") != null
+        && Objects.equals(params.getFirst("applyCurations"), "false")) {
+      applyCurations = false;
+    }
+
     return new IteratorResourceFetchAll<>(
         Objects.requireNonNull(responseEntity.getBody()),
         restOperations,
         parameterizedTypeReference,
         executor,
-        jwt);
+        jwt,
+        applyCurations);
   }
 
   private static class IteratorResourceFetchAll<U> implements Iterator<EntityModel<U>> {
     private final Logger log = LoggerFactory.getLogger(getClass());
-
     private final RestOperations restOperations;
     private final ExecutorService executor;
     private final ParameterizedTypeReference<PagedModel<EntityModel<U>>> parameterizedTypeReference;
@@ -122,37 +139,48 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
     private Iterator<EntityModel<U>> pageIterator;
     private Future<PagedModel<EntityModel<U>>> nextPageFuture;
     private final String jwt;
+    private final boolean applyCurations;
 
     IteratorResourceFetchAll(
         final PagedModel<EntityModel<U>> page,
         final RestOperations restOperations,
         final ParameterizedTypeReference<PagedModel<EntityModel<U>>> parameterizedTypeReference,
         final ExecutorService executor,
-        final String jwt) {
-
+        final String jwt,
+        final boolean applyCurations) {
       this.page = page;
-      pageIterator = page.iterator();
       this.restOperations = restOperations;
       this.executor = executor;
       this.parameterizedTypeReference = parameterizedTypeReference;
       this.jwt = jwt;
+      this.applyCurations = applyCurations;
+
+      pageIterator = page.iterator();
     }
 
     @Override
     public synchronized boolean hasNext() {
       // pre-emptively grab the next page as a future
       if (nextPageFuture == null && page.hasLink(IanaLinkRelations.NEXT)) {
-
         final Link nextLink = page.getLink(IanaLinkRelations.NEXT).get();
 
-        final URI uri;
+        URI uri;
+
         if (nextLink.isTemplated()) {
           final UriTemplate uriTemplate = new UriTemplate(nextLink.getHref());
+
           uri = uriTemplate.expand();
         } else {
           uri = URI.create(nextLink.getHref());
         }
-        log.trace("getting next page uri " + uri);
+
+        uri =
+            UriComponentsBuilder.fromUri(uri)
+                .queryParam("applyCurations", applyCurations)
+                .build(true)
+                .toUri();
+
+        log.trace("Getting next page uri " + uri);
 
         nextPageFuture =
             executor.submit(
@@ -171,8 +199,10 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
           throw new RuntimeException(e);
         }
         pageIterator = page.iterator();
+
         return hasNext();
       }
+
       return false;
     }
 
@@ -191,6 +221,7 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
         } catch (final InterruptedException | ExecutionException e) {
           throw new RuntimeException(e);
         }
+
         if (pageIterator.hasNext()) {
           return pageIterator.next();
         }
@@ -228,6 +259,7 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
 
       private static RequestEntity<Void> buildRequestEntity(final String jwt, final URI uri) {
         final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+
         headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
 
         if (jwt != null) {

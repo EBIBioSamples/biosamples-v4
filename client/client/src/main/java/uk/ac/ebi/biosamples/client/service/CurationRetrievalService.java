@@ -43,17 +43,13 @@ public class CurationRetrievalService {
   }
 
   public Iterable<EntityModel<Curation>> fetchAll(final String jwt) {
-    final MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-
-    params.add("size", Integer.toString(pageSize));
-
     return new IterableResourceFetchAll<>(
         executor,
         traverson,
         restOperations,
         new ParameterizedTypeReference<PagedModel<EntityModel<Curation>>>() {},
         jwt,
-        params,
+        null,
         "curations");
   }
 
