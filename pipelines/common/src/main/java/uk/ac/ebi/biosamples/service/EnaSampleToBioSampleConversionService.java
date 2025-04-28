@@ -109,13 +109,13 @@ public class EnaSampleToBioSampleConversionService {
         isNcbiDdbjSample
             ? pipelinesProperties.getProxyWebinId()
             : eraproSample.getSubmissionAccountId();
-
     final SortedSet<Attribute> attributes = new TreeSet<>(sample.getCharacteristics());
     final SortedSet<Publication> publications = new TreeSet<>(sample.getPublications());
     final String lastUpdated = eraproSample.getLastUpdated();
     final String firstPublic = eraproSample.getFirstPublic();
     final String firstCreated = eraproSample.getFirstCreated();
     final Instant release;
+
     Instant update = null;
     Instant create = null;
     Instant submitted = null;

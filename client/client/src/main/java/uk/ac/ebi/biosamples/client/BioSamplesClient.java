@@ -98,15 +98,13 @@ public class BioSamplesClient implements AutoCloseable {
 
     sampleRetrievalService = new SampleRetrievalService(restOperations, traverson);
     samplePageRetrievalService = new SamplePageRetrievalService(restOperations, traverson);
-    sampleCursorRetrievalService =
-        new SampleCursorRetrievalService(
-            restOperations, traverson, clientProperties.getBiosamplesClientPagesize());
+    sampleCursorRetrievalService = new SampleCursorRetrievalService(restOperations, traverson);
     sampleSubmissionService = new SampleSubmissionService(restOperations, traverson);
     sampleSubmissionServiceV2 = new SampleSubmissionServiceV2(restOperations, uriV2);
     sampleRetrievalServiceV2 = new SampleRetrievalServiceV2(restOperations, uriV2);
     curationRetrievalService =
         new CurationRetrievalService(
-            restOperations, traverson, clientProperties.getBiosamplesClientPagesize());
+            restOperations, traverson, clientProperties.getBiosamplesClientMaxPages());
     /*TODO: In CurationSubmissionService and StructuredDataSubmissionService webin auth is handled more elegantly, replicate it in all other services*/
     curationSubmissionService = new CurationSubmissionService(restOperations, traverson);
     structuredDataSubmissionService =

@@ -137,18 +137,20 @@ public class SamplesRestController {
 
     if (cursor != null) {
       log.trace("This cursor = " + decodedCursor);
+
       final CursorArrayList<Sample> samples =
           samplePageService.getSamplesByText(
               decodedText, filters, principle, decodedCursor, effectiveSize, applyCurations);
+
       log.trace("Next cursor = " + samples.getNextCursorMark());
 
       final CollectionModel<EntityModel<Sample>> resources =
           CollectionModel.of(
               samples.stream()
                   .map(
-                      s ->
-                          s != null
-                              ? sampleResourceAssembler.toModel(s, SampleRestController.class)
+                      sample ->
+                          sample != null
+                              ? sampleResourceAssembler.toModel(sample, SampleRestController.class)
                               : null)
                   .collect(Collectors.toList()));
 
@@ -161,6 +163,7 @@ public class SamplesRestController {
               effectiveSize,
               IanaLinkRelations.SELF.value(),
               getClass()));
+
       // only display the next link if there is a next cursor to go to
       if (!LinkUtils.decodeText(samples.getNextCursorMark()).equals(decodedCursor)
           && !samples.getNextCursorMark().equals("*")) {
@@ -189,6 +192,7 @@ public class SamplesRestController {
 
       final UriComponentsBuilder uriComponentsBuilder =
           WebMvcLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
+
       // This is a bit of a hack, but best we can do for now...
       resources.add(
           Link.of(uriComponentsBuilder.build(true).toUriString() + "/{accession}", "sample"));
