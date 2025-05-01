@@ -1,0 +1,94 @@
+{
+  "_embedded": {
+    "terms": [
+      {
+        "iri": "http://purl.obolibrary.org/obo/FBcv_0003016",
+        "label": "protein complex group",
+        "description": [
+          "Genes whose protein products form a macromolecular complex (GO:0043234)."
+        ],
+        "annotation": {
+          "created_by": [
+            "mmc46"
+          ],
+          "creation_date": [
+            "2014-03-28T15:23:42Z"
+          ],
+          "has_obo_namespace": [
+            "group_descriptor"
+          ],
+          "id": [
+            "FBcv:0003016"
+          ]
+        },
+        "synonyms": null,
+        "ontology_name": "fbcv",
+        "ontology_prefix": "FBcv",
+        "ontology_iri": "http://purl.obolibrary.org/obo/fbcv.owl",
+        "is_obsolete": false,
+        "term_replaced_by": null,
+        "is_defining_ontology": false,
+        "has_children": false,
+        "is_root": false,
+        "short_form": "FBcv_0003016",
+        "obo_id": "FBcv:0003016",
+        "in_subset": null,
+        "obo_definition_citation": [
+          {
+            "definition": "Genes whose protein products form a macromolecular complex (GO:0043234).",
+            "oboXrefs": [
+              {
+                "database": "FBC",
+                "id": "SM",
+                "description": null,
+                "url": null
+              },
+              {
+                "database": "GOC",
+                "id": "go_curators",
+                "description": null,
+                "url": null
+              }
+            ]
+          }
+        ],
+        "obo_xref": null,
+        "obo_synonym": null,
+        "_links": {
+          "self": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/fbcv/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFBcv_0003016"
+          },
+          "parents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/fbcv/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFBcv_0003016/parents"
+          },
+          "ancestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/fbcv/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFBcv_0003016/ancestors"
+          },
+          "hierarchicalParents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/fbcv/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFBcv_0003016/hierarchicalParents"
+          },
+          "hierarchicalAncestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/fbcv/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFBcv_0003016/hierarchicalAncestors"
+          },
+          "jstree": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/fbcv/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFBcv_0003016/jstree"
+          },
+          "graph": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/fbcv/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFBcv_0003016/graph"
+          }
+        }
+      }
+    ]
+  },
+  "_links": {
+    "self": {
+      "href": "https://wwwdev.ebi.ac.uk/ols/api/terms"
+    }
+  },
+  "page": {
+    "size": 500,
+    "totalElements": 1,
+    "totalPages": 1,
+    "number": 0
+  }
+}

@@ -29,8 +29,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Attribute;
+import uk.ac.ebi.biosamples.core.model.Sample;
 
 @Component
 // @Order(1)

@@ -23,8 +23,8 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Attribute;
+import uk.ac.ebi.biosamples.core.model.Sample;
 
 @Component
 public class SampleChecklistComplianceHandlerEVA {

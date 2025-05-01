@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 
 @Service
