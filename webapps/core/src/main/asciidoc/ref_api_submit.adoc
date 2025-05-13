@@ -4,7 +4,7 @@
 
 Using the BioSamples API you can submit new samples to our resource, as well as update or curate samples.
 
-This website requires the limited processing of your personal data in order to function. By using the site you are agreeing to this as outlined in our https://www.ebi.ac.uk/data-protection/privacy-notice/biosamples-submissions[Submission Privacy Notice]
+This website requires the limited processing of your personal data in order to function. By using the site you are agreeing to this as outlined in our https://www.ebi.ac.uk/biosamples/privacy/privacy_notice.pdf[Submission Privacy Notice]
 
 == Submission minimal fields
 

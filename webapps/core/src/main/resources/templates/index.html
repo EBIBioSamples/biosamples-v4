@@ -1,207 +1,280 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.w3.org/1999/xhtml">
+      xmlns:layout="http://www.w3.org/1999/xhtml">
 
 <head th:replace="fragments/head :: head">
-	<title>BioSamples &lt; EMBL-EBI</title>
-	<!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
-	<meta name="keywords" content="biosamples, europe, EBI" />
-	<!-- Describe what this page is about -->
-	<meta name="description" content="EMBL-EBI" />
+    <title>BioSamples &lt; EMBL-EBI</title>
+    <!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
+    <meta name="keywords" content="biosamples, europe, EBI"/>
+    <!-- Describe what this page is about -->
+    <meta name="description" content="EMBL-EBI"/>
 
-	<meta name="ebi:last-review" content="2016-12-20" />
-	<!-- The last time the content was reviewed -->
-	<meta name="ebi:expiry" content="2017-12-20" />
-	<!-- When this content is no longer relevant -->
-	<script th:if="${jsonLD != null}" type="application/ld+json" th:utext="${jsonLD}"> </script>
+    <meta name="ebi:last-review" content="2016-12-20"/>
+    <!-- The last time the content was reviewed -->
+    <meta name="ebi:expiry" content="2017-12-20"/>
+    <!-- When this content is no longer relevant -->
+    <script th:if="${jsonLD != null}" type="application/ld+json" th:utext="${jsonLD}"></script>
 </head>
 
 <!--<body th:onload="|drawCharts(${stats}, ${yearlyGrowth})|">-->
 <body>
-	<th:block th:include="fragments/header :: header"></th:block>
-	<div layout:fragment="content" id="content" >
-		<th:block th:include="fragments/header :: masterhead"></th:block>
-		<div id="main-content-area" class="row padding-top-xlarge padding-left-xlarge padding-right-xlarge">
-			<div class="row">
-				<!--<div class="warning-msg">
-					Please note that the BioSamples team will be out of the office from December 22nd 2024 to January 2nd 2025. Replies to Helpdesk requests will be delayed during this period.
-				</div>-->
-				<div class="warning-msg" style="border: 1px solid #f5c6cb; background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px;">
-					<strong>EBI AAP Deprecation Notice</strong>
-					<p>
-						The EBI Authentication, Authorization, and Profile (AAP) Service is being deprecated.
-						Starting <strong>19th December 2024</strong>, BioSamples will exclusively support Webin authentication.
-					</p>
-					<p>
-						We are here to assist you with this transition. Please reach out to our
-						<a href="mailto:biosamples@ebi.ac.uk?subject=AAP Deprecation" style="color: #721c24; text-decoration: underline;">help desk</a>
-						for support or further information.
-					</p>
-				</div>
-				<p class="intro justify">
-					BioSamples an ELIXIR Core Deposition Database,
-					stores and supplies descriptions and metadata
-					about biological samples used in research and
-					development by academia and industry.
-					Samples are either 'reference' samples  (e.g. from <a
-						href="http://www.internationalgenome.org">1000 Genomes</a>, <a
-						href="http://www.hipsci.org">HipSci</a>, <a
-						href="http://www.faang.org">FAANG</a>) or experimental samples,
-					and have been used in an assay
-					that has generated publicly available data in the <a href="http://www.ebi.ac.uk/ena">European
-						Nucleotide Archive (ENA)</a> or <a
-						href="http://www.ebi.ac.uk/arrayexpress">ArrayExpress </a>.
-					<br/>
-					BioSamples supports links between sample records and any sample-derived datasets,
-					including sequence-based datasets such as those held in the
-					European Nucleotide Archive (ENA)
-					or ArrayExpress, -omics-based datasets
-					such as those in PRIDE or MetaboLights,
-					and any other assay-based databases.
-					It provides links to assays and specific samples and accepts
-					direct submissions of sample information.
-				</p>
-			</div>
+<style>
+    .biosamples-consent-banner {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        background-color: #2a2f4a;
+        color: #fff;
+        padding: 1rem 2rem;
+        font-family: Arial, sans-serif;
+        z-index: 9999;
+        box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
+    }
 
-<!--			<div class="row">-->
-<!--				<div id="sample-curation-graph" class="medium-12 large-6 columns">-->
-<!--					<div id="yearly-growth-chart-wrapper">-->
-<!--						<div class="home-chart-title">sample growth</div>-->
-<!--						<canvas id="yearly-growth-chart" width="450" height="320" class="home-charts"></canvas>-->
-<!--					</div>-->
-<!--				</div>-->
-<!--				<div id="sample-type-chart" class="medium-12 large-6 columns">-->
-<!--					<div id="organism-distribution-chart-wrapper">-->
-<!--						<div class="home-chart-title">organism distribution</div>-->
-<!--						<canvas id="organism-distribution-chart" width="450" height="300" class="home-charts"></canvas>-->
-<!--					</div>-->
-<!--				</div>-->
-<!--			</div>-->
+    .biosamples-consent-banner p {
+        margin: 0.5rem 0;
+        font-size: 0.95rem;
+    }
 
-			<div class="row">
-				<h3 class="icon icon-generic icon-spacer" data-icon="L">Info</h3>
-				<ul>
-					<li><a href="docs">Help pages</a> about how to
-						search BioSamples, how to submit data, and FAQ.</li>
-					<li><a href="docs/references/api">Programmatic access</a> to query
-						and download data using web services.</li>
-					<li>Contact us by emailing <a
-						href="mailto:biosamples@ebi.ac.uk">biosamples@ebi.ac.uk</a></li>
-				</ul>
-			</div>
-			<div class="row">
-				<h3 class="icon icon-generic icon-spacer" data-icon="g">Data Content</h3>
-				<div class="data-content">
+    .biosamples-consent-banner a {
+        color: #66bfff;
+        text-decoration: underline;
+    }
 
-					<div class="small-12 medium-3 large-3 data-content__entry">
-						<div class="home-example-card">
-							<div class="home-example-card-content">
-								<div class="data-logo">
-									<a th:href="@{/samples}+'?filter=attr%3Aorganism%3ASevere+acute+respiratory+syndrome+coronavirus+2'">
-										<img src="images/covid.png" alt="covid image" title="COVID-19" class="data-content-img"/>
-									</a>
-								</div>
-								<div class="data-description padding-top-small">
-									Coronavirus disease 2019 (COVID-19) is an infectious disease caused by severe acute respiratory
-									syndrome
-									coronavirus 2 (SARS-CoV-2).
-								</div>
-							</div>
-							<div class="data-content-search">
-								<a th:href="@{/samples}+'?filter=attr%3Aorganism%3ASevere+acute+respiratory+syndrome+coronavirus+2'">search for covid-19 samples</a>
-							</div>
-						</div>
-					</div>
+    .biosamples-consent-banner a.button {
+        display: inline-block;
+        background-color: #66bfff;
+        color: #000;
+        padding: 0.4rem 1rem;
+        text-decoration: none;
+        border-radius: 4px;
+        margin-top: 0.5rem;
+    }
 
-					<div class="small-12 medium-3 large-3 data-content__entry">
-						<div class="home-example-card">
-							<div class="home-example-card-content">
-								<div class="data-logo">
-									<a href="//www.ebisc.org">
-										<img src="images/logo_ebisc.png" alt="EBiSC logo" title="EBiSC" class="data-content-img"/>
-									</a>
-								</div>
-								<div class="data-description padding-top-small">
-									EBiSC has been designed to
-									address the increasing demand for quality-controlled,
-									disease-relevant, research-grade iPSC lines, data and cell
-									services.
-								</div>
-							</div>
-							<div class="data-content-search">
-								<a th:href="@{/samples}+'?filter=attr%3Aproject%3AEBiSC'" href="samples?filter=attr%3Aproject%3AEBiSC">search
-									for EBiSC samples</a>
-							</div>
-						</div>
-					</div>
+    .biosamples-consent-banner a.button:hover {
+        background-color: #4faeea;
+    }
+</style>
+<th:block th:include="fragments/header :: header"></th:block>
+<div layout:fragment="content" id="content">
+    <th:block th:include="fragments/header :: masterhead"></th:block>
+    <div id="main-content-area" class="row padding-top-xlarge padding-left-xlarge padding-right-xlarge">
+        <div class="row">
+            <!--<div class="warning-msg">
+                Please note that the BioSamples team will be out of the office from December 22nd 2024 to January 2nd 2025. Replies to Helpdesk requests will be delayed during this period.
+            </div>-->
+            <div class="warning-msg"
+                 style="border: 1px solid #f5c6cb; background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px;">
+                <strong>EBI AAP Deprecation Notice</strong>
+                <p>
+                    The EBI Authentication, Authorization, and Profile (AAP) Service is being deprecated.
+                    Starting <strong>19th December 2024</strong>, BioSamples will exclusively support Webin
+                    authentication.
+                </p>
+                <p>
+                    We are here to assist you with this transition. Please reach out to our
+                    <a href="mailto:biosamples@ebi.ac.uk?subject=AAP Deprecation"
+                       style="color: #721c24; text-decoration: underline;">help desk</a>
+                    for support or further information.
+                </p>
+            </div>
+            <div class="biosamples-consent-banner" id="consent-banner">
+                <p>
+                    This BioSamples website uses cookies and processes limited personal data to function properly.
+                    By using the site, you agree to our
+                    <a href="https://www.ebi.ac.uk/biosamples/privacy/privacy_notice.pdf" target="_blank">Privacy
+                        Notice</a>
+                    and
+                    <a href="https://www.ebi.ac.uk/about/terms-of-use" target="_blank">Terms of Use</a>.
+                </p>
+                <a href="#" class="button"
+                   onclick="document.getElementById('consent-banner').style.display='none'; localStorage.setItem('biosamples-custom-consent', 'v1.0'); return false;">
+                    I Agree
+                </a>
+            </div>
+            <p class="intro justify">
+                BioSamples an ELIXIR Core Deposition Database,
+                stores and supplies descriptions and metadata
+                about biological samples used in research and
+                development by academia and industry.
+                Samples are either 'reference' samples (e.g. from <a
+                    href="http://www.internationalgenome.org">1000 Genomes</a>, <a
+                    href="http://www.hipsci.org">HipSci</a>, <a
+                    href="http://www.faang.org">FAANG</a>) or experimental samples,
+                and have been used in an assay
+                that has generated publicly available data in the <a href="http://www.ebi.ac.uk/ena">European
+                Nucleotide Archive (ENA)</a> or <a
+                    href="http://www.ebi.ac.uk/arrayexpress">ArrayExpress </a>.
+                <br/>
+                BioSamples supports links between sample records and any sample-derived datasets,
+                including sequence-based datasets such as those held in the
+                European Nucleotide Archive (ENA)
+                or ArrayExpress, -omics-based datasets
+                such as those in PRIDE or MetaboLights,
+                and any other assay-based databases.
+                It provides links to assays and specific samples and accepts
+                direct submissions of sample information.
+            </p>
+        </div>
 
-					<div class="small-12 medium-3 large-3 data-content__entry">
-						<div class="home-example-card">
-							<div class="home-example-card-content">
-								<div class="data-logo">
-									<a href="//www.faang.org">
-										<img src="images/logo_faang.png" alt="FAANG logo" title="FAANG" class="data-content-img"/>
-									</a>
-								</div>
-								<div class="data-description padding-top-small">
-									Functional Annotation of Animal
-									Genomes. A coordinated international action to accelerate genome
-									to phenome research..
-								</div>
-							</div>
-							<div class="data-content-search">
-								<a th:href="@{/samples}+'?filter=attr%3Aproject%3AFAANG'" href="samples?filter=attr%3Aproject%3AFAANG">search
-									for FAANG samples</a>
-							</div>
-						</div>
-					</div>
+        <!--			<div class="row">-->
+        <!--				<div id="sample-curation-graph" class="medium-12 large-6 columns">-->
+        <!--					<div id="yearly-growth-chart-wrapper">-->
+        <!--						<div class="home-chart-title">sample growth</div>-->
+        <!--						<canvas id="yearly-growth-chart" width="450" height="320" class="home-charts"></canvas>-->
+        <!--					</div>-->
+        <!--				</div>-->
+        <!--				<div id="sample-type-chart" class="medium-12 large-6 columns">-->
+        <!--					<div id="organism-distribution-chart-wrapper">-->
+        <!--						<div class="home-chart-title">organism distribution</div>-->
+        <!--						<canvas id="organism-distribution-chart" width="450" height="300" class="home-charts"></canvas>-->
+        <!--					</div>-->
+        <!--				</div>-->
+        <!--			</div>-->
 
-					<div class="small-12 medium-3 large-3 data-content__entry">
-						<div class="home-example-card">
-							<div class="home-example-card-content">
-								<div class="data-logo">
-									<a href="//www.hipsci.org">
-										<img src="images/logo_hipsci.png" alt="HipSci logo" title="HipSci" class="data-content-img"/>
-									</a>
-								</div>
-								<div class="data-description padding-top-small">
-									HipSci brings together diverse
-									constituents in genomics, proteomics, cell biology and clinical
-									genetics to create a UK national iPS cell resource and use it to
-									carry out cellular genetic studies.
-								</div>
-							</div>
-							<div class="data-content-search">
-								<a th:href="@{/samples}+'?filter=attr%3Aproject%3AHipSci'"
-									 href="samples?filter=attr%3Aproject%3AHipSci">search for HipSci samples</a>
-							</div>
-						</div>
-					</div>
+        <div class="row">
+            <h3 class="icon icon-generic icon-spacer" data-icon="L">Info</h3>
+            <ul>
+                <li><a href="docs">Help pages</a> about how to
+                    search BioSamples, how to submit data, and FAQ.
+                </li>
+                <li><a href="docs/references/api">Programmatic access</a> to query
+                    and download data using web services.
+                </li>
+                <li>Contact us by emailing <a
+                        href="mailto:biosamples@ebi.ac.uk">biosamples@ebi.ac.uk</a></li>
+            </ul>
+        </div>
+        <div class="row">
+            <h3 class="icon icon-generic icon-spacer" data-icon="g">Data Content</h3>
+            <div class="data-content">
 
-					<div class="small-12 medium-3 large-3 data-content__entry">
-						<div class="home-example-card">
-							<div class="home-example-card-content">
-								<div class="data-logo">
-									<a href="//www.microbeproject.eu/">
-										<img src="images/logo_microbe_big.png" alt="MICROBE logo" title="MICROBE" class="data-content-img"/>
-									</a>
-								</div>
-								<div class="data-description padding-top-small">
-									MICROBE paves the way for an innovative microbiome biobanking in Europe
-									by combining scientific expertise with research infrastructures know-how.
-								</div>
-							</div>
-							<div class="data-content-search">
-								<a th:href="@{/samples}+'?filter=attr%3Aproject+name%3AMICROBE'"
-								   href="samples?filter=attr%3Aproject+name%3AMICROBE">search for MICROBE samples</a>
-							</div>
-						</div>
-					</div>
+                <div class="small-12 medium-3 large-3 data-content__entry">
+                    <div class="home-example-card">
+                        <div class="home-example-card-content">
+                            <div class="data-logo">
+                                <a th:href="@{/samples}+'?filter=attr%3Aorganism%3ASevere+acute+respiratory+syndrome+coronavirus+2'">
+                                    <img src="images/covid.png" alt="covid image" title="COVID-19"
+                                         class="data-content-img"/>
+                                </a>
+                            </div>
+                            <div class="data-description padding-top-small">
+                                Coronavirus disease 2019 (COVID-19) is an infectious disease caused by severe acute
+                                respiratory
+                                syndrome
+                                coronavirus 2 (SARS-CoV-2).
+                            </div>
+                        </div>
+                        <div class="data-content-search">
+                            <a th:href="@{/samples}+'?filter=attr%3Aorganism%3ASevere+acute+respiratory+syndrome+coronavirus+2'">search
+                                for covid-19 samples</a>
+                        </div>
+                    </div>
+                </div>
 
-				</div>
-			</div>
-		</div>
-	</div>
-	<th:block th:include="fragments/footer :: footer"></th:block>
+                <div class="small-12 medium-3 large-3 data-content__entry">
+                    <div class="home-example-card">
+                        <div class="home-example-card-content">
+                            <div class="data-logo">
+                                <a href="//www.ebisc.org">
+                                    <img src="images/logo_ebisc.png" alt="EBiSC logo" title="EBiSC"
+                                         class="data-content-img"/>
+                                </a>
+                            </div>
+                            <div class="data-description padding-top-small">
+                                EBiSC has been designed to
+                                address the increasing demand for quality-controlled,
+                                disease-relevant, research-grade iPSC lines, data and cell
+                                services.
+                            </div>
+                        </div>
+                        <div class="data-content-search">
+                            <a th:href="@{/samples}+'?filter=attr%3Aproject%3AEBiSC'"
+                               href="samples?filter=attr%3Aproject%3AEBiSC">search
+                                for EBiSC samples</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="small-12 medium-3 large-3 data-content__entry">
+                    <div class="home-example-card">
+                        <div class="home-example-card-content">
+                            <div class="data-logo">
+                                <a href="//www.faang.org">
+                                    <img src="images/logo_faang.png" alt="FAANG logo" title="FAANG"
+                                         class="data-content-img"/>
+                                </a>
+                            </div>
+                            <div class="data-description padding-top-small">
+                                Functional Annotation of Animal
+                                Genomes. A coordinated international action to accelerate genome
+                                to phenome research..
+                            </div>
+                        </div>
+                        <div class="data-content-search">
+                            <a th:href="@{/samples}+'?filter=attr%3Aproject%3AFAANG'"
+                               href="samples?filter=attr%3Aproject%3AFAANG">search
+                                for FAANG samples</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="small-12 medium-3 large-3 data-content__entry">
+                    <div class="home-example-card">
+                        <div class="home-example-card-content">
+                            <div class="data-logo">
+                                <a href="//www.hipsci.org">
+                                    <img src="images/logo_hipsci.png" alt="HipSci logo" title="HipSci"
+                                         class="data-content-img"/>
+                                </a>
+                            </div>
+                            <div class="data-description padding-top-small">
+                                HipSci brings together diverse
+                                constituents in genomics, proteomics, cell biology and clinical
+                                genetics to create a UK national iPS cell resource and use it to
+                                carry out cellular genetic studies.
+                            </div>
+                        </div>
+                        <div class="data-content-search">
+                            <a th:href="@{/samples}+'?filter=attr%3Aproject%3AHipSci'"
+                               href="samples?filter=attr%3Aproject%3AHipSci">search for HipSci samples</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="small-12 medium-3 large-3 data-content__entry">
+                    <div class="home-example-card">
+                        <div class="home-example-card-content">
+                            <div class="data-logo">
+                                <a href="//www.microbeproject.eu/">
+                                    <img src="images/logo_microbe_big.png" alt="MICROBE logo" title="MICROBE"
+                                         class="data-content-img"/>
+                                </a>
+                            </div>
+                            <div class="data-description padding-top-small">
+                                MICROBE paves the way for an innovative microbiome biobanking in Europe
+                                by combining scientific expertise with research infrastructures know-how.
+                            </div>
+                        </div>
+                        <div class="data-content-search">
+                            <a th:href="@{/samples}+'?filter=attr%3Aproject+name%3AMICROBE'"
+                               href="samples?filter=attr%3Aproject+name%3AMICROBE">search for MICROBE samples</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:include="fragments/footer :: footer"></th:block>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        if (localStorage.getItem('biosamples-custom-consent') === 'v1.0') {
+            const banner = document.getElementById("consent-banner");
+            if (banner) banner.style.display = "none";
+        }
+    });
+</script>
 </body>
 </html>
