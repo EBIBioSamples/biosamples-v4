@@ -18,13 +18,14 @@ before_script:
   - apk update && apk add git
 
 stages:
+  - build
   - package
   - config
   - deploy
 
 maven-package:
   image: ${CI_REGISTRY_IMAGE}/eclipse-temurin:17-jdk
-  stage: package
+  stage: build
   script:
     - './mvnw -q deploy -P embl-ebi -s ci_settings.xml -DskipTests -Dmaven.source.skip=true'
     - mkdir deployment
