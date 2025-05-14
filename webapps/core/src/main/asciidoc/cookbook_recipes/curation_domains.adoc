@@ -1,5 +1,5 @@
 
-= [.ebi-color]#How to retrive sample without any curations or only specified curations#
+= [.ebi-color]#How to retrieve sample without any curations or only specified curations#
 :last-update-label!:
 
 == User requirements
@@ -11,21 +11,12 @@ I want to retrieve samples without any curations or only apply selected curation
 == Usecases
 
 === 1. Retrieve sample without any curations
-Providing an empty `curationdomain` query parameter will instruct BioSamples to remove all curations applied on top of the oirginal sample.
+Providing an `applyCurations=false` query parameter will instruct BioSamples to remove all curations applied on top of the original sample.
 
 Example `curl` command:
 ```shell
-curl 'https://www.ebi.ac.uk/biosamples/samples/SAMEA9948714?curationdomain=' -i -X GET -H "Accept: application/json"
+curl 'https://www.ebi.ac.uk/biosamples/samples/SAMEA9948714?applyCurations=false' -i -X GET -H "Accept: application/json"
 ```
-
-=== 2. Retrieve sample with only specified curation domains
-
-You can also retrieve a sample with only a specified set of curation domains. Following example shows how to retrieve a sample with only `self.BiosampleZooma` curation domain applied. `self.BiosampleZooma` curation is a BioSamples auto generated curation, which try to associate ontology term with attribute-values.
-
-```shell
-curl 'https://www.ebi.ac.uk/biosamples/samples/SAMEA9948714?curationdomain=self.BiosampleZooma' -i -X GET -H "Accept: application/json"
-```
-
 
 === Viewing curations
 You can also view all the curations applied to a particular samples using `curationlinks` endpoint
@@ -33,4 +24,5 @@ You can also view all the curations applied to a particular samples using `curat
 curl 'https://www.ebi.ac.uk/biosamples/samples/SAMEA9948714/curationlinks' -i -X GET -H "Accept: application/json"
 ```
 
-In the given example you can see sample `SAMEA9948714` has 5 curations applied to it (at current time). In this sample all curations are automatic curations applied by BioSamples curation pipelines.
+In the given example you can see sample `SAMEA9948714` has 5 curations applied to it (at current time).
+In this sample, all curations are automatic curations applied by BioSamples curation pipelines.

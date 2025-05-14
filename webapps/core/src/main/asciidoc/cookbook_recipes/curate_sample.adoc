@@ -3,25 +3,19 @@
 :last-update-label!:
 
 == User requirements
-I want to improve the quality of metadata for a sample in BioSamples but I'm not the
+I want to improve the quality of metadata for a sample in BioSamples, but I'm not the
 owner of the sample
 
 == Requirements
-- You need an AAP account to proceed with this recipe
-- Your AAP account should be able to submit to the domain you're going to use in the curation object
+You need a Webin submission account to proceed with this recipe.
+Please refer our link:../guides/authentication[AUTHENTICATION GUIDE] for more information.
 
 ==  Steps
 
-=== 1. Get the JSON Web Token from AAP
+=== 1. Get the JSON Web Token Webin Authentication Service
 
-Start by getting your AAP JWT to use in your application.
-
-You can do that in curl for example using the next command
-```
-TOKEN=$(curl --user <app-user>:<aap-password> https://api.aai.ebi.ac.uk/auth)
-```
-
-For more details on AAP, check out https://aai.ebi.ac.uk[their website]
+Start by getting your Webin authentication JWT to use in your application.
+Please refer our link:../guides/authentication[AUTHENTICATION GUIDE] for more information.
 
 === 2. Produce a BioSamples curation object in JSON format
 
@@ -99,8 +93,7 @@ we must create a curation object like this one
       ],
       "externalReferencesPre": [ ],
       "externalReferencesPost": [ ],
-    },
-    "domain": "self.MyPersonalDomain"
+    }
 }
 ```
 We are now ready to submit the curation object to BioSamples
@@ -131,8 +124,7 @@ $ curl 'https://www.ebi.ac.uk/biosamples/samples/SAMN08432304/curationlinks' -i 
   ],
   "externalReferencesPre": [ ],
   "externalReferencesPost": [ ],
-},
-"domain": "self.MyPersonalDomain"
+}
 '
 ```
 
@@ -170,7 +162,6 @@ $ curl 'https://www.ebi.ac.uk/biosamples/samples/SAMN08432304/curationlinks' -i 
         },
         ...
     ]
-  },
-  "domain" : <the-domain-you-want-to-associate-this-curation>
+  }
 }
 ```

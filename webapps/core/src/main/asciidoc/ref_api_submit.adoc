@@ -27,9 +27,6 @@ Sample content reference:
 | relationships | A list of relationships this sample has to other, existing, samples. | `Array` | Optional
 | data | A more structured data format to allow submission of tables (eg. antibiogram) in addition to key-value pairs.| `Array` | Optional, required only for structured data submission using our POST or PUT endpoints.
 
-Note - You must provide an AAP domain for your data. It can be same as the sample domain if you are the submitter of both the
-sample metadata and structured data.
-
 |===
 
 The structure of elements in Field `characteristics` :

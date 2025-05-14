@@ -23,11 +23,6 @@ services:
     - env=local
     #application properties
     - biosamples.bulksubmisison.webin.superuser.validation=true
-    #AAP certificate
-    - jwt.certificate=public.explore.der
-    - security.basic.path=
-    - aap.domains.url=https://explore.api.aai.ebi.ac.uk
-    - aap.token.url=https://explore.api.aai.ebi.ac.uk/auth
     #configure other services
     - spring.data.solr.host=http://solr:8983/solr
     - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
@@ -115,11 +110,6 @@ services:
     environment:
       #application properties
       - biosamples.bulksubmisison.webin.superuser.validation=true
-      #AAP certificate
-      - jwt.certificate=public.explore.der
-      - security.basic.path=
-      - aap.domains.url=https://explore.api.aai.ebi.ac.uk
-      - aap.token.url=https://explore.api.aai.ebi.ac.uk/auth
       #configure other services
       - spring.data.solr.host=http://solr:8983/solr
       - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
@@ -220,11 +210,6 @@ services:
       - -jar
       - agents-uploadworkers-5.3.11-SNAPSHOT.jar
     environment:
-      #AAP certificate
-      - jwt.certificate=public.explore.der
-      - security.basic.path=
-      - aap.domains.url=https://explore.api.aai.ebi.ac.uk
-      - aap.token.url=https://explore.api.aai.ebi.ac.uk/auth
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
       - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
@@ -382,9 +367,6 @@ services:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - BIOSAMPLES_CLIENT_URI_V2=http://biosamples-webapps-core-v2:8080/biosamples/v2
     - LOGGING_FILE=/logs/integration.log
-    # Provide AAP infos
-    #- BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
-    #- BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
     - BIOSAMPLES_LEGACYAPIKEY=fooqwerty
     - BIOSAMPLES_NEO_URL=bolt://neo4j:7687
 
