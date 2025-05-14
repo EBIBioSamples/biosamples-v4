@@ -4,6 +4,13 @@ services:
 
 variables:
   DEPLOY_PATH: ~/gitlab
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_TAG: $CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
+  DOCKER_IMAGE_NAME: $CI_REGISTRY_IMAGE:$DOCKER_TAG
+  DOCKER_PULL_SECRET: docker-registry-secret
+  APP_NAME: $CI_PROJECT_NAME
+
 
 before_script:
   - echo $CI_BUILD_REF
@@ -37,6 +44,19 @@ maven-package:
     paths:
       - deployment
 #  when: manual
+
+build_docker_image:
+  stage: package
+  image: docker:stable
+  services:
+    - docker:stable-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    - docker build --build-arg DOCKER_REGISTRY=${CI_REGISTRY_IMAGE} -t $DOCKER_IMAGE_NAME .
+    - docker push --quiet $DOCKER_IMAGE_NAME
+  after_script:
+    - docker logout ${CI_REGISTRY_IMAGE}
 
 clone-config-dev:
   stage: config
@@ -127,7 +147,7 @@ deploy-production:
   parallel:
     matrix:
       - BSD_NODE_NAME: bsd_prod
-        BSD_HOST_NAME: [wp-p2m-40, wp-p2m-41, wp-p1m-40, wp-p1m-41]
+        BSD_HOST_NAME: [ wp-p2m-40, wp-p2m-41, wp-p1m-40, wp-p1m-41 ]
   environment:
     name: prod-${BSD_HOST_NAME}
     url: http://${BSD_HOST_NAME}:8081/biosamples/
@@ -144,7 +164,7 @@ deploy-production-solr:
   parallel:
     matrix:
       - BSD_NODE_NAME: bsd_prod
-        BSD_SOLR_HOST_NAME: [wp-p1m-42, wp-p2m-42]
+        BSD_SOLR_HOST_NAME: [ wp-p1m-42, wp-p2m-42 ]
   environment:
     name: prod-solr-${BSD_HOST_NAME}
     url: http://${BSD_SOLR_HOST_NAME}.ebi.ac.uk:8983/solr
