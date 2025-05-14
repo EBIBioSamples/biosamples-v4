@@ -53,7 +53,7 @@ build_docker_image:
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
-    - docker build --build-arg DOCKER_REGISTRY=${CI_REGISTRY_IMAGE} -t $DOCKER_IMAGE_NAME .
+    - docker build --build-arg DOCKER_REGISTRY=${CI_REGISTRY_IMAGE} -t $DOCKER_IMAGE_NAME f webapps/core/Dockerfile .
     - docker push --quiet $DOCKER_IMAGE_NAME
   after_script:
     - docker logout ${CI_REGISTRY_IMAGE}
