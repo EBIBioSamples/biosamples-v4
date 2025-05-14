@@ -18,7 +18,7 @@
 			<!-- i.e. oracle drivers that cannot be redistributed in public -->
 			<id>embl-ebi</id>
 			<modules>
-				<module>ncbi-ena-link</module>
+				<!--<module>ncbi-ena-link</module>-->
 				<!--<module>ena</module>-->
 			</modules>
 		</profile>
@@ -40,7 +40,7 @@
 		<module>export</module>
 		<module>neoexport</module>
 		<module>chain</module>
-		<module>ncbi-ena-link</module>
+		<!--<module>ncbi-ena-link</module>-->
 		<!--<module>ena</module>-->
 	</modules>
 </project>
