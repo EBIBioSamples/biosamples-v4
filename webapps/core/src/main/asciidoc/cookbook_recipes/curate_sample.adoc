@@ -12,7 +12,7 @@ Please refer our link:../guides/authentication[AUTHENTICATION GUIDE] for more in
 
 ==  Steps
 
-=== 1. Get the JSON Web Token Webin Authentication Service
+=== 1. Get the JSON Web Token from the Webin Authentication Service
 
 Start by getting your Webin authentication JWT to use in your application.
 Please refer our link:../guides/authentication[AUTHENTICATION GUIDE] for more information.
