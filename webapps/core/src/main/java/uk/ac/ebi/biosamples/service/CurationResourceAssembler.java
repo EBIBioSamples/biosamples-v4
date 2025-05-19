@@ -17,7 +17,7 @@ import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.controller.CurationController;
-import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.core.model.Curation;
 
 @Service
 public class CurationResourceAssembler

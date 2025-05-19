@@ -32,13 +32,10 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.service.*;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.CurationLink;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SubmissionReceipt;
-import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.model.structured.StructuredData;
-import uk.ac.ebi.biosamples.service.SampleValidator;
+import uk.ac.ebi.biosamples.core.model.*;
+import uk.ac.ebi.biosamples.core.model.filter.Filter;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredData;
+import uk.ac.ebi.biosamples.core.service.SampleValidator;
 
 /**
  * This is the primary class for interacting with BioSamples.
@@ -101,15 +98,13 @@ public class BioSamplesClient implements AutoCloseable {
 
     sampleRetrievalService = new SampleRetrievalService(restOperations, traverson);
     samplePageRetrievalService = new SamplePageRetrievalService(restOperations, traverson);
-    sampleCursorRetrievalService =
-        new SampleCursorRetrievalService(
-            restOperations, traverson, clientProperties.getBiosamplesClientPagesize());
+    sampleCursorRetrievalService = new SampleCursorRetrievalService(restOperations, traverson);
     sampleSubmissionService = new SampleSubmissionService(restOperations, traverson);
     sampleSubmissionServiceV2 = new SampleSubmissionServiceV2(restOperations, uriV2);
     sampleRetrievalServiceV2 = new SampleRetrievalServiceV2(restOperations, uriV2);
     curationRetrievalService =
         new CurationRetrievalService(
-            restOperations, traverson, clientProperties.getBiosamplesClientPagesize());
+            restOperations, traverson, clientProperties.getBiosamplesClientMaxPages());
     /*TODO: In CurationSubmissionService and StructuredDataSubmissionService webin auth is handled more elegantly, replicate it in all other services*/
     curationSubmissionService = new CurationSubmissionService(restOperations, traverson);
     structuredDataSubmissionService =

@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapps-core-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webapps-core
+  template:
+    metadata:
+      labels:
+        app: webapps-core
+    spec:
+      containers:
+        - name: webapps-core
+          image: webapps-core:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: spring.data.solr.host
+              value: "http://solr:8983/solr"
+            - name: spring.data.mongodb.uri
+              value: "mongodb://mongodb:27017/biosamples"
+            - name: SPRING_RABBITMQ_HOST
+              value: "rabbitmq"
+            - name: biosamples.schemaValidator
+              value: "http://json-schema-validator:3020/validate"
+            - name: biosamples.schemaStore
+              value: "https://wwwdev.ebi.ac.uk/biosamples/schema-store"
+            - name: SERVER_SERVLET_CONTEXT_PATH
+              value: /biosamples

@@ -10,16 +10,15 @@
 */
 package uk.ac.ebi.biosamples;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.auth.services.AuthChangeHandler;
+import uk.ac.ebi.biosamples.auth.services.SamplesCrawlerAuthChangeHandler;
+import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.helpdesk.services.*;
 
 // import uk.ac.ebi.biosamples.service.AnalyticsService;
@@ -33,13 +32,14 @@ public class HelpdeskActionApplicationRunner implements ApplicationRunner {
   @Autowired SampleRelationshipHandler sampleRelationshipHandler;
   @Autowired SampleExternalReferenceHandler sampleExternalReferenceHandler;
   @Autowired SampleRestoreIPK sampleRestoreIPK;
+  @Autowired SamplesCrawlerAuthChangeHandler samplesCrawlerAuthChangeHandler;
 
   @Override
   public void run(ApplicationArguments args) {
     // authChangeHandler.parseFileAndProcessSampleAuthentication();
     // sampleChecklistComplianceHandlerEVA.samnSampleGeographicLocationAttributeUpdateFromFile();
     try {
-      final List<String> accessions =
+      /*final List<String> accessions =
           sampleRestoreIPK.parseInput("C:\\Users\\dgupta\\IPK_samples_3.list");
 
       log.info("Number of accessions to be handled are " + accessions.size());
@@ -57,7 +57,14 @@ public class HelpdeskActionApplicationRunner implements ApplicationRunner {
           Paths.get("updateResults_3.txt"),
           updateResults,
           StandardOpenOption.CREATE,
-          StandardOpenOption.TRUNCATE_EXISTING);
+          StandardOpenOption.TRUNCATE_EXISTING);*/
+
+      final Iterable<EntityModel<Sample>> samples =
+          samplesCrawlerAuthChangeHandler.getSamples("subs.team-41");
+
+      for (final EntityModel sample : samples) {
+        samplesCrawlerAuthChangeHandler.handleAuth(sample, "subs.team-41");
+      }
     } catch (Exception e) {
       log.info("Operation failed");
       e.printStackTrace();

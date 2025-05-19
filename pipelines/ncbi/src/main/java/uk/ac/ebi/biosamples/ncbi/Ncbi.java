@@ -39,17 +39,17 @@ import org.springframework.stereotype.Component;
 import org.xml.sax.SAXException;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredDataTable;
+import uk.ac.ebi.biosamples.core.service.FilterBuilder;
 import uk.ac.ebi.biosamples.model.PipelineName;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
 import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
 import uk.ac.ebi.biosamples.mongo.repository.MongoPipelineRepository;
 import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
-import uk.ac.ebi.biosamples.service.FilterBuilder;
-import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.PipelineUniqueIdentifierGenerator;
-import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.XmlFragmenter;
+import uk.ac.ebi.biosamples.utils.thread.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.thread.ThreadUtils;
 
 @Component
 @Profile("!test")
