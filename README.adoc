@@ -1,15 +1,15 @@
 image:https://api.codacy.com/project/badge/Grade/d1d650940b1f4a6286607c1d06573090["Codacy code quality", link="https://www.codacy.com/app/danielvaughan/biosamples-v4?utm_source=github.com&utm_medium=referral&utm_content=EBIBioSamples/biosamples-v4&utm_campaign=Badge_Grade"]
 image:https://quay.io/repository/ebibiosamples/biosamples-v4/status["Docker Repository on Quay", link="https://quay.io/repository/ebibiosamples/biosamples-v4"]
 
-= BioSamples
+== BioSamples
 
-BioSamples https://www.ebi.ac.uk/biosamples/ an ELIXIR Core Deposition Database, stores and supplies descriptions and metadata about biological samples used in research and development by academia and industry. Samples are either 'reference' samples (e.g. from 1000 Genomes, HipSci, FAANG) or experimental samples, and have been used in an assay that has generated publicly available data in the European Nucleotide Archive (ENA) or ArrayExpress .
+BioSamples https://www.ebi.ac.uk/biosamples/ is an ELIXIR Core Deposition Database that stores and supplies descriptions and metadata about biological samples used in research and development by academia and industry. Samples are either 'reference' samples (e.g. from 1000 Genomes, HipSci, FAANG) or experimental samples, and have been used in an assay that has generated publicly available data in the European Nucleotide Archive (ENA) or ArrayExpress.
 
-BioSamples supports links between sample records and any sample-derived datasets, including sequence-based datasets such as those held in the European Nucleotide Archive (ENA) or ArrayExpress, -omics-based datasets such as those in PRIDE or MetaboLights, and any other assay-based databases. It provides links to assays and specific samples and accepts direct submissions of sample information. 
+BioSamples supports links between sample records and any sample-derived datasets, including sequence-based datasets such as those held in ENA or ArrayExpress, -omics-based datasets such as those in PRIDE or MetaboLights, and any other assay-based databases. It provides links to assays and specific samples and accepts direct submissions of sample information.
 
 BioSamples also synchronizes data with the NCBI BioSample database and imports data from ENA.
 
-This document provides information about the local installation, development environment setup  instructions of BioSamples database. 
+This document provides information about local installation and development environment setup for the BioSamples database.
 
 == Table of contents
 
@@ -38,31 +38,24 @@ This document provides information about the local installation, development env
 == Setup
 
 [arabic]
-. Run this in terminal to install the dependent softwares.
+. Run this in terminal to install the dependent software.
 +
 [source,sh]
 ----
 sudo apt-get update
-sudo apt-get install temurin-17-jdk maven git docker (or any JDK 17)
+sudo apt-get install temurin-17-jdk maven git docker
 ----
-. Please make sure the software versions are correct.
+. Verify the software versions.
 +
 [source,sh]
 ----
-docker -v 
-# Output
+docker -v
 # Docker version 18.06.1-ce
 
 java -version
-# Output
 # openjdk version "17.0.12" 2024-07-16
 ----
 . Install BioSamples on your computer.
-+
-This process sets up a local compiled version of all biosamples tools.
-It requires a large download of Spring dependencies and uses up to two
-threads per core of your machine. The installation might take several
-minutes.
 +
 [source,sh]
 ----
@@ -70,197 +63,121 @@ git clone https://github.com/EBIBioSamples/biosamples-v4.git
 cd biosamples-v4
 ./mvnw -T 2C package
 ----
-. Start Biosamples on your own machine
+. Start BioSamples on your machine
 +
 [source,sh]
 ----
 docker-compose up
 ----
 +
-If it returns
-`+ERROR: Couldn't connect to Docker daemon - you might need to run docker-machine start default+`.
-Please run `+sudo docker-compose up+` instead.
-. Now you can access the public interface at
-http://localhost:8081/biosamples/. So far, there is no data in the local
-sample.
-. Create an AAP or an ENA WEBIN account for API authentication and data upload
-+ 
-An AAP account or a WEBIN is required to upload data through API.
-The API account can be registered at
-https://explore.aai.ebi.ac.uk/registerUser. A detailed instruction about user account and authentication can be
-found on https://www.ebi.ac.uk/biosamples/docs/guides/authentication.
+If you get:
+`ERROR: Couldn't connect to Docker daemon - you might need to run docker-machine start default`,
+try:
+`sudo docker-compose up`
+. Access the web interface at http://localhost:8081/biosamples/. Initially, there is no data in the local instance.
+. Create an ENA WEBIN account for API authentication and data upload
 +
-
-*Above guide shows AAP account details for production usage.
-Please replace all URL references as below to create and authenticate against development server.*
-[cols="1,1"]
-|===
-| Original                  | Replace with
-| https://aai.ebi.ac.uk     | https://explore.aai.ebi.ac.uk
-| https://api.aai.ebi.ac.uk | https://explore.api.aai.ebi.ac.uk
-|===
-
-Alternatively an ENA WEBIN account can also be used for authentication and data upload.
-A production WEBIN account can be created here -> https://www.ebi.ac.uk/ena/submit/webin/auth/swagger-ui/index.html?configUrl=/ena/submit/webin/auth/v3/api-docs/swagger-config#/AdministrationAPI/createSubmissionAccount (Note: replace www with wwwdev for a test WEBIN account)
-
-. Upload first test data (using AAP account)
+An ENA WEBIN account is required to upload data via the BioSamples API.
 +
-[source,sh]
-----
-TOKEN=$(curl -u Username https://explore.api.aai.ebi.ac.uk/auth)
-
-curl 'http://localhost:8081/biosamples/samples' -i -X POST -H "Content-Type: application/json;charset=UTF-8" -H "Accept: application/hal+json" -H "Authorization: Bearer $TOKEN" -d '{
- "name" : "FakeSample",
- "update" : "2019-07-16T09:47:20.003Z",
- "release" : "2019-07-16T09:47:20.003Z",
- "domain" : "self.ExampleDomain"
-}'
-----
+Production WEBIN accounts can be created here:
+https://www.ebi.ac.uk/ena/submit/webin/auth/swagger-ui/index.html?configUrl=/ena/submit/webin/auth/v3/api-docs/swagger-config#/AdministrationAPI/createSubmissionAccount
++
+To register a test account, replace `www` with `wwwdev` in the URL.
 
 == Data import
 
-An example of the JSON format that can be sent by POST to http://localhost:8081/biosamples/beta/samples is at https://github.com/EBIBioSamples/biosamples-v4/blob/master/models/core/src/test/resources/TEST1.json
+An example JSON payload to POST to http://localhost:8081/biosamples/beta/samples can be found here:
+https://github.com/EBIBioSamples/biosamples-v4/blob/master/models/core/src/test/resources/TEST1.json
 
 === NCBI
 
-Download the XML dump (~400Mb) to the current directory:
+Download the XML dump (~400MB):
 
 `wget http://ftp.ncbi.nih.gov/biosample/biosample_set.xml.gz`
 
-Run the pipeline to send the data to the submission API via REST
+Run the pipeline to submit the data to BioSamples API via REST:
 
 `docker-compose up biosamples-pipelines-ncbi`
 
-Note: You will need to mount the location that the XML dump was
-downloaded to within the docker container. A docker-compose.override.yml
-file is the easiest way to do that.
+You may need to mount the directory where the XML file is located. Use a `docker-compose.override.yml` file to handle volume mounting.
 
 === MongoDB notes
 
-Cross-platform easy to use mongodb management tool
-http://www.mongoclient.com
+A useful MongoDB client tool: http://www.mongoclient.com
 
 == Developing
 
-Docker can be run from within a virtual machine e.g VirtualBox. This is
-useful if it causes any problems for your machine or if you have an OS
-that is not supported.
+Docker can be run in a virtual machine (e.g., VirtualBox) if needed. You can mount shared folders for IDE use.
 
-You might want to mount the virtual machines directory with the host, so
-you can work in a standard IDE outside of the VM. VirtualBox supports
-this.
-
-If you ware using a virtual machine, you might also want to configure
-docker-compose to start by default.
-
-As you make changes to the code, you can recompile it via Maven with:
-
+To build code changes:
 `./mvnw -T 2C package`
 
-And to get the new packages into the docker containers you will need to
-rebuild containers with:
-
+To rebuild docker containers:
 `docker-compose build`
 
-If needed, you can rebuild just a single container by specifying its
-name e.g.
-
+To rebuild a single container:
 `docker-compose build biosamples-pipelines`
 
-To start a service, using docker compose will also start and dependent
-services it requires e.g.
-
+To run a service with its dependencies:
 `docker-compose up biosamples-webapp-api`
 
-will also start solr, neo4j, mongo, and rabbitmq
-
-To run an executable file in a docker container, and start its
-dependencies first use something like:
-
+To run a containerized executable:
 `docker-compose run --service-ports biosamples-pipelines`
 
-If you want to add command line arguments note that these will entirely
-replace the executable in the docker-compose.yml file. So you need to do
-something like:
-
+To pass command-line arguments (note: replaces the default executable):
 `docker-compose run --service-ports biosamples-pipelines java -jar pipelines-4.0.0-SNAPSHOT.jar --debug`
 
-If you want to connect debugging tools to the java applications running
-inside docker containers, see instructions at
-http://www.jamasoftware.com/blog/monitoring-java-applications/
+Monitoring and debugging info: http://www.jamasoftware.com/blog/monitoring-java-applications/
 
-Note that you can bring maven and docker together into a single
-commandline like:
-
+Combined Maven build and container launch:
 `./mvnw -T 2C package && docker-compose build && docker-compose run --service-ports biosamples-pipelines`
 
-Beware, Docker tar's and copies all the files on the filesystem from the
-location of docker-compose down. If you have data files there (e.g.
-downloads from ncbi, docker volumes, logs) then that process can take so
-long that it makes using Docker impractical.
+If `docker-compose` is slow, check for large volumes in the source directory. Use these to clean up:
 
-As docker-compose creates new volumes each time, you may fill the disk
-docker is working on. To delete all docker volumes use:
-
+Remove all Docker volumes:
 `docker volume ls -q | xargs -r docker volume rm`
 
-To delete all docker images use:
-
+Remove all Docker images:
 `docker images -q | xargs -r docker rmi`
 
-NOTE: this will remove everything not just things for this project
+WARNING: The above removes everything Docker-related from your machine.
 
 == Client usage
 
-There is a spring client, and a spring-boot starter module, for use with
-BioSamples. To use these in a maven project, add the following to the
-appropriate sections:
+Add the spring-boot starter module for BioSamples in your Maven project:
 
 ....
-<dependencies>      
+<dependencies>
     <dependency>
         <groupId>uk.ac.ebi.biosamples</groupId>
         <artifactId>biosamples-spring-boot-starter</artifactId>
         <version>5.3.7</version>
     </dependency>
 </dependencies>
-
-** 5.3.7 is an example, latest version is available in the release notes here -> https://www.ebi.ac.uk/biosamples/docs/releasenotes
 ....
+
 ....
 maven {
   url 'https://gitlab.ebi.ac.uk/api/v4/projects/2669/packages/maven'
 }
 ....
 
-This can then be configured by several spring application.properties
-including biosamples.client.uri to specify the base URI of the
-BioSamples instance to use.
+Configure `biosamples.client.uri` in your `application.properties` to point to the correct BioSamples instance.
 
 == Issues and troubleshooting
 
 === Problems with spring-data-rest
 
-This was originally using spring-data-rest to expose rest API for the
-repositories. But there are a number of problems with this (see below)
-and that was scrapped in favor of implementing custom HATEOAS compliant
-endpoints.
+Originally, Spring Data REST was used for exposing the API but had issues:
 
-Content type negotiation is not possible as it can't overlap with the
-URLs for the Thymeleaf controllers and it can't serve XML even with the
-appropriate converters supplied.
-
-When repeatedly sending JSON because it is a list of things with
-optional components, the optional parts can become mixed if the list
-ordering changes. Maybe this can be remedied by using map of attribute
-types instead?
+* Content type negotiation problems due to overlaps with Thymeleaf routes.
+* Cannot serve XML even with converters.
+* List ordering caused optional attributes to mix—better handled via `Map` of attributes.
 
 === Known issues
 
-Solr has a limit on the field size (technically the term vector).
-Therefore the attribute values over 255 characters are not indexed in
-solr.
+Solr has a limitation on field size (term vector length). Values over 255 characters are not indexed.
 
-=== License
+== License
 
-link:https://github.com/EBIBioSamples/biosamples-v4}/LICENSE[Apache 2.0]
+link:https://github.com/EBIBioSamples/biosamples-v4/LICENSE[Apache 2.0]

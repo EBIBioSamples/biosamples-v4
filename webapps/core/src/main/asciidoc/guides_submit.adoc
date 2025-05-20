@@ -7,4 +7,4 @@ You might want to look at the link:../guides/authentication[Authentication guide
 '''
 If you have any questions about these services or would like more information, please contact us at mailto:biosamples@ebi.ac.uk[biosamples@ebi.ac.uk].
 
-This website requires the limited processing of your personal data in order to function. By using the site you are agreeing to this as outlined in our https://www.ebi.ac.uk/data-protection/privacy-notice/biosamples-submissions[Submission Privacy Notice]
+This website requires the limited processing of your personal data in order to function. By using the site you are agreeing to this as outlined in our https://www.ebi.ac.uk/biosamples/privacy/privacy_notice.pdf[Submission Privacy Notice]

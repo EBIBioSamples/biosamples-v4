@@ -4,7 +4,7 @@
 
 Using the BioSamples API you can submit new samples to our resource, as well as update or curate samples.
 
-This website requires the limited processing of your personal data in order to function. By using the site you are agreeing to this as outlined in our https://www.ebi.ac.uk/data-protection/privacy-notice/biosamples-submissions[Submission Privacy Notice]
+This website requires the limited processing of your personal data in order to function. By using the site you are agreeing to this as outlined in our https://www.ebi.ac.uk/biosamples/privacy/privacy_notice.pdf[Submission Privacy Notice]
 
 == Submission minimal fields
 
@@ -26,9 +26,6 @@ Sample content reference:
 | externalReferences | A list of links towards external references, such as datasets in other archives. | `Array` | Optional
 | relationships | A list of relationships this sample has to other, existing, samples. | `Array` | Optional
 | data | A more structured data format to allow submission of tables (eg. antibiogram) in addition to key-value pairs.| `Array` | Optional, required only for structured data submission using our POST or PUT endpoints.
-
-Note - You must provide an AAP domain for your data. It can be same as the sample domain if you are the submitter of both the
-sample metadata and structured data.
 
 |===
 
