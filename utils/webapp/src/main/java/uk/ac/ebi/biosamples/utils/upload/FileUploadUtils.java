@@ -55,7 +55,13 @@ public class FileUploadUtils {
               headers.forEach(
                   header -> {
                     final String record = csvRecord.get(i.get());
-                    listMultiMap.put(header != null ? header.toLowerCase() : null, record);
+                    listMultiMap.put(
+                        header != null
+                                && !(header.startsWith("characteristics")
+                                    || header.startsWith("Characteristics"))
+                            ? header.toLowerCase()
+                            : header,
+                        record);
                     i.getAndIncrement();
                   });
 
@@ -455,11 +461,10 @@ public class FileUploadUtils {
         .forEach(
             entry -> {
               final Characteristics characteristics = new Characteristics();
-              if (entry.getKey().startsWith("characteristics")) {
-                characteristics.setName(entry.getKey().trim());
-                final String value = entry.getValue();
 
-                characteristics.setValue(value);
+              if (entry.getKey().startsWith("Characteristics")) {
+                characteristics.setName(entry.getKey().trim());
+                characteristics.setValue(entry.getValue());
 
                 characteristicsList.add(characteristics);
               }
@@ -674,7 +679,7 @@ public class FileUploadUtils {
 
   public void validateHeaderPositions(
       final List<String> headers, final ValidationResult validationResult) {
-    if (headers.size() > 0) {
+    if (!headers.isEmpty()) {
       if ((!headers.get(0).equalsIgnoreCase("Source Name")
           && (!headers.get(1).equalsIgnoreCase("Sample Name"))
           && (!headers.get(2).equalsIgnoreCase("Release Date")))) {

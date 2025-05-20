@@ -212,7 +212,7 @@ public class SampleService {
     return sampleOptional.orElseThrow(
         () ->
             new RuntimeException(
-                "Failed to create newSample. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk"));
+                "Failed to create sample. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk"));
   }
 
   private Sample updateWhenNoneExists(Sample newSample) {
