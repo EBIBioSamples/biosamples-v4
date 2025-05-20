@@ -7,18 +7,13 @@ I want to link a BioSamples accession with an external repositories or an extern
 even if I'm not the owner of the sample
 
 == Requirements
-- You need an AAP account to proceed with this recipe
-- Your AAP account should be able to submit to the domain you're going to use in the curation object
+You need a Webin submission account to proceed with this recipe.
+Please refer our link:../guides/authentication[AUTHENTICATION GUIDE] for more information.
 
 ==  Steps
 
-=== 1. Get the JSON Web Token from AAP
-Start by getting your JWT to use in your application
-
-You can do that in curl for example using the next command
-```
-TOKEN=$(curl --user <app-user>:<aap-password> https://api.aai.ebi.ac.uk/auth)
-```
+=== 1. Get the JSON Web Token from Webin Authentication Service
+Start by getting your JWT to use in your application. Please refer our authentication guide for this step.
 
 === 2. Produce a BioSamples curation object in JSON format
 In order to add an external reference in a sample without being the sample owner
@@ -26,11 +21,9 @@ you need to use a BioSamples curation object.
 Since we just want to add link(s) and not change any existing link, what you need to do is add such link(s)
 to the externalReferencesPost field.
 
-Let's say for example you have a MGnify sample - e.g. `ERS645361` - and you want to link it back to the corresponding
+Let's say, for example, you have a MGnify sample - e.g. `ERS645361` - and you want to link it back to the corresponding
 BioSamples sample entry `SAMEA3219512`.
 
-Start by creating a valid curation object with containing the BioSamples sample accession, the MGnify link
-and a AAP domain you want to use to identify the curation provenance (note the AAP domain in this example is just a demo)
 ```
 {
   "sample" : "SAMEA3219152",
@@ -41,8 +34,7 @@ and a AAP domain you want to use to identify the curation provenance (note the A
     "externalReferencesPost" : [ {
       "url" : "https://www.ebi.ac.uk/metagenomics/api/v1/samples/ERS645361"
     } ]
-  },
-  "domain" : "self.MGnifyToBioSamplesLinkCreator"
+  }
 }
 ```
 
@@ -63,12 +55,11 @@ $ curl 'https://www.ebi.ac.uk/biosamples/samples/SAMEA3219152/curationlinks' -i 
        "externalReferencesPost" : [ {
          "url" : "https://www.ebi.ac.uk/metagenomics/api/v1/samples/ERS645361"
        } ]
-     },
-     "domain" : "self.MGnifyToBioSamplesLinkCreator"
+     }
 }'
 ```
 
-If the response is successfull (2xx code), you should be able to see the new link available on the sample page
+If the response is successful (2xx code), you should be able to see the new link available on the sample page
 at https://www.ebi.ac.uk/biosamples/samples/SAMEA3219152
 
 == Templates
@@ -86,7 +77,6 @@ Here the template for the curation object to add a new relation to a BioSamples 
     "externalReferencesPost" : [ {
       "url" : <the-url-to-the-external-reference-you-want-to-add>
     } ]
-  },
-  "domain" : <the-domain-you-want-to-associate-this-curation>
+  }
 }
 ```

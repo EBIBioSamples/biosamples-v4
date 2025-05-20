@@ -34,12 +34,6 @@
                             <div class="container">
                                 <div class="row">
                                     <div class="col-lg-8 mt-5">
-                                        <div th:if="${loginmethod == null}">
-                                            <select class="required" id="aapDomain" name="aapDomain">
-                                                <option th:value="0" selected disabled><b>Select AAP domain</b></option>
-                                                <option th:each="domain : ${domains}" th:value="${domain}" th:text="${domain}"></option>
-                                            </select>
-                                        </div>
                                         <div>
                                             <select class="required" id="checklist" name="checklist">
                                                 <option th:value="0" selected disabled><b>Select checklist for validation</b></option>
@@ -48,7 +42,6 @@
                                             </select>
                                         </div>
                                         <form th:action="@{/upload}" enctype="multipart/form-data" class="dropzone" id="data-upload">
-                                            <input type="hidden" id="hiddenAapDomain" name="hiddenAapDomain">
                                             <input type="hidden" id="hiddenChecklist" name="hiddenChecklist">
                                             <input type="hidden" th:value="${webinId}" name="webinId"/>
                                             <input type="hidden" id="uploadToken" th:value="${token}" name="token"/>
@@ -158,10 +151,6 @@
         $(".dz-success-mark").css("display", "none");
         toastr.error("Your file upload has failed");
         download(response, "failed_response.txt", "text/plain");
-    });
-
-    $("#aapDomain").change(function (e) {
-        $("#hiddenAapDomain").val(e.target.value);
     });
 
     $("#checklist").change(function (e) {
