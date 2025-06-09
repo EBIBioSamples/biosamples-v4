@@ -70,6 +70,22 @@ build_docker_image:
   after_script:
     - docker logout ${CI_REGISTRY_IMAGE}
 
+deploy-dev-bsd-v1:
+  image: dtzar/helm-kubectl:3.11.0
+  stage: deploy
+  script:
+    - cd webapps/core
+    - sed -i "s|%DOCKER_IMAGE%|$DOCKER_IMAGE_NAME|g" core-deployment.yaml
+    - kubectl config set-cluster bsd-cluster --server="${K8_HL_SERVER}"
+    - kubectl config set clusters.bsd-cluster.certificate-authority-data ${K8_HL_CERTIFICATE_AUTHORITY_DATA}
+    - kubectl config set-credentials bsd-user --token="${K8_HL_CREDENTIALS}"
+    - kubectl config set-context bsd-context --cluster=bsd-cluster --user=bsd-user
+    - kubectl config use-context bsd-context
+    - kubectl apply -f core-deployment.yaml --namespace=biosamples-dev
+  tags:
+    - ena-dcap-gitlab-runner
+  when: manual
+
 clone-config-dev:
   stage: config
   script:

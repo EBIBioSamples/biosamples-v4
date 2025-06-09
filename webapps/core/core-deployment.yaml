@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: webapps-core
-          image: webapps-core:latest
+          image: %DOCKER_IMAGE%
           imagePullPolicy: Never
           ports:
             - containerPort: 8080
