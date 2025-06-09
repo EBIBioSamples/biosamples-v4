@@ -82,8 +82,6 @@ deploy-dev-bsd-v1:
     - kubectl config set-context bsd-context --cluster=bsd-cluster --user=bsd-user
     - kubectl config use-context bsd-context
     - kubectl apply -f core-deployment.yaml --namespace=biosamples-dev
-  tags:
-    - ena-dcap-gitlab-runner
   when: manual
 
 clone-config-dev:
