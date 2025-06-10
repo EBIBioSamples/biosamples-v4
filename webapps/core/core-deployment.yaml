@@ -16,6 +16,8 @@ spec:
         - name: webapps-core
           image: %DOCKER_IMAGE%
           imagePullPolicy: IfNotPresent
+          imagePullSecrets:
+            - name: docker-registry-secret
           ports:
             - containerPort: 8080
           env:
