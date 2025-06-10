@@ -34,4 +34,4 @@ spec:
             - name: SERVER_SERVLET_CONTEXT_PATH
               value: /biosamples
       imagePullSecrets:
-        - name: docker-registry-secret
+        - name: gitlab
