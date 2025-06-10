@@ -15,18 +15,20 @@ spec:
       containers:
         - name: webapps-core
           image: %DOCKER_IMAGE%
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           env:
             - name: spring.data.solr.host
-              value: "http://solr:8983/solr"
+              value: "http://wp-np2-40.ebi.ac.uk:8983/solr/"
             - name: spring.data.mongodb.uri
-              value: "mongodb://mongodb:27017/biosamples"
+              value: "mongodb://biosdev:L85SKeuR@mongodb-hx-biosdev-dev-001.ebi.ac.uk:27017,mongodb-hh-biosdev-dev-002.ebi.ac.uk:27017/biosamples?replicaSet=biosdevrs017&readPreference=primary&authSource=admin&w=1"
             - name: SPRING_RABBITMQ_HOST
-              value: "rabbitmq"
+              value: "wp-np2-40"
+            - name: SPRING_RABBITMQ_PORT
+              value: "5672"
             - name: biosamples.schemaValidator
-              value: "http://json-schema-validator:3020/validate"
+              value: "https://wwwdev.ebi.ac.uk/biosamples/biovalidator/validate"
             - name: biosamples.schemaStore
               value: "https://wwwdev.ebi.ac.uk/biosamples/schema-store"
             - name: SERVER_SERVLET_CONTEXT_PATH
