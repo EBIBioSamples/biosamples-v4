@@ -16,8 +16,6 @@ spec:
         - name: webapps-core
           image: %DOCKER_IMAGE%
           imagePullPolicy: IfNotPresent
-          imagePullSecrets:
-            - name: docker-registry-secret
           ports:
             - containerPort: 8080
           env:
@@ -35,3 +33,5 @@ spec:
               value: "https://wwwdev.ebi.ac.uk/biosamples/schema-store"
             - name: SERVER_SERVLET_CONTEXT_PATH
               value: /biosamples
+      imagePullSecrets:
+        - name: docker-registry-secret
