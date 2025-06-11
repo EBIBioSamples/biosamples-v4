@@ -1,4 +1,4 @@
 FROM eclipse-temurin:17-jdk-alpine
-WORKDIR /deployment
-EXPOSE 8087
-ENTRYPOINT ["java", "-jar", "webapps-core.war"]
+RUN mkdir /deployment
+COPY webapps-core-*.war /deployment/webapps-core.war
+ENTRYPOINT ["java", "-jar", "/deployment/webapps-core.war"]
