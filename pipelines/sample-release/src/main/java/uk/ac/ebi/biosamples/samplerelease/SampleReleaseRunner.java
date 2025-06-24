@@ -129,11 +129,7 @@ public class SampleReleaseRunner implements ApplicationRunner {
                 accession -> {
                   final Callable<Void> task =
                       new SampleReleaseCallable(
-                          bioSamplesWebinClient,
-                          pipelinesProperties,
-                          restTemplate,
-                          accession,
-                          fromDate);
+                          bioSamplesWebinClient, pipelinesProperties, restTemplate, accession);
 
                   futures.put(accession, executorService.submit(task));
                 });

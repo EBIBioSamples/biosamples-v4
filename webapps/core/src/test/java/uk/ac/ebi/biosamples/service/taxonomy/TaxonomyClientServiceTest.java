@@ -30,7 +30,7 @@ public class TaxonomyClientServiceTest {
     final TaxonomyClientService taxonomyClientService = new TaxonomyClientService();
     Sample sample = objectMapper.readValue(file, Sample.class);
 
-    sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
+    sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample);
 
     final String organismInSample =
         sample.getAttributes().stream()
