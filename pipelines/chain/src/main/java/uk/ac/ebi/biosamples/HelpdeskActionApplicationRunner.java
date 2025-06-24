@@ -10,10 +10,6 @@
 */
 package uk.ac.ebi.biosamples;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
@@ -36,9 +32,9 @@ public class HelpdeskActionApplicationRunner implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) {
-    // authChangeHandler.parseFileAndProcessSampleAuthentication();
+    authChangeHandler.parseListOfSamplesAndProcessSampleAuthentication();
     // sampleChecklistComplianceHandlerEVA.samnSampleGeographicLocationAttributeUpdateFromFile();
-    try {
+    /*try {
       final List<String> accessions =
           sampleRestoreIPK.parseInput("C:\\Users\\dgupta\\IPK_samples_3.list");
 
@@ -63,7 +59,7 @@ public class HelpdeskActionApplicationRunner implements ApplicationRunner {
       e.printStackTrace();
 
       throw new RuntimeException(e);
-    }
+    }*/
     /*final List<String> accessions =
         sampleStatusUpdater.parseFileAndGetSampleAccessionList(
             "C:\\Users\\dgupta\\AtlantECO-samples-to-suppress.txt");

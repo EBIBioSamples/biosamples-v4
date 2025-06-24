@@ -12,19 +12,23 @@ EMBL-EBI's European Nucleotide Archive (ENA) https://www.ebi.ac.uk/ena/submit/we
 
 == Authentication API documentation
 
-WEBIN AUTHENTICATION—Please refer to https://www.ebi.ac.uk/ena/submit/webin/auth[API documentation]
+Please refer to ENA Webin authentication https://www.ebi.ac.uk/ena/submit/webin/auth[API documentation]
 
-We use token-based authentication. This means that once you have an account, you can log in with your username and password
-to receive a https://jwt.io/[token]. This is a piece of text that contains all the information we need to know who you
-are and what data you are allowed to access. You present this token to the API every time you make a request.
+Webin authentication is token based—this means that once you have an account,
+you can log in with your username and password
+to receive a https://jwt.io/[token].
 
-The WEBIN AUTHENTICATION token lasts for 3 hours unless a long validity token is requested using the time-to-live (`ttl`) parameter,
+This is a piece of text that contains all the information we need to know who you
+are and what data you are allowed to access.
+You present this token to the API every time you make a request.
+
+The Webin authentication token lasts for 3 hours unless a long validity token is requested using the time-to-live (`ttl`) parameter,
 so if you have a long-running process, you may find the token expiring before the process completes.
 
 *Please note that the following guide is for authentication against our production system.
 If you are testing in our development server, please replace the following URLs.*
 
-** ENA WEBIN AUTHENTICATION
+Webin Authentication
 
 [cols="1,1"]
 |===

@@ -36,20 +36,17 @@ public class SampleReleaseCallable implements Callable<Void> {
   private final BioSamplesClient bioSamplesWebinClient;
   private final RestTemplate restTemplate;
   private final String accession;
-  private final LocalDate localDate;
   static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
   SampleReleaseCallable(
       final BioSamplesClient bioSamplesWebinClient,
       final PipelinesProperties pipelinesProperties,
       final RestTemplate restTemplate,
-      final String accession,
-      final LocalDate fromDate) {
+      final String accession) {
     this.bioSamplesWebinClient = bioSamplesWebinClient;
     this.restTemplate = restTemplate;
     this.pipelinesProperties = pipelinesProperties;
     this.accession = accession;
-    this.localDate = fromDate;
   }
 
   @Override
@@ -131,7 +128,7 @@ public class SampleReleaseCallable implements Callable<Void> {
     sampleWithoutCurations.getAttributes().add(Attribute.build("INSDC status", "public"));
     sampleWithoutCurations
         .getAttributes()
-        .add(Attribute.build("ENA first public", localDate.toString()));
+        .add(Attribute.build("ENA first public", String.valueOf(LocalDate.now())));
   }
 
   private ResponseEntity deleteSampleReleaseMessageInEna(final String accession) {

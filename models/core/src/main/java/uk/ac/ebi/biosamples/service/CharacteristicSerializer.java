@@ -62,14 +62,10 @@ public class CharacteristicSerializer extends StdSerializer<SortedSet> {
     final SortedMap<String, ArrayListValuedHashMap<String, Attribute>> attributeMap =
         new TreeMap<>();
 
-    if (attributes != null && attributes.size() > 0) {
+    if (attributes != null && !attributes.isEmpty()) {
       for (final Attribute attribute : attributes) {
-        if (!attributeMap.containsKey(attribute.getType())) {
-          attributeMap.put(attribute.getType(), new ArrayListValuedHashMap<>());
-        }
-
         attributeMap
-            .get(attribute.getType())
+            .computeIfAbsent(attribute.getType(), k -> new ArrayListValuedHashMap<>())
             .put(
                 attribute.getValue(),
                 Attribute.build(
@@ -88,7 +84,7 @@ public class CharacteristicSerializer extends StdSerializer<SortedSet> {
             gen.writeStartObject();
             gen.writeStringField("text", value);
 
-            if (attr.getIri() != null && attr.getIri().size() > 0) {
+            if (attr.getIri() != null && !attr.getIri().isEmpty()) {
               gen.writeArrayFieldStart("ontologyTerms");
 
               for (final String iri : attr.getIri()) {
