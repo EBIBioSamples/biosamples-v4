@@ -238,9 +238,10 @@ code[class^="language"] {
 .warning-msg {
     margin: 10px 0;
     padding: 10px;
-    border-radius: 3px 3px 3px 3px;
+    border-radius: 5px;
     color: #9F6000;
     background-color: #FEEFB3;
+    border: 1px solid #e7ca2b;
 }
 
 .info-msg {

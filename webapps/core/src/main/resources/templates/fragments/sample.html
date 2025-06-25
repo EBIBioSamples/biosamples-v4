@@ -58,13 +58,6 @@
 		<section th:unless="${#arrays.isEmpty(relationships)}">
 			<h3>Relationships</h3>
 			<table>
-				<thead>
-                    <tr>
-                        <th>Source</th>
-                        <th>Type</th>
-                        <th>Target</th>
-                    </tr>
-				</thead>
 				<tbody>
                     <tr th:each="relationship : ${relationships}">
                         <td><a th:href="${relationship.source}"
