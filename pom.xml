@@ -107,6 +107,11 @@
 			<id>biosamples-v4</id>
 			<url>https://gitlab.ebi.ac.uk/api/v4/projects/2669/packages/maven</url>
 		</repository>
+		<!-- needed for biosamples-search gitlab-->
+		<repository>
+			<id>gitlab-maven</id>
+			<url>https://gitlab.ebi.ac.uk/api/v4/projects/5516/packages/maven</url>
+		</repository>
 	</repositories>
 	<pluginRepositories>
 		<!-- (you don't need this if you are using a .RELEASE version) -->
