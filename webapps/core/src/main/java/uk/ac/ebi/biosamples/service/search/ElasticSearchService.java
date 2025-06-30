@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.service.search;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,7 @@ import java.util.Set;
 public class ElasticSearchService implements SearchService {
 
   @Override
+  @Timed("biosamples.search.page.elastic")
   public Page<String> searchForAccessions(String searchTerm, Set<Filter> filters, String webinId, Pageable pageable) {
 
     ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 9090).usePlaintext().build();
@@ -40,6 +42,7 @@ public class ElasticSearchService implements SearchService {
   }
 
   @Override
+  @Timed("biosamples.search.cursor.elastic")
   public CursorArrayList<String> searchForAccessions(String searchTerm, Set<Filter> filters, String webinId, String cursor, int size) {
     ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 9090).usePlaintext().build();
     SearchGrpc.SearchBlockingStub stub = SearchGrpc.newBlockingStub(channel);
@@ -51,6 +54,7 @@ public class ElasticSearchService implements SearchService {
       throw new RuntimeException("Failed to fetch samples from remote server", e);
     }
 
-    return new CursorArrayList<>(response.next().getAccessionsList(), cursor);
+    SearchResponse searchResponse = response.next();
+    return new CursorArrayList<>(searchResponse.getAccessionsList(), searchResponse.getPage()..getSearchAfter());
   }
 }

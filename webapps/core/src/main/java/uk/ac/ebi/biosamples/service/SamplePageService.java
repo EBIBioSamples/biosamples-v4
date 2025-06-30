@@ -10,15 +10,8 @@
 */
 package uk.ac.ebi.biosamples.service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,9 +23,16 @@ import uk.ac.ebi.biosamples.mongo.repository.MongoCurationLinkRepository;
 import uk.ac.ebi.biosamples.mongo.repository.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleReadService;
-import uk.ac.ebi.biosamples.solr.model.SolrSample;
+import uk.ac.ebi.biosamples.service.search.SearchService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
-import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * Service layer business logic for centralising repository access and conversions between different
@@ -41,19 +41,25 @@ import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
  * @author faulcon
  */
 @Service
+@Slf4j
 public class SamplePageService {
+  private final MongoSampleRepository mongoSampleRepository;
+  private final MongoCurationLinkRepository mongoCurationLinkRepository;
+  private final MongoSampleToSampleConverter mongoSampleToSampleConverter;
+  private final SampleReadService sampleService;
+  private final SearchService searchService;
 
-  private final Logger log = LoggerFactory.getLogger(getClass());
-
-  @Autowired private MongoSampleRepository mongoSampleRepository;
-  @Autowired private MongoCurationLinkRepository mongoCurationLinkRepository;
-
-  // TODO use a ConversionService to manage all these
-  @Autowired private MongoSampleToSampleConverter mongoSampleToSampleConverter;
-
-  @Autowired private SampleReadService sampleService;
-
-  @Autowired private SolrSampleService solrSampleService;
+  public SamplePageService(MongoSampleRepository mongoSampleRepository,
+                           MongoCurationLinkRepository mongoCurationLinkRepository,
+                           MongoSampleToSampleConverter mongoSampleToSampleConverter,
+                           SampleReadService sampleService,
+                           @Qualifier("solrSearchService") SearchService searchService) {
+    this.mongoSampleRepository = mongoSampleRepository;
+    this.mongoCurationLinkRepository = mongoCurationLinkRepository;
+    this.mongoSampleToSampleConverter = mongoSampleToSampleConverter;
+    this.sampleService = sampleService;
+    this.searchService = searchService;
+  }
 
   public Page<Sample> getSamplesOfExternalReference(final String urlHash, final Pageable pageable) {
     final Page<MongoSample> pageMongoSample =
@@ -79,15 +85,14 @@ public class SamplePageService {
       final Pageable pageable,
       final boolean applyCurations) {
     long startTime = System.nanoTime();
-    final Page<SolrSample> pageSolrSample =
-        solrSampleService.fetchSolrSampleByText(text, filters, webinSubmissionAccountId, pageable);
+    final Page<String> accessionPage =
+        searchService.searchForAccessions(text, new HashSet<>(filters), webinSubmissionAccountId, pageable);
     long endTime = System.nanoTime();
-    log.trace("Got solr page in " + ((endTime - startTime) / 1000000) + "ms");
+    log.trace("Got search page in {}ms", (endTime - startTime) / 1000000);
 
     startTime = System.nanoTime();
     final Page<Future<Optional<Sample>>> pageFutureSample;
-    pageFutureSample =
-        pageSolrSample.map(ss -> sampleService.fetchAsync(ss.getAccession(), applyCurations));
+    pageFutureSample = accessionPage.map(a -> sampleService.fetchAsync(a, applyCurations));
 
     final Page<Sample> pageSample =
         pageFutureSample.map(
@@ -103,7 +108,7 @@ public class SamplePageService {
               }
             });
     endTime = System.nanoTime();
-    log.trace("Got mongo page content in " + ((endTime - startTime) / 1000000) + "ms");
+    log.trace("Got mongo page content in {}ms", (endTime - startTime) / 1000000);
     return pageSample;
   }
 
@@ -117,19 +122,18 @@ public class SamplePageService {
     cursorMark = validateCursor(cursorMark);
     size = validatePageSize(size);
 
-    final CursorArrayList<SolrSample> cursorSolrSample =
-        solrSampleService.fetchSolrSampleByText(
-            text, filters, webinSubmissionAccountId, cursorMark, size);
+    final CursorArrayList<String> cursorAccessionList =
+        searchService.searchForAccessions(text, new HashSet<>(filters), webinSubmissionAccountId, cursorMark, size);
     final List<Future<Optional<Sample>>> listFutureSample;
 
     listFutureSample =
-        cursorSolrSample.stream()
-            .map(s -> sampleService.fetchAsync(s.getAccession(), applyCurations))
+        cursorAccessionList.stream()
+            .map(a -> sampleService.fetchAsync(a, applyCurations))
             .collect(Collectors.toList());
 
     final List<Sample> listSample = collectSampleFutures(listFutureSample);
 
-    return new CursorArrayList<>(listSample, cursorSolrSample.getNextCursorMark());
+    return new CursorArrayList<>(listSample, cursorAccessionList.getNextCursorMark());
   }
 
   private List<Sample> collectSampleFutures(final List<Future<Optional<Sample>>> listFutureSample) {

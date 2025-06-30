@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.service.search;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -20,12 +21,14 @@ public class SolrSearchService implements SearchService {
   private final SolrSampleService solrSampleService;
 
   @Override
+  @Timed("biosamples.search.page.solr")
   public Page<String> searchForAccessions(String searchTerm, Set<Filter> filters, String webinId, Pageable pageable) {
     return solrSampleService.fetchSolrSampleByText(searchTerm, filters, webinId, pageable)
         .map(SolrSample::getAccession);
   }
 
   @Override
+  @Timed("biosamples.search.cursor.solr")
   public CursorArrayList<String> searchForAccessions(String searchTerm, Set<Filter> filters, String webinId, String cursor, int size) {
     CursorArrayList<SolrSample> samples = solrSampleService.fetchSolrSampleByText(searchTerm, filters, webinId, cursor, size);
     List<String> accessions = samples
