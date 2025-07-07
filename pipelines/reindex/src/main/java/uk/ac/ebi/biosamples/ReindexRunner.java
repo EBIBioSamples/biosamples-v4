@@ -12,6 +12,8 @@ package uk.ac.ebi.biosamples;
 
 import java.util.*;
 import java.util.concurrent.*;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.IncompleteArgumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,15 +50,17 @@ public class ReindexRunner implements ApplicationRunner {
   private final AmqpTemplate amqpTemplate;
   private final SampleReadService sampleReadService;
   private final MongoOperations mongoOperations;
+  private final ObjectMapper objectMapper;
 
   @Autowired
   public ReindexRunner(
       final AmqpTemplate amqpTemplate,
       final SampleReadService sampleReadService,
-      final MongoOperations mongoOperations) {
+      final MongoOperations mongoOperations, ObjectMapper objectMapper) {
     this.amqpTemplate = amqpTemplate;
     this.sampleReadService = sampleReadService;
     this.mongoOperations = mongoOperations;
+    this.objectMapper = objectMapper;
   }
 
   @Override
@@ -101,7 +105,7 @@ public class ReindexRunner implements ApplicationRunner {
           futures.put(
               accession,
               executor.submit(
-                  new SampleIndexingCallable(accession, sampleReadService, amqpTemplate)));
+                  new SampleIndexingCallable(accession, sampleReadService, amqpTemplate, objectMapper)));
 
           ThreadUtils.checkFutures(futures, 1000);
         }
@@ -119,14 +123,16 @@ public class ReindexRunner implements ApplicationRunner {
     private final String accession;
     private final SampleReadService sampleReadService;
     private final AmqpTemplate amqpTemplate;
+    private final ObjectMapper objectMapper;
 
     public SampleIndexingCallable(
         final String accession,
         final SampleReadService sampleReadService,
-        final AmqpTemplate amqpTemplate) {
+        final AmqpTemplate amqpTemplate, ObjectMapper objectMapper) {
       this.accession = accession;
       this.sampleReadService = sampleReadService;
       this.amqpTemplate = amqpTemplate;
+      this.objectMapper = objectMapper;
     }
 
     @Override
@@ -154,7 +160,8 @@ public class ReindexRunner implements ApplicationRunner {
           amqpTemplate.convertAndSend(
               Messaging.REINDEXING_EXCHANGE,
               Messaging.REINDEXING_QUEUE,
-              MessageContent.build(sampleOptional.get(), null, related, false));
+              objectMapper.writeValueAsString(sampleOptional.get()));
+//              MessageContent.build(sampleOptional.get(), null, related, false));
 
           return true;
         } catch (final Exception e) {

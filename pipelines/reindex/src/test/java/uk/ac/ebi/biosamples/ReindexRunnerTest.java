@@ -16,6 +16,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.*;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -106,7 +108,7 @@ public class ReindexRunnerTest {
         .thenReturn(Optional.empty())
         .thenReturn(Optional.of(sample3));
     final ReindexRunner reindexRunner =
-        new ReindexRunner(amqpTemplate, sampleReadService, mongoOperations);
+        new ReindexRunner(amqpTemplate, sampleReadService, mongoOperations, new ObjectMapper());
     reindexRunner.run(applicationArguments);
   }
 }
