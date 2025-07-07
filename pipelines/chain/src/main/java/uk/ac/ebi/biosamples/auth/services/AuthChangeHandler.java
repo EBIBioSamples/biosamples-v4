@@ -148,20 +148,10 @@ public class AuthChangeHandler {
 
   public void parseListOfSamplesAndProcessSampleAuthentication() {
     final List<String> samples =
-        List.of(
-            "SAMEA8231217",
-            "SAMEA8231218",
-            "SAMEA8231219",
-            "SAMEA8231220",
-            "SAMEA8231221",
-            "SAMEA8231222",
-            "SAMEA8231223",
-            "SAMEA8231224",
-            "SAMEA8231225",
-            "SAMEA8231226");
+        List.of("SAMEA7936841", "SAMEA7936942", "SAMEA7937232", "SAMEA7937238", "SAMEA7937322");
 
     try {
-      samples.forEach(sample -> processSample(sample));
+      samples.forEach(this::processSample);
     } catch (Exception e) {
       log.info("Failed to process list of samples " + e);
     }

@@ -18,41 +18,52 @@
 
 	<div id="main-content-area" class="row padding-top-xlarge padding-left-xlarge padding-right-xlarge">
 		<div class="row">
-			<h2>Services</h2>
+			<h2>Submit Samples</h2>
 			<p>
-				There are several services provided for programmatically sending sample information to the
-				<a href="/biosamples">BioSamples Database</a>. These are:
+				Several services are available for submitting samples interactively and programmatically to the
+				<a href="/biosamples">BioSamples Database</a>.
 			</p>
 
 			<div class="row biosamples-button-row">
+				<a th:href="@{/uploadLogin}">
+					<div class="large-3 columns">
+						<div class="card biosamples-card">
+							<h3>File Upload Service</h3>
+							<div class="card-section">
+								<p>Submit Samples using file upload service</p>
+							</div>
+						</div>
+					</div>
+				</a>
+
 				<a th:href="@{/docs}+'/references/api/submit#_submit_a_sample'">
-					<div class="large-4 columns">
+					<div class="large-3 columns">
 						<div class="card biosamples-card">
 							<h3>Submission Service</h3>
 							<div class="card-section">
-								<p>Submit using the JSON API</p>
+								<p>Guide: Submit Samples using the JSON API</p>
 							</div>
 						</div>
 					</div>
 				</a>
 
 				<a th:href="@{/docs}+'/references/api/submit#_accession_a_sample'">
-					<div class="large-4 columns">
+					<div class="large-3 columns">
 						<div class="card biosamples-card">
 							<h3>Accessioning Service</h3>
 							<div class="card-section">
-								<p>Accession using the JSON API</p>
+								<p>Guide: Accession using the JSON API</p>
 							</div>
 						</div>
 					</div>
 				</a>
 
 				<a th:href="@{/docs}+'/references/api/submit#_validate_sample_fields'">
-					<div class="large-4 columns">
+					<div class="large-3 columns">
 						<div class="card biosamples-card">
-							<h3>Validation Service</h3>
+							<h3>Sample Validation Service</h3>
 							<div class="card-section">
-								<p>Validate using the JSON API</p>
+								<p>Guide: Validate Samples using the JSON API</p>
 							</div>
 						</div>
 					</div>

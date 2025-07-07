@@ -205,8 +205,7 @@ public class ApiDocumentationTest {
         .thenReturn(wrongSample);
     when(schemaValidationService.validate(any(Sample.class), any(String.class)))
         .thenReturn(wrongSample);
-    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
-            any(Sample.class), eq(true)))
+    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(any(Sample.class)))
         .thenReturn(wrongSample);
     when(sampleService.persistSample(wrongSample, null, false))
         .thenThrow(GlobalExceptions.SampleMandatoryFieldsMissingException.class);
@@ -276,8 +275,7 @@ public class ApiDocumentationTest {
         .thenReturn(sampleWithWebinId);
     when(schemaValidationService.validate(any(Sample.class), any(String.class)))
         .thenReturn(sampleWithWebinId);
-    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
-            any(Sample.class), eq(true)))
+    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(any(Sample.class)))
         .thenReturn(sampleWithWebinId);
 
     mockMvc
@@ -324,8 +322,7 @@ public class ApiDocumentationTest {
         .thenReturn(sample);
     when(sampleService.persistSample(any(Sample.class), eq(null), eq(false))).thenReturn(sample);
     when(schemaValidationService.validate(any(Sample.class), any(String.class))).thenReturn(sample);
-    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
-            any(Sample.class), eq(true)))
+    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(any(Sample.class)))
         .thenReturn(sample);
 
     mockMvc
@@ -579,8 +576,7 @@ public class ApiDocumentationTest {
         .thenReturn(Optional.of(sampleWithWebinId));
     when(sampleService.persistSample(eq(sampleWithWebinId), eq(sampleWithWebinId), eq(false)))
         .thenReturn(sampleWithWebinId);
-    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
-            any(Sample.class), eq(true)))
+    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(any(Sample.class)))
         .thenReturn(sampleWithWebinId);
 
     mockMvc
@@ -610,8 +606,7 @@ public class ApiDocumentationTest {
     when(sampleService.persistSample(eq(sampleWithWebinId), eq(sampleWithWebinId), eq(false)))
         .thenReturn(sampleWithWebinId);
 
-    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
-            any(Sample.class), eq(true)))
+    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(any(Sample.class)))
         .thenReturn(sampleWithWebinId);
 
     mockMvc
@@ -646,8 +641,7 @@ public class ApiDocumentationTest {
         .thenReturn(Optional.of(sampleWithWebinId));
     when(sampleService.persistSample(eq(sampleWithWebinId), eq(sampleWithWebinId), eq(false)))
         .thenReturn(sampleWithWebinId);
-    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(
-            any(Sample.class), eq(true)))
+    when(taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(any(Sample.class)))
         .thenReturn(sampleWithWebinId);
 
     mockMvc
