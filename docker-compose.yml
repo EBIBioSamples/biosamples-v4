@@ -18,7 +18,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-core-5.3.12-RC1.war
+    - webapps-core-5.3.12.war
     environment:
     - env=local
     #application properties
@@ -106,7 +106,7 @@ services:
     command:
       - java
       - -jar
-      - webapps-core-v2-5.3.12-RC1.jar
+      - webapps-core-v2-5.3.12.jar
     environment:
       #application properties
       - biosamples.bulksubmisison.webin.superuser.validation=true
@@ -183,7 +183,7 @@ services:
     command:
     - java
     - -jar
-    - agents-solr-5.3.12-RC1.jar
+    - agents-solr-5.3.12.jar
     environment:
     - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
@@ -208,7 +208,7 @@ services:
     command:
       - java
       - -jar
-      - agents-uploadworkers-5.3.12-RC1.jar
+      - agents-uploadworkers-5.3.12.jar
     environment:
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
@@ -232,7 +232,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-ena-5.3.12-RC1.jar
+    - pipelines-ena-5.3.12.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ena.log
@@ -247,7 +247,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-ncbi-5.3.12-RC1.jar
+    - pipelines-ncbi-5.3.12.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ncbi.log
@@ -262,7 +262,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-accession-5.3.12-RC1.jar
+    - pipelines-accession-5.3.12.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-accession.log
@@ -277,7 +277,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-copydown-5.3.12-RC1.jar
+    - pipelines-copydown-5.3.12.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-copydown.log
@@ -292,7 +292,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-curation-5.3.12-RC1.jar
+    - pipelines-curation-5.3.12.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-curation.log
@@ -309,7 +309,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-zooma-5.3.12-RC1.jar
+    - pipelines-zooma-5.3.12.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-zooma.log
@@ -326,7 +326,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-reindex-5.3.12-RC1.jar
+    - pipelines-reindex-5.3.12.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-reindex.log
@@ -344,7 +344,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-export-5.3.12-RC1.jar
+    - pipelines-export-5.3.12.jar
     - --gzip
     - /export/export.json.gzip
     environment:
@@ -362,7 +362,7 @@ services:
     command:
     - java
     - -jar
-    - integration-5.3.12-RC1.jar
+    - integration-5.3.12.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - BIOSAMPLES_CLIENT_URI_V2=http://biosamples-webapps-core-v2:8080/biosamples/v2
