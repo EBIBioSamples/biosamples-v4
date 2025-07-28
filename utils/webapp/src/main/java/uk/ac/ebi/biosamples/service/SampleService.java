@@ -110,7 +110,7 @@ public class SampleService {
 
         return true;
       } else {
-        // otherwise it is an ENA pipeline import, cannot be empty
+        // otherwise it is an ENA submission reference, cannot be an empty sample
         return false;
       }
     } else {
@@ -335,6 +335,7 @@ public class SampleService {
             isStoredSampleEmpty(newSample, isWebinSuperUser, oldSample);
 
         if (savedSampleEmpty) {
+          // submitted is now if metadata is first submitted after accessioning
           newSample = Sample.Builder.fromSample(newSample).withSubmitted(Instant.now()).build();
         }
 
