@@ -11,15 +11,14 @@
 package uk.ac.ebi.biosamples.service.taxonomy;
 
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.core.model.Sample;
-import uk.ac.ebi.biosamples.exception.GlobalExceptions;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
+import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.ena.taxonomy.client.TaxonomyClientImpl;
 import uk.ac.ebi.ena.taxonomy.taxon.SubmittableTaxon;
 
 @Service
 public class TaxonomyClientService extends TaxonomyClientImpl {
-  public Sample performTaxonomyValidationAndUpdateTaxIdInSample(
-      Sample sample, final boolean isWebinAuth) {
+  public Sample performTaxonomyValidationAndUpdateTaxIdInSample(Sample sample) {
     SubmittableTaxon submittableTaxon;
 
     try {
@@ -40,10 +39,10 @@ public class TaxonomyClientService extends TaxonomyClientImpl {
                 .build();
         return sample;
       } else {
-        return returnSampleOrThrowBasedOnAuthProvider(sample, isWebinAuth);
+        throw new GlobalExceptions.ENATaxonUnresolvedException();
       }
     } catch (final Exception e) {
-      return returnSampleOrThrowBasedOnAuthProvider(sample, isWebinAuth);
+      throw new GlobalExceptions.ENATaxonUnresolvedException();
     }
   }
 
@@ -57,14 +56,5 @@ public class TaxonomyClientService extends TaxonomyClientImpl {
             .findFirst()
             .get()
             .getValue());
-  }
-
-  private Sample returnSampleOrThrowBasedOnAuthProvider(
-      final Sample sample, final boolean isWebinAuth) {
-    if (isWebinAuth) {
-      throw new GlobalExceptions.ENATaxonUnresolvedException();
-    } else {
-      return sample;
-    }
   }
 }

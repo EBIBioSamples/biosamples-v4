@@ -518,7 +518,7 @@ public class SamplesRestController {
       Sample sample, final String principle, final boolean isWebinSuperUser) {
     if (!isWebinSuperUser) {
       sample = schemaValidationService.validate(sample, principle);
-      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
+      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample);
     }
 
     if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {

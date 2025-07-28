@@ -205,7 +205,7 @@ public class SampleRestController {
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
     if (!isWebinSuperUser) {
       schemaValidationService.validate(sample, principle);
-      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample, true);
+      sample = taxonomyClientService.performTaxonomyValidationAndUpdateTaxIdInSample(sample);
     }
 
     if (sample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {

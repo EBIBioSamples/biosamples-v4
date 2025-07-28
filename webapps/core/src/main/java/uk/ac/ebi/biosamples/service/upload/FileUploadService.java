@@ -228,14 +228,14 @@ public class FileUploadService {
             if (sample == null) {
               validationResult.addValidationMessage(
                   new ValidationResult.ValidationMessage(
-                      fileUploadUtils.getSampleName(csvRecordMap),
+                      FileUploadUtils.getSampleName(csvRecordMap),
                       "Failed to create sample in the file",
                       true));
             }
           } catch (final Exception e) {
             validationResult.addValidationMessage(
                 new ValidationResult.ValidationMessage(
-                    fileUploadUtils.getSampleName(csvRecordMap),
+                    FileUploadUtils.getSampleName(csvRecordMap),
                     "Failed to create sample in the file",
                     true));
           }

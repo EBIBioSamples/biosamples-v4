@@ -26,20 +26,19 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.core.model.Attribute;
-import uk.ac.ebi.biosamples.core.model.Relationship;
-import uk.ac.ebi.biosamples.core.model.Sample;
-import uk.ac.ebi.biosamples.core.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.core.model.structured.AbstractData;
-import uk.ac.ebi.biosamples.core.service.SampleValidator;
-import uk.ac.ebi.biosamples.exception.GlobalExceptions;
+import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSampleMessage;
 import uk.ac.ebi.biosamples.mongo.repository.MongoSampleMessageRepository;
 import uk.ac.ebi.biosamples.mongo.repository.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.*;
-import uk.ac.ebi.biosamples.security.service.BioSamplesCrossSourceIngestAccessControlService;
+import uk.ac.ebi.biosamples.service.security.BioSamplesCrossSourceIngestAccessControlService;
 
 /**
  * Service layer business logic for centralising repository access and conversions between different
@@ -111,7 +110,7 @@ public class SampleService {
 
         return true;
       } else {
-        // otherwise it is an ENA pipeline import, cannot be empty
+        // otherwise it is an ENA submission reference, cannot be an empty sample
         return false;
       }
     } else {
@@ -213,7 +212,7 @@ public class SampleService {
     return sampleOptional.orElseThrow(
         () ->
             new RuntimeException(
-                "Failed to create newSample. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk"));
+                "Failed to create sample. Please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk"));
   }
 
   private Sample updateWhenNoneExists(Sample newSample) {
@@ -336,6 +335,7 @@ public class SampleService {
             isStoredSampleEmpty(newSample, isWebinSuperUser, oldSample);
 
         if (savedSampleEmpty) {
+          // submitted is now if metadata is first submitted after accessioning
           newSample = Sample.Builder.fromSample(newSample).withSubmitted(Instant.now()).build();
         }
 

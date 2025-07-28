@@ -5,97 +5,62 @@
 This page describes how to create a user account and log in to use the API.
 
 == Overview
-We support two modes of authentication and authorization:
 
-1. EMBL-EBI's https://aai.ebi.ac.uk[Authentication, authorisation and profile (AAP)] service.
-AAP is the default mode of authentication and authorization.
-2. EMBL-EBI's European Nucleotide Archive (ENA) https://www.ebi.ac.uk/ena/submit/webin/auth[WEBIN authentication] service
+We support ENA Webin authentication for access and authorization:
+
+EMBL-EBI's European Nucleotide Archive (ENA) https://www.ebi.ac.uk/ena/submit/webin/auth[WEBIN authentication] service
 
 == Authentication API documentation
-** AAP - Please refer to https://api.aai.ebi.ac.uk/docs[API documentation]
-** WEBIN AUTHENTICATION - Please refer to https://www.ebi.ac.uk/ena/submit/webin/auth[API documentation]
 
-We use token based authentication. This means that once you have an account, you can login with your username and password
-to receive a https://jwt.io/[token]. This is a piece of text that contains all the information we need to know who you
-are and what data you are allowed to access. You present this information to the API every time you make a request.
+Please refer to ENA Webin authentication https://www.ebi.ac.uk/ena/submit/webin/auth[API documentation]
 
-The AAP and WEBIN AUTHENTICATION tokens last for 1 hour and 3 hours respectively unless a long validity token is requested using the time to live (ttl) parameter,
-so if you have a long running process you may find the token expiring before the process
-completion.
+Webin authentication is token based—this means that once you have an account,
+you can log in with your username and password
+to receive a https://jwt.io/[token].
 
-*Please note that following guide is for authentication against our production system.
-If you are testing in our development server, please replace following URLs.*
+This is a piece of text that contains all the information we need to know who you
+are and what data you are allowed to access.
+You present this token to the API every time you make a request.
 
-** AAP
+The Webin authentication token lasts for 3 hours unless a long validity token is requested using the time-to-live (`ttl`) parameter,
+so if you have a long-running process, you may find the token expiring before the process completes.
+
+*Please note that the following guide is for authentication against our production system.
+If you are testing in our development server, please replace the following URLs.*
+
+Webin Authentication
+
 [cols="1,1"]
 |===
-| Original                  | Replace with
-| https://aai.ebi.ac.uk     | https://explore.aai.ebi.ac.uk
-| https://api.aai.ebi.ac.uk | https://explore.api.aai.ebi.ac.uk
-|===
-
-** ENA WEBIN AUTHENTICATION
-[cols="1,1"]
-|===
-| Original                  | Replace with
+| Original                                   | Replace with
 | https://www.ebi.ac.uk/ena/submit/webin/auth    | https://wwwdev.ebi.ac.uk/ena/submit/webin/auth
 |===
 
 == Creating your account
 
-=== AAP
-
-You can create an account through the https://aai.ebi.ac.uk/registerUser[AAP webpage], or through their API.
-
-AAP supports two types of accounts - those created within the AAP system, and Elixir single-sign-on (SSO) accounts (log
-in with a google, ORCID or LinkedIn account, or your research institute). We can work with with either account type, but
-there is not currently any way to get an AAP token through their API while using an Elixir SSO account. Therefore we
-recommend that programmatic users create AAP accounts.
-
-=== WEBIN AUTHENTICATION
-
-You can create a account through the https://www.ebi.ac.uk/ena/submit/webin/auth/[ENA WEBIN AUTHENTICATION SWAGGER UI]
+You can create an account through the https://www.ebi.ac.uk/ena/submit/webin/auth/[ENA WEBIN AUTHENTICATION SWAGGER UI].
 
 == How to get a token
-=== AAP
-
-You can obtain a AAP token by executing the following curl command.
-
-==== Example request
-[source,bash,options="nowrap"]
-----
- $ curl -u <your_aap_username>:<your_aap_password> https://api.aai.ebi.ac.uk/auth
-----
-The response will contains your AAP token.
-
-==== Example response
-
-[source,options="nowrap"]
-----
-eyJhbGciOiWerFg78ghY.eyJpc3MiOiJodHRwhdsL3RzaS5lYmkuYWMudWsiLCJleHAiOjE1MDc4MjIxNzEsImp0aSI6IlNWUndCYWlubTA1MFlEZHJaWFRMbWciLCJpYXQiOjE1MDc4MTg1NzEsInN1YiI6InVzci0wZmRhM2YzZS0wM2I1LTQzOTgtOGRjOS02ZmU4MWVkMzNhOTciLCJlbWFpbCI6Imthcm9seUBlYmkuYWMudWsiLCJuaWNrbmFtZSI6ImthcmVsIiwibmFtZSI6Ikthcm9seSBFcmRvcyIsImRvbWFpbnMiOlsiYWFwLXVzZXJzLWRvbWFpbiJdfQ.MnLeqmPdxGMy7ln3mlMFqhdNVDrf0uvilbe2pqngper56sjUYUOMnzvCK6ht2Q65P25VdJAA_nSOQJ03ZEqnp2ZB0urGpCY_sK0JV834ZSe1atLKww7wa2Ntq5EJakUfxrma9lHLTylGxJzYc3ej1s8pTE5Jj6tprvcV5s3eNEmYFUJL9RwhKmDA9-5E7TfOVYvEQSMw7IqXMiVSSQNU1o_dfalp-PYlqer9mTR2MPIMAaA2wdr7jKVDXzI7zKlprIRLVyJAiEPIeWzNYN8FC2RdigwqbcBt9UTTDrwDH5Op3fAJPrYWNpRD4-wV8mn5DWzd7cNm6dMqwm1C12WEg
-----
-
-NOTE: The token is valid for 1 hour.
-
-=== WEBIN AUTHENTICATION
 
 You can obtain a WEBIN AUTHENTICATION token by executing the following curl command.
 
-==== Example request
+=== Example request
+
 [source,bash,options="nowrap"]
 ----
- $
-TOKEN=$(curl -X POST "https://www.ebi.ac.uk/ena/submit/webin/auth/token" -H
-"accept: */*" -H  "Content-Type: application/json" -d "{\"authRealms\":[\"ENA\"],
-\"password\":\"your_webin_password\",\"username\":\"your_webin_username\"}")
+TOKEN=$(curl -X POST "https://www.ebi.ac.uk/ena/submit/webin/auth/token" \
+  -H "accept: */*" \
+  -H "Content-Type: application/json" \
+  -d "{\"authRealms\":[\"ENA\"],\"password\":\"your_webin_password\",\"username\":\"your_webin_username\"}")
 ----
-The response will contains WEBIN AUTHENTICATION token.
 
-==== Example response
+The response will contain the WEBIN AUTHENTICATION token.
+
+=== Example response
 
 [source,options="nowrap"]
 ----
-eyJhbGciOiWerFg78ghY.eyJpc3MiOiJodHRwhdsL3RzaS5lYmkuYWMudWsiLCJleHAiOjE1MDc4MjIxNzEsImp0aSI6IlNWUndCYWlubTA1MFlEZHJaWFRMbWciLCJpYXQiOjE1MDc4MTg1NzEsInN1YiI6InVzci0wZmRhM2YzZS0wM2I1LTQzOTgtOGRjOS02ZmU4MWVkMzNhOTciLCJlbWFpbCI6Imthcm9seUBlYmkuYWMudWsiLCJuaWNrbmFtZSI6ImthcmVsIiwibmFtZSI6Ikthcm9seSBFcmRvcyIsImRvbWFpbnMiOlsiYWFwLXVzZXJzLWRvbWFpbiJdfQ.MnLeqmPdxGMy7ln3mlMFqhdNVDrf0uvilbe2pqngper56sjUYUOMnzvCK6ht2Q65P25VdJAA_nSOQJ03ZEqnp2ZB0urGpCY_sK0JV834ZSe1atLKww7wa2Ntq5EJakUfxrma9lHLTylGxJzYc3ej1s8pTE5Jj6tprvcV5s3eNEmYFUJL9RwhKmDA9-5E7TfOVYvEQSMw7IqXMiVSSQNU1o_dfalp-PYlqer9mTR2MPIMAaA2wdr7jKVDXzI7zKlprIRLVyJAiEPIeWzNYN8FC2RdigwqbcBt9UTTDrwDH5Op3fAJPrYWNpRD4-wV8mn5DWzd7cNm6dMqwm1C12WEg
+eyJhbGciOi...your.jwt.token...FC2Rdig
 ----
 
 NOTE: The token is valid for 3 hours.
@@ -103,241 +68,42 @@ NOTE: The token is valid for 3 hours.
 == How to use the obtained token
 
 You need to add this token as an `Authorization` header to all of your API requests.
-The format is `Authorization: Bearer $TOKEN`
+The format is `Authorization: Bearer $TOKEN`.
 
 === Example request
+
 [source,bash,options="nowrap"]
 ----
- $ curl -i -X POST -H "Accept: application/hal+json" -H "Content-Type: application/hal+json" -H "Authorization: Bearer $TOKEN" https://www.ebi.ac.uk/biosamples/samples -d "{ /* sample content */ }"
+curl -i -X POST \
+  -H "Accept: application/hal+json" \
+  -H "Content-Type: application/hal+json" \
+  -H "Authorization: Bearer $TOKEN" \
+  https://www.ebi.ac.uk/biosamples/samples \
+  -d "{ /* sample content */ }"
 ----
-== Don't copy and paste your token
 
-You don't need to copy and paste the token. It's easier to write to an environment variable, such as in this example:
+== Don’t copy and paste your token
+
+You don’t need to manually copy and paste the token. Instead, write it to an environment variable:
+
 [source,bash,options="nowrap"]
 ----
-$ curl -u <your_aap_username>:<your_aap_password> https://api.aai.ebi.ac.uk/auth > aap.jwt
-$ TOKEN=`cat aap.jwt`
-
+TOKEN=$(curl -X POST "https://www.ebi.ac.uk/ena/submit/webin/auth/token" \
+  -H "accept: */*" \
+  -H "Content-Type: application/json" \
+  -d "{\"authRealms\":[\"ENA\"],\"password\":\"your_webin_password\",\"username\":\"your_webin_username\"}")
 ----
-
-NOTE: If you don't login successfully, there will be an error message in `aap.jwt`, rather than a token.
 
 You can then use the environment variable like this:
 
-** Submission using a AAP token
 [source,bash,options="nowrap"]
-
 ----
-$ curl -i -X POST -H "Accept: application/hal+json" -H "Content-Type: application/hal+json" -H "Authorization: Bearer $TOKEN" https://www.ebi.ac.uk/biosamples/samples -d "{ /* sample content */ }"
-----
-
-** Submission using a WEBIN AUTHENTICATION token:
-[source,bash,options="nowrap"]
-
-----
-$ curl -i -X POST -H "Accept: application/hal+json" -H "Content-Type: application/hal+json" -H "Authorization: Bearer $TOKEN" https://www.ebi.ac.uk/biosamples/samples?authProvider=WEBIN -d "{ /* sample content */ }"
+curl -i -X POST \
+  -H "Accept: application/hal+json" \
+  -H "Content-Type: application/hal+json" \
+  -H "Authorization: Bearer $TOKEN" \
+  https://www.ebi.ac.uk/biosamples/samples \
+  -d "{ /* sample content */ }"
 ----
 
 Be careful with your token; anyone with it can act as if they are you.
-
-== Futher steps below (only for AAP)
-=== Domains, and why you need one
-
-BioSamples considers each piece of data to be owned by a domain. This allows several people part of the same domain to
-collaborate on submission, without sharing account details. You therefore need to create a domain before you can work with
-the BioSamples submission API.
-
-=== How to setup a domain
-
-To create a new domain, send a `POST` request to the domains URL. The request body should be a
-https://en.wikipedia.org/wiki/JSON[JSON document], with two fields:
-
- * `domainName` - the name of your domain
- * `domainDesc` - a description of your domain
-
-The name of your domain must be unique, if it's already been claimed you will get an error message.
-
-Creating a domain will automatically make you an administrator of that domain, so you can add and remove people from it.
-*It does not automatically add you as a member of the domain, so you cannot submit data for a domain until you've added
-yourself to it.*
-
-==== Example request
-[source,bash,options="nowrap"]
-----
- $ curl 'https://api.aai.ebi.ac.uk/domains' -i -X POST -H 'Content-Type: application/json;charset=UTF-8' -H "Authorization: Bearer $TOKEN" -H 'Accept: application/hal+json' -d '{"domainName":"new domain","domainDesc":"new domain Desc"}'
-----
-==== Example response
-
-The response body will be a JSON document representing the domain:
-
-[source,http,options="nowrap"]
-----
-HTTP/1.1 201 Created
-X-Content-Type-Options: nosniff
-X-XSS-Protection: 1; mode=block
-Cache-Control: no-cache, no-store, max-age=0, must-revalidate
-Pragma: no-cache
-Expires: 0
-X-Frame-Options: DENY
-X-Application-Context: application:integration-test:0
-Content-Type: application/hal+json;charset=utf-8
-Content-Length: 768
-
-{
-  "domainReference" : "dom-de00a819-dfe4-4516-8ad8-0c8d571e162d",
-  "domainName" : "self.new domain",
-  "domainDesc" : "new domain Desc",
-  "isActive" : "Y",
-  "users" : null,
-  "managers" : null,
-  "_links" : {
-    "self" : {
-      "href" : "http://api.aai.ebi.ac.uk/domains/dom-de00a819-dfe4-4516-8ad8-0c8d571e162d"
-    },
-    "deactivate" : {
-      "href" : "http://api.aai.ebi.ac.uk/domains/dom-de00a819-dfe4-4516-8ad8-0c8d571e162d"
-    },
-    "get users from domain" : {
-      "href" : "http://api.aai.ebi.ac.uk/domains/dom-de00a819-dfe4-4516-8ad8-0c8d571e162d/users"
-    },
-    "admin" : {
-      "href" : "http://api.aai.ebi.ac.uk/domains/dom-eb5bd028-a4aa-45b9-9457-7c375b55d1b3"
-    },
-    "get all domains" : {
-      "href" : "http://api.aai.ebi.ac.uk/domains"
-    }
-  }
-}
-----
-
-=== How to add a user to a domain
-
-If you want to add a new user to a domain, then you have to make a `PUT` request. To do this, you need to know two
-identifiers - the user reference and the domain reference.
-
-==== Finding your user reference
-
-You can find the reference, if you know your username:
-
-[source,bash,options="nowrap"]
-----
-curl https://api.aai.ebi.ac.uk/users/your-usename-goes-here -i -H "Authorization: Bearer $TOKEN"
-----
-
-The response should be a JSON document representing the user. It should include a field called `userReference`, with a
-starting with `usr-`. This is the identifier you need.
-
-==== Finding domain references
-
-You can get a list of the domains you administer, such as the domain you just created, with this request:
-
-[source,bash,options="nowrap"]
-----
- $ curl https://api.aai.ebi.ac.uk/my/management -i -H "Authorization: Bearer $TOKEN"
-----
-
-Alternatively, you can get a list of the domains you are a member of with this request:
-
-[source,bash,options="nowrap"]
-----
- $ curl https://api.aai.ebi.ac.uk/my/domains -i -H "Authorization: Bearer $TOKEN"
-----
-
-The response will be a list of domain documents. Each of these should have a field called `domainReference` - this is
-the identifier you need. It should start with `dom-`.
-
-==== Adding a user to a domain
-
-Once you have both identifiers, you can add the user to the domain.
-
-===== Example request
-
-[source,bash,options="nowrap"]
-----
- $ curl 'http://api.aai.ebi.ac.uk/domains/<your_domain_reference>/<your_user_reference>/user' -i -X PUT -H 'Authorization: Bearer $TOKEN' -H 'Accept: application/hal+json'
-----
-
-===== Example response
-
-[source,http,options="nowrap"]
-----
-HTTP/1.1 200 OK
-X-Content-Type-Options: nosniff
-X-XSS-Protection: 1; mode=block
-Cache-Control: no-cache, no-store, max-age=0, must-revalidate
-Pragma: no-cache
-Expires: 0
-X-Frame-Options: DENY
-X-Application-Context: application:integration-test:0
-Content-Type: application/hal+json;charset=utf-8
-Content-Length: 1376
-
-{
-  "domainReference" : "dom-36ccaae5-1ce1-41f9-b65c-d349994e9c80",
-  "domainName" : "wonderland",
-  "domainDesc" : "Drink me",
-  "isActive" : "N",
-  "users" : [ {
-    "userReference" : "usr-d8749acf-6a22-4438-accc-cc8d1877ba36",
-    "userName" : "karo",
-    "email" : "karo@example.com",
-    "mobile" : null,
-    "domains" : null,
-    "_links" : {
-      "self" : {
-        "href" : "http://api.aai.ebi.ac.uk/users/usr-d8749acf-6a22-4438-accc-cc8d1877ba36"
-      }
-    }
-  }, {
-    "userReference" : "usr-9832620d-ec53-43a1-873d-efdc50d34ad1",
-    "userName" : "ajay",
-    "email" : "ajay@example.com",
-    "mobile" : null,
-    "domains" : null,
-    "_links" : {
-      "self" : {
-        "href" : "http://api.aai.ebi.ac.uk/users/usr-9832620d-ec53-43a1-873d-efdc50d34ad1"
-      }
-    }
-  } ],
-  "managers" : null,
-  "_links" : {
-    "self" : {
-      "href" : "http://api.aai.ebi.ac.uk/domains/dom-36ccaae5-1ce1-41f9-b65c-d349994e9c80"
-    },
-    "deactivate" : {
-      "href" : "http://api.aai.ebi.ac.uk/domains/dom-36ccaae5-1ce1-41f9-b65c-d349994e9c80"
-    },
-    "get users from domain" : {
-      "href" : "http://api.aai.ebi.ac.uk/domains/dom-36ccaae5-1ce1-41f9-b65c-d349994e9c80/users"
-    },
-    "admin" : {
-      "href" : "http://api.aai.ebi.ac.uk/domains/dom-7c3aa7d3-e9bc-43e5-818a-8971390a3102"
-    },
-    "get all domains" : {
-      "href" : "http://api.aai.ebi.ac.uk/domains"
-    }
-  }
-}
-----
-
-=== You need to request a new token!
-
-Each token includes all the details about who you are, and which domains you are a member of. You have now created a new
-domain and added yourself to it since you requested your first token, so that first token is out of date. You should
-request a new one, as you did before. The new one will include the domain you just created. You can use this new token
-to access the submissions API.
-
-=== Development servers
-
-We use a different copy of the AAP service to secure our test and development servers. If you are working with them,
-rather than the main server, please use this version of AAP: https://explore.api.aai.ebi.ac.uk
-
-== Wrapping up
-
-You have now created an AAP account and domain or a ENA WEBIN account.
-You are now ready to submit to BioSamples using the BioSamples API.
-
-//== Next steps
-//
-//<<guide_getting_started.adoc#,Getting started>>
