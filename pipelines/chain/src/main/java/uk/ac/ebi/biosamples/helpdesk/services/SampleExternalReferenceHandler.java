@@ -18,9 +18,9 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Curation;
+import uk.ac.ebi.biosamples.core.model.ExternalReference;
+import uk.ac.ebi.biosamples.core.model.Sample;
 
 @Service
 public class SampleExternalReferenceHandler {

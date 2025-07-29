@@ -16,8 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.MessageUtils;
-import uk.ac.ebi.biosamples.Messaging;
+import uk.ac.ebi.biosamples.messaging.MessagingConstants;
+import uk.ac.ebi.biosamples.messaging.service.MessageUtils;
 
 @Component
 public class FileUploadMessageQueueRunner implements ApplicationRunner {
@@ -30,9 +30,9 @@ public class FileUploadMessageQueueRunner implements ApplicationRunner {
     while (true) {
       log.trace(
           "Messages remaining in "
-              + Messaging.UPLOAD_QUEUE
+              + MessagingConstants.UPLOAD_QUEUE
               + " "
-              + messageUtils.getQueueCount(Messaging.UPLOAD_QUEUE));
+              + messageUtils.getQueueCount(MessagingConstants.UPLOAD_QUEUE));
     }
   }
 }

@@ -29,9 +29,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.SamplePageService;
+import uk.ac.ebi.biosamples.sitemap.model.XmlSitemap;
+import uk.ac.ebi.biosamples.sitemap.model.XmlSitemapIndex;
+import uk.ac.ebi.biosamples.sitemap.model.XmlUrl;
+import uk.ac.ebi.biosamples.sitemap.model.XmlUrlSet;
 
 @Controller
 @RequestMapping("/sitemap")
@@ -56,15 +60,19 @@ public class SitemapController {
   @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
   @ResponseBody
   public XmlSitemapIndex createSampleSitemapIndex(final HttpServletRequest request) {
-
     final long sampleCount = getTotalSamples();
     final long pageNumber = (sampleCount / (long) sitemapPageSize) + 1L;
     final XmlSitemapIndex xmlSitemapIndex = new XmlSitemapIndex();
+
     for (int i = 0; i < pageNumber; i++) {
       final String location = generateBaseUrl(request) + String.format("/sitemap/%d", i + 1);
       final XmlSitemap xmlSiteMap = new XmlSitemap(location);
+
       xmlSitemapIndex.addSitemap(xmlSiteMap);
     }
+
+    log.info("Sitemap API called, returning {} sitemaps ", xmlSitemapIndex.getXmlSitemaps().size());
+
     return xmlSitemapIndex;
   }
 
@@ -89,24 +97,26 @@ public class SitemapController {
     final Page<Sample> samplePage =
         samplePageService.getSamplesByText("", Collections.emptyList(), null, pageRequest, true);
     final XmlUrlSet xmlUrlSet = new XmlUrlSet();
+
     for (final Sample sample : samplePage.getContent()) {
       final String location =
           generateBaseUrl(request) + String.format("/samples/%s", sample.getAccession());
-
       final LocalDate lastModifiedDate =
           LocalDateTime.ofInstant(sample.getUpdate(), ZoneOffset.UTC).toLocalDate();
-
       final XmlUrl url =
           new XmlUrl.XmlUrlBuilder(location)
               .lastModified(lastModifiedDate)
               .hasPriority(XmlUrl.Priority.MEDIUM)
               .build();
+
       xmlUrlSet.addUrl(url);
     }
+
     log.debug(
         String.format(
             "Returning model for %d samples took %d millis",
             sitemapPageSize, System.currentTimeMillis() - startTime));
+
     return xmlUrlSet;
   }
 
@@ -119,6 +129,7 @@ public class SitemapController {
   private String generateBaseUrl(final HttpServletRequest request) {
     final String requestURI = request.getRequestURI();
     final String requestURL = request.getRequestURL().toString();
+
     return requestURL.replaceFirst(requestURI, "") + request.getContextPath();
   }
 
@@ -130,9 +141,9 @@ public class SitemapController {
   private long getTotalSamples() {
     final Pageable pageable = PageRequest.of(0, 1);
     final Collection<Filter> filters = Collections.emptyList();
-    final Collection<String> domains = Collections.emptyList();
     final Page<Sample> samplePage =
         samplePageService.getSamplesByText("", filters, null, pageable, true);
+
     return samplePage.getTotalElements();
   }
 }

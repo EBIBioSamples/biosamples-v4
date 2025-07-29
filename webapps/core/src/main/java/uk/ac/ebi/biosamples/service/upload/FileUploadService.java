@@ -11,9 +11,8 @@
 package uk.ac.ebi.biosamples.service.upload;
 
 import com.google.common.collect.Multimap;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -26,18 +25,18 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Relationship;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.exception.GlobalExceptions;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.mongo.repository.MongoFileUploadRepository;
 import uk.ac.ebi.biosamples.mongo.util.BioSamplesFileUploadSubmissionStatus;
 import uk.ac.ebi.biosamples.mongo.util.SampleNameAccessionPair;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.WebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.validation.SchemaValidationService;
 import uk.ac.ebi.biosamples.utils.upload.FileUploadUtils;
 import uk.ac.ebi.biosamples.utils.upload.ValidationResult;
-import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 @Service
 public class FileUploadService {
@@ -71,7 +70,6 @@ public class FileUploadService {
       final String webinId,
       final FileUploadUtils fileUploadUtils) {
     final ValidationResult validationResult = new ValidationResult();
-    final boolean isWebin = webinId != null && webinId.toUpperCase().startsWith("WEBIN");
     final String uniqueUploadId = UUID.randomUUID().toString();
     String submissionDate = FileUploadUtils.formatDateString(LocalDateTime.now());
 
@@ -93,8 +91,9 @@ public class FileUploadService {
 
       log.info("Input file name " + fileToBeUploaded.getName());
 
-      final FileReader fr = new FileReader(fileToBeUploaded);
-      final BufferedReader reader = new BufferedReader(fr);
+      final BufferedReader reader =
+          new BufferedReader(
+              new InputStreamReader(new FileInputStream(fileToBeUploaded), StandardCharsets.UTF_8));
       final CSVParser csvParser = this.fileUploadUtils.buildParser(reader);
       final List<String> headers = csvParser.getHeaderNames();
 
@@ -116,7 +115,7 @@ public class FileUploadService {
       }
 
       final List<Sample> samples =
-          buildAndPersistSamples(csvDataMap, webinId, checklist, validationResult, isWebin);
+          buildAndPersistSamples(csvDataMap, webinId, checklist, validationResult);
       final List<SampleNameAccessionPair> accessionsList =
           samples.stream()
               .filter(sample -> sample.getAccession() != null)
@@ -213,8 +212,7 @@ public class FileUploadService {
       final List<Multimap<String, String>> csvDataMap,
       final String webinId,
       final String checklist,
-      final ValidationResult validationResult,
-      final boolean isWebin) {
+      final ValidationResult validationResult) {
     final Map<String, String> sampleNameToAccessionMap = new LinkedHashMap<>();
     final Map<Sample, Multimap<String, String>> sampleToMappedSample = new LinkedHashMap<>();
 
@@ -247,14 +245,13 @@ public class FileUploadService {
         });
 
     return addRelationshipsAndThenBuildSamples(
-        sampleNameToAccessionMap, sampleToMappedSample, validationResult, isWebin);
+        sampleNameToAccessionMap, sampleToMappedSample, validationResult);
   }
 
   private List<Sample> addRelationshipsAndThenBuildSamples(
       final Map<String, String> sampleNameToAccessionMap,
       final Map<Sample, Multimap<String, String>> sampleToMappedSample,
-      final ValidationResult validationResult,
-      final boolean isWebin) {
+      final ValidationResult validationResult) {
     return sampleToMappedSample.entrySet().stream()
         .map(
             sampleMultimapEntry ->

@@ -1,0 +1,69 @@
+{
+	"accession": "TEST1",
+	"sraAccession": "ERS01",
+	"name": "Test Sample",
+	"domain": "foozit",
+	"webinSubmissionAccountId": "",
+	"taxId": "9606",
+	"status": "PUBLIC",
+	"update": "2016-05-05T11:36:57Z",
+	"create": "2016-05-05T11:36:57Z",
+	"submitted": "2016-05-05T11:36:57Z",
+	"release": "2016-04-01T11:36:57Z",
+	"attributes": [
+		{
+			"type": "organism",
+			"value": "Homo sapiens",
+			"iri": ["http://purl.obolibrary.org/obo/NCBITaxon_9606"]
+		},
+		{
+			"type": "age",
+			"value": "3",
+			"unit": "year"
+		},
+		{
+			"type": "organism part",
+			"value": "heart"
+		},
+		{
+			"type": "organism part",
+			"value": "lung"
+		}
+	],
+	"relationships": [
+		{
+			"source": "TEST1",
+			"type": "derived from",
+			"target": "TEST2"
+		}
+	],
+	"externalReferences": [
+		{
+			"url": "http://www.google.com"
+		}
+	],
+	"organizations": [
+		{
+			"Name": "Jo Bloggs Inc",
+			"Role": "user",
+			"E-mail": "help@jobloggs.com",
+			"URL": "http://www.jobloggs.com"
+		}
+	],
+	"contacts": [
+		{
+			"FirstName": "Joe",
+			"LastName": "Bloggs",
+			"Name": "Joe Bloggs",
+			"E-mail": "jobloggs@joblogs.com",
+			"Role": "Submitter"
+		}
+	],
+	"publications": [
+		{
+			"doi": "10.1093/nar/gkt1081",
+			"pubmed_id": "24265224"
+		}
+	],
+	"submittedVia": "JSON_API"
+}

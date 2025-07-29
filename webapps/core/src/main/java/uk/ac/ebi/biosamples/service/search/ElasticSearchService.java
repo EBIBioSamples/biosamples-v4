@@ -9,10 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.search.grpc.SearchGrpc;
-import uk.ac.ebi.biosamples.search.grpc.SearchRequest;
-import uk.ac.ebi.biosamples.search.grpc.SearchResponse;
+import uk.ac.ebi.biosamples.core.model.filter.Filter;
+import uk.ac.ebi.biosamples.search.grpc.*;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 
 import java.util.Iterator;
@@ -46,15 +44,15 @@ public class ElasticSearchService implements SearchService {
   public CursorArrayList<String> searchForAccessions(String searchTerm, Set<Filter> filters, String webinId, String cursor, int size) {
     ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 9090).usePlaintext().build();
     SearchGrpc.SearchBlockingStub stub = SearchGrpc.newBlockingStub(channel);
-    Iterator<SearchResponse> response;
+    Iterator<StreamResponse> response;
     try {
-      response = stub.streamSamples(SearchRequest.newBuilder().setText(searchTerm).build());
+      response = stub.streamSamples(StreamRequest.newBuilder().setText(searchTerm).build());
     } catch (StatusRuntimeException e) {
       log.warn("Failed to fetch samples from remote server", e);
       throw new RuntimeException("Failed to fetch samples from remote server", e);
     }
 
-    SearchResponse searchResponse = response.next();
-    return new CursorArrayList<>(searchResponse.getAccessionsList(), searchResponse.getPage()..getSearchAfter());
+    StreamResponse searchResponse = response.next();
+    return new CursorArrayList<>(searchResponse.getAccession());
   }
 }

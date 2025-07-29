@@ -17,8 +17,8 @@ import org.springframework.context.annotation.Configuration;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.WebinAuthClientService;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
+import uk.ac.ebi.biosamples.core.service.SampleValidator;
 import uk.ac.ebi.biosamples.ncbi.MockBioSamplesClient;
-import uk.ac.ebi.biosamples.service.SampleValidator;
 
 @Configuration
 public class TestApplication {

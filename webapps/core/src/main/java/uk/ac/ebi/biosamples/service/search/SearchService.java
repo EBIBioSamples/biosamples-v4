@@ -2,7 +2,7 @@ package uk.ac.ebi.biosamples.service.search;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.core.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 
 import java.util.Set;

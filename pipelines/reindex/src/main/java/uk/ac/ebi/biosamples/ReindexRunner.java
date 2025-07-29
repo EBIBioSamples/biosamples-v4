@@ -12,8 +12,6 @@ package uk.ac.ebi.biosamples;
 
 import java.util.*;
 import java.util.concurrent.*;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.IncompleteArgumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,13 +24,15 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.util.CloseableIterator;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
-import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.filter.DateRangeFilter;
+import uk.ac.ebi.biosamples.core.model.filter.Filter;
+import uk.ac.ebi.biosamples.messaging.MessagingConstants;
+import uk.ac.ebi.biosamples.messaging.model.MessageContent;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.service.SampleReadService;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
-import uk.ac.ebi.biosamples.utils.ThreadUtils;
+import uk.ac.ebi.biosamples.utils.thread.ThreadUtils;
 
 /**
  * This runner will get a list of accessions from mongo directly, query the API to get the latest
@@ -50,17 +50,15 @@ public class ReindexRunner implements ApplicationRunner {
   private final AmqpTemplate amqpTemplate;
   private final SampleReadService sampleReadService;
   private final MongoOperations mongoOperations;
-  private final ObjectMapper objectMapper;
 
   @Autowired
   public ReindexRunner(
       final AmqpTemplate amqpTemplate,
       final SampleReadService sampleReadService,
-      final MongoOperations mongoOperations, ObjectMapper objectMapper) {
+      final MongoOperations mongoOperations) {
     this.amqpTemplate = amqpTemplate;
     this.sampleReadService = sampleReadService;
     this.mongoOperations = mongoOperations;
-    this.objectMapper = objectMapper;
   }
 
   @Override
@@ -105,7 +103,7 @@ public class ReindexRunner implements ApplicationRunner {
           futures.put(
               accession,
               executor.submit(
-                  new SampleIndexingCallable(accession, sampleReadService, amqpTemplate, objectMapper)));
+                  new SampleIndexingCallable(accession, sampleReadService, amqpTemplate)));
 
           ThreadUtils.checkFutures(futures, 1000);
         }
@@ -123,16 +121,14 @@ public class ReindexRunner implements ApplicationRunner {
     private final String accession;
     private final SampleReadService sampleReadService;
     private final AmqpTemplate amqpTemplate;
-    private final ObjectMapper objectMapper;
 
     public SampleIndexingCallable(
         final String accession,
         final SampleReadService sampleReadService,
-        final AmqpTemplate amqpTemplate, ObjectMapper objectMapper) {
+        final AmqpTemplate amqpTemplate) {
       this.accession = accession;
       this.sampleReadService = sampleReadService;
       this.amqpTemplate = amqpTemplate;
-      this.objectMapper = objectMapper;
     }
 
     @Override
@@ -158,10 +154,9 @@ public class ReindexRunner implements ApplicationRunner {
       if (sampleOptional.isPresent()) {
         try {
           amqpTemplate.convertAndSend(
-              Messaging.REINDEXING_EXCHANGE,
-              Messaging.REINDEXING_QUEUE,
-              objectMapper.writeValueAsString(sampleOptional.get()));
-//              MessageContent.build(sampleOptional.get(), null, related, false));
+              MessagingConstants.REINDEXING_EXCHANGE,
+              MessagingConstants.REINDEXING_QUEUE,
+              MessageContent.build(sampleOptional.get(), null, related, false));
 
           return true;
         } catch (final Exception e) {

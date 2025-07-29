@@ -26,8 +26,8 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.util.CloseableIterator;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SampleStatus;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.SampleStatus;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.service.SampleReadService;
 
@@ -108,7 +108,7 @@ public class ReindexRunnerTest {
         .thenReturn(Optional.empty())
         .thenReturn(Optional.of(sample3));
     final ReindexRunner reindexRunner =
-        new ReindexRunner(amqpTemplate, sampleReadService, mongoOperations, new ObjectMapper());
+        new ReindexRunner(amqpTemplate, sampleReadService, mongoOperations);
     reindexRunner.run(applicationArguments);
   }
 }

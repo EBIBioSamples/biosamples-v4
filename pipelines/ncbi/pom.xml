@@ -8,25 +8,20 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.3.12-SNAPSHOT</version>
+		<version>5.3.13-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>utils-pipeline</artifactId>
-			<version>5.3.12-SNAPSHOT</version>
+			<artifactId>pipelines-common</artifactId>
+			<version>5.3.13-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>utils-thread</artifactId>
-			<version>5.3.12-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>models-mongo</artifactId>
-			<version>5.3.12-SNAPSHOT</version>
+			<artifactId>core</artifactId>
+			<version>5.3.13-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
