@@ -26,19 +26,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.core.model.*;
+import uk.ac.ebi.biosamples.core.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.core.service.SampleValidator;
+import uk.ac.ebi.biosamples.exception.GlobalExceptions;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSampleMessage;
 import uk.ac.ebi.biosamples.mongo.repository.MongoSampleMessageRepository;
 import uk.ac.ebi.biosamples.mongo.repository.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.*;
-import uk.ac.ebi.biosamples.service.security.BioSamplesCrossSourceIngestAccessControlService;
+import uk.ac.ebi.biosamples.security.service.BioSamplesCrossSourceIngestAccessControlService;
 
 /**
  * Service layer business logic for centralising repository access and conversions between different

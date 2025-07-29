@@ -13,12 +13,14 @@ package uk.ac.ebi.biosamples.client.utils;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -36,6 +38,7 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriTemplate;
 
+@Slf4j
 public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
   private final Traverson traverson;
   private final RestOperations restOperations;
@@ -94,29 +97,33 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
     }
 
     final String href = traversonBuilder.asLink().getHref();
+    // Remove the existing 'applyCurations' parameter while preserving encoding
+    final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(href);
 
-    // Remove existing 'applyCurations' parameter
-    URI baseUriWithoutApplyCurations =
-        UriComponentsBuilder.fromHttpUrl(href)
-            .replaceQueryParam("applyCurations") // removes all instances
-            .build()
-            .toUri();
+    uriBuilder.replaceQueryParam("applyCurations"); // removes all instances
 
-    // Add your desired query parameters
-    URI finalUri =
-        UriComponentsBuilder.fromUri(baseUriWithoutApplyCurations)
-            .queryParams(params) // your own MultiValueMap<String, String>
-            .build(true)
-            .toUri();
+    // Add query parameters while preserving their encoding
+    if (params != null) {
+      for (final String key : params.keySet()) {
+        final List<String> values = params.get(key);
 
-    // log.info("Getting the first page " + finalUri);
+        if (values != null) {
+          for (final String value : values) {
+            uriBuilder.queryParam(key, value);
+          }
+        }
+      }
+    }
 
+    // Build the URI with encoding disabled to preserve existing encoding
+    final URI finalUri = uriBuilder.build(false).toUri();
     final RequestEntity<Void> requestEntity =
         IteratorResourceFetchAll.NextPageCallable.buildRequestEntity(jwt, finalUri);
     final ResponseEntity<PagedModel<EntityModel<T>>> responseEntity =
         restOperations.exchange(requestEntity, parameterizedTypeReference);
 
-    if (params.get("applyCurations") != null
+    if (params != null
+        && params.get("applyCurations") != null
         && Objects.equals(params.getFirst("applyCurations"), "false")) {
       applyCurations = false;
     }

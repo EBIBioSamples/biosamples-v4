@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.3.10-SNAPSHOT</version>
+		<version>5.3.13-SNAPSHOT</version>
 	</parent>
 
 	<profiles>
@@ -34,11 +34,8 @@
 		<module>sample-transformation-dtol</module>
 		<module>ncbi</module>
 		<module>sample-release</module>
-		<module>sample-post-release-action</module>
 		<module>taxonimport</module>
 		<module>reindex</module>
-		<module>export</module>
-		<module>neoexport</module>
 		<module>chain</module>
 		<!--<module>ncbi-ena-link</module>-->
 		<!--<module>ena</module>-->

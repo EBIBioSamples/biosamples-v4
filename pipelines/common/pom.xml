@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.3.10-SNAPSHOT</version>
+		<version>5.3.13-SNAPSHOT</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
@@ -22,7 +22,7 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>biosamples-spring-boot-starter</artifactId>
-			<version>5.3.10-SNAPSHOT</version>
+			<version>5.3.13-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
@@ -54,13 +54,13 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>core</artifactId>
-			<version>5.3.10-SNAPSHOT</version>
+			<version>5.3.13-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>properties</artifactId>
-			<version>5.3.10-SNAPSHOT</version>
+			<version>5.3.13-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<!-- use Dom4J for XML conversions -->

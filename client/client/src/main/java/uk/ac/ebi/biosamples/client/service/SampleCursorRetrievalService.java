@@ -62,6 +62,7 @@ public class SampleCursorRetrievalService {
       final String jwt,
       final boolean addCurations) {
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+
     params.add("text", text);
 
     for (final Filter filter : filterCollection) {
