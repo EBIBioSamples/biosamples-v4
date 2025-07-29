@@ -10,19 +10,15 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
-import uk.ac.ebi.biosamples.BioSamplesConstants;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 import uk.ac.ebi.biosamples.service.EraProDao;
-import uk.ac.ebi.biosamples.service.EraproSample;
 
 public class NcbiEnaLinkCallable implements Callable<Void> {
   private static final int MAX_RETRIES = 5; // Maximum number of retries for persistence operation
@@ -61,12 +57,12 @@ public class NcbiEnaLinkCallable implements Callable<Void> {
         log.info("NCBI sample doesn't exist in BioSamples " + accession + " fetching from ERAPRO");
 
         // Enrich the sample from ERA PRO
-        final Sample sample = enaSampleToBioSampleConversionService.enrichSample(accession);
+        final Sample sample = enaSampleToBioSampleConversionService.enrichSample(accession, true);
 
         // Attempt to persist the enriched sample with retries
         submitRetry(success, sample);
       } else {
-        log.info("NCBI sample exists " + accession + " verifying SRA accession");
+        /*log.info("NCBI sample exists " + accession + " verifying SRA accession");
 
         // Get the sample content
         final Sample sample = optionalSampleEntityModel.get().getContent();
@@ -92,7 +88,7 @@ public class NcbiEnaLinkCallable implements Callable<Void> {
 
             submitRetry(success, modifiedSample);
           }
-        }
+        }*/
       }
     } catch (final Exception e) {
       NcbiEnaLinkRunner.failures.put(accession, e.getMessage());

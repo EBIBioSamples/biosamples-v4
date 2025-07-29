@@ -23,8 +23,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 import uk.ac.ebi.biosamples.client.utils.IterableResourceFetchAll;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.filter.Filter;
 
 public class SampleCursorRetrievalService {
   private static final ParameterizedTypeReference<PagedModel<EntityModel<Sample>>>
@@ -33,14 +33,12 @@ public class SampleCursorRetrievalService {
   private final Traverson traverson;
   private final ExecutorService executor;
   private final RestOperations restOperations;
-  private final int pageSize;
 
   public SampleCursorRetrievalService(
-      final RestOperations restOperations, final Traverson traverson, final int pageSize) {
+      final RestOperations restOperations, final Traverson traverson) {
     this.restOperations = restOperations;
     this.traverson = traverson;
     this.executor = Executors.newSingleThreadExecutor();
-    this.pageSize = pageSize;
   }
 
   public Iterable<EntityModel<Sample>> fetchAll(
@@ -64,17 +62,14 @@ public class SampleCursorRetrievalService {
       final String jwt,
       final boolean addCurations) {
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+
     params.add("text", text);
 
     for (final Filter filter : filterCollection) {
       params.add("filter", filter.getSerialization());
     }
 
-    params.add("size", Integer.toString(pageSize));
-
-    if (!addCurations) {
-      params.add("applyCurations", "false");
-    }
+    params.add("applyCurations", String.valueOf(addCurations));
 
     params = encodePlusInQueryParameters(params);
 

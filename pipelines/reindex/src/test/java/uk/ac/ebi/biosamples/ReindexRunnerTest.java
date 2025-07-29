@@ -24,8 +24,8 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.util.CloseableIterator;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SampleStatus;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.SampleStatus;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.service.SampleReadService;
 

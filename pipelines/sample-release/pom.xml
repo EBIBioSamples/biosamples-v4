@@ -15,7 +15,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>utils-pipeline</artifactId>
+			<artifactId>pipelines-common</artifactId>
 			<version>5.3.13-SNAPSHOT</version>
 		</dependency>
 		<dependency>

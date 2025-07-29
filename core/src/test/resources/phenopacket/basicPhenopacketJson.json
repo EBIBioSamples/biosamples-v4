@@ -1,0 +1,32 @@
+{
+  "subject":
+    {
+    "id": "id-individual"
+  },
+  "biosamples": [
+    {
+    "id": "id",
+    "description": "description",
+    "phenotypicFeatures": [{
+      "type": {
+        "id": "term id",
+        "label": "term label"
+      }
+    }],
+    "individualId": "id-individual",
+    "ageOfIndividualAtCollection": {
+      "age": "0"
+    }
+  }],
+  "metaData": {
+    "created": "2018-07-04T14:00:23.294Z",
+    "createdBy": "Biosamples phenopacket exporter",
+    "resources": [{
+      "id": "resource id",
+      "name": "resource name",
+      "namespacePrefix": "resource prefix",
+      "url": "url",
+      "version": "version"
+    }]
+  }
+}

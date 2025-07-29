@@ -23,7 +23,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.neo4j.model.NeoExternalEntity;
 import uk.ac.ebi.biosamples.neo4j.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo4j.model.NeoSample;

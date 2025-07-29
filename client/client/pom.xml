@@ -28,7 +28,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>models-core</artifactId>
+			<artifactId>core</artifactId>
 			<version>5.3.13-SNAPSHOT</version>
 		</dependency>
 		<dependency>

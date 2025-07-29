@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapps-core-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webapps-core
+  template:
+    metadata:
+      labels:
+        app: webapps-core
+    spec:
+      containers:
+        - name: webapps-core
+          image: %DOCKER_IMAGE%
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: spring.data.solr.host
+              value: "http://wp-np2-40.ebi.ac.uk:8983/solr/"
+            - name: spring.data.mongodb.uri
+              value: "mongodb://biosdev:L85SKeuR@mongodb-hx-biosdev-dev-001.ebi.ac.uk:27017,mongodb-hh-biosdev-dev-002.ebi.ac.uk:27017/biosamples?replicaSet=biosdevrs017&readPreference=primary&authSource=admin&w=1"
+            - name: SPRING_RABBITMQ_HOST
+              value: "wp-np2-40"
+            - name: SPRING_RABBITMQ_PORT
+              value: "5672"
+            - name: biosamples.schemaValidator
+              value: "https://wwwdev.ebi.ac.uk/biosamples/biovalidator/validate"
+            - name: biosamples.schemaStore
+              value: "https://wwwdev.ebi.ac.uk/biosamples/schema-store"
+            - name: SERVER_SERVLET_CONTEXT_PATH
+              value: /biosamples
+      imagePullSecrets:
+        - name: gitlab

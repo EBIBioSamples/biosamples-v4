@@ -16,7 +16,7 @@ import uk.ac.ebi.biosamples.Application;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.WebinAuthClientService;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
-import uk.ac.ebi.biosamples.service.SampleValidator;
+import uk.ac.ebi.biosamples.core.service.SampleValidator;
 
 public class NonSavingApplication extends Application {
   @Bean

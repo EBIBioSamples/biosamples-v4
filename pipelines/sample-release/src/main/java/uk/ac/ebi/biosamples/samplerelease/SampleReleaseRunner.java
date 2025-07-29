@@ -31,7 +31,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.utils.ThreadUtils;
+import uk.ac.ebi.biosamples.utils.thread.ThreadUtils;
 
 @Component
 public class SampleReleaseRunner implements ApplicationRunner {

@@ -25,7 +25,7 @@ import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 import uk.ac.ebi.biosamples.controller.SamplesRestController;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Sample;
 
 @RestControllerAdvice(assignableTypes = SamplesRestController.class)
 public class SamplesRestResponseBodyAdvice

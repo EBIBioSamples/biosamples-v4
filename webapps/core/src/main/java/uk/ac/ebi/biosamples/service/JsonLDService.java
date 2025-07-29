@@ -23,7 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import uk.ac.ebi.biosamples.controller.SampleHtmlController;
 import uk.ac.ebi.biosamples.controller.SampleRestController;
-import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.jsonld.model.*;
+import uk.ac.ebi.biosamples.jsonld.service.SampleToJsonLDSampleRecordConverter;
 
 /** This servise is meant for the conversions jobs to/form ld+json */
 @Service

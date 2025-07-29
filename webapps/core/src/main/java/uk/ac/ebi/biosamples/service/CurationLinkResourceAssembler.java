@@ -18,8 +18,8 @@ import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.controller.SampleCurationLinksController;
 import uk.ac.ebi.biosamples.controller.SampleRestController;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.CurationLink;
+import uk.ac.ebi.biosamples.core.model.Curation;
+import uk.ac.ebi.biosamples.core.model.CurationLink;
 
 @Service
 public class CurationLinkResourceAssembler

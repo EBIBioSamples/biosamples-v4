@@ -21,8 +21,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 import uk.ac.ebi.biosamples.client.utils.IterableResourceFetchAll;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.CurationLink;
+import uk.ac.ebi.biosamples.core.model.Curation;
+import uk.ac.ebi.biosamples.core.model.CurationLink;
 
 public class CurationRetrievalService {
   private final Traverson traverson;
@@ -43,17 +43,13 @@ public class CurationRetrievalService {
   }
 
   public Iterable<EntityModel<Curation>> fetchAll(final String jwt) {
-    final MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-
-    params.add("size", Integer.toString(pageSize));
-
     return new IterableResourceFetchAll<>(
         executor,
         traverson,
         restOperations,
         new ParameterizedTypeReference<PagedModel<EntityModel<Curation>>>() {},
         jwt,
-        params,
+        null,
         "curations");
   }
 

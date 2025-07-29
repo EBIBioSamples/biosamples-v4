@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import org.dom4j.Element;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredDataEntry;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service

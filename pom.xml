@@ -25,16 +25,13 @@
 		</profile>
 	</profiles>
 	<modules>
-		<module>models</module>
-		<module>messaging</module>
 		<module>agents</module>
 		<module>webapps</module>
 		<module>pipelines</module>
 		<module>integration</module>
 		<module>client</module>
 		<module>properties</module>
-		<module>utils</module>
-		<module>commons</module>
+		<module>core</module>
 	</modules>
 	<dependencies>
 		<dependency>
@@ -107,6 +104,10 @@
 			<id>biosamples-v4</id>
 			<url>https://gitlab.ebi.ac.uk/api/v4/projects/2669/packages/maven</url>
 		</repository>
+		<repository>
+			<id>gitlab-maven</id>
+			<url>https://gitlab.ebi.ac.uk/api/v4/projects/1143/packages/maven</url>
+		</repository>
 	</repositories>
 	<pluginRepositories>
 		<!-- (you don't need this if you are using a .RELEASE version) -->
@@ -117,6 +118,10 @@
 		<pluginRepository>
 			<id>spring-milestones</id>
 			<url>http://repo.spring.io/milestone</url>
+		</pluginRepository>
+		<pluginRepository>
+			<id>central</id>
+			<url>https://repo.maven.apache.org/maven2</url>
 		</pluginRepository>
 	</pluginRepositories>
 	<distributionManagement>
@@ -145,6 +150,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.6.0</version>
 				<configuration>
 					<ignoreNonCompile>true</ignoreNonCompile>
 				</configuration>
@@ -171,6 +177,11 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>3.1.1</version>
 			</plugin>
 			<plugin>
 				<groupId>com.diffplug.spotless</groupId>

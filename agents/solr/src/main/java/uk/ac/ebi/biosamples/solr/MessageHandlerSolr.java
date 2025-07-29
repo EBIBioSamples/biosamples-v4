@@ -19,10 +19,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.MessageContent;
-import uk.ac.ebi.biosamples.Messaging;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Attribute;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.messaging.MessagingConstants;
+import uk.ac.ebi.biosamples.messaging.model.MessageContent;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 import uk.ac.ebi.biosamples.solr.service.SampleToSolrSampleConverter;
@@ -51,14 +51,14 @@ public class MessageHandlerSolr {
   }
 
   @RabbitListener(
-      queues = Messaging.INDEXING_QUEUE,
+      queues = MessagingConstants.INDEXING_QUEUE,
       containerFactory = "biosamplesAgentSolrContainerFactory")
   public void handleIndexing(final MessageContent messageContent) {
     handle(messageContent);
   }
 
   @RabbitListener(
-      queues = Messaging.REINDEXING_QUEUE,
+      queues = MessagingConstants.REINDEXING_QUEUE,
       containerFactory = "biosamplesAgentSolrContainerFactory")
   public void handleReindexing(final MessageContent messageContent) {
     handle(messageContent);
