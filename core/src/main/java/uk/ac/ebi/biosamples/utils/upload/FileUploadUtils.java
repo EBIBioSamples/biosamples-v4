@@ -492,6 +492,9 @@ public class FileUploadUtils {
                   if (entry.getKey().startsWith("unit")) {
                     final String value = entry.getValue();
 
+                    log.info(
+                        "Unit is " + value + " for " + entry.getKey() + " and " + entry.getValue());
+
                     return value != null ? value.trim() : null;
                   } else {
                     return null;

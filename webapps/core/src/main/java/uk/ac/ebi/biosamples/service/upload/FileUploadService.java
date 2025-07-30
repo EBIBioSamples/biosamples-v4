@@ -73,6 +73,8 @@ public class FileUploadService {
     final String uniqueUploadId = UUID.randomUUID().toString();
     String submissionDate = FileUploadUtils.formatDateString(LocalDateTime.now());
 
+    System.setProperty("file.encoding", "UTF-8");
+
     try {
       persistSubmissionState(
           checklist,
@@ -167,6 +169,7 @@ public class FileUploadService {
           "********FEEDBACK TO BSD DEV TEAM START********"
               + e.getMessage()
               + "********FEEDBACK TO BSD DEV TEAM END********";
+
       validationResult.addValidationMessage(
           new ValidationResult.ValidationMessage(uniqueUploadId, messageForBsdDevTeam, true));
       throw new GlobalExceptions.UploadInvalidException(

@@ -61,7 +61,7 @@ public class MongoAccessionService {
     log.trace("Generating a new accession");
 
     final MongoSample originalSample = sample;
-    // inspired by Counter collection + Optimistic Loops of
+    // inspired by a Counter collection and Optimistic Loops of
     // https://docs.mongodb.com/v3.0/tutorial/create-an-auto-incrementing-field/
 
     boolean success = false;
