@@ -1,4 +1,3 @@
-version: '2'
 services:
 
   biosamples-webapps-core:
@@ -88,7 +87,6 @@ services:
     - GOOGLE_APPLICATION_CREDENTIALS=/secrets/prj-int-dev-omics-apps-mon-1fba094e79b2.json
     ports:
     - 8081:8080
-    - 9090:9090
     - 8000:8000
 
   biosamples-webapps-core-v2:
@@ -406,7 +404,7 @@ services:
     - rabbitmq_data:/var/lib/rabbitmq/mnesia
 
   solr:
-    image: solr:8.11.2-slim
+    image: solr:8.11.2
     mem_limit: 1g
     ports:
     - 8983:8983

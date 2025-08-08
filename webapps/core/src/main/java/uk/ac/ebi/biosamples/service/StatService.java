@@ -17,20 +17,20 @@ import uk.ac.ebi.biosamples.core.model.facet.Facet;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.model.MongoAnalytics;
 import uk.ac.ebi.biosamples.mongo.service.AnalyticsService;
-import uk.ac.ebi.biosamples.solr.service.SolrFacetService;
+import uk.ac.ebi.biosamples.service.facet.SolrFacetService;
 import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
 
 @Service
 public class StatService {
 
-  private final FacetService facetService;
+  private final FacetingService facetService;
   private final FilterService filterService;
   private final AnalyticsService analyticsService;
   private final SolrFacetService solrFacetService;
   private final SolrFieldService solrFieldService;
 
   public StatService(
-      final FacetService facetService,
+      final FacetingService facetService,
       final FilterService filterService,
       final AnalyticsService analyticsService,
       final SolrFacetService solrFacetService,

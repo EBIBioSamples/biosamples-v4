@@ -57,7 +57,7 @@ public class SampleHtmlController {
   private final SampleService sampleService;
   private final SamplePageService samplePageService;
   private final JsonLDService jsonLDService;
-  private final FacetService facetService;
+  private final FacetingService facetService;
   private final FilterService filterService;
   private final BioSamplesProperties bioSamplesProperties;
   private final WebinAuthenticationService webinAuthenticationService;
@@ -66,7 +66,7 @@ public class SampleHtmlController {
       final SampleService sampleService,
       final SamplePageService samplePageService,
       final JsonLDService jsonLDService,
-      final FacetService facetService,
+      final FacetingService facetService,
       final FilterService filterService,
       final BioSamplesProperties bioSamplesProperties,
       final WebinAuthenticationService webinAuthenticationService) {

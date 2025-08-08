@@ -26,7 +26,7 @@ import uk.ac.ebi.biosamples.core.model.facet.Facet;
 import uk.ac.ebi.biosamples.core.model.facet.content.LabelCountEntry;
 import uk.ac.ebi.biosamples.core.model.facet.content.LabelCountListContent;
 import uk.ac.ebi.biosamples.mongo.service.AnalyticsService;
-import uk.ac.ebi.biosamples.service.FacetService;
+import uk.ac.ebi.biosamples.service.FacetingService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 
 @Component
@@ -34,12 +34,12 @@ public class AnalyticsApplicationRunner implements ApplicationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(AnalyticsApplicationRunner.class);
   private final AnalyticsService analyticsService;
   private final PipelineFutureCallback pipelineFutureCallback;
-  private final FacetService facetService;
+  private final FacetingService facetService;
   private final SamplePageService samplePageService;
 
   public AnalyticsApplicationRunner(
       final AnalyticsService analyticsService,
-      final FacetService facetService,
+      final FacetingService facetService,
       final SamplePageService samplePageService) {
     this.analyticsService = analyticsService;
     this.facetService = facetService;

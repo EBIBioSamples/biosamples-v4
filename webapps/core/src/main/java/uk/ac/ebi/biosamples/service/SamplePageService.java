@@ -53,7 +53,7 @@ public class SamplePageService {
                            MongoCurationLinkRepository mongoCurationLinkRepository,
                            MongoSampleToSampleConverter mongoSampleToSampleConverter,
                            SampleReadService sampleService,
-                           @Qualifier("solrSearchService") SearchService searchService) {
+                           @Qualifier("elasticSearchService") SearchService searchService) {
     this.mongoSampleRepository = mongoSampleRepository;
     this.mongoCurationLinkRepository = mongoCurationLinkRepository;
     this.mongoSampleToSampleConverter = mongoSampleToSampleConverter;

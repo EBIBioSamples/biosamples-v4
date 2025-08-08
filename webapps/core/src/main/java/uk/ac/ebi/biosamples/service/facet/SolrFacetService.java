@@ -1,19 +1,15 @@
 /*
-* Copyright 2021 EMBL - European Bioinformatics Institute
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
-* file except in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0
-* Unless required by applicable law or agreed to in writing, software distributed under the
-* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-* CONDITIONS OF ANY KIND, either express or implied. See the License for the
-* specific language governing permissions and limitations under the License.
-*/
-package uk.ac.ebi.biosamples.solr.service;
+ * Copyright 2021 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
+package uk.ac.ebi.biosamples.service.facet;
 
-import java.util.*;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,9 +24,16 @@ import uk.ac.ebi.biosamples.core.model.facet.FacetHelper;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
+import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
+import uk.ac.ebi.biosamples.solr.service.SolrFilterService;
 
-@Service
-public class SolrFacetService {
+import java.util.AbstractMap.SimpleEntry;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
+@Service("solrFacetService")
+public class SolrFacetService implements FacetService {
   private static final int TIME_ALLOWED = 55;
   private final SolrSampleRepository solrSampleRepository;
   private final SolrFieldService solrFieldService;
@@ -45,9 +48,11 @@ public class SolrFacetService {
     this.solrFilterService = solrFilterService;
   }
 
+  @Override
   public List<Facet> getFacets(
       final String searchTerm,
-      final Collection<Filter> filters,
+      final Set<Filter> filters,
+      final String webinId,
       final Pageable facetFieldPageInfo,
       final Pageable facetValuesPageInfo,
       final String facetField,
@@ -125,7 +130,7 @@ public class SolrFacetService {
       final Pageable facetFieldPageInfo,
       final Pageable facetValuesPageInfo) {
 
-    return getFacets(searchTerm, filters, facetFieldPageInfo, facetValuesPageInfo, null, null);
+    return getFacets(searchTerm, new HashSet<>(filters), null, facetFieldPageInfo, facetValuesPageInfo, null, null);
   }
 
   private List<Entry<SolrSampleField, Long>> getFacetFields(

@@ -75,7 +75,7 @@ public class SolrFilterService {
    * @param filters a collection of filters
    * @return the corresponding filter query
    */
-  List<FilterQuery> getFilterQuery(final Collection<Filter> filters) {
+  public List<FilterQuery> getFilterQuery(final Collection<Filter> filters) {
     if (filters == null || filters.size() == 0) {
       return Collections.emptyList();
     }
@@ -126,7 +126,7 @@ public class SolrFilterService {
    *
    * @return a filter query for public and domain relevant samples
    */
-  Optional<FilterQuery> getPublicFilterQuery(final String webinSubmissionAccountId) {
+  public Optional<FilterQuery> getPublicFilterQuery(final String webinSubmissionAccountId) {
     // check if this is a read superuser
     if (webinSubmissionAccountId != null
         && webinSubmissionAccountId.equalsIgnoreCase(
