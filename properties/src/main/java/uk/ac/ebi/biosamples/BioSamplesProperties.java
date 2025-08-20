@@ -115,6 +115,9 @@ public class BioSamplesProperties {
   @Value("${biosamples.bulksubmisison.webin.superuser.validation:false}")
   private boolean enableBulkSubmissionWebinSuperUserValidation;
 
+  @Value("${biosamples.search.host:localhost}")
+  private String biosamplesSearchHost;
+
   public int getBiosamplesClientConnectionCountMax() {
     return connectionCountMax;
   }

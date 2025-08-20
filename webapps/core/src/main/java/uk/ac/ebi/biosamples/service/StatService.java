@@ -17,6 +17,7 @@ import uk.ac.ebi.biosamples.core.model.facet.Facet;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.model.MongoAnalytics;
 import uk.ac.ebi.biosamples.mongo.service.AnalyticsService;
+import uk.ac.ebi.biosamples.service.facet.FacetingService;
 import uk.ac.ebi.biosamples.service.facet.SolrFacetService;
 import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
 

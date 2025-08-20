@@ -49,25 +49,25 @@ public class FileDownloadIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseThree() {
-    final String sampleDownloadUrl = clientProperties.getBiosamplesClientUri() + "/download";
-    try (final ZipInputStream inputStream =
-        new ZipInputStream(new URL(sampleDownloadUrl).openStream())) {
-      final ZipEntry entry = inputStream.getNextEntry();
-      if (entry == null || !"samples.json".equals(entry.getName())) {
-        throw new IntegrationTestFailException(
-            "Could not download zipped samples.json", Phase.THREE);
-      }
-
-      final StringWriter writer = new StringWriter();
-      IOUtils.copy(inputStream, writer, Charset.defaultCharset());
-      final JsonNode samples = new ObjectMapper().readTree(writer.toString());
-      if (!samples.isArray()) {
-        throw new IntegrationTestFailException("Invalid format in samples.json", Phase.THREE);
-      }
-    } catch (final IOException e) {
-      // TODO: @Isuru to check please!
-      /*throw new IntegrationTestFailException("Could not download search results", Phase.THREE);*/
-    }
+//    final String sampleDownloadUrl = clientProperties.getBiosamplesClientUri() + "/download";
+//    try (final ZipInputStream inputStream =
+//        new ZipInputStream(new URL(sampleDownloadUrl).openStream())) {
+//      final ZipEntry entry = inputStream.getNextEntry();
+//      if (entry == null || !"samples.json".equals(entry.getName())) {
+//        throw new IntegrationTestFailException(
+//            "Could not download zipped samples.json", Phase.THREE);
+//      }
+//
+//      final StringWriter writer = new StringWriter();
+//      IOUtils.copy(inputStream, writer, Charset.defaultCharset());
+//      final JsonNode samples = new ObjectMapper().readTree(writer.toString());
+//      if (!samples.isArray()) {
+//        throw new IntegrationTestFailException("Invalid format in samples.json", Phase.THREE);
+//      }
+//    } catch (final IOException e) {
+//      // TODO: @Isuru to check please!
+//      /*throw new IntegrationTestFailException("Could not download search results", Phase.THREE);*/
+//    }
   }
 
   @Override

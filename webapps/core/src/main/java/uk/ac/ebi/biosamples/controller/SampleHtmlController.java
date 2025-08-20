@@ -42,6 +42,7 @@ import uk.ac.ebi.biosamples.jsonld.model.JsonLDDataset;
 import uk.ac.ebi.biosamples.security.model.AuthorizationProvider;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.WebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.facet.FacetingService;
 
 /**
  * Primary controller for HTML operations.

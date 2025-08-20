@@ -4,7 +4,7 @@ set -e
 ./docker-webapp.sh --clean
 
 
-docker-compose up -d biosamples-agents-solr
+#docker-compose up -d biosamples-agents-solr
 docker-compose up -d biosamples-agents-upload-workers
 
 #ARGS=--spring.profiles.active=big
@@ -20,6 +20,6 @@ do
 done
 
 #leave the agent up at the end
-docker-compose up -d biosamples-agents-solr
+#docker-compose up -d biosamples-agents-solr
 
 echo "Successfully completed"

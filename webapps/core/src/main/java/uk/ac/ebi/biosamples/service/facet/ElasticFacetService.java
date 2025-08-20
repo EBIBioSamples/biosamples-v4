@@ -6,22 +6,17 @@ import io.grpc.StatusRuntimeException;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.core.model.facet.*;
 import uk.ac.ebi.biosamples.core.model.facet.Facet;
 import uk.ac.ebi.biosamples.core.model.facet.content.LabelCountEntry;
 import uk.ac.ebi.biosamples.core.model.facet.content.LabelCountListContent;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
 import uk.ac.ebi.biosamples.search.grpc.*;
-import uk.ac.ebi.biosamples.service.search.GrpcFilterUtils;
-import uk.ac.ebi.biosamples.service.search.SearchAfterPage;
-import uk.ac.ebi.biosamples.service.search.SearchService;
-import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
+import uk.ac.ebi.biosamples.service.search.SearchFilterMapper;
 
 import java.util.*;
 
@@ -29,6 +24,7 @@ import java.util.*;
 @RequiredArgsConstructor
 @Slf4j
 public class ElasticFacetService implements FacetService {
+  private final BioSamplesProperties bioSamplesProperties;
 
   @Override
   @Timed("biosamples.facet.page.elastic")
@@ -36,7 +32,7 @@ public class ElasticFacetService implements FacetService {
                                Pageable facetFieldPageInfo, Pageable facetValuesPageInfo,
                                String facetField, List<String> facetFields) {
 
-    ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 9090).usePlaintext().build();
+    ManagedChannel channel = ManagedChannelBuilder.forAddress(bioSamplesProperties.getBiosamplesSearchHost(), 9090).usePlaintext().build();
     SearchGrpc.SearchBlockingStub stub = SearchGrpc.newBlockingStub(channel);
     FacetResponse response;
     try {
@@ -44,9 +40,10 @@ public class ElasticFacetService implements FacetService {
       if (StringUtils.hasText(searchTerm)) {
         builder.setText(searchTerm);
       }
-
-      builder.addAllFilters(GrpcFilterUtils.getSearchFilters(filters, webinId));
-
+      builder.addAllFilters(SearchFilterMapper.getSearchFilters(filters, webinId));
+      if (facetFields != null) {
+        builder.addAllFacets(facetFields);
+      }
       builder.setSize(facetFieldPageInfo.getPageSize());
 
       response = stub.getFacets(builder.build());

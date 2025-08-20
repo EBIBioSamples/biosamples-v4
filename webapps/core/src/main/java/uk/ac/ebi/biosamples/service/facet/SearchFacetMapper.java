@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.service.search;
+package uk.ac.ebi.biosamples.service.facet;
 
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class GrpcFilterUtils {
+public class SearchFacetMapper {
 
   public static List<Filter> getSearchFilters(Set<uk.ac.ebi.biosamples.core.model.filter.Filter> filters, String webinId) {
     List<Filter> grpcFilters = new ArrayList<>();
@@ -57,13 +57,13 @@ public class GrpcFilterUtils {
       }
       if (filter instanceof uk.ac.ebi.biosamples.core.model.filter.RelationFilter f) {
         RelationshipFilter.Builder relationshipFilterBuilder = RelationshipFilter.newBuilder();
-        relationshipFilterBuilder.setRelType(f.getLabel());
+        relationshipFilterBuilder.setType(f.getLabel());
         f.getContent().ifPresent(relationshipFilterBuilder::setTarget);
         filterBuilder.setRelationship(relationshipFilterBuilder);
       }
       if (filter instanceof uk.ac.ebi.biosamples.core.model.filter.InverseRelationFilter f) {
         RelationshipFilter.Builder relationshipFilterBuilder = RelationshipFilter.newBuilder();
-        relationshipFilterBuilder.setRelType(f.getLabel());
+        relationshipFilterBuilder.setType(f.getLabel());
         f.getContent().ifPresent(relationshipFilterBuilder::setSource);
         filterBuilder.setRelationship(relationshipFilterBuilder);
       }

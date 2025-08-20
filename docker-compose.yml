@@ -30,6 +30,7 @@ services:
     - BIOSAMPLES_NEO_URL=bolt://neo4j:7687
     - biosamples.schemaValidator=http://json-schema-validator:3020/validate
     - biosamples.schemaStore=https://wwwdev.ebi.ac.uk/biosamples/schema-store
+    - biosamples.search.host=biosamples-search
     - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
     - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
@@ -432,6 +433,70 @@ services:
       - neo_import:/import
       - logs:/logs
 
+
+  biosamples-search:
+    image: biosamples-search:latest
+    ports:
+      - "8083:8080"
+      - "9090:9090"
+    environment:
+      - spring.elasticsearch.username=elastic
+      - spring.elasticsearch.password=elastic
+      - spring.elasticsearch.uris=http://elastic:9200
+      - spring.rabbitmq.host=rabbitmq
+    links:
+      - elastic
+  elastic-setup:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    user: "0"
+    command: >
+      bash -c '
+        if [ x${ELASTIC_PASSWORD} == x ]; then
+          echo "Set the ELASTIC_PASSWORD environment variable in the .env file";
+          exit 1;
+        elif [ x${KIBANA_PASSWORD} == x ]; then
+          echo "Set the KIBANA_PASSWORD environment variable in the .env file";
+          exit 1;
+        fi;
+        echo "Waiting for Elasticsearch availability";
+        until curl -s http://elastic:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
+        echo "Setting kibana_system password";
+        until curl -s -X POST -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" http://elastic:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
+        echo "All done!";
+      '
+    healthcheck:
+      test: [ "CMD-SHELL", "[ -f config/certs/es01/es01.crt ]" ]
+      interval: 1s
+      timeout: 5s
+      retries: 120
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    volumes:
+      - es_data1:/usr/share/elasticsearch/data
+    ports:
+      - ${ES_PORT}:9200
+    environment:
+      - node.name=elastic
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - bootstrap.memory_lock=true
+      - xpack.security.http.ssl.enabled=false
+    mem_limit: ${MEM_LIMIT}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s http://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+
 volumes:
   solr_data: null
   mongo_data: null
@@ -440,3 +505,7 @@ volumes:
   neo_plugins: null
   neo_data: null
   neo_import: null
+  es_data1:
+    driver: local
+  kibana_data:
+    driver: local

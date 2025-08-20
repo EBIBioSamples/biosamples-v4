@@ -10,15 +10,20 @@
 */
 package uk.ac.ebi.biosamples.service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.core.Message;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.core.model.CurationLink;
 import uk.ac.ebi.biosamples.core.model.Relationship;
@@ -70,10 +75,29 @@ public class MessagingService {
           updateInverseRelationships(sample.get(), existingRelationshipTargets);
 
       // send the original sample with the extras as related samples
-      amqpTemplate.convertAndSend(
-          MessagingConstants.INDEXING_EXCHANGE,
-          MessagingConstants.INDEXING_QUEUE,
-          MessageContent.build(sample.get(), null, related, false));
+//      amqpTemplate.convertAndSend(
+//          MessagingConstants.INDEXING_EXCHANGE,
+//          MessagingConstants.INDEXING_QUEUE,
+//          MessageContent.build(sample.get(), null, related, false));
+
+      try {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = objectMapper.writeValueAsString(sample.get());
+        log.info("Sending message for indexing: {}", sample.get().getAccession());
+//        amqpTemplate.send(MessagingConstants.INDEXING_EXCHANGE, MessagingConstants.INDEXING_QUEUE, new Message(json.getBytes(StandardCharsets.UTF_8)));
+        amqpTemplate.convertAndSend(MessagingConstants.INDEXING_EXCHANGE, MessagingConstants.INDEXING_QUEUE, json);
+        related.forEach(s -> {
+          try {
+            amqpTemplate.convertAndSend(MessagingConstants.INDEXING_EXCHANGE, MessagingConstants.INDEXING_QUEUE, objectMapper.writeValueAsString(s));
+          } catch (JsonProcessingException e) {
+            log.error("Failed to convert sample to JSON: {}", s.getAccession(), e);
+//            throw new RuntimeException(e);
+          }
+        });
+      } catch (Exception e) {
+        log.error("Failed to convert sample to JSON: {}", sample.get().getAccession(), e);
+      }
+
     }
   }
 

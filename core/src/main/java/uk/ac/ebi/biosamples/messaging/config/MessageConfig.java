@@ -84,8 +84,8 @@ public class MessageConfig {
 
   // enable messaging in json
   // note that this class is not the same as the http MessageConverter class
-  @Bean
-  public MessageConverter getJackson2MessageConverter() {
-    return new Jackson2JsonMessageConverter();
-  }
+//  @Bean
+//  public MessageConverter getJackson2MessageConverter() {
+//    return new Jackson2JsonMessageConverter();
+//  }
 }

@@ -26,7 +26,7 @@ import uk.ac.ebi.biosamples.core.model.facet.Facet;
 import uk.ac.ebi.biosamples.core.model.facet.content.LabelCountEntry;
 import uk.ac.ebi.biosamples.core.model.facet.content.LabelCountListContent;
 import uk.ac.ebi.biosamples.mongo.service.AnalyticsService;
-import uk.ac.ebi.biosamples.service.FacetingService;
+import uk.ac.ebi.biosamples.service.facet.FacetingService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 
 @Component

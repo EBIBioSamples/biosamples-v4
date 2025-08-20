@@ -63,7 +63,7 @@ public class SitemapIntegration extends AbstractIntegration {
       lookupTable.put(Objects.requireNonNull(sample.getContent()).getAccession(), Boolean.FALSE);
     }
 
-    if (samples.size() <= 0) {
+    if (samples.isEmpty()) {
       throw new RuntimeException("No search results found!");
     }
 

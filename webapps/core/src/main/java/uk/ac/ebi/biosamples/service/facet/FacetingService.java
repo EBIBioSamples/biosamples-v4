@@ -8,7 +8,7 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.service;
+package uk.ac.ebi.biosamples.service.facet;
 
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.slf4j.Logger;
@@ -19,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.core.model.facet.Facet;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.facet.FacetService;
 
 import java.util.Collection;
 import java.util.HashSet;

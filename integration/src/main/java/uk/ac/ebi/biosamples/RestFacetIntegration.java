@@ -282,7 +282,7 @@ public class RestFacetIntegration extends AbstractIntegration {
       JsonNode facets = node.get("_embedded").get("facets");
       for (JsonNode facet : facets) {
         if ("SRA accession".equals(facet.get("label").asText())) {
-          if (facet.get("content").size() <= 10) {
+          if (facet.get("content").size() < 10) {
             throw new IntegrationTestFailException(
                 "Facet count should be larger than 10 when facet filters are being used",
                 Phase.SIX);

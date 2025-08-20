@@ -22,7 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.core.model.facet.Facet;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.FacetingService;
+import uk.ac.ebi.biosamples.service.facet.FacetingService;
 import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 

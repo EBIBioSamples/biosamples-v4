@@ -51,15 +51,11 @@ public class FileDownloadController {
       @RequestParam(name = "text", required = false) final String text,
       @RequestParam(name = "filter", required = false) final String[] filter,
       @RequestParam(name = "zip", required = false, defaultValue = "true") final boolean zip,
-      @RequestParam(name = "format", required = false)
-          final String
-              format, // there is no easy way to set accept header in html for downloading large
-      // files
+      @RequestParam(name = "format", required = false) final String format,
       @RequestParam(name = "count", required = false, defaultValue = "100000") final int count,
       final HttpServletResponse response,
       final HttpServletRequest request) {
-    LOG.info(
-        "Sample bulk download request: text = {}, filters = {}", text, Arrays.toString(filter));
+    LOG.info("Sample bulk download request: text = {}, filters = {}", text, Arrays.toString(filter));
 
     final String decodedText = LinkUtils.decodeText(text);
     final Collection<Filter> filters =
