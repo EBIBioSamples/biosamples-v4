@@ -32,7 +32,7 @@ public class ElasticFacetService implements FacetService {
                                Pageable facetFieldPageInfo, Pageable facetValuesPageInfo,
                                String facetField, List<String> facetFields) {
 
-    ManagedChannel channel = ManagedChannelBuilder.forAddress(bioSamplesProperties.getBiosamplesSearchHost(), 9090).usePlaintext().build();
+    ManagedChannel channel = ManagedChannelBuilder.forAddress(bioSamplesProperties.getBiosamplesSearchHost(), bioSamplesProperties.getBiosamplesSearchPort()).usePlaintext().build();
     SearchGrpc.SearchBlockingStub stub = SearchGrpc.newBlockingStub(channel);
     FacetResponse response;
     try {

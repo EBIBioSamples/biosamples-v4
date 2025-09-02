@@ -16,6 +16,7 @@ import uk.ac.ebi.biosamples.core.model.filter.Filter;
 import uk.ac.ebi.biosamples.search.grpc.*;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 
+import java.io.OutputStream;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -31,7 +32,7 @@ public class ElasticSearchService implements SearchService {
   @Override
   @Timed("biosamples.search.page.elastic")
   public Page<String> searchForAccessions(String searchTerm, Set<Filter> filters, String webinId, Pageable pageable) {
-    ManagedChannel channel = ManagedChannelBuilder.forAddress(bioSamplesProperties.getBiosamplesSearchHost(), 9090).usePlaintext().build();
+    ManagedChannel channel = ManagedChannelBuilder.forAddress(bioSamplesProperties.getBiosamplesSearchHost(), bioSamplesProperties.getBiosamplesSearchPort()).usePlaintext().build();
     SearchGrpc.SearchBlockingStub stub = SearchGrpc.newBlockingStub(channel);
     SearchResponse response;
     try {
@@ -64,7 +65,6 @@ public class ElasticSearchService implements SearchService {
   @Override
   @Timed("biosamples.search.cursor.elastic")
   public CursorArrayList<String> searchForAccessions(String searchTerm, Set<Filter> filters, String webinId, String cursor, int size) {
-    log.warn("SEARCHING WITH CURSOR {} ==============================================================================================", cursor);
     SearchAfter searchAfter = null;
     String[] cursorParts = cursor.split(",");
     if (cursorParts.length == 2) {
@@ -75,7 +75,7 @@ public class ElasticSearchService implements SearchService {
           .setAccession(accession).build();
     }
 
-    ManagedChannel channel = ManagedChannelBuilder.forAddress(bioSamplesProperties.getBiosamplesSearchHost(), 9090).usePlaintext().build();
+    ManagedChannel channel = ManagedChannelBuilder.forAddress(bioSamplesProperties.getBiosamplesSearchHost(), bioSamplesProperties.getBiosamplesSearchPort()).usePlaintext().build();
     SearchGrpc.SearchBlockingStub stub = SearchGrpc.newBlockingStub(channel);
     SearchResponse response;
     try {
@@ -100,8 +100,6 @@ public class ElasticSearchService implements SearchService {
     List<String> accessions = response.getAccessionsList();
     SearchAfter newSearchAfter = response.getSearchAfter();
 
-    log.warn("GOT SEARCH AFTER {} ==============================================================================================", newSearchAfter);
-
     if (StringUtils.hasText(newSearchAfter.getAccession())) {
       cursor = Timestamps.toString(newSearchAfter.getUpdate()) + "," + newSearchAfter.getAccession();
     }
@@ -110,7 +108,7 @@ public class ElasticSearchService implements SearchService {
   }
 
 
-  public CursorArrayList<String> searchForAccessionsStream(String searchTerm, Set<Filter> filters, String webinId, String cursor, int size) {
+  /*public OutputStream searchForAccessionsStream(String searchTerm, Set<Filter> filters, String webinId, String cursor, int size) {
     SearchAfter searchAfter = null;
     String[] cursorParts = cursor.split(",");
     if (cursorParts.length == 2) {
@@ -151,5 +149,5 @@ public class ElasticSearchService implements SearchService {
     }
 
     return new CursorArrayList<>(accessionList, cursor);
-  }
+  }*/
 }

@@ -118,6 +118,9 @@ public class BioSamplesProperties {
   @Value("${biosamples.search.host:localhost}")
   private String biosamplesSearchHost;
 
+  @Value("${biosamples.search.port:9090}")
+  private int biosamplesSearchPort;
+
   public int getBiosamplesClientConnectionCountMax() {
     return connectionCountMax;
   }

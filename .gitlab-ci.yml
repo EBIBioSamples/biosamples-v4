@@ -10,6 +10,7 @@ variables:
   DOCKER_IMAGE_NAME: $CI_REGISTRY_IMAGE:$DOCKER_TAG
   DOCKER_PULL_SECRET: docker-registry-secret
   APP_NAME: $CI_PROJECT_NAME
+  K8S_NAMESPACE_PREFIX: biosamples
 
 
 before_script:
@@ -193,3 +194,41 @@ deploy-production-solr:
   environment:
     name: prod-solr-${BSD_HOST_NAME}
     url: http://${BSD_SOLR_HOST_NAME}.ebi.ac.uk:8983/solr
+
+
+deploy_k8s_wwwdev:
+  variables:
+    ENVIRONMENT_NAME: dev
+  environment:
+    name: fallback_dev
+    url: https://wwwdev.ebi.ac.uk/biosamples
+  only:
+    - dev
+    - main
+    - biosamples-search
+  when: manual
+  extends: .kube_deploy_script
+
+.kube_deploy_script:
+  stage: deploy
+  image: ${CI_REGISTRY_IMAGE}/dtzar/helm-kubectl:3.16
+  tags: ["dind"]
+  services:
+    - docker:27-dind
+  variables:
+    K8S_NAMESPACE: ${K8S_NAMESPACE_PREFIX}-${ENVIRONMENT_NAME}
+  script:
+    - echo $K8S_NAMESPACE
+    - kubectl config set-context --current --namespace=${K8S_NAMESPACE}
+    - kubectl delete secret $DOCKER_PULL_SECRET || true
+    - |
+      kubectl create secret docker-registry $DOCKER_PULL_SECRET \
+              --docker-server=$CI_REGISTRY \
+              --docker-username=$CI_REGISTRY_USER \
+              --docker-password=$CI_REGISTRY_PASSWORD
+    - |
+      helm upgrade --install $APP_NAME ./k8s/helm \
+                   --values ./k8s/helm/values-${ENVIRONMENT_NAME}.yaml \
+                   --set image.repository=$CI_REGISTRY_IMAGE \
+                   --set image.tag=$DOCKER_TAG \
+                   --set "imagePullSecrets[0].name=$DOCKER_PULL_SECRET"
