@@ -211,7 +211,7 @@ deploy_k8s_wwwdev:
 
 .kube_deploy_script:
   stage: deploy
-  image: ${CI_REGISTRY_IMAGE}/dtzar/helm-kubectl:3.16
+  image: dtzar/helm-kubectl:3.16
   tags: ["dind"]
   services:
     - docker:27-dind
