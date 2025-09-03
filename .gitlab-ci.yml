@@ -196,11 +196,11 @@ deploy-production-solr:
     url: http://${BSD_SOLR_HOST_NAME}.ebi.ac.uk:8983/solr
 
 
-deploy_k8s_wwwdev:
+deploy_k8s_hh_prod:
   variables:
-    ENVIRONMENT_NAME: dev
+    ENVIRONMENT_NAME: prod
   environment:
-    name: fallback_dev
+    name: primary_prod
     url: https://wwwdev.ebi.ac.uk/biosamples
   only:
     - dev
