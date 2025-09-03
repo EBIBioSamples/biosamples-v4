@@ -219,6 +219,7 @@ deploy_k8s_wwwdev:
     K8S_NAMESPACE: ${K8S_NAMESPACE_PREFIX}-${ENVIRONMENT_NAME}
   script:
     - echo $K8S_NAMESPACE
+    - kubectl config view
     - kubectl config set-context --current --namespace=${K8S_NAMESPACE}
     - kubectl delete secret $DOCKER_PULL_SECRET || true
     - |
