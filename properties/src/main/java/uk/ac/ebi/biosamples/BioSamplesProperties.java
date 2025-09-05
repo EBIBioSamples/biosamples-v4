@@ -115,7 +115,7 @@ public class BioSamplesProperties {
   @Value("${biosamples.bulksubmisison.webin.superuser.validation:false}")
   private boolean enableBulkSubmissionWebinSuperUserValidation;
 
-  @Value("${biosamples.search.host:localhost}")
+  @Value("${biosamples.search.host:biosamples-search-helm}")
   private String biosamplesSearchHost;
 
   @Value("${biosamples.search.port:9090}")
