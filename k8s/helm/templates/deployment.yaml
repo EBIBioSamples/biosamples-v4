@@ -58,6 +58,10 @@ spec:
                 secretKeyRef:
                   name: rabbitmq-user
                   key: password
+            - name: BIOSAMPLES_SEARCH_HOST
+              value: {{ .Values.biosamples.search.host }}
+            - name: BIOSAMPLES_SEARCH_PORT
+              value: {{ .Values.biosamples.search.port }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
