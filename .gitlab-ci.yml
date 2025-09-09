@@ -24,50 +24,99 @@ stages:
   - config
   - deploy
 
-maven-package-webapps-core:
+maven-package-all-apps:
   image: ${CI_REGISTRY_IMAGE}/eclipse-temurin:17-jdk
   stage: build
   script:
-    - './mvnw -q deploy -pl webapps/core -am -P embl-ebi -s ci_settings.xml -DskipTests -Dmaven.source.skip=true'
+    - './mvnw -q package -P embl-ebi -s ci_settings.xml -DskipTests -Dmaven.source.skip=true'
   artifacts:
     paths:
       - webapps/core/target/webapps-core-*.war
+      - webapps/core-v2/target/webapps-core-v2-*.jar
+      - agents/solr/target/agents-solr-*.jar
+      - agents/uploadworkers/target/agents-uploadworkers-*.jar
+      - pipelines/curation/target/pipelines-curation-*.jar
+      - pipelines/ena/target/pipelines-ena-*.jar
+      - pipelines/ncbi-ena-link/target/pipelines-ncbi-ena-link-*.jar
+      - pipelines/sample-release/target/pipelines-sample-release-*.jar
+      - pipelines/sample-post-release-action/target/pipelines-sample-post-release-action-*.jar
+      - pipelines/ncbi/target/pipelines-ncbi-*.jar
+      - pipelines/reindex/target/pipelines-reindex-*.jar
+      - pipelines/sample-transformation-dtol/target/pipelines-sample-transformation-dtol-*.jar
 
-    # maven-package:
-    # image: ${CI_REGISTRY_IMAGE}/eclipse-temurin:17-jdk
-    # stage: build
-    # script:
-    #  - './mvnw -q deploy -P embl-ebi -s ci_settings.xml -DskipTests -Dmaven.source.skip=true'
-    #  - mkdir deployment
-    #  - cp webapps/core/target/webapps-core-*.war deployment/webapps-core.war
-    #  - cp webapps/core-v2/target/webapps-core-v2*.jar deployment/webapps-core-v2.jar
-    #  - cp agents/solr/target/agents-solr-*.jar deployment/agents-solr.jar
-    # - cp agents/uploadworkers/target/agents-uploadworkers-*.jar deployment/agents-uploadworkers.jar
-    #  - cp pipelines/curation/target/pipelines-curation-*.jar deployment/pipelines-curation.jar
-    # - cp pipelines/ena/target/pipelines-ena-*.jar deployment/pipelines-ena.jar
-    # - cp pipelines/ncbi-ena-link/target/pipelines-ncbi-ena-link-*.jar deployment/pipelines-ncbi-ena-link.jar
-  # - cp pipelines/sample-release/target/pipelines-sample-release-*.jar deployment/pipelines-sample-release.jar
-  # - cp pipelines/sample-post-release-action/target/pipelines-sample-post-release-action*.jar deployment/pipelines-sample-post-release-action.jar
-  # - cp pipelines/ncbi/target/pipelines-ncbi-*.jar deployment/pipelines-ncbi.jar
-  # - cp pipelines/reindex/target/pipelines-reindex-*.jar deployment/pipelines-reindex.jar
-  # - cp pipelines/sample-transformation-dtol/target/pipelines-sample-transformation-dtol-*.jar deployment/pipelines-sample-transformation-dtol.jar
-  # artifacts:
-  #  paths:
-  #    - deployment
-#  when: manual
 
-build_docker_image:
+build_and_push_docker_images:
   stage: package
   image: docker:stable
   services:
     - docker:stable-dind
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  parallel:
+    matrix:
+      - APP_NAME: "webapp-core"
+        DOCKERFILE_TARGET: "webapp-core"
+      - APP_NAME: "webapp-core-v2"
+        DOCKERFILE_TARGET: "webapp-core-v2"
+      - APP_NAME: "pipelines-reindex"
+        DOCKERFILE_TARGET: "pipelines-reindex"
+#      - APP_NAME: "agents-solr"
+#        DOCKERFILE_TARGET: "agents-solr"
+#      - APP_NAME: "agents-uploadworkers"
+#        DOCKERFILE_TARGET: "agents-uploadworkers"
+#      - APP_NAME: "pipelines-curation"
+#        DOCKERFILE_TARGET: "pipelines-curation"
+#      - APP_NAME: "pipelines-ena"
+#        DOCKERFILE_TARGET: "pipelines-ena"
+#      - APP_NAME: "pipelines-ncbi-ena-link"
+#        DOCKERFILE_TARGET: "pipelines-ncbi-ena-link"
+#      - APP_NAME: "pipelines-sample-release"
+#        DOCKERFILE_TARGET: "pipelines-sample-release"
+#      - APP_NAME: "pipelines-sample-post-release-action"
+#        DOCKERFILE_TARGET: "pipelines-sample-post-release-action"
+#      - APP_NAME: "pipelines-ncbi"
+#        DOCKERFILE_TARGET: "pipelines-ncbi"
+#      - APP_NAME: "pipelines-sample-transformation-dtol"
+#        DOCKERFILE_TARGET: "pipelines-sample-transformation-dtol"
   script:
-    - docker build --build-arg DOCKER_REGISTRY=${CI_REGISTRY_IMAGE} -t $DOCKER_IMAGE_NAME -f webapps/core/Dockerfile .
-    - docker push $DOCKER_IMAGE_NAME
+    - |
+      DOCKER_IMAGE_NAME="$CI_REGISTRY_IMAGE/$APP_NAME:$DOCKER_TAG"
+      echo "Building and pushing $DOCKER_IMAGE_NAME with target $DOCKERFILE_TARGET"
+      docker build --target $DOCKERFILE_TARGET -t $DOCKER_IMAGE_NAME -f k8s/Dockerfile .
+      docker push $DOCKER_IMAGE_NAME
+      
+      # Also tag as latest for the current branch
+      DOCKER_LATEST_NAME="$CI_REGISTRY_IMAGE/$APP_NAME:$CI_COMMIT_REF_SLUG-latest"
+      docker tag $DOCKER_IMAGE_NAME $DOCKER_LATEST_NAME
+      docker push $DOCKER_LATEST_NAME
   after_script:
-    - docker logout ${CI_REGISTRY_IMAGE}
+    - docker logout $CI_REGISTRY
+
+
+
+#maven-package-webapps-core:
+#  image: ${CI_REGISTRY_IMAGE}/eclipse-temurin:17-jdk
+#  stage: build
+#  script:
+#    - './mvnw -q deploy -pl webapps/core -am -P embl-ebi -s ci_settings.xml -DskipTests -Dmaven.source.skip=true'
+#  artifacts:
+#    paths:
+#      - webapps/core/target/webapps-core-*.war
+#
+#build_docker_image:
+#  stage: package
+#  image: docker:stable
+#  services:
+#    - docker:stable-dind
+#  before_script:
+#    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+#  script:
+#    - docker build --build-arg DOCKER_REGISTRY=${CI_REGISTRY_IMAGE} -t $DOCKER_IMAGE_NAME -f webapps/core/Dockerfile .
+#    - docker push $DOCKER_IMAGE_NAME
+#  after_script:
+#    - docker logout ${CI_REGISTRY_IMAGE}
+
+
 
 deploy-dev-bsd-v1:
   image: dtzar/helm-kubectl:3.11.0

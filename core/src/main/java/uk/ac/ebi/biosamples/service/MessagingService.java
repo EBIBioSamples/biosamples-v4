@@ -37,11 +37,12 @@ public class MessagingService {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final SampleReadService sampleReadService;
   private final AmqpTemplate amqpTemplate;
+  private final ObjectMapper objectMapper;
 
-  public MessagingService(
-      final SampleReadService sampleReadService, final AmqpTemplate amqpTemplate) {
+  public MessagingService(SampleReadService sampleReadService, AmqpTemplate amqpTemplate, ObjectMapper objectMapper) {
     this.sampleReadService = sampleReadService;
     this.amqpTemplate = amqpTemplate;
+    this.objectMapper = objectMapper;
   }
 
   public void sendFileUploadedMessage(final String fileId) {
@@ -81,7 +82,6 @@ public class MessagingService {
 //          MessageContent.build(sample.get(), null, related, false));
 
       try {
-        ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(sample.get());
         log.info("Sending message for indexing: {}", sample.get().getAccession());
 //        amqpTemplate.send(MessagingConstants.INDEXING_EXCHANGE, MessagingConstants.INDEXING_QUEUE, new Message(json.getBytes(StandardCharsets.UTF_8)));
