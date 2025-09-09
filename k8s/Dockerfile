@@ -1,4 +1,4 @@
-FROM openjdk:17-jre-slim as base
+FROM eclipse-temurin:17-jdk-alpine as base
 WORKDIR /app
 
 # Stage for core webapp
