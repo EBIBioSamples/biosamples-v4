@@ -35,6 +35,7 @@ public class OLSDataRetriever {
   public OLSDataRetriever() {
     ontologyPrefixMapping.put("orphanet", "ordo");
   }
+
   /**
    * Read json from OLS by iri provided in GA4GH sample
    *

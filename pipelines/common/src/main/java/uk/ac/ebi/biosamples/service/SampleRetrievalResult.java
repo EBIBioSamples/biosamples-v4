@@ -11,42 +11,12 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.sql.Date;
+import lombok.Data;
 
-public class SampleCallbackResult {
+@Data
+public class SampleRetrievalResult {
   private String biosampleId;
   private int statusId;
   private String egaId;
   private Date lastUpdated;
-
-  public String getBiosampleId() {
-    return biosampleId;
-  }
-
-  public void setBiosampleId(final String biosampleId) {
-    this.biosampleId = biosampleId;
-  }
-
-  public int getStatusId() {
-    return statusId;
-  }
-
-  public void setStatusId(final int statusId) {
-    this.statusId = statusId;
-  }
-
-  public String getEgaId() {
-    return egaId;
-  }
-
-  public void setEgaId(final String egaId) {
-    this.egaId = egaId;
-  }
-
-  public Date getLastUpdated() {
-    return lastUpdated;
-  }
-
-  public void setLastUpdated(final Date lastUpdated) {
-    this.lastUpdated = lastUpdated;
-  }
 }

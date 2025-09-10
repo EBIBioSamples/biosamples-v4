@@ -40,6 +40,7 @@ import uk.ac.ebi.biosamples.core.service.SampleValidator;
 public class BioSamplesWebinGetClient implements AutoCloseable {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final SampleRetrievalServiceV2 sampleRetrievalServiceV2;
+
   /** -- GETTER -- Gets the public client. */
   @Getter private final Optional<BioSamplesClient> publicClient;
 

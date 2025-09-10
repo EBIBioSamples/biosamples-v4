@@ -118,7 +118,9 @@ public abstract class SolrSampleField implements FilterCriteriaBuilder {
    */
   public abstract FacetFetchStrategy getFacetCollectionStrategy();
 
-  /** @return the readable label of the field */
+  /**
+   * @return the readable label of the field
+   */
   public String getReadableLabel() {
     return readableLabel;
   }

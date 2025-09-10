@@ -26,7 +26,6 @@ import uk.ac.ebi.biosamples.mongo.repository.MongoAuthChangeRepository;
 @Service
 @Slf4j
 public class SamplesCrawlerAuthChangeHandler {
-  private static final String WEBIN_ID_TO_CHANGE_TO = "Webin-69232";
   private final BioSamplesClient bioSamplesClient;
   private final MongoAuthChangeRepository mongoAuthChangeRepository;
 
@@ -39,18 +38,20 @@ public class SamplesCrawlerAuthChangeHandler {
 
   public Iterable<EntityModel<Sample>> getSamples(final String domain) {
     final Filter authenticationFilter = new AuthenticationFilter.Builder(domain).build();
+
     return bioSamplesClient.fetchSampleResourceAllWithoutCuration(
         "", List.of(authenticationFilter));
   }
 
-  public void handleAuth(final EntityModel<Sample> sampleEntityModel, final String domain) {
+  public void handleAuth(
+      final EntityModel<Sample> sampleEntityModel, final String domain, final String newWebinId) {
     final Sample sample = sampleEntityModel.getContent();
 
     log.info("Handling Sample {}", sample.getAccession());
 
     final String accession = sample.getAccession();
     final String sampleDomain = sample.getDomain();
-    final String webinId = sample.getWebinSubmissionAccountId();
+    final String currentWebinId = sample.getWebinSubmissionAccountId();
 
     if (!accession.startsWith("SAME")
         || (sample.getSubmittedVia() == SubmittedViaType.PIPELINE_IMPORT
@@ -60,16 +61,12 @@ public class SamplesCrawlerAuthChangeHandler {
       return;
     }
 
-    if (sampleDomain != null && sampleDomain.equals(domain) && webinId == null) {
-      log.info(
-          "Sample authority needs to change for: "
-              + accession
-              + " setting to: "
-              + WEBIN_ID_TO_CHANGE_TO);
+    if (sampleDomain != null && sampleDomain.equals(domain) && currentWebinId == null) {
+      log.info("Sample authority needs to change for: " + accession + " setting to: " + newWebinId);
 
       final Sample updatedSample =
           Sample.Builder.fromSample(sample)
-              .withWebinSubmissionAccountId(WEBIN_ID_TO_CHANGE_TO)
+              .withWebinSubmissionAccountId(newWebinId)
               .withNoDomain()
               .build();
       final EntityModel<Sample> savedSampleEntityModel =
@@ -77,11 +74,10 @@ public class SamplesCrawlerAuthChangeHandler {
 
       if (Objects.requireNonNull(savedSampleEntityModel.getContent())
           .getWebinSubmissionAccountId()
-          .equals(WEBIN_ID_TO_CHANGE_TO)) {
+          .equals(newWebinId)) {
         log.info("Sample " + accession + " updated");
 
-        mongoAuthChangeRepository.save(
-            new MongoAuthChangeRecord(accession, domain, WEBIN_ID_TO_CHANGE_TO));
+        mongoAuthChangeRepository.save(new MongoAuthChangeRecord(accession, domain, newWebinId));
       } else {
         log.info("Sample " + accession + " failed to be updated");
       }

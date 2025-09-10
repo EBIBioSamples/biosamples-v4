@@ -47,6 +47,7 @@ public class JsonLDService {
     dataCatalogUrl = dataCatalogUrl == null ? getDataCatalogUrl() : dataCatalogUrl;
     datasetUrl = datasetUrl == null ? getDatasetUrl() : datasetUrl;
   }
+
   /**
    * Produce the ld+json version of a sample
    *
