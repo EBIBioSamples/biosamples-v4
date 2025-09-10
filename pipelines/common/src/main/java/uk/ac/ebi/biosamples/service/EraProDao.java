@@ -39,7 +39,7 @@ public class EraProDao {
   private static final String STATUS_CLAUSE_SUPPRESSED = "STATUS_ID IN (5, 7)";
   private static final String STATUS_CLAUSE_KILLED = "STATUS_ID IN (6, 8)";
 
-  public List<SampleCallbackResult> doSampleCallback(
+  public List<SampleRetrievalResult> doSampleCallback(
       final LocalDate minDate, final LocalDate maxDate) {
     log.info("Getting ENA samples");
 
@@ -56,12 +56,12 @@ public class EraProDao {
         query, sampleCallbackResultRowMapper, minDateOld, maxDateOld, minDateOld, maxDateOld);
   }
 
-  public List<SampleCallbackResult> doSampleCallbackForAccessions(
+  public List<SampleRetrievalResult> doSampleCallbackForAccessions(
       final List<String> accessions, final boolean biosamples) {
     log.info("Getting ENA samples");
     final AtomicInteger counter = new AtomicInteger(0);
     final int batchSize = 1000;
-    final List<SampleCallbackResult> sampleCallbackResults = new ArrayList<>();
+    final List<SampleRetrievalResult> sampleRetrievalResults = new ArrayList<>();
     final Collection<List<String>> accessionBatches =
         accessions.stream()
             .collect(Collectors.groupingBy(accession -> counter.getAndIncrement() / batchSize))
@@ -73,7 +73,7 @@ public class EraProDao {
           accessionBatch -> {
             final String query = queryForBioSampleAccessions(accessionBatch);
 
-            sampleCallbackResults.addAll(
+            sampleRetrievalResults.addAll(
                 jdbcTemplate.query(query, sampleCallbackResultRowMapper, accessionBatch.toArray()));
           });
     } else {
@@ -81,12 +81,12 @@ public class EraProDao {
           accessionBatch -> {
             final String query = queryForAccessions(accessionBatch);
 
-            sampleCallbackResults.addAll(
+            sampleRetrievalResults.addAll(
                 jdbcTemplate.query(query, sampleCallbackResultRowMapper, accessionBatch.toArray()));
           });
     }
 
-    return sampleCallbackResults;
+    return sampleRetrievalResults;
   }
 
   private String queryForAccessions(List<String> accessions) {
@@ -129,7 +129,7 @@ public class EraProDao {
     return query;
   }
 
-  public List<SampleCallbackResult> doSampleCallbackForBsdAuthoritySamples(
+  public List<SampleRetrievalResult> doSampleCallbackForBsdAuthoritySamples(
       final LocalDate minDate, final LocalDate maxDate) {
     final String query =
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID, LAST_UPDATED FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'Y' "
@@ -184,7 +184,7 @@ public class EraProDao {
     jdbcTemplate.query(query, rch, bioSampleId);
   }
 
-  public List<SampleCallbackResult> doNcbiCallback(
+  public List<SampleRetrievalResult> doNcbiCallback(
       final LocalDate minDate, final LocalDate maxDate) {
     final String query =
         "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID, EGA_ID, LAST_UPDATED FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND BIOSAMPLE_AUTHORITY= 'N' "
@@ -247,16 +247,16 @@ public class EraProDao {
         return sampleBean;
       };
 
-  private final RowMapper<SampleCallbackResult> sampleCallbackResultRowMapper =
+  private final RowMapper<SampleRetrievalResult> sampleCallbackResultRowMapper =
       (rs, rowNum) -> {
-        final SampleCallbackResult sampleCallbackResult = new SampleCallbackResult();
+        final SampleRetrievalResult sampleRetrievalResult = new SampleRetrievalResult();
 
-        sampleCallbackResult.setBiosampleId(rs.getString("BIOSAMPLE_ID"));
-        sampleCallbackResult.setEgaId(rs.getString("EGA_ID"));
-        sampleCallbackResult.setStatusId(rs.getInt("STATUS_ID"));
-        sampleCallbackResult.setLastUpdated(rs.getDate("LAST_UPDATED"));
+        sampleRetrievalResult.setBiosampleId(rs.getString("BIOSAMPLE_ID"));
+        sampleRetrievalResult.setEgaId(rs.getString("EGA_ID"));
+        sampleRetrievalResult.setStatusId(rs.getInt("STATUS_ID"));
+        sampleRetrievalResult.setLastUpdated(rs.getDate("LAST_UPDATED"));
 
-        return sampleCallbackResult;
+        return sampleRetrievalResult;
       };
 
   public void updateSampleStatus(final String biosampleId) {

@@ -10,69 +10,122 @@
 */
 package uk.ac.ebi.biosamples;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.auth.services.AuthChangeHandler;
+import uk.ac.ebi.biosamples.auth.services.SamplesCrawlerAuthChangeHandler;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.SampleStatus;
 import uk.ac.ebi.biosamples.helpdesk.services.*;
-
-// import uk.ac.ebi.biosamples.service.AnalyticsService;
 
 @Component
 @Slf4j
 public class HelpdeskActionApplicationRunner implements ApplicationRunner {
+
   @Autowired SampleChecklistComplianceHandlerEVA sampleChecklistComplianceHandlerEVA;
   @Autowired SampleStatusUpdater sampleStatusUpdater;
   @Autowired AuthChangeHandler authChangeHandler;
   @Autowired SampleRelationshipHandler sampleRelationshipHandler;
   @Autowired SampleExternalReferenceHandler sampleExternalReferenceHandler;
   @Autowired SampleRestoreIPK sampleRestoreIPK;
+  @Autowired SamplesCrawlerAuthChangeHandler samplesCrawlerAuthChangeHandler;
 
   @Override
   public void run(ApplicationArguments args) {
-    authChangeHandler.parseListOfSamplesAndProcessSampleAuthentication();
-    // sampleChecklistComplianceHandlerEVA.samnSampleGeographicLocationAttributeUpdateFromFile();
-    /*try {
-      final List<String> accessions =
-          sampleRestoreIPK.parseInput("C:\\Users\\dgupta\\IPK_samples_3.list");
-
-      log.info("Number of accessions to be handled are " + accessions.size());
-
-      final List<String> updateResults =
-          accessions.stream()
-              .map(
-                  accession ->
-                      sampleRestoreIPK.restoreSample(accession)
-                          ? accession + " updated"
-                          : accession + " not updated")
-              .toList();
-
-      Files.write(
-          Paths.get("updateResults_3.txt"),
-          updateResults,
-          StandardOpenOption.CREATE,
-          StandardOpenOption.TRUNCATE_EXISTING);
-    } catch (Exception e) {
-      log.info("Operation failed");
-      e.printStackTrace();
-
-      throw new RuntimeException(e);
-    }*/
-    /*final List<String> accessions =
-        sampleStatusUpdater.parseFileAndGetSampleAccessionList(
-            "C:\\Users\\dgupta\\AtlantECO-samples-to-suppress.txt");
-
-    sampleStatusUpdater.processSamples(accessions);*/
     try {
-      /*sampleRelationshipHandler.processFile(
-      "C:\\Users\\dgupta\\ParentChild_Biosamples_mapping_clean.xlsx");*/
-      // sampleChecklistComplianceHandlerEVA.samnSampleGeographicLocationAttributeUpdateFromFile();
-      // sampleExternalReferenceHandler.processSample("SAMEA115414646");
+      final String action =
+          args.containsOption("action") ? args.getOptionValues("action").get(0) : "";
 
-      // sampleStatusUpdater.makeFilteredSamplesPrivate();
+      switch (action) {
+        case "authChangeHandlerStaticSampleList" -> {
+          authChangeHandler.parseListOfSamplesAndProcessSampleAuthentication();
+        }
+
+        case "evaComplianceUpdate" -> {
+          sampleChecklistComplianceHandlerEVA.updateSamnSampleGeographicLocationFromFile();
+        }
+
+        case "restoreIPKSamples" -> {
+          final List<String> accessions =
+              sampleRestoreIPK.parseInput("C:\\Users\\dgupta\\IPK_samples_3.list");
+
+          log.info("Number of accessions to be handled are {}", accessions.size());
+
+          final List<String> updateResults =
+              accessions.stream()
+                  .map(
+                      accession ->
+                          sampleRestoreIPK.restoreSample(accession)
+                              ? accession + " updated"
+                              : accession + " not updated")
+                  .toList();
+
+          Files.write(
+              Paths.get("updateResults_3.txt"),
+              updateResults,
+              StandardOpenOption.CREATE,
+              StandardOpenOption.TRUNCATE_EXISTING);
+        }
+
+        case "changeStatusOfSamplesFromFile" -> {
+          final List<String> accessions =
+              sampleStatusUpdater.parseFileAndGetSampleAccessionList(
+                  "C:\\Users\\dgupta\\AtlantECO-samples-to-suppress.txt");
+
+          sampleStatusUpdater.processSamples(accessions, null);
+        }
+
+        case "updateSampleRelationships" -> {
+          sampleRelationshipHandler.processFile(
+              "C:\\Users\\dgupta\\ParentChild_Biosamples_mapping_clean.xlsx");
+        }
+
+        case "addExternalReferenceCurations" -> {
+          sampleExternalReferenceHandler.processSample("SAMEA115414646");
+        }
+
+        case "makeSamplesPrivate" -> {
+          sampleStatusUpdater.makeFilteredSamplesPrivate();
+        }
+
+        case "makeSamplesPublicFromStaticSamplesList" -> {
+          final List<String> toBePublicSampleAccessions =
+              sampleStatusUpdater.parseFileAndGetSampleAccessionList(
+                  "C:\\Users\\dgupta\\biosamples_ids_morphic_forPublic.txt");
+
+          sampleStatusUpdater.processSamples(toBePublicSampleAccessions, SampleStatus.PUBLIC);
+        }
+
+        case "crawlSamplesAndChangeAuthInfoFromAAPToWebin" -> {
+          final String domain =
+              args.containsOption("domain") ? args.getOptionValues("domain").get(0) : null;
+          final String webinId =
+              args.containsOption("webinId") ? args.getOptionValues("webinId").get(0) : null;
+
+          if (webinId != null && domain != null) {
+            for (EntityModel<Sample> sample : samplesCrawlerAuthChangeHandler.getSamples(domain)) {
+              samplesCrawlerAuthChangeHandler.handleAuth(sample, domain, webinId);
+            }
+          } else {
+            log.info("Please provide a valid AAP domain and a valid webin submission account ID");
+          }
+        }
+
+        default -> {
+          log.warn("No valid --action argument provided. Nothing will run.");
+        }
+      }
+
     } catch (final Exception e) {
+      log.error("Operation failed", e);
       throw new RuntimeException(e);
     }
   }

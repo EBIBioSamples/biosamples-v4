@@ -46,6 +46,7 @@ public class SolrSample {
    */
   @Indexed(name = "release_dt", required = true, type = "date")
   protected String release;
+
   /**
    * Store the update date as a string so that it can be used easily by solr Use a TrieDate type for
    * better range query performance

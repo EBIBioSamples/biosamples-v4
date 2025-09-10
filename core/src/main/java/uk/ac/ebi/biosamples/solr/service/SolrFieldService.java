@@ -129,7 +129,9 @@ public class SolrFieldService {
       final Class<? extends SolrSampleField> prototype,
       final String baseLabel,
       final String encodedLabel)
-      throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
+      throws NoSuchMethodException,
+          IllegalAccessException,
+          InvocationTargetException,
           InstantiationException {
     return prototype
         .getConstructor(String.class, String.class)
@@ -138,7 +140,9 @@ public class SolrFieldService {
 
   public SolrSampleField getNewFieldInstance(
       final Class<? extends SolrSampleField> prototype, final String baseLabel)
-      throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
+      throws NoSuchMethodException,
+          IllegalAccessException,
+          InvocationTargetException,
           InstantiationException {
     return prototype.getConstructor(String.class).newInstance(baseLabel);
   }
