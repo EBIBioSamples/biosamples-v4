@@ -253,5 +253,5 @@ deploy_k8s_hh_prod:
       helm upgrade --install $APP_NAME ./k8s/helm \
                    --values ./k8s/helm/values-${ENVIRONMENT_NAME}.yaml \
                    --set "imagePullSecrets[0].name=$DOCKER_PULL_SECRET" \
-                   --set image.repository=$CI_REGISTRY_IMAGE \
+                   --set image.repository=$CI_REGISTRY_IMAGE/webapp-core \
                    --set image.tag=$DOCKER_TAG
