@@ -1,0 +1,56 @@
+rabbitmq:
+  host: wp-np2-40.ebi.ac.uk
+biosamples:
+  schemaValidator: http://localhost:3020/validate
+  schemaStore: http://localhost:8085
+  search:
+    host: biosamples-search-helm
+    port: 9090
+
+
+global:
+  imageRegistry: "registry.gitlab.com/your-group/your-project"
+  imagePullSecrets:
+    - name: docker-registry-secret
+
+services:
+  webapp-core:
+    replicaCount: 1
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 2Gi
+      requests:
+        cpu: 1000m
+        memory: 1Gi
+    ingress:
+      hosts:
+        - host: biosamples-core.example.com
+          paths:
+            - path: /
+              pathType: Prefix
+
+  webapp-core-v2:
+    replicaCount: 1
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 2Gi
+      requests:
+        cpu: 1000m
+        memory: 1Gi
+    ingress:
+      hosts:
+        - host: biosamples-core-v2.example.com
+          paths:
+            - path: /
+              pathType: Prefix
+
+  agents-uploadworkers:
+    replicaCount: 1
+
+  pipelines-reindex:
+    replicaCount: 1
+
+  pipelines-curation:
+    replicaCount: 1

@@ -13,5 +13,4 @@ CMD ["java", "-jar", "app.war"]
 
 FROM base as pipelines-reindex
 COPY pipelines/reindex/target/pipelines-reindex-*.jar app.jar
-EXPOSE 8081
 CMD ["java", "-jar", "app.jar"]

@@ -33,16 +33,7 @@ maven-package-all-apps:
     paths:
       - webapps/core/target/webapps-core-*.war
       - webapps/core-v2/target/webapps-core-v2-*.jar
-      - agents/solr/target/agents-solr-*.jar
-      - agents/uploadworkers/target/agents-uploadworkers-*.jar
-      - pipelines/curation/target/pipelines-curation-*.jar
-      - pipelines/ena/target/pipelines-ena-*.jar
-      - pipelines/ncbi-ena-link/target/pipelines-ncbi-ena-link-*.jar
-      - pipelines/sample-release/target/pipelines-sample-release-*.jar
-      - pipelines/sample-post-release-action/target/pipelines-sample-post-release-action-*.jar
-      - pipelines/ncbi/target/pipelines-ncbi-*.jar
       - pipelines/reindex/target/pipelines-reindex-*.jar
-      - pipelines/sample-transformation-dtol/target/pipelines-sample-transformation-dtol-*.jar
 
 
 build_and_push_docker_images:
@@ -60,24 +51,6 @@ build_and_push_docker_images:
         DOCKERFILE_TARGET: "webapp-core-v2"
       - APP_NAME: "pipelines-reindex"
         DOCKERFILE_TARGET: "pipelines-reindex"
-#      - APP_NAME: "agents-solr"
-#        DOCKERFILE_TARGET: "agents-solr"
-#      - APP_NAME: "agents-uploadworkers"
-#        DOCKERFILE_TARGET: "agents-uploadworkers"
-#      - APP_NAME: "pipelines-curation"
-#        DOCKERFILE_TARGET: "pipelines-curation"
-#      - APP_NAME: "pipelines-ena"
-#        DOCKERFILE_TARGET: "pipelines-ena"
-#      - APP_NAME: "pipelines-ncbi-ena-link"
-#        DOCKERFILE_TARGET: "pipelines-ncbi-ena-link"
-#      - APP_NAME: "pipelines-sample-release"
-#        DOCKERFILE_TARGET: "pipelines-sample-release"
-#      - APP_NAME: "pipelines-sample-post-release-action"
-#        DOCKERFILE_TARGET: "pipelines-sample-post-release-action"
-#      - APP_NAME: "pipelines-ncbi"
-#        DOCKERFILE_TARGET: "pipelines-ncbi"
-#      - APP_NAME: "pipelines-sample-transformation-dtol"
-#        DOCKERFILE_TARGET: "pipelines-sample-transformation-dtol"
   script:
     - |
       DOCKER_IMAGE_NAME="$CI_REGISTRY_IMAGE/$APP_NAME:$DOCKER_TAG"
@@ -89,6 +62,7 @@ build_and_push_docker_images:
       DOCKER_LATEST_NAME="$CI_REGISTRY_IMAGE/$APP_NAME:$CI_COMMIT_REF_SLUG-latest"
       docker tag $DOCKER_IMAGE_NAME $DOCKER_LATEST_NAME
       docker push $DOCKER_LATEST_NAME
+      echo $DOCKER_LATEST_NAME
   after_script:
     - docker logout $CI_REGISTRY
 
@@ -115,7 +89,6 @@ build_and_push_docker_images:
 #    - docker push $DOCKER_IMAGE_NAME
 #  after_script:
 #    - docker logout ${CI_REGISTRY_IMAGE}
-
 
 
 deploy-dev-bsd-v1:
@@ -279,6 +252,6 @@ deploy_k8s_hh_prod:
     - |
       helm upgrade --install $APP_NAME ./k8s/helm \
                    --values ./k8s/helm/values-${ENVIRONMENT_NAME}.yaml \
+                   --set "imagePullSecrets[0].name=$DOCKER_PULL_SECRET" \
                    --set image.repository=$CI_REGISTRY_IMAGE \
-                   --set image.tag=$DOCKER_TAG \
-                   --set "imagePullSecrets[0].name=$DOCKER_PULL_SECRET"
+                   --set image.tag=$DOCKER_TAG
