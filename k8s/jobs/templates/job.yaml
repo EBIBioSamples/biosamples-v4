@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "helm.fullname" . }}-job
+  labels:
+    app: {{ include "helm.name" . }}
+    chart: {{ include "helm.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  backoffLimit: {{ .Values.backoffLimit }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "helm.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      restartPolicy: {{ .Values.restartPolicy }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            {{- range .Values.env }}
+            - name: {{ .name }}
+              value: "{{ .value }}"
+            {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
