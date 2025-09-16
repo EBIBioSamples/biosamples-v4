@@ -15,6 +15,10 @@ spec:
         app: {{ include "helm.name" . }}
         release: {{ .Release.Name }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       restartPolicy: {{ .Values.restartPolicy }}
       containers:
         - name: {{ .Chart.Name }}
