@@ -258,10 +258,6 @@ deploy_k8s_hh_pipeline_prod:
               --docker-server=$CI_REGISTRY \
               --docker-username=$CI_REGISTRY_USER \
               --docker-password=$CI_REGISTRY_PASSWORD
-    - echo "CI_REGISTRY=$CI_REGISTRY"
-    - echo "CI_REGISTRY_IMAGE=$CI_REGISTRY_IMAGE"
-    - echo "DOCKER_TAG=$DOCKER_TAG"
-    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
     - |
       helm upgrade --install biosamples-reindex ./k8s/jobs \
                    --values ./k8s/jobs/values-${ENVIRONMENT_NAME}.yaml \
