@@ -243,7 +243,6 @@ deploy_k8s_hh_pipeline_prod:
     - main
     - biosamples-search
   when: manual
-  extends: .kube_deploy_script
   stage: deploy
   image: dtzar/helm-kubectl:3.16
   tags: [ "dind" ]
@@ -261,7 +260,7 @@ deploy_k8s_hh_pipeline_prod:
               --docker-password=$CI_REGISTRY_PASSWORD
     - |
       helm upgrade --install biosamples-reindex ./k8s/jobs \
-                   --values ./k8s/helm/values-${ENVIRONMENT_NAME}.yaml \
+                   --values ./k8s/jobs/values-${ENVIRONMENT_NAME}.yaml \
                    --set "imagePullSecrets[0].name=$DOCKER_PULL_SECRET" \
                    --set image.repository=$CI_REGISTRY_IMAGE/pipelines-reindex \
                    --set image.tag=$DOCKER_TAG
