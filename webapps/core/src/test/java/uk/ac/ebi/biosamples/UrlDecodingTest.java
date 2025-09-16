@@ -38,6 +38,7 @@ public class UrlDecodingTest {
         "AoErVGVzdEZpbHRlcjM=", URLDecoder.decode("AoErVGVzdEZpbHRlcjM%3D", "UTF-8"));
     Assert.assertEquals("AoErVGVzdEZpbHRlcjM=", URLDecoder.decode("AoErVGVzdEZpbHRlcjM=", "UTF-8"));
   }
+
   /*
    * this would be expected to work, but fails
   	@Test

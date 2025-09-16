@@ -147,18 +147,14 @@ public class AmrDataIntegration extends AbstractIntegration {
 
     // Assert there are only 2 entries with missing testing standard
     assertEquals(
-        table
-            .getContent()
-            .parallelStream()
+        table.getContent().parallelStream()
             .filter(entry -> entry.get("ast_standard").getValue().equalsIgnoreCase("missing"))
             .count(),
         2);
 
     // Verifying AMREntry for ciprofloxacin is found and has certain values
     final Optional<Map<String, StructuredDataEntry>> optionalAmrEntry =
-        table
-            .getContent()
-            .parallelStream()
+        table.getContent().parallelStream()
             .filter(
                 entry -> entry.get("antibiotic_name").getValue().equalsIgnoreCase("ciprofloxacin"))
             .findFirst();

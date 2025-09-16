@@ -29,6 +29,7 @@ import uk.ac.ebi.biosamples.mongo.model.MongoPipeline;
 import uk.ac.ebi.biosamples.mongo.repository.MongoPipelineRepository;
 import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
 import uk.ac.ebi.biosamples.service.EraProDao;
+import uk.ac.ebi.biosamples.service.SampleRetrievalResult;
 import uk.ac.ebi.biosamples.service.SampleCallbackResult;
 import uk.ac.ebi.biosamples.utils.PipelineUniqueIdentifierGenerator;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
@@ -124,16 +125,16 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
     }
   }
 
-  private List<SampleCallbackResult> getAllNcbiSamplesToHandle(
+  private List<SampleRetrievalResult> getAllNcbiSamplesToHandle(
       final LocalDate fromDate, final LocalDate toDate) {
     final int MAX_RETRIES = 5;
-    List<SampleCallbackResult> sampleCallbackResults = new ArrayList<>();
+    List<SampleRetrievalResult> sampleRetrievalResults = new ArrayList<>();
     boolean success = false;
     int numRetry = 0;
 
     while (!success) {
       try {
-        sampleCallbackResults = eraProDao.doNcbiCallback(fromDate, toDate);
+        sampleRetrievalResults = eraProDao.doNcbiCallback(fromDate, toDate);
 
         success = true;
       } catch (final Exception e) {
@@ -145,19 +146,19 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
       }
     }
 
-    return sampleCallbackResults;
+    return sampleRetrievalResults;
   }
 
   private void syncNcbiSamples(final LocalDate fromDate, final LocalDate toDate) throws Exception {
     log.info("Handling NCBI Samples");
 
-    final List<SampleCallbackResult> sampleCallbackResults =
+    final List<SampleRetrievalResult> sampleRetrievalResults =
         getAllNcbiSamplesToHandle(fromDate, toDate);
 
     if (pipelinesProperties.getThreadCount() == 0) {
       final NcbiRowHandler ncbiRowHandler = new NcbiRowHandler(ncbiEnaLinkCallableFactory);
 
-      sampleCallbackResults.forEach(ncbiRowHandler::processRow);
+      sampleRetrievalResults.forEach(ncbiRowHandler::processRow);
     } else {
       try (final AdaptiveThreadPoolExecutor executorService =
           AdaptiveThreadPoolExecutor.create(
@@ -168,12 +169,12 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
               pipelinesProperties.getThreadCountMax())) {
         final NcbiRowHandler ncbiRowHandler = new NcbiRowHandler(ncbiEnaLinkCallableFactory);
 
-        sampleCallbackResults.forEach(
-            sampleCallbackResult -> {
+        sampleRetrievalResults.forEach(
+            sampleRetrievalResult -> {
               futures.put(
-                  sampleCallbackResult.getBiosampleId(),
+                  sampleRetrievalResult.getBiosampleId(),
                   executorService.submit(
-                      Objects.requireNonNull(ncbiRowHandler.processRow(sampleCallbackResult))));
+                      Objects.requireNonNull(ncbiRowHandler.processRow(sampleRetrievalResult))));
             });
 
         try {
@@ -197,9 +198,9 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
       this.ncbiEnaLinkCallableFactory = ncbiEnaLinkCallableFactory;
     }
 
-    public Callable<Void> processRow(final SampleCallbackResult sampleCallbackResult) {
-      final String sampleAccession = sampleCallbackResult.getBiosampleId();
-      final java.sql.Date lastUpdated = sampleCallbackResult.getLastUpdated();
+    public Callable<Void> processRow(final SampleRetrievalResult sampleRetrievalResult) {
+      final String sampleAccession = sampleRetrievalResult.getBiosampleId();
+      final java.sql.Date lastUpdated = sampleRetrievalResult.getLastUpdated();
 
       log.info(
           String.format(

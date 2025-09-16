@@ -54,6 +54,7 @@ public class BioSamplesClient implements AutoCloseable {
   private final CurationSubmissionService curationSubmissionService;
   private final StructuredDataSubmissionService structuredDataSubmissionService;
   private final SampleValidator sampleValidator;
+
   /**
    * -- GETTER -- Gets the public client.
    *

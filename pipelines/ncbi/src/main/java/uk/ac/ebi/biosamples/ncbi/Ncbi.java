@@ -78,7 +78,10 @@ public class Ncbi implements ApplicationRunner {
 
   @Override
   public void run(final ApplicationArguments args)
-      throws IOException, ParserConfigurationException, ExecutionException, InterruptedException,
+      throws IOException,
+          ParserConfigurationException,
+          ExecutionException,
+          InterruptedException,
           SAXException {
     String pipelineFailureCause = null;
     boolean isPassed = true;

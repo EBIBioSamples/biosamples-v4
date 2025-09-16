@@ -28,13 +28,18 @@ import uk.ac.ebi.biosamples.core.model.Sample;
 
 @Component
 public class SampleChecklistComplianceHandlerEVA {
+
   private static final Logger log =
       LoggerFactory.getLogger(SampleChecklistComplianceHandlerEVA.class);
+
   private static final String GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA =
       "geographic location (country and/or sea)";
   private static final String GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY =
       "geographic location (region and locality)";
-  public static final String NCBI_MIRRORING_WEBIN_ID = "Webin-842";
+  private static final String COLLECTION_DATE = "collection_date";
+  private static final String COLLECTION_DATE_WITHOUT_UNDERSCORE = "collection date";
+  private static final String NCBI_MIRRORING_WEBIN_ID = "Webin-842";
+
   private final BioSamplesClient bioSamplesWebinClient;
   private final PipelinesProperties pipelinesProperties;
 
@@ -46,168 +51,153 @@ public class SampleChecklistComplianceHandlerEVA {
   }
 
   private void processSample(final String accession) {
-    log.info("Processing Sample: " + accession);
+    log.info("Processing sample: {}", accession);
 
     final Optional<EntityModel<Sample>> optionalSampleEntityModel =
         bioSamplesWebinClient.fetchSampleResource(accession, false);
 
     if (optionalSampleEntityModel.isPresent()) {
-      handleGeographicLocationAndCollectionDate(optionalSampleEntityModel);
+      handleGeographicLocationAndCollectionDate(optionalSampleEntityModel.get().getContent());
     } else {
-      log.info("Sample not found: " + accession);
+      log.warn("Sample not found: {}", accession);
     }
   }
 
-  private void handleGeographicLocationAndCollectionDate(
-      Optional<EntityModel<Sample>> optionalSampleEntityModel) {
-    final Sample sample = optionalSampleEntityModel.orElseGet(null).getContent();
-
+  private void handleGeographicLocationAndCollectionDate(final Sample sample) {
     if (sample == null) {
+      log.warn("Sample object is null, skipping processing");
       return;
     }
 
     final String accession = sample.getAccession();
-    final Set<Attribute> attributeSet = sample.getAttributes();
+    final Set<Attribute> attributes = new HashSet<>(sample.getAttributes());
 
-    final Optional<Attribute> getLocAttributeOptional =
-        attributeSet.stream()
-            .filter(attribute -> attribute.getType().equals("geo_loc_name"))
-            .findFirst();
-    final Optional<Attribute> collectionDateAttributeOptional =
-        attributeSet.stream()
-            .filter(attribute -> attribute.getType().equals("collection_date"))
-            .findFirst();
+    // Handle geographic location
+    final Optional<Attribute> geoLocOptional =
+        attributes.stream().filter(attr -> "geo_loc_name".equals(attr.getType())).findFirst();
 
-    if (getLocAttributeOptional.isPresent()) {
-      log.info("geo_loc_name attribute present in: " + accession);
+    if (geoLocOptional.isPresent()) {
+      Attribute geoLoc = geoLocOptional.get();
+      String value = geoLoc.getValue();
 
-      final Attribute geoLocAttribute = getLocAttributeOptional.get();
-      final String getLocAttrValue = geoLocAttribute.getValue();
-      final String getLocAttributeTag = geoLocAttribute.getTag();
-      final String getLocAttributeUnit = geoLocAttribute.getUnit();
-      // final List<String> splittedGeoLoc = splitGeoLoc(getLocAttrValue);
-      final String geoLocValue = countryAndRegionExtractor(getLocAttrValue);
+      log.info(
+          "geo_loc_name attribute present in sample {}: {}",
+          accession,
+          value.isEmpty() ? "empty" : value);
 
-      if (!geoLocValue.isEmpty()) {
-        log.info(
-            "Setting "
-                + GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA
-                + " and "
-                + GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY
-                + " for "
-                + accession);
-
-        attributeSet.removeIf(
+      if (!value.isEmpty()) {
+        attributes.removeIf(
             attribute -> attribute.getType().equals(GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA));
-        attributeSet.removeIf(
+        attributes.removeIf(
             attribute -> attribute.getType().equals(GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY));
-        attributeSet.add(
+
+        attributes.add(
             Attribute.build(
                 GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA,
-                "South Korea",
-                getLocAttributeTag,
+                value,
+                geoLoc.getTag(),
                 Collections.emptyList(),
-                getLocAttributeUnit));
-        attributeSet.add(
-            Attribute.build(
-                GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY,
-                "South Korea",
-                getLocAttributeTag,
-                Collections.emptyList(),
-                getLocAttributeUnit));
+                geoLoc.getUnit()));
+
+        log.info(
+            "Set '{}' attribute for sample {}", GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA, accession);
       } else {
-        attributeSet.add(Attribute.build(GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA, "not provided"));
-        attributeSet.add(Attribute.build(GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY, "not provided"));
+        attributes.removeIf(
+            attribute -> attribute.getType().equals(GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA));
+        attributes.removeIf(
+            attribute -> attribute.getType().equals(GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY));
+
+        attributes.add(Attribute.build(GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA, "not provided"));
+
+        log.info(
+            "geo_loc_name empty, set '{}' as 'not provided' for sample {}",
+            GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA,
+            accession);
       }
     } else {
+      attributes.removeIf(
+          attribute -> attribute.getType().equals(GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA));
+      attributes.removeIf(
+          attribute -> attribute.getType().equals(GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY));
+
+      attributes.add(Attribute.build(GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA, "not provided"));
+
       log.info(
-          "geo_loc_name attribute not present in: "
-              + accession
-              + " building with not provided value");
-      attributeSet.add(Attribute.build(GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA, "not provided"));
+          "geo_loc_name attribute not present, set '{}' as 'not provided' for sample {}",
+          GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA,
+          accession);
     }
 
-    if (collectionDateAttributeOptional.isEmpty()) {
+    // Handle collection date
+    final Optional<Attribute> collectionDateOptional =
+        attributes.stream().filter(attr -> COLLECTION_DATE.equals(attr.getType())).findFirst();
+
+    if (collectionDateOptional.isPresent()) {
+      Attribute collectionDate = collectionDateOptional.get();
+      String value = collectionDate.getValue();
+
+      attributes.add(
+          Attribute.build(
+              COLLECTION_DATE_WITHOUT_UNDERSCORE,
+              value != null ? value : "not provided",
+              collectionDate.getTag(),
+              Collections.emptyList(),
+              null));
+
       log.info(
-          "collection_date attribute not present in: "
-              + accession
-              + " adding new attribute with not provided value");
-      attributeSet.add(Attribute.build("collection_date", "not provided"));
+          "Processed collection_date for sample {}: {}",
+          accession,
+          value != null ? value : "not provided");
     } else {
-      final Attribute collectionDateAttribute = collectionDateAttributeOptional.get();
-      final String collectionDateAttributeValue = collectionDateAttribute.getValue();
+      attributes.add(Attribute.build(COLLECTION_DATE_WITHOUT_UNDERSCORE, "not provided"));
 
-      if (!collectionDateAttributeValue.equals("not provided")) {
-        log.info(
-            "collection_date attribute present in: "
-                + accession
-                + " but not set to not provided, setting now");
-        attributeSet.remove(collectionDateAttribute);
-        attributeSet.add(Attribute.build("collection_date", "not provided"));
-      } else {
-        log.info(
-            "collection_date attribute present in: "
-                + accession
-                + " and set to not provided, no action required");
-      }
+      log.info(
+          "collection_date attribute not present, set as 'not provided' for sample {}", accession);
     }
 
-    final Sample updateSample =
-        Sample.Builder.fromSample(sample).withAttributes(attributeSet).build();
-
+    // Persist updated sample
+    final Sample updatedSample =
+        Sample.Builder.fromSample(sample).withAttributes(attributes).build();
     try {
-      bioSamplesWebinClient.persistSampleResource(updateSample);
-
-      log.info("Persisted using WEBIN client " + accession);
-    } catch (final Exception e) {
-      log.info("Failed to persisted using WEBIN client " + accession);
+      bioSamplesWebinClient.persistSampleResource(updatedSample);
+      log.info("Successfully persisted sample {} using WEBIN client", accession);
+    } catch (Exception e) {
+      log.error("Failed to persist sample {} using WEBIN client", accession, e);
     }
   }
 
-  public void samnSampleGeographicLocationAttributeUpdateFromFile() {
+  public void updateSamnSampleGeographicLocationFromFile() {
     final Pattern pattern = Pattern.compile("SAMN\\d+");
     final Set<String> samnAccessions = new HashSet<>();
 
-    try (final BufferedReader bufferedReader =
-        new BufferedReader(new FileReader("C:\\Users\\dgupta\\samples.txt"))) {
+    try (BufferedReader reader =
+        new BufferedReader(new FileReader("C:\\Users\\dgupta\\samples_2.list"))) {
       String line;
-
-      while ((line = bufferedReader.readLine()) != null) {
-        final Matcher matcher = pattern.matcher(line);
-
+      while ((line = reader.readLine()) != null) {
+        Matcher matcher = pattern.matcher(line);
         while (matcher.find()) {
           samnAccessions.add(matcher.group());
         }
       }
     } catch (IOException e) {
+      log.error("Error reading sample list file", e);
       throw new RuntimeException(e);
     }
 
-    for (final String accession : samnAccessions) {
-      // log.info(accession);
-
-      processSample(accession);
-    }
-  }
-
-  private String countryAndRegionExtractor(final String getLocAttrValue) {
-    return getLocAttrValue;
+    log.info("Found {} SAMN accessions to process", samnAccessions.size());
+    samnAccessions.forEach(this::processSample);
   }
 
   public static List<String> splitGeoLoc(final String input) {
     List<String> parts = new ArrayList<>();
     int index = input.indexOf(':');
-
     if (index != -1) {
-      String country = input.substring(0, index).trim();
-      String city = input.substring(index + 1).trim();
-      parts.add(country);
-      parts.add(city);
+      parts.add(input.substring(0, index).trim()); // country
+      parts.add(input.substring(index + 1).trim()); // city
     } else {
       parts.add(input.trim());
       parts.add("");
     }
-
     return parts;
   }
 }

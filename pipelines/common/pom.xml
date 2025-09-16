@@ -27,7 +27,7 @@
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
-			<version>1.3.4</version>
+			<version>1.5.5</version>
 		</dependency>
 		<!-- HTTP POST handling -->
 		<dependency>

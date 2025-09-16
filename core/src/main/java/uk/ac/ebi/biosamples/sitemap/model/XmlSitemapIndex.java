@@ -17,7 +17,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import javax.xml.bind.annotation.*;
 
-/** @author mrelac */
+/**
+ * @author mrelac
+ */
 @JacksonXmlRootElement(localName = "sitemapindex")
 public class XmlSitemapIndex {
   @JacksonXmlElementWrapper(useWrapping = false)
