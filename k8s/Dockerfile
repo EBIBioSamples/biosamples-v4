@@ -7,9 +7,9 @@ EXPOSE 8080
 CMD ["java", "-jar", "app.war"]
 
 FROM base as webapp-core-v2
-COPY webapps/core-v2/target/webapps-core-*.war app.war
+COPY webapps/core-v2/target/webapps-core-*.jar app.jar
 EXPOSE 8080
-CMD ["java", "-jar", "app.war"]
+CMD ["java", "-jar", "app.jar"]
 
 FROM base as pipelines-reindex
 COPY pipelines/reindex/target/pipelines-reindex-*.jar app.jar

@@ -260,7 +260,7 @@ deploy_k8s_hh_pipeline_prod:
               --docker-username=$CI_REGISTRY_USER \
               --docker-password=$CI_REGISTRY_PASSWORD
     - |
-      helm upgrade --install biosamples-reindex-pipeline ./k8s/jobs \
+      helm upgrade --install biosamples-reindex ./k8s/jobs \
                    --values ./k8s/helm/values-${ENVIRONMENT_NAME}.yaml \
                    --set "imagePullSecrets[0].name=$DOCKER_PULL_SECRET" \
                    --set image.repository=$CI_REGISTRY_IMAGE/pipelines-reindex \
@@ -291,7 +291,7 @@ deploy_k8s_hh_pipeline_prod:
                    --set image.repository=$CI_REGISTRY_IMAGE/webapp-core \
                    --set image.tag=$DOCKER_TAG
     - |
-      helm upgrade --install $APP_NAME ./k8s/helm \
+      helm upgrade --install ${APP_NAME}-v2 ./k8s/helm \
                    --values ./k8s/helm/values-${ENVIRONMENT_NAME}.yaml \
                    --set "imagePullSecrets[0].name=$DOCKER_PULL_SECRET" \
                    --set image.repository=$CI_REGISTRY_IMAGE/webapp-core-v2 \
