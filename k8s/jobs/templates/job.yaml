@@ -25,6 +25,23 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
+            - name: SPRING_DATA_MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: biosamples-mongodb
+                  key: connection-string
+            - name: SPRING_RABBITMQ_HOST
+              value: {{ .Values.rabbitmq.host }}
+            - name: SPRING_RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-user
+                  key: username
+            - name: SPRING_RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-user
+                  key: password
             {{- range .Values.env }}
             - name: {{ .name }}
               value: "{{ .value }}"
