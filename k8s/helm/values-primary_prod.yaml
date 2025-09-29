@@ -1,5 +1,5 @@
 rabbitmq:
-  host: wp-np2-40.ebi.ac.uk
+  host: wp-p1m-42.ebi.ac.uk
 biosamples:
   schemaValidator: http://localhost:3020/validate
   schemaStore: http://localhost:8085

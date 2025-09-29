@@ -45,13 +45,6 @@ public class MessageConfig {
         .build();
   }
 
-  @Bean(name = "reindexingExchange")
-  public Exchange reindexingExchange() {
-    return ExchangeBuilder.directExchange(MessagingConstants.REINDEXING_EXCHANGE)
-        .durable(true)
-        .build();
-  }
-
   @Bean(name = "uploadExchange")
   public Exchange uploadExchange() {
     return ExchangeBuilder.fanoutExchange(MessagingConstants.UPLOAD_EXCHANGE).durable(true).build();
@@ -69,7 +62,7 @@ public class MessageConfig {
   @Bean(name = "reindexingBinding")
   public Binding reindexBinding() {
     return BindingBuilder.bind(reindexingQueue())
-        .to(reindexingExchange())
+        .to(indexingExchange())
         .with(MessagingConstants.REINDEXING_QUEUE)
         .noargs();
   }
