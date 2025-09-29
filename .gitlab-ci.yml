@@ -238,7 +238,7 @@ deploy_k8s_primary_prod:
     K8S_NAMESPACE: biosamples-prod
   environment:
     name: primary_prod
-    url: https://wwwdev.ebi.ac.uk/biosamples
+    url: https://www.ebi.ac.uk/biosamples
   only:
     - dev
     - main
@@ -252,7 +252,7 @@ deploy_k8s_fallback_prod:
     K8S_NAMESPACE: biosamples-prod
   environment:
     name: fallback_prod
-    url: https://wwwdev.ebi.ac.uk/biosamples
+    url: https://www.ebi.ac.uk/biosamples
   only:
     - dev
     - main
@@ -296,6 +296,7 @@ deploy_pipeline_k8s_primary_dev:
     - docker:27-dind
   script:
     - echo $K8S_NAMESPACE
+    - kubectl config view
     - kubectl config set-context --current --namespace=${K8S_NAMESPACE}
     - kubectl delete secret $DOCKER_PULL_SECRET || true
     - |
