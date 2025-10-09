@@ -12,10 +12,10 @@ package uk.ac.ebi.biosamples.docs;
 
 import java.time.Instant;
 import java.util.*;
-import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.model.structured.StructuredData;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
+import uk.ac.ebi.biosamples.core.model.*;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredData;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredDataEntry;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredDataTable;
 
 public class DocumentationHelper {
   public static final String WEBIN_SUBMISSION_ACCOUNT_ID = "Webin-12345";

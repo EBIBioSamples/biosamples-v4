@@ -1,0 +1,85 @@
+{
+   "name":"source GSM498707 1",
+   "accession":"SAMEA182635",
+   "domain":"self.BioSamplesMigration",
+   "release":"2010-12-01T00:00:00Z",
+   "update":"2018-04-04T15:56:20.902Z",
+   "characteristics":{
+      "Organism":[
+         {
+            "text":"Homo sapiens",
+            "ontologyTerms":[
+               "http://purl.obolibrary.org/obo/NCBITaxon_9606"
+            ]
+         }
+      ],
+      "Sample_source_name":[
+         {
+            "text":"Normal colonic mucosa located in proximal colon from a familial HPPS patient"
+         }
+      ],
+      "colon location":[
+         {
+            "text":"proximal",
+            "ontologyTerms":[
+               "http://www.ebi.ac.uk/efo/EFO_0001661"
+            ]
+         }
+      ],
+      "description":[
+         {
+            "text":"A643MNP1"
+         }
+      ],
+      "disease":[
+         {
+            "text":"hyperplastic polyposis syndrome (HPPS)"
+         }
+      ],
+      "hereditary nature of hpps":[
+         {
+            "text":"familial"
+         }
+      ],
+      "histology":[
+         {
+            "text":"normal colonic mucosa"
+         }
+      ],
+      "organism part":[
+         {
+            "text":"colon",
+            "ontologyTerms":[
+               "http://www.ebi.ac.uk/efo/EFO_0000361"
+            ]
+         }
+      ]
+   },
+   "relationships":[
+      {
+         "source":"SAMEG12675",
+         "type":"has member",
+         "target":"SAMEA182635"
+      }
+   ],
+   "organization":[
+      {
+         "Name":"Instituto Português de Oncologia de Lisboa Francisco Gentil, EPE",
+         "Role":"submitter "
+      }
+   ],
+   "contact":[
+      {
+         "Name":"Cristina Albuquerque"
+      },
+      {
+         "Name":"Joana Dinis"
+      },
+      {
+         "Name":"Patrícia Silva"
+      }
+   ],
+   "releaseDate":"2010-12-01",
+   "updateDate":"2018-04-04"
+
+}

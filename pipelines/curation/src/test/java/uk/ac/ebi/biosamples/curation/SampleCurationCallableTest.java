@@ -36,11 +36,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.biosamples.core.model.Attribute;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.curation.service.IriUrlValidatorService;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.ols.OlsProcessor;
-import uk.ac.ebi.biosamples.service.CurationApplicationService;
+import uk.ac.ebi.biosamples.utils.ols.OlsProcessor;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(

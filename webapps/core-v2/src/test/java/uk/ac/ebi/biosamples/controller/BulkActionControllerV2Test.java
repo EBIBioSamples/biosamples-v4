@@ -31,10 +31,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.security.TestSecurityConfig;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.WebinAuthenticationService;
 
 @SpringBootTest(properties = {"spring.cloud.gcp.project-id=no_project"})
 @ContextConfiguration(classes = TestSecurityConfig.class)

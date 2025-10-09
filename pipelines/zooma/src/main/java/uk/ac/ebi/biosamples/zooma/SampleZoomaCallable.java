@@ -18,10 +18,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.CurationApplicationService;
+import uk.ac.ebi.biosamples.core.model.Attribute;
+import uk.ac.ebi.biosamples.core.model.Curation;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.service.CurationApplicationService;
 
 public class SampleZoomaCallable implements Callable<PipelineResult> {
   private final Logger log = LoggerFactory.getLogger(getClass());

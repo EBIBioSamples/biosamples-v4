@@ -28,7 +28,7 @@ public class ClientProperties {
   private URI biosamplesClientUriV2;
 
   @Value("${biosamples.client.pagesize:499}")
-  private int biosamplesClientPagesize;
+  private int biosamplesClientMaxPages;
 
   // in milliseconds
   @Value("${biosamples.client.timeout:60000}")

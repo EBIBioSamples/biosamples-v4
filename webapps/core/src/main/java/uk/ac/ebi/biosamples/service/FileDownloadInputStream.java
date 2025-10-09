@@ -17,8 +17,9 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Queue;
 import org.apache.commons.io.IOUtils;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.filter.Filter;
+import uk.ac.ebi.biosamples.core.service.FileDownloadSerializer;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 
 public class FileDownloadInputStream extends InputStream {

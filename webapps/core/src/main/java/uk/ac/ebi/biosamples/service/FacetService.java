@@ -18,8 +18,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.facet.Facet;
-import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.core.model.facet.Facet;
+import uk.ac.ebi.biosamples.core.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.service.SolrFacetService;
 
 @Service

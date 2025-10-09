@@ -20,6 +20,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
 public class Application {
@@ -28,6 +29,11 @@ public class Application {
   @Bean
   public static PropertySourcesPlaceholderConfigurer getPropertySourcesPlaceholderConfigurer() {
     return new PropertySourcesPlaceholderConfigurer();
+  }
+
+  @Bean
+  public RestTemplate restTemplate() {
+    return new RestTemplate();
   }
 
   public static void exitApplication(final ConfigurableApplicationContext ctx) {

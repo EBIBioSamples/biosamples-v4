@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import uk.ac.ebi.biosamples.model.facet.Facet;
+import uk.ac.ebi.biosamples.core.model.facet.Facet;
 import uk.ac.ebi.biosamples.mongo.model.MongoAnalytics;
 import uk.ac.ebi.biosamples.service.StatService;
 

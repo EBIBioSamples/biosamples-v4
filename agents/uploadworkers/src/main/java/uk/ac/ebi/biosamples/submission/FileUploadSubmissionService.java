@@ -27,11 +27,11 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Relationship;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.exception.GlobalExceptions;
+import uk.ac.ebi.biosamples.messaging.MessagingConstants;
 import uk.ac.ebi.biosamples.model.SubmissionFile;
 import uk.ac.ebi.biosamples.mongo.model.MongoFileUpload;
 import uk.ac.ebi.biosamples.mongo.repository.MongoFileUploadRepository;
@@ -56,7 +56,7 @@ public class FileUploadSubmissionService {
   @Autowired MongoSampleRepository mongoSampleRepository;
 
   @RabbitListener(
-      queues = Messaging.UPLOAD_QUEUE,
+      queues = MessagingConstants.UPLOAD_QUEUE,
       containerFactory = "biosamplesFileUploadSubmissionContainerFactory")
   public void receiveMessageFromBioSamplesFileUploaderQueue(final String mongoFileId) {
     handleMessage(mongoFileId);

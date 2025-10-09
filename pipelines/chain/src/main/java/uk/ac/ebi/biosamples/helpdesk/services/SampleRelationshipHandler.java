@@ -24,8 +24,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Relationship;
+import uk.ac.ebi.biosamples.core.model.Sample;
 
 @Service
 @Slf4j

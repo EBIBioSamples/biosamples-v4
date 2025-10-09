@@ -24,7 +24,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.controller.SampleCurationLinksController;
 import uk.ac.ebi.biosamples.controller.SampleRestController;
 import uk.ac.ebi.biosamples.controller.StructuredDataController;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Sample;
 
 /**
  * This class is used by Spring to add HAL _links for {@Link Sample} objects.

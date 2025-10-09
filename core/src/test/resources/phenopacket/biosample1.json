@@ -1,0 +1,75 @@
+{
+   "name":"source GSM729765 1",
+   "accession":"SAMEA190234",
+   "domain":"self.BioSamplesMigration",
+   "release":"2011-05-23T23:00:00Z",
+   "update":"2018-01-20T13:55:29.870Z",
+   "characteristics":{
+      "Organism":[
+         {
+            "text":"Homo sapiens",
+            "ontologyTerms":[
+               "http://purl.obolibrary.org/obo/NCBITaxon_9606"
+            ]
+         }
+      ],
+      "Sample_source_name":[
+         {
+            "text":"A549/vec cells"
+         }
+      ],
+      "description":[
+         {
+            "text":"Biological replicate 1"
+         }
+      ],
+      "disease":[
+         {
+            "text":"Lung adenocarcinoma",
+            "ontologyTerms":[
+               "http://www.ebi.ac.uk/efo/EFO_0000571"
+            ]
+         }
+      ],
+      "strain":[
+         {
+            "text":"A549 lung cancer cells"
+         }
+      ],
+      "transfection":[
+         {
+            "text":"Empty pLemiR plasmid"
+         }
+      ]
+   },
+   "relationships":[
+      {
+         "source":"SAMEG12970",
+         "type":"has member",
+         "target":"SAMEA190234"
+      }
+   ],
+   "organization":[
+      {
+         "Name":"Roswell Park Cancer Institute",
+         "Role":"submitter "
+      }
+   ],
+   "contact":[
+      {
+         "Name":"Eric Kannisto"
+      },
+      {
+         "Name":"Reema Mallick"
+      },
+      {
+         "Name":"Sai Yendamuri"
+      },
+      {
+         "Name":"Santosh Patnaik"
+      }
+   ],
+   "releaseDate":"2011-05-23",
+   "updateDate":"2018-01-20"
+
+}

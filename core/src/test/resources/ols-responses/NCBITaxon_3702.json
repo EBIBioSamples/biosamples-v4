@@ -1,0 +1,609 @@
+{
+  "_embedded": {
+    "terms": [
+      {
+        "iri": "http://purl.obolibrary.org/obo/NCBITaxon_3702",
+        "label": "Arabidopsis thaliana",
+        "description": null,
+        "annotation": {
+          "has_obo_namespace": [
+            "ncbi_taxonomy"
+          ],
+          "has_related_synonym": [
+            "At-"
+          ],
+          "id": [
+            "NCBITaxon:3702"
+          ]
+        },
+        "synonyms": null,
+        "ontology_name": "pr",
+        "ontology_prefix": "PR",
+        "ontology_iri": "http://purl.obolibrary.org/obo/pr.owl",
+        "is_obsolete": false,
+        "term_replaced_by": null,
+        "is_defining_ontology": false,
+        "has_children": false,
+        "is_root": false,
+        "short_form": "NCBITaxon_3702",
+        "obo_id": "NCBITaxon:3702",
+        "in_subset": null,
+        "obo_definition_citation": null,
+        "obo_xref": null,
+        "obo_synonym": [
+          {
+            "name": "At-",
+            "scope": "hasRelatedSynonym",
+            "type": "Unique short label for PRO terms for display purposes",
+            "xrefs": [
+              {
+                "database": "PRO",
+                "id": "DAN",
+                "description": null,
+                "url": null
+              }
+            ]
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/pr/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702"
+          },
+          "parents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/pr/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/parents"
+          },
+          "ancestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/pr/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/ancestors"
+          },
+          "hierarchicalParents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/pr/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalParents"
+          },
+          "hierarchicalAncestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/pr/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalAncestors"
+          },
+          "jstree": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/pr/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/jstree"
+          },
+          "graph": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/pr/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/graph"
+          }
+        }
+      },
+      {
+        "iri": "http://purl.obolibrary.org/obo/NCBITaxon_3702",
+        "label": "Arabidopsis thaliana",
+        "description": [
+          "An organism of the species Arabidopsis thaliana"
+        ],
+        "annotation": {
+          "id": [
+            "NCBITaxon:3702"
+          ]
+        },
+        "synonyms": null,
+        "ontology_name": "cco",
+        "ontology_prefix": "CCO",
+        "ontology_iri": "http://purl.obolibrary.org/obo/cco",
+        "is_obsolete": false,
+        "term_replaced_by": null,
+        "is_defining_ontology": false,
+        "has_children": false,
+        "is_root": false,
+        "short_form": "NCBITaxon_3702",
+        "obo_id": "NCBITaxon:3702",
+        "in_subset": null,
+        "obo_definition_citation": null,
+        "obo_xref": null,
+        "obo_synonym": null,
+        "_links": {
+          "self": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/cco/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702"
+          },
+          "parents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/cco/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/parents"
+          },
+          "ancestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/cco/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/ancestors"
+          },
+          "hierarchicalParents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/cco/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalParents"
+          },
+          "hierarchicalAncestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/cco/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalAncestors"
+          },
+          "jstree": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/cco/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/jstree"
+          },
+          "graph": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/cco/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/graph"
+          }
+        }
+      },
+      {
+        "iri": "http://purl.obolibrary.org/obo/NCBITaxon_3702",
+        "label": "Arabidopsis thaliana",
+        "description": null,
+        "annotation": {
+          "alternative term": [
+            "thale cress",
+            "mouse-ear cress",
+            "Arabidopsis thaliana (thale cress)",
+            "thale-cress",
+            "Arbisopsis thaliana"
+          ],
+          "imported from": [
+            "http://purl.obolibrary.org/obo/ncbitaxon.owl"
+          ]
+        },
+        "synonyms": null,
+        "ontology_name": "ero",
+        "ontology_prefix": "ERO",
+        "ontology_iri": "http://purl.obolibrary.org/obo/ero",
+        "is_obsolete": false,
+        "term_replaced_by": null,
+        "is_defining_ontology": false,
+        "has_children": false,
+        "is_root": false,
+        "short_form": "NCBITaxon_3702",
+        "obo_id": "NCBITaxon:3702",
+        "in_subset": null,
+        "obo_definition_citation": null,
+        "obo_xref": null,
+        "obo_synonym": null,
+        "_links": {
+          "self": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ero/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702"
+          },
+          "parents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ero/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/parents"
+          },
+          "ancestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ero/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/ancestors"
+          },
+          "hierarchicalParents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ero/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalParents"
+          },
+          "hierarchicalAncestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ero/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalAncestors"
+          },
+          "jstree": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ero/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/jstree"
+          },
+          "graph": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ero/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/graph"
+          }
+        }
+      },
+      {
+        "iri": "http://purl.obolibrary.org/obo/NCBITaxon_3702",
+        "label": "Arabidopsis thaliana",
+        "description": [
+          "A species of genus Arabidopsis."
+        ],
+        "annotation": {
+          "has_related_synonym": [
+            "Arabidopsis thaliana (thale cress)",
+            "Arbisopsis thaliana"
+          ]
+        },
+        "synonyms": [
+          "Mouse-ear cress",
+          "Thale cress",
+          "Thale-cress"
+        ],
+        "ontology_name": "mirnao",
+        "ontology_prefix": "MIRNAO",
+        "ontology_iri": "http://purl.obolibrary.org/obo/mirnao",
+        "is_obsolete": false,
+        "term_replaced_by": null,
+        "is_defining_ontology": false,
+        "has_children": false,
+        "is_root": false,
+        "short_form": "NCBITaxon_3702",
+        "obo_id": "NCBITaxon:3702",
+        "in_subset": null,
+        "obo_definition_citation": null,
+        "obo_xref": null,
+        "obo_synonym": null,
+        "_links": {
+          "self": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/mirnao/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702"
+          },
+          "parents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/mirnao/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/parents"
+          },
+          "ancestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/mirnao/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/ancestors"
+          },
+          "hierarchicalParents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/mirnao/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalParents"
+          },
+          "hierarchicalAncestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/mirnao/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalAncestors"
+          },
+          "jstree": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/mirnao/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/jstree"
+          },
+          "graph": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/mirnao/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/graph"
+          }
+        }
+      },
+      {
+        "iri": "http://purl.obolibrary.org/obo/NCBITaxon_3702",
+        "label": "Arabidopsis thaliana",
+        "description": null,
+        "annotation": {
+          "editor preferred label": [
+            "Arabidopsis thaliana"
+          ],
+          "imported from": [
+            "http://purl.obolibrary.org/obo/ncbitaxon.owl"
+          ]
+        },
+        "synonyms": [
+          "thale cress",
+          "mouse-ear cress",
+          "Arabidopsis thaliana (thale cress)",
+          "thale-cress",
+          "Arabidopsis_thaliana",
+          "Arbisopsis thaliana"
+        ],
+        "ontology_name": "bao",
+        "ontology_prefix": "BAO",
+        "ontology_iri": "http://www.bioassayontology.org/bao/bao_complete.owl",
+        "is_obsolete": false,
+        "term_replaced_by": null,
+        "is_defining_ontology": false,
+        "has_children": false,
+        "is_root": false,
+        "short_form": "NCBITaxon_3702",
+        "obo_id": "NCBITaxon:3702",
+        "in_subset": null,
+        "obo_definition_citation": null,
+        "obo_xref": null,
+        "obo_synonym": null,
+        "_links": {
+          "self": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/bao/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702"
+          },
+          "parents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/bao/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/parents"
+          },
+          "ancestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/bao/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/ancestors"
+          },
+          "hierarchicalParents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/bao/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalParents"
+          },
+          "hierarchicalAncestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/bao/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalAncestors"
+          },
+          "jstree": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/bao/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/jstree"
+          },
+          "graph": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/bao/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/graph"
+          }
+        }
+      },
+      {
+        "iri": "http://purl.obolibrary.org/obo/NCBITaxon_3702",
+        "label": "Arabidopsis thaliana",
+        "description": null,
+        "annotation": {
+          "alternative term": [
+            "thale cress",
+            "mouse-ear cress",
+            "thale-cress"
+          ],
+          "editor preferred label": [
+            "Arabidopsis thaliana"
+          ],
+          "imported from": [
+            "http://purl.obolibrary.org/obo/ncbitaxon.owl"
+          ]
+        },
+        "synonyms": null,
+        "ontology_name": "obi",
+        "ontology_prefix": "OBI",
+        "ontology_iri": "http://purl.obolibrary.org/obo/obi.owl",
+        "is_obsolete": false,
+        "term_replaced_by": null,
+        "is_defining_ontology": false,
+        "has_children": false,
+        "is_root": false,
+        "short_form": "NCBITaxon_3702",
+        "obo_id": "NCBITaxon:3702",
+        "in_subset": null,
+        "obo_definition_citation": null,
+        "obo_xref": null,
+        "obo_synonym": null,
+        "_links": {
+          "self": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/obi/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702"
+          },
+          "parents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/obi/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/parents"
+          },
+          "ancestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/obi/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/ancestors"
+          },
+          "hierarchicalParents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/obi/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalParents"
+          },
+          "hierarchicalAncestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/obi/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalAncestors"
+          },
+          "jstree": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/obi/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/jstree"
+          },
+          "graph": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/obi/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/graph"
+          }
+        }
+      },
+      {
+        "iri": "http://purl.obolibrary.org/obo/NCBITaxon_3702",
+        "label": "Arabidopsis thaliana",
+        "description": null,
+        "annotation": {
+          "alternative term": [
+            "thale cress",
+            "mouse-ear cress",
+            "thale-cress"
+          ],
+          "editor preferred label": [
+            "Arabidopsis thaliana"
+          ],
+          "imported from": [
+            "http://purl.obolibrary.org/obo/ncbitaxon.owl"
+          ]
+        },
+        "synonyms": null,
+        "ontology_name": "ohmi",
+        "ontology_prefix": "OHMI",
+        "ontology_iri": "http://purl.obolibrary.org/obo/ohmi.owl",
+        "is_obsolete": false,
+        "term_replaced_by": null,
+        "is_defining_ontology": false,
+        "has_children": false,
+        "is_root": false,
+        "short_form": "NCBITaxon_3702",
+        "obo_id": "NCBITaxon:3702",
+        "in_subset": null,
+        "obo_definition_citation": null,
+        "obo_xref": null,
+        "obo_synonym": null,
+        "_links": {
+          "self": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ohmi/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702"
+          },
+          "parents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ohmi/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/parents"
+          },
+          "ancestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ohmi/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/ancestors"
+          },
+          "hierarchicalParents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ohmi/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalParents"
+          },
+          "hierarchicalAncestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ohmi/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalAncestors"
+          },
+          "jstree": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ohmi/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/jstree"
+          },
+          "graph": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ohmi/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/graph"
+          }
+        }
+      },
+      {
+        "iri": "http://purl.obolibrary.org/obo/NCBITaxon_3702",
+        "label": "Arabidopsis thaliana",
+        "description": null,
+        "annotation": {
+          "has_obo_namespace": [
+            "ncbi_taxonomy"
+          ],
+          "has_rank": [
+            "http://purl.obolibrary.org/obo/NCBITaxon_species"
+          ],
+          "id": [
+            "NCBITaxon:3702"
+          ],
+          "term editor": [
+            "Class imported / merged by efoimporter",
+            "James Malone"
+          ]
+        },
+        "synonyms": [
+          "thale cress",
+          "mouse-ear cress",
+          "Arabidopsis thaliana (thale cress)",
+          "thale-cress",
+          "Arbisopsis thaliana"
+        ],
+        "ontology_name": "efo",
+        "ontology_prefix": "EFO",
+        "ontology_iri": "http://www.ebi.ac.uk/efo/efo.owl",
+        "is_obsolete": false,
+        "term_replaced_by": null,
+        "is_defining_ontology": false,
+        "has_children": true,
+        "is_root": false,
+        "short_form": "NCBITaxon_3702",
+        "obo_id": "NCBITaxon:3702",
+        "in_subset": null,
+        "obo_definition_citation": null,
+        "obo_xref": null,
+        "obo_synonym": null,
+        "_links": {
+          "self": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/efo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702"
+          },
+          "parents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/efo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/parents"
+          },
+          "ancestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/efo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/ancestors"
+          },
+          "hierarchicalParents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/efo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalParents"
+          },
+          "hierarchicalAncestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/efo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalAncestors"
+          },
+          "jstree": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/efo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/jstree"
+          },
+          "children": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/efo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/children"
+          },
+          "descendants": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/efo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/descendants"
+          },
+          "hierarchicalChildren": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/efo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalChildren"
+          },
+          "hierarchicalDescendants": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/efo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalDescendants"
+          },
+          "graph": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/efo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/graph"
+          },
+          "part_of": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/efo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FBFO_0000050"
+          }
+        }
+      },
+      {
+        "iri": "http://purl.obolibrary.org/obo/NCBITaxon_3702",
+        "label": "Arabidopsis thaliana",
+        "description": null,
+        "annotation": {
+          "database_cross_reference": [
+            "GC_ID:1"
+          ],
+          "has_exact_synonym": [
+            "thale cress",
+            "mouse-ear cress",
+            "thale-cress"
+          ],
+          "has_obo_namespace": [
+            "ncbi_taxonomy"
+          ],
+          "has_rank": [
+            "http://purl.obolibrary.org/obo/NCBITaxon_species"
+          ],
+          "has_related_synonym": [
+            "Arabidopsis thaliana (thale cress)",
+            "Arabidopsis_thaliana",
+            "thale kress",
+            "Arbisopsis thaliana"
+          ]
+        },
+        "synonyms": null,
+        "ontology_name": "ncbitaxon",
+        "ontology_prefix": "NCBITAXON",
+        "ontology_iri": "http://purl.obolibrary.org/obo/ncbitaxon.owl",
+        "is_obsolete": false,
+        "term_replaced_by": null,
+        "is_defining_ontology": true,
+        "has_children": false,
+        "is_root": false,
+        "short_form": "NCBITaxon_3702",
+        "obo_id": "NCBITaxon:3702",
+        "in_subset": null,
+        "obo_definition_citation": null,
+        "obo_xref": [
+          {
+            "database": "GC_ID",
+            "id": "1",
+            "description": null,
+            "url": null
+          }
+        ],
+        "obo_synonym": [
+          {
+            "name": "thale-cress",
+            "scope": "hasExactSynonym",
+            "type": "common name",
+            "xrefs": []
+          },
+          {
+            "name": "thale kress",
+            "scope": "hasRelatedSynonym",
+            "type": "misspelling",
+            "xrefs": []
+          },
+          {
+            "name": "Arbisopsis thaliana",
+            "scope": "hasRelatedSynonym",
+            "type": "misspelling",
+            "xrefs": []
+          },
+          {
+            "name": "thale cress",
+            "scope": "hasExactSynonym",
+            "type": "genbank common name",
+            "xrefs": []
+          },
+          {
+            "name": "Arabidopsis_thaliana",
+            "scope": "hasRelatedSynonym",
+            "type": "misspelling",
+            "xrefs": []
+          },
+          {
+            "name": "mouse-ear cress",
+            "scope": "hasExactSynonym",
+            "type": "common name",
+            "xrefs": []
+          },
+          {
+            "name": "Arabidopsis thaliana (thale cress)",
+            "scope": "hasRelatedSynonym",
+            "type": "misspelling",
+            "xrefs": []
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ncbitaxon/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702"
+          },
+          "parents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ncbitaxon/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/parents"
+          },
+          "ancestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ncbitaxon/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/ancestors"
+          },
+          "hierarchicalParents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ncbitaxon/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalParents"
+          },
+          "hierarchicalAncestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ncbitaxon/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/hierarchicalAncestors"
+          },
+          "jstree": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ncbitaxon/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/jstree"
+          },
+          "graph": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/ncbitaxon/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_3702/graph"
+          }
+        }
+      }
+    ]
+  },
+  "_links": {
+    "self": {
+      "href": "https://wwwdev.ebi.ac.uk/ols/api/terms"
+    }
+  },
+  "page": {
+    "size": 500,
+    "totalElements": 9,
+    "totalPages": 1,
+    "number": 0
+  }
+}

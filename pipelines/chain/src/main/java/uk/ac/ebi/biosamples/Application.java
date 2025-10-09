@@ -48,7 +48,6 @@ import uk.ac.ebi.biosamples.utils.PipelineUtils;
 @Import(ExclusionConfiguration.class)
 @EnableCaching
 public class Application {
-
   public static void main(final String[] args) {
     final ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
     PipelineUtils.exitPipeline(ctx);

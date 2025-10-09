@@ -24,11 +24,11 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
-import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.model.structured.StructuredData;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataEntry;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataTable;
-import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
+import uk.ac.ebi.biosamples.core.model.*;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredData;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredDataEntry;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredDataTable;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredDataType;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 import uk.ac.ebi.biosamples.utils.TestUtilities;
 
@@ -147,18 +147,14 @@ public class AmrDataIntegration extends AbstractIntegration {
 
     // Assert there are only 2 entries with missing testing standard
     assertEquals(
-        table
-            .getContent()
-            .parallelStream()
+        table.getContent().parallelStream()
             .filter(entry -> entry.get("ast_standard").getValue().equalsIgnoreCase("missing"))
             .count(),
         2);
 
     // Verifying AMREntry for ciprofloxacin is found and has certain values
     final Optional<Map<String, StructuredDataEntry>> optionalAmrEntry =
-        table
-            .getContent()
-            .parallelStream()
+        table.getContent().parallelStream()
             .filter(
                 entry -> entry.get("antibiotic_name").getValue().equalsIgnoreCase("ciprofloxacin"))
             .findFirst();

@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.Certificate;
+import uk.ac.ebi.biosamples.core.model.Certificate;
 import uk.ac.ebi.biosamples.model.certification.*;
 
 @Service

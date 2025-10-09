@@ -132,7 +132,7 @@ public class EnaImportRunner implements ApplicationRunner {
       // importSuppressedAndKilled);
 
       // Import ENA samples
-      // importEraSamples(fromDate, toDate);
+      importEraSamples(fromDate, toDate);
 
       // Import ERA and BSD authority samples from file
       /*if (filePath != null) {
@@ -153,7 +153,7 @@ public class EnaImportRunner implements ApplicationRunner {
       }*/
 
       // Sync BSD authority samples from ERAPRO
-      importEraBsdAuthoritySamples(fromDate, toDate);
+      // importEraBsdAuthoritySamples(fromDate, toDate);
       // syncBsdEnaSampleStatusFromFile_BsdAuthoritySamples(filePath);
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);

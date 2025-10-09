@@ -24,10 +24,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.filter.AttributeFilter;
-import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.core.model.Attribute;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.SampleStatus;
+import uk.ac.ebi.biosamples.core.model.filter.AttributeFilter;
+import uk.ac.ebi.biosamples.core.model.filter.Filter;
 
 @Service
 @Slf4j
@@ -103,11 +104,11 @@ public class SampleStatusUpdater {
     }
   }
 
-  public void processSamples(final List<String> accessions) {
-    accessions.forEach(accession -> processSample(accession));
+  public void processSamples(final List<String> accessions, final SampleStatus toMakeStatus) {
+    accessions.forEach(accession -> processSample(accession, toMakeStatus));
   }
 
-  private void processSample(final String accession) {
+  private void processSample(final String accession, final SampleStatus toMakeStatus) {
     log.info("Handling " + accession);
 
     Optional<EntityModel<Sample>> optionalSampleEntityModel =
@@ -116,28 +117,41 @@ public class SampleStatusUpdater {
     if (optionalSampleEntityModel.isPresent()) {
       final Sample sample = optionalSampleEntityModel.get().getContent();
 
-      handleSample(sample);
+      handleSample(sample, toMakeStatus);
     } else {
       log.info("Not found " + accession);
     }
   }
 
-  private void handleSample(final Sample sample) {
-    if (sample.getRelease().isAfter(Instant.now())) {
-      log.info("Sample " + sample.getAccession() + " is already private, no action required");
-    } else {
-      log.info("Sample " + sample.getAccession() + " is public, making private");
+  private void handleSample(final Sample sample, final SampleStatus toMakeStatus) {
+    final String accession = sample.getAccession();
 
-      final Sample updatedSample =
-          Sample.Builder.fromSample(sample)
-              .withRelease(
-                  Instant.ofEpochSecond(
-                      LocalDateTime.now(ZoneOffset.UTC)
-                          .plusYears(100)
-                          .toEpochSecond(ZoneOffset.UTC)))
-              .build();
+    Sample updatedSample = null;
 
+    if (toMakeStatus == SampleStatus.PRIVATE) {
+      if (sample.getRelease().isBefore(Instant.now())) {
+        updatedSample =
+            Sample.Builder.fromSample(sample)
+                .withRelease(
+                    Instant.ofEpochSecond(
+                        LocalDateTime.now(ZoneOffset.UTC)
+                            .plusYears(100)
+                            .toEpochSecond(ZoneOffset.UTC)))
+                .build();
+      } else {
+        log.info("{} is already private", accession);
+      }
+    } else if (toMakeStatus == SampleStatus.PUBLIC) {
+      if (sample.getRelease().isAfter(Instant.now())) {
+        updatedSample = Sample.Builder.fromSample(sample).withRelease(Instant.now()).build();
+      } else {
+        log.info("{} is already public", accession);
+      }
+    }
+
+    if (updatedSample != null) {
       webinClient.persistSampleResource(updatedSample);
+      log.info("{} is released", accession);
     }
   }
 }

@@ -18,7 +18,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
-import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.core.model.filter.Filter;
+import uk.ac.ebi.biosamples.core.service.FileDownloadSerializer;
 
 @Service
 public class FileDownloadService {

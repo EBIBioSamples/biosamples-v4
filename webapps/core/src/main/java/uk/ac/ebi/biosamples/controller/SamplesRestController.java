@@ -34,18 +34,18 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
-import uk.ac.ebi.biosamples.exceptions.GlobalExceptions.PaginationException;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.core.model.filter.Filter;
+import uk.ac.ebi.biosamples.core.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.exception.GlobalExceptions;
+import uk.ac.ebi.biosamples.exception.GlobalExceptions.PaginationException;
 import uk.ac.ebi.biosamples.service.*;
-import uk.ac.ebi.biosamples.service.security.WebinAuthenticationService;
+import uk.ac.ebi.biosamples.service.WebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.taxonomy.TaxonomyClientService;
+import uk.ac.ebi.biosamples.service.validation.SchemaValidationService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
-import uk.ac.ebi.biosamples.validation.SchemaValidationService;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and write.
@@ -137,18 +137,20 @@ public class SamplesRestController {
 
     if (cursor != null) {
       log.trace("This cursor = " + decodedCursor);
+
       final CursorArrayList<Sample> samples =
           samplePageService.getSamplesByText(
               decodedText, filters, principle, decodedCursor, effectiveSize, applyCurations);
+
       log.trace("Next cursor = " + samples.getNextCursorMark());
 
       final CollectionModel<EntityModel<Sample>> resources =
           CollectionModel.of(
               samples.stream()
                   .map(
-                      s ->
-                          s != null
-                              ? sampleResourceAssembler.toModel(s, SampleRestController.class)
+                      sample ->
+                          sample != null
+                              ? sampleResourceAssembler.toModel(sample, SampleRestController.class)
                               : null)
                   .collect(Collectors.toList()));
 
@@ -161,6 +163,7 @@ public class SamplesRestController {
               effectiveSize,
               IanaLinkRelations.SELF.value(),
               getClass()));
+
       // only display the next link if there is a next cursor to go to
       if (!LinkUtils.decodeText(samples.getNextCursorMark()).equals(decodedCursor)
           && !samples.getNextCursorMark().equals("*")) {
@@ -189,6 +192,7 @@ public class SamplesRestController {
 
       final UriComponentsBuilder uriComponentsBuilder =
           WebMvcLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
+
       // This is a bit of a hack, but best we can do for now...
       resources.add(
           Link.of(uriComponentsBuilder.build(true).toUriString() + "/{accession}", "sample"));

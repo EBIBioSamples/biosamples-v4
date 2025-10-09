@@ -23,7 +23,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
-import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.core.model.*;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component

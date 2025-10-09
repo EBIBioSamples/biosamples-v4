@@ -4,6 +4,13 @@ services:
 
 variables:
   DEPLOY_PATH: ~/gitlab
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_TAG: $CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
+  DOCKER_IMAGE_NAME: $CI_REGISTRY_IMAGE:$DOCKER_TAG
+  DOCKER_PULL_SECRET: docker-registry-secret
+  APP_NAME: $CI_PROJECT_NAME
+
 
 before_script:
   - echo $CI_BUILD_REF
@@ -11,32 +18,70 @@ before_script:
   - apk update && apk add git
 
 stages:
+  - build
   - package
   - config
   - deploy
 
-maven-package:
+maven-package-webapps-core:
   image: ${CI_REGISTRY_IMAGE}/eclipse-temurin:17-jdk
-  stage: package
+  stage: build
   script:
-    - './mvnw -q deploy -P embl-ebi -s ci_settings.xml -DskipTests -Dmaven.source.skip=true'
-    - mkdir deployment
-    - cp webapps/core/target/webapps-core-*.war deployment/webapps-core.war
-    - cp webapps/core-v2/target/webapps-core-v2*.jar deployment/webapps-core-v2.jar
-    - cp agents/solr/target/agents-solr-*.jar deployment/agents-solr.jar
-    - cp agents/uploadworkers/target/agents-uploadworkers-*.jar deployment/agents-uploadworkers.jar
-    - cp pipelines/curation/target/pipelines-curation-*.jar deployment/pipelines-curation.jar
-    # - cp pipelines/ena/target/pipelines-ena-*.jar deployment/pipelines-ena.jar
-    # - cp pipelines/ncbi-ena-link/target/pipelines-ncbi-ena-link-*.jar deployment/pipelines-ncbi-ena-link.jar
-    - cp pipelines/sample-release/target/pipelines-sample-release-*.jar deployment/pipelines-sample-release.jar
-    - cp pipelines/sample-post-release-action/target/pipelines-sample-post-release-action*.jar deployment/pipelines-sample-post-release-action.jar
-    - cp pipelines/ncbi/target/pipelines-ncbi-*.jar deployment/pipelines-ncbi.jar
-    - cp pipelines/reindex/target/pipelines-reindex-*.jar deployment/pipelines-reindex.jar
-    - cp pipelines/sample-transformation-dtol/target/pipelines-sample-transformation-dtol-*.jar deployment/pipelines-sample-transformation-dtol.jar
+    - './mvnw -q deploy -pl webapps/core -am -P embl-ebi -s ci_settings.xml -DskipTests -Dmaven.source.skip=true'
   artifacts:
     paths:
-      - deployment
+      - webapps/core/target/webapps-core-*.war
+
+    # maven-package:
+    # image: ${CI_REGISTRY_IMAGE}/eclipse-temurin:17-jdk
+    # stage: build
+    # script:
+    #  - './mvnw -q deploy -P embl-ebi -s ci_settings.xml -DskipTests -Dmaven.source.skip=true'
+    #  - mkdir deployment
+    #  - cp webapps/core/target/webapps-core-*.war deployment/webapps-core.war
+    #  - cp webapps/core-v2/target/webapps-core-v2*.jar deployment/webapps-core-v2.jar
+    #  - cp agents/solr/target/agents-solr-*.jar deployment/agents-solr.jar
+    # - cp agents/uploadworkers/target/agents-uploadworkers-*.jar deployment/agents-uploadworkers.jar
+    #  - cp pipelines/curation/target/pipelines-curation-*.jar deployment/pipelines-curation.jar
+    # - cp pipelines/ena/target/pipelines-ena-*.jar deployment/pipelines-ena.jar
+    # - cp pipelines/ncbi-ena-link/target/pipelines-ncbi-ena-link-*.jar deployment/pipelines-ncbi-ena-link.jar
+  # - cp pipelines/sample-release/target/pipelines-sample-release-*.jar deployment/pipelines-sample-release.jar
+  # - cp pipelines/sample-post-release-action/target/pipelines-sample-post-release-action*.jar deployment/pipelines-sample-post-release-action.jar
+  # - cp pipelines/ncbi/target/pipelines-ncbi-*.jar deployment/pipelines-ncbi.jar
+  # - cp pipelines/reindex/target/pipelines-reindex-*.jar deployment/pipelines-reindex.jar
+  # - cp pipelines/sample-transformation-dtol/target/pipelines-sample-transformation-dtol-*.jar deployment/pipelines-sample-transformation-dtol.jar
+  # artifacts:
+  #  paths:
+  #    - deployment
 #  when: manual
+
+build_docker_image:
+  stage: package
+  image: docker:stable
+  services:
+    - docker:stable-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    - docker build --build-arg DOCKER_REGISTRY=${CI_REGISTRY_IMAGE} -t $DOCKER_IMAGE_NAME -f webapps/core/Dockerfile .
+    - docker push $DOCKER_IMAGE_NAME
+  after_script:
+    - docker logout ${CI_REGISTRY_IMAGE}
+
+deploy-dev-bsd-v1:
+  image: dtzar/helm-kubectl:3.11.0
+  stage: deploy
+  script:
+    - cd webapps/core
+    - sed -i "s|%DOCKER_IMAGE%|$DOCKER_IMAGE_NAME|g" core-deployment.yaml
+    - kubectl config set-cluster bsd-cluster --server="${K8_HL_SERVER}"
+    - kubectl config set clusters.bsd-cluster.certificate-authority-data ${K8_HL_CERTIFICATE_AUTHORITY_DATA}
+    - kubectl config set-credentials bsd-user --token="${K8_HL_CREDENTIALS}"
+    - kubectl config set-context bsd-context --cluster=bsd-cluster --user=bsd-user
+    - kubectl config use-context bsd-context
+    - kubectl apply -f core-deployment.yaml --namespace=biosamples-dev
+    - kubectl apply -f core-service.yaml --namespace=biosamples-dev
+  when: manual
 
 clone-config-dev:
   stage: config
@@ -127,7 +172,7 @@ deploy-production:
   parallel:
     matrix:
       - BSD_NODE_NAME: bsd_prod
-        BSD_HOST_NAME: [wp-p2m-40, wp-p2m-41, wp-p1m-40, wp-p1m-41]
+        BSD_HOST_NAME: [ wp-p2m-40, wp-p2m-41, wp-p1m-40, wp-p1m-41 ]
   environment:
     name: prod-${BSD_HOST_NAME}
     url: http://${BSD_HOST_NAME}:8081/biosamples/
@@ -144,7 +189,7 @@ deploy-production-solr:
   parallel:
     matrix:
       - BSD_NODE_NAME: bsd_prod
-        BSD_SOLR_HOST_NAME: [wp-p1m-42, wp-p2m-42]
+        BSD_SOLR_HOST_NAME: [ wp-p1m-42, wp-p2m-42 ]
   environment:
     name: prod-solr-${BSD_HOST_NAME}
     url: http://${BSD_SOLR_HOST_NAME}.ebi.ac.uk:8983/solr

@@ -26,7 +26,11 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
-import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.core.model.Attribute;
+import uk.ac.ebi.biosamples.core.model.ExternalReference;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.jsonld.model.JsonLDDataRecord;
+import uk.ac.ebi.biosamples.jsonld.model.JsonLDSample;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component

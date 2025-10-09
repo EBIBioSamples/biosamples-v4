@@ -18,9 +18,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Attribute;
+import uk.ac.ebi.biosamples.core.model.Relationship;
+import uk.ac.ebi.biosamples.core.model.Sample;
 
 public class TransformationCallable implements Callable<PipelineResult> {
   private static final Logger LOG = LoggerFactory.getLogger(TransformationCallable.class);

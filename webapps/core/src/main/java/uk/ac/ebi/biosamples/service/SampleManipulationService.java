@@ -16,8 +16,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Contact;
+import uk.ac.ebi.biosamples.core.model.Sample;
 
 @Service
 public class SampleManipulationService {

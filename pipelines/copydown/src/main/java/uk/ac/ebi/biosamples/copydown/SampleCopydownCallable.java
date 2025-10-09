@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.core.model.*;
 
 public class SampleCopydownCallable implements Callable<PipelineResult> {
   private static final Logger LOG = LoggerFactory.getLogger(SampleCopydownCallable.class);

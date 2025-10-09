@@ -24,9 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.exceptions.GlobalExceptions;
+import uk.ac.ebi.biosamples.exception.GlobalExceptions;
 import uk.ac.ebi.biosamples.model.certification.Checklist;
-import uk.ac.ebi.biosamples.validation.ValidatorI;
+import uk.ac.ebi.biosamples.service.validation.ValidatorI;
 
 @Service
 @Qualifier("javaValidator")

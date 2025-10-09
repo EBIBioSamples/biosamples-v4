@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.ac.ebi.biosamples.model.CuramiRecommendation;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SampleRecommendation;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.curami.model.CuramiRecommendation;
+import uk.ac.ebi.biosamples.curami.model.SampleRecommendation;
 import uk.ac.ebi.biosamples.service.RecommendationService;
 
 @RestController

@@ -23,7 +23,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Sample;
 
 public class SampleRetrievalServiceV2 {
   private final Logger log = LoggerFactory.getLogger(getClass());

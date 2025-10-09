@@ -23,7 +23,7 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
-import uk.ac.ebi.biosamples.model.structured.StructuredData;
+import uk.ac.ebi.biosamples.core.model.structured.StructuredData;
 
 public class StructuredDataSubmissionService {
   private final Logger log = LoggerFactory.getLogger(getClass());

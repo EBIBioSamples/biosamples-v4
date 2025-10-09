@@ -23,7 +23,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.core.model.Sample;
 
 @Component
 public class ExportRunner implements ApplicationRunner {
@@ -59,21 +59,23 @@ public class ExportRunner implements ApplicationRunner {
                   StandardCharsets.UTF_8)) {
         jsonSampleWriter.write("[\n");
         for (final EntityModel<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
-          log.trace("Handling " + sampleResource);
           final Sample sample = sampleResource.getContent();
-          if (sample == null) {
-            throw new RuntimeException("Sample should not be null");
-          }
+
+          log.info("Handling " + sample.getAccession());
+
           if (!first) {
             jsonSampleWriter.write(",\n");
           }
+
           jsonSampleWriter.write(objectMapper.writeValueAsString(sample));
           first = false;
           sampleCount += 1;
         }
+
         jsonSampleWriter.write("\n]");
       }
     } catch (final Exception e) {
+      e.printStackTrace();
     } finally {
       final long elapsed = System.nanoTime() - oldTime;
       log.info("Exported " + sampleCount + " samples in " + (elapsed / 1000000000L) + "s");

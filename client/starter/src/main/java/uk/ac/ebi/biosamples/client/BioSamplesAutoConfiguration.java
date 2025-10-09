@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
+* Copyright 2021 EMBL - European Bioinformatics Institute
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
 * http://www.apache.org/licenses/LICENSE-2.0
@@ -49,8 +49,8 @@ import uk.ac.ebi.biosamples.client.model.auth.AuthRealm;
 import uk.ac.ebi.biosamples.client.service.ClientService;
 import uk.ac.ebi.biosamples.client.service.WebinAuthClientService;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
-import uk.ac.ebi.biosamples.service.AttributeValidator;
-import uk.ac.ebi.biosamples.service.SampleValidator;
+import uk.ac.ebi.biosamples.core.service.AttributeValidator;
+import uk.ac.ebi.biosamples.core.service.SampleValidator;
 
 @Configuration
 @AutoConfigureAfter(WebClientAutoConfiguration.class)

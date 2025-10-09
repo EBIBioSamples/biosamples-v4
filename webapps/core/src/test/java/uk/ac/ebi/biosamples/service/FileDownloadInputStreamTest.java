@@ -25,9 +25,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.core.model.Attribute;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.filter.Filter;
+import uk.ac.ebi.biosamples.core.service.FileDownloadSerializer;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 
 @RunWith(MockitoJUnitRunner.class)

@@ -15,8 +15,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SampleStatus;
+import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.SampleStatus;
 
 public class SamplePostReleaseActionCallable implements Callable<Boolean> {
   private final Logger log = LoggerFactory.getLogger(getClass());

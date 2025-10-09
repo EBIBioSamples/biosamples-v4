@@ -24,7 +24,7 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
-import uk.ac.ebi.biosamples.model.CurationLink;
+import uk.ac.ebi.biosamples.core.model.CurationLink;
 
 public class CurationSubmissionService {
   private final Logger log = LoggerFactory.getLogger(getClass());
