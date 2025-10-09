@@ -33,6 +33,7 @@ maven-package-all-apps:
     paths:
       - webapps/core/target/webapps-core-*.war
       - webapps/core-v2/target/webapps-core-v2-*.jar
+      - agents/uploadworkers/target/agents-uploadworkers-*.jar
       - pipelines/reindex/target/pipelines-reindex-*.jar
 
 
@@ -49,6 +50,8 @@ build_and_push_docker_images:
         DOCKERFILE_TARGET: "webapp-core"
       - APP_NAME: "webapp-core-v2"
         DOCKERFILE_TARGET: "webapp-core-v2"
+      - APP_NAME: "agents-uploadworkers"
+        DOCKERFILE_TARGET: "agents-uploadworkers"
       - APP_NAME: "pipelines-reindex"
         DOCKERFILE_TARGET: "pipelines-reindex"
   script:
@@ -288,6 +291,20 @@ deploy_pipeline_k8s_primary_dev:
   when: manual
   extends: .kube_deploy_pipeline_script
 
+deploy_cronjobs_k8s_primary_dev:
+  variables:
+    ENVIRONMENT_NAME: primary_dev
+    K8S_NAMESPACE: biosamples-dev
+  environment:
+    name: primary_dev
+    url: https://wwwdev.ebi.ac.uk/biosamples
+  only:
+    - dev
+    - main
+    - biosamples-search
+  when: manual
+  extends: .kube_deploy_cronjobs_script
+
 .kube_deploy_script:
   stage: deploy
   image: dtzar/helm-kubectl:3.16
@@ -316,8 +333,14 @@ deploy_pipeline_k8s_primary_dev:
                    --set "imagePullSecrets[0].name=$DOCKER_PULL_SECRET" \
                    --set image.repository=$CI_REGISTRY_IMAGE/webapp-core-v2 \
                    --set image.tag=$DOCKER_TAG
+    - |
+      helm upgrade --install ${APP_NAME}-v2 ./k8s/helm \
+                   --values ./k8s/helm/values-${ENVIRONMENT_NAME}.yaml \
+                   --set "imagePullSecrets[0].name=$DOCKER_PULL_SECRET" \
+                   --set image.repository=$CI_REGISTRY_IMAGE/webapp-core-v2 \
+                   --set image.tag=$DOCKER_TAG
 
-.kube_deploy_pipeline_script:
+.kube_deploy_jobs_script:
   stage: deploy
   image: dtzar/helm-kubectl:3.16
   tags: [ "dind" ]
@@ -337,4 +360,26 @@ deploy_pipeline_k8s_primary_dev:
                    --values ./k8s/jobs/values-${ENVIRONMENT_NAME}.yaml \
                    --set "imagePullSecrets[0].name=$DOCKER_PULL_SECRET" \
                    --set image.repository=$CI_REGISTRY_IMAGE/pipelines-reindex \
+                   --set image.tag=$DOCKER_TAG
+
+.kube_deploy_cronjobs_script:
+  stage: deploy
+  image: dtzar/helm-kubectl:3.16
+  tags: [ "dind" ]
+  services:
+    - docker:27-dind
+  script:
+    - echo $K8S_NAMESPACE
+    - kubectl config set-context --current --namespace=${K8S_NAMESPACE}
+    - kubectl delete secret $DOCKER_PULL_SECRET || true
+    - |
+      kubectl create secret docker-registry $DOCKER_PULL_SECRET \
+              --docker-server=$CI_REGISTRY \
+              --docker-username=$CI_REGISTRY_USER \
+              --docker-password=$CI_REGISTRY_PASSWORD
+    - |
+      helm upgrade --install biosamples-reindex ./k8s/cronjobs \
+                   --values ./k8s/cronjobs/values-${ENVIRONMENT_NAME}.yaml \
+                   --set "imagePullSecrets[0].name=$DOCKER_PULL_SECRET" \
+                   --set image.repository=$CI_REGISTRY_IMAGE/pipelines-curation \
                    --set image.tag=$DOCKER_TAG

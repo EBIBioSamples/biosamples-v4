@@ -11,6 +11,15 @@ COPY webapps/core-v2/target/webapps-core-*.jar app.jar
 EXPOSE 8080
 CMD ["java", "-jar", "app.jar"]
 
+FROM base as agents-uploadworkers
+COPY agents/uploadworkers/target/agents-uploadworkers-*.jar app.jar
+EXPOSE 8080
+CMD ["java", "-jar", "app.jar"]
+
 FROM base as pipelines-reindex
 COPY pipelines/reindex/target/pipelines-reindex-*.jar app.jar
+CMD ["java", "-jar", "app.jar"]
+
+FROM base as pipelines-curation
+COPY pipelines/curation/target/pipelines-curation-*.jar app.jar
 CMD ["java", "-jar", "app.jar"]
