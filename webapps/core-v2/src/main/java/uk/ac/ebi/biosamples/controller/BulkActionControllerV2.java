@@ -27,9 +27,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.core.model.Relationship;
 import uk.ac.ebi.biosamples.core.model.Sample;
@@ -76,8 +76,8 @@ public class BulkActionControllerV2 {
   public ResponseEntity<Map<String, String>> accessionV2(@RequestBody List<Sample> samples) {
     log.info("V2-Received POST for bulk accessioning called");
 
-    final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
-    final String principle = sampleService.getPrinciple(loggedInUser);
+    final var loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+    final var principle = sampleService.getPrinciple(loggedInUser);
 
     if (principle == null) {
       throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
@@ -100,7 +100,7 @@ public class BulkActionControllerV2 {
             .map(sample -> webinAuthenticationService.buildSampleWithWebinId(sample, principle))
             .collect(Collectors.toList());
 
-    final List<Sample> createdSamplesList =
+    final var createdSamplesList =
         samples.stream()
             .map(
                 sample -> {
@@ -115,7 +115,7 @@ public class BulkActionControllerV2 {
                 })
             .toList();
 
-    final Map<String, String> outputMap =
+    final var outputMap =
         createdSamplesList.stream()
             .filter(Objects::nonNull)
             .collect(Collectors.toMap(Sample::getName, Sample::getAccession));
@@ -142,8 +142,8 @@ public class BulkActionControllerV2 {
   public ResponseEntity<Map<String, Sample>> getV2(
       @RequestParam final List<String> accessions,
       @RequestHeader(name = "Authorization", required = false) final String token) {
-    final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
-    final String principle = sampleService.getPrinciple(loggedInUser);
+    final var loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+    final var principle = sampleService.getPrinciple(loggedInUser);
 
     if (accessions == null) {
       throw new GlobalExceptions.BulkFetchInvalidRequestException();
@@ -151,22 +151,23 @@ public class BulkActionControllerV2 {
 
     log.info("V2-Received request to bulk-fetch " + accessions.size() + " accessions");
 
-    final List<Sample> samples =
+    final var samples =
         accessions.stream()
             .map(
                 accession -> {
-                  final String justAccession = accession.trim();
-                  final Optional<Sample> sampleOptional =
+                  final var accesionWithoutSpaces = accession.trim();
+                  final var sampleOptional =
                       // fetch returns sample with no-curations applied
-                      sampleService.fetch(justAccession, false);
+                      sampleService.fetch(accesionWithoutSpaces, false);
 
                   if (sampleOptional.isPresent()) {
-                    final Sample sample = sampleOptional.get();
+                    final var sample = sampleOptional.get();
 
                     try {
                       webinAuthenticationService.isSampleAccessible(sample, principle);
                     } catch (final Exception e) {
                       log.info("Bulk-fetch forbidden sample: " + sample.getAccession());
+
                       return null;
                     }
 
@@ -202,21 +203,20 @@ public class BulkActionControllerV2 {
       value = "/bulk-submit-get-receipt",
       consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<SubmissionReceipt> postV2(@RequestBody final List<Sample> samples) {
-    final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
-    final String principle = sampleService.getPrinciple(loggedInUser);
+    final var loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+    final var principle = sampleService.getPrinciple(loggedInUser);
 
     if (principle == null) {
       throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
     }
 
-    log.info("V2-Received POST for " + samples.size() + " samples");
+    log.info("V2-Received POST with validation for {} samples", samples.size());
 
-    final List<Sample> createdSamples = new ArrayList<>();
-    final List<SubmissionReceipt.ErrorReceipt> errors = new ArrayList<>();
+    final var createdSamples = new ArrayList<Sample>();
+    final var errors = new ArrayList<SubmissionReceipt.ErrorReceipt>();
 
-    for (final Sample sample : samples) {
-      final Pair<Optional<Sample>, Optional<String>> sampleErrorPair =
-          persistSample(principle, sample);
+    for (final var sample : samples) {
+      final var sampleErrorPair = persistSample(principle, sample);
 
       sampleErrorPair.getLeft().ifPresent(createdSamples::add);
       sampleErrorPair
@@ -256,30 +256,28 @@ public class BulkActionControllerV2 {
   @RequestMapping("/bulk-submit")
   @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<List<Sample>> postV2NoValidation(@RequestBody final List<Sample> samples) {
-    log.info("V2-Received POST for " + samples.size() + " samples");
+    log.info("V2-Received POST for {} samples", samples.size());
 
-    final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
-    final String principle = sampleService.getPrinciple(loggedInUser);
+    final var loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+    final var principle = sampleService.getPrinciple(loggedInUser);
 
     if (principle == null) {
       throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
     }
 
-    /*if (!webinAuthenticationService.isWebinSuperUser(principle)) {
+    if (!webinAuthenticationService.isWebinSuperUser(principle)) {
       throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "POST for super users only");
-    }*/
+    }
 
-    final List<Sample> createdSamples =
+    final var createdSamples =
         samples.stream()
             .map(sample -> persistSampleNoValidation(principle, sample))
             .collect(Collectors.toList());
 
     log.info(
-        "V2-Received bulk-submit request for : "
-            + samples.size()
-            + " samples and persisted : "
-            + createdSamples.size()
-            + " samples.");
+        "V2-Received bulk-submit request for : {} samples and persisted : {} samples.",
+        samples.size(),
+        createdSamples.size());
 
     return ResponseEntity.status(HttpStatus.CREATED).body(createdSamples);
   }
@@ -291,17 +289,18 @@ public class BulkActionControllerV2 {
       value = "/bulk-validate",
       consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<SubmissionReceipt> validateV2(@RequestBody final List<Sample> samples) {
-    final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
-    final String principle = sampleService.getPrinciple(loggedInUser);
+    final var loggedInUser = SecurityContextHolder.getContext().getAuthentication();
+    final var principle = sampleService.getPrinciple(loggedInUser);
 
     if (principle == null) {
       throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
     }
 
-    log.info("V2-Received Validate request for " + samples.size() + " samples");
+    log.info("V2-Received Validate request for {} samples", samples.size());
 
-    final List<SubmissionReceipt.ErrorReceipt> errors = new ArrayList<>();
-    List<SubmissionReceipt.ValidationError> validationErrors;
+    final var errors = new ArrayList<SubmissionReceipt.ErrorReceipt>();
+
+    var validationErrors = new ArrayList<SubmissionReceipt.ValidationError>();
 
     for (final Sample sample : samples) {
       final String validationResult = validateGetMessages(sample, principle);
@@ -311,9 +310,10 @@ public class BulkActionControllerV2 {
           validationErrors = objectMapper.readValue(validationResult, new TypeReference<>() {});
         } catch (JsonProcessingException e) {
           validationErrors =
-              Collections.singletonList(
-                  new SubmissionReceipt.ValidationError(
-                      "", Collections.singletonList(validationResult)));
+              new ArrayList<>(
+                  Collections.singletonList(
+                      new SubmissionReceipt.ValidationError(
+                          "", Collections.singletonList(validationResult))));
         }
 
         errors.add(new SubmissionReceipt.ErrorReceipt(sample.getName(), validationErrors));
@@ -321,22 +321,20 @@ public class BulkActionControllerV2 {
     }
 
     log.info(
-        "V2-Received bulk-validate request for : "
-            + samples.size()
-            + " samples and validated : "
-            + samples.size()
-            + " samples.");
+        "V2-Received bulk-validate request for : {} samples and validated : {} samples.",
+        samples.size(),
+        samples.size());
 
     return ResponseEntity.status(HttpStatus.OK).body(new SubmissionReceipt(null, errors));
   }
 
   private Pair<Optional<Sample>, Optional<String>> persistSample(
       final String principle, Sample sample) {
-    final boolean isWebinSuperUser = webinAuthenticationService.isWebinSuperUser(principle);
-    final Optional<Sample> oldSample =
+    final var isWebinSuperUser = webinAuthenticationService.isWebinSuperUser(principle);
+    final var oldSample =
         sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(
             sample, isWebinSuperUser);
-    final Set<Relationship> relationships =
+    final var relationships =
         sampleService.handleSampleRelationshipsV2(sample, oldSample, isWebinSuperUser);
 
     sample = webinAuthenticationService.handleWebinUserSubmission(sample, principle, oldSample);
@@ -358,7 +356,7 @@ public class BulkActionControllerV2 {
     } catch (GlobalExceptions.SchemaValidationException e) {
       sampleErrorPair = new ImmutablePair<>(Optional.empty(), Optional.ofNullable(e.getMessage()));
 
-      final String accession = sample.getAccession();
+      final var accession = sample.getAccession();
 
       log.info("Sample validation failed: {}", accession != null ? accession : sample.getName());
     } catch (Exception e) {
@@ -371,10 +369,9 @@ public class BulkActionControllerV2 {
   }
 
   private Sample persistSampleNoValidation(final String principle, Sample sample) {
-    final Optional<Sample> oldSample =
+    final var oldSample =
         sampleService.validateSampleWithAccessionsAgainstConditionsAndGetOldSample(sample, true);
-    final Set<Relationship> relationships =
-        sampleService.handleSampleRelationshipsV2(sample, oldSample, true);
+    final var relationships = sampleService.handleSampleRelationshipsV2(sample, oldSample, true);
 
     sample = webinAuthenticationService.handleWebinUserSubmission(sample, principle, oldSample);
     sample = buildSample(sample, relationships, true);
@@ -383,12 +380,12 @@ public class BulkActionControllerV2 {
   }
 
   private String validateGetMessages(final Sample sample, final String principle) {
-    final String sampleIdentifier =
+    final var sampleIdentifier =
         sample.getAccession() != null ? sample.getAccession() : sample.getName();
     try {
       schemaValidationService.validate(sample, principle);
     } catch (GlobalExceptions.SchemaValidationException e) {
-      log.info("Sample validation failed: {}", sample.getAccession());
+      log.info("Sample validation has failed: {}", sample.getAccession());
 
       return Optional.ofNullable(e.getMessage())
           .orElse("Unknown validation error while validating sample: " + sampleIdentifier);

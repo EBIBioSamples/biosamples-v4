@@ -28,7 +28,7 @@ public class SampleRelationshipUtils {
     final SortedSet<Relationship> relationships = new TreeSet<>();
     for (final Relationship relationship : sample.getRelationships()) {
       if (!sample.hasAccession()
-          && (relationship.getSource() == null || relationship.getSource().trim().length() == 0)) {
+          && (relationship.getSource() == null || relationship.getSource().trim().isEmpty())) {
         relationships.add(relationship);
       } else if (relationship.getSource() != null
           && relationship.getSource().equals(sample.getAccession())) {
