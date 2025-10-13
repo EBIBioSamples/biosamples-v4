@@ -269,9 +269,6 @@ public class BigIntegration extends AbstractIntegration {
             .withRelationships(relationships)
             .build();
 
-    //		Sample.build("big sample "+i, "SAMbig"+i, domain, release, update, attributes,
-    // relationships, null, null, null, null);
-
     log.trace("built " + sample.getAccession());
 
     return sample;
