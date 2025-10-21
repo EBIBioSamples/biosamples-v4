@@ -1,6 +1,6 @@
 
 service:
-  type: ClusterIP
+  type: NodePort
   port: 8080
 livenessProbe:
   httpGet:
