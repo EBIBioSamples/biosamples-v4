@@ -275,7 +275,7 @@ deploy_pipeline_k8s_primary_prod:
     - main
     - biosamples-search
   when: manual
-  extends: .kube_deploy_pipeline_script
+  extends: .kube_deploy_jobs_script
 
 deploy_pipeline_k8s_primary_dev:
   variables:
@@ -289,7 +289,7 @@ deploy_pipeline_k8s_primary_dev:
     - main
     - biosamples-search
   when: manual
-  extends: .kube_deploy_pipeline_script
+  extends: .kube_deploy_jobs_script
 
 deploy_cronjobs_k8s_primary_dev:
   variables:
