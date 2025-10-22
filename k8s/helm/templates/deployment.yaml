@@ -42,9 +42,9 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: SERVER_SERVLET_CONTEXT-PATH
-              value: /biosamples
+              value: {{ .Values.biosamples.context.path }}
             - name: SERVER_CONTEXT-PATH
-              value: /biosamples
+              value: {{ .Values.biosamples.context.path }}
             - name: SPRING_DATA_MONGODB_URI
               valueFrom:
                 secretKeyRef:
