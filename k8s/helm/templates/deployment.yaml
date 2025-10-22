@@ -41,6 +41,10 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
+            - name: SERVER_SERVLET_CONTEXT-PATH
+              value: /biosamples
+            - name: SERVER_CONTEXT-PATH
+              value: /biosamples
             - name: SPRING_DATA_MONGODB_URI
               valueFrom:
                 secretKeyRef:

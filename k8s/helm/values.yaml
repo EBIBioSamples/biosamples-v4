@@ -11,7 +11,7 @@ readinessProbe:
     path: /actuator/health/readiness
     port: 8080
 
-replicaCount: 2
+replicaCount: 1
 image:
   repository: __set-in-commandline__
   pullPolicy: IfNotPresent
