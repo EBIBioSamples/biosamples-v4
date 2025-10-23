@@ -97,10 +97,7 @@ public class BioSamplesProperties {
   @Value("${biosamples.webapp.core.facet.cache.maxage:86400}")
   private int webappCoreFacetCacheMaxAge;
 
-  @Value("${biosamples.schema.validator.uri:http://localhost:8085/validate}")
-  private URI biosamplesSchemaValidatorServiceUri;
-
-  @Value("${biosamples.schemaValidator:http://localhost:3020/validate}")
+  @Value("${biosamples.schema.validator.url:http://localhost:3020/validate}")
   private String schemaValidator;
 
   @Value("${biosamples.schemaStore:http://localhost:8085}")

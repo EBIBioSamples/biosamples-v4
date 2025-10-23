@@ -1,8 +1,6 @@
 rabbitmq:
   host: wp-p2m-42.ebi.ac.uk
 biosamples:
-  schemaValidator: http://localhost:3020/validate
-  schemaStore: http://localhost:8085
   search:
     host: biosamples-search-helm
     port: 9090
