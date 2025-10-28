@@ -14,18 +14,23 @@ import java.util.Collection;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.util.ClientUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.solr.core.query.*;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
+import uk.ac.ebi.biosamples.exception.GlobalExceptions;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 @Service
 public class SolrSampleService {
+  private final Logger log = LoggerFactory.getLogger(getClass());
+
   private final SolrSampleRepository solrSampleRepository;
   private final SolrFilterService solrFilterService;
 
@@ -52,6 +57,13 @@ public class SolrSampleService {
       final Collection<Filter> filters,
       final String webinSubmissionAccountId,
       final Pageable pageable) {
+
+    // solr degrades with high page and size params, use cursor instead
+    if (pageable.getPageNumber() > 500 || pageable.getPageSize() > 200) {
+      log.warn("Max page number/size exceeded, returning error to the user. Number: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+      throw new GlobalExceptions.PaginationException();
+    }
+
     Page<SolrSample> result;
     try {
       final Query query = buildQuery(searchTerm, filters, webinSubmissionAccountId);

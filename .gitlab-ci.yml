@@ -12,7 +12,6 @@ variables:
   APP_NAME: $CI_PROJECT_NAME
   K8S_NAMESPACE_PREFIX: biosamples
 
-
 before_script:
   - echo $CI_BUILD_REF
   - echo $CI_PROJECT_DIR
@@ -68,30 +67,6 @@ build_and_push_docker_images:
       echo $DOCKER_LATEST_NAME
   after_script:
     - docker logout $CI_REGISTRY
-
-
-
-#maven-package-webapps-core:
-#  image: ${CI_REGISTRY_IMAGE}/eclipse-temurin:17-jdk
-#  stage: build
-#  script:
-#    - './mvnw -q deploy -pl webapps/core -am -P embl-ebi -s ci_settings.xml -DskipTests -Dmaven.source.skip=true'
-#  artifacts:
-#    paths:
-#      - webapps/core/target/webapps-core-*.war
-#
-#build_docker_image:
-#  stage: package
-#  image: docker:stable
-#  services:
-#    - docker:stable-dind
-#  before_script:
-#    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-#  script:
-#    - docker build --build-arg DOCKER_REGISTRY=${CI_REGISTRY_IMAGE} -t $DOCKER_IMAGE_NAME -f webapps/core/Dockerfile .
-#    - docker push $DOCKER_IMAGE_NAME
-#  after_script:
-#    - docker logout ${CI_REGISTRY_IMAGE}
 
 
 deploy-dev-bsd-v1:

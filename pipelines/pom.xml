@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.3.13-SNAPSHOT</version>
+		<version>5.3.15-SNAPSHOT</version>
 	</parent>
 
 	<profiles>
@@ -37,7 +37,7 @@
 		<module>taxonimport</module>
 		<module>reindex</module>
 		<module>chain</module>
-<!--		<module>ncbi-ena-link</module>-->
+        <!--<module>ncbi-ena-link</module>-->
 		<!--<module>ena</module>-->
 	</modules>
 </project>

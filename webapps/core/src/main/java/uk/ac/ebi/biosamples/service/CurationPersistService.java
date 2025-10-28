@@ -51,14 +51,14 @@ public class CurationPersistService {
       try {
         mongoCurationRepository.save(mongoCuration);
       } catch (final DuplicateKeyException e) {
-        // sometimes, if there are multiple threads there may be a collision
-        // check if its a true duplicate and not an accidental hash collision
+        // sometimes, if there are multiple threads, there may be a collision
+        // check if it's a true duplicate and not an accidental hash collision
         final Optional<MongoCuration> byId =
             mongoCurationRepository.findById(mongoCuration.getHash());
         final MongoCuration existingMongoCuration = byId.orElse(null);
 
         if (!existingMongoCuration.equals(mongoCuration)) {
-          // if it is a different curation with an hash collision, then throw an exception
+          // if it is a different curation with a hash collision, then throw an exception
           throw e;
         }
       }
@@ -92,7 +92,7 @@ public class CurationPersistService {
     messagingSerivce.fetchThenSendMessage(curationLink.getSample());
   }
 
-  // sample reverse relationships are dynamically generated, therefore should create for curations
+  // sample reverse relationships are dynamically generated, therefore, should create for curations
   private void createReverseRelationshipCurations(final CurationLink curationLink) {
     final SortedSet<Relationship> relationshipsPre =
         curationLink.getCuration().getRelationshipsPre();
@@ -103,7 +103,7 @@ public class CurationPersistService {
       for (final Relationship rel : relationshipsPre) {
         final SortedSet<Relationship> reverseRelationships = new TreeSet<>();
         reverseRelationships.add(
-            rel); // to keep original direction, instead of adding reverse relationship
+            rel); // to keep an original direction, instead of adding a reverse relationship
         final Curation reverseCuration =
             Curation.build(null, null, null, null, reverseRelationships, null);
         final CurationLink reverseCurationLink =
@@ -126,7 +126,7 @@ public class CurationPersistService {
       for (final Relationship rel : relationshipsPost) {
         final SortedSet<Relationship> reverseRelationships = new TreeSet<>();
         reverseRelationships.add(
-            rel); // to keep original direction, instead of adding reverse relationship
+            rel); // to keep an original direction, instead of adding a reverse relationship
         final Curation reverseCuration =
             Curation.build(null, null, null, null, null, reverseRelationships);
         final CurationLink reverseCurationLink =
