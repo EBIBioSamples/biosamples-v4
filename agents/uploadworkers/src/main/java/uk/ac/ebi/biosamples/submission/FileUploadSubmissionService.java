@@ -62,14 +62,17 @@ public class FileUploadSubmissionService {
     handleMessage(mongoFileId);
   }
 
-  private void handleMessage(final String submissionId) {
-    final Optional<MongoFileUpload> fileUploadOptional =
-        mongoFileUploadRepository.findById(submissionId);
-    final MongoFileUpload mongoFileUpload =
-        fileUploadOptional.orElseThrow(
-            () ->
-                new GlobalExceptions.UploadInvalidException(
-                    "Could not find file upload record for submissionId: " + submissionId));
+  private void handleMessage(String submissionId) {
+    submissionId = submissionId.replace("\"", "");
+    final Optional<MongoFileUpload> fileUploadOptional = mongoFileUploadRepository.findById(submissionId);
+    if (fileUploadOptional.isEmpty()) {
+      log.error("Could not find file upload record for submissionId: {}", submissionId);
+      //todo here exception means there is no progress from the queue reading loop.
+      // We can send this to dead letter or something for monitoring.
+      return;
+    }
+
+    final MongoFileUpload mongoFileUpload = fileUploadOptional.get();
 
     try {
       validationResult = new ValidationResult();
