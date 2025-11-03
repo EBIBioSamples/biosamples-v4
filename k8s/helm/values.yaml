@@ -1,6 +1,6 @@
 biosamples:
   context:
-    path: /biosamples
+    path: /
   schema:
     validator:
       url: http://biovalidator-service:3020/biosamples/biovalidator/validate
