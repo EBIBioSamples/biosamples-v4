@@ -187,7 +187,7 @@ deploy_cronjobs_k8s_primary_dev:
       helm upgrade --install ${APP_NAME}-uploadworkers ./k8s/helm \
                    --values ./k8s/helm/values-${ENVIRONMENT_NAME}.yaml \
                    --set "imagePullSecrets[0].name=$DOCKER_PULL_SECRET" \
-                   --set image.repository=$CI_REGISTRY_IMAGE/webapp-core-v2 \
+                   --set image.repository=$CI_REGISTRY_IMAGE/agents-uploadworkers \
                    --set image.tag=$DOCKER_TAG 
 
 .kube_deploy_jobs_script:
