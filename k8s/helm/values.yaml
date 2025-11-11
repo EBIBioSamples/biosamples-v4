@@ -79,16 +79,15 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
-volumes: []
-# - name: foo
-#   secret:
-#     secretName: mysecret
-#     optional: false
+volumes:
+  - name: config-volume
+    configMap:
+      name: application-properties
 
-volumeMounts: []
-# - name: foo
-#   mountPath: "/etc/foo"
-#   readOnly: true
+volumeMounts:
+  - name: config-volume
+    mountPath: /config/application.properties
+    subPath: application.properties
 
 nodeSelector: {}
 tolerations: []
