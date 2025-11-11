@@ -49,6 +49,8 @@ spec:
               value: {{ .Values.biosamples.schema.validator.url }}
             - name: BIOSAMPLES.SCHEMA.STORE.URL
               value: {{ .Values.biosamples.schema.store.url }}
+            - name: SPRING_CONFIG_LOCATION
+              value: /config/application.properties
             - name: SPRING_DATA_MONGODB_URI
               valueFrom:
                 secretKeyRef:
