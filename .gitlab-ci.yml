@@ -177,7 +177,7 @@ deploy_cronjobs_k8s_primary_dev:
     - kubectl config view
     - kubectl config set-context --current --namespace=${K8S_NAMESPACE}
     - |
-      kubectl create configmap application-properties \ 
+      kubectl create configmap application-properties \
               --from-file=./config/${ENVIRONMENT_NAME}/application.properties \
               --dry-run=client -o yaml | kubectl apply -f -
     - kubectl delete secret $DOCKER_PULL_SECRET || true
