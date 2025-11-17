@@ -314,6 +314,7 @@ public class FileUploadSubmissionService {
       } catch (final Exception e) {
         persisted = false;
         handleUnauthorizedWhilePersistence(sampleName, accession, sampleWithAccession, e);
+        throw new GlobalExceptions.SampleValidationException(e.getMessage());
       }
 
       if (sampleWithAccession && persisted) {
