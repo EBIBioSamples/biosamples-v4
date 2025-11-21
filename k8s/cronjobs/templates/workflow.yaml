@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  name: {{ include "springboot-argo-job.fullname" . }}
+  name: {{ include "biosamples-curation.fullname" . }}
   namespace: {{ .Values.workflow.namespace }}
   labels:
-    app.kubernetes.io/name: {{ include "springboot-argo-job.name" . }}
+    app.kubernetes.io/name: {{ include "biosamples-curation.name" . }}
 spec:
   entrypoint: {{ .Values.job.name }}
 
