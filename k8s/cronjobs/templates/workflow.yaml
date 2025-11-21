@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: {{ include "springboot-argo-job.fullname" . }}
+  namespace: {{ .Values.workflow.namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "springboot-argo-job.name" . }}
+spec:
+  entrypoint: {{ .Values.job.name }}
+
+  ttlStrategy:
+    secondsAfterSuccess: {{ .Values.workflow.ttlStrategy.secondsAfterSuccess }}
+    secondsAfterFailure: {{ .Values.workflow.ttlStrategy.secondsAfterFailure }}
+
+  templates:
+    - name: {{ .Values.job.name }}
+      retryStrategy:
+        limit: {{ .Values.workflow.retryStrategy.limit }}
+        backoff:
+          duration: {{ .Values.workflow.retryStrategy.backoff.duration }}
+          factor: {{ .Values.workflow.retryStrategy.backoff.factor }}
+          maxDuration: {{ .Values.workflow.retryStrategy.backoff.maxDuration }}
+
+      container:
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+        command:
+          {{- toYaml .Values.job.command | nindent 10 }}
+
+        args:
+          {{- toYaml .Values.job.args | nindent 10 }}
+
+        resources:
+          {{- toYaml .Values.job.resources | nindent 10 }}

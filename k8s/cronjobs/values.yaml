@@ -1,0 +1,28 @@
+image:
+  repository: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+
+job:
+  name: biosamples-curation
+  command: ["java", "-jar", "/app/app.jar"]
+  args: []
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+
+workflow:
+  namespace: argo
+  ttlStrategy:
+    secondsAfterSuccess: 3600
+    secondsAfterFailure: 7200
+  retryStrategy:
+    limit: 2
+    backoff:
+      duration: "10s"
+      factor: 2
+      maxDuration: "1m"

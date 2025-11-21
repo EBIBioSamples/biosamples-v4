@@ -1,0 +1,6 @@
+apiVersion: v2
+name: biosamples-curation
+description: Run a Spring Boot CLI job via Argo Workflow
+type: application
+version: 0.1.0
+appVersion: "1.0"

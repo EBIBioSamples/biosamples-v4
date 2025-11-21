@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: springboot-cli-
+spec:
+  entrypoint: run-job
+
+  templates:
+    - name: run-job
+      container:
+        image: registry.gitlab.com/YOUR-PROJECT/YOUR-REPO:latest
+        command: ["java", "-jar", "/app/app.jar"]
+      resources:
+        limits:
+          cpu: "500m"
+          memory: "1Gi"
