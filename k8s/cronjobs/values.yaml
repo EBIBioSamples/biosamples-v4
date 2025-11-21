@@ -16,7 +16,6 @@ job:
       memory: "512Mi"
 
 workflow:
-  namespace: argo
   ttlStrategy:
     secondsAfterSuccess: 3600
     secondsAfterFailure: 7200
