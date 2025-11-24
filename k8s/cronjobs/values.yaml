@@ -20,8 +20,11 @@ workflow:
     secondsAfterSuccess: 3600
     secondsAfterFailure: 7200
   retryStrategy:
-    limit: 2
+    limit: 1
     backoff:
       duration: "10s"
-      factor: 2
+      factor: 1
       maxDuration: "1m"
+
+imagePullSecrets:
+  - name: __set-in-commandline__

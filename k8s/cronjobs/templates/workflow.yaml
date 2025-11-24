@@ -8,6 +8,12 @@ metadata:
 spec:
   entrypoint: {{ .Values.job.name }}
 
+
+  {{- with .Values.imagePullSecrets }}
+  imagePullSecrets:
+    {{- toYaml . | nindent 8 }}
+  {{- end }}
+
   parallelism: 1
 
   ttlStrategy:
