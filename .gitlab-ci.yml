@@ -177,7 +177,6 @@ deploy_cronjobs_k8s_primary_dev:
     - docker:27-dind
   script:
     - echo $K8S_NAMESPACE
-    - kubectl config view
     - kubectl config set-context --current --namespace=${K8S_NAMESPACE}
     - |
       kubectl create configmap application-properties \
@@ -248,7 +247,7 @@ deploy_cronjobs_k8s_primary_dev:
               --docker-username=$CI_REGISTRY_USER \
               --docker-password=$CI_REGISTRY_PASSWORD
     - |
-      helm upgrade --install biosamples-curation ./k8s/cronjobs \
+      helm upgrade --install curation ./k8s/cronjobs \
                    --values ./k8s/cronjobs/values-${ENVIRONMENT_NAME}.yaml \
                    --set "imagePullSecrets[0].name=$DOCKER_PULL_SECRET" \
                    --set image.repository=$CI_REGISTRY_IMAGE/pipelines-curation \

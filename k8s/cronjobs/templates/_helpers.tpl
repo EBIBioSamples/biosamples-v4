@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "biosamples-curation.name" -}}
+{{- define "biosamples-v4-pipelines.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "biosamples-curation.fullname" -}}
+{{- define "biosamples-v4-pipelines.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "biosamples-curation.chart" -}}
+{{- define "biosamples-v4-pipelines.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "biosamples-curation.labels" -}}
+{{- define "biosamples-v4-pipelines.labels" -}}
 helm.sh/chart: {{ include "helm.chart" . }}
-{{ include "biosamples-curation.selectorLabels" . }}
+{{ include "biosamples-v4-pipelines.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "biosamples-curation.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "biosamples-curation.name" . }}
+{{- define "biosamples-v4-pipelines.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "biosamples-v4-pipelines.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "biosamples-curation.serviceAccountName" -}}
+{{- define "biosamples-v4-pipelines.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "biosamples-curation.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "biosamples-v4-pipelines.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

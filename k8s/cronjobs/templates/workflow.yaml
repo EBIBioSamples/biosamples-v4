@@ -1,12 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  name: {{ include "biosamples-curation.fullname" . }}
+  name: {{ include "biosamples-v4-pipelines.fullname" . }}
   namespace: {{ .Values.workflow.namespace }}
   labels:
-    app.kubernetes.io/name: {{ include "biosamples-curation.name" . }}
+    app.kubernetes.io/name: {{ include "biosamples-v4-pipelines.name" . }}
 spec:
   entrypoint: {{ .Values.job.name }}
+
+  parallelism: 1
 
   ttlStrategy:
     secondsAfterSuccess: {{ .Values.workflow.ttlStrategy.secondsAfterSuccess }}
