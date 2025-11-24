@@ -34,7 +34,7 @@ maven-package-all-apps:
       - webapps/core-v2/target/webapps-core-v2-*.jar
       - agents/uploadworkers/target/agents-uploadworkers-*.jar
       - pipelines/reindex/target/pipelines-reindex-*.jar
-      - pipelines/reindex/target/pipelines-curation-*.jar
+      - pipelines/curation/target/pipelines-curation-*.jar
 
 
 build_and_push_docker_images:
