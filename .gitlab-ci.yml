@@ -245,7 +245,7 @@ deploy_cronjobs_k8s_primary_dev:
       kubectl create secret docker-registry $DOCKER_PULL_SECRET \
               --docker-server=$CI_REGISTRY \
               --docker-username=$CI_REGISTRY_USER \
-              --docker-password=$CI_REGISTRY_PASSWORD
+              --docker-password=$CI_JOB_TOKEN
     - |
       helm upgrade --install pipelines-curation ./k8s/cronjobs \
                    --values ./k8s/cronjobs/values-${ENVIRONMENT_NAME}.yaml \

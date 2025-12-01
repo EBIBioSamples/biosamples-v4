@@ -33,9 +33,6 @@ spec:
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
 
-        imagePullSecrets:
-          name: docker-registry-secret
-
         env:
           - name: SPRING_CONFIG_LOCATION
             value: /config/application.properties
