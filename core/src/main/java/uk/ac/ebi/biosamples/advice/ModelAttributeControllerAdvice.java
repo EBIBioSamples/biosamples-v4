@@ -13,7 +13,7 @@ package uk.ac.ebi.biosamples.advice;
 import java.net.URI;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.properties.BioSamplesProperties;
 
 @ControllerAdvice
 public class ModelAttributeControllerAdvice {

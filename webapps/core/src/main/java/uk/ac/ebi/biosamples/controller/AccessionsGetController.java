@@ -21,8 +21,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.core.model.Accession;
+import uk.ac.ebi.biosamples.core.service.SampleService;
 import uk.ac.ebi.biosamples.service.AccessionsService;
-import uk.ac.ebi.biosamples.service.SampleService;
 
 @RestController
 @RequestMapping("/accessions")

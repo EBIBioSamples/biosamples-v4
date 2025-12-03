@@ -31,6 +31,7 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
 import uk.ac.ebi.biosamples.core.model.Attribute;
 import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.properties.BioSamplesConstants;
 
 @Component
 // @Order(1)

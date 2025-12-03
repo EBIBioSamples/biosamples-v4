@@ -30,13 +30,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import uk.ac.ebi.biosamples.authentication.WebinAuthenticationService;
 import uk.ac.ebi.biosamples.core.model.Attribute;
 import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.service.SampleService;
 import uk.ac.ebi.biosamples.security.model.AuthToken;
 import uk.ac.ebi.biosamples.security.model.AuthorizationProvider;
 import uk.ac.ebi.biosamples.security.service.AccessControlService;
-import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.WebinAuthenticationService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = {"spring.cloud.gcp.project-id=no_project"})

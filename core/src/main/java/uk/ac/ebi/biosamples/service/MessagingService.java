@@ -49,7 +49,7 @@ public class MessagingService {
     fetchThenSendMessage(accession, Collections.emptyList());
   }
 
-  void fetchThenSendMessage(
+  public void fetchThenSendMessage(
       final String accession, final List<String> existingRelationshipTargets) {
     if (accession == null) {
       throw new IllegalArgumentException("accession cannot be null");

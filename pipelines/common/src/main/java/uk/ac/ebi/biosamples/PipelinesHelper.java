@@ -24,6 +24,7 @@ import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import uk.ac.ebi.biosamples.properties.BioSamplesProperties;
 
 public class PipelinesHelper {
   public RestTemplateCustomizer getRestTemplateCustomizer(

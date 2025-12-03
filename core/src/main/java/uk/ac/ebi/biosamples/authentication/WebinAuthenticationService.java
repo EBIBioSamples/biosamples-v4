@@ -8,25 +8,25 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.service;
+package uk.ac.ebi.biosamples.authentication;
 
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.core.model.CurationLink;
 import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.core.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.core.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.core.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.core.model.structured.StructuredDataType;
+import uk.ac.ebi.biosamples.core.service.SampleService;
 import uk.ac.ebi.biosamples.exception.GlobalExceptions;
+import uk.ac.ebi.biosamples.properties.BioSamplesProperties;
 import uk.ac.ebi.biosamples.security.service.BioSamplesCrossSourceIngestAccessControlService;
 
 @Service
 public class WebinAuthenticationService {
-  public static final String ATLANTICO_DOMAIN = "self.AtlantECO";
   private final SampleService sampleService;
   private final BioSamplesCrossSourceIngestAccessControlService
       bioSamplesCrossSourceIngestAccessControlService;

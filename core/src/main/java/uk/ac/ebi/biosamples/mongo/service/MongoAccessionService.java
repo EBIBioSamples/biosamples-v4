@@ -21,15 +21,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Update;
-import uk.ac.ebi.biosamples.BioSamplesConstants;
+import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.core.model.Attribute;
 import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSequence;
 import uk.ac.ebi.biosamples.mongo.repository.MongoSampleRepository;
+import uk.ac.ebi.biosamples.properties.BioSamplesConstants;
 
 // this needs to be the spring exception, not the mongo one
+@Service("SampleAccessionService")
 public class MongoAccessionService {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final MongoSampleRepository mongoSampleRepository;

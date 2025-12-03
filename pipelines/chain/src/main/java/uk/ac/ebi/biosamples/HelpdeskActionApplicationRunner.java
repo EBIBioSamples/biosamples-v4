@@ -10,10 +10,18 @@
 */
 package uk.ac.ebi.biosamples;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
@@ -109,24 +117,146 @@ public class HelpdeskActionApplicationRunner implements ApplicationRunner {
               args.containsOption("domain") ? args.getOptionValues("domain").get(0) : null;
           final String webinId =
               args.containsOption("webinId") ? args.getOptionValues("webinId").get(0) : null;
+          final String releaseFlag =
+              args.containsOption("release") ? args.getOptionValues("release").get(0) : null;
+          final String file =
+              args.containsOption("file") ? args.getOptionValues("file").get(0) : null;
+          final boolean release = releaseFlag != null && releaseFlag.equalsIgnoreCase("true");
 
           if (webinId != null && domain != null) {
-            for (EntityModel<Sample> sample : samplesCrawlerAuthChangeHandler.getSamples(domain)) {
-              samplesCrawlerAuthChangeHandler.handleAuth(sample, domain, webinId);
+            if (file == null) {
+              for (EntityModel<Sample> sample :
+                  samplesCrawlerAuthChangeHandler.getSamples(domain)) {
+                samplesCrawlerAuthChangeHandler.handleAuth(sample, domain, webinId, release);
+              }
+            } else {
+              final List<String> accessions = readAccessions(file);
+
+              if (accessions.isEmpty()) {
+                log.warn("No accessions found in file {}", file);
+                return;
+              }
+
+              int threads = 20;
+              int batchSize = 1000;
+              int total = accessions.size();
+              int processed = 0;
+              int successCount = 0;
+              int failCount = 0;
+              final ExecutorService executorService = Executors.newFixedThreadPool(threads);
+
+              log.info(
+                  "Starting auth change handling for {} samples using {} threads", total, threads);
+
+              try {
+                for (final List<String> batch : partition(accessions, batchSize)) {
+                  final List<Future<Boolean>> futures = new ArrayList<>();
+
+                  for (final String accession : batch) {
+                    futures.add(
+                        executorService.submit(
+                            () -> {
+                              try {
+                                final EntityModel<Sample> sampleEntityModel =
+                                    samplesCrawlerAuthChangeHandler.getSample(accession);
+
+                                if (sampleEntityModel != null) {
+                                  samplesCrawlerAuthChangeHandler.handleAuth(
+                                      sampleEntityModel, domain, webinId, release);
+
+                                  return true;
+                                } else {
+                                  log.debug("Sample not found for {}", accession);
+
+                                  return false;
+                                }
+                              } catch (final Exception e) {
+                                log.error("Error processing sample {}", accession, e);
+
+                                return false;
+                              }
+                            }));
+                  }
+
+                  for (final Future<Boolean> future : futures) {
+                    try {
+                      if (Boolean.TRUE.equals(future.get())) {
+                        successCount++;
+                      } else {
+                        failCount++;
+                      }
+                    } catch (final Exception e) {
+                      failCount++;
+
+                      log.error("Task execution failed", e);
+                    }
+
+                    processed++;
+                  }
+
+                  log.info(
+                      "Processed {} / {} samples (success: {}, failed: {})",
+                      processed,
+                      total,
+                      successCount,
+                      failCount);
+                }
+              } finally {
+                // Stop accepting new tasks
+                executorService.shutdown();
+
+                try {
+                  if (!executorService.awaitTermination(2, TimeUnit.HOURS)) {
+                    log.warn("Timeout waiting for tasks to finish, forcing shutdown...");
+
+                    executorService.shutdownNow();
+                  }
+                } catch (final InterruptedException e) {
+                  log.error("Interrupted while waiting for executor shutdown", e);
+
+                  executorService.shutdownNow();
+                  Thread.currentThread().interrupt();
+                }
+              }
             }
           } else {
             log.info("Please provide a valid AAP domain and a valid webin submission account ID");
           }
         }
 
-        default -> {
-          log.warn("No valid --action argument provided. Nothing will run.");
-        }
+        default -> log.warn("No valid --action argument provided. Nothing will run.");
       }
 
     } catch (final Exception e) {
       log.error("Operation failed", e);
       throw new RuntimeException(e);
     }
+  }
+
+  /** Splits list into batches */
+  private static <T> List<List<T>> partition(List<T> list, int size) {
+    List<List<T>> parts = new ArrayList<>();
+
+    for (int i = 0; i < list.size(); i += size) {
+      parts.add(list.subList(i, Math.min(i + size, list.size())));
+    }
+
+    return parts;
+  }
+
+  private static List<String> readAccessions(String file) {
+    final List<String> accessions = new ArrayList<>();
+
+    try (final BufferedReader reader = new BufferedReader(new FileReader(file))) {
+      String line;
+
+      while ((line = reader.readLine()) != null) {
+        accessions.add(line);
+      }
+    } catch (IOException e) {
+      log.error("Error reading sample list file", e);
+      throw new RuntimeException(e);
+    }
+    return accessions;
   }
 }

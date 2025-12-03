@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.properties.BioSamplesProperties;
 
 @Configuration
 @ComponentScan
