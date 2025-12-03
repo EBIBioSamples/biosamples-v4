@@ -33,10 +33,6 @@ spec:
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
 
-        env:
-          - name: SPRING_CONFIG_LOCATION
-            value: /config/application.properties
-
         command:
           {{- toYaml .Values.job.command | nindent 10 }}
 
