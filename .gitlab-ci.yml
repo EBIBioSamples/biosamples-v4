@@ -240,15 +240,9 @@ deploy_cronjobs_k8s_primary_dev:
   script:
     - echo $K8S_NAMESPACE
     - kubectl config set-context --current --namespace=${K8S_NAMESPACE}
-    - kubectl delete secret $DOCKER_PULL_SECRET || true
-    - |
-      kubectl create secret docker-registry $DOCKER_PULL_SECRET \
-              --docker-server=$CI_REGISTRY \
-              --docker-username=$CI_REGISTRY_USER \
-              --docker-password=$CI_JOB_TOKEN
     - |
       helm upgrade --install pipelines-curation ./k8s/cronjobs \
                    --values ./k8s/cronjobs/values-${ENVIRONMENT_NAME}.yaml \
-                   --set "imagePullSecrets[0].name=$DOCKER_PULL_SECRET" \
+                   --set "imagePullSecrets[0].name=gitlab-argo-secret" \
                    --set image.repository=$CI_REGISTRY_IMAGE/pipelines-curation \
                    --set image.tag=$DOCKER_TAG

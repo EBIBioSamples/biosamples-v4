@@ -1,7 +1,9 @@
 image:
-  repository: ""
-  tag: ""
+  repository: __set-in-commandline__
   pullPolicy: IfNotPresent
+  tag: latest
+imagePullSecrets:
+  - name: __set-in-commandline__
 
 job:
   name: biosamples-curation
@@ -25,6 +27,3 @@ workflow:
       duration: "10s"
       factor: 1
       maxDuration: "1m"
-
-imagePullSecrets:
-  - name: __set-in-commandline__
