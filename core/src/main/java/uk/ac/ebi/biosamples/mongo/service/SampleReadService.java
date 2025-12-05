@@ -20,14 +20,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.BioSamplesConstants;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.core.model.structured.StructuredData;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoStructuredData;
 import uk.ac.ebi.biosamples.mongo.repository.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.repository.MongoStructuredDataRepository;
+import uk.ac.ebi.biosamples.properties.BioSamplesConstants;
+import uk.ac.ebi.biosamples.properties.BioSamplesProperties;
 import uk.ac.ebi.biosamples.utils.thread.AdaptiveThreadPoolExecutor;
 
 /**

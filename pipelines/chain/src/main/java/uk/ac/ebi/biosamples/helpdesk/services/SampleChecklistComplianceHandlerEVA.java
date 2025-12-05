@@ -31,7 +31,6 @@ public class SampleChecklistComplianceHandlerEVA {
 
   private static final Logger log =
       LoggerFactory.getLogger(SampleChecklistComplianceHandlerEVA.class);
-
   private static final String GEOGRAPHIC_LOCATION_COUNTRY_AND_OR_SEA =
       "geographic location (country and/or sea)";
   private static final String GEOGRAPHIC_LOCATION_REGION_AND_LOCALITY =

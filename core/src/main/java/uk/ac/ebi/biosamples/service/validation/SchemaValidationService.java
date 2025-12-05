@@ -18,11 +18,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import uk.ac.ebi.biosamples.BioSamplesConstants;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.core.model.Attribute;
 import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.exception.GlobalExceptions;
+import uk.ac.ebi.biosamples.properties.BioSamplesConstants;
+import uk.ac.ebi.biosamples.properties.BioSamplesProperties;
 
 @Service
 public class SchemaValidationService {

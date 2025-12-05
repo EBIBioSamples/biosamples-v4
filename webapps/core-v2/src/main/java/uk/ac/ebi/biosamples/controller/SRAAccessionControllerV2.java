@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.core.service.SampleService;
 
 @RestController
 @CrossOrigin

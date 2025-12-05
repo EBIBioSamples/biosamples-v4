@@ -30,14 +30,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.authentication.WebinAuthenticationService;
 import uk.ac.ebi.biosamples.core.model.Relationship;
 import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.core.model.SubmissionReceipt;
 import uk.ac.ebi.biosamples.core.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.core.service.SampleService;
 import uk.ac.ebi.biosamples.exception.GlobalExceptions;
-import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.WebinAuthenticationService;
+import uk.ac.ebi.biosamples.properties.BioSamplesProperties;
 import uk.ac.ebi.biosamples.service.validation.SchemaValidationService;
 
 @RestController

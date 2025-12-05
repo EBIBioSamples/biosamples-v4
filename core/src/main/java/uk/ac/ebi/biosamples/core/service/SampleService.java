@@ -8,10 +8,10 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.service;
+package uk.ac.ebi.biosamples.core.service;
 
 import static java.util.stream.Collectors.toSet;
-import static uk.ac.ebi.biosamples.BioSamplesConstants.*;
+import static uk.ac.ebi.biosamples.properties.BioSamplesConstants.*;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -25,20 +25,20 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.core.model.Attribute;
 import uk.ac.ebi.biosamples.core.model.Relationship;
 import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.core.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.core.model.structured.AbstractData;
-import uk.ac.ebi.biosamples.core.service.SampleValidator;
 import uk.ac.ebi.biosamples.exception.GlobalExceptions;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSampleMessage;
 import uk.ac.ebi.biosamples.mongo.repository.MongoSampleMessageRepository;
 import uk.ac.ebi.biosamples.mongo.repository.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.*;
+import uk.ac.ebi.biosamples.properties.BioSamplesProperties;
 import uk.ac.ebi.biosamples.security.service.BioSamplesCrossSourceIngestAccessControlService;
+import uk.ac.ebi.biosamples.service.MessagingService;
 
 /**
  * Service layer business logic for centralizing repository access and conversions between different

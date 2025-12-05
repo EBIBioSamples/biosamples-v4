@@ -10,6 +10,7 @@
 */
 package uk.ac.ebi.biosamples.auth.services;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.SampleStatus;
 import uk.ac.ebi.biosamples.core.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.core.model.filter.AuthenticationFilter;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
@@ -44,7 +46,10 @@ public class SamplesCrawlerAuthChangeHandler {
   }
 
   public void handleAuth(
-      final EntityModel<Sample> sampleEntityModel, final String domain, final String newWebinId) {
+      final EntityModel<Sample> sampleEntityModel,
+      final String domain,
+      final String newWebinId,
+      final boolean release) {
     final Sample sample = sampleEntityModel.getContent();
 
     log.info("Handling Sample {}", sample.getAccession());
@@ -64,11 +69,35 @@ public class SamplesCrawlerAuthChangeHandler {
     if (sampleDomain != null && sampleDomain.equals(domain) && currentWebinId == null) {
       log.info("Sample authority needs to change for: " + accession + " setting to: " + newWebinId);
 
-      final Sample updatedSample =
-          Sample.Builder.fromSample(sample)
-              .withWebinSubmissionAccountId(newWebinId)
-              .withNoDomain()
-              .build();
+      final Sample updatedSample;
+
+      if (release) {
+        final Instant releaseDate = sample.getRelease();
+
+        if (releaseDate.isAfter(Instant.now())) {
+          updatedSample =
+              Sample.Builder.fromSample(sample)
+                  .withWebinSubmissionAccountId(newWebinId)
+                  .withNoDomain()
+                  .withStatus(SampleStatus.PUBLIC)
+                  .withRelease(Instant.now())
+                  .build();
+        } else {
+          updatedSample =
+              Sample.Builder.fromSample(sample)
+                  .withWebinSubmissionAccountId(newWebinId)
+                  .withNoDomain()
+                  .withStatus(SampleStatus.PUBLIC)
+                  .build();
+        }
+      } else {
+        updatedSample =
+            Sample.Builder.fromSample(sample)
+                .withWebinSubmissionAccountId(newWebinId)
+                .withNoDomain()
+                .build();
+      }
+
       final EntityModel<Sample> savedSampleEntityModel =
           bioSamplesClient.persistSampleResource(updatedSample);
 
@@ -82,7 +111,11 @@ public class SamplesCrawlerAuthChangeHandler {
         log.info("Sample " + accession + " failed to be updated");
       }
     } else {
-      log.info("Sample from some other domain, no change required");
+      log.info("Sample from some other domain or already webin, no change required");
     }
+  }
+
+  public EntityModel<Sample> getSample(String accession) {
+    return bioSamplesClient.fetchSampleResource(accession).orElse(null);
   }
 }

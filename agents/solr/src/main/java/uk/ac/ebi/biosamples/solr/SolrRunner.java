@@ -16,9 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.messaging.MessagingConstants;
 import uk.ac.ebi.biosamples.messaging.service.MessageUtils;
+import uk.ac.ebi.biosamples.properties.BioSamplesProperties;
 
 @Component
 public class SolrRunner implements ApplicationRunner {

@@ -15,6 +15,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.core.service.SampleService;
 import uk.ac.ebi.biosamples.neo4j.model.GraphSearchQuery;
 import uk.ac.ebi.biosamples.neo4j.repo.NeoSampleRepository;
 
