@@ -35,6 +35,8 @@ maven-package-all-apps:
       - agents/uploadworkers/target/agents-uploadworkers-*.jar
       - pipelines/reindex/target/pipelines-reindex-*.jar
       - pipelines/curation/target/pipelines-curation-*.jar
+      - pipelines/curation/target/pipelines-curami-*.jar
+      - pipelines/curation/target/pipelines-copydown-*.jar
 
 
 build_and_push_docker_images:
@@ -56,6 +58,10 @@ build_and_push_docker_images:
         DOCKERFILE_TARGET: "pipelines-reindex"
       - APP_NAME: "pipelines-curation"
         DOCKERFILE_TARGET: "pipelines-curation"
+      - APP_NAME: "pipelines-curami"
+        DOCKERFILE_TARGET: "pipelines-curami"
+      - APP_NAME: "pipelines-copydown"
+        DOCKERFILE_TARGET: "pipelines-copydown"
   script:
     - |
       DOCKER_IMAGE_NAME="$CI_REGISTRY_IMAGE/$APP_NAME:$DOCKER_TAG"
