@@ -29,13 +29,6 @@ import uk.ac.ebi.biosamples.core.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.facet.FacetService;
 import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
-import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
-import uk.ac.ebi.biosamples.solr.service.SolrFilterService;
-
-import java.util.AbstractMap.SimpleEntry;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 @Service("solrFacetService")
 public class SolrFacetService implements FacetService {
@@ -135,7 +128,14 @@ public class SolrFacetService implements FacetService {
       final Pageable facetFieldPageInfo,
       final Pageable facetValuesPageInfo) {
 
-    return getFacets(searchTerm, new HashSet<>(filters), null, facetFieldPageInfo, facetValuesPageInfo, null, null);
+    return getFacets(
+        searchTerm,
+        new HashSet<>(filters),
+        null,
+        facetFieldPageInfo,
+        facetValuesPageInfo,
+        null,
+        null);
   }
 
   private List<Entry<SolrSampleField, Long>> getFacetFields(

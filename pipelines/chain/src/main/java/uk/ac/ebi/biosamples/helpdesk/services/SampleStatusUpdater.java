@@ -137,13 +137,18 @@ public class SampleStatusUpdater {
                         LocalDateTime.now(ZoneOffset.UTC)
                             .plusYears(100)
                             .toEpochSecond(ZoneOffset.UTC)))
+                .withStatus(SampleStatus.PRIVATE)
                 .build();
       } else {
         log.info("{} is already private", accession);
       }
     } else if (toMakeStatus == SampleStatus.PUBLIC) {
       if (sample.getRelease().isAfter(Instant.now())) {
-        updatedSample = Sample.Builder.fromSample(sample).withRelease(Instant.now()).build();
+        updatedSample =
+            Sample.Builder.fromSample(sample)
+                .withRelease(Instant.now())
+                .withStatus(SampleStatus.PUBLIC)
+                .build();
       } else {
         log.info("{} is already public", accession);
       }

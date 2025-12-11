@@ -358,6 +358,7 @@ services:
     links:
     - biosamples-webapps-core
     - neo4j
+    - mongo
     command:
     - java
     - -jar
@@ -368,6 +369,7 @@ services:
     - LOGGING_FILE=/logs/integration.log
     - BIOSAMPLES_LEGACYAPIKEY=fooqwerty
     - BIOSAMPLES_NEO_URL=bolt://neo4j:7687
+    - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
 
   json-schema-validator:
     image: quay.io/ebi-ait/biovalidator:2.0.1
@@ -481,7 +483,7 @@ services:
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - bootstrap.memory_lock=true
       - xpack.security.http.ssl.enabled=false
-    mem_limit: ${MEM_LIMIT}
+    mem_limit: 1g
     ulimits:
       memlock:
         soft: -1

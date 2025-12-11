@@ -15,9 +15,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.*;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -39,7 +38,6 @@ public class ReindexRunnerTest {
   @Mock private MongoOperations mongoOperations;
   @Mock private SampleReadService sampleReadService;
   @Mock private ObjectMapper objectMapper;
-
 
   private final List<String> accessions = Arrays.asList("ACCESSION1", "ACCESSION2", "ACCESSION3");
 

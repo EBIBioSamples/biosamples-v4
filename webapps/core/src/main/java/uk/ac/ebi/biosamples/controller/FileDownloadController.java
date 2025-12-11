@@ -55,7 +55,8 @@ public class FileDownloadController {
       @RequestParam(name = "count", required = false, defaultValue = "100000") final int count,
       final HttpServletResponse response,
       final HttpServletRequest request) {
-    LOG.info("Sample bulk download request: text = {}, filters = {}", text, Arrays.toString(filter));
+    LOG.info(
+        "Sample bulk download request: text = {}, filters = {}", text, Arrays.toString(filter));
 
     final String decodedText = LinkUtils.decodeText(text);
     final Collection<Filter> filters =

@@ -76,11 +76,17 @@ public class HelpdeskActionApplicationRunner implements ApplicationRunner {
         }
 
         case "changeStatusOfSamplesFromFile" -> {
-          final List<String> accessions =
-              sampleStatusUpdater.parseFileAndGetSampleAccessionList(
-                  "C:\\Users\\dgupta\\AtlantECO-samples-to-suppress.txt");
+          final String file =
+              args.containsOption("file") ? args.getOptionValues("file").get(0) : null;
 
-          sampleStatusUpdater.processSamples(accessions, null);
+          if (file != null) {
+            final List<String> accessions =
+                sampleStatusUpdater.parseFileAndGetSampleAccessionList(file);
+
+            sampleStatusUpdater.processSamples(accessions, SampleStatus.PUBLIC);
+          } else {
+            throw new RuntimeException("File is not provided");
+          }
         }
 
         case "updateSampleRelationships" -> {

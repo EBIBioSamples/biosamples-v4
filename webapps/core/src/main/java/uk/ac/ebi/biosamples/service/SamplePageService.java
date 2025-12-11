@@ -10,6 +10,13 @@
 */
 package uk.ac.ebi.biosamples.service;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
@@ -26,14 +33,6 @@ import uk.ac.ebi.biosamples.mongo.service.SampleReadService;
 import uk.ac.ebi.biosamples.service.search.SearchService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-
 /**
  * Service layer business logic for centralising repository access and conversions between different
  * controller. Use this instead of linking to repositories directly.
@@ -49,11 +48,12 @@ public class SamplePageService {
   private final SampleReadService sampleService;
   private final SearchService searchService;
 
-  public SamplePageService(MongoSampleRepository mongoSampleRepository,
-                           MongoCurationLinkRepository mongoCurationLinkRepository,
-                           MongoSampleToSampleConverter mongoSampleToSampleConverter,
-                           SampleReadService sampleService,
-                           @Qualifier("elasticSearchService") SearchService searchService) {
+  public SamplePageService(
+      MongoSampleRepository mongoSampleRepository,
+      MongoCurationLinkRepository mongoCurationLinkRepository,
+      MongoSampleToSampleConverter mongoSampleToSampleConverter,
+      SampleReadService sampleService,
+      @Qualifier("elasticSearchService") SearchService searchService) {
     this.mongoSampleRepository = mongoSampleRepository;
     this.mongoCurationLinkRepository = mongoCurationLinkRepository;
     this.mongoSampleToSampleConverter = mongoSampleToSampleConverter;
@@ -86,7 +86,8 @@ public class SamplePageService {
       final boolean applyCurations) {
     long startTime = System.nanoTime();
     final Page<String> accessionPage =
-        searchService.searchForAccessions(text, new HashSet<>(filters), webinSubmissionAccountId, pageable);
+        searchService.searchForAccessions(
+            text, new HashSet<>(filters), webinSubmissionAccountId, pageable);
     long endTime = System.nanoTime();
     log.trace("Got search page in {}ms", (endTime - startTime) / 1000000);
 
@@ -123,7 +124,8 @@ public class SamplePageService {
     size = validatePageSize(size);
 
     final CursorArrayList<String> cursorAccessionList =
-        searchService.searchForAccessions(text, new HashSet<>(filters), webinSubmissionAccountId, cursorMark, size);
+        searchService.searchForAccessions(
+            text, new HashSet<>(filters), webinSubmissionAccountId, cursorMark, size);
     final List<Future<Optional<Sample>>> listFutureSample;
 
     listFutureSample =
