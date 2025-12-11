@@ -12,7 +12,6 @@ bin/
 target/
 export/
 temp/
-.env
 set_java_17.sh
 
 # Scripts

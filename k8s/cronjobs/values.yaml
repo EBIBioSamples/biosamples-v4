@@ -1,4 +1,5 @@
 image:
+  repositoryBase: __set
   repository: __set-in-commandline__
   pullPolicy: IfNotPresent
   tag: latest
@@ -6,7 +7,7 @@ imagePullSecrets:
   - name: __set-in-commandline__
 
 job:
-  name: biosamples-curation
+  name: pipelines
   command: ["java", "-jar", "/app/app.jar"]
   args: []
   resources:

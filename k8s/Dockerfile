@@ -23,3 +23,11 @@ CMD ["java", "-jar", "app.jar"]
 FROM base as pipelines-curation
 COPY pipelines/curation/target/pipelines-curation-*.jar app.jar
 CMD ["java", "-jar", "app.jar"]
+
+FROM base as pipelines-curami
+COPY pipelines/curami/target/pipelines-curami-*.jar app.jar
+CMD ["java", "-jar", "app.jar"]
+
+FROM base as pipelines-copydown
+COPY pipelines/copydown/target/pipelines-copydown-*.jar app.jar
+CMD ["java", "-jar", "app.jar"]

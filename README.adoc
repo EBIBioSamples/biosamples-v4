@@ -63,6 +63,12 @@ git clone https://github.com/EBIBioSamples/biosamples-v4.git
 cd biosamples-v4
 ./mvnw -T 2C package
 ----
+. Clone and build `biosamples-search` image
++
+[source,sh]
+----
+./build-biosamples-search-image.sh
+----
 . Start BioSamples on your machine
 +
 [source,sh]
