@@ -35,8 +35,8 @@ maven-package-all-apps:
       - agents/uploadworkers/target/agents-uploadworkers-*.jar
       - pipelines/reindex/target/pipelines-reindex-*.jar
       - pipelines/curation/target/pipelines-curation-*.jar
-      - pipelines/curation/target/pipelines-curami-*.jar
-      - pipelines/curation/target/pipelines-copydown-*.jar
+      - pipelines/curami/target/pipelines-curami-*.jar
+      - pipelines/copydown/target/pipelines-copydown-*.jar
 
 
 build_and_push_docker_images:
