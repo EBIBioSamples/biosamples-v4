@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.PipelineLastRun;
 import uk.ac.ebi.biosamples.model.PipelineName;
-import uk.ac.ebi.biosamples.respository.PipelineLastRunRepository;
+import uk.ac.ebi.biosamples.repository.PipelineLastRunRepository;
 
 import java.time.LocalDate;
 
