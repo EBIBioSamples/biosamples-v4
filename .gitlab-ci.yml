@@ -38,7 +38,6 @@ maven-package-all-apps:
       - pipelines/curami/target/pipelines-curami-*.jar
       - pipelines/copydown/target/pipelines-copydown-*.jar
 
-
 build_and_push_docker_images:
   stage: package
   image: docker:stable

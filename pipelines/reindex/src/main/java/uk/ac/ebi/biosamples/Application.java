@@ -13,7 +13,6 @@ package uk.ac.ebi.biosamples;
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
@@ -23,7 +22,6 @@ import org.apache.http.impl.client.cache.CachingHttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
-import org.apache.http.protocol.HttpContext;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -40,20 +38,22 @@ import uk.ac.ebi.biosamples.security.service.BioSamplesWebSecurityConfig;
 import uk.ac.ebi.biosamples.service.EnaConfig;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 import uk.ac.ebi.biosamples.service.EraProDao;
-import uk.ac.ebi.biosamples.service.validation.ElixirSchemaValidator;
-import uk.ac.ebi.biosamples.service.validation.SchemaValidationService;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
-import uk.ac.ebi.biosamples.utils.ols.OlsProcessor;
 
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
 @ComponentScan(
     excludeFilters = {
-        @ComponentScan.Filter(
-            type = FilterType.ASSIGNABLE_TYPE,
-            value = {EnaConfig.class, EraProDao.class, EnaSampleToBioSampleConversionService.class,
-                BioSamplesWebSecurityConfig.class
-            }),
-        @ComponentScan.Filter(type = FilterType.REGEX, pattern = "uk\\.ac\\.ebi\\.biosamples\\.service\\.validation\\..*")
+      @ComponentScan.Filter(
+          type = FilterType.ASSIGNABLE_TYPE,
+          value = {
+            EnaConfig.class,
+            EraProDao.class,
+            EnaSampleToBioSampleConversionService.class,
+            BioSamplesWebSecurityConfig.class
+          }),
+      @ComponentScan.Filter(
+          type = FilterType.REGEX,
+          pattern = "uk\\.ac\\.ebi\\.biosamples\\.service\\.validation\\..*")
     })
 @Import(ExclusionConfiguration.class)
 public class Application {
@@ -63,8 +63,8 @@ public class Application {
     PipelineUtils.exitPipeline(ctx);
   }
 
-
-  // todo I Had to add restTemplate bean as a temporary workaround as there seems to be a problem with dependencies after refactor.
+  // todo I Had to add restTemplate bean as a temporary workaround as there seems to be a problem
+  // with dependencies after refactor.
   //  We need to sort out dependency problem and remove this unused dependency.
 
   @Bean
@@ -79,10 +79,8 @@ public class Application {
       final BioSamplesProperties bioSamplesProperties,
       final PipelinesProperties pipelinesProperties) {
     return restTemplate -> {
-
       final ConnectionKeepAliveStrategy keepAliveStrategy =
           (response, context) -> {
-
             final HeaderElementIterator it =
                 new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
             while (it.hasNext()) {
@@ -119,8 +117,7 @@ public class Application {
       final RequestConfig config =
           RequestConfig.custom()
               .setConnectTimeout(timeout * 1000)
-              .setConnectionRequestTimeout(
-                  timeout * 1000)
+              .setConnectionRequestTimeout(timeout * 1000)
               .setSocketTimeout(timeout * 1000)
               .build();
       final HttpClient httpClient =

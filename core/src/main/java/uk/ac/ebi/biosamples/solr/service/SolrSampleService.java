@@ -60,7 +60,10 @@ public class SolrSampleService {
 
     // solr degrades with high page and size params, use cursor instead
     if (pageable.getPageNumber() > 500 || pageable.getPageSize() > 200) {
-      log.warn("Max page number/size exceeded, returning error to the user. Number: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+      log.warn(
+          "Max page number/size exceeded, returning error to the user. Number: {}, size: {}",
+          pageable.getPageNumber(),
+          pageable.getPageSize());
       throw new GlobalExceptions.PaginationException();
     }
 

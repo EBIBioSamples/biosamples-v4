@@ -14,7 +14,6 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;

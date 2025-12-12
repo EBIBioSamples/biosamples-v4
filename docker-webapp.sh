@@ -51,7 +51,8 @@ echo "checking neo4j is up"
 
 
 #profile any queries that take longer than 100 ms
-docker-compose run --rm mongo mongo --eval 'db.setProfilingLevel(1)' mongo:27017/biosamples
+#don't use run, spins up a new container, use eval to use existing container
+docker-compose exec mongo mongo biosamples --eval 'db.setProfilingLevel(1)'
 
 until curl -s http://localhost:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
 # create ES index

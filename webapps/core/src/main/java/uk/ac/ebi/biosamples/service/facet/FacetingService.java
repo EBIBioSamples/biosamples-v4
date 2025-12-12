@@ -10,6 +10,9 @@
 */
 package uk.ac.ebi.biosamples.service.facet;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,10 +22,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.core.model.facet.Facet;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 
 @Service
 public class FacetingService {
@@ -60,7 +59,13 @@ public class FacetingService {
     final String escapedText = text == null ? null : ClientUtils.escapeQueryChars(text);
     final List<Facet> facets =
         facetService.getFacets(
-            escapedText, new HashSet<>(filters), null, facetPageable, facetValuePageable, facetField, facetFields);
+            escapedText,
+            new HashSet<>(filters),
+            null,
+            facetPageable,
+            facetValuePageable,
+            facetField,
+            facetFields);
     final long endTime = System.nanoTime();
     log.trace("Got solr facets in " + ((endTime - startTime) / 1000000) + "ms");
 

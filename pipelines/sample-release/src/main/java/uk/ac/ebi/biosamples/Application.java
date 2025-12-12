@@ -30,11 +30,12 @@ import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 import uk.ac.ebi.biosamples.service.EraProDao;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 
-@SpringBootApplication(exclude = {
-    DataSourceAutoConfiguration.class,
-    SecurityAutoConfiguration.class,
-    UserDetailsServiceAutoConfiguration.class
-})
+@SpringBootApplication(
+    exclude = {
+      DataSourceAutoConfiguration.class,
+      SecurityAutoConfiguration.class,
+      UserDetailsServiceAutoConfiguration.class
+    })
 @ComponentScan(
     excludeFilters = {
       @ComponentScan.Filter(

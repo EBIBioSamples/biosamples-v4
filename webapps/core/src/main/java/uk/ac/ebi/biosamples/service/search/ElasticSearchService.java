@@ -1,3 +1,13 @@
+/*
+* Copyright 2021 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.service.search;
 
 import com.google.protobuf.Timestamp;
@@ -6,6 +16,9 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import io.micrometer.core.annotation.Timed;
+import java.time.Instant;
+import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
@@ -16,13 +29,6 @@ import uk.ac.ebi.biosamples.core.model.filter.Filter;
 import uk.ac.ebi.biosamples.search.grpc.*;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 
-import java.io.OutputStream;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
 @Service("elasticSearchService")
 @RequiredArgsConstructor
 @Slf4j
@@ -31,8 +37,14 @@ public class ElasticSearchService implements SearchService {
 
   @Override
   @Timed("biosamples.search.page.elastic")
-  public Page<String> searchForAccessions(String searchTerm, Set<Filter> filters, String webinId, Pageable pageable) {
-    ManagedChannel channel = ManagedChannelBuilder.forAddress(bioSamplesProperties.getBiosamplesSearchHost(), bioSamplesProperties.getBiosamplesSearchPort()).usePlaintext().build();
+  public Page<String> searchForAccessions(
+      String searchTerm, Set<Filter> filters, String webinId, Pageable pageable) {
+    ManagedChannel channel =
+        ManagedChannelBuilder.forAddress(
+                bioSamplesProperties.getBiosamplesSearchHost(),
+                bioSamplesProperties.getBiosamplesSearchPort())
+            .usePlaintext()
+            .build();
     SearchGrpc.SearchBlockingStub stub = SearchGrpc.newBlockingStub(channel);
     SearchResponse response;
     try {
@@ -54,28 +66,45 @@ public class ElasticSearchService implements SearchService {
     }
 
     List<String> accessions = response.getAccessionsList();
-    Sort sort = Sort.by(response.getSortList().stream().map(s -> new Sort.Order(Sort.Direction.ASC, s)).toList());
-    PageRequest page = PageRequest.of(response.getNumber(), response.getSize(), sort) ;
+    Sort sort =
+        Sort.by(
+            response.getSortList().stream()
+                .map(s -> new Sort.Order(Sort.Direction.ASC, s))
+                .toList());
+    PageRequest page = PageRequest.of(response.getNumber(), response.getSize(), sort);
     long totalElements = response.getTotalElements();
     SearchAfter searchAfter = response.getSearchAfter();
 
-    return new SearchAfterPage<>(accessions, page, totalElements, searchAfter.getUpdate(), searchAfter.getAccession());
+    return new SearchAfterPage<>(
+        accessions, page, totalElements, searchAfter.getUpdate(), searchAfter.getAccession());
   }
 
   @Override
   @Timed("biosamples.search.cursor.elastic")
-  public CursorArrayList<String> searchForAccessions(String searchTerm, Set<Filter> filters, String webinId, String cursor, int size) {
+  public CursorArrayList<String> searchForAccessions(
+      String searchTerm, Set<Filter> filters, String webinId, String cursor, int size) {
     SearchAfter searchAfter = null;
     String[] cursorParts = cursor.split(",");
     if (cursorParts.length == 2) {
       Instant update = Instant.parse(cursorParts[0].trim());
       String accession = cursorParts[1].trim();
-      searchAfter = SearchAfter.newBuilder()
-          .setUpdate(Timestamp.newBuilder().setSeconds(update.getEpochSecond()).setNanos(update.getNano()).build())
-          .setAccession(accession).build();
+      searchAfter =
+          SearchAfter.newBuilder()
+              .setUpdate(
+                  Timestamp.newBuilder()
+                      .setSeconds(update.getEpochSecond())
+                      .setNanos(update.getNano())
+                      .build())
+              .setAccession(accession)
+              .build();
     }
 
-    ManagedChannel channel = ManagedChannelBuilder.forAddress(bioSamplesProperties.getBiosamplesSearchHost(), bioSamplesProperties.getBiosamplesSearchPort()).usePlaintext().build();
+    ManagedChannel channel =
+        ManagedChannelBuilder.forAddress(
+                bioSamplesProperties.getBiosamplesSearchHost(),
+                bioSamplesProperties.getBiosamplesSearchPort())
+            .usePlaintext()
+            .build();
     SearchGrpc.SearchBlockingStub stub = SearchGrpc.newBlockingStub(channel);
     SearchResponse response;
     try {
@@ -101,12 +130,12 @@ public class ElasticSearchService implements SearchService {
     SearchAfter newSearchAfter = response.getSearchAfter();
 
     if (StringUtils.hasText(newSearchAfter.getAccession())) {
-      cursor = Timestamps.toString(newSearchAfter.getUpdate()) + "," + newSearchAfter.getAccession();
+      cursor =
+          Timestamps.toString(newSearchAfter.getUpdate()) + "," + newSearchAfter.getAccession();
     }
 
     return new CursorArrayList<>(accessions, cursor);
   }
-
 
   /*public OutputStream searchForAccessionsStream(String searchTerm, Set<Filter> filters, String webinId, String cursor, int size) {
     SearchAfter searchAfter = null;

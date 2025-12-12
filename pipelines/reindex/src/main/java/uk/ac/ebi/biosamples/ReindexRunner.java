@@ -10,10 +10,9 @@
 */
 package uk.ac.ebi.biosamples;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
 import java.util.concurrent.*;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.IncompleteArgumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +29,6 @@ import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.core.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
 import uk.ac.ebi.biosamples.messaging.MessagingConstants;
-import uk.ac.ebi.biosamples.messaging.model.MessageContent;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.service.SampleReadService;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
@@ -55,8 +53,11 @@ public class ReindexRunner implements ApplicationRunner {
   private final ObjectMapper objectMapper;
 
   @Autowired
-  public ReindexRunner(AmqpTemplate amqpTemplate, SampleReadService sampleReadService,
-                       MongoOperations mongoOperations, ObjectMapper objectMapper) {
+  public ReindexRunner(
+      AmqpTemplate amqpTemplate,
+      SampleReadService sampleReadService,
+      MongoOperations mongoOperations,
+      ObjectMapper objectMapper) {
     this.amqpTemplate = amqpTemplate;
     this.sampleReadService = sampleReadService;
     this.mongoOperations = mongoOperations;
@@ -105,7 +106,8 @@ public class ReindexRunner implements ApplicationRunner {
           futures.put(
               accession,
               executor.submit(
-                  new SampleIndexingCallable(accession, sampleReadService, amqpTemplate, objectMapper)));
+                  new SampleIndexingCallable(
+                      accession, sampleReadService, amqpTemplate, objectMapper)));
 
           ThreadUtils.checkFutures(futures, 1000);
         }
@@ -125,10 +127,11 @@ public class ReindexRunner implements ApplicationRunner {
     private final AmqpTemplate amqpTemplate;
     private final ObjectMapper objectMapper;
 
-    public SampleIndexingCallable(String accession,
-                                  SampleReadService sampleReadService,
-                                  AmqpTemplate amqpTemplate,
-                                  ObjectMapper objectMapper) {
+    public SampleIndexingCallable(
+        String accession,
+        SampleReadService sampleReadService,
+        AmqpTemplate amqpTemplate,
+        ObjectMapper objectMapper) {
       this.accession = accession;
       this.sampleReadService = sampleReadService;
       this.amqpTemplate = amqpTemplate;
@@ -158,15 +161,17 @@ public class ReindexRunner implements ApplicationRunner {
       if (sampleOptional.isPresent()) {
         try {
           String json = objectMapper.writeValueAsString(sampleOptional.get());
-          amqpTemplate.convertAndSend(MessagingConstants.INDEXING_EXCHANGE, MessagingConstants.INDEXING_QUEUE, json);
-//          amqpTemplate.convertAndSend(
-//              MessagingConstants.REINDEXING_EXCHANGE,
-//              MessagingConstants.REINDEXING_QUEUE,
-//              MessageContent.build(sampleOptional.get(), null, related, false));
+          amqpTemplate.convertAndSend(
+              MessagingConstants.INDEXING_EXCHANGE, MessagingConstants.INDEXING_QUEUE, json);
+          //          amqpTemplate.convertAndSend(
+          //              MessagingConstants.REINDEXING_EXCHANGE,
+          //              MessagingConstants.REINDEXING_QUEUE,
+          //              MessageContent.build(sampleOptional.get(), null, related, false));
 
           return true;
         } catch (final Exception e) {
-          LOGGER.error("Failed to convert sample to message and send to queue for {}", accession, e);
+          LOGGER.error(
+              "Failed to convert sample to message and send to queue for {}", accession, e);
         }
       } else {
         LOGGER.warn("Failed to fetch sample for {}", accession);
