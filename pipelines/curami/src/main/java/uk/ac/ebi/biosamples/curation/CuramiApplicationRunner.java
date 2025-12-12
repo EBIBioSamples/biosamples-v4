@@ -34,6 +34,7 @@ import uk.ac.ebi.biosamples.core.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.core.model.SampleAnalytics;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
+import uk.ac.ebi.biosamples.model.PipelineLastRun;
 import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.mongo.model.MongoCurationRule;
 import uk.ac.ebi.biosamples.mongo.repository.MongoCurationRuleRepository;
@@ -72,8 +73,10 @@ public class CuramiApplicationRunner implements ApplicationRunner {
 
   @Override
   public void run(final ApplicationArguments args) throws Exception {
-    LocalDate lastRunDate = pipelineHelperService.getLastRunDate(PIPELINE_NAME);
-    final Collection<Filter> filters = PipelineUtils.getLastRunFilters(lastRunDate);
+    PipelineLastRun pipelineLastRun = pipelineHelperService.getLastRunDate(PIPELINE_NAME);
+    LocalDate lastRunDate = pipelineLastRun.getLastRunDate();
+    LocalDate startDate = LocalDate.now();
+    final Collection<Filter> filters = PipelineUtils.getLastRunFilters(lastRunDate, startDate);
     final Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
     LOG.info("Processing samples from {}", lastRunDate);
@@ -112,6 +115,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
 
       LOG.info("Waiting for all scheduled tasks to finish");
       ThreadUtils.checkAndCallbackFutures(futures, 0, pipelineFutureCallback);
+      pipelineHelperService.updateLastRunDate(pipelineLastRun, startDate);
     } catch (final Exception e) {
       LOG.error("Pipeline failed to finish successfully", e);
       throw e;

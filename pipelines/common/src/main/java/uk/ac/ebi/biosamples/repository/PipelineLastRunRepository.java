@@ -10,4 +10,6 @@ import java.util.Optional;
 @Repository
 public interface PipelineLastRunRepository extends MongoRepository<PipelineLastRun, String> {
   Optional<PipelineLastRun> findFirstByPipelineName(PipelineName pipelineName);
+
+
 }

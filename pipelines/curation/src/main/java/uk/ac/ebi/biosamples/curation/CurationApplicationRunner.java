@@ -32,6 +32,7 @@ import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
 import uk.ac.ebi.biosamples.core.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.curation.service.IriUrlValidatorService;
+import uk.ac.ebi.biosamples.model.PipelineLastRun;
 import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.mongo.service.AnalyticsService;
 import uk.ac.ebi.biosamples.service.PipelineHelperService;
@@ -73,9 +74,11 @@ public class CurationApplicationRunner implements ApplicationRunner {
 
   @Override
   public void run(final ApplicationArguments args) throws Exception {
+    PipelineLastRun pipelineLastRun = pipelineHelperService.getLastRunDate(PIPELINE_NAME);
+    LocalDate lastRunDate = pipelineLastRun.getLastRunDate();
+    LocalDate startDate = LocalDate.now();
     final Instant startTime = Instant.now();
-    LocalDate lastRunDate = pipelineHelperService.getLastRunDate(PIPELINE_NAME);
-    final Collection<Filter> filters = PipelineUtils.getLastRunFilters(lastRunDate);
+    final Collection<Filter> filters = PipelineUtils.getLastRunFilters(lastRunDate, startDate);
     LOG.info("Pipeline started at {}", startTime);
     LOG.info("Processing samples from {}", lastRunDate);
     long sampleCount = 0;
@@ -117,6 +120,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
       LOG.info("waiting for futures");
       // wait for anything to finish
       ThreadUtils.checkAndCallbackFutures(futures, 0, pipelineFutureCallback);
+      pipelineHelperService.updateLastRunDate(pipelineLastRun, startDate);
     } catch (final Exception e) {
       LOG.error("Pipeline failed to finish successfully", e);
 

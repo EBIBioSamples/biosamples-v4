@@ -32,9 +32,10 @@ import uk.ac.ebi.biosamples.model.PipelineName;
 public class PipelineUtils {
   private static final Logger log = LoggerFactory.getLogger(PipelineUtils.class);
 
-  public static Collection<Filter> getLastRunFilters(LocalDate lastRunDate) {
+  public static Collection<Filter> getLastRunFilters(LocalDate lastRunDate, LocalDate startDate) {
     Filter fromDateFilter = new DateRangeFilter.DateRangeFilterBuilder("update")
         .from(lastRunDate.atStartOfDay().toInstant(ZoneOffset.UTC))
+        .until(startDate.atStartOfDay().toInstant(ZoneOffset.UTC))
         .build();
     return List.of(fromDateFilter);
   }

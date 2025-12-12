@@ -15,9 +15,17 @@ import java.time.LocalDate;
 public class PipelineHelperService {
   private final PipelineLastRunRepository pipelineLastRunRepository;
 
-  public LocalDate getLastRunDate(PipelineName pipelineName) {
-    PipelineLastRun pipelineLastRun = pipelineLastRunRepository.findFirstByPipelineName(pipelineName)
+  public PipelineLastRun getLastRunDate(PipelineName pipelineName) {
+    return pipelineLastRunRepository.findFirstByPipelineName(pipelineName)
         .orElse(PipelineLastRun.builder().pipelineName(pipelineName).lastRunDate(LocalDate.EPOCH).build());
-    return pipelineLastRun.getLastRunDate();
+  }
+
+  public void updateLastRunDate(PipelineLastRun pipelineLastRun, LocalDate lastRunDate) {
+    PipelineLastRun updated = PipelineLastRun.builder()
+        .id(pipelineLastRun.getId())
+        .pipelineName(pipelineLastRun.getPipelineName())
+        .lastRunDate(lastRunDate)
+        .build();
+    pipelineLastRunRepository.save(updated);
   }
 }

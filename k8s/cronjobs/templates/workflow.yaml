@@ -11,7 +11,7 @@ spec:
   imagePullSecrets:
     {{- toYaml . | nindent 8 }}
   {{- end }}
-  parallelism: 1
+  parallelism: 2
   ttlStrategy:
     secondsAfterSuccess: {{ .Values.workflow.ttlStrategy.secondsAfterSuccess }}
     secondsAfterFailure: {{ .Values.workflow.ttlStrategy.secondsAfterFailure }}
