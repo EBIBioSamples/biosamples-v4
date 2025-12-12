@@ -25,6 +25,7 @@ import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
@@ -54,7 +55,10 @@ import uk.ac.ebi.biosamples.utils.PipelineUtils;
 public class Application {
 
   public static void main(final String[] args) {
-    final ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
+    SpringApplication app = new SpringApplication(Application.class);
+    app.setWebApplicationType(WebApplicationType.NONE);
+
+    final ConfigurableApplicationContext ctx = app.run(args);
     PipelineUtils.exitPipeline(ctx);
   }
 

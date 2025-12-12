@@ -13,6 +13,7 @@ package uk.ac.ebi.biosamples.curation;
 import java.io.*;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -33,9 +34,11 @@ import uk.ac.ebi.biosamples.core.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.core.model.SampleAnalytics;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
+import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.mongo.model.MongoCurationRule;
 import uk.ac.ebi.biosamples.mongo.repository.MongoCurationRuleRepository;
 import uk.ac.ebi.biosamples.mongo.service.AnalyticsService;
+import uk.ac.ebi.biosamples.service.PipelineHelperService;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 import uk.ac.ebi.biosamples.utils.thread.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.thread.ThreadUtils;
@@ -43,6 +46,7 @@ import uk.ac.ebi.biosamples.utils.thread.ThreadUtils;
 @Component
 public class CuramiApplicationRunner implements ApplicationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(CuramiApplicationRunner.class);
+  private static final PipelineName PIPELINE_NAME = PipelineName.CURAMI;
 
   private final BioSamplesClient bioSamplesClient;
   private final PipelinesProperties pipelinesProperties;
@@ -50,25 +54,29 @@ public class CuramiApplicationRunner implements ApplicationRunner {
   private final MongoCurationRuleRepository repository;
   private final AnalyticsService analyticsService;
   private final PipelineFutureCallback pipelineFutureCallback;
+  private final PipelineHelperService pipelineHelperService;
 
   public CuramiApplicationRunner(
       final BioSamplesClient bioSamplesClient,
       final PipelinesProperties pipelinesProperties,
       final MongoCurationRuleRepository repository,
-      final AnalyticsService analyticsService) {
+      final AnalyticsService analyticsService, PipelineHelperService pipelineHelperService) {
     this.bioSamplesClient = bioSamplesClient;
     this.pipelinesProperties = pipelinesProperties;
     this.repository = repository;
     this.analyticsService = analyticsService;
+    this.pipelineHelperService = pipelineHelperService;
     curationRules = new HashMap<>();
     pipelineFutureCallback = new PipelineFutureCallback();
   }
 
   @Override
   public void run(final ApplicationArguments args) throws Exception {
-    final Collection<Filter> filters = PipelineUtils.getDateFilters(args, "update");
+    LocalDate lastRunDate = pipelineHelperService.getLastRunDate(PIPELINE_NAME);
+    final Collection<Filter> filters = PipelineUtils.getLastRunFilters(lastRunDate);
     final Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
+    LOG.info("Processing samples from {}", lastRunDate);
     long sampleCount = 0;
     final SampleAnalytics sampleAnalytics = new SampleAnalytics();
 
