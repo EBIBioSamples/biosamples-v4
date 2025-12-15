@@ -41,7 +41,14 @@ else
 fi
 
 echo "[3/3] Building Docker image: ${IMAGE_TAG}"
-DOCKER_BUILDKIT=1 docker build -t "${IMAGE_TAG}" "${CONTEXT_DIR}"
+# Check if buildx is available, otherwise use regular docker build
+if docker buildx version >/dev/null 2>&1; then
+  echo "Using BuildKit (buildx available)"
+  DOCKER_BUILDKIT=1 docker build -t "${IMAGE_TAG}" "${CONTEXT_DIR}"
+else
+  echo "BuildKit not available, using standard docker build"
+  docker build -t "${IMAGE_TAG}" "${CONTEXT_DIR}"
+fi
 
 echo "${IMAGE_TAG} built successfully"
 

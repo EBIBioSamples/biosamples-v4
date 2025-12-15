@@ -38,6 +38,7 @@ import uk.ac.ebi.biosamples.security.service.BioSamplesWebSecurityConfig;
 import uk.ac.ebi.biosamples.service.EnaConfig;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 import uk.ac.ebi.biosamples.service.EraProDao;
+import uk.ac.ebi.biosamples.service.PipelineHelperService;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
@@ -49,7 +50,8 @@ import uk.ac.ebi.biosamples.utils.PipelineUtils;
             EnaConfig.class,
             EraProDao.class,
             EnaSampleToBioSampleConversionService.class,
-            BioSamplesWebSecurityConfig.class
+            BioSamplesWebSecurityConfig.class,
+            PipelineHelperService.class
           }),
       @ComponentScan.Filter(
           type = FilterType.REGEX,
