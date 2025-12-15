@@ -281,24 +281,29 @@ public class RestFacetIntegration extends AbstractIntegration {
       ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
       log.info("Response status: {}", response.getStatusCode());
       log.info("Response body: {}", response.getBody());
-      
+
       JsonNode node = objectMapper.readTree(response.getBody());
       JsonNode embedded = node.get("_embedded");
       if (embedded == null) {
-        log.error("Response does not contain '_embedded' field. Full response: {}", response.getBody());
+        log.error(
+            "Response does not contain '_embedded' field. Full response: {}", response.getBody());
         throw new IntegrationTestFailException(
-            "Facet endpoint response does not contain '_embedded' field. Response: " + response.getBody(),
+            "Facet endpoint response does not contain '_embedded' field. Response: "
+                + response.getBody(),
             Phase.SIX);
       }
-      
+
       JsonNode facets = embedded.get("facets");
       if (facets == null) {
-        log.error("Response does not contain 'facets' field. '_embedded' content: {}", embedded.toString());
+        log.error(
+            "Response does not contain 'facets' field. '_embedded' content: {}",
+            embedded.toString());
         throw new IntegrationTestFailException(
-            "Facet endpoint response does not contain 'facets' field. Response: " + response.getBody(),
+            "Facet endpoint response does not contain 'facets' field. Response: "
+                + response.getBody(),
             Phase.SIX);
       }
-      
+
       for (JsonNode facet : facets) {
         if ("SRA accession".equals(facet.get("label").asText())) {
           if (facet.get("content").size() < 10) {

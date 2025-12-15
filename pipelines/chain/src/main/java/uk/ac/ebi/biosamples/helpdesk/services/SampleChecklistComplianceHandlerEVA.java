@@ -38,7 +38,7 @@ public class SampleChecklistComplianceHandlerEVA {
   private static final String COLLECTION_DATE = "collection_date";
   private static final String COLLECTION_DATE_WITHOUT_UNDERSCORE = "collection date";
 
-    private final BioSamplesClient bioSamplesWebinClient;
+  private final BioSamplesClient bioSamplesWebinClient;
   private final PipelinesProperties pipelinesProperties;
 
   public SampleChecklistComplianceHandlerEVA(

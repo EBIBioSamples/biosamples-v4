@@ -61,7 +61,8 @@ public class CuramiApplicationRunner implements ApplicationRunner {
       final BioSamplesClient bioSamplesClient,
       final PipelinesProperties pipelinesProperties,
       final MongoCurationRuleRepository repository,
-      final AnalyticsService analyticsService, PipelineHelperService pipelineHelperService) {
+      final AnalyticsService analyticsService,
+      PipelineHelperService pipelineHelperService) {
     this.bioSamplesClient = bioSamplesClient;
     this.pipelinesProperties = pipelinesProperties;
     this.repository = repository;

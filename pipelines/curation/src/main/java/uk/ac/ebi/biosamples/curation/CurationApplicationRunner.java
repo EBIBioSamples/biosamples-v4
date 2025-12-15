@@ -61,7 +61,8 @@ public class CurationApplicationRunner implements ApplicationRunner {
       final OlsProcessor olsProcessor,
       final CurationApplicationService curationApplicationService,
       final AnalyticsService analyticsService,
-      final IriUrlValidatorService iriUrlValidatorService, PipelineHelperService pipelineHelperService) {
+      final IriUrlValidatorService iriUrlValidatorService,
+      PipelineHelperService pipelineHelperService) {
     this.bioSamplesClient = bioSamplesClient;
     this.pipelinesProperties = pipelinesProperties;
     this.olsProcessor = olsProcessor;
