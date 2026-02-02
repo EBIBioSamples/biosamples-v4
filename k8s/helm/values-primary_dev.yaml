@@ -4,3 +4,6 @@ biosamples:
   search:
     host: biosamples-search-helm
     port: 9090
+  schema:
+    store:
+      url: https://www.ebi.ac.uk/biosamples/schema-store
