@@ -86,6 +86,7 @@ clone-config:
     paths:
       - config
   only:
+    - chore/working-es-search-k8-deployment-with-cleanup
     - dev
     - main
     - biosamples-search
@@ -98,6 +99,7 @@ deploy_k8s_primary_dev:
     name: primary_dev
     url: https://wwwdev.ebi.ac.uk/biosamples
   only:
+    - chore/working-es-search-k8-deployment-with-cleanup
     - dev
     - main
     - biosamples-search
