@@ -162,7 +162,7 @@ public class ReindexRunner implements ApplicationRunner {
         try {
           String json = objectMapper.writeValueAsString(sampleOptional.get());
           amqpTemplate.convertAndSend(
-              MessagingConstants.INDEXING_EXCHANGE, MessagingConstants.REINDEXING_QUEUE, json);
+              MessagingConstants.REINDEXING_EXCHANGE, MessagingConstants.REINDEXING_QUEUE, json);
 
           return true;
         } catch (final Exception e) {

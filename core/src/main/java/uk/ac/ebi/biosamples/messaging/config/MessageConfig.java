@@ -46,8 +46,8 @@ public class MessageConfig {
   @Bean(name = "reindexingExchange")
   public Exchange reindexingExchange() {
     return ExchangeBuilder.directExchange(MessagingConstants.REINDEXING_EXCHANGE)
-            .durable(true)
-            .build();
+        .durable(true)
+        .build();
   }
 
   @Bean(name = "uploadExchange")
