@@ -98,7 +98,7 @@ public class SearchFacetMapper {
         filterBuilder.setExternal(externalRefFilterBuilder);
       }
 
-      // todo SraAccessionFilter, Structured data filter
+      // todo SraAccessionFilter
 
       grpcFilters.add(filterBuilder.build());
     }
