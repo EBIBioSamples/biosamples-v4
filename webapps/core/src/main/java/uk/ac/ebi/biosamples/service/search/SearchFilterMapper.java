@@ -151,14 +151,12 @@ public class SearchFilterMapper {
                     default ->
                         throw new IllegalArgumentException("Unknown date field " + f.getLabel());
                   };
-              grpcFilters.add(
-                  Filter.newBuilder()
-                      .setDateRange(
-                          DateRangeFilter.newBuilder()
-                              .setField(dateField)
-                              .setFrom(dateRange.getFrom().toString())
-                              .setTo(dateRange.getUntil().toString()))
-                      .build());
+              var dateRangeBuilder =
+                  DateRangeFilter.newBuilder()
+                      .setField(dateField)
+                      .setFrom(dateRange.isFromMinDate() ? "" : dateRange.getFrom().toString())
+                      .setTo(dateRange.isUntilMaxDate() ? "" : dateRange.getUntil().toString());
+              grpcFilters.add(Filter.newBuilder().setDateRange(dateRangeBuilder.build()).build());
             });
   }
 

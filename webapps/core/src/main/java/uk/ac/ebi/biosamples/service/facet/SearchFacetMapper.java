@@ -67,8 +67,12 @@ public class SearchFacetMapper {
                     filterBuilder.setDateRange(
                         DateRangeFilter.newBuilder()
                             .setField(dateField)
-                            .setFrom(dateRange.getFrom().toString())
-                            .setTo(dateRange.getUntil().toString())));
+                            .setFrom(
+                                dateRange.isFromMinDate() ? "" : dateRange.getFrom().toString())
+                            .setTo(
+                                dateRange.isUntilMaxDate()
+                                    ? ""
+                                    : dateRange.getUntil().toString())));
       }
       if (filter instanceof uk.ac.ebi.biosamples.core.model.filter.AttributeFilter f) {
         AttributeFilter.Builder attributeFilterBuilder = AttributeFilter.newBuilder();
