@@ -38,9 +38,9 @@ import uk.ac.ebi.biosamples.utils.thread.ThreadUtils;
  * This runner will get a list of accessions from mongo directly, query the API to get the latest
  * information, and then send that information to Rabbit for the Solr Agent to reindex it into Solr.
  *
- * <p>Mongo is queried instead of the API because the API is driven by Solr, and if Solr is
- * incorrect (which it will be because why else would you run this) then it won't get the right
- * information from the API.
+ * <p>Mongo is queried instead of the API. The API is driven by Solr, and if Solr is incorrect
+ * (which it will be because why else would you run this), then it won't get the right information
+ * from the API.
  *
  * @author faulcon
  */

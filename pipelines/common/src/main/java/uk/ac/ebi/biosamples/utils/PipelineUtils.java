@@ -45,7 +45,7 @@ public class PipelineUtils {
     final Collection<Filter> filters = new ArrayList<>();
     final LocalDate fromDate;
     final LocalDate toDate;
-    final Filter fromDateFilter;
+    final Filter dateFilter;
 
     if (args.getOptionNames().contains("from")) {
       fromDate =
@@ -67,20 +67,20 @@ public class PipelineUtils {
     log.info("Processing samples to " + DateTimeFormatter.ISO_LOCAL_DATE.format(toDate));
 
     if (!dateType.equals("release")) {
-      fromDateFilter =
+      dateFilter =
           new DateRangeFilter.DateRangeFilterBuilder(dateType)
               .from(fromDate.atStartOfDay().toInstant(ZoneOffset.UTC))
               .until(toDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))
               .build();
     } else {
-      fromDateFilter =
+      dateFilter =
           new DateRangeFilter.DateRangeFilterBuilder(dateType)
               .from(fromDate.atStartOfDay().toInstant(ZoneOffset.UTC))
               .until(fromDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))
               .build();
     }
 
-    filters.add(fromDateFilter);
+    filters.add(dateFilter);
 
     return filters;
   }
