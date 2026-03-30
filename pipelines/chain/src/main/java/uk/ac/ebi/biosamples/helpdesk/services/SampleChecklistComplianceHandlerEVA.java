@@ -165,7 +165,7 @@ public class SampleChecklistComplianceHandlerEVA {
   }
 
   public void updateSamnSampleGeographicLocationFromFile() {
-    final Pattern pattern = Pattern.compile("SAMN\\d+");
+    final Pattern pattern = Pattern.compile("(SAMN|SAMD)\\d+");
     final Set<String> samnAccessions = new HashSet<>();
 
     try (BufferedReader reader =

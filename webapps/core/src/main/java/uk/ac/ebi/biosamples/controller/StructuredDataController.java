@@ -45,8 +45,7 @@ public class StructuredDataController {
     this.sampleService = sampleService;
   }
 
-  @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  @GetMapping()
+  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public EntityModel<StructuredData> get(@PathVariable final String accession) {
     if (accession == null || accession.isEmpty()) {
       throw new GlobalExceptions.SampleAccessionMismatchException();
@@ -59,23 +58,34 @@ public class StructuredDataController {
   }
 
   @PreAuthorize("isAuthenticated()")
-  @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
+  @PutMapping(
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public EntityModel<StructuredData> put(
       @PathVariable final String accession, @RequestBody final StructuredData structuredData) {
     final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
-    final String principle = sampleService.getPrinciple(loggedInUser);
+    final String principal = sampleService.getPrinciple(loggedInUser);
 
-    if (principle == null) {
+    if (principal == null) {
       throw new GlobalExceptions.WebinUserLoginUnauthorizedException();
     }
 
     log.info("PUT request for structured data: {}", accession);
 
+    if (structuredData == null) {
+      throw new GlobalExceptions.SampleMandatoryFieldsMissingException("Missing request body");
+    }
+
     if (structuredData.getAccession() == null || !structuredData.getAccession().equals(accession)) {
       throw new GlobalExceptions.SampleAccessionMismatchException();
     }
 
-    webinAuthenticationService.isStructuredDataAccessible(structuredData, principle);
+    if (structuredData.getData() == null || structuredData.getData().isEmpty()) {
+      throw new GlobalExceptions.SampleMandatoryFieldsMissingException(
+          "Missing data. Empty data is not accepted");
+    }
+
+    webinAuthenticationService.isStructuredDataAccessible(structuredData, principal);
 
     return EntityModel.of(structuredDataService.saveStructuredData(structuredData));
   }

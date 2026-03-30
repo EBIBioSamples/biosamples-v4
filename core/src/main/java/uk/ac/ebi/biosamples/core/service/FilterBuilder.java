@@ -42,8 +42,8 @@ public class FilterBuilder {
     return new DateRangeFilter.DateRangeFilterBuilder("update");
   }
 
-  public AuthenticationFilter.Builder onAuthInfo(final String domain) {
-    return new AuthenticationFilter.Builder(domain);
+  public AuthenticationFilter.Builder onAuthInfo(final String authInfo) {
+    return new AuthenticationFilter.Builder(authInfo);
   }
 
   public NameFilter.Builder onName(final String name) {
@@ -57,6 +57,14 @@ public class FilterBuilder {
   public ExternalReferenceDataFilter.Builder onDataFromExternalReference(
       final String extReference) {
     return new ExternalReferenceDataFilter.Builder(extReference);
+  }
+
+  public StructuredDataFilter.Builder onStructuredData() {
+    return new StructuredDataFilter.Builder();
+  }
+
+  public StructuredDataFilter.Builder onStructuredData(final String dataType) {
+    return new StructuredDataFilter.Builder().withDataType(dataType);
   }
 
   public Filter buildFromString(final String serializedFilter) {

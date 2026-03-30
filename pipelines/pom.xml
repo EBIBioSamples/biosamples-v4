@@ -37,6 +37,7 @@
 		<module>taxonimport</module>
 		<module>reindex</module>
 		<module>chain</module>
+		<module>sample-post-release-action</module>
 		<!--<module>ncbi-ena-link</module>-->
 		<!--<module>ena</module>-->
 	</modules>

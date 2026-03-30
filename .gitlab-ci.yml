@@ -86,6 +86,7 @@ clone-config:
     paths:
       - config
   only:
+    - chore/working-es-search-k8-deployment-with-cleanup
     - dev
     - main
     - biosamples-search
@@ -98,6 +99,7 @@ deploy_k8s_primary_dev:
     name: primary_dev
     url: https://wwwdev.ebi.ac.uk/biosamples
   only:
+    - chore/working-es-search-k8-deployment-with-cleanup
     - dev
     - main
     - biosamples-search
@@ -112,6 +114,7 @@ deploy_k8s_primary_prod:
     name: primary_prod
     url: https://www.ebi.ac.uk/biosamples
   only:
+    - chore/working-es-search-k8-deployment-with-cleanup
     - dev
     - main
     - biosamples-search
@@ -126,6 +129,7 @@ deploy_k8s_fallback_prod:
     name: fallback_prod
     url: https://www.ebi.ac.uk/biosamples
   only:
+    - chore/working-es-search-k8-deployment-with-cleanup
     - dev
     - main
     - biosamples-search
@@ -138,8 +142,24 @@ deploy_pipeline_k8s_primary_prod:
     K8S_NAMESPACE: biosamples-prod
   environment:
     name: primary_prod
-    url: https://wwwdev.ebi.ac.uk/biosamples
+    url: https://www.ebi.ac.uk/biosamples
+  only: 
+    - chore/working-es-search-k8-deployment-with-cleanup
+    - dev
+    - main
+    - biosamples-search
+  when: manual
+  extends: .kube_deploy_jobs_script
+
+deploy_pipeline_k8s_fallback_prod:
+  variables:
+    ENVIRONMENT_NAME: fallback_prod
+    K8S_NAMESPACE: biosamples-prod
+  environment:
+    name: fallback_prod
+    url: https://www.ebi.ac.uk/biosamples
   only:
+    - chore/working-es-search-k8-deployment-with-cleanup
     - dev
     - main
     - biosamples-search
@@ -154,6 +174,7 @@ deploy_pipeline_k8s_primary_dev:
     name: primary_dev
     url: https://wwwdev.ebi.ac.uk/biosamples
   only:
+    - chore/working-es-search-k8-deployment-with-cleanup
     - dev
     - main
     - biosamples-search

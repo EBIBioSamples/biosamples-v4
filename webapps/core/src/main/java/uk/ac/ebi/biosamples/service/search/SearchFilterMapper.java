@@ -17,6 +17,7 @@ import uk.ac.ebi.biosamples.core.model.filter.AuthenticationFilter;
 import uk.ac.ebi.biosamples.core.model.filter.ExternalReferenceDataFilter;
 import uk.ac.ebi.biosamples.core.model.filter.InverseRelationFilter;
 import uk.ac.ebi.biosamples.core.model.filter.RelationFilter;
+import uk.ac.ebi.biosamples.core.model.filter.StructuredDataFilter;
 import uk.ac.ebi.biosamples.search.grpc.*;
 
 public class SearchFilterMapper {
@@ -52,12 +53,29 @@ public class SearchFilterMapper {
       } else if (filter
           instanceof uk.ac.ebi.biosamples.core.model.filter.ExternalReferenceDataFilter f) {
         getExternalReferenceSearchFilter(f, grpcFilters);
+      } else if (filter instanceof uk.ac.ebi.biosamples.core.model.filter.StructuredDataFilter f) {
+        getStructuredDataSearchFilter(f, grpcFilters);
       } else {
-        // todo SraAccessionFilter, Structured data filter
+        // todo SraAccessionFilter
         throw new RuntimeException("Unsupported filter type " + filter.getClass().getName());
       }
     }
     filterMap.forEach((k, v) -> grpcFilters.add(v.build())); // allows OR filter for attributes
+  }
+
+  private static void getStructuredDataSearchFilter(
+      StructuredDataFilter f, List<Filter> grpcFilters) {
+    f.getContent()
+        .filter(StringUtils::hasText)
+        .ifPresent(
+            dataType -> {
+              grpcFilters.add(
+                  Filter.newBuilder()
+                      .setStructuredData(
+                          uk.ac.ebi.biosamples.search.grpc.StructuredDataFilter.newBuilder()
+                              .setType(dataType))
+                      .build());
+            });
   }
 
   private static void getAuthSearchFilter(AuthenticationFilter f, List<Filter> grpcFilters) {
@@ -133,14 +151,12 @@ public class SearchFilterMapper {
                     default ->
                         throw new IllegalArgumentException("Unknown date field " + f.getLabel());
                   };
-              grpcFilters.add(
-                  Filter.newBuilder()
-                      .setDateRange(
-                          DateRangeFilter.newBuilder()
-                              .setField(dateField)
-                              .setFrom(dateRange.getFrom().toString())
-                              .setTo(dateRange.getUntil().toString()))
-                      .build());
+              var dateRangeBuilder =
+                  DateRangeFilter.newBuilder()
+                      .setField(dateField)
+                      .setFrom(dateRange.isFromMinDate() ? "" : dateRange.getFrom().toString())
+                      .setTo(dateRange.isUntilMaxDate() ? "" : dateRange.getUntil().toString());
+              grpcFilters.add(Filter.newBuilder().setDateRange(dateRangeBuilder.build()).build());
             });
   }
 
