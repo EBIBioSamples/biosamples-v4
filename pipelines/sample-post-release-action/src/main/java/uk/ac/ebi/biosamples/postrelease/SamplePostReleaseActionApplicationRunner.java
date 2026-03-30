@@ -12,8 +12,9 @@ package uk.ac.ebi.biosamples.postrelease;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
@@ -47,6 +48,8 @@ public class SamplePostReleaseActionApplicationRunner implements ApplicationRunn
   public void run(final ApplicationArguments args) throws Exception {
     final Instant startTime = Instant.now();
     final Collection<Filter> filters = PipelineUtils.getDateFilters(args, "release");
+    final String fromDate = getDateArgOrDefault(args, "from", "1000-01-01");
+    final String untilDate = getDateArgOrDefault(args, "until", "3000-01-01");
     long sampleCount = 0;
 
     try (final AdaptiveThreadPoolExecutor executorService =
@@ -68,15 +71,15 @@ public class SamplePostReleaseActionApplicationRunner implements ApplicationRunn
 
         LOG.info("Handling {}", sample.getAccession());
 
-        final Callable<Boolean> task =
-            new SamplePostReleaseActionCallable(bioSamplesWebinClient, sample);
+        /*final Callable<Boolean> task =
+        new SamplePostReleaseActionCallable(bioSamplesWebinClient, sample);*/
         sampleCount++;
 
         if (sampleCount % 10000 == 0) {
           LOG.info("{} scheduled for processing", sampleCount);
         }
 
-        futures.put(sample.getAccession(), executorService.submit(task));
+        // futures.put(sample.getAccession(), executorService.submit(task));
       }
 
       LOG.info("waiting for futures");
@@ -91,6 +94,8 @@ public class SamplePostReleaseActionApplicationRunner implements ApplicationRunn
       final String failures;
 
       LOG.info("Total samples processed {}", sampleCount);
+      LOG.info(
+          "Samples received for date range from {} to {}: {}", fromDate, untilDate, sampleCount);
       LOG.info("Pipeline finished at {}", endTime);
       LOG.info(
           "Pipeline total running time {} seconds",
@@ -113,5 +118,16 @@ public class SamplePostReleaseActionApplicationRunner implements ApplicationRunn
         LOG.info(failures);
       }
     }
+  }
+
+  private String getDateArgOrDefault(
+      final ApplicationArguments args, final String argName, final String defaultValue) {
+    if (!args.getOptionNames().contains(argName)) {
+      return defaultValue;
+    }
+
+    final String value = args.getOptionValues(argName).iterator().next();
+    return DateTimeFormatter.ISO_LOCAL_DATE.format(
+        LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE));
   }
 }

@@ -23,8 +23,11 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -35,23 +38,38 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.configuration.ExclusionConfiguration;
+import uk.ac.ebi.biosamples.security.service.BioSamplesWebSecurityConfig;
 import uk.ac.ebi.biosamples.service.EnaConfig;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 import uk.ac.ebi.biosamples.service.EraProDao;
+import uk.ac.ebi.biosamples.service.PipelineHelperService;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 
-@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
+@SpringBootApplication(
+    exclude = {
+      DataSourceAutoConfiguration.class,
+      SecurityAutoConfiguration.class,
+      UserDetailsServiceAutoConfiguration.class
+    })
 @ComponentScan(
     excludeFilters = {
       @ComponentScan.Filter(
           type = FilterType.ASSIGNABLE_TYPE,
-          value = {EnaConfig.class, EraProDao.class, EnaSampleToBioSampleConversionService.class})
+          value = {
+            EnaConfig.class,
+            EraProDao.class,
+            EnaSampleToBioSampleConversionService.class,
+            PipelineHelperService.class,
+            BioSamplesWebSecurityConfig.class
+          })
     })
 @Import(ExclusionConfiguration.class)
 @EnableCaching
 public class Application {
   public static void main(final String[] args) {
-    final ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
+    final SpringApplication springApplication = new SpringApplication(Application.class);
+    springApplication.setWebApplicationType(WebApplicationType.NONE);
+    final ConfigurableApplicationContext ctx = springApplication.run(args);
     PipelineUtils.exitPipeline(ctx);
   }
 
