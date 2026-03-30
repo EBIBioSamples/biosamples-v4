@@ -32,7 +32,8 @@ public class RootHalController {
 
     resource.add(WebMvcLinkBuilder.linkTo(SamplesRestController.class).withRel("samples"));
     resource.add(WebMvcLinkBuilder.linkTo(CurationController.class).withRel("curations"));
-    resource.add(Link.of("/biosamples/privacy/privacy_notice.pdf", "privacyNotice"));
+    resource.add(
+        Link.of("/biosamples/privacy/biosamples-submissions-privacy-notice.pdf", "privacyNotice"));
     resource.add(Link.of("https://www.ebi.ac.uk/about/terms-of-use", "termsOfUse"));
 
     return ResponseEntity.ok()

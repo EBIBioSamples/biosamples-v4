@@ -95,6 +95,49 @@
     <script src="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.3/js/foundationExtendEBI.js"></script>
     <script type="text/JavaScript">$(document).foundation();</script>
     <script type="text/JavaScript">$(document).foundationExtendEBI();</script>
+    <script type="text/JavaScript">
+        // After the EMBL-EBI footer has rendered, point its privacy link(s)
+        // to the BioSamples submissions privacy notice PDF.
+        (function () {
+            function updateFooterPrivacyLinks() {
+                // First, handle any known EMBL-EBI public website privacy notice links.
+                var anchors = document.querySelectorAll('a[href*="data-protection/privacy-notice/embl-ebi-public-website"]');
+                for (var i = 0; i < anchors.length; i++) {
+                    anchors[i].setAttribute("href", "/biosamples/privacy/biosamples-submissions-privacy-notice.pdf");
+                    anchors[i].setAttribute("target", "_blank");
+                    anchors[i].setAttribute("rel", "noopener noreferrer");
+                }
+
+                // Fallback: update any other footer privacy/data-protection links if present.
+                var container = document.getElementById("ebi-footer-meta") || document.getElementById("global-footer");
+                if (!container) {
+                    return;
+                }
+                var footerAnchors = container.getElementsByTagName("a");
+                for (var j = 0; j < footerAnchors.length; j++) {
+                    var href2 = footerAnchors[j].getAttribute("href") || "";
+                    if (href2.indexOf("privacy") !== -1 || href2.indexOf("data-protection") !== -1) {
+                        footerAnchors[j].setAttribute("href", "/biosamples/privacy/biosamples-submissions-privacy-notice.pdf");
+                        footerAnchors[j].setAttribute("target", "_blank");
+                        footerAnchors[j].setAttribute("rel", "noopener noreferrer");
+                    }
+                }
+            }
+
+            // Run after the footer scripts; retry a couple of times in case of async load.
+            function scheduleUpdates() {
+                updateFooterPrivacyLinks();
+                setTimeout(updateFooterPrivacyLinks, 1000);
+                setTimeout(updateFooterPrivacyLinks, 3000);
+            }
+
+            if (document.readyState === "complete" || document.readyState === "interactive") {
+                scheduleUpdates();
+            } else {
+                document.addEventListener("DOMContentLoaded", scheduleUpdates);
+            }
+        })();
+    </script>
 </div>
 </body>
 </html>
