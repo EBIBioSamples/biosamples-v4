@@ -101,7 +101,7 @@ public class Application extends SpringBootServletInitializer {
     return new RestTemplate();
   }
 
-  @Value("${spring.cloud.gcp.project-id}")
+  @Value("${spring.cloud.gcp.project-id:no_project}")
   private String enaGcpProject;
 
   @Autowired private Environment environment;

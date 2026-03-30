@@ -17,10 +17,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -33,6 +30,15 @@ import uk.ac.ebi.biosamples.model.PipelineName;
 
 public class PipelineUtils {
   private static final Logger log = LoggerFactory.getLogger(PipelineUtils.class);
+
+  public static Collection<Filter> getLastRunFilters(LocalDate lastRunDate, LocalDate startDate) {
+    Filter fromDateFilter =
+        new DateRangeFilter.DateRangeFilterBuilder("update")
+            .from(lastRunDate.atStartOfDay().toInstant(ZoneOffset.UTC))
+            .until(startDate.atStartOfDay().toInstant(ZoneOffset.UTC))
+            .build();
+    return List.of(fromDateFilter);
+  }
 
   public static Collection<Filter> getDateFilters(
       final ApplicationArguments args, final String dateType) {

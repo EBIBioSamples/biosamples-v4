@@ -27,9 +27,9 @@ spec:
               value: "wp-np2-40"
             - name: SPRING_RABBITMQ_PORT
               value: "5672"
-            - name: biosamples.schemaValidator
+            - name: biosamples.schema.validator.url
               value: "https://wwwdev.ebi.ac.uk/biosamples/biovalidator/validate"
-            - name: biosamples.schemaStore
+            - name: biosamples.schema.store.url
               value: "https://wwwdev.ebi.ac.uk/biosamples/schema-store"
             - name: SERVER_SERVLET_CONTEXT_PATH
               value: /biosamples

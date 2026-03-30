@@ -64,4 +64,10 @@ echo "Updating docker-compose and shell files to the new version"
 
 find . -name "docker-*.yml" -or -name "docker-*.sh" | xargs sed -i.versionsBackup "s/$LAST_VERSION/$NEW_VERSION/g" || exit 1
 
-echo "Version update complete!"
+
+echo "Clearing up resource..."
+./mvnw versions:commit
+find . -name "*.versionsBackup" -delete
+
+echo "Version update complete: $LAST_VERSION -> $NEW_VERSION"
+

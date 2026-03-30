@@ -41,7 +41,8 @@ echo "checking mongo is up"
 curl http://localhost:8983/solr/samples/config -H 'Content-type:application/json' -d'{"set-property" : {"updateHandler.autoCommit.maxTime":5000, "updateHandler.autoCommit.openSearcher":"true", "query.documentCache.size":1024, "query.filterCache.size":1024, "query.filterCache.autowarmCount":128, "query.queryResultCache.size":1024, "query.queryResultCache.autowarmCount":128}}'
 
 #profile any queries that take longer than 100 ms
-docker-compose run --rm mongo mongo --eval 'db.setProfilingLevel(1)' mongo:27017/biosamples
+#don't use run, spins up a new container, use eval to use existing container
+docker-compose exec mongo mongo biosamples --eval 'db.setProfilingLevel(1)'
 
 
 docker-compose -f docker-compose.yml -f docker-compose.debug.override.yml -f docker-compose.override.yml up -d biosamples-webapps-core

@@ -1,0 +1,40 @@
+image:
+  repositoryBase: __set
+  repository: __set-in-commandline__
+  pullPolicy: IfNotPresent
+  tag: latest
+imagePullSecrets:
+  - name: __set-in-commandline__
+
+job:
+  name: pipelines
+  command: ["java", "-jar", "/app/app.jar"]
+  args: []
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+
+workflow:
+  ttlStrategy:
+    secondsAfterSuccess: 3600
+    secondsAfterFailure: 7200
+  retryStrategy:
+    limit: 1
+    backoff:
+      duration: "10s"
+      factor: 1
+      maxDuration: "1m"
+
+volumes:
+  - name: config-volume
+    configMap:
+      name: application-properties
+
+volumeMounts:
+  - name: config-volume
+    mountPath: /config/application.properties
+    subPath: application.properties

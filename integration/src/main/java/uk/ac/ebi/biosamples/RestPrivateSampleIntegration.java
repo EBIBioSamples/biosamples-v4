@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
@@ -21,6 +22,7 @@ import uk.ac.ebi.biosamples.core.model.*;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 @Component
+@Slf4j
 public class RestPrivateSampleIntegration extends AbstractIntegration {
   private final ClientProperties clientProperties;
 
@@ -95,7 +97,7 @@ public class RestPrivateSampleIntegration extends AbstractIntegration {
 
   private Sample getSampleWithReleaseDateToday() {
     final String name = "RestPrivateSampleIntegration_sample_1";
-    final Instant release = Instant.now();
+    final Instant release = Instant.now().minusSeconds(3600);
     final SortedSet<Attribute> attributes = new TreeSet<>();
 
     attributes.add(Attribute.build("description", "Fake sample with today(now) release date"));

@@ -36,6 +36,7 @@ import uk.ac.ebi.biosamples.configuration.ExclusionConfiguration;
 import uk.ac.ebi.biosamples.service.EnaConfig;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
 import uk.ac.ebi.biosamples.service.EraProDao;
+import uk.ac.ebi.biosamples.service.PipelineHelperService;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
@@ -43,7 +44,12 @@ import uk.ac.ebi.biosamples.utils.PipelineUtils;
     excludeFilters = {
       @ComponentScan.Filter(
           type = FilterType.ASSIGNABLE_TYPE,
-          value = {EnaConfig.class, EraProDao.class, EnaSampleToBioSampleConversionService.class})
+          value = {
+            EnaConfig.class,
+            EraProDao.class,
+            EnaSampleToBioSampleConversionService.class,
+            PipelineHelperService.class
+          })
     })
 @Import(ExclusionConfiguration.class)
 @EnableCaching

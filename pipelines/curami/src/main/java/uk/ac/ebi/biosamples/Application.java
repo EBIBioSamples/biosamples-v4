@@ -34,7 +34,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.configuration.ExclusionConfiguration;
 import uk.ac.ebi.biosamples.service.EnaConfig;
@@ -51,6 +53,8 @@ import uk.ac.ebi.biosamples.utils.PipelineUtils;
     })
 @Import(ExclusionConfiguration.class)
 @EnableCaching
+@EnableWebSecurity
+@EnableMongoRepositories(basePackages = "uk.ac.ebi.biosamples.repository")
 public class Application {
 
   public static void main(final String[] args) {

@@ -11,10 +11,11 @@
 package uk.ac.ebi.biosamples.messaging;
 
 public class MessagingConstants {
-  public static final String INDEXING_EXCHANGE = "biosamples.forindexing.solr";
-  public static final String INDEXING_QUEUE = "biosamples.tobeindexed.solr";
-  public static final String REINDEXING_EXCHANGE = "biosamples.reindex.solr";
-  public static final String REINDEXING_QUEUE = "biosamples.reindex.solr";
-  public static final String UPLOAD_QUEUE = "biosamples.uploaded.files";
+  public static final String INDEXING_EXCHANGE = "biosamples.indexing";
+  public static final String REINDEXING_EXCHANGE = "biosamples.reindexing";
+  public static final String INDEXING_QUEUE = "biosamples.indexing.es";
+  public static final String REINDEXING_QUEUE = "biosamples.reindexing.es";
+
   public static final String UPLOAD_EXCHANGE = "biosamples.uploaded.files.exchange";
+  public static final String UPLOAD_QUEUE = "biosamples.uploaded.files";
 }

@@ -66,10 +66,10 @@ public class PipelinesProperties {
   @Value("${biosamples.pipelines.copydown.domain:self.BiosampleCopydown}")
   private String copydownDomain;
 
-  @Value("${biosamples.schemaValidator:http://localhost:3020/validate}")
+  @Value("${biosamples.schema.validator.url:http://localhost:3020/validate}")
   private String schemaValidator;
 
-  @Value("${biosamples.schemaStore:http://localhost:8085/api/v2/schemas}")
+  @Value("${biosamples.schema.store.url:http://localhost:8085/api/v2/schemas}")
   private String schemaStore;
 
   @Value(

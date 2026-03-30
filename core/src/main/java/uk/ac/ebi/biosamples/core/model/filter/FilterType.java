@@ -25,7 +25,8 @@ public enum FilterType {
   WEBINID_FILTER("webinId", AuthenticationFilter.Builder.class),
   DATE_FILTER("dt", DateRangeFilter.DateRangeFilterBuilder.class),
   EXTERNAL_REFERENCE_DATA_FILTER("extd", ExternalReferenceDataFilter.Builder.class),
-  ACCESSION_FILTER("acc", AccessionFilter.Builder.class);
+  ACCESSION_FILTER("acc", AccessionFilter.Builder.class),
+  STRUCTURED_DATA_FILTER("strd", StructuredDataFilter.Builder.class);
 
   private static final List<FilterType> filterTypesByLength;
 

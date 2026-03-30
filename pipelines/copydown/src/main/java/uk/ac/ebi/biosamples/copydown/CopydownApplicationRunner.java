@@ -12,6 +12,7 @@ package uk.ac.ebi.biosamples.copydown;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -29,7 +30,10 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.core.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
+import uk.ac.ebi.biosamples.model.PipelineLastRun;
+import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.mongo.service.AnalyticsService;
+import uk.ac.ebi.biosamples.service.PipelineHelperService;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 import uk.ac.ebi.biosamples.utils.thread.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.thread.ThreadUtils;
@@ -37,27 +41,35 @@ import uk.ac.ebi.biosamples.utils.thread.ThreadUtils;
 @Component
 public class CopydownApplicationRunner implements ApplicationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(CopydownApplicationRunner.class);
+  private static final PipelineName PIPELINE_NAME = PipelineName.COPYDOWN;
 
   private final BioSamplesClient bioSamplesClient;
   private final PipelinesProperties pipelinesProperties;
   private final AnalyticsService analyticsService;
   private final PipelineFutureCallback pipelineFutureCallback;
+  private final PipelineHelperService pipelineHelperService;
 
   public CopydownApplicationRunner(
       final BioSamplesClient bioSamplesClient,
       final PipelinesProperties pipelinesProperties,
-      final AnalyticsService analyticsService) {
+      final AnalyticsService analyticsService,
+      PipelineHelperService pipelineHelperService) {
     this.bioSamplesClient = bioSamplesClient;
     this.pipelinesProperties = pipelinesProperties;
     this.analyticsService = analyticsService;
+    this.pipelineHelperService = pipelineHelperService;
     pipelineFutureCallback = new PipelineFutureCallback();
   }
 
   @Override
   public void run(final ApplicationArguments args) throws Exception {
-    final Collection<Filter> filters = PipelineUtils.getDateFilters(args, "update");
+    PipelineLastRun pipelineLastRun = pipelineHelperService.getLastRunDate(PIPELINE_NAME);
+    LocalDate lastRunDate = pipelineLastRun.getLastRunDate();
+    LocalDate startDate = LocalDate.now();
+    final Collection<Filter> filters = PipelineUtils.getLastRunFilters(lastRunDate, startDate);
     final Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
+    LOG.info("Processing samples from {}", lastRunDate);
     long sampleCount = 0;
 
     try (final AdaptiveThreadPoolExecutor executorService =
@@ -89,6 +101,7 @@ public class CopydownApplicationRunner implements ApplicationRunner {
       LOG.info("waiting for futures");
       // wait for anything to finish
       ThreadUtils.checkAndCallbackFutures(futures, 0, pipelineFutureCallback);
+      pipelineHelperService.updateLastRunDate(pipelineLastRun, startDate);
     } catch (final Exception e) {
       LOG.error("Pipeline failed to finish successfully", e);
       throw e;

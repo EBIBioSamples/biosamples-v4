@@ -10,6 +10,7 @@ variables:
   DOCKER_IMAGE_NAME: $CI_REGISTRY_IMAGE:$DOCKER_TAG
   DOCKER_PULL_SECRET: docker-registry-secret
   APP_NAME: $CI_PROJECT_NAME
+  K8S_NAMESPACE_PREFIX: biosamples
 
 before_script:
   - echo $CI_BUILD_REF
@@ -17,177 +18,257 @@ before_script:
   - apk update && apk add git
 
 stages:
-#  - build
+  - build
   - package
   - config
   - deploy
 
-maven-package:
+maven-package-all-apps:
   image: ${CI_REGISTRY_IMAGE}/eclipse-temurin:17-jdk
-  stage: package
+  stage: build
   script:
-    - './mvnw -q deploy -P embl-ebi -s ci_settings.xml -DskipTests -Dmaven.source.skip=true'
-    - mkdir deployment
-    - cp webapps/core/target/webapps-core-*.war deployment/webapps-core.war
-    - cp webapps/core-v2/target/webapps-core-v2*.jar deployment/webapps-core-v2.jar
-    - cp agents/solr/target/agents-solr-*.jar deployment/agents-solr.jar
-    - cp agents/uploadworkers/target/agents-uploadworkers-*.jar deployment/agents-uploadworkers.jar
-    # - cp pipelines/curation/target/pipelines-curation-*.jar deployment/pipelines-curation.jar
-    # - cp pipelines/ena/target/pipelines-ena-*.jar deployment/pipelines-ena.jar
-    # - cp pipelines/ncbi-ena-link/target/pipelines-ncbi-ena-link-*.jar deployment/pipelines-ncbi-ena-link.jar
-    - cp pipelines/sample-release/target/pipelines-sample-release-*.jar deployment/pipelines-sample-release.jar
-    # - cp pipelines/sample-post-release-action/target/pipelines-sample-post-release-action*.jar deployment/pipelines-sample-post-release-action.jar
-    - cp pipelines/ncbi/target/pipelines-ncbi-*.jar deployment/pipelines-ncbi.jar
-    - cp pipelines/reindex/target/pipelines-reindex-*.jar deployment/pipelines-reindex.jar
-    - cp pipelines/sample-transformation-dtol/target/pipelines-sample-transformation-dtol-*.jar deployment/pipelines-sample-transformation-dtol.jar
+    - './mvnw -q package -P embl-ebi -s ci_settings.xml -DskipTests -Dmaven.source.skip=true'
   artifacts:
     paths:
-      - deployment
+      - webapps/core/target/webapps-core-*.war
+      - webapps/core-v2/target/webapps-core-v2-*.jar
+      - agents/uploadworkers/target/agents-uploadworkers-*.jar
+      - pipelines/reindex/target/pipelines-reindex-*.jar
+      - pipelines/curation/target/pipelines-curation-*.jar
+      - pipelines/curami/target/pipelines-curami-*.jar
+      - pipelines/copydown/target/pipelines-copydown-*.jar
 
-#maven-package-webapps-core:
-#  image: ${CI_REGISTRY_IMAGE}/eclipse-temurin:17-jdk
-#  stage: build
-#  script:
-#    - './mvnw -q deploy -pl webapps/core -am -P embl-ebi -s ci_settings.xml -DskipTests -Dmaven.source.skip=true'
-#  artifacts:
-#    paths:
-#      - webapps/core/target/webapps-core-*.war
+build_and_push_docker_images:
+  stage: package
+  image: docker:stable
+  services:
+    - docker:stable-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  parallel:
+    matrix:
+      - APP_NAME: "webapp-core"
+        DOCKERFILE_TARGET: "webapp-core"
+      - APP_NAME: "webapp-core-v2"
+        DOCKERFILE_TARGET: "webapp-core-v2"
+      - APP_NAME: "agents-uploadworkers"
+        DOCKERFILE_TARGET: "agents-uploadworkers"
+      - APP_NAME: "pipelines-reindex"
+        DOCKERFILE_TARGET: "pipelines-reindex"
+      - APP_NAME: "pipelines-curation"
+        DOCKERFILE_TARGET: "pipelines-curation"
+      - APP_NAME: "pipelines-curami"
+        DOCKERFILE_TARGET: "pipelines-curami"
+      - APP_NAME: "pipelines-copydown"
+        DOCKERFILE_TARGET: "pipelines-copydown"
+  script:
+    - |
+      DOCKER_IMAGE_NAME="$CI_REGISTRY_IMAGE/$APP_NAME:$DOCKER_TAG"
+      echo "Building and pushing $DOCKER_IMAGE_NAME with target $DOCKERFILE_TARGET"
+      docker build --target $DOCKERFILE_TARGET -t $DOCKER_IMAGE_NAME -f k8s/Dockerfile .
+      docker push $DOCKER_IMAGE_NAME
+      
+      # Also tag as latest for the current branch
+      DOCKER_LATEST_NAME="$CI_REGISTRY_IMAGE/$APP_NAME:$CI_COMMIT_REF_SLUG-latest"
+      docker tag $DOCKER_IMAGE_NAME $DOCKER_LATEST_NAME
+      docker push $DOCKER_LATEST_NAME
+      echo $DOCKER_LATEST_NAME
+  after_script:
+    - docker logout $CI_REGISTRY
 
-#build_docker_image:
-#  stage: package
-#  image: docker:stable
-#  services:
-#    - docker:stable-dind
-#  before_script:
-#    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-#  script:
-#    - docker build --build-arg DOCKER_REGISTRY=${CI_REGISTRY_IMAGE} -t $DOCKER_IMAGE_NAME -f webapps/core/Dockerfile .
-#    - docker push $DOCKER_IMAGE_NAME
-#  after_script:
-#    - docker logout ${CI_REGISTRY_IMAGE}
-
-#deploy-dev-bsd-v1:
-#  image: dtzar/helm-kubectl:3.11.0
-#  stage: deploy
-#  script:
-#    - cd webapps/core
-#    - sed -i "s|%DOCKER_IMAGE%|$DOCKER_IMAGE_NAME|g" core-deployment.yaml
-#    - kubectl config set-cluster bsd-cluster --server="${K8_HL_SERVER}"
-#    - kubectl config set clusters.bsd-cluster.certificate-authority-data ${K8_HL_CERTIFICATE_AUTHORITY_DATA}
-#    - kubectl config set-credentials bsd-user --token="${K8_HL_CREDENTIALS}"
-#    - kubectl config set-context bsd-context --cluster=bsd-cluster --user=bsd-user
-#    - kubectl config use-context bsd-context
-#    - kubectl apply -f core-deployment.yaml --namespace=biosamples-dev
-#    - kubectl apply -f core-service.yaml --namespace=biosamples-dev
-#  when: manual
-
-clone-config-dev:
+clone-config:
   stage: config
   script:
     - git clone https://$BSD_INTERNAL_USER:$BSD_INTERNAL_PASS@gitlab.ebi.ac.uk/biosamples/biosamples-internal.git
     - mkdir config
-    - cp -r biosamples-internal/script/* deployment/
-    - cp -r biosamples-internal/dev/* config/
-    - cp biosamples-internal/deployment/deploy.sh ./
+    - cp -r biosamples-internal/k8s/* config/
   artifacts:
     paths:
-      - deployment
       - config
-      - deploy.sh
+  only:
+    - chore/working-es-search-k8-deployment-with-cleanup
+    - dev
+    - main
+    - biosamples-search
+
+deploy_k8s_primary_dev:
+  variables:
+    ENVIRONMENT_NAME: primary_dev
+    K8S_NAMESPACE: biosamples-dev
+  environment:
+    name: primary_dev
+    url: https://wwwdev.ebi.ac.uk/biosamples
+  only:
+    - chore/working-es-search-k8-deployment-with-cleanup
+    - dev
+    - main
+    - biosamples-search
+  when: manual
+  extends: .kube_deploy_script
+
+deploy_k8s_primary_prod:
+  variables:
+    ENVIRONMENT_NAME: primary_prod
+    K8S_NAMESPACE: biosamples-prod
+  environment:
+    name: primary_prod
+    url: https://www.ebi.ac.uk/biosamples
+  only:
+    - chore/working-es-search-k8-deployment-with-cleanup
+    - dev
+    - main
+    - biosamples-search
+  when: manual
+  extends: .kube_deploy_script
+
+deploy_k8s_fallback_prod:
+  variables:
+    ENVIRONMENT_NAME: fallback_prod
+    K8S_NAMESPACE: biosamples-prod
+  environment:
+    name: fallback_prod
+    url: https://www.ebi.ac.uk/biosamples
+  only:
+    - chore/working-es-search-k8-deployment-with-cleanup
+    - dev
+    - main
+    - biosamples-search
+  when: manual
+  extends: .kube_deploy_script
+
+deploy_pipeline_k8s_primary_prod:
+  variables:
+    ENVIRONMENT_NAME: primary_prod
+    K8S_NAMESPACE: biosamples-prod
+  environment:
+    name: primary_prod
+    url: https://www.ebi.ac.uk/biosamples
+  only: 
+    - chore/working-es-search-k8-deployment-with-cleanup
+    - dev
+    - main
+    - biosamples-search
+  when: manual
+  extends: .kube_deploy_jobs_script
+
+deploy_pipeline_k8s_fallback_prod:
+  variables:
+    ENVIRONMENT_NAME: fallback_prod
+    K8S_NAMESPACE: biosamples-prod
+  environment:
+    name: fallback_prod
+    url: https://www.ebi.ac.uk/biosamples
+  only:
+    - chore/working-es-search-k8-deployment-with-cleanup
+    - dev
+    - main
+    - biosamples-search
+  when: manual
+  extends: .kube_deploy_jobs_script
+
+deploy_pipeline_k8s_primary_dev:
+  variables:
+    ENVIRONMENT_NAME: primary_dev
+    K8S_NAMESPACE: biosamples-dev
+  environment:
+    name: primary_dev
+    url: https://wwwdev.ebi.ac.uk/biosamples
+  only:
+    - chore/working-es-search-k8-deployment-with-cleanup
+    - dev
+    - main
+    - biosamples-search
+  when: manual
+  extends: .kube_deploy_jobs_script
+
+deploy_cronjobs_k8s_primary_dev:
+  variables:
+    ENVIRONMENT_NAME: primary_dev
+    K8S_NAMESPACE: biosamples-dev
+  environment:
+    name: primary_dev
+    url: https://wwwdev.ebi.ac.uk/biosamples
   only:
     - dev
-
-clone-config-preproduction:
-  stage: config
-  script:
-    - git clone https://$BSD_INTERNAL_USER:$BSD_INTERNAL_PASS@gitlab.ebi.ac.uk/biosamples/biosamples-internal.git
-    - mkdir config
-    - cp -r biosamples-internal/script/* deployment/
-    - cp -r biosamples-internal/wwwdev/* config/
-    - cp biosamples-internal/deployment/deploy.sh ./
-  artifacts:
-    paths:
-      - deployment
-      - config
-      - deploy.sh
+    - main
+    - biosamples-search
   when: manual
+  extends: .kube_deploy_cronjobs_script
 
-clone-config-production:
-  stage: config
-  script:
-    - git clone https://$BSD_INTERNAL_USER:$BSD_INTERNAL_PASS@gitlab.ebi.ac.uk/biosamples/biosamples-internal.git
-    - mkdir config
-    - cp -r biosamples-internal/script/* deployment/
-    - cp -r biosamples-internal/www/* config/
-    - cp biosamples-internal/deployment/deploy.sh ./
-    - cp biosamples-internal/deployment/deploy_agents_solr.sh ./
-  artifacts:
-    paths:
-      - deployment
-      - config
-      - deploy.sh
-      - deploy_agents_solr.sh
-  when: manual
-  rules:
-    - if: $CI_COMMIT_REF_NAME == "master"
-
-.deploy-template: &deploy-template
-  image: ${CI_REGISTRY_IMAGE}/ubuntu:latest
+.kube_deploy_script:
   stage: deploy
+  image: dtzar/helm-kubectl:3.16
+  tags: ["dind"]
+  services:
+    - docker:27-dind
   script:
-    - chmod +x deploy.sh
-    - ./deploy.sh $BSD_NODE_NAME $BSD_HOST_NAME
-  when: manual
-  rules:
-    - if: $CI_COMMIT_REF_NAME == "master"
+    - echo $K8S_NAMESPACE
+    - kubectl config set-context --current --namespace=${K8S_NAMESPACE}
+    - |
+      kubectl create configmap application-properties \
+              --from-file=./config/${ENVIRONMENT_NAME}/application.properties \
+              --dry-run=client -o yaml | kubectl apply -f -
+    - kubectl delete secret $DOCKER_PULL_SECRET || true
+    - |
+      kubectl create secret docker-registry $DOCKER_PULL_SECRET \
+              --docker-server=$CI_REGISTRY \
+              --docker-username=$CI_REGISTRY_USER \
+              --docker-password=$CI_REGISTRY_PASSWORD
+    - |
+      helm upgrade --install $APP_NAME ./k8s/helm \
+                   --values ./k8s/helm/values-${ENVIRONMENT_NAME}.yaml \
+                   --set "imagePullSecrets[0].name=$DOCKER_PULL_SECRET" \
+                   --set image.repository=$CI_REGISTRY_IMAGE/webapp-core \
+                   --set image.tag=$DOCKER_TAG \
+                   --set biosamples.context.path=/biosamples
+    - |
+      helm upgrade --install ${APP_NAME}-v2 ./k8s/helm \
+                   --values ./k8s/helm/values-${ENVIRONMENT_NAME}.yaml \
+                   --set "imagePullSecrets[0].name=$DOCKER_PULL_SECRET" \
+                   --set image.repository=$CI_REGISTRY_IMAGE/webapp-core-v2 \
+                   --set image.tag=$DOCKER_TAG \
+                   --set biosamples.context.path=/biosamples/v2
+    - |
+      helm upgrade --install ${APP_NAME}-uploadworkers ./k8s/helm \
+                   --values ./k8s/helm/values-${ENVIRONMENT_NAME}.yaml \
+                   --set "imagePullSecrets[0].name=$DOCKER_PULL_SECRET" \
+                   --set image.repository=$CI_REGISTRY_IMAGE/agents-uploadworkers \
+                   --set image.tag=$DOCKER_TAG 
 
-deploy-dev:
-  <<: *deploy-template
-  rules:
-    - if: $CI_COMMIT_REF_NAME == "dev"
-  variables:
-    BSD_NODE_NAME: bsd_dev
-    BSD_HOST_NAME: wp-np2-44
-  environment:
-    name: dev-${BSD_HOST_NAME}
-    url: http://${BSD_HOST_NAME}:8081/biosamples/
-
-deploy-preproduction:
-  <<: *deploy-template
-  rules:
-    - if: $CI_COMMIT_REF_NAME == "refactoring_1_2024"
-    - if: $CI_COMMIT_REF_NAME == "dev"
-    - if: $CI_COMMIT_REF_NAME == "master"
-  variables:
-    BSD_NODE_NAME: bsd_dev
-    BSD_HOST_NAME: wp-np2-40
-  environment:
-    name: dev-${BSD_HOST_NAME}
-    url: http://${BSD_HOST_NAME}:8081/biosamples/
-
-deploy-production:
-  <<: *deploy-template
-  parallel:
-    matrix:
-      - BSD_NODE_NAME: bsd_prod
-        BSD_HOST_NAME: [ wp-p2m-40, wp-p2m-41, wp-p1m-40, wp-p1m-41 ]
-  environment:
-    name: prod-${BSD_HOST_NAME}
-    url: http://${BSD_HOST_NAME}:8081/biosamples/
-
-deploy-production-solr:
-  image: ${CI_REGISTRY_IMAGE}/ubuntu:latest
+.kube_deploy_jobs_script:
   stage: deploy
+  image: dtzar/helm-kubectl:3.16
+  tags: [ "dind" ]
+  services:
+    - docker:27-dind
   script:
-    - chmod +x deploy.sh
-    - ./deploy_agents_solr.sh ${BSD_NODE_NAME} ${BSD_SOLR_HOST_NAME}
-  when: manual
-  rules:
-    - if: '$BSD_NODE_NAME == "bsd_prod" && $CI_COMMIT_REF_NAME == "master"'
-  parallel:
-    matrix:
-      - BSD_NODE_NAME: bsd_prod
-        BSD_SOLR_HOST_NAME: [ wp-p1m-42, wp-p2m-42 ]
-  environment:
-    name: prod-solr-${BSD_HOST_NAME}
-    url: http://${BSD_SOLR_HOST_NAME}.ebi.ac.uk:8983/solr
+    - echo $K8S_NAMESPACE
+    - kubectl config set-context --current --namespace=${K8S_NAMESPACE}
+    - kubectl delete secret $DOCKER_PULL_SECRET || true
+    - |
+      kubectl create secret docker-registry $DOCKER_PULL_SECRET \
+              --docker-server=$CI_REGISTRY \
+              --docker-username=$CI_REGISTRY_USER \
+              --docker-password=$CI_REGISTRY_PASSWORD
+    - |
+      helm upgrade --install biosamples-reindex ./k8s/jobs \
+                   --values ./k8s/jobs/values-${ENVIRONMENT_NAME}.yaml \
+                   --set "imagePullSecrets[0].name=$DOCKER_PULL_SECRET" \
+                   --set image.repository=$CI_REGISTRY_IMAGE/pipelines-reindex \
+                   --set image.tag=$DOCKER_TAG
+
+.kube_deploy_cronjobs_script:
+  stage: deploy
+  image: dtzar/helm-kubectl:3.16
+  tags: [ "dind" ]
+  services:
+    - docker:27-dind
+  script:
+    - echo $K8S_NAMESPACE
+    - kubectl config set-context --current --namespace=${K8S_NAMESPACE}
+    - |
+      helm upgrade --install biosamples-pipeline ./k8s/cronjobs \
+                   --values ./k8s/cronjobs/values-${ENVIRONMENT_NAME}.yaml \
+                   --set "imagePullSecrets[0].name=gitlab-argo-secret" \
+                   --set image.repository=$CI_REGISTRY_IMAGE \
+                   --set image.tag=$DOCKER_TAG

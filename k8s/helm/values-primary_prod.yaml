@@ -1,0 +1,6 @@
+rabbitmq:
+  host: wp-p1m-42.ebi.ac.uk
+biosamples:
+  search:
+    host: biosamples-search-helm
+    port: 9090
