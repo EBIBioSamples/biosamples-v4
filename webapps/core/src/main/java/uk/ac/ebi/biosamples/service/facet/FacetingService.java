@@ -8,28 +8,29 @@
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 */
-package uk.ac.ebi.biosamples.service;
+package uk.ac.ebi.biosamples.service.facet;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.core.model.facet.Facet;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
-import uk.ac.ebi.biosamples.solr.service.SolrFacetService;
 
 @Service
-public class FacetService {
+public class FacetingService {
   private final Logger log = LoggerFactory.getLogger(getClass());
 
-  private final SolrFacetService solrFacetService;
+  private final FacetService facetService;
 
-  public FacetService(final SolrFacetService solrFacetService) {
-    this.solrFacetService = solrFacetService;
+  public FacetingService(@Qualifier("elasticFacetService") FacetService facetService) {
+    this.facetService = facetService;
   }
 
   public List<Facet> getFacets(
@@ -57,8 +58,14 @@ public class FacetService {
     final long startTime = System.nanoTime();
     final String escapedText = text == null ? null : ClientUtils.escapeQueryChars(text);
     final List<Facet> facets =
-        solrFacetService.getFacets(
-            escapedText, filters, facetPageable, facetValuePageable, facetField, facetFields);
+        facetService.getFacets(
+            escapedText,
+            new HashSet<>(filters),
+            null,
+            facetPageable,
+            facetValuePageable,
+            facetField,
+            facetFields);
     final long endTime = System.nanoTime();
     log.trace("Got solr facets in " + ((endTime - startTime) / 1000000) + "ms");
 

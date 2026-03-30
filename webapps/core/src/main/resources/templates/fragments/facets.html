@@ -24,6 +24,7 @@
         </script>
     </div>
 
+    <div style="color: grey; font-size: small">Showing approximate facet counts for faster response</div>
     <div th:each="facet: ${facets}"
          th:with="facetType = ${facet.getType().getFacetName()},
 				 		  filterType=${facet.getAssociatedFilterType().get()},

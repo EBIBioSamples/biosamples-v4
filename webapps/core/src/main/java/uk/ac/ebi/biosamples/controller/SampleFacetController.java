@@ -22,18 +22,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.core.model.facet.Facet;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.FacetService;
 import uk.ac.ebi.biosamples.service.FilterService;
+import uk.ac.ebi.biosamples.service.facet.FacetingService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 @RestController
 @ExposesResourceFor(Facet.class)
 @RequestMapping("/samples/facets")
 public class SampleFacetController {
-  private final FacetService facetService;
+  private final FacetingService facetService;
   private final FilterService filterService;
 
-  public SampleFacetController(final FacetService facetService, final FilterService filterService) {
+  public SampleFacetController(
+      final FacetingService facetService, final FilterService filterService) {
     this.facetService = facetService;
     this.filterService = filterService;
   }

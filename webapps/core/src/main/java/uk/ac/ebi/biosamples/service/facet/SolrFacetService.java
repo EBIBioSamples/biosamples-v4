@@ -26,11 +26,12 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.core.model.facet.Facet;
 import uk.ac.ebi.biosamples.core.model.facet.FacetHelper;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
+import uk.ac.ebi.biosamples.service.facet.FacetService;
 import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
-@Service
-public class SolrFacetService {
+@Service("solrFacetService")
+public class SolrFacetService implements FacetService {
   private static final int TIME_ALLOWED = 55;
   private final SolrSampleRepository solrSampleRepository;
   private final SolrFieldService solrFieldService;
@@ -45,9 +46,11 @@ public class SolrFacetService {
     this.solrFilterService = solrFilterService;
   }
 
+  @Override
   public List<Facet> getFacets(
       final String searchTerm,
-      final Collection<Filter> filters,
+      final Set<Filter> filters,
+      final String webinId,
       final Pageable facetFieldPageInfo,
       final Pageable facetValuesPageInfo,
       final String facetField,
@@ -125,7 +128,14 @@ public class SolrFacetService {
       final Pageable facetFieldPageInfo,
       final Pageable facetValuesPageInfo) {
 
-    return getFacets(searchTerm, filters, facetFieldPageInfo, facetValuesPageInfo, null, null);
+    return getFacets(
+        searchTerm,
+        new HashSet<>(filters),
+        null,
+        facetFieldPageInfo,
+        facetValuesPageInfo,
+        null,
+        null);
   }
 
   private List<Entry<SolrSampleField, Long>> getFacetFields(

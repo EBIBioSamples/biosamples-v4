@@ -12,11 +12,9 @@ package uk.ac.ebi.biosamples;
 
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
-import org.apache.http.HttpHost;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
-import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.impl.client.cache.CacheConfig;
 import org.apache.http.impl.client.cache.CachingHttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -68,8 +66,8 @@ public class Application {
         mongoOperations);
   }
 
-
-  // todo I Had to add restTemplate bean as a temporary workaround as there seems to be a problem with dependencies after refactor.
+  // todo I Had to add restTemplate bean as a temporary workaround as there seems to be a problem
+  // with dependencies after refactor.
   //  We need to sort out dependency problem and remove this unused dependency.
 
   @Bean
@@ -80,12 +78,11 @@ public class Application {
   }
 
   @Bean
-  public RestTemplateCustomizer restTemplateCustomizer(final BioSamplesProperties bioSamplesProperties) {
+  public RestTemplateCustomizer restTemplateCustomizer(
+      final BioSamplesProperties bioSamplesProperties) {
     return restTemplate -> {
-
       final ConnectionKeepAliveStrategy keepAliveStrategy =
           (response, context) -> {
-
             final HeaderElementIterator it =
                 new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
             while (it.hasNext()) {
@@ -115,8 +112,7 @@ public class Application {
       final RequestConfig config =
           RequestConfig.custom()
               .setConnectTimeout(timeout * 1000)
-              .setConnectionRequestTimeout(
-                  timeout * 1000)
+              .setConnectionRequestTimeout(timeout * 1000)
               .setSocketTimeout(timeout * 1000)
               .build();
       final HttpClient httpClient =

@@ -28,7 +28,6 @@ import uk.ac.ebi.biosamples.core.model.Sample;
 
 @Component
 public class SampleChecklistComplianceHandlerEVA {
-
   private static final Logger log =
       LoggerFactory.getLogger(SampleChecklistComplianceHandlerEVA.class);
 
@@ -38,7 +37,6 @@ public class SampleChecklistComplianceHandlerEVA {
       "geographic location (region and locality)";
   private static final String COLLECTION_DATE = "collection_date";
   private static final String COLLECTION_DATE_WITHOUT_UNDERSCORE = "collection date";
-  private static final String NCBI_MIRRORING_WEBIN_ID = "Webin-842";
 
   private final BioSamplesClient bioSamplesWebinClient;
   private final PipelinesProperties pipelinesProperties;

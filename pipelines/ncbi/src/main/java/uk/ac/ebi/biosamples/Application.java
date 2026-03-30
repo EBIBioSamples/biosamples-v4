@@ -11,8 +11,10 @@
 package uk.ac.ebi.biosamples;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +24,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.configuration.ExclusionConfiguration;
 import uk.ac.ebi.biosamples.service.EnaConfig;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
@@ -39,6 +43,7 @@ import uk.ac.ebi.biosamples.utils.PipelineUtils;
 @EnableCaching(proxyTargetClass = true)
 @EnableAsync
 @EnableScheduling
+@EnableWebSecurity
 public class Application {
 
   // this is needed to read nonstrings from properties files
@@ -49,7 +54,25 @@ public class Application {
   }
 
   public static void main(final String[] args) {
-    final ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
+    SpringApplication app = new SpringApplication(Application.class);
+    app.setWebApplicationType(WebApplicationType.NONE);
+
+    final ConfigurableApplicationContext ctx = app.run(args);
     PipelineUtils.exitPipeline(ctx);
+  }
+
+  @Bean
+  public RestTemplate restTemplate(final RestTemplateCustomizer restTemplateCustomizer) {
+    final RestTemplate restTemplate = new RestTemplate();
+    restTemplateCustomizer.customize(restTemplate);
+    return restTemplate;
+  }
+
+  @Bean
+  public RestTemplateCustomizer restTemplateCustomizer(
+      final BioSamplesProperties bioSamplesProperties,
+      final PipelinesProperties pipelinesProperties) {
+    return new PipelinesHelper()
+        .getRestTemplateCustomizer(bioSamplesProperties, pipelinesProperties);
   }
 }

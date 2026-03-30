@@ -10,21 +10,8 @@
 */
 package uk.ac.ebi.biosamples;
 
-import org.apache.http.HeaderElement;
-import org.apache.http.HeaderElementIterator;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.conn.ConnectionKeepAliveStrategy;
-import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.impl.client.cache.CacheConfig;
-import org.apache.http.impl.client.cache.CachingHttpClientBuilder;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.message.BasicHeaderElementIterator;
-import org.apache.http.protocol.HTTP;
-import org.apache.http.protocol.HttpContext;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
@@ -34,7 +21,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.configuration.ExclusionConfiguration;
 import uk.ac.ebi.biosamples.service.EnaConfig;
@@ -51,94 +39,30 @@ import uk.ac.ebi.biosamples.utils.PipelineUtils;
     })
 @Import(ExclusionConfiguration.class)
 @EnableCaching
+@EnableWebSecurity
+@EnableMongoRepositories(basePackages = "uk.ac.ebi.biosamples.repository")
 public class Application {
 
   public static void main(final String[] args) {
-    final ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
+    SpringApplication app = new SpringApplication(Application.class);
+    app.setWebApplicationType(WebApplicationType.NONE);
+
+    final ConfigurableApplicationContext ctx = app.run(args);
     PipelineUtils.exitPipeline(ctx);
+  }
+
+  @Bean
+  public RestTemplate restTemplate(final RestTemplateCustomizer restTemplateCustomizer) {
+    final RestTemplate restTemplate = new RestTemplate();
+    restTemplateCustomizer.customize(restTemplate);
+    return restTemplate;
   }
 
   @Bean
   public RestTemplateCustomizer restTemplateCustomizer(
       final BioSamplesProperties bioSamplesProperties,
-      final PipelinesProperties piplinesProperties) {
-    return new RestTemplateCustomizer() {
-      @Override
-      public void customize(final RestTemplate restTemplate) {
-
-        // use a keep alive strategy to try to make it easier to maintain connections for
-        // reuse
-        final ConnectionKeepAliveStrategy keepAliveStrategy =
-            new ConnectionKeepAliveStrategy() {
-              @Override
-              public long getKeepAliveDuration(
-                  final HttpResponse response, final HttpContext context) {
-
-                // check if there is a non-standard keep alive header present
-                final HeaderElementIterator it =
-                    new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
-                while (it.hasNext()) {
-                  final HeaderElement he = it.nextElement();
-                  final String param = he.getName();
-                  final String value = he.getValue();
-                  if (value != null && param.equalsIgnoreCase("timeout")) {
-                    return Long.parseLong(value) * 1000;
-                  }
-                }
-                // default to 60s if no header
-                return 60 * 1000;
-              }
-            };
-
-        // set a number of connections to use at once for multiple threads
-        final PoolingHttpClientConnectionManager poolingHttpClientConnectionManager =
-            new PoolingHttpClientConnectionManager();
-        poolingHttpClientConnectionManager.setMaxTotal(piplinesProperties.getConnectionCountMax());
-        poolingHttpClientConnectionManager.setDefaultMaxPerRoute(
-            piplinesProperties.getConnectionCountDefault());
-        poolingHttpClientConnectionManager.setMaxPerRoute(
-            new HttpRoute(HttpHost.create(piplinesProperties.getZooma())),
-            piplinesProperties.getConnectionCountZooma());
-        poolingHttpClientConnectionManager.setMaxPerRoute(
-            new HttpRoute(HttpHost.create(bioSamplesProperties.getOls())),
-            piplinesProperties.getConnectionCountOls());
-
-        // set a local cache for cacheable responses
-        final CacheConfig cacheConfig =
-            CacheConfig.custom()
-                .setMaxCacheEntries(1024)
-                .setMaxObjectSize(1024 * 1024) // max size of 1Mb
-                // number of entries x size of entries = 1Gb total cache size
-                .setSharedCache(false) // act like a browser cache not a middle-hop cache
-                .build();
-
-        // set a timeout limit
-        // TODO put this in application.properties
-        final int timeout = 60; // in seconds
-        final RequestConfig config =
-            RequestConfig.custom()
-                .setConnectTimeout(timeout * 1000) // time to establish the connection with the
-                // remote host
-                .setConnectionRequestTimeout(
-                    timeout * 1000) // maximum time of inactivity between two
-                // data packets
-                .setSocketTimeout(timeout * 1000)
-                .build(); // time to wait for a connection from the connection
-        // manager/pool
-
-        // make the actual client
-        final HttpClient httpClient =
-            CachingHttpClientBuilder.create()
-                .setCacheConfig(cacheConfig)
-                .useSystemProperties()
-                .setConnectionManager(poolingHttpClientConnectionManager)
-                .setKeepAliveStrategy(keepAliveStrategy)
-                .setDefaultRequestConfig(config)
-                .build();
-
-        // and wire it into the resttemplate
-        restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
-      }
-    };
+      final PipelinesProperties pipelinesProperties) {
+    return new PipelinesHelper()
+        .getRestTemplateCustomizer(bioSamplesProperties, pipelinesProperties);
   }
 }

@@ -30,6 +30,7 @@ import uk.ac.ebi.biosamples.mongo.repository.MongoPipelineRepository;
 import uk.ac.ebi.biosamples.mongo.util.PipelineCompletionStatus;
 import uk.ac.ebi.biosamples.service.EraProDao;
 import uk.ac.ebi.biosamples.service.SampleRetrievalResult;
+import uk.ac.ebi.biosamples.service.SampleCallbackResult;
 import uk.ac.ebi.biosamples.utils.PipelineUniqueIdentifierGenerator;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 import uk.ac.ebi.biosamples.utils.thread.AdaptiveThreadPoolExecutor;

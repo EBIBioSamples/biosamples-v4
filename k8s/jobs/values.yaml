@@ -1,0 +1,22 @@
+image:
+  repository: biosamples-v4/pipelines-reindex
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "1"
+    memory: "2Gi"
+
+env:
+  - name: SPRING_PROFILES_ACTIVE
+    value: "batch"
+  - name: JAVA_OPTS
+    value: "-Xms512m -Xmx1g"
+
+restartPolicy: Never
+
+backoffLimit: 3

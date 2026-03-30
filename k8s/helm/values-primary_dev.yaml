@@ -1,0 +1,6 @@
+rabbitmq:
+  host: wp-np2-40.ebi.ac.uk
+biosamples:
+  search:
+    host: biosamples-search-helm
+    port: 9090

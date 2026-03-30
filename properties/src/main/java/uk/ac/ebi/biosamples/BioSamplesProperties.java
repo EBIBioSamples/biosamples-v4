@@ -97,13 +97,10 @@ public class BioSamplesProperties {
   @Value("${biosamples.webapp.core.facet.cache.maxage:86400}")
   private int webappCoreFacetCacheMaxAge;
 
-  @Value("${biosamples.schema.validator.uri:http://localhost:8085/validate}")
-  private URI biosamplesSchemaValidatorServiceUri;
-
-  @Value("${biosamples.schemaValidator:http://localhost:3020/validate}")
+  @Value("${biosamples.schema.validator.url:http://localhost:3020/validate}")
   private String schemaValidator;
 
-  @Value("${biosamples.schemaStore:http://localhost:8085}")
+  @Value("${biosamples.schema.store.url:http://localhost:8085}")
   private String schemaStore;
 
   @Value("${biosamples.schema.default:BSDC00001}")
@@ -114,6 +111,12 @@ public class BioSamplesProperties {
 
   @Value("${biosamples.bulksubmisison.webin.superuser.validation:false}")
   private boolean enableBulkSubmissionWebinSuperUserValidation;
+
+  @Value("${biosamples.search.host:biosamples-search-helm}")
+  private String biosamplesSearchHost;
+
+  @Value("${biosamples.search.port:9090}")
+  private int biosamplesSearchPort;
 
   public int getBiosamplesClientConnectionCountMax() {
     return connectionCountMax;

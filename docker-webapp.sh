@@ -29,9 +29,9 @@ docker-compose build
 
 #start up the webapps (and dependencies)
 #docker-compose up -d --remove-orphans solr rabbitmq mongo neo4j json-schema-validator schema-store
-docker-compose up -d --remove-orphans solr rabbitmq mongo neo4j json-schema-validator
-echo "checking solr is up"
-./http-status-check -u http://localhost:8983 -t 30
+docker-compose up -d --remove-orphans elastic rabbitmq mongo neo4j json-schema-validator
+#echo "checking solr is up"
+#./http-status-check -u http://localhost:9200 -t 30
 echo "checking rabbitmq is up"
 ./http-status-check -u http://localhost:15672 -t 30
 echo "checking mongo is up"
@@ -45,14 +45,29 @@ echo "checking neo4j is up"
 
 
 #configure solr
-curl http://localhost:8983/solr/samples/config -H 'Content-type:application/json' -d'{"set-property" : {"updateHandler.autoCommit.maxTime":1000, "updateHandler.autoCommit.openSearcher":"true", "updateHandler.autoSoftCommit.maxDocs":1, "query.documentCache.size":1024, "query.filterCache.size":1024, "query.filterCache.autowarmCount":128, "query.queryResultCache.size":1024, "query.queryResultCache.autowarmCount":128}}'
+#curl http://localhost:8983/solr/samples/config -H 'Content-type:application/json' -d'{"set-property" : {"updateHandler.autoCommit.maxTime":1000, "updateHandler.autoCommit.openSearcher":"true", "updateHandler.autoSoftCommit.maxDocs":1, "query.documentCache.size":1024, "query.filterCache.size":1024, "query.filterCache.autowarmCount":128, "query.queryResultCache.size":1024, "query.queryResultCache.autowarmCount":128}}'
 
 #configure schema-store
 
 
 #profile any queries that take longer than 100 ms
-docker-compose run --rm mongo mongo --eval 'db.setProfilingLevel(1)' mongo:27017/biosamples
+#don't use run, spins up a new container, use eval to use existing container
+docker-compose exec mongo mongo biosamples --eval 'db.setProfilingLevel(1)'
 
+until curl -s http://localhost:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
+# create ES index
+curl -X DELETE "http://localhost:9200/samples" -u "elastic:elastic"
+
+curl -X PUT "http://localhost:9200/samples" \
+  -H "Content-Type: application/json" \
+  -u "elastic:elastic" \
+  --data-binary @es_index.json
+
+
+docker-compose up -d biosamples-search
+sleep 20
+echo "checking biosamples-search is up"
+./http-status-check -u http://localhost:8083/actuator/health -t 600
 
 docker-compose up -d biosamples-webapps-core
 sleep 40

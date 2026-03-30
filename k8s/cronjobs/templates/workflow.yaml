@@ -1,0 +1,92 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: {{ include "cronjobs.fullname" . }}
+  namespace: {{ .Values.workflow.namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "cronjobs.name" . }}
+spec:
+  serviceAccountName: argo-workflow-sa
+  entrypoint: {{ .Values.job.name }}
+  {{- with .Values.imagePullSecrets }}
+  imagePullSecrets:
+    {{- toYaml . | nindent 8 }}
+  {{- end }}
+  parallelism: 2
+  ttlStrategy:
+    secondsAfterSuccess: {{ .Values.workflow.ttlStrategy.secondsAfterSuccess }}
+    secondsAfterFailure: {{ .Values.workflow.ttlStrategy.secondsAfterFailure }}
+
+  templates:
+    - name: {{ .Values.job.name }}
+      dag:
+        tasks:
+          - name: curation
+            template: curation
+          - name: curami
+            template: curami
+            dependencies:
+              - curation
+          - name: copydown
+            template: copydown
+
+    - name: curation
+      retryStrategy:
+        limit: {{ .Values.workflow.retryStrategy.limit }}
+      container:
+        image: "{{ .Values.image.repository }}/pipelines-curation:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+          - name: SPRING_CONFIG_LOCATION
+            value: /config/application.properties
+        command:
+          {{- toYaml .Values.job.command | nindent 10 }}
+        args:
+          {{- toYaml .Values.job.args | nindent 10 }}
+        resources:
+          {{- toYaml .Values.job.resources | nindent 10 }}
+        volumeMounts:
+          {{- toYaml .Values.volumeMounts | nindent 10 }}
+      volumes:
+        {{- toYaml .Values.volumes | nindent 8 }}
+
+    - name: curami
+      retryStrategy:
+        limit: {{ .Values.workflow.retryStrategy.limit }}
+      container:
+        image: "{{ .Values.image.repository }}/pipelines-curami:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+          - name: SPRING_CONFIG_LOCATION
+            value: /config/application.properties
+        command:
+          {{- toYaml .Values.job.command | nindent 10 }}
+        args:
+          {{- toYaml .Values.job.args | nindent 10 }}
+        resources:
+          {{- toYaml .Values.job.resources | nindent 10 }}
+        volumeMounts:
+          {{- toYaml .Values.volumeMounts | nindent 10 }}
+      volumes:
+        {{- toYaml .Values.volumes | nindent 8 }}
+
+    - name: copydown
+      retryStrategy:
+        limit: {{ .Values.workflow.retryStrategy.limit }}
+      container:
+        image: "{{ .Values.image.repository }}/pipelines-copydown:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+          - name: SPRING_CONFIG_LOCATION
+            value: /config/application.properties
+        command:
+          {{- toYaml .Values.job.command | nindent 10 }}
+        args:
+          {{- toYaml .Values.job.args | nindent 10 }}
+        resources:
+          {{- toYaml .Values.job.resources | nindent 10 }}
+        volumeMounts:
+          {{- toYaml .Values.volumeMounts | nindent 10 }}
+      volumes:
+        {{- toYaml .Values.volumes | nindent 8 }}
+
