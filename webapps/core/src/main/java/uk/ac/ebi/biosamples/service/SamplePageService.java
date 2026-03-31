@@ -99,11 +99,7 @@ public class SamplePageService {
         pageFutureSample.map(
             ss -> {
               try {
-                if (ss.get().isPresent()) {
-                  return ss.get().get();
-                } else {
-                  return null;
-                }
+                return ss.get().orElse(null);
               } catch (final InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
               }
@@ -143,7 +139,7 @@ public class SamplePageService {
         .map(
             ss -> {
               try {
-                return ss.get().get();
+                return ss.get().orElse(null);
               } catch (final InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
               }
