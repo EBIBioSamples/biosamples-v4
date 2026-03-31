@@ -13,7 +13,6 @@ services:
     - schema-store
     volumes:
     - logs:/logs
-    - "/mnt/c/Users/dgupta/secrets:/secrets"
     command:
     - java
     - -jar
@@ -101,7 +100,6 @@ services:
       - rabbitmq
     volumes:
       - logs:/logs
-      - "/mnt/c/Users/dgupta/secrets:/secrets"
     command:
       - java
       - -jar
