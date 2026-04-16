@@ -49,7 +49,8 @@ public class TransformationApplicationRunner implements ApplicationRunner {
 
   @Override
   public void run(final ApplicationArguments args) throws Exception {
-    final Collection<Filter> filters = PipelineUtils.getDateFilters(args, "update");
+    final Collection<Filter> filters =
+        PipelineUtils.getDateFilters(args, PipelineUtils.DateType.update);
     final Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
     long sampleCount = 0;

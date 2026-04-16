@@ -29,6 +29,8 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.core.model.*;
 import uk.ac.ebi.biosamples.core.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.core.service.SampleValidator;
+import uk.ac.ebi.biosamples.core.validation.SamplePersistencePolicy;
+import uk.ac.ebi.biosamples.core.validation.SampleStatusTransitionPolicy;
 import uk.ac.ebi.biosamples.exception.GlobalExceptions;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -98,69 +100,7 @@ public class SampleService {
    */
   private boolean isStoredSampleEmpty(
       final Sample newSample, final boolean isWebinSuperUser, final Sample oldSample) {
-    if (isWebinSuperUser) {
-      if (newSample.getSubmittedVia() == SubmittedViaType.FILE_UPLOADER) {
-        // file uploader submissions are done via superuser, but they are non-imported samples,
-        // needs to be handled safely
-        if (newSample.hasAccession()) {
-          return isStoredSampleEmpty(oldSample);
-        }
-
-        return true;
-      } else {
-        // otherwise it is an ENA submission reference, cannot be an empty sample
-        return false;
-      }
-    } else {
-      if (newSample.hasAccession()) {
-        return isStoredSampleEmpty(oldSample);
-      }
-    }
-
-    if (newSample.hasAccession()) {
-      return isStoredSampleEmpty(oldSample);
-    }
-
-    return true;
-  }
-
-  /*
-  Checks if the current sample that exists has no metadata, returns true if empty
-   */
-  private boolean isStoredSampleEmpty(final Sample oldSample) {
-    if (oldSample.getTaxId() != null && oldSample.getTaxId() > 0) {
-      return false;
-    }
-
-    if (!oldSample.getAttributes().isEmpty()) {
-      return false;
-    }
-
-    if (!oldSample.getRelationships().isEmpty()) {
-      return false;
-    }
-
-    if (!oldSample.getPublications().isEmpty()) {
-      return false;
-    }
-
-    if (!oldSample.getContacts().isEmpty()) {
-      return false;
-    }
-
-    if (!oldSample.getOrganizations().isEmpty()) {
-      return false;
-    }
-
-    if (!oldSample.getData().isEmpty()) {
-      return false;
-    }
-
-    if (!oldSample.getExternalReferences().isEmpty()) {
-      return false;
-    }
-
-    return oldSample.getStructuredData().isEmpty();
+    return SamplePersistencePolicy.isStoredSampleEmpty(newSample, isWebinSuperUser, oldSample);
   }
 
   // Because the fetch caches the sample, if an updated version is stored, we need to make
@@ -189,6 +129,7 @@ public class SampleService {
         newSample = updateWhenNoneExists(newSample);
       }
 
+      validatePublicStatusTransition(oldSample, newSample);
       MongoSample mongoSample = sampleToMongoSampleConverter.convert(newSample);
       mongoSample = mongoSampleRepository.save(mongoSample);
 
@@ -311,90 +252,12 @@ public class SampleService {
     return existingRelationshipTargets;
   }
 
-  /*
-  Called by V2 endpoints to persist samples
-   */
-  public Sample persistSampleV2(
-      Sample newSample, final Sample oldSample, final boolean isWebinSuperUser) {
-    final Collection<String> errors = sampleValidator.validate(newSample);
-
-    if (!errors.isEmpty()) {
-      log.error("Sample validation failed : {}", errors);
-      throw new GlobalExceptions.SampleMandatoryFieldsMissingException(String.join("|", errors));
-    }
-
-    if (newSample.hasAccession()) {
-      if (oldSample != null) {
-        log.info(
-            "Trying to update sample that exists in database, accession: {}",
-            newSample.getAccession());
-
-        final boolean savedSampleEmpty =
-            isStoredSampleEmpty(newSample, isWebinSuperUser, oldSample);
-
-        if (savedSampleEmpty) {
-          // submitted is now if metadata is first submitted after accessioning
-          newSample = Sample.Builder.fromSample(newSample).withSubmitted(Instant.now()).build();
-        }
-
-        newSample =
-            compareWithExistingAndUpdateSample(
-                newSample, oldSample, null, savedSampleEmpty, isWebinSuperUser);
-      } else {
-        log.error(
-            "Trying to update sample not in database, accession: {}", newSample.getAccession());
-
-        newSample = updateWhenNoneExists(newSample);
-      }
-
-      MongoSample mongoSample = sampleToMongoSampleConverter.convert(newSample);
-
-      assert mongoSample != null;
-
-      mongoSample = mongoSampleRepository.save(mongoSample);
-      newSample = mongoSampleToSampleConverter.apply(mongoSample);
-
-      sendMessageToRabbitForIndexingToSolr(newSample.getAccession(), Collections.emptyList());
-    } else {
-      newSample = createNew(newSample);
-    }
-
-    return newSample;
-  }
-
   private void sendMessageToRabbitForIndexingToSolr(
       final String accession, final List<String> existingRelationshipTargets) {
     try {
       messagingService.fetchThenSendMessage(accession, existingRelationshipTargets);
     } catch (final Exception e) {
-      log.error("Indexing failed for accession " + accession);
-    }
-  }
-
-  /*
-  Called by V2 endpoints to build a sample with a newly generated sample accession
-   */
-  public Sample accessionSample(Sample newSample) {
-    final Collection<String> errors = sampleValidator.validate(newSample);
-
-    if (!errors.isEmpty()) {
-      log.error("Sample validation failed : {}", errors);
-
-      throw new GlobalExceptions.SampleMandatoryFieldsMissingException(String.join("|", errors));
-    }
-
-    if (newSample
-        .getWebinSubmissionAccountId()
-        .equalsIgnoreCase(bioSamplesProperties.getBiosamplesClientWebinUsername())) {
-      // accessioning from ENA, sample name is the SRA accession here
-      final Attribute sraAccessionAttribute = Attribute.build(SRA_ACCESSION, newSample.getName());
-
-      newSample.getAttributes().add(sraAccessionAttribute);
-      newSample = Sample.Builder.fromSample(newSample).build();
-
-      return mongoAccessionService.generateAccession(newSample, false);
-    } else {
-      return mongoAccessionService.generateAccession(newSample, true);
+      log.error("Indexing failed for accession {}", accession, e);
     }
   }
 
@@ -440,6 +303,7 @@ public class SampleService {
     // uploads though
     handleRelationships(newSample, existingRelationships);
     handleSRAAccession(newSample, oldSample, isWebinSuperUser);
+    newSample = handleSampleStatus(newSample, oldSample);
     newSample = validateAndPromoteSRAAccessionAttributeToField(newSample);
 
     if (newSample.getData().isEmpty()) {
@@ -473,17 +337,35 @@ public class SampleService {
     }
   }
 
+  private Sample handleSampleStatus(final Sample newSample, final Sample oldSample) {
+    if (newSample.getRelease() != null && !newSample.getRelease().isAfter(Instant.now())) {
+      final SampleStatus oldSampleStatus = oldSample.getStatus();
+
+      if (oldSampleStatus == null || oldSampleStatus == SampleStatus.PRIVATE) {
+        return Sample.Builder.fromSample(newSample).withStatus(SampleStatus.PUBLIC).build();
+      }
+    }
+
+    return newSample;
+  }
+
+  private void validatePublicStatusTransition(final Sample oldSample, final Sample newSample) {
+    final SampleStatus oldStatus = oldSample != null ? oldSample.getStatus() : null;
+
+    SampleStatusTransitionPolicy.validatePublicTransition(oldStatus, newSample.getStatus());
+  }
+
   private Sample validateAndPromoteSRAAccessionAttributeToField(final Sample newSample) {
-    // Retrieve SRA accession attribute from new sample
+    // Retrieve SRA accession attribute from a new sample
     final Optional<Attribute> newSampleSraAccessionOptional =
         newSample.getAttributes().stream()
             .filter(attribute -> attribute.getType().equalsIgnoreCase(SRA_ACCESSION))
             .findFirst();
 
-    // Retrieve SRA accession field from new sample
+    // Retrieve the SRA accession field from a new sample
     final String sraAccessionField = newSample.getSraAccession();
 
-    // Check if SRA accession field and attribute are both present
+    // Check if the SRA accession field and attribute are both present
     if (sraAccessionField != null && newSampleSraAccessionOptional.isPresent()) {
       // Check for SRA accession mismatch
       if (!sraAccessionField.equals(newSampleSraAccessionOptional.get().getValue())) {
@@ -494,7 +376,7 @@ public class SampleService {
       }
     }
 
-    // Check if SRA accession field is null but the attribute is present
+    // Check if the SRA accession field is null but the attribute is present
     if (sraAccessionField == null && newSampleSraAccessionOptional.isPresent()) {
       // Promote SRA accession attribute to the field and return the modified sample
       return Sample.Builder.fromSample(newSample)

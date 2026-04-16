@@ -11,7 +11,9 @@
 package uk.ac.ebi.biosamples;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -19,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.utils.ClientProperties;
@@ -187,22 +188,19 @@ public class RestFilterIntegration extends AbstractIntegration {
 
     Filter attributeFilter =
         FilterBuilder.create().onAttribute("TestAttribute").withValue("FilterMe").build();
-    PagedModel<EntityModel<Sample>> samplePage =
-        webinClient.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
+    List<EntityModel<Sample>> matchingSamples = fetchAllSamplesByFilter(attributeFilter);
 
-    if (samplePage.getMetadata().getTotalElements() != 1) {
+    if (matchingSamples.size() != 1) {
       throw new IntegrationTestFailException(
-          "Unexpected number of results for attribute filter query: "
-              + samplePage.getMetadata().getTotalElements(),
+          "Unexpected number of results for attribute filter query: " + matchingSamples.size(),
           Phase.THREE);
     }
 
-    EntityModel<Sample> restSample = samplePage.getContent().iterator().next();
+    EntityModel<Sample> restSample = matchingSamples.get(0);
 
     if (!restSample.getContent().equals(testSample1)) {
       throw new IntegrationTestFailException(
-          "Unexpected number of results for attribute filter query: "
-              + samplePage.getMetadata().getTotalElements(),
+          "Unexpected number of results for attribute filter query: " + matchingSamples.size(),
           Phase.THREE);
     }
 
@@ -224,22 +222,19 @@ public class RestFilterIntegration extends AbstractIntegration {
             .withValue(targetAttribute.get().getValue())
             .build();
 
-    samplePage =
-        webinClient.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
+    matchingSamples = fetchAllSamplesByFilter(attributeFilter);
 
-    if (samplePage.getMetadata().getTotalElements() != 1) {
+    if (matchingSamples.size() != 1) {
       throw new IntegrationTestFailException(
-          "Unexpected number of results for attribute filter query: "
-              + samplePage.getMetadata().getTotalElements(),
+          "Unexpected number of results for attribute filter query: " + matchingSamples.size(),
           Phase.THREE);
     }
 
-    restSample = samplePage.getContent().iterator().next();
+    restSample = matchingSamples.get(0);
 
     if (!restSample.getContent().getAccession().equals(testSample1.getAccession())) {
       throw new IntegrationTestFailException(
-          "Unexpected number of results for attribute filter query: "
-              + samplePage.getMetadata().getTotalElements(),
+          "Unexpected number of results for attribute filter query: " + matchingSamples.size(),
           Phase.THREE);
     }
 
@@ -257,22 +252,19 @@ public class RestFilterIntegration extends AbstractIntegration {
 
     attributeFilter =
         FilterBuilder.create().onAttribute(targetAttribute.get().getType()).withValue(null).build();
-    samplePage =
-        webinClient.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
+    matchingSamples = fetchAllSamplesByFilter(attributeFilter);
 
-    if (samplePage.getMetadata().getTotalElements() != 1) {
+    if (matchingSamples.size() != 1) {
       throw new IntegrationTestFailException(
-          "Unexpected number of results for attribute filter query: "
-              + samplePage.getMetadata().getTotalElements(),
+          "Unexpected number of results for attribute filter query: " + matchingSamples.size(),
           Phase.THREE);
     }
 
-    restSample = samplePage.getContent().iterator().next();
+    restSample = matchingSamples.get(0);
 
     if (!restSample.getContent().getAccession().equals(testSample1.getAccession())) {
       throw new IntegrationTestFailException(
-          "Unexpected number of results for attribute filter query: "
-              + samplePage.getMetadata().getTotalElements(),
+          "Unexpected number of results for attribute filter query: " + matchingSamples.size(),
           Phase.THREE);
     }
 
@@ -280,22 +272,19 @@ public class RestFilterIntegration extends AbstractIntegration {
 
     attributeFilter =
         FilterBuilder.create().onAttribute("testAttribute").withValue("filterMe_1").build();
-    samplePage =
-        webinClient.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
+    matchingSamples = fetchAllSamplesByFilter(attributeFilter);
 
-    if (samplePage.getMetadata().getTotalElements() != 1) {
+    if (matchingSamples.size() != 1) {
       throw new IntegrationTestFailException(
-          "Unexpected number of results for attribute filter query: "
-              + samplePage.getMetadata().getTotalElements(),
+          "Unexpected number of results for attribute filter query: " + matchingSamples.size(),
           Phase.THREE);
     }
 
-    restSample = samplePage.getContent().iterator().next();
+    restSample = matchingSamples.get(0);
 
     if (!restSample.getContent().getAccession().equals(testSample2.getAccession())) {
       throw new IntegrationTestFailException(
-          "Unexpected number of results for attribute filter query: "
-              + samplePage.getMetadata().getTotalElements(),
+          "Unexpected number of results for attribute filter query: " + matchingSamples.size(),
           Phase.THREE);
     }
 
@@ -303,22 +292,19 @@ public class RestFilterIntegration extends AbstractIntegration {
 
     final Filter nameFilter = FilterBuilder.create().onName(testSample2.getName()).build();
 
-    samplePage =
-        webinClient.fetchPagedSampleResource("", Collections.singletonList(nameFilter), 0, 10);
+    matchingSamples = fetchAllSamplesByFilter(nameFilter);
 
-    if (samplePage.getMetadata().getTotalElements() != 1) {
+    if (matchingSamples.size() != 1) {
       throw new IntegrationTestFailException(
-          "Unexpected number of results for attribute filter query: "
-              + samplePage.getMetadata().getTotalElements(),
+          "Unexpected number of results for attribute filter query: " + matchingSamples.size(),
           Phase.THREE);
     }
 
-    restSample = samplePage.getContent().iterator().next();
+    restSample = matchingSamples.get(0);
 
     if (!restSample.getContent().getAccession().equals(testSample2.getAccession())) {
       throw new IntegrationTestFailException(
-          "Unexpected number of results for attribute filter query: "
-              + samplePage.getMetadata().getTotalElements(),
+          "Unexpected number of results for attribute filter query: " + matchingSamples.size(),
           Phase.THREE);
     }
 
@@ -327,27 +313,24 @@ public class RestFilterIntegration extends AbstractIntegration {
     final Filter accessionFilter =
         FilterBuilder.create().onAccession(testSample2.getAccession()).build();
 
-    samplePage =
-        webinClient.fetchPagedSampleResource("", Collections.singletonList(accessionFilter), 0, 10);
+    matchingSamples = fetchAllSamplesByFilter(accessionFilter);
 
-    if (samplePage.getMetadata().getTotalElements() != 1) {
+    if (matchingSamples.size() != 1) {
       throw new IntegrationTestFailException(
-          "Unexpected number of results for attribute filter query: "
-              + samplePage.getMetadata().getTotalElements(),
+          "Unexpected number of results for attribute filter query: " + matchingSamples.size(),
           Phase.THREE);
     }
 
     final String accession1 = testSample1.getAccession();
     final String accession2 = testSample2.getAccession();
 
-    if (!samplePage.getContent().stream()
+    if (!matchingSamples.stream()
         .allMatch(
             r ->
                 r.getContent().getAccession().equals(accession1)
                     || r.getContent().getAccession().equals(accession2))) {
       throw new IntegrationTestFailException(
-          "Unexpected number of results for attribute filter query: "
-              + samplePage.getMetadata().getTotalElements(),
+          "Unexpected number of results for attribute filter query: " + matchingSamples.size(),
           Phase.THREE);
     }
   }
@@ -397,17 +380,15 @@ public class RestFilterIntegration extends AbstractIntegration {
             .from(testSample1.getRelease().minusSeconds(2))
             .until(testSample1.getRelease().plusSeconds(2))
             .build();
-    PagedModel<EntityModel<Sample>> samplePage =
-        webinClient.fetchPagedSampleResource("", Collections.singletonList(dateFilter), 0, 10);
+    List<EntityModel<Sample>> matchingSamples = fetchAllSamplesByFilter(dateFilter);
 
-    if (samplePage.getMetadata().getTotalElements() < 1) {
+    if (matchingSamples.size() < 1) {
       throw new IntegrationTestFailException(
-          "Unexpected number of results for date range filter query: "
-              + samplePage.getMetadata().getTotalElements());
+          "Unexpected number of results for date range filter query: " + matchingSamples.size());
     }
 
     boolean match =
-        samplePage.getContent().stream()
+        matchingSamples.stream()
             .anyMatch(resource -> resource.getContent().getAccession().equals(accession1));
 
     if (!match) {
@@ -423,18 +404,16 @@ public class RestFilterIntegration extends AbstractIntegration {
             .onRelation("parent of")
             .withValue(testSample2.getAccession())
             .build();
-    samplePage =
-        webinClient.fetchPagedSampleResource("", Collections.singletonList(relFilter), 0, 10);
+    matchingSamples = fetchAllSamplesByFilter(relFilter);
 
-    if (samplePage.getMetadata().getTotalElements() < 1) {
+    if (matchingSamples.size() < 1) {
       throw new IntegrationTestFailException(
-          "Unexpected number of results for relation filter query: "
-              + samplePage.getMetadata().getTotalElements(),
+          "Unexpected number of results for relation filter query: " + matchingSamples.size(),
           Phase.FOUR);
     }
 
     match =
-        samplePage.getContent().stream()
+        matchingSamples.stream()
             .anyMatch(resource -> resource.getContent().getAccession().equals(accession3));
 
     if (!match) {
@@ -450,17 +429,16 @@ public class RestFilterIntegration extends AbstractIntegration {
             .onInverseRelation("parent of")
             .withValue(testSample3.getAccession())
             .build();
-    samplePage =
-        webinClient.fetchPagedSampleResource("", Collections.singletonList(invRelFilter), 0, 10);
+    matchingSamples = fetchAllSamplesByFilter(invRelFilter);
 
-    if (samplePage.getMetadata().getTotalElements() < 1) {
+    if (matchingSamples.size() < 1) {
       throw new IntegrationTestFailException(
           "Unexpected number of results for relation filter query. Expected more than zero but got "
-              + samplePage.getMetadata().getTotalElements());
+              + matchingSamples.size());
     }
 
     match =
-        samplePage.getContent().stream()
+        matchingSamples.stream()
             .anyMatch(resource -> resource.getContent().getAccession().equals(accession2));
 
     if (!match) {
@@ -476,19 +454,28 @@ public class RestFilterIntegration extends AbstractIntegration {
 
     final Filter authFilter =
         FilterBuilder.create().onAuthInfo(defaultWebinIdForIntegrationTests).build();
-    final PagedModel<EntityModel<Sample>> samplePage =
-        webinClient.fetchPagedSampleResource("", Collections.singletonList(authFilter), 0, 10);
+    final List<EntityModel<Sample>> matchingSamples = fetchAllSamplesByFilter(authFilter);
 
-    if (samplePage.getMetadata().getTotalElements() < 1) {
+    if (matchingSamples.size() < 1) {
       throw new IntegrationTestFailException(
-          "Unexpected number of results for domain filter query: "
-              + samplePage.getMetadata().getTotalElements(),
+          "Unexpected number of results for domain filter query: " + matchingSamples.size(),
           Phase.FIVE);
     }
   }
 
   @Override
   protected void phaseSix() {}
+
+  private List<EntityModel<Sample>> fetchAllSamplesByFilter(final Filter filter) {
+    final List<EntityModel<Sample>> samples = new ArrayList<>();
+
+    for (final EntityModel<Sample> sample :
+        webinClient.fetchSampleResourceAll("", Collections.singletonList(filter))) {
+      samples.add(sample);
+    }
+
+    return samples;
+  }
 
   private Sample getTestSample1() {
     final String name = "RestFilterIntegration_sample_1";
