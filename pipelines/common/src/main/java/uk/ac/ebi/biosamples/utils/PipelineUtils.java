@@ -41,11 +41,12 @@ public class PipelineUtils {
   }
 
   public static Collection<Filter> getDateFilters(
-      final ApplicationArguments args, final String dateType) {
+      final ApplicationArguments args, final DateType dateType) {
     final Collection<Filter> filters = new ArrayList<>();
     final LocalDate fromDate;
     final LocalDate toDate;
-    final Filter dateFilter;
+    final LocalDate effectiveTo;
+    Filter dateFilter;
 
     if (args.getOptionNames().contains("from")) {
       fromDate =
@@ -63,22 +64,22 @@ public class PipelineUtils {
       toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
     }
 
-    log.info("Processing samples from " + DateTimeFormatter.ISO_LOCAL_DATE.format(fromDate));
-    log.info("Processing samples to " + DateTimeFormatter.ISO_LOCAL_DATE.format(toDate));
-
-    if (!dateType.equals("release")) {
-      dateFilter =
-          new DateRangeFilter.DateRangeFilterBuilder(dateType)
-              .from(fromDate.atStartOfDay().toInstant(ZoneOffset.UTC))
-              .until(toDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))
-              .build();
+    if (dateType.equals(DateType.release)) {
+      effectiveTo = LocalDate.now();
+    } else if (dateType.equals(DateType.update)) {
+      effectiveTo = toDate.plusDays(1);
     } else {
-      dateFilter =
-          new DateRangeFilter.DateRangeFilterBuilder(dateType)
-              .from(fromDate.atStartOfDay().toInstant(ZoneOffset.UTC))
-              .until(fromDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))
-              .build();
+      throw new RuntimeException("Unsupported date type");
     }
+
+    log.info("Processing samples from " + DateTimeFormatter.ISO_LOCAL_DATE.format(fromDate));
+    log.info("Processing samples to " + DateTimeFormatter.ISO_LOCAL_DATE.format(effectiveTo));
+
+    dateFilter =
+        new DateRangeFilter.DateRangeFilterBuilder(dateType.name())
+            .from(fromDate.atStartOfDay().toInstant(ZoneOffset.UTC))
+            .until(effectiveTo.atStartOfDay().toInstant(ZoneOffset.UTC))
+            .build();
 
     filters.add(dateFilter);
 
@@ -171,5 +172,10 @@ public class PipelineUtils {
 
   public static Filter getAttributeFilter(final String attributeName, final String attributeValue) {
     return new AttributeFilter.Builder(attributeName).withValue(attributeValue).build();
+  }
+
+  public enum DateType {
+    release,
+    update
   }
 }

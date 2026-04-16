@@ -1,6 +1,4 @@
 {
-	"_comment": "Do not create index from this file. This is for reference/template purposes only.",
-
 	"settings": {
 		"number_of_shards": 1,
 		"number_of_replicas": 0

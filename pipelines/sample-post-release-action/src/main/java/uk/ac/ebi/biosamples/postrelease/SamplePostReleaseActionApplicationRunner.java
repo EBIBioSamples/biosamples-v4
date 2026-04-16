@@ -12,7 +12,7 @@ package uk.ac.ebi.biosamples.postrelease;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -26,6 +26,8 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.SampleStatus;
+import uk.ac.ebi.biosamples.core.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 import uk.ac.ebi.biosamples.utils.thread.AdaptiveThreadPoolExecutor;
@@ -47,9 +49,21 @@ public class SamplePostReleaseActionApplicationRunner implements ApplicationRunn
   @Override
   public void run(final ApplicationArguments args) throws Exception {
     final Instant startTime = Instant.now();
-    final Collection<Filter> filters = PipelineUtils.getDateFilters(args, "release");
-    final String fromDate = getDateArgOrDefault(args, "from", "1000-01-01");
-    final String untilDate = getDateArgOrDefault(args, "until", "3000-01-01");
+    final Collection<Filter> filters =
+        PipelineUtils.getDateFilters(args, PipelineUtils.DateType.release);
+    final DateRangeFilter.DateRange dateRange =
+        filters.stream()
+            .filter(DateRangeFilter.class::isInstance)
+            .map(DateRangeFilter.class::cast)
+            .map(DateRangeFilter::getContent)
+            .flatMap(Optional::stream)
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("Date range filter not found"));
+    final String fromDate =
+        DateTimeFormatter.ISO_LOCAL_DATE.format(dateRange.getFrom().atZone(ZoneOffset.UTC));
+    final String effectiveUntilDate =
+        DateTimeFormatter.ISO_LOCAL_DATE.format(dateRange.getUntil().atZone(ZoneOffset.UTC));
+    final List<String> accessions = new ArrayList<>();
     long sampleCount = 0;
 
     try (final AdaptiveThreadPoolExecutor executorService =
@@ -69,11 +83,16 @@ public class SamplePostReleaseActionApplicationRunner implements ApplicationRunn
           throw new RuntimeException("Sample should not be null");
         }
 
-        LOG.info("Handling {}", sample.getAccession());
+        if (sample.getRelease().isBefore(Instant.now())
+            && sample.getStatus() == SampleStatus.PRIVATE) {
+          LOG.info("Handling {}", sample.getAccession());
 
-        /*final Callable<Boolean> task =
-        new SamplePostReleaseActionCallable(bioSamplesWebinClient, sample);*/
-        sampleCount++;
+          accessions.add(sample.getAccession());
+
+          /*final Callable<Boolean> task =
+          new SamplePostReleaseActionCallable(bioSamplesWebinClient, sample);*/
+          sampleCount++;
+        }
 
         if (sampleCount % 10000 == 0) {
           LOG.info("{} scheduled for processing", sampleCount);
@@ -90,12 +109,16 @@ public class SamplePostReleaseActionApplicationRunner implements ApplicationRunn
 
       throw e;
     } finally {
+      accessions.forEach(System.out::println);
       final Instant endTime = Instant.now();
       final String failures;
 
       LOG.info("Total samples processed {}", sampleCount);
       LOG.info(
-          "Samples received for date range from {} to {}: {}", fromDate, untilDate, sampleCount);
+          "Samples received for effective release date range from {} to {}: {}",
+          fromDate,
+          effectiveUntilDate,
+          sampleCount);
       LOG.info("Pipeline finished at {}", endTime);
       LOG.info(
           "Pipeline total running time {} seconds",
@@ -118,16 +141,5 @@ public class SamplePostReleaseActionApplicationRunner implements ApplicationRunn
         LOG.info(failures);
       }
     }
-  }
-
-  private String getDateArgOrDefault(
-      final ApplicationArguments args, final String argName, final String defaultValue) {
-    if (!args.getOptionNames().contains(argName)) {
-      return defaultValue;
-    }
-
-    final String value = args.getOptionValues(argName).iterator().next();
-    return DateTimeFormatter.ISO_LOCAL_DATE.format(
-        LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE));
   }
 }

@@ -66,7 +66,8 @@ public class ReindexRunner implements ApplicationRunner {
 
   @Override
   public void run(final ApplicationArguments args) throws Exception {
-    final Collection<Filter> filters = PipelineUtils.getDateFilters(args, "update");
+    final Collection<Filter> filters =
+        PipelineUtils.getDateFilters(args, PipelineUtils.DateType.update);
     final Map<String, Future<Void>> futures = new HashMap<>();
 
     ExecutorService executor = null;
