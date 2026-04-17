@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.core.model.Attribute;
 import uk.ac.ebi.biosamples.core.model.Relationship;
 import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.ValidationReport;
 
 @Service
 public class SampleValidator {
@@ -31,52 +32,92 @@ public class SampleValidator {
   }
 
   public Collection<String> validate(final Sample sample) {
-    final Collection<String> errors = new ArrayList<>();
-
-    validate(sample, errors);
-
+    final ValidationReport report = validateStructured(sample);
+    final List<String> errors = new ArrayList<>();
+    errors.addAll(report.getMissingFields());
+    errors.addAll(report.getInvalidTypes());
+    errors.addAll(report.getUnknownFields());
     return errors;
   }
 
+  public ValidationReport validateStructured(final Sample sample) {
+    final ValidationReport report = new ValidationReport();
+
+    validateStructured(sample, report);
+
+    return report;
+  }
+
   public List<String> validate(final Map sampleAsMap) {
+    final ValidationReport report = validateStructured(sampleAsMap);
     final List<String> errors = new ArrayList<>();
+    errors.addAll(report.getMissingFields());
+    errors.addAll(report.getInvalidTypes());
+    errors.addAll(report.getUnknownFields());
+    return errors;
+  }
+
+  public ValidationReport validateStructured(final Map sampleAsMap) {
+    final ValidationReport report = new ValidationReport();
 
     if (sampleAsMap.get("release") == null) {
-      errors.add("Must provide release date in format YYYY-MM-DDTHH:MM:SS");
+      report.addMissingField("release");
     }
 
     if (sampleAsMap.get("name") == null) {
-      errors.add("Must provide name");
+      report.addMissingField("name");
     }
 
     final ObjectMapper mapper = new ObjectMapper();
 
     try {
       final Sample sample = mapper.convertValue(sampleAsMap, Sample.class);
-      validate(sample, errors);
+      validateStructured(sample, report);
     } catch (final IllegalArgumentException e) {
-      errors.add(e.getMessage());
+      report.addInvalidType(e.getMessage());
     }
 
-    return errors;
+    return report;
   }
 
-  public void validate(final Sample sample, final Collection<String> errors) {
+  public void validateStructured(final Sample sample, final ValidationReport report) {
     if (sample.getRelease() == null) {
-      errors.add("Must provide release date in format YYYY-MM-DDTHH:MM:SS");
+      report.addMissingField("release");
     }
 
     if (sample.getName() == null) {
-      errors.add("Must provide name");
+      report.addMissingField("name");
     }
 
-    // TODO more validation
+    boolean hasOrganism = false;
     for (final Attribute attribute : sample.getAttributes()) {
-      attributeValidator.validate(attribute, errors);
+      if ("organism".equalsIgnoreCase(attribute.getType())) {
+        hasOrganism = true;
+      }
+      final List<String> attrErrors = new ArrayList<>();
+      attributeValidator.validate(attribute, attrErrors);
+      for (final String err : attrErrors) {
+        report.addInvalidType(err);
+      }
+    }
+
+    if (!hasOrganism) {
+      report.addMissingField("organism");
     }
 
     for (final Relationship rel : sample.getRelationships()) {
-      errors.addAll(relationshipValidator.validate(rel, sample.getAccession()));
+      final Collection<String> relErrors = relationshipValidator.validate(rel, sample.getAccession());
+      for (final String err : relErrors) {
+        report.addInvalidType(err);
+      }
     }
+  }
+
+  @Deprecated
+  public void validate(final Sample sample, final Collection<String> errors) {
+    final ValidationReport report = validateStructured(sample);
+    errors.addAll(report.getMissingFields());
+    errors.addAll(report.getInvalidTypes());
+    errors.addAll(report.getUnknownFields());
   }
 }

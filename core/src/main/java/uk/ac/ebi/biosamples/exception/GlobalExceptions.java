@@ -93,9 +93,21 @@ public class GlobalExceptions {
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public static class SampleMandatoryFieldsMissingException extends RuntimeException {
     @Serial private static final long serialVersionUID = -7937033504537036300L;
+    private final uk.ac.ebi.biosamples.core.model.ValidationReport validationReport;
 
     public SampleMandatoryFieldsMissingException(final String message) {
       super(message);
+      this.validationReport = null;
+    }
+
+    public SampleMandatoryFieldsMissingException(
+        final uk.ac.ebi.biosamples.core.model.ValidationReport validationReport) {
+      super("Validation failed");
+      this.validationReport = validationReport;
+    }
+
+    public uk.ac.ebi.biosamples.core.model.ValidationReport getValidationReport() {
+      return validationReport;
     }
   }
 
