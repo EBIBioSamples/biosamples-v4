@@ -174,12 +174,12 @@ public class SampleService {
    */
   public Sample persistSample(
       Sample newSample, final Sample oldSample, final boolean isWebinSuperUser) {
-    final Collection<String> errors = sampleValidator.validate(newSample);
+    final ValidationReport report = sampleValidator.validateStructured(newSample);
 
-    if (!errors.isEmpty()) {
-      log.error("Sample validation failed : {}", errors);
+    if (!report.isEmpty()) {
+      log.error("Sample validation failed : {}", report);
 
-      throw new GlobalExceptions.SampleMandatoryFieldsMissingException(String.join("|", errors));
+      throw new GlobalExceptions.SampleMandatoryFieldsMissingException(report);
     }
 
     if (newSample.hasAccession()) {
@@ -299,7 +299,7 @@ public class SampleService {
           existingRelationships.stream()
               .map(
                   relationship -> {
-                    if (relationship.getSource().equals(oldSample.getAccession())) {
+                     if (relationship.getSource().equals(oldSample.getAccession())) {
                       return relationship.getTarget();
                     }
 
@@ -316,11 +316,11 @@ public class SampleService {
    */
   public Sample persistSampleV2(
       Sample newSample, final Sample oldSample, final boolean isWebinSuperUser) {
-    final Collection<String> errors = sampleValidator.validate(newSample);
+    final ValidationReport report = sampleValidator.validateStructured(newSample);
 
-    if (!errors.isEmpty()) {
-      log.error("Sample validation failed : {}", errors);
-      throw new GlobalExceptions.SampleMandatoryFieldsMissingException(String.join("|", errors));
+    if (!report.isEmpty()) {
+      log.error("Sample validation failed : {}", report);
+      throw new GlobalExceptions.SampleMandatoryFieldsMissingException(report);
     }
 
     if (newSample.hasAccession()) {
@@ -375,12 +375,12 @@ public class SampleService {
   Called by V2 endpoints to build a sample with a newly generated sample accession
    */
   public Sample accessionSample(Sample newSample) {
-    final Collection<String> errors = sampleValidator.validate(newSample);
+    final ValidationReport report = sampleValidator.validateStructured(newSample);
 
-    if (!errors.isEmpty()) {
-      log.error("Sample validation failed : {}", errors);
+    if (!report.isEmpty()) {
+      log.error("Sample validation failed : {}", report);
 
-      throw new GlobalExceptions.SampleMandatoryFieldsMissingException(String.join("|", errors));
+      throw new GlobalExceptions.SampleMandatoryFieldsMissingException(report);
     }
 
     if (newSample
