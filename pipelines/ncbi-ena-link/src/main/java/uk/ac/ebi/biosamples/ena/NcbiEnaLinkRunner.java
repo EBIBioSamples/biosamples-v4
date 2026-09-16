@@ -12,13 +12,16 @@ package uk.ac.ebi.biosamples.ena;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -43,17 +46,28 @@ import uk.ac.ebi.biosamples.utils.thread.ThreadUtils;
     matchIfMissing = true)
 public class NcbiEnaLinkRunner implements ApplicationRunner {
   private static final Logger log = LoggerFactory.getLogger(NcbiEnaLinkRunner.class);
-  @Autowired private PipelinesProperties pipelinesProperties;
-  @Autowired private EraProDao eraProDao;
-  @Autowired private NcbiEnaLinkCallableFactory ncbiEnaLinkCallableFactory;
-  @Autowired private MongoPipelineRepository mongoPipelineRepository;
+  private final PipelinesProperties pipelinesProperties;
+  private final EraProDao eraProDao;
+  private final NcbiEnaLinkCallableFactory ncbiEnaLinkCallableFactory;
+  private final MongoPipelineRepository mongoPipelineRepository;
 
-  private final Map<String, Future<Void>> futures = new LinkedHashMap<>();
-  public static final Map<String, String> failures = new HashMap<>();
+  public static final ConcurrentHashMap<String, String> failures = new ConcurrentHashMap<>();
+
+  public NcbiEnaLinkRunner(
+      final PipelinesProperties pipelinesProperties,
+      final EraProDao eraProDao,
+      final NcbiEnaLinkCallableFactory ncbiEnaLinkCallableFactory,
+      final MongoPipelineRepository mongoPipelineRepository) {
+    this.pipelinesProperties = pipelinesProperties;
+    this.eraProDao = eraProDao;
+    this.ncbiEnaLinkCallableFactory = ncbiEnaLinkCallableFactory;
+    this.mongoPipelineRepository = mongoPipelineRepository;
+  }
 
   @Override
   public void run(final ApplicationArguments args) throws Exception {
     log.info("Processing NCBI-ENA-Link pipeline...");
+    failures.clear();
 
     boolean isPassed = true;
     String pipelineFailureCause = null;
@@ -79,7 +93,7 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
         toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
       }
 
-      log.info("Running from date range from " + fromDate + " until " + toDate);
+      log.info("Running from date range from {} until {}", fromDate, toDate);
 
       // Syncing NCBI missing samples from ENA
       syncNcbiSamples(fromDate, toDate);
@@ -117,9 +131,9 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
 
         mongoPipelineRepository.insert(mongoPipeline);
 
-        PipelineUtils.writeFailedSamplesToFile(failures, PipelineName.ENA);
+        PipelineUtils.writeFailedSamplesToFile(failures, PipelineName.NCBIENALINK);
       } catch (final Exception e) {
-        log.info("Error in persisting pipeline status to database " + e.getMessage());
+        log.error("Error persisting pipeline status to database: {}", e.getMessage(), e);
       }
     }
   }
@@ -140,7 +154,7 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
         log.error("Fetching from ERAPRO failed with exception - retry ", e);
 
         if (++numRetry == MAX_RETRIES) {
-          throw new RuntimeException("Permanent failure in fetching samples from ERAPRO");
+          throw new RuntimeException("Permanent failure in fetching samples from ERAPRO", e);
         }
       }
     }
@@ -156,8 +170,9 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
 
     if (pipelinesProperties.getThreadCount() == 0) {
       final NcbiRowHandler ncbiRowHandler = new NcbiRowHandler(ncbiEnaLinkCallableFactory);
-
-      sampleRetrievalResults.forEach(ncbiRowHandler::processRow);
+      for (SampleRetrievalResult sampleRetrievalResult : sampleRetrievalResults) {
+        ncbiRowHandler.processRow(sampleRetrievalResult).call();
+      }
     } else {
       try (final AdaptiveThreadPoolExecutor executorService =
           AdaptiveThreadPoolExecutor.create(
@@ -167,13 +182,13 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
               pipelinesProperties.getThreadCount(),
               pipelinesProperties.getThreadCountMax())) {
         final NcbiRowHandler ncbiRowHandler = new NcbiRowHandler(ncbiEnaLinkCallableFactory);
+        final LinkedHashMap<String, Future<Void>> futures = new LinkedHashMap<>();
 
         sampleRetrievalResults.forEach(
             sampleRetrievalResult -> {
               futures.put(
                   sampleRetrievalResult.getBiosampleId(),
-                  executorService.submit(
-                      Objects.requireNonNull(ncbiRowHandler.processRow(sampleRetrievalResult))));
+                  executorService.submit(ncbiRowHandler.processRow(sampleRetrievalResult)));
             });
 
         try {
@@ -201,9 +216,7 @@ public class NcbiEnaLinkRunner implements ApplicationRunner {
       final String sampleAccession = sampleRetrievalResult.getBiosampleId();
       final java.sql.Date lastUpdated = sampleRetrievalResult.getLastUpdated();
 
-      log.info(
-          String.format(
-              "%s is being handled and last updated is %s", sampleAccession, lastUpdated));
+      log.info("{} is being handled and last updated is {}", sampleAccession, lastUpdated);
 
       return ncbiEnaLinkCallableFactory.build(sampleAccession);
     }

@@ -1,0 +1,455 @@
+= [.ebi-color]#Bulk action V2 API#
+:last-update-label!:
+:toc: auto
+
+The bulk action V2 API accepts multiple BioSamples samples or accessions in a single HTTP request.
+Use these endpoints from automated clients when you need to accession, submit, validate, or retrieve batches of samples.
+
+All examples in this page use Python with the https://requests.readthedocs.io/[requests] library.
+Replace `BASE_URL` with the environment you are using:
+
+[source,python,options="nowrap"]
+----
+BASE_URL = "https://www.ebi.ac.uk/biosamples"
+# Development:
+# BASE_URL = "https://wwwdev.ebi.ac.uk/biosamples"
+----
+
+== Authentication
+
+Bulk action V2 endpoints require a WEBIN authentication token.
+For details on obtaining a token, see the link:/biosamples/docs/guides/authentication[authentication guide].
+
+Send the token as a Bearer token in every request:
+
+[source,python,options="nowrap"]
+----
+import os
+import requests
+
+TOKEN = os.environ["WEBIN_TOKEN"]
+
+HEADERS = {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+    "Authorization": f"Bearer {TOKEN}",
+}
+----
+
+== Sample payload shape
+
+Submission endpoints accept a JSON array of `Sample` objects.
+Each sample should follow the standard BioSamples JSON structure.
+For new samples, provide at least `name`, `domain`, `release`, and suitable `characteristics`.
+
+[source,json,options="nowrap"]
+----
+[
+  {
+    "name": "client-example-001",
+    "domain": "self.example",
+    "release": "2030-01-01T00:00:00Z",
+    "characteristics": {
+      "organism": [
+        {
+          "text": "Homo sapiens",
+          "ontologyTerms": [
+            "http://purl.obolibrary.org/obo/NCBITaxon_9606"
+          ]
+        }
+      ],
+      "sample title": [
+        {
+          "text": "Client example sample 001"
+        }
+      ]
+    }
+  }
+]
+----
+
+== Endpoint summary
+
+[cols="2,3,3,2",options="header"]
+|===
+|Method
+|Path
+|Use
+|Success status
+
+|`POST`
+|`/samples/bulk-accession`
+|Accession multiple new samples and save them as private samples.
+|`200 OK`
+
+|`GET`
+|`/samples/bulk-fetch?accessions=...`
+|Fetch multiple samples by accession.
+|`200 OK`
+
+|`POST`
+|`/samples/bulk-submit-get-receipt`
+|Validate and submit multiple samples, returning submitted samples and per-sample errors.
+|`201 Created`
+
+|`POST`
+|`/samples/bulk-submit`
+|Submit multiple samples without schema validation. This is restricted to WEBIN superusers.
+|`201 Created`
+
+|`POST`
+|`/samples/bulk-validate`
+|Validate multiple samples without persisting them.
+|`200 OK`
+|===
+
+== Python client helper
+
+The following helper uses Python 3.9 or later and the `requests` package.
+Install the dependency with `python -m pip install requests`.
+It keeps HTTP concerns in one place and raises an exception for non-success status codes.
+
+[source,python,options="nowrap"]
+----
+from __future__ import annotations
+
+from typing import Any, Iterable
+
+import requests
+
+
+class BioSamplesBulkClient:
+    def __init__(self, base_url: str, token: str, timeout: int = 60) -> None:
+        self.base_url = base_url.rstrip("/")
+        self.timeout = timeout
+        self.session = requests.Session()
+        self.session.headers.update(
+            {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {token}",
+            }
+        )
+
+    def _raise_for_error(self, response: requests.Response) -> None:
+        try:
+            response.raise_for_status()
+        except requests.HTTPError as exc:
+            message = response.text.strip()
+            raise RuntimeError(
+                f"BioSamples request failed: {response.status_code} {message}"
+            ) from exc
+
+    def bulk_accession(self, samples: list[dict[str, Any]]) -> dict[str, str]:
+        response = self.session.post(
+            f"{self.base_url}/samples/bulk-accession",
+            json=samples,
+            timeout=self.timeout,
+        )
+        self._raise_for_error(response)
+        return response.json()
+
+    def bulk_fetch(self, accessions: Iterable[str]) -> dict[str, dict[str, Any]]:
+        response = self.session.get(
+            f"{self.base_url}/samples/bulk-fetch",
+            params={"accessions": list(accessions)},
+            timeout=self.timeout,
+        )
+        self._raise_for_error(response)
+        return response.json()
+
+    def bulk_submit_get_receipt(self, samples: list[dict[str, Any]]) -> dict[str, Any]:
+        response = self.session.post(
+            f"{self.base_url}/samples/bulk-submit-get-receipt",
+            json=samples,
+            timeout=self.timeout,
+        )
+        self._raise_for_error(response)
+        return response.json()
+
+    def bulk_submit_no_validation(self, samples: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        response = self.session.post(
+            f"{self.base_url}/samples/bulk-submit",
+            json=samples,
+            timeout=self.timeout,
+        )
+        self._raise_for_error(response)
+        return response.json()
+
+    def bulk_validate(self, samples: list[dict[str, Any]]) -> dict[str, Any]:
+        response = self.session.post(
+            f"{self.base_url}/samples/bulk-validate",
+            json=samples,
+            timeout=self.timeout,
+        )
+        self._raise_for_error(response)
+        return response.json()
+----
+
+== Bulk accession
+
+`POST /samples/bulk-accession`
+
+Use bulk accession when samples need BioSamples accessions before full submission.
+The request body is an array of new samples.
+Do not include `accession` values and do not include an attribute with type `SRA accession`; those identifiers are assigned by BioSamples.
+
+=== Example request
+
+[source,python,options="nowrap"]
+----
+client = BioSamplesBulkClient(BASE_URL, TOKEN)
+
+samples = [
+    {
+        "name": "client-example-001",
+        "domain": "self.example",
+        "release": "2030-01-01T00:00:00Z",
+        "characteristics": {
+            "organism": [
+                {
+                    "text": "Homo sapiens",
+                    "ontologyTerms": [
+                        "http://purl.obolibrary.org/obo/NCBITaxon_9606"
+                    ],
+                }
+            ]
+        },
+    }
+]
+
+accessions_by_name = client.bulk_accession(samples)
+print(accessions_by_name)
+----
+
+=== Example response
+
+[source,json,options="nowrap"]
+----
+{
+  "client-example-001": "SAMEA123456789"
+}
+----
+
+=== Notes
+
+* The response is a JSON object keyed by submitted sample name.
+* Samples are saved as private samples.
+* If any sample already contains a BioSamples accession or `SRA accession` attribute, the request fails with `400 Bad Request`.
+
+== Bulk fetch
+
+`GET /samples/bulk-fetch`
+
+Use bulk fetch when you already have accessions and need the corresponding sample documents.
+Pass accessions as repeated `accessions` query parameters.
+
+=== Example request
+
+[source,python,options="nowrap"]
+----
+client = BioSamplesBulkClient(BASE_URL, TOKEN)
+
+samples_by_accession = client.bulk_fetch(["SAMEA123456789", "SAMEA987654321"])
+
+for accession, sample in samples_by_accession.items():
+    print(accession, sample["name"])
+----
+
+The helper sends a request equivalent to:
+
+[source,text,options="nowrap"]
+----
+GET /samples/bulk-fetch?accessions=SAMEA123456789&accessions=SAMEA987654321
+----
+
+=== Example response
+
+[source,json,options="nowrap"]
+----
+{
+  "SAMEA123456789": {
+    "name": "client-example-001",
+    "accession": "SAMEA123456789",
+    "domain": "self.example",
+    "release": "2030-01-01T00:00:00Z",
+    "characteristics": {
+      "organism": [
+        {
+          "text": "Homo sapiens",
+          "ontologyTerms": [
+            "http://purl.obolibrary.org/obo/NCBITaxon_9606"
+          ]
+        }
+      ]
+    }
+  }
+}
+----
+
+=== Notes
+
+* The response is a JSON object keyed by accession.
+* Accessions that are not found are omitted from the response.
+* Private samples that the authenticated user cannot access are omitted from the response.
+* A missing `accessions` request parameter fails with `400 Bad Request`.
+
+== Bulk submit with receipt
+
+`POST /samples/bulk-submit-get-receipt`
+
+Use this endpoint for normal bulk submission.
+The service validates and attempts to persist each sample, then returns a receipt containing the successfully created or updated samples and per-sample errors.
+
+=== Example request
+
+[source,python,options="nowrap"]
+----
+client = BioSamplesBulkClient(BASE_URL, TOKEN)
+
+receipt = client.bulk_submit_get_receipt(samples)
+
+for sample in receipt.get("samples", []):
+    print("submitted", sample["name"], sample.get("accession"))
+
+for item in receipt.get("errors", []):
+    print("failed", item["sampleName"])
+    for error in item["errors"]:
+        print(error.get("dataPath", ""), error.get("errors", []))
+----
+
+=== Example response
+
+[source,json,options="nowrap"]
+----
+{
+  "samples": [
+    {
+      "name": "client-example-001",
+      "accession": "SAMEA123456789",
+      "domain": "self.example",
+      "release": "2030-01-01T00:00:00Z"
+    }
+  ],
+  "errors": [
+    {
+      "sampleName": "client-example-002",
+      "errors": [
+        {
+          "dataPath": "$.characteristics.organism",
+          "errors": [
+            "organism is required"
+          ]
+        }
+      ]
+    }
+  ]
+}
+----
+
+=== Notes
+
+* Successful samples are returned in `samples`.
+* Failed samples are returned in `errors`; each error includes the original `sampleName` and validation messages.
+* A `201 Created` response can contain both successful samples and errors. Check both arrays before treating the batch as complete.
+* For standard WEBIN users, samples are schema-validated before persistence.
+* WEBIN superuser validation behavior is controlled by server configuration.
+
+== Bulk submit without validation
+
+`POST /samples/bulk-submit`
+
+This endpoint persists multiple samples without schema validation.
+It is restricted to WEBIN superusers and should not be used by regular client integrations.
+
+=== Example request
+
+[source,python,options="nowrap"]
+----
+client = BioSamplesBulkClient(BASE_URL, TOKEN)
+
+created_samples = client.bulk_submit_no_validation(samples)
+for sample in created_samples:
+    print(sample["name"], sample.get("accession"))
+----
+
+=== Notes
+
+* The response body is an array of persisted sample objects.
+* Non-superuser requests fail with `406 Not Acceptable`.
+* Because this endpoint bypasses schema validation, validate data before calling it.
+
+== Bulk validate
+
+`POST /samples/bulk-validate`
+
+Use bulk validate to check samples before submitting them.
+The endpoint returns validation errors and does not persist samples.
+
+=== Example request
+
+[source,python,options="nowrap"]
+----
+client = BioSamplesBulkClient(BASE_URL, TOKEN)
+
+receipt = client.bulk_validate(samples)
+if not receipt.get("errors"):
+    print("all samples passed validation")
+else:
+    for item in receipt["errors"]:
+        print("failed", item["sampleName"], item["errors"])
+----
+
+=== Example response
+
+[source,json,options="nowrap"]
+----
+{
+  "samples": null,
+  "errors": []
+}
+----
+
+=== Notes
+
+* The response uses the same receipt shape as bulk submit with receipt.
+* `samples` is `null` because validation does not create or update samples.
+* Validation failures are reported under `errors`.
+
+== Usage guidelines
+
+* Prefer `bulk-validate` before large submissions so client-side workflows can correct errors before persistence.
+* Prefer `bulk-submit-get-receipt` for normal automated submissions because it reports per-sample failures.
+* Treat `201 Created` from `bulk-submit-get-receipt` as a completed request, not as proof that every sample was persisted. Inspect `errors`.
+* Keep batches at a size your client can retry safely. If a network error occurs, retry only the samples whose final state is unknown.
+* Use stable sample `name` values. Receipts and accession responses use sample names to identify records.
+* Do not put credentials or WEBIN tokens in source code. Load them from environment variables or a secrets manager.
+* Use future `release` dates for private samples and past or current `release` dates for public samples.
+* When updating existing samples, fetch the current sample first, preserve fields you want to keep, and resubmit the complete desired sample document.
+* For `bulk-fetch`, compare requested accessions with the response keys to identify missing or inaccessible samples.
+
+== Common status codes
+
+[cols="1,3",options="header"]
+|===
+|Status
+|Meaning
+
+|`200 OK`
+|Bulk fetch, bulk validate, or bulk accession completed.
+
+|`201 Created`
+|Bulk submit completed. Inspect the response body for per-sample errors when using `bulk-submit-get-receipt`.
+
+|`400 Bad Request`
+|The request body or query parameters are malformed, or a bulk accession request contains a pre-existing accession.
+
+|`401 Unauthorized`
+|The request has no valid WEBIN authentication context.
+
+|`403 Forbidden`
+|The authenticated user is not allowed to access or update a requested sample.
+
+|`406 Not Acceptable`
+|A regular WEBIN user called the superuser-only `bulk-submit` endpoint.
+|===

@@ -365,6 +365,7 @@ public class RestIntegration extends AbstractIntegration {
     sampleTest1 =
         Sample.Builder.fromSample(sampleTest1)
             .withRelease("2116-04-01T11:36:57.00Z")
+            .withStatus(SampleStatus.PRIVATE)
             .withNoRelationships()
             .withNoContacts()
             .withNoPublications()

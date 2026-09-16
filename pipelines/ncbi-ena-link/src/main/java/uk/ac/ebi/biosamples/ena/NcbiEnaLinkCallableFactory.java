@@ -13,31 +13,27 @@ package uk.ac.ebi.biosamples.ena;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
-import uk.ac.ebi.biosamples.service.EraProDao;
 
 @Service
 public class NcbiEnaLinkCallableFactory {
   private final BioSamplesClient bioSamplesClient;
   private final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
-  private final EraProDao eraProDao;
 
   public NcbiEnaLinkCallableFactory(
       final BioSamplesClient bioSamplesClient,
-      final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService,
-      final EraProDao eraProDao) {
+      final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService) {
     this.bioSamplesClient = bioSamplesClient;
     this.enaSampleToBioSampleConversionService = enaSampleToBioSampleConversionService;
-    this.eraProDao = eraProDao;
   }
 
   /**
-   * Builds a callable for dealing samples that are SUPPRESSED
+   * Builds a callable for dealing with NCBI samples
    *
    * @param accession The accession passed
    * @return the callable, {@link NcbiEnaLinkCallable}
    */
   public NcbiEnaLinkCallable build(final String accession) {
     return new NcbiEnaLinkCallable(
-        accession, bioSamplesClient, enaSampleToBioSampleConversionService, eraProDao);
+        accession, bioSamplesClient, enaSampleToBioSampleConversionService);
   }
 }

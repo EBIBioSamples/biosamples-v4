@@ -207,6 +207,9 @@ public class SampleService {
   }
 
   private Sample createNew(Sample newSample) {
+    // V1 new submissions must be normalized before accessioning so status follows release date.
+    newSample = handleSampleStatus(newSample, null);
+
     final boolean noSraAccession =
         newSample.getAttributes().stream()
             .noneMatch(attribute -> attribute.getType().equals(SRA_ACCESSION));
@@ -338,12 +341,30 @@ public class SampleService {
   }
 
   private Sample handleSampleStatus(final Sample newSample, final Sample oldSample) {
-    if (newSample.getRelease() != null && !newSample.getRelease().isAfter(Instant.now())) {
-      final SampleStatus oldSampleStatus = oldSample.getStatus();
+    // No release date means there is no date-driven status change to apply.
+    if (newSample.getRelease() == null) {
+      return newSample;
+    }
 
-      if (oldSampleStatus == null || oldSampleStatus == SampleStatus.PRIVATE) {
-        return Sample.Builder.fromSample(newSample).withStatus(SampleStatus.PUBLIC).build();
+    final SampleStatus newSampleStatus = newSample.getStatus();
+    final SampleStatus oldSampleStatus = oldSample == null ? null : oldSample.getStatus();
+
+    if (newSample.getRelease().isAfter(Instant.now())) {
+      // A sample cannot be public before release, even when the request says PUBLIC.
+      if (newSampleStatus == SampleStatus.PUBLIC
+          && (oldSampleStatus == null
+              || oldSampleStatus == SampleStatus.PRIVATE
+              || oldSampleStatus == SampleStatus.PUBLIC)) {
+        return Sample.Builder.fromSample(newSample).withStatus(SampleStatus.PRIVATE).build();
       }
+
+      return newSample;
+    }
+
+    // Once release is reached, only implicit or PRIVATE samples become PUBLIC automatically.
+    if ((newSampleStatus == null || newSampleStatus == SampleStatus.PRIVATE)
+        && (oldSampleStatus == null || oldSampleStatus == SampleStatus.PRIVATE)) {
+      return Sample.Builder.fromSample(newSample).withStatus(SampleStatus.PUBLIC).build();
     }
 
     return newSample;
