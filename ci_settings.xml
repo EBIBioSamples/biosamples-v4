@@ -1,5 +1,5 @@
-<settings xmlns="http://maven.apache.org/SETTINGS/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd">
+<?xml version="1.0" encoding="utf-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd">
 <mirrors>
 	<mirror>
 	<id>biosamples-v4</id>
@@ -23,8 +23,8 @@
 	<configuration>
 		<httpHeaders>
 		<property>
-			<name>Job-Token</name>
-			<value>${env.CI_JOB_TOKEN}</value>
+			<name>Private-Token</name>
+			<value>${env.GITLAB_MAVEN_TOKEN}</value>
 		</property>
 		</httpHeaders>
 	</configuration>
@@ -34,8 +34,8 @@
 	<configuration>
 		<httpHeaders>
 		<property>
-			<name>Job-Token</name>
-			<value>${env.CI_JOB_TOKEN}</value>
+			<name>Private-Token</name>
+			<value>${env.GITLAB_MAVEN_TOKEN}</value>
 		</property>
 		</httpHeaders>
 	</configuration>
@@ -45,33 +45,46 @@
 	<configuration>
 		<httpHeaders>
 		<property>
-			<name>Job-Token</name>
-			<value>${env.CI_JOB_TOKEN}</value>
+			<name>Private-Token</name>
+			<value>${env.GITLAB_MAVEN_TOKEN}</value>
 		</property>
 		</httpHeaders>
 	</configuration>
 	</server>
-	<server>
-	<id>maven.oracle.com</id>
-	<username>dgupta@ebi.ac.uk</username>
-	<password>DGalpha#12345</password>
-	<configuration>
-		<basicAuthScope>
-		<host>ANY</host>
-		<port>ANY</port>
-		<realm>OAM 11g</realm>
-		</basicAuthScope>
-		<httpConfiguration>
-		<all>
-			<params>
-			<property>
-				<name>http.protocol.allow-circular-redirects</name>
-				<value>%b,true</value>
-			</property>
-			</params>
-		</all>
-		</httpConfiguration>
-	</configuration>
-	</server>
 </servers>
+<profiles>
+	<profile>
+	<id>embl-ebi</id>
+	<repositories>
+		<repository>
+		<id>gitlab-maven</id>
+		<url>https://gitlab.ebi.ac.uk/api/v4/projects/1143/packages/maven</url>
+		</repository>
+		<repository>
+		<id>biosamples-v4</id>
+		<url>https://gitlab.ebi.ac.uk/api/v4/projects/2669/packages/maven</url>
+		</repository>
+		<repository>
+		<id>gitlab-biosamples-search</id>
+		<url>https://gitlab.ebi.ac.uk/api/v4/projects/5516/packages/maven</url>
+		</repository>
+		<repository>
+		<id>central</id>
+		<name>Central Repository</name>
+		<url>https://repo.maven.apache.org/maven2</url>
+		<layout>default</layout>
+		<snapshots>
+			<enabled>false</enabled>
+		</snapshots>
+		</repository>
+		<repository>
+		<id>oracle-public</id>
+		<url>https://maven.oracle.com/public</url>
+		</repository>
+	</repositories>
+	</profile>
+</profiles>
+<activeProfiles>
+	<activeProfile>embl-ebi</activeProfile>
+</activeProfiles>
 </settings>
