@@ -64,7 +64,7 @@ public class EnaSampleToBioSampleConversionService {
       if (XmlPathBuilder.of(enaSampleRootElement).path("SAMPLE").exists()) {
         return enrichSample(eraproSample, enaSampleRootElement, accession, isNcbiDdbjSample);
       } else {
-        log.warn("Unable to find SAMPLE element for " + accession);
+        log.warn("Unable to find SAMPLE element for {}", accession);
       }
     }
 
@@ -85,7 +85,7 @@ public class EnaSampleToBioSampleConversionService {
       if (XmlPathBuilder.of(enaSampleRootElement).path("SAMPLE").exists()) {
         return enrichSample(eraproSample, enaSampleRootElement, accession, false);
       } else {
-        log.warn("Unable to find SAMPLE element for " + accession);
+        log.warn("Unable to find SAMPLE element for {}", accession);
       }
     }
 

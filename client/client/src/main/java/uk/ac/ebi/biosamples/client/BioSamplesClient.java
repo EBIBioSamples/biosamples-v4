@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
@@ -46,7 +45,6 @@ public class BioSamplesClient implements AutoCloseable {
   private final Logger log = LoggerFactory.getLogger(getClass());
   private final SampleRetrievalService sampleRetrievalService;
   private final SampleRetrievalServiceV2 sampleRetrievalServiceV2;
-  private final SamplePageRetrievalService samplePageRetrievalService;
   private final SampleCursorRetrievalService sampleCursorRetrievalService;
   private final SampleSubmissionService sampleSubmissionService;
   private final SampleSubmissionServiceV2 sampleSubmissionServiceV2;
@@ -98,7 +96,6 @@ public class BioSamplesClient implements AutoCloseable {
     traverson.setRestOperations(restOperations);
 
     sampleRetrievalService = new SampleRetrievalService(restOperations, traverson);
-    samplePageRetrievalService = new SamplePageRetrievalService(restOperations, traverson);
     sampleCursorRetrievalService = new SampleCursorRetrievalService(restOperations, traverson);
     sampleSubmissionService = new SampleSubmissionService(restOperations, traverson);
     sampleSubmissionServiceV2 = new SampleSubmissionServiceV2(restOperations, uriV2);
@@ -336,36 +333,6 @@ public class BioSamplesClient implements AutoCloseable {
   }
 
   /**
-   * Searches for samples using pagination. This method should be used for specific pagination
-   * needs. When in need for all results from a search, prefer the iterator implementation.
-   *
-   * @param text the text query
-   * @param page the page number
-   * @param size the page size
-   * @return a paged model of sample resources
-   */
-  public PagedModel<EntityModel<Sample>> fetchPagedSampleResource(
-      final String text, final int page, final int size) {
-    return samplePageRetrievalService.search(text, Collections.emptyList(), page, size);
-  }
-
-  /**
-   * Searches for samples using pagination with specified filters. This method should be used for
-   * specific pagination needs. When in need for all results from a search, prefer the iterator
-   * implementation.
-   *
-   * @param text the text query
-   * @param filters the collection of filters
-   * @param page the page number
-   * @param size the page size
-   * @return a paged model of sample resources
-   */
-  public PagedModel<EntityModel<Sample>> fetchPagedSampleResource(
-      final String text, final Collection<Filter> filters, final int page, final int size) {
-    return samplePageRetrievalService.search(text, filters, page, size);
-  }
-
-  /**
    * Deprecated method: Persists a sample using BioSamples.
    *
    * @param sample the sample to persist
@@ -508,15 +475,6 @@ public class BioSamplesClient implements AutoCloseable {
   public Iterable<EntityModel<Sample>> fetchSampleResourceAll(
       final String text, final Collection<Filter> filters, final String jwt) {
     return sampleCursorRetrievalService.fetchAll(text, filters, jwt);
-  }
-
-  public PagedModel<EntityModel<Sample>> fetchPagedSampleResource(
-      final String text,
-      final Collection<Filter> filters,
-      final int page,
-      final int size,
-      final String jwt) {
-    return samplePageRetrievalService.search(text, filters, page, size, jwt);
   }
 
   public EntityModel<Sample> persistSampleResource(final Sample sample, final String jwt) {

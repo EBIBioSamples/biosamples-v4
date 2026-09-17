@@ -544,7 +544,7 @@ public class Sample implements Comparable<Sample> {
 
     sample.reviewed = reviewed;
 
-    // Validation moved to a later stage, to capture the error (SampleService.store())
+    // Validation moved to a later stage to capture the error (SampleService.store())
     sample.release = release;
 
     if (status != null) {

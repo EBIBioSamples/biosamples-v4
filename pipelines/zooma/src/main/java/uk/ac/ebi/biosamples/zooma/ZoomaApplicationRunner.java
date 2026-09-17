@@ -12,6 +12,7 @@ package uk.ac.ebi.biosamples.zooma;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -29,7 +30,10 @@ import uk.ac.ebi.biosamples.core.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
 import uk.ac.ebi.biosamples.core.service.CurationApplicationService;
+import uk.ac.ebi.biosamples.model.PipelineLastRun;
+import uk.ac.ebi.biosamples.model.PipelineName;
 import uk.ac.ebi.biosamples.mongo.service.AnalyticsService;
+import uk.ac.ebi.biosamples.service.PipelineHelperService;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 import uk.ac.ebi.biosamples.utils.thread.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.thread.ThreadUtils;
@@ -37,6 +41,7 @@ import uk.ac.ebi.biosamples.utils.thread.ThreadUtils;
 @Component
 public class ZoomaApplicationRunner implements ApplicationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(ZoomaApplicationRunner.class);
+  private static final PipelineName PIPELINE_NAME = PipelineName.ZOOMA;
 
   private final BioSamplesClient bioSamplesClient;
   private final PipelinesProperties pipelinesProperties;
@@ -44,25 +49,33 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
   private final CurationApplicationService curationApplicationService;
   private final AnalyticsService analyticsService;
   private final PipelineFutureCallback pipelineFutureCallback;
+  private final PipelineHelperService pipelineHelperService;
 
   public ZoomaApplicationRunner(
       final BioSamplesClient bioSamplesClient,
       final PipelinesProperties pipelinesProperties,
       final ZoomaProcessor zoomaProcessor,
       final CurationApplicationService curationApplicationService,
-      final AnalyticsService analyticsService) {
+      final AnalyticsService analyticsService,
+      final PipelineHelperService pipelineHelperService) {
     this.bioSamplesClient = bioSamplesClient;
     this.pipelinesProperties = pipelinesProperties;
     this.zoomaProcessor = zoomaProcessor;
     this.curationApplicationService = curationApplicationService;
     this.analyticsService = analyticsService;
-    pipelineFutureCallback = new PipelineFutureCallback();
+    this.pipelineHelperService = pipelineHelperService;
+    this.pipelineFutureCallback = new PipelineFutureCallback();
   }
 
   @Override
   public void run(final ApplicationArguments args) {
+    PipelineLastRun pipelineLastRun = pipelineHelperService.getLastRunDate(PIPELINE_NAME);
+    LocalDate lastRunDate = pipelineLastRun.getLastRunDate();
+    LocalDate startDate = LocalDate.now();
     final Instant startTime = Instant.now();
-    final Collection<Filter> filters = PipelineUtils.getDateFilters(args, "update");
+    final Collection<Filter> filters = PipelineUtils.getLastRunFilters(lastRunDate, startDate);
+    LOG.info("Pipeline started at {}", startTime);
+    LOG.info("Processing samples from {}", lastRunDate);
     long sampleCount = 0;
 
     try (final AdaptiveThreadPoolExecutor executorService =

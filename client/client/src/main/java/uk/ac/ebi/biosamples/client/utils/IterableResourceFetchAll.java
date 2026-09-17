@@ -38,6 +38,28 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriTemplate;
 
+/**
+ * Provides an {@link Iterable} view over a paginated HAL resource and transparently fetches
+ * additional pages as iteration progresses.
+ *
+ * <p>This utility is intended for clients that need to consume a collection of {@link EntityModel}
+ * instances without manually handling pagination. It starts from the initial page discovered
+ * through {@link Traverson}, then iterates through all available pages by requesting later page
+ * links on demand. The implementation is designed to hide the paging mechanics from callers so that
+ * the result can be processed with a standard Java-enhanced for-loop or any other {@link
+ * Iterable}-based API.
+ *
+ * <p>When iterating, the current page is consumed first. If another page is available, the next
+ * page request is prepared and executed asynchronously using the supplied {@link ExecutorService}.
+ * This allows the next page to be fetched while the current page is still being processed, which
+ * can reduce waiting time for large result sets. Authentication information may be propagated via
+ * the optional JWT value when performing page requests.
+ *
+ * <p>The class also supports applying query parameters to the initial traversal, making it useful
+ * for fetching filtered result sets from REST endpoints that expose paginated representations.
+ *
+ * @param <T> the resource type contained in each {@link EntityModel}
+ */
 @Slf4j
 public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
   private final Traverson traverson;
@@ -117,6 +139,9 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
 
     // Build the URI with encoding disabled to preserve existing encoding
     final URI finalUri = uriBuilder.build(false).toUri();
+
+    log.info("First Uri {}", finalUri);
+
     final RequestEntity<Void> requestEntity =
         IteratorResourceFetchAll.NextPageCallable.buildRequestEntity(jwt, finalUri);
     final ResponseEntity<PagedModel<EntityModel<T>>> responseEntity =
@@ -187,7 +212,7 @@ public class IterableResourceFetchAll<T> implements Iterable<EntityModel<T>> {
                 .build(true)
                 .toUri();
 
-        log.trace("Getting next page uri " + uri);
+        log.info("Next page uri " + uri);
 
         nextPageFuture =
             executor.submit(

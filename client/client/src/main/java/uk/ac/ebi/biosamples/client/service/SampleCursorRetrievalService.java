@@ -70,7 +70,6 @@ public class SampleCursorRetrievalService {
     }
 
     params.add("applyCurations", String.valueOf(addCurations));
-
     params = encodePlusInQueryParameters(params);
 
     return new IterableResourceFetchAll<>(
