@@ -15,7 +15,17 @@ variables:
 before_script:
   - echo $CI_BUILD_REF
   - echo $CI_PROJECT_DIR
-  - apk update && apk add git
+  - |
+    if ! command -v git >/dev/null 2>&1; then
+      if command -v apk >/dev/null 2>&1; then
+        apk update && apk add git
+      elif command -v apt-get >/dev/null 2>&1; then
+        apt-get update && apt-get install -y git
+      else
+        echo "No supported package manager found to install git" >&2
+        exit 1
+      fi
+    fi
 
 stages:
   - build

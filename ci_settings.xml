@@ -1,5 +1,22 @@
 <settings xmlns="http://maven.apache.org/SETTINGS/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd">
+<mirrors>
+	<mirror>
+	<id>biosamples-v4</id>
+	<mirrorOf>biosamples-v4</mirrorOf>
+	<url>https://gitlab.ebi.ac.uk/api/v4/projects/2669/packages/maven</url>
+	</mirror>
+	<mirror>
+	<id>gitlab-maven</id>
+	<mirrorOf>gitlab-maven</mirrorOf>
+	<url>https://gitlab.ebi.ac.uk/api/v4/projects/1143/packages/maven</url>
+	</mirror>
+	<mirror>
+	<id>gitlab-biosamples-search</id>
+	<mirrorOf>gitlab-biosamples-search</mirrorOf>
+	<url>https://gitlab.ebi.ac.uk/api/v4/projects/5516/packages/maven</url>
+	</mirror>
+</mirrors>
 <servers>
 	<server>
 	<id>biosamples-v4</id>
@@ -14,6 +31,17 @@
 	</server>
 	<server>
 	<id>gitlab-maven</id>
+	<configuration>
+		<httpHeaders>
+		<property>
+			<name>Job-Token</name>
+			<value>${env.CI_JOB_TOKEN}</value>
+		</property>
+		</httpHeaders>
+	</configuration>
+	</server>
+	<server>
+	<id>gitlab-biosamples-search</id>
 	<configuration>
 		<httpHeaders>
 		<property>
