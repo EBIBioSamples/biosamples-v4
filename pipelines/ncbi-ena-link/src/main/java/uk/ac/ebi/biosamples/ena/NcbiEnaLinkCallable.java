@@ -18,7 +18,6 @@ import org.springframework.hateoas.EntityModel;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.core.model.Sample;
 import uk.ac.ebi.biosamples.service.EnaSampleToBioSampleConversionService;
-import uk.ac.ebi.biosamples.service.EraProDao;
 
 public class NcbiEnaLinkCallable implements Callable<Void> {
   private static final int MAX_RETRIES = 5; // Maximum number of retries for persistence operation
@@ -26,18 +25,15 @@ public class NcbiEnaLinkCallable implements Callable<Void> {
   private final String accession;
   private final BioSamplesClient bioSamplesClient;
   private final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService;
-  private final EraProDao eraProDao;
 
   /** Constructor to initialize the callable with necessary dependencies */
   NcbiEnaLinkCallable(
       final String accession,
       final BioSamplesClient bioSamplesClient,
-      final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService,
-      final EraProDao eraProDao) {
+      final EnaSampleToBioSampleConversionService enaSampleToBioSampleConversionService) {
     this.accession = accession;
     this.bioSamplesClient = bioSamplesClient;
     this.enaSampleToBioSampleConversionService = enaSampleToBioSampleConversionService;
-    this.eraProDao = eraProDao;
   }
 
   /**
@@ -54,45 +50,17 @@ public class NcbiEnaLinkCallable implements Callable<Void> {
           bioSamplesClient.fetchSampleResource(accession, false);
 
       if (optionalSampleEntityModel.isEmpty()) {
-        log.info("NCBI sample doesn't exist in BioSamples " + accession + " fetching from ERAPRO");
+        log.info("NCBI sample {} doesn't exist in BioSamples, fetching from ERAPRO", accession);
 
         // Enrich the sample from ERA PRO
         final Sample sample = enaSampleToBioSampleConversionService.enrichSample(accession, true);
 
         // Attempt to persist the enriched sample with retries
         submitRetry(success, sample);
-      } else {
-        /*log.info("NCBI sample exists " + accession + " verifying SRA accession");
-
-        // Get the sample content
-        final Sample sample = optionalSampleEntityModel.get().getContent();
-        final List<Attribute> sraAccessionAttributes =
-            sample.getAttributes().stream()
-                .filter(attribute -> attribute.getType().equals(BioSamplesConstants.SRA_ACCESSION))
-                .toList();
-
-        if (sraAccessionAttributes.size() > 1) {
-          log.info("Multiple SRA accessions for " + accession + " not handling");
-        } else {
-          final Attribute sraAccessionAttribute = sraAccessionAttributes.get(0);
-          final EraproSample eraproSample = eraProDao.getSampleDetailsByBioSampleId(accession);
-
-          // Check if SRA accession matches between ENA and BioSamples
-          if (sraAccessionAttribute.getValue().equals(eraproSample.getSampleId())) {
-            log.info(
-                "SRA accession matches ENA and BioSamples " + accession + " no action required");
-          } else {
-            // Enrich and persist the sample if there is a mismatch
-            final Sample modifiedSample =
-                enaSampleToBioSampleConversionService.enrichSample(accession, eraproSample);
-
-            submitRetry(success, modifiedSample);
-          }
-        }*/
       }
     } catch (final Exception e) {
       NcbiEnaLinkRunner.failures.put(accession, e.getMessage());
-      log.info("Failed to handle NCBI sample with accession " + accession, e);
+      log.error("Failed to handle NCBI sample with accession {}", accession, e);
     }
 
     return null;
@@ -114,7 +82,7 @@ public class NcbiEnaLinkCallable implements Callable<Void> {
       } catch (final Exception e) {
         if (++numRetry == MAX_RETRIES) {
           throw new RuntimeException(
-              "Failed to enrich and persist NCBI sample with accession " + accession);
+              "Failed to enrich and persist NCBI sample with accession " + accession, e);
         }
       }
     }

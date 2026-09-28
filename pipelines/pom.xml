@@ -12,6 +12,12 @@
 		<version>5.3.15-SNAPSHOT</version>
 	</parent>
 
+	<properties>
+		<!-- Skip Spotless on this aggregator module to avoid creating pipelines/target/spotless-index -->
+		<spotless.check.skip>true</spotless.check.skip>
+		<spotless.apply.skip>true</spotless.apply.skip>
+	</properties>
+
 	<profiles>
 		<profile>
 			<!-- this profile contains references to internal-only artifacts -->
@@ -29,8 +35,6 @@
 		<module>analytics</module>
 		<module>curation</module>
 		<module>zooma</module>
-		<module>copydown</module>
-		<module>curami</module>
 		<module>sample-transformation-dtol</module>
 		<module>ncbi</module>
 		<module>sample-release</module>

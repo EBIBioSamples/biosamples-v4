@@ -15,7 +15,17 @@ variables:
 before_script:
   - echo $CI_BUILD_REF
   - echo $CI_PROJECT_DIR
-  - apk update && apk add git
+  - |
+    if ! command -v git >/dev/null 2>&1; then
+      if command -v apk >/dev/null 2>&1; then
+        apk update && apk add git
+      elif command -v apt-get >/dev/null 2>&1; then
+        apt-get update && apt-get install -y git
+      else
+        echo "No supported package manager found to install git" >&2
+        exit 1
+      fi
+    fi
 
 stages:
   - build
@@ -27,7 +37,7 @@ maven-package-all-apps:
   image: ${CI_REGISTRY_IMAGE}/eclipse-temurin:17-jdk
   stage: build
   script:
-    - './mvnw -q package -P embl-ebi -s ci_settings.xml -DskipTests -Dmaven.source.skip=true'
+    - './mvnw -U -q package -P embl-ebi -s ci_settings.xml -DskipTests -Dmaven.source.skip=true'
   artifacts:
     paths:
       - webapps/core/target/webapps-core-*.war
@@ -35,8 +45,6 @@ maven-package-all-apps:
       - agents/uploadworkers/target/agents-uploadworkers-*.jar
       - pipelines/reindex/target/pipelines-reindex-*.jar
       - pipelines/curation/target/pipelines-curation-*.jar
-      - pipelines/curami/target/pipelines-curami-*.jar
-      - pipelines/copydown/target/pipelines-copydown-*.jar
 
 build_and_push_docker_images:
   stage: package
@@ -57,10 +65,6 @@ build_and_push_docker_images:
         DOCKERFILE_TARGET: "pipelines-reindex"
       - APP_NAME: "pipelines-curation"
         DOCKERFILE_TARGET: "pipelines-curation"
-      - APP_NAME: "pipelines-curami"
-        DOCKERFILE_TARGET: "pipelines-curami"
-      - APP_NAME: "pipelines-copydown"
-        DOCKERFILE_TARGET: "pipelines-copydown"
   script:
     - |
       DOCKER_IMAGE_NAME="$CI_REGISTRY_IMAGE/$APP_NAME:$DOCKER_TAG"
@@ -87,6 +91,7 @@ clone-config:
       - config
   only:
     - chore/working-es-search-k8-deployment-with-cleanup
+    - chore/BSD-2547-sample-status-management
     - dev
     - main
     - biosamples-search
@@ -100,6 +105,7 @@ deploy_k8s_primary_dev:
     url: https://wwwdev.ebi.ac.uk/biosamples
   only:
     - chore/working-es-search-k8-deployment-with-cleanup
+    - chore/BSD-2547-sample-status-management
     - dev
     - main
     - biosamples-search
@@ -115,6 +121,7 @@ deploy_k8s_primary_prod:
     url: https://www.ebi.ac.uk/biosamples
   only:
     - chore/working-es-search-k8-deployment-with-cleanup
+    - chore/BSD-2547-sample-status-management
     - dev
     - main
     - biosamples-search
@@ -130,6 +137,7 @@ deploy_k8s_fallback_prod:
     url: https://www.ebi.ac.uk/biosamples
   only:
     - chore/working-es-search-k8-deployment-with-cleanup
+    - chore/BSD-2547-sample-status-management
     - dev
     - main
     - biosamples-search
@@ -145,6 +153,7 @@ deploy_pipeline_k8s_primary_prod:
     url: https://www.ebi.ac.uk/biosamples
   only: 
     - chore/working-es-search-k8-deployment-with-cleanup
+    - chore/BSD-2547-sample-status-management
     - dev
     - main
     - biosamples-search
@@ -160,6 +169,7 @@ deploy_pipeline_k8s_fallback_prod:
     url: https://www.ebi.ac.uk/biosamples
   only:
     - chore/working-es-search-k8-deployment-with-cleanup
+    - chore/BSD-2547-sample-status-management
     - dev
     - main
     - biosamples-search
@@ -175,6 +185,7 @@ deploy_pipeline_k8s_primary_dev:
     url: https://wwwdev.ebi.ac.uk/biosamples
   only:
     - chore/working-es-search-k8-deployment-with-cleanup
+    - chore/BSD-2547-sample-status-management
     - dev
     - main
     - biosamples-search

@@ -19,7 +19,9 @@ public enum SampleStatus {
   PUBLIC,
   CANCELLED,
   SUPPRESSED,
-  KILLED;
+  KILLED,
+  TEMPORARY_SUPPRESSED,
+  TEMPORARY_KILLED;
 
   public static List<String> getSearchHiddenStatuses() {
     return Arrays.asList(SUPPRESSED.name(), KILLED.name());

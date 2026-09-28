@@ -4,6 +4,20 @@ services:
     build: .
     image: biosamples:latest
     mem_limit: 1g
+    restart: on-failure:5
+    depends_on:
+      mongo:
+        condition: service_healthy
+      schema-store:
+        condition: service_started
+      json-schema-validator:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      solr:
+        condition: service_started
+      neo4j:
+        condition: service_started
     links:
     - solr
     - mongo
@@ -94,6 +108,16 @@ services:
     build: .
     image: biosamples:latest
     mem_limit: 1g
+    restart: on-failure:5
+    depends_on:
+      mongo:
+        condition: service_healthy
+      schema-store:
+        condition: service_started
+      json-schema-validator:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
     links:
       - mongo
       - json-schema-validator
@@ -355,6 +379,13 @@ services:
     - logs:/logs
     image: biosamples:latest
     mem_limit: 500m
+    depends_on:
+      mongo:
+        condition: service_healthy
+      biosamples-webapps-core:
+        condition: service_started
+      biosamples-webapps-core-v2:
+        condition: service_started
     links:
     - biosamples-webapps-core
     - neo4j
@@ -378,6 +409,11 @@ services:
 
   schema-store:
     image: biosamples/json-schema-store:1.1.0
+    depends_on:
+      mongo:
+        condition: service_healthy
+      json-schema-validator:
+        condition: service_started
     ports:
       - 8085:8085
     links:
@@ -389,7 +425,14 @@ services:
 
   mongo:
     image: mongo:4.4.22
+    command: ["mongod", "--bind_ip_all"]
     mem_limit: 2g
+    healthcheck:
+      test: ["CMD", "mongo", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
     volumes:
     - mongo_data:/data/db
     - ./docker/mongoarchive:/mongoarchive

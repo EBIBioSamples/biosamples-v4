@@ -10,6 +10,7 @@
 	</parent>
 	<properties>
 		<bootstrap.version>4.0.0-2</bootstrap.version>
+		<jacoco.version>0.8.13</jacoco.version>
 		<spring-cloud-gcp.version>3.4.6</spring-cloud-gcp.version>
 		<spring-cloud.version>2021.0.6</spring-cloud.version>
 	</properties>
@@ -135,4 +136,33 @@
 			</plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>coverage</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.jacoco</groupId>
+						<artifactId>jacoco-maven-plugin</artifactId>
+						<version>${jacoco.version}</version>
+						<executions>
+							<execution>
+								<id>prepare-agent</id>
+								<goals>
+									<goal>prepare-agent</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>report</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>report</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

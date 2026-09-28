@@ -423,8 +423,7 @@ public class SamplesRestController {
       path = "/accession",
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<EntityModel<Sample>> accession(
-      @RequestBody Sample sample, @RequestHeader(name = "Authorization") final String token) {
+  public ResponseEntity<EntityModel<Sample>> accession(@RequestBody Sample sample) {
     final Authentication loggedInUser = SecurityContextHolder.getContext().getAuthentication();
     final String principle = sampleService.getPrinciple(loggedInUser);
 

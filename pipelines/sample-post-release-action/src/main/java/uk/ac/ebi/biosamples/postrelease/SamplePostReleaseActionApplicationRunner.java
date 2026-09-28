@@ -12,8 +12,9 @@ package uk.ac.ebi.biosamples.postrelease;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
@@ -25,6 +26,8 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.core.model.Sample;
+import uk.ac.ebi.biosamples.core.model.SampleStatus;
+import uk.ac.ebi.biosamples.core.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.core.model.filter.Filter;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 import uk.ac.ebi.biosamples.utils.thread.AdaptiveThreadPoolExecutor;
@@ -46,7 +49,21 @@ public class SamplePostReleaseActionApplicationRunner implements ApplicationRunn
   @Override
   public void run(final ApplicationArguments args) throws Exception {
     final Instant startTime = Instant.now();
-    final Collection<Filter> filters = PipelineUtils.getDateFilters(args, "release");
+    final Collection<Filter> filters =
+        PipelineUtils.getDateFilters(args, PipelineUtils.DateType.release);
+    final DateRangeFilter.DateRange dateRange =
+        filters.stream()
+            .filter(DateRangeFilter.class::isInstance)
+            .map(DateRangeFilter.class::cast)
+            .map(DateRangeFilter::getContent)
+            .flatMap(Optional::stream)
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("Date range filter not found"));
+    final String fromDate =
+        DateTimeFormatter.ISO_LOCAL_DATE.format(dateRange.getFrom().atZone(ZoneOffset.UTC));
+    final String effectiveUntilDate =
+        DateTimeFormatter.ISO_LOCAL_DATE.format(dateRange.getUntil().atZone(ZoneOffset.UTC));
+    final List<String> accessions = new ArrayList<>();
     long sampleCount = 0;
 
     try (final AdaptiveThreadPoolExecutor executorService =
@@ -66,17 +83,22 @@ public class SamplePostReleaseActionApplicationRunner implements ApplicationRunn
           throw new RuntimeException("Sample should not be null");
         }
 
-        LOG.info("Handling {}", sample.getAccession());
+        if (sample.getRelease().isBefore(Instant.now())
+            && sample.getStatus() == SampleStatus.PRIVATE) {
+          LOG.info("Handling {}", sample.getAccession());
 
-        final Callable<Boolean> task =
-            new SamplePostReleaseActionCallable(bioSamplesWebinClient, sample);
-        sampleCount++;
+          accessions.add(sample.getAccession());
+
+          /*final Callable<Boolean> task =
+          new SamplePostReleaseActionCallable(bioSamplesWebinClient, sample);*/
+          sampleCount++;
+        }
 
         if (sampleCount % 10000 == 0) {
           LOG.info("{} scheduled for processing", sampleCount);
         }
 
-        futures.put(sample.getAccession(), executorService.submit(task));
+        // futures.put(sample.getAccession(), executorService.submit(task));
       }
 
       LOG.info("waiting for futures");
@@ -87,10 +109,16 @@ public class SamplePostReleaseActionApplicationRunner implements ApplicationRunn
 
       throw e;
     } finally {
+      accessions.forEach(System.out::println);
       final Instant endTime = Instant.now();
       final String failures;
 
       LOG.info("Total samples processed {}", sampleCount);
+      LOG.info(
+          "Samples received for effective release date range from {} to {}: {}",
+          fromDate,
+          effectiveUntilDate,
+          sampleCount);
       LOG.info("Pipeline finished at {}", endTime);
       LOG.info(
           "Pipeline total running time {} seconds",

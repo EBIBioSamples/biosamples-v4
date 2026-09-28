@@ -11,20 +11,32 @@
 package uk.ac.ebi.biosamples;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.biosamples.security.service.BioSamplesWebSecurityConfig;
 import uk.ac.ebi.biosamples.utils.PipelineUtils;
 
 @SpringBootApplication
+@ComponentScan(
+    excludeFilters = {
+      @ComponentScan.Filter(
+          type = FilterType.ASSIGNABLE_TYPE,
+          value = {BioSamplesWebSecurityConfig.class})
+    })
 @EnableCaching(proxyTargetClass = true)
 @EnableAsync
 @EnableScheduling
+@EnableMongoRepositories(basePackages = "uk.ac.ebi.biosamples.repository")
 public class Application {
 
   // this is needed to read non-strings from properties files
@@ -40,7 +52,10 @@ public class Application {
   }
 
   public static void main(final String[] args) {
-    final ConfigurableApplicationContext ctx = SpringApplication.run(Application.class, args);
+    final SpringApplication application = new SpringApplication(Application.class);
+    application.setWebApplicationType(WebApplicationType.NONE);
+
+    final ConfigurableApplicationContext ctx = application.run(args);
     PipelineUtils.exitPipeline(ctx);
   }
 }
