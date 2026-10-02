@@ -191,6 +191,20 @@ public class BioSamplesClient implements AutoCloseable {
   }
 
   /**
+   * Fetches all sample resources using BioSamples with a text query, specified filters, and a
+   * cursor page size.
+   *
+   * @param text the text query
+   * @param filters the collection of filters
+   * @param size cursor page size
+   * @return an iterable of sample resources
+   */
+  public Iterable<EntityModel<Sample>> fetchSampleResourceAllWithSize(
+      final String text, final Collection<Filter> filters, final int size) {
+    return sampleCursorRetrievalService.fetchAllWithSizeAndWithoutCurations(text, filters, size);
+  }
+
+  /**
    * Fetches a sample resource by accession using BioSamples V2.
    *
    * @param accession the accession of the sample
