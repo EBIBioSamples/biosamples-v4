@@ -56,6 +56,41 @@ public class SampleCursorRetrievalService {
     return fetchAll(text, filterCollection, null, false);
   }
 
+  public Iterable<EntityModel<Sample>> fetchAllWithSizeAndWithoutCurations(
+      final String text, final Collection<Filter> filterCollection, final int size) {
+    return fetchAllWithSizeAndWithoutCurations(text, filterCollection, null, false, size);
+  }
+
+  public Iterable<EntityModel<Sample>> fetchAllWithSizeAndWithoutCurations(
+      final String text,
+      final Collection<Filter> filterCollection,
+      final String jwt,
+      final boolean addCurations,
+      final int size) {
+    MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+
+    params.add("text", text);
+
+    for (final Filter filter : filterCollection) {
+      params.add("filter", filter.getSerialization());
+    }
+
+    params.add("applyCurations", String.valueOf(addCurations));
+    params.add("size", Integer.toString(size));
+
+    params = encodePlusInQueryParameters(params);
+
+    return new IterableResourceFetchAll<>(
+        executor,
+        traverson,
+        restOperations,
+        parameterizedTypeReferencePagedResourcesSample,
+        jwt,
+        params,
+        "samples",
+        "cursor");
+  }
+
   public Iterable<EntityModel<Sample>> fetchAll(
       final String text,
       final Collection<Filter> filterCollection,
